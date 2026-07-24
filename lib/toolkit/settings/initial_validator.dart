@@ -1,20 +1,21 @@
-import 'package:app/services/client/client_service.dart';
 import 'package:core/navis/navis.dart';
 
+// SERVICES
+import 'package:app/toolkit/settings/initial_builder.dart';
+
 Future<String?> initialValidator() async {
-  final client = ClientSingleton();
-
-  final status = await client.validate();
-
+  final page = await clientService.resolve();
   final deepLink = Navis.consumePendingDeepLink();
 
-  if (status) {
-    if (deepLink != null) {
-      return deepLink;
-    } else {
-      return "/home";
-    }
-  } else {
-    return "/login";
+  if (page != null) {
+    return page;
   }
+
+  if (deepLink != null) {
+    return deepLink;
+  }
+
+  // TODO: cuando exista el concepto de negocio, separar el destino del cliente
+  // que todavia no tiene uno.
+  return "/home";
 }

@@ -1,7 +1,7 @@
 name: app
 description: "Lyra"
 publish_to: 'none'
-version: 1.0.0+1
+version: 0.0.1+1
 
 environment:
   sdk: ^3.9.2
@@ -32,6 +32,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/dark/
+    - assets/images/light/
 
 flutter_intl:
   enabled: true

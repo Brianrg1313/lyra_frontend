@@ -119,6 +119,22 @@ class DatabaseService {
     await _secureStorage.write(key: key, value: value);
   }
 
+  /// Whether [key] exists in the secure storage.
+  Future<bool> hasInSecure(String key) async {
+    return _secureStorage.containsKey(key: key);
+  }
+
+  /// Deletes [key] from the secure storage.
+  Future<void> deleteSecure(String key) async {
+    await _secureStorage.delete(key: key);
+  }
+
+  /// Whether [key] exists in [boxName]. Opens the box first if needed.
+  Future<bool> hasInBox(String boxName, String key) async {
+    final box = await _box(boxName);
+    return box.containsKey(key);
+  }
+
   /// Close all open boxes and release Hive resources.
   Future<void> dispose() async {
     _boxes.clear();
