@@ -18,7 +18,7 @@ class SignUpService {
   final _database = DatabaseService();
 
   Future<String?> _requestCode(BuildContext context, Map<String, dynamic> data) async {
-    final username = await api.post(path: "/sign_up/email/", version: "v1", data: data)
+    final username = await api.post(path: "/authentication/sign_up/email/", version: "v1", data: data)
       .catchError((E) {
         if (E is Map) {
           if (!context.mounted) return;
@@ -62,7 +62,7 @@ class SignUpService {
     if (username == null) throw "";
 
     final token = await api.post(
-      path: "/sign_up/create/",
+      path: "/authentication/sign_up/create/",
       version: "v1",
       data: {"USERNAME": username, "CODE": data["CODE"]}
     ).catchError((E) {

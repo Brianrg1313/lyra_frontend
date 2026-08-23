@@ -14,7 +14,6 @@ class Login extends PageBuilder {
   @override
   Widget build(BuildContext context) => Provider(
     create: (_) => SignInService(),
-    dispose: (_, SignInService service) => service.dispose(),
     child: const DesktopBody()
   );
 }

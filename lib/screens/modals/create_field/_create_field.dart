@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
-import 'package:app/services/products/table_field_type.dart';
+import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:core/buttons.dart';
+import 'package:core/button.dart';
 
 /// Alta de una columna (campo) de una tabla, pensada al estilo de una planilla:
 /// se abre desde la vista de la tabla al tocar el boton de agregar columna, pide

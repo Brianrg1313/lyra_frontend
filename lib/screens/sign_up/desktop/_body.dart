@@ -8,7 +8,7 @@ import 'package:app/services/sign_up/sign_up_service.dart';
 // WIDGETS
 import 'package:core/form.dart';
 import 'package:core/images.dart';
-import 'package:core/buttons.dart';
+import 'package:core/button.dart';
 
 class DesktopBody extends StatefulWidget {
   const DesktopBody({super.key});

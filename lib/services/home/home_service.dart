@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:core/core.dart';
 
@@ -29,6 +30,37 @@ class HomeService extends ChangeNotifier {
 
   late bool _isSideBarExpanded;
   bool get isSideBarExpanded => _isSideBarExpanded;
+
+  /// Lo que se escribio en el buscador del header, ya normalizado (sin espacios
+  /// en los bordes y en minusculas), que es como lo comparan las secciones.
+  ///
+  /// El buscador es uno solo para todo el home y vive en el header, que esta
+  /// afuera de la seccion abierta; el texto tiene que llegar igual a la seccion
+  /// que se este mirando, asi que se guarda aca, que es lo que ambos comparten.
+  ///
+  /// Es un [ValueNotifier] aparte y no un campo mas del servicio porque el
+  /// buscador escribe en el a cada letra: si notificara como el resto, tipear
+  /// volveria a construir tambien el side bar —que escucha al servicio entero
+  /// con `context.watch`— en vez de solo la lista que se esta filtrando.
+  final ValueNotifier<String> _searchQuery = ValueNotifier<String>("");
+  ValueListenable<String> get searchQuery => _searchQuery;
+
+  @override
+  void dispose() {
+    _searchQuery.dispose();
+    super.dispose();
+  }
+
+  /// Guarda lo que se escribio en el buscador. Lo llama el header; las secciones
+  /// solo leen [searchQuery].
+  void search(String value) {
+    _searchQuery.value = value.trim().toLowerCase();
+  }
+
+  /// Vacia la busqueda. Se llama al cambiar de pantalla: cada seccion busca
+  /// sobre lo suyo, asi que entrar a una con el texto de la anterior esconderia
+  /// filas sin motivo.
+  void clearSearch() => _searchQuery.value = "";
 
   /// Abre el box del home. Debe llamarse en `preCall`, antes de levantar la
   /// app, porque `DatabaseService.get` solo lee de boxes ya abiertos.

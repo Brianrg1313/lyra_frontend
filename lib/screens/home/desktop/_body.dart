@@ -7,25 +7,38 @@ import './side_bar/side_bar.dart';
 
 class DesktopBody extends StatelessWidget {
   const DesktopBody({
+    super.key,
     required this.section,
-    required this.content,
-    super.key
+    required this.header,
+    required this.content
   });
 
-  /// Seccion abierta, usada para marcar su opcion en el side bar. Una sub-pagina
-  /// se refleja en la seccion que la contiene.
+  /// Open section, used to mark its option in the side bar. A sub-page
+  /// is reflected in the section that contains it.
   final HomeSection section;
 
-  /// Contenido del panel central: el de la seccion o el de su sub-pagina.
+  /// Top bar, the same for all sections.
+  ///
+  /// It goes above the content and not above the whole window: next to the
+  /// side bar the two fixed parts would sit in the same corner and the center
+  /// panel would lose height for nothing. This way the bar spans the width of
+  /// the panel it belongs to, which is also what you search on.
+  final Widget header;
+
+  /// Content of the center panel: the section's or its sub-page's.
   final Widget content;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.all(AppSize.padding),
+    padding: EdgeInsets.all(AppSize.gap),
     child: Row(children: [
       SideBar(section: section),
-      SizedBox(width: AppSize.padding),
-      Expanded(child: content)
+      SizedBox(width: AppSize.gap),
+      Expanded(child: Column(children: [
+        header,
+        SizedBox(height: AppSize.gap),
+        Expanded(child: content)
+      ]))
     ])
   );
 }

@@ -5,19 +5,22 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/products/table_request.dart';
+import 'package:app/services/inventory/table_request.dart';
+import 'package:app/services/inventory/table_template.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:core/buttons.dart';
+import 'package:core/button.dart';
 
 /// Alta de una tabla de productos. Reemplaza a la vieja sub-pagina de creacion:
-/// ahora la tabla se crea vacia, solo con su cabecera (titulo, descripcion y
-/// color), y las columnas se definen despues.
+/// ahora la tabla se crea con su cabecera (titulo, descripcion y color) en una
+/// sola peticion. Si se eligio un rubro de plantilla (`Blank template` es el
+/// que no manda ninguno), el backend arma sus columnas ahi mismo: el front no
+/// conoce ni crea columnas por su cuenta.
 ///
 /// Es un modal y no una pantalla porque el formulario es corto y de tamaño fijo.
-/// Se abre desde el listado de tablas ([ProductTablesSection]) y, al cerrarse,
+/// Se abre desde el listado de tablas ([InventorySection]) y, al cerrarse,
 /// el listado se recarga para mostrar la tabla nueva.
 class CreateTableModal extends StatefulWidget {
   const CreateTableModal({super.key});
@@ -58,33 +61,18 @@ class _CreateTableModalState extends State<CreateTableModal> {
     }
   );
 
-  /// Paleta de la que sale el color de la tabla. Son los codigos que viajan al
-  /// backend y no se traducen: literales ARGB de Flutter (`0x` mas 8 digitos
-  /// hex, con el alpha adelante), que es el unico formato que acepta el alta.
-  static const _palette = <String>[
-    "0xFFF87171", // rojo
-    "0xFFEF4444", // rojo intenso
-    "0xFFFB923C", // naranja
-    "0xFFF59E0B", // ambar oscuro
-    "0xFFFBBF24", // ambar
-    "0xFF34D399", // verde
-    "0xFF10B981", // esmeralda
-    "0xFF14B8A6", // verde azulado
-    "0xFF22D3EE", // cyan
-    "0xFF60A5FA", // azul
-    "0xFF3B82F6", // azul intenso
-    "0xFF818CF8", // indigo
-    "0xFF8B5CF6", // violeta intenso
-    "0xFFA78BFA", // violeta
-    "0xFFF472B6", // rosa
-    "0xFFEC4899", // rosa intenso
-    "0xFF94A3B8", // gris
-    "0xFF64748B"  // gris oscuro
-  ];
+  /// Plantilla elegida. Arranca en [TableTemplate.blank], que no trae columnas:
+  /// elegir una plantilla nunca es obligatorio para crear una tabla.
+  late final _template = InputController.select(
+    key: "TEMPLATE",
+    form: _form,
+    initial: TableTemplate.blank
+  );
 
-  /// Color elegido. Arranca con el primero puesto para que el alta siempre lleve
-  /// uno y no haya un estado "sin color".
-  String _color = _palette.first;
+  /// El alta pide un color de cabecera aunque el formulario ya no lo pregunte,
+  /// asi que viaja fijo: un rojo cualquiera, literal ARGB de Flutter (`0x` mas
+  /// 8 digitos hex, con el alpha adelante), que es el unico formato que acepta.
+  static const _color = "0xFFF87171";
 
   @override
   void dispose() {
@@ -116,8 +104,13 @@ class _CreateTableModalState extends State<CreateTableModal> {
           controller: _description,
           leftIcon: Icon(CI.pen, color: ThemeColor.of(context).icon)
         ),
-        SizedBox(height: AppSize.spaceXS),
-        _colorSelector(context),
+        SelectInput(
+          title: S.of(context).table_template_title,
+          placeholder: S.of(context).table_template_placeholder,
+          emptyText: S.of(context).table_template_empty,
+          controller: _template,
+          options: TableTemplate.options(context)
+        ),
         SizedBox(height: AppSize.spaceM),
         Button(
           title: S.of(context).create_table,
@@ -125,30 +118,6 @@ class _CreateTableModalState extends State<CreateTableModal> {
           action: _submit
         )
       ])
-  );
-
-  /// Selector de color: la etiqueta y, debajo, la paleta de swatches. El
-  /// seleccionado se marca con un anillo y un tilde.
-  Widget _colorSelector(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      TextSmall(
-        S.of(context).table_color_title,
-        color: ThemeColor.of(context).text.secondary
-      ),
-      SizedBox(height: AppSize.gap),
-      Wrap(
-        spacing: AppSize.spaceS,
-        runSpacing: AppSize.spaceS,
-        children: [
-          for (final color in _palette) _Swatch(
-            color: color,
-            selected: color == _color,
-            onTap: () => setState(() => _color = color)
-          )
-        ]
-      )
-    ]
   );
 
   void _submit() {
@@ -170,61 +139,13 @@ class _CreateTableModalState extends State<CreateTableModal> {
       });
   }
 
-  /// Cuerpo de la peticion. Los textos se leen de los controladores; el color,
-  /// del estado del selector.
+  /// Cuerpo de la peticion. Los textos se leen de los controladores; el color
+  /// es el fijo de [_color]. Si se eligio un rubro de plantilla se manda su
+  /// codigo, y es el backend quien crea sus columnas junto con la tabla.
   Map<String, dynamic> _payload() => createTableRequest(
     title: _title.value,
     description: _description.value,
-    color: _color
+    color: _color,
+    template: _template.value == TableTemplate.blank ? null : _template.value
   );
-}
-
-/// Circulo de un color de la paleta. Cuando esta [selected] lo rodea un anillo
-/// del color de texto principal y le aparece un tilde encima.
-class _Swatch extends StatelessWidget {
-  const _Swatch({
-    required this.color,
-    required this.selected,
-    required this.onTap
-  });
-
-  /// Literal ARGB del color, tal como viaja al backend (`0xFF60A5FA`).
-  final String color;
-  final bool selected;
-  final void Function() onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final swatch = _parse(color);
-
-    return FeedbackButton(
-      action: onTap,
-      width: AppSize.action,
-      height: AppSize.action,
-      message: color,
-      child: Center(child: Container(
-        width: AppSize.action * .7,
-        height: AppSize.action * .7,
-        decoration: BoxDecoration(
-          color: swatch,
-          shape: BoxShape.circle,
-          border: selected
-            ? Border.all(color: ThemeColor.of(context).text.primary, width: 2)
-            : null
-        ),
-        child: selected
-          ? const Center(child: Icon(Icons.check, color: Colors.white, size: 16))
-          : null
-      ))
-    );
-  }
-
-  /// Convierte el literal ARGB (`0xFFRRGGBB`) a un [Color]. `int.tryParse`
-  /// entiende el prefijo `0x` sin pasarle `radix`. Ante un formato inesperado
-  /// cae a gris, para no reventar el pintado por un color mal formado.
-  static Color _parse(String argb) {
-    final parsed = int.tryParse(argb);
-    if (parsed == null) return const Color(0xFF94A3B8);
-    return Color(parsed);
-  }
 }

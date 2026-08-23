@@ -10,7 +10,7 @@ import 'package:app/services/client/client_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:core/buttons.dart';
+import 'package:core/button.dart';
 
 class DesktopBody extends StatefulWidget {
   const DesktopBody({super.key});
@@ -99,7 +99,7 @@ class _DesktopBodyState extends State<DesktopBody> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.arrow_back, size: 18, color: ThemeColor.of(context).primary),
+                  Icon(CI.arrow_left, size: 18, color: ThemeColor.of(context).primary),
                   SizedBox(width: AppSize.gap),
                   TextMedium(S.of(context).back, color: ThemeColor.of(context).primary)
                 ]

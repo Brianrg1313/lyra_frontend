@@ -10,8 +10,6 @@ import 'package:app/services/home/home_service.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 
 // WIDGETS
-import 'package:app/screens/home/desktop/side_bar/business_selector.dart';
-
 import './profile.dart';
 import './options.dart';
 import './sign_out.dart';
@@ -19,7 +17,7 @@ import './sign_out.dart';
 class SideBar extends StatelessWidget {
   const SideBar({required this.section, super.key});
 
-  /// Seccion abierta, usada para marcar su opcion en la lista.
+  /// Open section, used to mark its option in the list.
   final HomeSection section;
 
   @override
@@ -32,25 +30,43 @@ class SideBar extends StatelessWidget {
       width: home.sideBarWidth,
       duration: const Duration(milliseconds: 200),
       child: Surface(
-        child: Column(children: [
-          ProfileCard(isExpanded: isExpanded),
-          Separator.horizontal(
-            margin: EdgeInsets.symmetric(horizontal: AppSize.padding),
+        padding: EdgeInsets.all(AppSize.gap),
+        child: Container(
+          decoration: BoxDecoration(
+            color: ThemeColor.of(context).navBar,
+            border: Border.all(color: ThemeColor.of(context).line),
+            borderRadius: BorderRadius.circular(AppSize.cornerInset(AppSize.gap)),
+            boxShadow: [BoxShadow(
+              color: ThemeColor.of(context).background.withAlpha(50),
+              blurRadius: AppSize.gap,
+              spreadRadius: 1
+            )]
           ),
-          Expanded(child: ScrollableWidget(
-            showBar: false,
-            padding: EdgeInsets.symmetric(vertical: AppSize.padding),
-            children: options(context, section, isExpanded)
-          )),
-          Separator.horizontal(
-            margin: EdgeInsets.symmetric(horizontal: AppSize.padding),
-          ),
-          BusinessSelector(isExpanded: isExpanded),
-          SignOut(
-            isExpanded: isExpanded,
-            toggle: () => context.read<HomeService>().toggleSideBar()
-          )
-        ])
+          child: Column(children: [
+            ProfileCard(isExpanded: isExpanded),
+            Separator.horizontal(
+              margin: EdgeInsets.symmetric(horizontal: AppSize.padding),
+            ),
+            Expanded(child: ScrollableWidget(
+              showBar: false,
+              padding: EdgeInsets.symmetric(vertical: AppSize.padding),
+              children: options(context, section, isExpanded)
+            )),
+            // The bottom margin comes from the line, not from [SignOut]: the
+            // gap used to be filled by the business selector, which now lives
+            // in the header.
+            Separator.horizontal(
+              margin: EdgeInsets.fromLTRB(
+                AppSize.padding, 0,
+                AppSize.padding, AppSize.padding
+              )
+            ),
+            SignOut(
+              isExpanded: isExpanded,
+              toggle: () => context.read<HomeService>().toggleSideBar()
+            )
+          ])
+        )
       )
     );
   }

@@ -21,7 +21,7 @@ class ProfileCard extends StatelessWidget {
     final picture = client.picture;
 
     return Padding(
-    padding: EdgeInsets.all(AppSize.padding),
+    padding: EdgeInsets.all(AppSize.spaceXS),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -34,8 +34,8 @@ class ProfileCard extends StatelessWidget {
               top: BorderSide(color: Colors.white.withAlpha(40)),
               left: BorderSide(color: Colors.white.withAlpha(40))
             ),
-            // El gradiente queda de fondo: se ve mientras la imagen carga y
-            // tambien cuando el cliente no tiene foto.
+            // The gradient stays in the background: it shows while the image
+            // loads and also when the client has no picture.
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -50,9 +50,9 @@ class ProfileCard extends StatelessWidget {
               : null
           )
         ),
-        // El espacio va dentro del Expanded para que pueda comprimirse a 0
-        // mientras el sideBar anima su ancho; si fuera un SizedBox fijo
-        // provocaria overflow en los primeros frames de la expansion.
+        // The spacing goes inside the Expanded so it can shrink to 0 while
+        // the side bar animates its width; as a fixed SizedBox it would cause
+        // overflow during the first frames of the expansion.
         if (isExpanded) Expanded(child: Padding(
           padding: EdgeInsets.only(left: AppSize.spaceXS),
           child: Column(

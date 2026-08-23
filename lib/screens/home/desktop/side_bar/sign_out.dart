@@ -16,8 +16,8 @@ class SignOut extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(
-      AppSize.padding, 0,
-      AppSize.padding, AppSize.padding
+      AppSize.spaceXS, 0,
+      AppSize.spaceXS, AppSize.spaceXS
     ),
     child: LayoutBuilder(builder: (context, constraints) =>
       constraints.maxWidth >= AppSize.action * 2
@@ -86,7 +86,7 @@ class SignOut extends StatelessWidget {
   Widget get _arrow => AnimatedRotation(
     turns: isExpanded ? 0.5 : 0,
     duration: const Duration(milliseconds: 200),
-    child: const Icon(Icons.arrow_forward_ios_rounded)
+    child: const Icon(CI.arrow_right)
   );
 
   void _signOut() {

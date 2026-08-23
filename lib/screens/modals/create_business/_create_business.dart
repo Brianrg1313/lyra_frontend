@@ -6,10 +6,11 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/business/business_profile_model.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:core/buttons.dart';
+import 'package:core/button.dart';
 
 import 'notice.dart';
 
@@ -51,20 +52,15 @@ class _CreateBusinessModalState extends State<CreateBusinessModal> {
     }
   );
 
+  /// Los sectores salen de [BusinessActivity] y no de una lista escrita aca: es
+  /// la misma que traduce el perfil cuando el backend devuelve el sector, asi
+  /// que lo que se elige al crear la empresa se lee despues con ese nombre.
+  ///
   /// El `value` viaja al backend y no se traduce; solo el `placeholder` es
   /// localizable.
-  late final _types = <SelectOption>[
-    SelectOption(value: "RETAIL", placeholder: S.of(context).business_type_retail),
-    SelectOption(value: "FOOD", placeholder: S.of(context).business_type_food),
-    SelectOption(value: "TECHNOLOGY", placeholder: S.of(context).business_type_technology),
-    SelectOption(value: "HEALTH", placeholder: S.of(context).business_type_health),
-    SelectOption(value: "PROFESSIONAL", placeholder: S.of(context).business_type_professional),
-    SelectOption(value: "EDUCATION", placeholder: S.of(context).business_type_education),
-    SelectOption(value: "CONSTRUCTION", placeholder: S.of(context).business_type_construction),
-    SelectOption(value: "TRANSPORT", placeholder: S.of(context).business_type_transport),
-    SelectOption(value: "ENTERTAINMENT", placeholder: S.of(context).business_type_entertainment),
-    SelectOption(value: "FINANCE", placeholder: S.of(context).business_type_finance),
-    SelectOption(value: "OTHER", placeholder: S.of(context).business_type_other)
+  late final _types = [
+    for (final activity in BusinessActivity.catalog)
+      SelectOption(value: activity.value, placeholder: activity.label(context))
   ];
 
   @override
