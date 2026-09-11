@@ -2,29 +2,29 @@ import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 
-/// Como lee el backend el archivo que se sube para armar una tabla.
+/// How the backend reads the file uploaded to build a table.
 ///
-/// No es el formato del archivo sino **con que parser lo abre el backend**, y
-/// por eso son dos y no uno por extension: `POST /tables/import/.../excel/` y
-/// `POST /tables/import/.../csv/`. La rama de Excel abre cualquier planilla
-/// (xlsx, xls, ods, ...); la de CSV es texto separado por comas o punto y coma.
+/// It is not the file format but **which parser the backend opens it with**, and
+/// that is why there are two and not one per extension: `POST /inventory/products/import/.../excel/` and
+/// `POST /inventory/products/import/.../csv/`. The Excel branch opens any spreadsheet
+/// (xlsx, xls, ods, ...); the CSV one is text separated by commas or semicolons.
 enum ImportFormat {
   excel("excel"),
   csv("csv");
 
   const ImportFormat(this.segment);
 
-  /// El tramo de la ruta del endpoint que corresponde a este formato.
+  /// The segment of the endpoint path that corresponds to this format.
   final String segment;
 }
 
-/// Extensiones que se le ofrecen al usuario en el dialogo del sistema, y las
-/// unicas que [importFormatOf] reconoce.
+/// Extensions offered to the user in the system dialog, and the only
+/// ones [importFormatOf] recognizes.
 ///
-/// Son las que sabe leer el backend: la rama de Excel usa una libreria que abre
-/// toda la familia de planillas —no solo `.xlsx`—, asi que se listan todas en
-/// vez de obligar a exportar a un formato en particular. Sin punto: es como las
-/// pide el dialogo del sistema.
+/// They are the ones the backend knows how to read: the Excel branch uses a library that opens
+/// the whole spreadsheet family —not only `.xlsx`—, so they are all listed instead
+/// of forcing an export to a particular format. Without the dot: it is how
+/// the system dialog asks for them.
 const List<String> kImportExtensions = [
   "xlsx",
   "xlsm",
@@ -34,14 +34,14 @@ const List<String> kImportExtensions = [
   "csv"
 ];
 
-/// Con que parser hay que abrir [path], o `null` si su extension no es una
-/// planilla ni un CSV.
+/// Which parser [path] has to be opened with, or `null` if its extension is not
+/// a spreadsheet nor a CSV.
 ///
-/// Se decide por la extension y no por el contenido porque es lo que decide la
-/// ruta a la que se sube, y es tambien lo unico que se sabe antes de leer el
-/// archivo. Nunca deberia dar `null` viniendo del dialogo (que ya filtra), pero
-/// se comprueba igual: en Linux y macOS el usuario puede escribir el nombre a
-/// mano y saltearse el filtro.
+/// It is decided by the extension and not by the content because that is what decides the
+/// path it is uploaded to, and it is also the only thing known before reading the
+/// file. It should never return `null` coming from the dialog (which already filters), but
+/// it is checked anyway: on Linux and macOS the user can type the name by
+/// hand and skip the filter.
 ImportFormat? importFormatOf(String path) {
   final name = _fileName(path);
   final dot = name.lastIndexOf(".");
@@ -55,23 +55,23 @@ ImportFormat? importFormatOf(String path) {
   return extension == "csv" ? ImportFormat.csv : ImportFormat.excel;
 }
 
-/// El nombre con el que nace la tabla importada: el del archivo, sin extension.
+/// The name the imported table is born with: the file's, without extension.
 ///
-/// Se manda desde aca y no se deja que lo deduzca el backend porque del otro
-/// lado el nombre del archivo llega como lo arme el multipart, y una ruta de
-/// Windows entera quedaria de titulo. Devuelve vacio si no queda nada usable, y
-/// en ese caso el backend pone el suyo por defecto.
+/// It is sent from here and the backend is not left to deduce it because on the other
+/// side the file name arrives as the multipart built it, and a whole Windows
+/// path would end up as the title. Returns empty if nothing usable remains, and
+/// in that case the backend puts its own default.
 String importTableName(String path) {
   final name = _fileName(path);
   final dot = name.lastIndexOf(".");
 
-  // Un nombre que arranca con punto (`.csv`) es todo extension: no queda nada
-  // de titulo, y por eso se corta en `dot >= 0` y no en `dot > 0`.
+  // A name that starts with a dot (`.csv`) is all extension: nothing remains
+  // for the title, and that is why it cuts at `dot >= 0` and not at `dot > 0`.
   return (dot < 0 ? name : name.substring(0, dot)).trim();
 }
 
-/// El ultimo tramo de una ruta, con cualquiera de los dos separadores: el
-/// dialogo devuelve rutas del sistema y en Windows vienen con "\\".
+/// The last segment of a path, with either of the two separators: the
+/// dialog returns system paths and on Windows they come with "\\".
 String _fileName(String path) {
   final slash = path.lastIndexOf("/");
   final backslash = path.lastIndexOf("\\");
@@ -80,23 +80,23 @@ String _fileName(String path) {
   return cut < 0 ? path : path.substring(cut + 1);
 }
 
-/// Abre el dialogo del sistema para elegir la planilla a importar, filtrado a
-/// [kImportExtensions]: los demas archivos no se pueden ni seleccionar.
+/// Opens the system dialog to choose the spreadsheet to import, filtered to
+/// [kImportExtensions]: the other files cannot even be selected.
 ///
-/// [label] es como se llama ese grupo de tipos en el desplegable del dialogo
-/// ("Planillas y CSV"), y llega traducido desde la pantalla porque este archivo
-/// no tiene contexto con el que traducirlo.
+/// [label] is what that group of types is called in the dialog's dropdown
+/// ("Spreadsheets and CSV"), and it arrives translated from the screen because this file
+/// has no context to translate it with.
 ///
-/// Devuelve `null` si se cerro el dialogo sin elegir nada.
+/// Returns `null` if the dialog was closed without choosing anything.
 Future<File?> pickImportFile({required String label}) async {
   final picked = await openFile(
     acceptedTypeGroups: [
       XTypeGroup(
         label: label,
         extensions: kImportExtensions,
-        // Windows filtra por extension, pero macOS e iOS lo hacen por UTI y
-        // Android por MIME: sin estos dos el dialogo de esas plataformas no
-        // filtraria nada y dejaria elegir cualquier archivo.
+        // Windows filters by extension, but macOS and iOS do it by UTI and
+        // Android by MIME: without these two the dialog on those platforms would not
+        // filter anything and would let any file be chosen.
         uniformTypeIdentifiers: const [
           "org.openxmlformats.spreadsheetml.sheet",
           "com.microsoft.excel.xls",

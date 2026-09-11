@@ -11,16 +11,16 @@ export 'package:core/float_flag/controller.dart';
 final api = _Api();
 final assets = _Assets();
 
-/// Donde vive la api: esquema, host y puerto, sin ruta.
+/// Where the api lives: scheme, host and port, without a path.
 ///
-/// Es lo que hace falta para completar una direccion que el backend manda
-/// relativa. La unica que manda asi hoy son las bases de las imagenes (ver
-/// `CdnService`): del lado del servidor `/rigel/media` es una direccion valida
-/// —el navegador la resuelve contra la pagina que la trajo—, pero esto no es
-/// una pagina y no tiene contra que resolverla.
+/// It's what's needed to complete an address the backend sends relative. The
+/// only thing that sends one that way today is the image bases (see
+/// `CdnService`): server-side `/rigel/media` is a valid address —the browser
+/// resolves it against the page that fetched it—, but this isn't a page and
+/// has nothing to resolve it against.
 ///
-/// El puerto se omite cuando es el que ya implica el esquema, que es lo que
-/// hace cualquiera que escriba una URL a mano.
+/// The port is omitted when it's the one the scheme already implies, which is
+/// what anyone writing a URL by hand does.
 String get apiOrigin {
   final port = api.port;
   final implied =
@@ -30,35 +30,35 @@ String get apiOrigin {
   return "${api.scheme}://${api.host}${implied ? "" : ":$port"}";
 }
 
-/// Deja la empresa activa en las dos apis y en el socket, o la saca al cerrar
-/// sesion.
+/// Sets the active business on both apis and on the socket, or clears it when
+/// signing out.
 ///
-/// Lo llama `BusinessService` cada vez que cambia la empresa activa: es lo
-/// unico que hay que tocar para que todas las peticiones queden apuntando a la
-/// empresa correcta, sin que cada endpoint tenga que acordarse de mandarla.
+/// `BusinessService` calls it every time the active business changes: it's
+/// the only thing that needs touching for every request to end up pointing at
+/// the right business, without each endpoint having to remember to send it.
 ///
-/// El socket es la excepcion a ese "queda apuntando": su handshake ya se hizo,
-/// asi que la empresa nueva recien viaja en la proxima reconexion. Si los
-/// eventos que se estan escuchando son de la empresa activa hay que forzarla
-/// con `ConnectionService().refresh()`.
+/// The socket is the exception to that "ends up pointing at": its handshake
+/// already happened, so the new business only travels on the next
+/// reconnection. If the events being listened to belong to the active
+/// business, it has to be forced with `ConnectionService().refresh()`.
 void useBusiness(String? id) {
   api.business = id;
   assets.business = id;
   sockets.business = id;
 }
 
-/// Base de las apis de la app: token de sesion y empresa activa viajan igual en
-/// todas, asi que el manejo vive una sola vez aca.
+/// Base of the app's apis: session token and active business travel the same
+/// way on all of them, so the handling lives here once.
 abstract class _SessionApi extends RestAPI {
   final _database = DatabaseService();
 
-  /// Empresa a la que pertenece lo que se pide. Se manda en la cabecera
-  /// `business_id` y no en el cuerpo porque no es un dato del alta sino el
-  /// contexto de la sesion: el cliente puede tener varias empresas y todas
-  /// comparten los endpoints.
+  /// Business that what's being requested belongs to. It's sent in the
+  /// `business_id` header and not in the body because it isn't data being
+  /// created but session context: the client can have several businesses and
+  /// they all share the same endpoints.
   ///
-  /// Nulo mientras no haya ninguna elegida (sesion recien abierta sin empresas,
-  /// o despues de cerrar sesion), y en ese caso la cabecera no viaja.
+  /// Null while none is chosen yet (session just opened with no businesses,
+  /// or after signing out), and in that case the header doesn't travel.
   String? business;
 
   @override

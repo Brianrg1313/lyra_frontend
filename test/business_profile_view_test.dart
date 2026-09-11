@@ -11,16 +11,17 @@ import 'package:app/services/business/business_email_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_details.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_field.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_emails.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_header.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_tag.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_id.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_incorporation.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_logo.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_phone.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_website.dart';
+import 'package:app/screens/home/sections/business/settings/profile_details.dart';
+import 'package:app/screens/home/sections/business/settings/profile_field.dart';
+import 'package:app/screens/home/sections/business/settings/profile_emails.dart';
+import 'package:app/screens/home/sections/business/settings/profile_header.dart';
+import 'package:app/screens/home/sections/business/settings/profile_identity.dart';
+import 'package:app/screens/home/sections/business/settings/profile_tag.dart';
+import 'package:app/screens/home/sections/business/settings/profile_id.dart';
+import 'package:app/screens/home/sections/business/settings/profile_incorporation.dart';
+import 'package:app/screens/home/sections/business/settings/profile_logo.dart';
+import 'package:app/screens/home/sections/business/settings/profile_phone.dart';
+import 'package:app/screens/home/sections/business/settings/profile_website.dart';
 
 /// Una empresa con todo cargado: es la unica forma de ver todas las filas de la
 /// ficha a la vez, porque un dato que no esta no se dibuja.
@@ -188,12 +189,28 @@ void main() {
     );
   });
 
-  testWidgets('la foto no es uno de los datos', (tester) async {
+  testWidgets('the photo belongs to the header, not to the data', (tester) async {
     await tester.pumpWidget(_app(1000));
     await tester.pumpAndSettle();
 
-    // Vive en la columna de al lado, que es la unica que no se lee.
-    expect(find.byType(BusinessProfileLogo), findsNothing);
+    // It is drawn once and inside the header, which is what says whose
+    // everything below is. It is not one more row of the sheet: the data
+    // blocks must not carry it.
+    expect(find.byType(BusinessProfileLogo), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(BusinessProfileHeader),
+        matching: find.byType(BusinessProfileLogo)
+      ),
+      findsOneWidget
+    );
+    expect(
+      find.descendant(
+        of: find.byType(BusinessProfileIdentity),
+        matching: find.byType(BusinessProfileLogo)
+      ),
+      findsNothing
+    );
   });
 
   testWidgets('las personas con acceso no son un dato del perfil', (tester) async {

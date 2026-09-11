@@ -15,7 +15,7 @@ Future<String?> initialValidator() async {
     return deepLink;
   }
 
-  // TODO: cuando exista el concepto de negocio, separar el destino del cliente
-  // que todavia no tiene uno.
+  // TODO: once the business concept exists, split off the destination for a
+  // client that does not have one yet.
   return "/home";
 }

@@ -4,11 +4,11 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/section_message.dart';
 
-/// Pestana de sucursales: los locales de la empresa, cada uno con su direccion
-/// y lo que se maneja ahi.
+/// Branches tab: the company's locations, each with its address and what is
+/// handled there.
 ///
-/// Todavia no hay de donde sacarlas, asi que la pestana existe pero avisa que
-/// falta (ver `BusinessEmployeesTab`).
+/// There is still no source for them, so the tab exists but notifies that it
+/// is missing (see `BusinessEmployeesTab`).
 class BusinessBranchesTab extends StatelessWidget {
   const BusinessBranchesTab({super.key});
 

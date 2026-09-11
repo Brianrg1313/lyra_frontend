@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Un bloque del formulario de una conexion: su titulo, una linea que explica
-/// para que sirve y lo que se elige o se escribe debajo.
+/// A block of a connection's form: its title, a line explaining what it's
+/// for, and what's chosen or written below it.
 ///
-/// Son tres cosas distintas —como se llama la cuenta, de que servicio es y con
-/// que credenciales se entra— y sin separarlas se lee como una lista de campos
-/// sueltos. El subtitulo no es decorativo: ninguna de las tres se explica sola
-/// con su titulo, y la de las credenciales menos que ninguna.
+/// They're three different things —what the account is called, which service
+/// it belongs to, and which credentials it logs in with— and without
+/// separating them it reads like a list of loose fields. The subtitle isn't
+/// decorative: none of the three explains itself with its title alone, and the
+/// credentials one least of all.
 class FormBlock extends StatelessWidget {
   const FormBlock({
     super.key,

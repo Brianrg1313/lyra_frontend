@@ -4,29 +4,30 @@ import 'package:app/toolkit/toolkit.dart';
 
 import 'profile_field.dart';
 
-/// El identificador de la empresa: tapado, con que destaparlo y con que
-/// copiarlo.
+/// The company identifier: hidden, with what to unhide it and what to copy
+/// it with.
 ///
-/// Es el unico dato del perfil que no se lee, se **usa**: es lo que se pega en
-/// un soporte o en una integracion para nombrar a esta empresa. No es un
-/// secreto —por si solo no autoriza nada— pero tampoco es para tenerlo escrito
-/// a la vista mientras se comparte la pantalla, asi que se muestra tapado.
+/// It's the only profile datum that isn't read, it's **used**: it's what's
+/// pasted into a support ticket or an integration to name this company. It's
+/// not a secret —on its own it authorizes nothing— but it also isn't for
+/// having written in view while sharing the screen, so it's shown hidden.
 ///
-/// Se copia sin destaparlo, que es lo que se hace con el casi siempre: el boton
-/// copia el identificador entero aunque en pantalla se vean puntos. Destaparlo
-/// es para lo otro, comparar de un vistazo que es el que se estaba buscando.
+/// It's copied without unhiding it, which is what's done with it almost
+/// always: the button copies the whole identifier even though dots are seen on
+/// screen. Unhiding it is for the other thing, comparing at a glance that it's
+/// the one being looked for.
 ///
-/// El valor y sus dos botones van juntos dentro de una caja ([Surface.over]) y
-/// no sueltos en la fila como el resto de los datos: esto no es un dato que se
-/// lee de corrido, es un valor que se manipula —se destapa, se copia, se pega
-/// afuera—, y la caja dice hasta donde llega. Ademas junta los botones con lo
-/// que operan: destapar y copiar no valen para la fila, valen para esos
-/// caracteres, y cruzados al otro extremo del renglon parecian dos acciones
-/// mas de la ficha.
+/// The value and its two buttons go together inside a box ([Surface.over]) and
+/// not loose in the row like the rest of the data: this isn't a datum read
+/// straight through, it's a value that's manipulated —unhidden, copied, pasted
+/// outside—, and the box says how far it reaches. It also brings the buttons
+/// together with what they operate on: unhide and copy don't hold for the row,
+/// they hold for those characters, and crossed to the other end of the row
+/// they looked like two more sheet actions.
 ///
-/// La caja mide lo que miden el identificador y sus botones, no el ancho de la
-/// columna: estirada de lado a lado con los botones colgando del borde derecho
-/// se leia como una barra de la ficha y no como el envoltorio de un valor.
+/// The box measures what the identifier and its buttons measure, not the
+/// column's width: stretched edge to edge with the buttons hanging off the
+/// right edge it read as a sheet bar and not as the wrapper of a value.
 class BusinessProfileId extends StatefulWidget {
   const BusinessProfileId({super.key, required this.id});
 
@@ -37,12 +38,13 @@ class BusinessProfileId extends StatefulWidget {
 }
 
 class _BusinessProfileIdState extends State<BusinessProfileId> {
-  /// Se destapa a pedido y **no queda destapado**: el estado es de esta fila,
-  /// asi que volver a la pestana lo muestra tapado de nuevo.
+  /// It's unhidden on request and **doesn't stay unhidden**: the state is of
+  /// this row, so coming back to the tab shows it hidden again.
   bool _visible = false;
 
-  /// Cuantos caracteres quedan a la vista al taparlo. Es el primer bloque del
-  /// uuid: alcanza para reconocer cual es sin dejarlo escrito entero.
+  /// How many characters are left in view when hiding it. It's the first block
+  /// of the uuid: enough to recognize which one it is without leaving it
+  /// written in full.
   static const int _shown = 8;
 
   @override
@@ -53,11 +55,11 @@ class _BusinessProfileIdState extends State<BusinessProfileId> {
     child: _box(context)
   );
 
-  /// El identificador y lo que se hace con el, en una sola caja del ancho de su
-  /// contenido.
+  /// The identifier and what's done with it, in a single box the width of its
+  /// content.
   ///
-  /// [Align] es lo que la deja medir su texto: dentro de la columna de la ficha
-  /// el ancho que llega es el de la ficha entera, y una fila lo tomaria todo.
+  /// [Align] is what lets it measure its text: inside the sheet's column the
+  /// width that arrives is the whole sheet's, and a row would take it all.
   Widget _box(BuildContext context) => Align(
     alignment: Alignment.centerLeft,
     child: Surface.over(
@@ -70,15 +72,15 @@ class _BusinessProfileIdState extends State<BusinessProfileId> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // El identificador se recorta antes que los botones si la ficha se
-          // pone muy angosta: `Flexible` y no `Expanded`, que se llevaria el
-          // ancho que sobra aunque el texto no lo necesite.
+          // The identifier is clipped before the buttons if the sheet gets
+          // very narrow: `Flexible` and not `Expanded`, which would take the
+          // width left over even if the text doesn't need it.
           Flexible(child: TextMedium(
             _visible ? widget.id : _masked,
             lines: 2,
             ellipsis: true,
-            // Tapado no hay nada que seleccionar: lo que se copiaria son los
-            // puntos.
+            // Hidden there's nothing to select: what would get copied is the
+            // dots.
             selectable: _visible
           )),
           SizedBox(width: AppSize.gap),
@@ -100,10 +102,10 @@ class _BusinessProfileIdState extends State<BusinessProfileId> {
     )
   );
 
-  /// El identificador con todo tapado menos el primer bloque.
+  /// The identifier with everything hidden except the first block.
   ///
-  /// Los guiones se dejan: conservan la forma del uuid, asi que lo que se ve
-  /// sigue leyendose como un identificador y no como un renglon de puntos.
+  /// The dashes are kept: they preserve the uuid's shape, so what's seen still
+  /// reads as an identifier and not as a row of dots.
   String get _masked {
     if (widget.id.length <= _shown) return "•" * widget.id.length;
 

@@ -10,19 +10,21 @@ import 'package:core/form.dart';
 import '../widgets/form_block.dart';
 import '../state/channel_form_controller.dart';
 
-/// Las credenciales de la red: el id de la cuenta, el token de acceso, el
-/// secreto de la app, el token de verificacion del webhook.
+/// The network's credentials: the account id, the access token, the app
+/// secret, the webhook verification token.
 ///
-/// **Nada de esto esta escrito en esta app.** Los campos, su orden, cual es
-/// secreto, cual es obligatorio y donde encontrar cada valor en la consola de
-/// Meta salen del catalogo del backend, que es tambien quien decide en cual de
-/// los dos objetos viaja cada uno (`SETTINGS` o `CREDENTIALS`). Una red que se
-/// agregue del otro lado aparece con su formulario hecho, sin tocar esto.
+/// **None of this is written in this app.** The fields, their order, which is
+/// secret, which is obligatory and where to find each value in the Meta
+/// console come from the backend catalog, which is also the one that decides
+/// in which of the two objects each travels (`SETTINGS` or `CREDENTIALS`). A
+/// network added on the other side appears with its form done, without
+/// touching this.
 ///
-/// Un canal se puede guardar con esto a medio llenar, y no es un descuido: se
-/// registra "Instagram — Ventas" hoy y se pegan los tokens cuando Meta los
-/// emita. Por eso los obligatorios se marcan pero no frenan el guardado; lo que
-/// hacen es dejar el canal como "falta configurar" en el listado.
+/// A channel can be saved with this half-filled, and it is not carelessness:
+/// it is registered as "Instagram — Sales" today and the tokens are pasted
+/// when Meta issues them. That is why the obligatory ones are marked but do
+/// not stop the save; what they do is leave the channel as "needs configuring"
+/// in the list.
 class CredentialsBlock extends StatelessWidget {
   const CredentialsBlock({
     super.key,
@@ -34,34 +36,51 @@ class CredentialsBlock extends StatelessWidget {
   final ChannelProviderModel schema;
 
   @override
-  Widget build(BuildContext context) => FormBlock(
-    title: S.of(context).channel_credentials_title,
-    subtitle: S.of(context).channel_credentials_subtitle(schema.name),
-    child: Column(children: [
-      // Los campos se dibujan en el orden del catalogo: los ids de cuenta
-      // primero y los secretos al final, que es el orden en que se consiguen.
-      //
-      // La key es la clave del campo y no su posicion: al cambiar de red las
-      // listas se cruzan —`app_secret` es el septimo campo de WhatsApp y el
-      // quinto de Messenger, pero es el mismo campo con el mismo valor— y sin
-      // key Flutter emparejaria por posicion, dejando un input dibujando el
-      // controlador de otro campo. Con ella, los que se repiten entre dos redes
-      // ni se enteran del cambio y los que no, se van y vuelven enteros.
-      for (final field in schema.fields) _Field(
-        key: ValueKey(field.key),
-        controller: controller,
-        field: field
-      )
-    ])
-  );
+  Widget build(BuildContext context) {
+    // WhatsApp Personal has no fields at all — there is nothing to paste, the
+    // number links by scanning a QR code after the channel exists — so
+    // drawing the usual empty title-and-column would be a box with nothing
+    // in it. A short notice pointing at where the pairing actually happens
+    // (the channel's switch in the list) says something instead of nothing.
+    if (schema.provider == ChannelProviderModel.whatsappPersonalCode) {
+      return FormBlock(
+        title: S.of(context).channel_whatsapp_personal_notice_title,
+        subtitle: S.of(context).channel_whatsapp_personal_notice_subtitle,
+        child: const SizedBox.shrink()
+      );
+    }
+
+    return FormBlock(
+      title: S.of(context).channel_credentials_title,
+      subtitle: S.of(context).channel_credentials_subtitle(schema.name),
+      child: Column(children: [
+        // The fields are drawn in the catalog's order: the account ids first
+        // and the secrets at the end, which is the order they are obtained
+        // in.
+        //
+        // The key is the field's key and not its position: when switching
+        // networks the lists cross —`app_secret` is the seventh field of
+        // WhatsApp and the fifth of Messenger, but it is the same field with
+        // the same value— and without a key Flutter would pair by position,
+        // leaving an input drawing another field's controller. With it, the
+        // ones that repeat between two networks do not even notice the
+        // change and the ones that do not, leave and come back whole.
+        for (final field in schema.fields) _Field(
+          key: ValueKey(field.key),
+          controller: controller,
+          field: field
+        )
+      ])
+    );
+  }
 }
 
-/// Un campo del proveedor.
+/// A provider field.
 ///
-/// Un secreto ya guardado se muestra vacio y **no es un error**: el backend
-/// nunca devuelve el valor de un token, solo dice bajo que clave hay uno. El
-/// campo lo aclara ("ya configurado") y funciona como reemplazo: escribir algo
-/// lo pisa, dejarlo en blanco lo conserva.
+/// An already stored secret is shown empty and **it is not an error**: the
+/// backend never returns the value of a token, it only says under which key
+/// there is one. The field makes it clear ("already configured") and works as
+/// a replacement: typing something overwrites it, leaving it blank keeps it.
 class _Field extends StatelessWidget {
   const _Field({super.key, required this.controller, required this.field});
 
@@ -89,9 +108,10 @@ class _Field extends StatelessWidget {
               color: scheme.icon
             )
           ),
-          // La pista la escribe el backend y dice **donde** sacar el valor en
-          // la consola del proveedor. Es lo unico que tiene quien configura, y
-          // sin ella este formulario es una lista de campos imposibles.
+          // The hint is written by the backend and says **where** to get the value
+          // in the provider's console. It is the only thing whoever is
+          // configuring has, and without it this form is a list of impossible
+          // fields.
           if (field.hint.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(
@@ -110,10 +130,10 @@ class _Field extends StatelessWidget {
     );
   }
 
-  /// El titulo del campo, marcando los que la red necesita si o si.
+  /// The field's title, marking the ones the network needs no matter what.
   ///
-  /// Se marca con una palabra y no con un asterisco: el asterisco significa
-  /// "no podes guardar sin esto", y aca si se puede.
+  /// It is marked with a word and not an asterisk: the asterisk means "you
+  /// cannot save without this", and here you can.
   String _title(BuildContext context) => field.required
     ? "${field.label} · ${S.of(context).channel_field_required}"
     : field.label;

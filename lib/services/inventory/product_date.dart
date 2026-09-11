@@ -3,50 +3,50 @@ import 'package:flutter/services.dart';
 // PACKAGES
 import 'package:intl/intl.dart';
 
-/// Una fecha de una celda de la planilla: lo que se guardo, entendido.
+/// A date from a spreadsheet cell: what was stored, understood.
 ///
-/// Existe porque una columna de fechas recibe fechas escritas de cualquier
-/// manera. Nadie tipea `2026-02-12` en una planilla: tipea `12/2/26`, o pega una
-/// columna de un Excel, o importa un CSV que trae otra cosa. Aca se reconocen
-/// todas y se escriben de una sola forma (ver [stored]), asi que la tabla
-/// converge a una fecha de verdad sin obligar a nadie a escribir en el formato
-/// del backend.
+/// It exists because a date column receives dates written any
+/// way. Nobody types `2026-02-12` in a spreadsheet: they type `12/2/26`, or paste a
+/// column from an Excel, or import a CSV that brings something else. Here they are all
+/// recognized and written in a single way (see [stored]), so the table
+/// converges on a real date without forcing anyone to write in the backend's
+/// format.
 ///
-/// **El dia es el dia.** No se convierte de zona horaria en ningun momento: la
-/// fecha de vencimiento de un producto es un dia del calendario, no un instante,
-/// y pasar `2026-02-12T00:00:00Z` a hora local lo correria al 11 en media
-/// America. Lo que se lee es lo que se guardo.
+/// **The day is the day.** It is never converted from time zone: the
+/// expiry date of a product is a calendar day, not an instant,
+/// and turning `2026-02-12T00:00:00Z` into local time would move it to the 11th in half of
+/// America. What is read is what was stored.
 ///
-/// El orden de los numeros se resuelve por como estan escritos y no por el
-/// idioma:
+/// The order of the numbers is resolved by how they are written and not by the
+/// language:
 ///
-/// - Si el primero tiene cuatro cifras, es el ano (`2026-02-12`, `2026/02/12`).
-/// - Si no, es el dia (`12-02-2026`, `12/02/26`), que es como se escribe una
-///   fecha en casi todo el mundo.
-/// - Y si con eso el mes pasa de doce pero el dia no, estaban al reves
-///   (`02/26/2026`): se dan vuelta en vez de perder la fecha.
+/// - If the first one has four digits, it is the year (`2026-02-12`, `2026/02/12`).
+/// - If not, it is the day (`12-02-2026`, `12/02/26`), which is how a
+///   date is written in almost the whole world.
+/// - And if with that the month goes past twelve but the day does not, they were the other
+///   way around (`02/26/2026`): they are swapped instead of losing the date.
 ///
-/// Un ano de dos cifras se completa en el siglo mas cercano (`26` es 2026, `98`
-/// es 1998), que es lo que hace cualquier planilla.
+/// A two-digit year is completed in the nearest century (`26` is 2026, `98`
+/// is 1998), which is what any spreadsheet does.
 class ProductDate {
   const ProductDate._(this.at, {required this.hasTime});
 
-  /// La fecha entendida.
+  /// The understood date.
   final DateTime at;
 
-  /// Si lo guardado traia hora, y no solo un dia.
+  /// Whether what was stored carried a time, and not only a day.
   ///
-  /// Se recuerda porque **no es lo mismo no tener hora que tenerla en cero**:
-  /// una fecha de vencimiento no vence a las doce de la noche, no vence a
-  /// ninguna hora. Sin esto, mostrarla completa inventaria un `12:00 AM` que
-  /// nadie cargo.
+  /// It is remembered because **not having a time is not the same as having it at zero**:
+  /// an expiry date does not expire at midnight, it does not expire at
+  /// any hour. Without this, showing it complete would invent a `12:00 AM` that
+  /// nobody entered.
   final bool hasTime;
 
-  /// Lee una fecha escrita como sea, o `null` si eso no es una fecha.
+  /// Reads a date written any way, or `null` if that is not a date.
   ///
-  /// Devolver `null` no es un error a mostrar: una celda con texto que no es una
-  /// fecha se sigue viendo tal como se cargo. Mientras el dato no sea una fecha,
-  /// escribirlo como una seria afirmar algo que no se sabe.
+  /// Returning `null` is not an error to show: a cell with text that is not a
+  /// date keeps being seen exactly as it was entered. While the datum is not a date,
+  /// writing it as one would be asserting something that is not known.
   static ProductDate? parse(String raw) {
     final text = raw.trim();
     if (text.isEmpty) return null;
@@ -54,8 +54,8 @@ class ProductDate {
     final match = _pattern.firstMatch(text);
 
     if (match == null) {
-      // Lo que no encaja arriba pero es ISO igual: lo que manda el backend con
-      // milisegundos y zona (`2026-02-12T00:00:00.000Z`).
+      // What does not fit above but is ISO anyway: what the backend sends with
+      // milliseconds and zone (`2026-02-12T00:00:00.000Z`).
       final iso = DateTime.tryParse(text);
 
       return iso == null
@@ -67,16 +67,16 @@ class ProductDate {
     final second = int.parse(match[2]!);
     final third = int.parse(match[3]!);
 
-    // Cuatro cifras adelante solo puede ser un ano; si no, adelante va el dia.
+    // Four digits up front can only be a year; if not, the day goes up front.
     final yearFirst = match[1]!.length == 4;
 
     final year = yearFirst ? first : _century(third, match[3]!.length);
     var month = second;
     var day = yearFirst ? third : first;
 
-    // `02/26/2026`: el mes no llega a veintiseis y el dia si. Estaban al reves.
-    // Solo cuando el ano no venia adelante: con el ano adelante el orden ya no
-    // es ambiguo (`2026-13-01` no es una fecha, no es el 13 de enero).
+    // `02/26/2026`: the month does not reach twenty-six and the day does. They were the other
+    // way around. Only when the year was not up front: with the year up front the order is no longer
+    // ambiguous (`2026-13-01` is not a date, it is not January 13).
     if (!yearFirst && month > 12 && day <= 12) (day, month) = (month, day);
     if (month < 1 || month > 12 || day < 1) return null;
 
@@ -89,40 +89,40 @@ class ProductDate {
 
     final at = DateTime(year, month, day, hour, minute, seconds);
 
-    // `31/02/2026` no existe: [DateTime] lo corre solo al 3 de marzo en vez de
-    // fallar, asi que la fecha se da por buena unicamente si volvio entera.
+    // `31/02/2026` does not exist: [DateTime] rolls it over to March 3 instead of
+    // failing, so the date is accepted only if it came back whole.
     if (at.month != month || at.day != day) return null;
 
     return ProductDate._(at, hasTime: withTime);
   }
 
-  /// La misma fecha escrita como la guarda la tabla, o el texto tal cual si eso
-  /// no era una fecha.
+  /// The same date written the way the table stores it, or the raw text if that
+  /// was not a date.
   ///
-  /// Es lo que corre al salir de la celda: se escribe en cualquier formato y
-  /// queda guardado en uno solo.
+  /// It is what runs when leaving the cell: it is written in any format and
+  /// ends up stored in one single one.
   static String normalize(String raw) => parse(raw)?.stored ?? raw;
 
-  /// Como viaja y como se guarda: `2026-02-12`, y con hora `2026-02-12 12:30`.
+  /// How it travels and how it is stored: `2026-02-12`, and with time `2026-02-12 12:30`.
   ///
-  /// Va con un espacio y no con la `T` de ISO porque tambien es lo que se ve al
-  /// volver a abrir la celda para corregirla, y es la misma forma que
-  /// [DateTime.parse] entiende de todos modos.
+  /// It goes with a space and not with ISO's `T` because it is also what is seen when
+  /// reopening the cell to correct it, and it is the same form
+  /// [DateTime.parse] understands anyway.
   String get stored =>
     hasTime ? "$_day ${_two(at.hour)}:${_two(at.minute)}" : _day;
 
-  /// Como se lee: `Feb 12, 2026`, en el idioma de la app.
+  /// How it is read: `Feb 12, 2026`, in the app's language.
   ///
-  /// Los nombres de los meses no los escribe esta app: los trae `intl` con los
-  /// datos que deja cargados `GlobalMaterialLocalizations`, asi que la fecha se
-  /// ordena y se traduce sola donde se la mire.
+  /// The month names are not written by this app: `intl` brings them with the
+  /// data loaded by `GlobalMaterialLocalizations`, so the date
+  /// orders and translates itself wherever it is looked at.
   String short(String locale) => DateFormat.yMMMd(locale).format(at);
 
-  /// La fecha completa: `2026-02-12`, y con su hora `2026-02-12 12:30 PM`.
+  /// The full date: `2026-02-12`, and with its time `2026-02-12 12:30 PM`.
   ///
-  /// Es la de leer un numero exacto —comparar dos filas, copiar la fecha a otro
-  /// lado— y por eso el dia va en cifras y la hora en el reloj del idioma (de 12
-  /// o de 24 segun el lugar). La hora aparece unicamente si se cargo una: ver
+  /// It is the one for reading an exact number —comparing two rows, copying the date elsewhere—
+  /// and that is why the day goes in digits and the time in the language's clock (12-
+  /// or 24-hour depending on the place). The time appears only if one was entered: see
   /// [hasTime].
   String full(String locale) =>
     hasTime ? "$_day ${DateFormat.jm(locale).format(at)}" : _day;
@@ -132,12 +132,12 @@ class ProductDate {
 
   static String _two(int value) => value.toString().padLeft(2, "0");
 
-  /// Un ano de dos cifras al siglo mas cercano: hasta `69` es 2000 y de `70`
-  /// para arriba 1900, que es la ventana que usan las planillas.
+  /// A two-digit year to the nearest century: up to `69` it is 2000 and from `70`
+  /// up it is 1900, which is the window spreadsheets use.
   static int _century(int year, int digits) =>
     digits > 2 ? year : (year < 70 ? 2000 + year : 1900 + year);
 
-  /// La hora de un reloj de 12 pasada a una de 24, si venia con `am` o `pm`.
+  /// The time of a 12-hour clock converted to a 24-hour one, if it came with `am` or `pm`.
   static int _hour(int hour, String? meridiem) {
     if (meridiem == null) return hour;
 
@@ -148,10 +148,10 @@ class ProductDate {
     return hour == 12 ? 0 : hour;
   }
 
-  /// Tres numeros separados por `-`, `/` o `.`, y detras una hora opcional.
+  /// Three numbers separated by `-`, `/` or `.`, and behind them an optional time.
   ///
-  /// Cual de los tres es el ano no lo decide esto sino [parse]: aca solo se
-  /// reconoce la forma.
+  /// Which of the three is the year is not decided here but by [parse]: here only the
+  /// shape is recognized.
   static final RegExp _pattern = RegExp(
     r"^(\d{1,4})[-/.](\d{1,2})[-/.](\d{1,4})"
     r"(?:[\sT]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?)?$",
@@ -159,26 +159,26 @@ class ProductDate {
   );
 }
 
-/// Las tres cosas que pueden separar los numeros de una fecha.
+/// The three things that can separate the numbers of a date.
 final RegExp _separators = RegExp(r"[-/.]");
 
-/// Escribe la barra de una fecha cuando se aprieta la barra espaciadora.
+/// Writes the slash of a date when the space bar is pressed.
 ///
-/// Una fecha se tipea con el teclado numerico, donde el separador no esta: hay
-/// que soltar la mano, buscar la barra y volver. El pulgar, en cambio, ya esta
-/// sobre el espacio. Asi `12 2 26` queda `12/2/26` sin mover la mano de los
-/// numeros.
+/// A date is typed with the numeric keyboard, where the separator is not: you have
+/// to take your hand off, find the slash and come back. The thumb, on the other hand, is already
+/// over the space. Thus `12 2 26` becomes `12/2/26` without moving the hand off the
+/// numbers.
 ///
-/// Pone la barra que la fecha ya venia usando —si se empezo con `-` sigue con
-/// `-`— para no dejar `2026-02/12`.
+/// It puts the slash the date was already using —if it started with `-` it continues with
+/// `-`— so as not to leave `2026-02/12`.
 ///
-/// **El espacio de la hora sigue siendo un espacio.** Con dos separadores puestos
-/// la fecha ya esta completa, asi que lo que viene detras es la hora
-/// (`2026-02-12 12:30`) y ahi el espacio se escribe tal cual. Sin esa
-/// comprobacion no habria forma de tipear una fecha con hora.
+/// **The time's space stays a space.** With two separators already placed
+/// the date is already complete, so what comes next is the time
+/// (`2026-02-12 12:30`) and there the space is written as is. Without that
+/// check there would be no way to type a date with a time.
 ///
-/// Tampoco escribe dos separadores seguidos ni uno al principio: un espacio que
-/// no separa nada no se convierte en nada, simplemente no entra.
+/// It also does not write two separators in a row nor one at the beginning: a space that
+/// separates nothing does not turn into anything, it simply does not enter.
 class DateSeparatorFormatter extends TextInputFormatter {
   const DateSeparatorFormatter();
 
@@ -187,9 +187,9 @@ class DateSeparatorFormatter extends TextInputFormatter {
     TextEditingValue old,
     TextEditingValue value
   ) {
-    // Solo la tecla recien apretada. Pegar un texto con espacios, o borrar, no
-    // pasa por aca: lo que se pega se guarda como vino y ya lo entiende
-    // [ProductDate].
+    // Only the freshly pressed key. Pasting a text with spaces, or deleting, does
+    // not come through here: what is pasted is stored as it came and [ProductDate]
+    // already understands it.
     if (value.text.length != old.text.length + 1) return value;
 
     final at = value.selection.baseOffset - 1;
@@ -197,7 +197,7 @@ class DateSeparatorFormatter extends TextInputFormatter {
 
     final before = value.text.substring(0, at);
 
-    // La fecha ya esta entera: lo que sigue es la hora.
+    // The date is already complete: what follows is the time.
     if (_separators.allMatches(before).length >= 2) return value;
 
     final separator =

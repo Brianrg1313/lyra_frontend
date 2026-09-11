@@ -10,17 +10,17 @@ import 'package:app/services/business/business_service.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/section_message.dart';
 
-/// Pestana de empleados: la gente que entra a la empresa, con que rango y que
-/// puede hacer cada uno.
+/// Employees tab: the people who enter the company, with which rank and what
+/// each one can do.
 ///
-/// Por ahora lo unico que hay es cuantos son. Ese numero vivia en el perfil y
-/// se mudo aca, que es su seccion: la cedula de identidad de la empresa no
-/// tiene por que cargar con una cuenta que nadie esta mirando.
+/// For now the only thing there is is how many they are. That number lived in
+/// the profile and moved here, which is its section: the company's identity
+/// card should not have to carry a count that nobody is looking at.
 ///
-/// Quienes son todavia no esta modelado del otro lado, asi que debajo del
-/// numero queda el aviso. La pestana se muestra igual, y no se esconde, por lo
-/// mismo que el side bar deja a la vista las secciones bloqueadas: asi se ve
-/// desde el primer dia de que partes se compone una empresa.
+/// Who they are is still not modeled on the other side, so below the number
+/// the notice stays. The tab shows anyway, and it does not hide, for the same
+/// reason the side bar leaves blocked sections in view: so that it is seen
+/// from day one what parts a business is made of.
 class BusinessEmployeesTab extends StatefulWidget {
   const BusinessEmployeesTab({super.key});
 
@@ -33,8 +33,8 @@ class _BusinessEmployeesTabState extends State<BusinessEmployeesTab> {
   void initState() {
     super.initState();
 
-    // Se difiere al primer frame porque la carga notifica al servicio, y
-    // notificar mientras el arbol se esta montando es un rebuild en pleno
+    // It is deferred to the first frame because the load notifies the service,
+    // and notifying while the tree is mounting is a rebuild in the middle of a
     // build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<BusinessService>().loadEmployees();
@@ -58,8 +58,8 @@ class _BusinessEmployeesTabState extends State<BusinessEmployeesTab> {
         children: [
           _Count(total: service.employees),
           SizedBox(height: AppSize.padding),
-          // El aviso ocupa lo que queda: la pestana sigue siendo, sobre todo,
-          // la lista que todavia no esta.
+          // The notice takes what is left: the tab remains, above all, the list that
+          // is still missing.
           Expanded(child: SectionMessage(
             icon: CI.employee,
             title: S.of(context).coming_soon,
@@ -72,10 +72,10 @@ class _BusinessEmployeesTabState extends State<BusinessEmployeesTab> {
   }
 }
 
-/// Cuanta gente entra a la empresa, como tarjeta.
+/// How many people enter the company, as a card.
 ///
-/// Es un dato y no un titulo: va sobre su superficie —un bloque sobre la hoja
-/// del cuerpo, como los del perfil— y no suelto sobre el aviso.
+/// It is data and not a title: it goes on its own surface —a block on the
+/// body's sheet, like the profile's— and not loose over the notice.
 class _Count extends StatelessWidget {
   const _Count({required this.total});
 

@@ -9,7 +9,7 @@ import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_email_model.dart';
 import 'package:app/services/business/business_service.dart';
-import 'package:app/screens/modals/verify_business_email/_verify_business_email.dart';
+import 'package:app/screens/modals/business/verify_business_email/_verify_business_email.dart';
 
 const _email = BusinessEmailModel(
   id: "22222222-2222-4222-8222-222222222222",

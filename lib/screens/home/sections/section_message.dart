@@ -4,12 +4,12 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:core/button.dart';
 
-/// Estado a pantalla completa: un icono, un mensaje y, si hay algo que hacer al
-/// respecto, un boton.
+/// Full-screen state: an icon, a message and, if there is something to do
+/// about it, a button.
 ///
-/// Lo usan las secciones del home para lo mismo —no cargo, no hay nada todavia,
-/// la busqueda no encontro nada— y por eso vive aca arriba y no dentro de una
-/// de ellas: era el mismo widget escrito una vez por seccion.
+/// The home sections use it for the same things —did not load, there is
+/// nothing yet, the search found nothing— and that is why it lives up here and
+/// not inside one of them: it was the same widget written once per section.
 class SectionMessage extends StatelessWidget {
   const SectionMessage({
     super.key,
@@ -24,16 +24,17 @@ class SectionMessage extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  /// Segunda linea, mas apagada. Sin ella el mensaje es solo el titulo.
+  /// Second line, dimmer. Without it the message is just the title.
   final String? subtitle;
 
-  /// Que hacer. Sin [action] o sin [actionLabel] no se dibuja el boton: hay
-  /// estados que solo informan (una busqueda sin resultados no tiene accion).
+  /// What to do. Without [action] or without [actionLabel] the button is not
+  /// drawn: there are states that only inform (a search without results has no
+  /// action).
   final void Function()? action;
   final String? actionLabel;
 
-  /// Icono del boton. Va donde la accion agrega algo (crear una tabla), no
-  /// donde solo reintenta.
+  /// Icon of the button. It goes where the action adds something (create a
+  /// table), not where it only retries.
   final IconData? actionIcon;
 
   @override

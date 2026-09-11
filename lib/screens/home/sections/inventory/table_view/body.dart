@@ -10,18 +10,18 @@ import 'record_row.dart';
 import 'state/sheet_columns.dart';
 import 'state/sheet_controller.dart';
 
-/// El cuerpo de la planilla: los registros y, debajo, las filas en blanco que se
-/// escriben.
+/// The body of the sheet: the records and, below, the blank rows that are
+/// written.
 ///
-/// `itemExtent` no es una optimizacion opcional, es lo que hace posible la
-/// pantalla: con filas de alto fijo la lista sabe cuanto mide sin construir
-/// ninguna, asi que una tabla de cientos de miles de registros se abre y se
-/// recorre igual de rapido que una de diez. Sin el, medir el alto obligaria a
-/// construirlas todas.
+/// `itemExtent` is not an optional optimization, it is what makes the screen
+/// possible: with fixed-height rows the list knows how tall it is without
+/// building any, so a table with hundreds of thousands of records opens and
+/// scrolls as fast as one of ten. Without it, measuring the height would force
+/// building them all.
 ///
-/// `addAutomaticKeepAlives` va apagado por lo mismo: las filas no tienen estado
-/// que preservar (lo que se escribe vive en los borradores, no en el widget), y
-/// a esta escala ni la contabilidad de mantenerlas vivas vale la pena.
+/// `addAutomaticKeepAlives` is off for the same reason: the rows have no state
+/// to preserve (what is written lives in the drafts, not in the widget), and at
+/// this scale not even the bookkeeping of keeping them alive is worth it.
 class SheetBody extends StatelessWidget {
   const SheetBody({
     super.key,
@@ -29,21 +29,21 @@ class SheetBody extends StatelessWidget {
     required this.visible
   });
 
-  /// La forma de la planilla: una columna por clave, en orden.
+  /// The shape of the sheet: one column per key, in order.
   final SheetShape shape;
 
-  /// Cuantas filas entran en pantalla. Lo mide el layout de la planilla, y es lo
-  /// que asegura que siempre haya filas en blanco hasta abajo de todo.
+  /// How many rows fit on screen. The sheet layout measures it, and it is what
+  /// ensures there are always blank rows all the way down.
   final int visible;
 
   @override
   Widget build(BuildContext context) {
     final controller = context.read<SheetController>();
 
-    // Buscando no hay filas en blanco debajo: lo que se ve son las que
-    // coinciden y ahi se termina (ver [SheetMetrics.bodyRows]). Es lo unico que
-    // el cuerpo le pregunta al servicio, y solo cambia al empezar o al dejar de
-    // buscar.
+    // While searching there are no blank rows below: what is seen are the
+    // matches and it ends there (see [SheetMetrics.bodyRows]). It is the only
+    // thing the body asks the service, and it only changes when starting or
+    // stopping a search.
     final searching = context.select<TableViewService, bool>(
       (service) => service.isSearching
     );
@@ -57,9 +57,9 @@ class SheetBody extends StatelessWidget {
           blanks: !searching
         );
 
-        // El teclado y la lectura por tramos necesitan saber hasta donde llega
-        // la planilla. Es una asignacion pelada, no avisa a nadie: quien la lee
-        // lo hace despues del frame.
+        // The keyboard and the chunked reading need to know how far the sheet
+        // reaches. It is a bare assignment, it notifies no one: whoever reads
+        // it does so after the frame.
         controller.setRows(rows);
 
         return ListView.builder(

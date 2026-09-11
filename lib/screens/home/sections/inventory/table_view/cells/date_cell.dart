@@ -10,27 +10,27 @@ import 'package:app/services/inventory/product_date.dart';
 import '../sheet_style.dart';
 import '../state/sheet_dates.dart';
 
-/// La celda de un campo de tipo fecha, fuera de edicion.
+/// The cell of a date-type field, out of editing.
 ///
-/// Una fecha guardada es `2026-02-12`, que es como viaja y como se compara, pero
-/// no como se lee: una columna de guiones y ceros hay que descifrarla numero por
-/// numero. Aca se muestra escrita —`Feb 12, 2026`, en el idioma de la app— que
-/// es la forma en la que el mes se reconoce sin leerlo.
+/// A stored date is `2026-02-12`, which is how it travels and how it's compared,
+/// but not how it's read: a column of dashes and zeros has to be deciphered
+/// number by number. Here it's shown written —`Feb 12, 2026`, in the app's
+/// language— which is the form in which the month is recognized without reading it.
 ///
-/// A la derecha lleva el boton que la pasa a la **fecha completa**: el dia en
-/// cifras y, si se cargo una, su hora (`2026-02-12 12:30 PM`). Las dos lecturas
-/// hacen falta y ninguna reemplaza a la otra: la escrita es la de entender de un
-/// vistazo, la completa es la de comparar dos filas, copiar la fecha a otro lado
-/// o controlar a que hora paso algo.
+/// On the right it carries the button that switches it to the **full date**: the
+/// day in digits and, if one was loaded, its time (`2026-02-12 12:30 PM`). Both
+/// readings are needed and neither replaces the other: the written one is for
+/// grasping it at a glance, the full one for comparing two rows, copying the date
+/// elsewhere or checking when something happened.
 ///
-/// El boton cambia **la columna entera** y no su celda (ver [SheetDates]): una
-/// columna de fechas se lee como una tira, y con cada fila en un formato
-/// distinto dos fechas dejarian de compararse de un vistazo.
+/// The button changes **the whole column** and not its cell (see [SheetDates]): a
+/// column of dates is read as a strip, and with each row in a different
+/// format two dates would stop being comparable at a glance.
 ///
-/// Lo que no es una fecha se muestra tal como se cargo, sin boton: mientras el
-/// dato no sea una fecha, escribirlo como una seria afirmar algo que no se sabe.
-/// Es tambien lo que hace que una tabla recien importada —con la columna llena
-/// de vaya a saber que— no pierda ni un dato por no haberse entendido.
+/// What isn't a date is shown just as it was entered, without a button: while the
+/// data isn't a date, writing it as one would affirm something that isn't known.
+/// It's also what keeps a freshly imported table —with the column full of who
+/// knows what— from losing a single datum for not having been understood.
 class DateCell extends StatelessWidget {
   const DateCell({
     super.key,
@@ -41,20 +41,20 @@ class DateCell extends StatelessWidget {
     required this.columnKey
   });
 
-  /// La fecha tal como esta guardada (o tal como se acaba de escribir en el
-  /// borrador de la fila).
+  /// The date as stored (or as just typed in the
+  /// row's draft).
   final String value;
 
   final TextStyle style;
 
   final TextAlign alignment;
 
-  /// En que fila de la planilla esta. Decide de que banda de la cebra es su
-  /// fondo, y con eso el relleno del boton (ver [SheetStyle.frameFill]).
+  /// Which row of the sheet it's in. It decides which zebra band its
+  /// background belongs to, and with that the button's fill (see [SheetStyle.frameFill]).
   final int row;
 
-  /// Clave de su columna: la misma con la que se recuerda su ancho. Es con lo
-  /// que la celda pregunta —y cambia— como se esta leyendo esa columna.
+  /// Its column's key: the same one used to remember its width. It's how
+  /// the cell asks —and changes— how that column is being read.
   final String columnKey;
 
   @override
@@ -73,17 +73,17 @@ class DateCell extends StatelessWidget {
 
     final sheet = SheetTheme.of(context);
 
-    // Solo su columna: cambiar el formato de una no puede repintar las fechas de
-    // las demas.
+    // Only its own column: changing one's format can't repaint the dates of
+    // the others.
     final full = context.select<SheetDates, bool>(
       (dates) => dates.isFull(columnKey)
     );
 
     final locale = Localizations.localeOf(context).toString();
 
-    // Poco mas alto que una letra, como el de generar un SKU: tiene que leerse
-    // como un boton sin pesar como uno de barra, que en una fila de planilla no
-    // entra.
+    // A bit taller than a letter, like the one that generates a SKU: it has to read
+    // as a button without weighing like a toolbar one, which in a sheet row
+    // doesn't fit.
     final size = AppSize.text * 1.8;
 
     return Row(children: [
@@ -95,8 +95,8 @@ class DateCell extends StatelessWidget {
         style: style
       )),
       Tooltip(
-        // El icono dice a que se pasa; esto, que lo que cambia es la columna y
-        // no esta fila sola.
+        // The icon says what it switches to; this, that what changes is the column and
+        // not this single row.
         message: full
           ? S.of(context).product_table_view_date_short_hint
           : S.of(context).product_table_view_date_full_hint,
@@ -110,8 +110,8 @@ class DateCell extends StatelessWidget {
           color: sheet.frameFill(row: row),
           action: () => context.read<SheetDates>().toggle(columnKey),
           child: Center(child: Icon(
-            // El icono es el formato al que se va, no el que se esta mirando:
-            // un boton dice lo que hace.
+            // The icon is the format it switches to, not the one being looked at:
+            // a button says what it does.
             full ? CI.calendar : Icons.schedule,
             size: AppSize.text,
             color: sheet.scheme.text.primary

@@ -1,17 +1,18 @@
 import 'dart:math' as math;
 
-/// La geometria de la planilla: cuanto mide una fila, cuantas hay, cuales se
-/// ven y adonde hay que desplazarse para que una celda entre en pantalla.
+/// The geometry of the spreadsheet: how tall a row is, how many there are,
+/// which ones are seen, and where it has to scroll for a cell to fit on
+/// screen.
 ///
-/// Es aritmetica pura y por eso vive aparte: antes se calculaba dentro del
-/// `build` y se guardaba en el `State` para que la leyera el teclado, lo que
-/// ataba el manejo de teclas al orden en que se construia el arbol. Aca no
-/// depende de nada del arbol y se prueba sola.
+/// It's pure arithmetic and that's why it lives apart: it used to be computed
+/// inside `build` and stored in the `State` for the keyboard to read, which
+/// tied key handling to the order in which the tree was built. Here it depends
+/// on nothing of the tree and is tested on its own.
 ///
-/// Todo esto solo cierra porque las dos bandas verticales tienen `itemExtent`:
-/// con filas de alto fijo, pasar de una fila a un offset (y al reves) es una
-/// multiplicacion, y una tabla de cientos de miles de registros mide su alto sin
-/// tener que construir una sola fila.
+/// All of this only works because the two vertical bands have `itemExtent`:
+/// with fixed-height rows, going from a row to an offset (and back) is a
+/// multiplication, and a table of hundreds of thousands of records measures
+/// its height without having to build a single row.
 class SheetMetrics {
   const SheetMetrics({
     required this.rowHeight,
@@ -20,45 +21,45 @@ class SheetMetrics {
     this.prefetch = 10
   });
 
-  /// Alto de una fila y de la fila de campos. Es el mismo para las dos: la fila
-  /// de campos es la fila 1 de la planilla, no un encabezado aparte.
+  /// Height of a row and of the field row. It's the same for both: the field
+  /// row is row 1 of the spreadsheet, not a separate header.
   final double rowHeight;
 
-  /// Ancho de la banda de numeros de fila.
+  /// Width of the row-number gutter.
   final double gutterWidth;
 
-  /// Filas en blanco que siempre sobran al final, aunque la pantalla ya este
-  /// llena: la planilla nunca termina en la ultima fila escrita.
+  /// Blank rows that always remain at the end, even when the screen is already
+  /// full: the spreadsheet never ends at the last written row.
   final int minBlankRows;
 
-  /// Cuantas filas antes de llegar se pide el tramo siguiente de registros. Es
-  /// el margen que tiene la lectura para llegar a tiempo: se pide cuando faltan
-  /// [prefetch] filas por entrar, no cuando ya se las esta mirando.
+  /// How many rows before reaching them the next batch of records is requested.
+  /// It's the margin the reading has to arrive in time: it's requested when
+  /// [prefetch] rows are still to come in, not when they're already in view.
   final int prefetch;
 
-  /// Cuantas filas del cuerpo entran en [height]. Se descuenta la fila de
-  /// campos, que esta congelada arriba y no se desplaza.
+  /// How many body rows fit in [height]. The field row is deducted, since it's
+  /// frozen on top and doesn't scroll.
   int visibleRows(double height) => ((height - rowHeight) / rowHeight).ceil();
 
-  /// Cuantas filas tiene el cuerpo.
+  /// How many rows the body has.
   ///
-  /// [used] son las filas ocupadas (registros, borradores y las que se ganaron
-  /// bajando con el teclado) y a esas se les suman las que siempre sobran en
-  /// blanco. Nunca menos de las que entran en pantalla, para que la planilla
-  /// llegue siempre hasta abajo de todo.
+  /// [used] are the occupied rows (records, drafts, and the ones gained by
+  /// going down with the keyboard) and to those are added the ones that always
+  /// remain blank. Never fewer than those that fit on screen, so the
+  /// spreadsheet always reaches all the way down.
   ///
-  /// Con [blanks] en `false` el cuerpo mide exactamente lo ocupado: es la
-  /// planilla filtrada por una busqueda, donde las filas en blanco no serian
-  /// para escribir —lo que se escribiera ahi no seria de la busqueda— sino
-  /// renglones vacios haciendo creer que el resultado sigue.
+  /// With [blanks] as `false` the body measures exactly what's occupied: it's
+  /// the spreadsheet filtered by a search, where the blank rows wouldn't be
+  /// for writing —what was written there wouldn't be part of the search— but
+  /// empty lines making it seem the result continues.
   int bodyRows({
     required int used,
     required int visible,
     bool blanks = true
   }) => blanks ? math.max(used + minBlankRows, visible) : used;
 
-  /// Primera y ultima fila que se ven con la banda en [offset]. La ultima entra
-  /// aunque se vea a medias, y ninguna de las dos se sale de [rows].
+  /// First and last row seen with the band at [offset]. The last one counts
+  /// even if it's half seen, and neither of the two goes out of [rows].
   (int, int) rangeAt({
     required double offset,
     required double viewport,
@@ -72,15 +73,15 @@ class SheetMetrics {
     return (first, math.max(first, last));
   }
 
-  /// Adonde hay que llevar la banda vertical para que se vea la fila [row], o
-  /// `null` si ya se ve.
+  /// Where the vertical band has to be brought for row [row] to be seen, or
+  /// `null` if it's already seen.
   double? revealRow({
     required int row,
     required double offset,
     required double viewport,
     required double maxExtent
   }) {
-    // La fila de los campos esta congelada arriba: siempre se ve.
+    // The field row is frozen on top: it's always seen.
     if (row < 0) return null;
 
     final top = row * rowHeight;
@@ -93,8 +94,8 @@ class SheetMetrics {
     return null;
   }
 
-  /// Adonde hay que llevar la banda horizontal para que se vea una columna que
-  /// empieza en [left] y mide [width], o `null` si ya se ve.
+  /// Where the horizontal band has to be brought for a column that starts at
+  /// [left] and measures [width] to be seen, or `null` if it's already seen.
   double? revealColumn({
     required double left,
     required double width,

@@ -10,17 +10,18 @@ import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'sheet_style.dart';
 import 'state/sheet_controller.dart';
 
-/// Flecha del borde derecho de la celda de un campo: despliega los tipos y
-/// cambia el de esa columna.
+/// Arrow on the right edge of a field's cell: unfolds the types and changes
+/// that column's.
 ///
-/// Va donde se la espera, pegada al titulo de la columna, como en una planilla.
+/// It goes where it is expected, attached to the column's title, like in a
+/// sheet.
 ///
-/// El [Builder] no es de adorno: el desplegable se ancla a la flecha, asi que
-/// hace falta un contexto que este en su lugar del arbol y no en el de la celda
-/// entera.
+/// The [Builder] is not for show: the dropdown anchors to the arrow, so a
+/// context is needed that is in its place in the tree and not in the whole
+/// cell's.
 ///
-/// No lleva tooltip propio: el de la celda ya dice de que tipo es la columna, y
-/// dos tooltips anidados se muestran los dos a la vez.
+/// It carries no tooltip of its own: the cell's already says what type the
+/// column is, and two nested tooltips show both at once.
 class TypeArrow extends StatelessWidget {
   const TypeArrow({super.key, required this.field});
 
@@ -35,8 +36,8 @@ class TypeArrow extends StatelessWidget {
       builder: (context) => MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
-          // El tap de la flecha gana sobre el de la celda: es el hijo, y en el
-          // arena de gestos el mas profundo se queda con el toque.
+          // The arrow's tap beats the cell's: it is the child, and in the
+          // gesture arena the deepest one keeps the touch.
           behavior: HitTestBehavior.opaque,
           onTap: () => controller.pickType(context, field),
           child: Padding(

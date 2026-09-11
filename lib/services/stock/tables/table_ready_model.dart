@@ -1,56 +1,77 @@
-/// El aviso `table/ready`: el backend termino de preparar una tabla importada.
+/// The `table/ready` notice: the backend finished preparing an imported
+/// table.
 ///
-/// Existe porque **la importacion de la estructura contesta antes de estar
-/// terminada**. `POST /tables/import/structure/<formato>/` devuelve el id de la
-/// tabla apenas existen sus columnas —todas `text` y todas visibles— y deja
-/// para despues la mitad lenta: leer que hay en cada columna y preguntarle a un
-/// modelo que significa, que tarda cerca de medio minuto, mas la columna de
-/// imagen que toda tabla termina teniendo. Cuando eso cae, el backend lo emite
-/// a la sala de la empresa y **ese es el momento de releer la tabla**.
+/// It exists because **the structure import answers before it's actually
+/// finished**. `POST /inventory/products/import/structure/<format>/` returns
+/// the table's id as soon as its columns exist —all `text` and all
+/// visible— and leaves the slow half for later: reading what's in each
+/// column and asking a model what it means, which takes about half a
+/// minute, plus the image column every table ends up with. When that lands,
+/// the backend emits it to the business's room and **that's the moment to
+/// reread the table**.
 ///
-/// Llega siempre: salga bien o mal, y tambien cuando la importacion pidio no
-/// normalizar (`NORMALIZE=0`, que deja `ok: true, normalized: false`). Por eso
-/// se lo puede esperar sin condiciones en vez de adivinar si va a venir.
+/// It always arrives: whether it goes well or not, and also when the import
+/// asked not to normalize (`NORMALIZE=0`, which leaves `ok: true, normalized:
+/// false`). That's why it can be waited for unconditionally instead of
+/// guessing whether it's going to come.
 ///
-/// Lo escuchan los dos lados que muestran una tabla, cada uno por su cuenta y
-/// para lo suyo: [TablesService], que es quien esta importando y no le sube las
-/// filas al archivo hasta que sus columnas tengan tipo, y [TableViewService],
-/// que si la tabla esta abierta la vuelve a leer donde esta.
+/// It's the far end of a wait whose near end is [TableNormalizingModel]:
+/// that one says the preparation started, this one that it landed, and a
+/// client can pair them unconditionally.
+///
+/// It's listened to by the two sides that show a table, each on its own and
+/// for its own purpose: [TablesService], which is whoever is importing and
+/// doesn't upload the file's rows until its columns are typed, and
+/// [TableViewService], which rereads the table where it stands if it's
+/// open.
 class TableReadyModel {
-  /// Nombre del evento en el socket. Es un contrato escrito a mano de los dos
-  /// lados —aca y en `Normalizer.prepare`—, asi que vive en una sola constante:
-  /// un evento mal escrito no falla, simplemente no llega nunca.
+  /// Name of the event on the socket. It's a contract handwritten on both
+  /// sides —here and in `Normalizer.prepare`—, so it lives in a single
+  /// constant: a misspelled event doesn't fail, it just never arrives.
   static const String event = "table/ready";
 
-  /// La tabla que quedo lista. Vacio cuando el aviso no se pudo leer, que es la
-  /// unica forma de descartarlo.
+  /// The table that became ready. Empty when the notice couldn't be read,
+  /// which is the only way to discard it.
   final String id;
 
-  /// Si la preparacion termino sin fallar. Que sea `false` no deshace nada: la
-  /// tabla existe igual, con sus columnas como quedaron.
+  /// Whether the preparation finished without failing. Being `false`
+  /// doesn't undo anything: the table exists all the same, with its columns
+  /// as they ended up.
   final bool ok;
 
-  /// Si las columnas llegaron a tiparse. Es `false` cuando la importacion pidio
-  /// no normalizar, y eso tambien es un final bueno.
+  /// Whether the columns got typed. It's `false` when the import asked not
+  /// to normalize, and that's also a good ending.
   final bool normalized;
 
-  /// Cuantas columnas cambiaron de tipo.
+  /// How many columns changed type.
   ///
-  /// Es lo que decide si lo que ya se leyo de la tabla sirve: al retipar una
-  /// columna el backend reescribe **los valores guardados** para que dejen de
-  /// ser texto (`Products.recast`), asi que los registros que estuvieran en
-  /// memoria quedaron viejos aunque las columnas sean las mismas.
+  /// It's what decides whether what was already read from the table is
+  /// still good: when retyping a column the backend rewrites **the saved
+  /// values** so they stop being text (`Products.recast`), so any records
+  /// that were in memory are now stale even though the columns are the
+  /// same.
   final int retyped;
 
-  /// Cuantas columnas quedaron con su visibilidad sembrada (que tanto de ellas
-  /// ve el agente). No cambia nada de lo que se muestra en la planilla.
+  /// How many columns ended up with their visibility seeded (how much of
+  /// them the agent sees). Doesn't change anything shown in the sheet.
   final int narrowed;
 
-  /// La columna de imagen de la tabla, creada o promovida a la primera
-  /// posicion. Vacia si no vino: nunca es motivo para descartar el aviso.
+  /// How many columns ended up with a name a person reads, out of the ones
+  /// the file named for a machine (`PRECIO_DISTRIBUIDOR` → `Precio
+  /// distribuidor`). It never touches a name somebody typed.
+  final int renamed;
+
+  /// How many columns had their place in the stock summary seeded: which of
+  /// them a person is shown at a glance in the short view. It's a different
+  /// question from the visibility above —what the agent may read— and that's
+  /// why it's counted apart.
+  final int summarized;
+
+  /// The table's image column, created or promoted to the first position.
+  /// Empty if none came: never a reason to discard the notice.
   final String image;
 
-  /// Que fallo, cuando [ok] es `false`. Vacio si salio bien.
+  /// What failed, when [ok] is `false`. Empty if it went well.
   final String reason;
 
   const TableReadyModel({
@@ -59,16 +80,19 @@ class TableReadyModel {
     this.normalized = false,
     this.retyped = 0,
     this.narrowed = 0,
+    this.renamed = 0,
+    this.summarized = 0,
     this.image = "",
     this.reason = ""
   });
 
-  /// Lee el aviso tal como llega del socket.
+  /// Reads the notice as it arrives from the socket.
   ///
-  /// Nada de esto se valida contra lo que se esperaba: un aviso que no se pueda
-  /// leer sale con [id] vacio y quien lo reciba lo tira. Es lo unico razonable
-  /// —no hay a quien devolverle un error— y ademas lo unico seguro: la peor
-  /// consecuencia es que la tabla se relea a mano.
+  /// None of this is validated against what was expected: a notice that
+  /// can't be read comes out with an empty [id] and whoever receives it
+  /// discards it. It's the only reasonable thing —there's no one to return
+  /// an error to— and also the only safe one: the worst that happens is the
+  /// table gets reread by hand.
   factory TableReadyModel.fromEvent(dynamic data) {
     if (data is! Map) return const TableReadyModel();
 
@@ -78,16 +102,19 @@ class TableReadyModel {
       normalized: _flag(data["normalized"]),
       retyped: _count(data["retyped"]),
       narrowed: _count(data["narrowed"]),
+      renamed: _count(data["renamed"]),
+      summarized: _count(data["summarized"]),
       image: data["image"]?.toString() ?? "",
       reason: data["reason"]?.toString() ?? ""
     );
   }
 
-  /// Si el aviso trae una tabla que se pueda releer.
+  /// Whether the notice carries a table that can be reread.
   bool get isEmpty => id.isEmpty;
 
-  /// Si los valores guardados se reescribieron. Lo unico que obliga a tirar los
-  /// registros leidos: las columnas pueden ser las mismas y sus valores no.
+  /// Whether the saved values were rewritten. The only thing that forces
+  /// discarding the records already read: the columns can be the same and
+  /// their values not.
   bool get changedValues => retyped > 0;
 
   static bool _flag(dynamic value) => switch (value) {

@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_service.dart';
-import 'package:app/screens/home/sections/business/business_detail/employees/_employees.dart';
+import 'package:app/screens/home/sections/business/employees/_employees.dart';
 
 /// El servicio con la lectura ya contestada: la pestana solo mira lo que hay
 /// cargado, y pedirlo de verdad seria pegarle al backend.

@@ -14,18 +14,18 @@ import 'package:core/form.dart';
 
 import 'connection_state_tag.dart';
 
-/// Fila del listado de conexiones: el icono del servicio, el nombre que le puso
-/// la empresa con el estado en que esta y, debajo, de que servicio es la cuenta y
-/// cuantos bots estan contestando a traves de ella.
+/// Row of the connections list: the service's icon, the name the company gave
+/// it with its current state and, below, which service the account belongs to
+/// and how many bots are answering through it.
 ///
-/// Al tocarla se abre su configuracion (`/home/connections/:id`), que es lo unico
-/// que se hace con una cuenta conectada: revisarle o corregirle las credenciales.
-/// A la derecha lleva el boton de sus opciones, que es desde donde se la pausa y
-/// se la desconecta sin tener que abrirla ([_OptionsButton]).
+/// Tapping it opens its configuration (`/home/connections/:id`), which is the
+/// only thing done with a connected account: reviewing or fixing its
+/// credentials. On the right it carries the options button, from which it is
+/// paused and disconnected without having to open it ([_OptionsButton]).
 ///
-/// Del catalogo se lleva **solo el nombre y el icono ya resueltos** y no el
-/// proveedor entero: el catalogo se carga una vez y no cambia, asi que esto lo
-/// deja de escuchar apenas llego.
+/// From the catalog it takes **only the already-resolved name and icon** and
+/// not the whole provider: the catalog loads once and doesn't change, so this
+/// stops listening to it as soon as it arrives.
 class ConnectionListRow extends StatelessWidget {
   const ConnectionListRow({super.key, required this.connection});
 
@@ -39,9 +39,9 @@ class ConnectionListRow extends StatelessWidget {
       .select<ConnectionCatalogService, (String, IconData)>((catalog) {
         final provider = catalog.byCode(connection.provider);
 
-        // Sin catalogo (todavia cargando, o fallo) se muestra el codigo crudo:
-        // "whatsapp" dice menos que "WhatsApp Business" pero mucho mas que un
-        // hueco, y la fila no depende de esa lectura para existir.
+        // Without the catalog (still loading, or it failed) the raw code is shown:
+        // "whatsapp" says less than "WhatsApp Business" but much more than a
+        // hole, and the row doesn't depend on that reading to exist.
         return (provider?.name ?? connection.provider, provider?.icon ?? CI.link);
       });
 
@@ -60,8 +60,8 @@ class ConnectionListRow extends StatelessWidget {
           child: Center(child: Icon(
             icon,
             size: AppSize.text * 1.2,
-            // Una cuenta pausada se ve apagada tambien en su icono: es lo
-            // primero que se mira de la fila.
+            // A paused account looks dimmed in its icon too: it's the first thing
+            // you look at in the row.
             color: connection.enabled ? scheme.icon : scheme.text.secondary
           ))
         ),
@@ -93,12 +93,12 @@ class ConnectionListRow extends StatelessWidget {
     );
   }
 
-  /// Que servicio es, cuanto esta corriendo encima y, si la tiene, la descripcion
-  /// que le puso la empresa, en un solo renglon.
+  /// Which service it is, how much is running on it and, if it has one, the
+  /// description the company gave it, all in a single line.
   ///
-  /// El servicio va primero porque es lo que identifica la cuenta —dos filas
-  /// pueden llamarse parecido— y los bots inmediatamente despues: es lo que
-  /// vuelve util la fila, y lo que la baja se lleva puesto.
+  /// The service goes first because it's what identifies the account —two rows
+  /// can be named similarly— and the bots immediately after: it's what makes the
+  /// row useful, and what deletion takes away with it.
   String _subtitle(BuildContext context, String label) => [
     label,
     S.of(context).connection_bot_count(connection.bots),
@@ -106,14 +106,15 @@ class ConnectionListRow extends StatelessWidget {
   ].join(" · ");
 }
 
-/// El boton de las opciones de una conexion, con el desplegable que despliega.
+/// The options button of a connection, with the dropdown it opens.
 ///
-/// Es un widget aparte y no un metodo de la fila porque el desplegable se cuelga
-/// **de el**: se ancla al contexto de quien lo abre, y ese tiene que ser el boton
-/// y no la fila entera, o se abriria desde el borde izquierdo.
+/// It's a separate widget and not a method of the row because the dropdown
+/// hangs off **it**: it anchors to the context of whoever opens it, and that has
+/// to be the button and not the whole row, or it would open from the left edge.
 ///
-/// Las dos cosas que ofrece se resuelven aca y no en la fila: la fila es lo que se
-/// toca para entrar en la configuracion, y estas dos no entran en ella.
+/// The two things it offers are resolved here and not in the row: the row is
+/// what gets tapped to enter the configuration, and those two don't belong in
+/// it.
 class _OptionsButton extends StatelessWidget {
   const _OptionsButton({required this.connection});
 
@@ -133,8 +134,8 @@ class _OptionsButton extends StatelessWidget {
     ))
   );
 
-  /// Abre el desplegable anclado al boton. Sin buscador y sin la medida de un
-  /// formulario ([dense]): son dos opciones, no una lista.
+  /// Opens the dropdown anchored to the button. Without a search box and
+  /// without a form's width ([dense]): they're two options, not a list.
   Future<void> _open(BuildContext context) async {
     final picked = await showSelectMenu(
       context: context,
@@ -167,12 +168,12 @@ class _OptionsButton extends StatelessWidget {
     }
   }
 
-  /// Pausa o reanuda la cuenta. No se pregunta nada: es reversible con el mismo
-  /// clic y no se pierde ni un dato —ni la configuracion ni los bots que corren
-  /// sobre ella—, solo dejan de contestar.
+  /// Pauses or resumes the account. Nothing is asked: it's reversible with the
+  /// same click and not a single piece of data is lost —neither the
+  /// configuration nor the bots running on it—, they just stop answering.
   Future<void> _toggle(BuildContext context) async {
-    // El aviso se arma antes: el servicio corrige la fila en el acto y este
-    // contexto puede repintarse mientras el cambio viaja.
+    // The notice is built beforehand: the service fixes the row on the spot
+    // and this context may repaint while the change is in transit.
     final message = connection.enabled
       ? S.of(context).connection_paused
       : S.of(context).connection_resumed;
@@ -182,22 +183,24 @@ class _OptionsButton extends StatelessWidget {
       connection
     );
 
-    // Si fallo, el servicio ya volvio la fila a como estaba y mostro el error.
+    // If it failed, the service already put the row back as it was and showed
+    // the error.
     if (!changed) return;
 
     FloatFlag.of().message(message);
   }
 
-  /// Desconecta la cuenta, previa confirmacion.
+  /// Disconnects the account, with prior confirmation.
   ///
-  /// Se pregunta aca y no en el servicio porque lo que se lleva la baja no cabe
-  /// en el listado, y son dos cosas: **las credenciales**, asi que volver a
-  /// conectar esa misma cuenta significa pedirle los tokens al servicio otra vez,
-  /// y **los bots que contestaban a traves de ella**, porque un bot sin cuenta no
-  /// tiene por donde contestar. Lo segundo solo se nombra cuando hay alguno, y es
-  /// la razon de que pausar exista: eso los deja quietos sin borrarlos.
+  /// It's asked here and not in the service because what deletion takes away
+  /// doesn't fit in the list, and it's two things: **the credentials**, so
+  /// reconnecting that same account means asking the service for its tokens all
+  /// over again, and **the bots that were answering through it**, because a bot
+  /// without an account has no way to answer. The second one is only named when
+  /// there are some, and it's the reason pause exists: that leaves them quiet
+  /// without deleting them.
   ///
-  /// El aviso nombra la cuenta para que no se confirme sobre la fila equivocada.
+  /// The notice names the account so confirmation isn't given on the wrong row.
   Future<void> _delete(BuildContext context) async {
     final message = StringBuffer(
       S.of(context).connection_delete_message(connection.name)
@@ -219,9 +222,9 @@ class _OptionsButton extends StatelessWidget {
 
     if (!confirmed || !context.mounted) return;
 
-    // El aviso se arma **antes** de la baja: cuando esta salga bien, esta fila ya
-    // no va a existir —el listado se repinta sin ella— y su contexto no servira
-    // ni para leer el texto.
+    // The notice is built **before** the deletion: when it goes well, this row
+    // will no longer exist —the list repaints without it— and its context won't
+    // even be good for reading the text.
     final done = S.of(context).connection_deleted;
 
     final deleted = await context.read<ConnectionsService>().remove(
@@ -229,12 +232,12 @@ class _OptionsButton extends StatelessWidget {
       connection
     );
 
-    // Si fallo, el error ya se mostro en el servicio y la cuenta sigue en el
-    // listado, que es lo que corresponde: no se desconecto nada.
+    // If it failed, the error was already shown in the service and the account
+    // stays in the list, which is what should happen: nothing was disconnected.
     if (!deleted) return;
 
-    // Sin contexto: el de la fila se desmonto con ella. La bandera flotante se
-    // cuelga del navegador, que sigue ahi.
+    // No context: the row's came down with it. The floating flag hangs off the
+    // browser, which is still there.
     FloatFlag.of().message(done);
   }
 }

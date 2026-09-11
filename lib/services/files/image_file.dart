@@ -5,45 +5,45 @@ import 'dart:typed_data';
 import 'package:file_selector/file_selector.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Elegir una imagen del disco y dejarla lista para subirla.
+/// Choose an image from disk and leave it ready to upload.
 ///
-/// Son dos pasos y no uno porque en el medio pasa lo que de verdad importa: la
-/// imagen se recorta antes de viajar (ver `CropImageModal`). Lo que se elige
-/// son los bytes originales, lo que se sube son los del recorte, y ninguno de
-/// los dos es el archivo que el cliente tiene guardado.
+/// It is two steps and not one because in the middle happens what really matters: the
+/// image is cropped before traveling (see `CropImageModal`). What is chosen
+/// are the original bytes, what is uploaded are the ones of the crop, and neither of
+/// the two is the file the client has stored.
 
-/// Extensiones que se le ofrecen al cliente en el dialogo del sistema.
+/// Extensions offered to the client in the system dialog.
 ///
-/// Son las que sabe leer el backend: reconoce el formato por los bytes y
-/// rechaza todo lo que no este en su lista —SVG incluido, que no es una imagen
-/// sino un documento que puede traer script—. Ofrecer aca una que alla se
-/// rechaza es dejar elegir un archivo que despues no entra.
+/// They are the ones the backend knows how to read: it recognizes the format by the bytes and
+/// rejects everything not in its list —SVG included, which is not an image
+/// but a document that can carry script—. Offering here one that is
+/// rejected there is letting a file be chosen that later cannot get in.
 const List<String> kImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
-/// Cuanto pesa como maximo lo que se manda, en bytes. Es el limite del
-/// multipart del backend (10 MB): pasarse es un rechazo del otro lado, asi que
-/// se avisa antes de subir nada.
+/// How much what is sent weighs at most, in bytes. It is the limit of the
+/// backend's multipart (10 MB): exceeding it is a rejection on the other side, so
+/// it is warned before uploading anything.
 ///
-/// El recorte casi siempre pesa mucho menos que el original, pero se mide el
-/// original igual: una foto de 40 MB hay que decodificarla entera en memoria
-/// para recortarla, y eso es lo que conviene no intentar.
+/// The crop almost always weighs much less than the original, but the
+/// original is measured anyway: a 40 MB photo has to be decoded entirely in memory
+/// to crop it, and that is what is better not to attempt.
 const int kImageMaxBytes = 10 * 1024 * 1024;
 
-/// Abre el dialogo del sistema filtrado a imagenes y devuelve sus bytes, o
-/// `null` si se cerro sin elegir nada.
+/// Opens the system dialog filtered to images and returns their bytes, or
+/// `null` if it was closed without choosing anything.
 ///
-/// [label] es como se llama ese grupo de tipos en el desplegable del dialogo, y
-/// llega traducido desde la pantalla: este archivo no tiene contexto con el que
-/// traducirlo.
+/// [label] is what that group of types is called in the dialog's dropdown, and
+/// it arrives translated from the screen: this file has no context to
+/// translate it with.
 Future<Uint8List?> pickImageBytes({required String label}) async {
   final picked = await openFile(
     acceptedTypeGroups: [
       XTypeGroup(
         label: label,
         extensions: kImageExtensions,
-        // Windows filtra por extension, pero macOS e iOS lo hacen por UTI y
-        // Android por MIME: sin estos dos el dialogo de esas plataformas
-        // dejaria elegir cualquier archivo.
+        // Windows filters by extension, but macOS and iOS do it by UTI and
+        // Android by MIME: without these two the dialog on those platforms
+        // would let any file be chosen.
         uniformTypeIdentifiers: const ["public.image"],
         mimeTypes: const [
           "image/jpeg",
@@ -58,13 +58,13 @@ Future<Uint8List?> pickImageBytes({required String label}) async {
   return picked?.readAsBytes();
 }
 
-/// Deja [bytes] en un archivo temporal y lo devuelve.
+/// Writes [bytes] to a temporary file and returns it.
 ///
-/// Existe porque la subida viaja como multipart y el cliente de multipart pide
-/// un archivo, no un bloque de memoria: lo que se sube nacio de un recorte
-/// hecho en pantalla y nunca fue un archivo del cliente. Quien lo llama lo
-/// borra cuando termina ([discardTempImage]): la carpeta temporal la limpia el
-/// sistema, pero no hoy.
+/// It exists because the upload travels as multipart and the multipart client asks for
+/// a file, not a memory block: what is uploaded was born from a crop
+/// made on screen and was never a client file. Whoever calls it
+/// deletes it when done ([discardTempImage]): the temporary folder is cleaned by the
+/// system, but not today.
 Future<File> writeTempImage(Uint8List bytes, {String name = "image"}) async {
   final directory = await getTemporaryDirectory();
   final stamp = DateTime.now().microsecondsSinceEpoch;
@@ -75,8 +75,8 @@ Future<File> writeTempImage(Uint8List bytes, {String name = "image"}) async {
   return file;
 }
 
-/// Borra el archivo temporal de una subida. No falla si ya no esta: es
-/// limpieza, y no poder limpiar no es un error que valga contarle a nadie.
+/// Deletes the temporary file of an upload. It does not fail if it is no longer there: it is
+/// cleanup, and not being able to clean is not an error worth telling anyone about.
 Future<void> discardTempImage(File file) async {
   try {
     if (await file.exists()) await file.delete();

@@ -11,89 +11,91 @@ import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/toolkit/api.dart';
 
-/// Estado de la carga del perfil de la empresa activa (`/business/profile/`).
+/// Status of loading the active business's profile (`/business/profile/`).
 enum BusinessProfileStatus { idle, loading, ready, error }
 
-/// Estado de la carga de la gente de la empresa activa
+/// Status of loading the active business's people
 /// (`/business/employees/`).
 enum BusinessEmployeesStatus { idle, loading, ready, error }
 
-/// Nombre del campo del formulario con el que viaja el logo. Lo decide el
-/// backend: es el que lee su multipart, y con cualquier otro la peticion llega
-/// sin archivo.
+/// Name of the form field the logo travels under. The backend decides it:
+/// it's the one its multipart reads, and with any other name the request
+/// arrives without a file.
 const String _kLogoField = "FILE";
 
-/// Estado y comportamiento de las empresas del cliente.
+/// State and behavior of the client's businesses.
 ///
-/// Concentra toda la logica de empresas que antes vivia en [ClientService]: la
-/// coleccion basica que llega en `/init` (para el selector del header), la
-/// empresa activa, el alta de empresas y el perfil de la que este activa, que
-/// es lo que muestra la seccion de empresas.
+/// Concentrates all the business logic that used to live in [ClientService]:
+/// the basic collection that arrives in `/init` (for the header's
+/// selector), the active business, business creation, and the profile of
+/// whichever one is active, which is what the businesses section shows.
 ///
-/// Se registra en el scope mas alto de la app (`initialBuilder`) con
-/// `ChangeNotifierProvider.value` porque su estado debe sobrevivir a la
-/// navegacion entre secciones.
+/// Registered at the app's highest scope (`initialBuilder`) with
+/// `ChangeNotifierProvider.value` because its state must survive
+/// navigation between sections.
 class BusinessService extends ChangeNotifier {
-  // ─── Coleccion basica (viene de /init) ──────────────────────────────────────
+  // ─── Basic collection (comes from /init) ────────────────────────────────────
 
   List<BusinessModel> _businesses = const [];
 
-  /// Empresa activa. Cada vez que cambia hay que pasarla por [useBusiness]:
-  /// viaja como cabecera en todas las peticiones, asi que este es el unico
-  /// lugar que sabe a que empresa le esta hablando la app.
+  /// Active business. Every time it changes it has to be passed through
+  /// [useBusiness]: it travels as a header on every request, so this is the
+  /// only place that knows which business the app is talking to.
   BusinessModel? _active;
 
   List<BusinessModel> get businesses => List.unmodifiable(_businesses);
 
-  /// Empresa activa: la que eligio el cliente o, por defecto, la primera que
-  /// devolvio la sesion.
+  /// Active business: the one the client chose or, by default, the first
+  /// one the session returned.
   BusinessModel get active {
-    assert(_active != null, "BusinessService leido sin una empresa creada");
+    assert(_active != null, "BusinessService read without a created business");
     return _active!;
   }
 
-  /// Identificador de la empresa activa, o `null` si no hay ninguna (cliente sin
-  /// empresas, o sesion cerrada).
+  /// Identifier of the active business, or `null` if there is none (client
+  /// with no businesses, or closed session).
   ///
-  /// Es lo que miran los que quieren enterarse de un **cambio de empresa** y no
-  /// del resto de las notificaciones del servicio (ver `BusinessListener` y el
-  /// shell del home): a diferencia de [active], no asume que haya empresa, asi
-  /// que se puede leer en cualquier momento.
+  /// This is what's watched by whoever wants to know about a **business
+  /// change** and not about the rest of the service's notifications (see
+  /// `BusinessListener` and the home shell): unlike [active], it doesn't
+  /// assume there's a business, so it can be read at any time.
   String? get activeId => _active?.id;
 
-  /// Moneda en la que factura la empresa activa, ya resuelta contra el catalogo
-  /// de plataforma: con simbolo, lado y decimales, que es lo que hace falta para
-  /// escribir un precio.
+  /// Currency the active business bills in, already resolved against the
+  /// platform catalog: with symbol, side, and decimals, which is what's
+  /// needed to write a price.
   ///
-  /// Sale de aca y no de cada pantalla porque es una sola para toda la app: es
-  /// con la que se escriben los precios del catalogo, y cambiar de empresa
-  /// cambia la moneda de todos ellos a la vez. A diferencia de [active], no
-  /// asume que haya empresa: se lee al pintar, y sin empresa —o sin moneda
-  /// declarada— contesta la de la app (ver [CurrencyCatalogService.resolve]).
+  /// It comes from here and not from each screen because there's only one
+  /// for the whole app: it's the one prices in the catalog are written
+  /// with, and changing business changes the currency of all of them at
+  /// once. Unlike [active], it doesn't assume there's a business: it's read
+  /// while rendering, and without a business —or without a declared
+  /// currency— it answers with the app's (see
+  /// [CurrencyCatalogService.resolve]).
   ///
-  /// Se resuelve en cada lectura y no se guarda resuelta: el catalogo se puede
-  /// releer con la app andando, y una moneda guardada aca seguiria escribiendo
-  /// con el simbolo viejo.
+  /// It's resolved on every read and not stored resolved: the catalog can
+  /// be reread while the app is running, and a currency stored here would
+  /// keep writing with the old symbol.
   CurrencyModel get currency =>
     CurrencyCatalogService().resolve(currencyCode);
 
-  /// El codigo de esa moneda, tal como lo guarda el backend (`""` si la empresa
-  /// no declaro ninguna).
+  /// That currency's code, exactly as the backend stores it (`""` if the
+  /// business didn't declare one).
   ///
-  /// Es lo que mira quien se suscribe a la moneda de la empresa y la resuelve
-  /// contra el catalogo por su cuenta (ver `PriceCell`): asi se entera tanto de
-  /// un cambio de empresa como de una relectura del catalogo, que son dos avisos
-  /// de dos servicios distintos.
+  /// This is what whoever subscribes to the business's currency and
+  /// resolves it against the catalog on their own watches (see
+  /// `PriceCell`): this way they learn of both a business change and a
+  /// catalog reread, which are two notices from two different services.
   String get currencyCode => _active?.currency ?? "";
 
   int get total => _businesses.length;
   bool get hasBusiness => _businesses.isNotEmpty;
 
-  /// La empresa con ese identificador, o `null` si el cliente no tiene ninguna.
+  /// The business with that identifier, or `null` if the client has none.
   ///
-  /// La coleccion de `/init` son **todas** las empresas a las que el cliente
-  /// tiene acceso, asi que esto tambien contesta lo otro que se le pregunta:
-  /// si un id que llego por URL es de una empresa suya.
+  /// The `/init` collection is **all** the businesses the client has
+  /// access to, so this also answers the other thing it gets asked:
+  /// whether an id that arrived via URL belongs to one of their businesses.
   BusinessModel? byId(String id) {
     for (final business in _businesses) {
       if (business.id == id) return business;
@@ -101,16 +103,17 @@ class BusinessService extends ChangeNotifier {
     return null;
   }
 
-  /// Puebla la coleccion basica desde la tabla columnar de `/init`. Lo llama
-  /// [ClientService.resolve] al levantar la sesion, antes de montar el arbol,
-  /// por eso no notifica: todavia no hay quien escuche.
+  /// Populates the basic collection from `/init`'s columnar table. Called
+  /// by [ClientService.resolve] when bringing up the session, before
+  /// mounting the tree, which is why it doesn't notify: there's no one
+  /// listening yet.
   void seed(dynamic table) {
     _businesses = BusinessModel.fromTable(table);
     _active = _businesses.isEmpty ? null : _businesses.first;
     useBusiness(_active?.id);
   }
 
-  /// Cambia la empresa activa. Ignora identificadores desconocidos.
+  /// Changes the active business. Ignores unknown identifiers.
   void selectBusiness(String id) {
     final index = _businesses.indexWhere((business) => business.id == id);
     if (index == -1 || _active?.id == id) return;
@@ -118,17 +121,19 @@ class BusinessService extends ChangeNotifier {
     _active = _businesses[index];
     useBusiness(_active!.id);
 
-    // Lo cargado es de la empresa que se acaba de dejar: los endpoints
-    // contestan por la activa, asi que ahora no describe a nadie.
+    // What's loaded belongs to the business that was just left: the
+    // endpoints answer for the active one, so it no longer describes
+    // anyone.
     _forgetLoaded();
 
     notifyListeners();
   }
 
-  /// Crea la empresa y la deja como la activa del cliente.
+  /// Creates the business and leaves it as the client's active one.
   ///
-  /// El endpoint solo devuelve el identificador, asi que el resto del modelo se
-  /// arma con lo que se envio en [data] y con el perfil de la sesion actual.
+  /// The endpoint only returns the identifier, so the rest of the model is
+  /// built from what was sent in [data] and from the current session's
+  /// profile.
   Future<void> createBusiness(BuildContext context, Map<String, dynamic> data) async {
     final profile = context.read<ClientService>().username;
 
@@ -156,42 +161,47 @@ class BusinessService extends ChangeNotifier {
     _businesses = [..._businesses, _active!];
     useBusiness(_active!.id);
 
-    // La empresa activa es otra, asi que el perfil cargado tampoco sirve.
+    // The active business is a different one now, so the loaded profile
+    // isn't valid either.
     _forgetLoaded();
 
     notifyListeners();
   }
 
-  // ─── Perfil (viene de /business/profile/) ───────────────────────────────────
+  // ─── Profile (comes from /business/profile/) ────────────────────────────────
 
   BusinessProfileStatus _profileStatus = BusinessProfileStatus.idle;
   BusinessProfileModel? _profile;
 
-  /// Empresa a la que pertenece lo que hay cargado en [_profile]. El endpoint
-  /// contesta por la activa, asi que un perfil sin saber de quien es no se
-  /// puede validar contra la que se esta mirando.
+  /// Business that what's loaded in [_profile] belongs to. The endpoint
+  /// answers for the active one, so a profile that doesn't know whose it
+  /// is can't be validated against the one currently being viewed.
   String? _profileOwner;
 
   BusinessProfileStatus get profileStatus => _profileStatus;
 
-  /// Perfil de la empresa activa, o `null` si todavia no se cargo.
+  /// Profile of the active business, or `null` if it hasn't been loaded
+  /// yet.
   BusinessProfileModel? get profile => _profile;
 
-  /// Carga el perfil completo de la empresa activa.
+  /// Loads the full profile of the active business.
   ///
-  /// El endpoint no recibe un id: contesta por la empresa de la cabecera
-  /// `business_id`, que es la activa. Ver el perfil de otra empresa es
-  /// **elegirla** ([selectBusiness]) y volver a pedirlo; por eso lo cargado se
-  /// tira cada vez que cambia la activa y no se cachea una empresa por otra.
+  /// The endpoint doesn't take an id: it answers for the business in the
+  /// `business_id` header, which is the active one. Viewing another
+  /// business's profile means **selecting it** ([selectBusiness]) and
+  /// requesting it again; that's why what's loaded is discarded every time
+  /// the active business changes and one business's data isn't cached in
+  /// place of another's.
   ///
-  /// Se cachea igual que el detalle: mientras no cambie la empresa activa, las
-  /// siguientes visitas al perfil no vuelven a pegarle al backend salvo que se
-  /// pida [force].
+  /// It's cached the same way as the detail view: as long as the active
+  /// business doesn't change, subsequent visits to the profile don't hit
+  /// the backend again unless [force] is requested.
   Future<void> loadProfile({bool force = false}) async {
     final id = activeId;
 
-    // Sin empresa activa no hay perfil que pedir: el backend contestaria por
-    // ninguna. La pantalla que lo muestra ya sabe que hacer sin empresa.
+    // With no active business there's no profile to request: the backend
+    // would be answering for none. The screen that shows it already knows
+    // what to do without a business.
     if (id == null) return;
 
     if (_profileStatus == BusinessProfileStatus.loading) return;
@@ -208,10 +218,10 @@ class BusinessService extends ChangeNotifier {
       return null;
     });
 
-    // La activa pudo cambiar mientras se pedia: lo que llego describe a la
-    // empresa anterior y guardarlo mostraria una en el lugar de la otra. La
-    // carga de la nueva ya esta en curso o va a pedirse, asi que aca no queda
-    // nada por hacer.
+    // The active business may have changed while this was being requested:
+    // what arrived describes the previous one, and storing it would show
+    // one in place of the other. Loading the new one is already underway
+    // or about to be requested, so there's nothing left to do here.
     if (_profileOwner != id) return;
 
     if (data is! Map) {
@@ -226,32 +236,34 @@ class BusinessService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Gente (viene de /business/employees/) ──────────────────────────────────
+  // ─── People (comes from /business/employees/) ───────────────────────────────
 
   BusinessEmployeesStatus _employeesStatus = BusinessEmployeesStatus.idle;
   int _employees = 0;
 
-  /// Empresa a la que pertenece lo cargado en [_employees], por lo mismo que
-  /// [_profileOwner]: el endpoint contesta por la activa.
+  /// Business that what's loaded in [_employees] belongs to, for the same
+  /// reason as [_profileOwner]: the endpoint answers for the active one.
   String? _employeesOwner;
 
   BusinessEmployeesStatus get employeesStatus => _employeesStatus;
 
-  /// Cuanta gente entra a la empresa activa.
+  /// How many people belong to the active business.
   int get employees => _employees;
 
-  /// Carga la gente de la empresa activa.
+  /// Loads the active business's people.
   ///
-  /// Hoy solo trae el numero: quienes son, con que rango y que puede hacer cada
-  /// uno todavia no esta modelado del otro lado, asi que la lista llega vacia y
-  /// aca no se guarda. Cuando existan, se leen de la misma respuesta.
+  /// Today it only brings the count: who they are, with what rank, and
+  /// what each one can do isn't modeled on the other side yet, so the list
+  /// arrives empty and isn't stored here. Once they exist, they'll be read
+  /// from the same response.
   ///
-  /// Este numero vivia en el perfil y se mudo: es de la gente de la empresa, no
-  /// de su cedula de identidad, y quien abre la ficha para corregir el telefono
-  /// no tiene por que pagar una cuenta que nadie esta mirando.
+  /// This number used to live in the profile and was moved out: it belongs
+  /// to the business's people, not to its ID card, and whoever opens the
+  /// card to fix the phone number shouldn't have to pay for a count nobody
+  /// is looking at.
   ///
-  /// Se cachea como el resto: mientras no cambie la empresa activa no se vuelve
-  /// a pedir salvo que se pida [force].
+  /// It's cached like the rest: as long as the active business doesn't
+  /// change it isn't requested again unless [force] is requested.
   Future<void> loadEmployees({bool force = false}) async {
     final id = activeId;
 
@@ -274,7 +286,8 @@ class BusinessService extends ChangeNotifier {
       return null;
     });
 
-    // La activa pudo cambiar mientras se pedia: lo que llego es de la anterior.
+    // The active business may have changed while this was being requested:
+    // what arrived belongs to the previous one.
     if (activeId != id || _employeesOwner != id) return;
 
     if (data is! Map) {
@@ -289,23 +302,24 @@ class BusinessService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cambia un dato del perfil de la empresa activa contra
+  /// Changes a field of the active business's profile against
   /// `PUT /business/profile/`.
   ///
-  /// Se manda **un campo por vez**, y solo el que se toco: el perfil se corrige
-  /// renglon por renglon desde su ficha, y reenviarlo entero seria reescribir
-  /// con lo que tiene cargado esta pantalla —que puede ser de hace rato— todo
-  /// lo que nadie cambio.
+  /// It's sent **one field at a time**, and only the one that was touched:
+  /// the profile is corrected row by row from its card, and resending it
+  /// whole would mean overwriting everything nobody changed with whatever
+  /// this screen has loaded —which may be from a while ago.
   ///
-  /// El id de la empresa no viaja en el cuerpo: como en la lectura, el endpoint
-  /// contesta por la de la cabecera `business_id`, o sea la activa.
+  /// The business's id doesn't travel in the body: as with reads, the
+  /// endpoint answers for the one in the `business_id` header, i.e. the
+  /// active one.
   ///
-  /// Un valor vacio **borra** el dato en vez de dejarlo como estaba: casi todo
-  /// el perfil es opcional, asi que vaciar un campo es una edicion valida y no
-  /// un olvido.
+  /// An empty value **deletes** the field instead of leaving it as it was:
+  /// almost the entire profile is optional, so clearing a field is a valid
+  /// edit and not an oversight.
   ///
-  /// Devuelve `true` si el cambio entro. Ante un error muestra la bandera
-  /// flotante y devuelve `false`, con el perfil como estaba.
+  /// Returns `true` if the change went through. On error it shows the
+  /// floating flag and returns `false`, with the profile left as it was.
   Future<bool> editProfile(
     BuildContext context,
     String key,
@@ -332,19 +346,19 @@ class BusinessService extends ChangeNotifier {
     return true;
   }
 
-  /// Cambia el logo de la empresa activa contra `POST /business/logo/`.
+  /// Changes the active business's logo against `POST /business/logo/`.
   ///
-  /// [file] es el recorte que se hizo en pantalla, no la foto que eligio el
-  /// cliente: que parte de la imagen queda dentro del cuadrado lo decide quien
-  /// la sube (ver `CropImageModal`), porque es lo unico que el backend no puede
-  /// adivinar. Del otro lado igual se la vuelve a codificar —a WebP, sin
-  /// metadatos y con su version chica— asi que lo que se sirve nunca son los
-  /// bytes que salieron de aca.
+  /// [file] is the crop that was made on screen, not the photo the client
+  /// chose: which part of the image stays inside the square is decided by
+  /// whoever uploads it (see `CropImageModal`), because it's the one thing
+  /// the backend can't guess. On the other side it gets re-encoded anyway
+  /// —to WebP, stripped of metadata and with its small version— so what
+  /// ends up served is never the exact bytes that left here.
   ///
-  /// No hay que borrar el logo anterior: lo hace el backend cuando el nuevo ya
-  /// esta en su lugar. Como el resto de las escrituras, devuelve `true` si
-  /// entro y ante un error muestra la bandera flotante y deja el logo como
-  /// estaba.
+  /// There's no need to delete the previous logo: the backend does it once
+  /// the new one is already in place. Like the rest of the writes, it
+  /// returns `true` if it went through, and on error shows the floating
+  /// flag and leaves the logo as it was.
   Future<bool> setLogo(BuildContext context, File file) async {
     if (activeId == null) return false;
 
@@ -368,15 +382,15 @@ class BusinessService extends ChangeNotifier {
     return true;
   }
 
-  /// Agrega una direccion de correo a la empresa contra
+  /// Adds an email address to the business against
   /// `POST /business/emails/`.
   ///
-  /// La primera direccion de una empresa queda como la principal, la pida o no
-  /// quien la agrega: una empresa cuyo unico correo no es el que publica no
-  /// tiene sentido. Eso lo decide el backend.
+  /// A business's first address is left as the main one, whether or not
+  /// whoever adds it asked for that: a business whose only email isn't the
+  /// one it publishes doesn't make sense. The backend decides that.
   ///
-  /// Devuelve `true` si entro. Ante un error muestra la bandera flotante y
-  /// devuelve `false`, con la lista como estaba.
+  /// Returns `true` if it went through. On error it shows the floating
+  /// flag and returns `false`, with the list left as it was.
   Future<bool> addEmail(BuildContext context, Map<String, dynamic> data) =>
     _writeEmail(context, "addEmail", () => api.post(
       path: "/business/emails/",
@@ -384,13 +398,13 @@ class BusinessService extends ChangeNotifier {
       data: data
     ));
 
-  /// Cambia una direccion de la empresa contra `PUT /business/emails/`.
+  /// Changes one of the business's addresses against `PUT /business/emails/`.
   ///
-  /// Solo cambia lo que se manda, asi que corregir un tipeo no obliga a
-  /// reenviar el proposito y el nombre. `MAIN: true` la vuelve la principal y
-  /// baja a la que lo era; bajar la principal sin promover otra lo rechaza el
-  /// backend, porque una empresa con direcciones y sin principal no es un
-  /// estado al que valga la pena poder llegar.
+  /// It only changes what's sent, so fixing a typo doesn't require
+  /// resending the purpose and the name. `MAIN: true` makes it the main one
+  /// and demotes whichever one was; demoting the main one without
+  /// promoting another is rejected by the backend, because a business with
+  /// addresses and no main one isn't a state worth being able to reach.
   Future<bool> editEmail(
     BuildContext context,
     String id,
@@ -401,11 +415,11 @@ class BusinessService extends ChangeNotifier {
     data: {"ID": id, ...data}
   ));
 
-  /// Borra una direccion de la empresa contra `DELETE /business/emails/`.
+  /// Deletes one of the business's addresses against `DELETE /business/emails/`.
   ///
-  /// Quien la llama tiene que haberlo preguntado antes: el servicio no
-  /// pregunta. Borrar la principal esta permitido y asciende a la mas vieja de
-  /// las que quedan.
+  /// Whoever calls it must have already asked for confirmation: the service
+  /// doesn't ask. Deleting the main one is allowed and promotes the oldest
+  /// of the remaining ones.
   Future<bool> removeEmail(BuildContext context, String id) =>
     _writeEmail(context, "removeEmail", () => api.delete(
       path: "/business/emails/",
@@ -413,19 +427,20 @@ class BusinessService extends ChangeNotifier {
       data: {"ID": id}
     ));
 
-  /// Pide el codigo con el que se verifica una direccion, contra
+  /// Requests the code an address is verified with, against
   /// `POST /business/emails/verify/`.
   ///
-  /// Devuelve la direccion a la que se mando —la guardada, no la que se
-  /// escribio en pantalla— para que la pantalla pueda decir a donde mirar; un
-  /// `null` es que no se mando nada y el error ya se mostro.
+  /// Returns the address it was sent to —the stored one, not the one typed
+  /// on screen— so the screen can say where to look; a `null` means
+  /// nothing was sent and the error was already shown.
   ///
-  /// El backend rechaza pedir otro codigo antes del minuto: es la unica
-  /// escritura de la ficha que le escribe a un correo que tipeo alguien, asi
-  /// que "reenviar" sin freno seria un boton que manda correo tan rapido como
-  /// se lo toque. Ese rechazo llega como cualquier otro error.
+  /// The backend rejects requesting another code within a minute: it's the
+  /// only write on this card that writes to an address someone typed, so
+  /// an unthrottled "resend" would be a button that sends mail as fast as
+  /// it's tapped. That rejection arrives like any other error.
   ///
-  /// No relee el perfil: pedir un codigo no cambia ningun dato de la empresa.
+  /// It doesn't reread the profile: requesting a code doesn't change any
+  /// of the business's data.
   Future<String?> sendEmailCode(BuildContext context, String id) async {
     if (activeId == null) return null;
 
@@ -446,17 +461,17 @@ class BusinessService extends ChangeNotifier {
     }
   }
 
-  /// Termina de verificar una direccion contra `PUT /business/emails/verify/`.
+  /// Finishes verifying an address against `PUT /business/emails/verify/`.
   ///
-  /// El codigo lo leyo alguien en la casilla, que es justamente la prueba: lo
-  /// que queda verificado es que la empresa lee esa direccion, no que la
-  /// empresa sea quien dice ser (eso es su situacion legal, y no se toca desde
-  /// aca).
+  /// The code was read by someone at the mailbox, which is precisely the
+  /// proof: what ends up verified is that the business reads that address,
+  /// not that the business is who it claims to be (that's its legal
+  /// status, and it isn't touched from here).
   ///
-  /// Relee el perfil como el resto de las escrituras de correos: el mismo
-  /// codigo puede verificar mas de una fila —la misma casilla cargada con dos
-  /// propositos es una sola casilla— asi que como queda la lista lo decide el
-  /// backend.
+  /// Rereads the profile like the rest of the email writes: the same code
+  /// can verify more than one row —the same mailbox loaded with two
+  /// purposes is still one mailbox— so how the list ends up is decided by
+  /// the backend.
   Future<bool> verifyEmail(
     BuildContext context,
     String id,
@@ -467,13 +482,13 @@ class BusinessService extends ChangeNotifier {
     data: {"ID": id, "CODE": code}
   ));
 
-  /// El cuerpo comun de las escrituras de correos: mandar, y si entro, releer
-  /// el perfil.
+  /// The common body of email writes: send it, and if it went through,
+  /// reread the profile.
   ///
-  /// Se relee entero y no se parchea la lista en memoria porque una sola
-  /// escritura toca mas de una fila: promover una direccion baja a la otra, y
-  /// borrar la principal asciende a la siguiente. Quien decide como queda la
-  /// lista es el backend, asi que se la vuelve a pedir.
+  /// It's reread in full rather than patching the list in memory because a
+  /// single write touches more than one row: promoting an address demotes
+  /// the other one, and deleting the main one promotes the next one. Who
+  /// decides how the list ends up is the backend, so it's requested again.
   Future<bool> _writeEmail(
     BuildContext context,
     String name,
@@ -496,19 +511,21 @@ class BusinessService extends ChangeNotifier {
     return true;
   }
 
-  /// Vuelve a leer el perfil sin pasar por `loading`.
+  /// Rereads the profile without going through `loading`.
   ///
-  /// Es lo que corre despues de guardar: ahi el estado ya es `ready` y la ficha
-  /// esta entera en pantalla, asi que mandarla a `loading` —como hace
-  /// [loadProfile]— cambiaria toda la ficha por un spinner para reescribir un
-  /// renglon.
+  /// This is what runs after saving: at that point the state is already
+  /// `ready` and the card is fully on screen, so sending it to `loading`
+  /// —as [loadProfile] does— would swap the whole card for a spinner just
+  /// to rewrite one row.
   ///
-  /// Se relee en vez de parchear lo que hay en memoria porque como queda
-  /// guardado lo decide el backend: recorta, normaliza el idioma, pone el pais
-  /// en mayusculas. Lo que se muestra es lo que quedo, no lo que se mando.
+  /// It's reread instead of patching what's in memory because how it ends
+  /// up stored is decided by the backend: it trims, normalizes the
+  /// language, uppercases the country. What's shown is what was left, not
+  /// what was sent.
   ///
-  /// Un error aca no se reporta: el cambio ya entro y la bandera diria lo
-  /// contrario. La ficha se queda con el valor viejo hasta la proxima lectura.
+  /// An error here isn't reported: the change already went through and the
+  /// flag would say the opposite. The card is left with the old value
+  /// until the next read.
   Future<void> _reloadProfile() async {
     final id = activeId;
     if (id == null) return;
@@ -520,8 +537,8 @@ class BusinessService extends ChangeNotifier {
       return null;
     });
 
-    // Igual que en [loadProfile]: la activa pudo cambiar mientras se leia, y lo
-    // que llego describe a la anterior.
+    // Same as in [loadProfile]: the active business may have changed while
+    // this was being read, and what arrived describes the previous one.
     if (activeId != id || _profileOwner != id) return;
     if (data is! Map) return;
 
@@ -531,14 +548,16 @@ class BusinessService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Baja a la coleccion basica lo que del perfil tambien vive ahi.
+  /// Pushes down to the basic collection whatever from the profile also
+  /// lives there.
   ///
-  /// La de `/init` es la que alimenta el selector de empresas y la moneda con
-  /// la que se escriben todos los precios de la app, y comparte tres datos con
-  /// el perfil: el nombre, el logo y la moneda. Cambiarlos en la ficha y no aca
-  /// dejaria a la misma empresa nombrada de dos maneras, con dos caras y
-  /// cobrando en dos monedas —el logo recien subido en su ficha y la inicial en
-  /// el selector, hasta el proximo arranque—.
+  /// The `/init` one feeds the business selector and the currency every
+  /// price in the app is written in, and shares three fields with the
+  /// profile: the name, the logo, and the currency. Changing them on the
+  /// card and not here would leave the same business named two different
+  /// ways, with two faces, and billing in two currencies —the freshly
+  /// uploaded logo on its card and the old one in the selector, until the
+  /// next launch.
   void _syncActive(BusinessProfileModel profile) {
     final index = _businesses.indexWhere(
       (business) => business.id == profile.id
@@ -565,10 +584,11 @@ class BusinessService extends ChangeNotifier {
     if (_active?.id == updated.id) _active = updated;
   }
 
-  /// Muestra el error de una escritura como lo muestra el resto de la app.
+  /// Shows a write's error the way the rest of the app shows them.
   ///
-  /// Un error con `action` no es un aviso sino un desvio (verificar el correo,
-  /// volver a entrar): se relanza para que lo atienda quien sabe navegar.
+  /// An error with `action` isn't a notice but a redirect (verify the
+  /// email, log in again): it's rethrown so whoever knows how to navigate
+  /// can handle it.
   void _report(BuildContext context, Object error) {
     if (error is Map && error["action"] != null) throw error["action"];
 
@@ -577,9 +597,9 @@ class BusinessService extends ChangeNotifier {
     );
   }
 
-  /// Tira lo que hay cargado de una empresa: su perfil y su gente. No notifica:
-  /// lo llaman los que ya van a notificar por su cuenta (un cambio de empresa,
-  /// un alta, el cierre de sesion).
+  /// Discards whatever is loaded for a business: its profile and its
+  /// people. Doesn't notify: it's called by whoever is already going to
+  /// notify on their own (a business change, a signup, logging out).
   void _forgetLoaded() {
     _profile = null;
     _profileOwner = null;

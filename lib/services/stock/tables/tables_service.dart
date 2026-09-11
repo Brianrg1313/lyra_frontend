@@ -8,141 +8,207 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
+import 'package:app/services/stock/tables/table_normalizing_model.dart';
 import 'package:app/services/stock/tables/table_ready_model.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/toolkit.dart' show S;
 
-/// Estado de la carga del listado de tablas (`GET /tables/list/`).
+/// State of the table list load (`GET /inventory/products/builder/list/`).
 enum TablesStatus { idle, loading, ready, empty, error }
 
-/// Como arranco una importacion ([TablesService.import]).
+/// How an import started ([TablesService.import]).
 ///
-/// Es como **arranco** y no como termino porque una importacion ya no termina
-/// dentro de la llamada: la tabla se crea en el acto y el resto —los tipos de
-/// sus columnas, que los pone el backend, y sus filas, que se suben despues—
-/// sigue en segundo plano (ver [TableImportStage]). De eso ya no se entera
-/// quien la disparo sino el listado, que muestra en que anda cada tabla.
+/// It's how it **started** and not how it finished because an import no
+/// longer finishes inside the call: the table is created on the spot and the
+/// rest —its columns' types, set by the backend, and its rows, uploaded
+/// afterward— keeps going in the background (see [TableImportStage]). Whoever
+/// triggered it no longer hears about that; the list does, showing what each
+/// table is up to.
 enum TableImportResult {
-  /// La tabla se creo. Lo que falta sigue solo.
+  /// The table was created. What's left keeps going on its own.
   started,
 
-  /// El archivo elegido no es una planilla ni un CSV. No se subio nada.
+  /// The chosen file is neither a spreadsheet nor a CSV. Nothing was
+  /// uploaded.
   unsupported,
 
-  /// No se creo nada. El error ya se mostro.
+  /// Nothing was created. The error was already shown.
   failed
 }
 
-/// En que anda una importacion que sigue corriendo despues de que la tabla ya
-/// existe ([TablesService.importStage]).
+/// What an import that keeps running after the table already exists is up to
+/// ([TablesService.importStage]).
 ///
-/// Las dos etapas son esperas de verdad —la primera de medio minuto largo, la
-/// segunda lo que tarde en subir el archivo— y en las dos la tabla ya esta en
-/// el listado, se puede abrir y esta a medio hacer: por eso se muestran en su
-/// fila en vez de quedarse dentro del servicio.
+/// Both stages are real waits —the first a good half a minute, the second
+/// however long the file takes to upload— and in both the table is in the
+/// list and **half done**: that's why they're shown in its row, and why a
+/// table carrying one of them doesn't open (see [TablesService.isBusy]).
+///
+/// A table is not only marked by the import that started here. The backend
+/// announces the first stage on its own ([TableNormalizingModel]), so a
+/// spreadsheet uploaded from another device or another tab shows up here in
+/// the same state as the one uploaded from this one.
 enum TableImportStage {
-  /// El backend le esta poniendo el tipo a las columnas del archivo y su
-  /// columna de imagen. Hasta que avise ([TableReadyModel]) la tabla tiene
-  /// todas sus columnas en `text` y ninguna fila.
+  /// The backend is typing the file's columns and its image column. Until it
+  /// signals ([TableReadyModel]) the table has all its columns as `text`,
+  /// the names the file wrote, and no rows.
   preparing,
 
-  /// Las columnas ya estan tipadas: se estan subiendo las filas del archivo.
+  /// The columns are already typed: the file's rows are being uploaded.
   loading
 }
 
-/// Nombre del campo del formulario con el que viaja el archivo en las dos
-/// subidas de la importacion. Lo fija el backend (`multer().single("FILE")`):
-/// con cualquier otro nombre el archivo no llega y la peticion se rechaza.
+/// Name of the form field the file travels under in both uploads of the
+/// import. Set by the backend (`multer().single("FILE")`): with any other
+/// name the file doesn't arrive and the request is rejected.
 const String _kImportField = "FILE";
 
-/// Cuanto se espera el aviso de que una tabla importada quedo lista antes de
-/// subirle las filas igual.
+/// How long to wait for the notice that an imported table became ready before
+/// uploading its rows anyway.
 ///
-/// No es lo que tarda el backend en prepararla —eso son unos treinta segundos—
-/// sino el margen para que el aviso llegue: viaja por socket, y si la conexion
-/// esta caida el evento se pierde y no llega nunca. Sin este tope la
-/// importacion se quedaria esperando para siempre un archivo que ya esta
-/// elegido y una tabla que ya existe.
+/// It's not how long the backend takes to prepare it —that's about thirty
+/// seconds— but the margin for the notice to arrive: it travels over socket,
+/// and if the connection is down the event is lost and never arrives.
+/// Without this cap the import would wait forever for a notice on a file
+/// that's already chosen and a table that already exists.
 const Duration _kReadyTimeout = Duration(minutes: 2);
 
-/// Estado y comportamiento de las tablas de productos de la empresa activa.
+/// State and behavior of the active business's product tables.
 ///
-/// Concentra las operaciones sobre las tablas: la lectura del listado, que
-/// consume la seccion `inventory`, el alta de una tabla nueva y, sobre una que
-/// ya existe, la edicion de su cabecera y su baja.
+/// Concentrates the operations on tables: reading the list, which uses the
+/// `inventory` section, creating a new table and, on one that already
+/// exists, editing its header and deleting it.
 ///
-/// Las tres escrituras dejan la cache al dia sin volver a leer el listado, pero
-/// no de la misma manera: el alta la invalida (`idle`), porque la tabla nueva
-/// hay que ir a buscarla —el backend le puso el id, y si venia con plantilla,
-/// tambien sus columnas—; la edicion y la baja corrigen la fila en memoria,
-/// porque lo que cambio ya se sabe entero de este lado.
+/// The three writes bring the cache up to date without rereading the list,
+/// but not in the same way: creation invalidates it (`idle`), because the new
+/// table has to be fetched —the backend gave it its id, and if it came with a
+/// template, its columns too—; editing and deletion fix the row in memory,
+/// because what changed is already fully known on this side.
 ///
-/// Se registra en el scope mas alto de la app (`initialBuilder`) con
-/// `ChangeNotifierProvider` porque su estado —la cache del listado— debe
-/// sobrevivir a la navegacion entre el listado y la pantalla de creacion.
+/// It's registered in the app's highest scope (`initialBuilder`) with
+/// `ChangeNotifierProvider` because its state —the list cache— has to survive
+/// navigation between the list and the creation screen.
 ///
-/// La cache es por empresa: las tablas viajan atadas a la empresa activa (la
-/// cabecera `business_id` que pone [useBusiness]), asi que al cambiar de empresa
-/// el listado se recarga solo. Por eso [load] recibe el id de la empresa y no lo
-/// deduce: mantiene al servicio desacoplado de `BusinessService`.
+/// The cache is per business: tables travel tied to the active business (the
+/// `business_id` header set by [useBusiness]), so the list reloads on its own
+/// when the business changes. That's why [load] takes the business's id
+/// instead of figuring it out: it keeps the service decoupled from
+/// `BusinessService`.
 ///
-/// **Y ademas escucha.** La importacion es lo unico de aca que no termina
-/// dentro de la llamada que la dispara: la tabla se crea en el acto y el
-/// backend sigue preparandola por atras, asi que el servicio queda esperando su
-/// aviso (`table/ready`, ver [TableReadyModel]) para subirle las filas y para
-/// corregir el listado. Ese es tambien el motivo de que la escucha viva aca y
-/// no en la pantalla: la importacion sobrevive a que se salga de la seccion.
+/// **And it also listens.** The import is the only thing here that doesn't
+/// finish inside the call that triggers it: the table is created on the spot
+/// and the backend keeps preparing it behind the scenes, so the service
+/// follows that from the two notices that bracket it —`table/normalizing`
+/// ([TableNormalizingModel]) and `table/ready` ([TableReadyModel])— to upload
+/// its rows and to fix the list. That's also why the listening lives here and
+/// not on the screen: the import survives leaving the section.
+///
+/// Listening to the first of the two is what makes the state honest for
+/// **everyone** and not only for whoever uploaded the file: a table imported
+/// from another device shows up here the moment it is created, marked as
+/// still being built, and is not opened until it lands (see [isBusy]).
 class TablesService extends ChangeNotifier {
   TablesService() {
-    // Se anota antes de que la conexion exista siquiera: el socket guarda los
-    // oyentes y los engancha al abrirse, asi que no hay que esperar a nada ni
-    // volver a anotarse despues de una reconexion.
-    _unlisten = ConnectionService().on(TableReadyModel.event, _onReady);
+    // Registered before the connection even exists: the socket keeps
+    // listeners and hooks them up once it opens, so there's no need to wait
+    // for anything or re-register after a reconnect.
+    //
+    // Two events and not one because the wait has two ends: the backend says
+    // it started preparing a table and, half a minute later, that it
+    // finished. Only the second one used to be listened to —it was the one
+    // that unblocked the upload— and that left every table imported from
+    // somewhere else looking finished the whole time it was being built.
+    _unlisten = [
+      ConnectionService().on(TableNormalizingModel.event, _onNormalizing),
+      ConnectionService().on(TableReadyModel.event, _onReady)
+    ];
   }
 
   TablesStatus _status = TablesStatus.idle;
   List<TableLiteModel> _tables = const [];
 
-  /// Empresa para la que se cargo la cache actual. Si no coincide con la activa,
-  /// [load] refresca aunque la cache este `ready`.
+  /// Business the current cache was loaded for. If it doesn't match the
+  /// active one, [load] refreshes even if the cache is `ready`.
   String? _businessId;
 
-  /// Baja del oyente de `table/ready`, para soltarlo al morir el servicio.
-  void Function()? _unlisten;
+  /// Unsubscribes from `table/normalizing` and `table/ready`, to release
+  /// them when the service dies.
+  List<void Function()> _unlisten = const [];
 
-  /// En que anda cada importacion que sigue corriendo, por id de tabla. Una
-  /// tabla que no esta aca no tiene nada pendiente.
+  /// What each import that's still running is up to, by table id. A table
+  /// not here has nothing pending.
   final Map<String, TableImportStage> _importing = {};
 
-  /// Importaciones esperando el aviso del backend, por id de tabla. Se completa
-  /// cuando llega el evento de esa tabla, y se abandona por tiempo
-  /// ([_kReadyTimeout]) si no llega nunca.
+  /// Imports waiting on the backend's notice, by table id. Completed when
+  /// that table's event arrives, and given up on after a timeout
+  /// ([_kReadyTimeout]) if it never does.
   final Map<String, Completer<TableReadyModel?>> _pending = {};
+
+  /// Tables marked by the backend's notice that nobody here is following,
+  /// with the timer that gives up on each one.
+  ///
+  /// An import started from here always ends —its upload finishes, well or
+  /// badly, and clears the mark. One started somewhere else has no such
+  /// ending on this side: the only thing that unmarks it is `table/ready`,
+  /// which travels over the socket and is lost if the connection drops while
+  /// the table is being prepared. Without this, that table would stay locked
+  /// for the rest of the session over a notice that is never coming.
+  final Map<String, Timer> _watching = {};
 
   TablesStatus get status => _status;
   List<TableLiteModel> get tables => List.unmodifiable(_tables);
 
-  /// En que anda la importacion de la tabla [tableId], o `null` si no tiene
-  /// ninguna corriendo. Lo mira cada fila del listado para avisar que esa tabla
-  /// todavia se esta armando.
+  /// What table [tableId]'s import is up to, or `null` if it has none
+  /// running. Every row in the list checks it to signal that this table is
+  /// still being built.
   TableImportStage? importStage(String tableId) => _importing[tableId];
 
-  /// Carga las tablas de [businessId].
+  /// Whether [tableId] is still being built, and therefore **cannot be
+  /// opened**.
   ///
-  /// Se cachea: una vez cargado, las siguientes visitas a la seccion no vuelven
-  /// a pegarle al backend salvo que se pida [force], que cambie la empresa
-  /// activa, o que un alta invalide la cache dejando el estado en `idle`.
+  /// A table is in the list from the moment it exists, which is long before
+  /// it is finished: its columns are still `text` and named as the file
+  /// named them, and its rows have not been uploaded. Opening it there shows
+  /// a sheet that is missing most of what was imported, which reads as an
+  /// import that failed rather than as one that is halfway — and the answer
+  /// people give to that is importing the file again.
   ///
-  /// Un cambio de empresa manda siempre: no se lo frena ni una lectura en curso
-  /// (que es de la empresa anterior) ni una cache `ready` (idem), y lo que
-  /// hubiera cargado se suelta en el acto para que nadie llegue a leer las
-  /// tablas de la otra empresa mientras llegan las de esta.
+  /// So the row says what the table is up to and doesn't let you in until it
+  /// lands. It's the same question [importStage] answers; it has its own
+  /// name because whoever asks it isn't drawing the stage, it's deciding
+  /// whether to navigate.
+  bool isBusy(String tableId) => _importing.containsKey(tableId);
+
+  /// Marks [tableId] as still being built, the way the backend's notice
+  /// does.
   ///
-  /// Se lleva tambien las importaciones a medio hacer, que son de la empresa
-  /// anterior: el socket se ata a una sola empresa por conexion, asi que
-  /// cambiar de empresa deja al aviso que estaban esperando sin forma de
-  /// llegar, y subirle las filas a esa tabla ya no seria posible —la peticion
-  /// viaja con la empresa activa, que no es la dueña de la tabla—.
+  /// Nothing in the app writes a stage from outside: the two socket events
+  /// and the import itself are what move it. It exists so the rule that
+  /// hangs off it —a table being built does not open— can be pinned without
+  /// a socket and without an upload.
+  @visibleForTesting
+  void seedImport(String tableId, TableImportStage stage) {
+    _importing[tableId] = stage;
+    notifyListeners();
+  }
+
+  /// Loads [businessId]'s tables.
+  ///
+  /// It's cached: once loaded, later visits to the section don't hit the
+  /// backend again unless [force] is asked for, the active business changes,
+  /// or a creation invalidates the cache leaving the state at `idle`.
+  ///
+  /// A business change always wins: it isn't stopped by an in-flight read
+  /// (which belongs to the previous business) nor by a `ready` cache (same),
+  /// and whatever had loaded is dropped on the spot so nobody gets to read the
+  /// other business's tables while this one's are arriving.
+  ///
+  /// It also carries over half-done imports, which belong to the previous
+  /// business: the socket is tied to a single business per connection, so
+  /// changing business leaves whatever notice it was waiting for with no way
+  /// to arrive, and uploading that table's rows would no longer be possible
+  /// —the request travels with the active business, which isn't the table's
+  /// owner—.
   Future<void> load(String businessId, {bool force = false}) async {
     final changed = _businessId != businessId;
 
@@ -161,15 +227,16 @@ class TablesService extends ChangeNotifier {
     notifyListeners();
 
     final data = await api
-        .get(path: "/tables/list/", version: "v1")
+        .get(path: "/inventory/products/builder/list/", version: "v1")
         .catchError((error) {
       if (kDebugMode) print("loadTables failed: $error");
       return null;
     });
 
-    // Mientras la lectura viajaba se cambio de empresa: lo que llego es de la
-    // anterior. Se descarta entero, tambien el error, porque la lectura que vale
-    // es la que disparo el cambio y ya esta en camino.
+    // The business changed while the read was traveling: what arrived
+    // belongs to the previous one. It's discarded entirely, error included,
+    // because the read that counts is the one the change triggered and is
+    // already on its way.
     if (_businessId != businessId) return;
 
     if (data == null) {
@@ -184,33 +251,36 @@ class TablesService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Alta de la estructura de una tabla contra `POST /tables/structure/`.
+  /// Creates a table's structure against
+  /// `POST /inventory/products/builder/structure/`.
   ///
-  /// La empresa dueña no viaja en [data]: va en la cabecera `business_id` que
-  /// ponen las apis solas (ver `useBusiness` en `toolkit/api.dart`).
+  /// The owning business doesn't travel in [data]: it goes in the
+  /// `business_id` header the apis set on their own (see `useBusiness` in
+  /// `toolkit/api.dart`).
   ///
-  /// Devuelve el identificador de la tabla creada. Ante un error muestra la
-  /// bandera flotante y relanza, para que la pantalla apague su estado de carga.
-  /// Al terminar bien invalida la cache del listado (`idle`) para que la proxima
-  /// lectura traiga la tabla nueva.
+  /// Returns the created table's identifier. On error it shows the floating
+  /// banner and rethrows, so the screen can turn off its loading state. On
+  /// success it invalidates the list cache (`idle`) so the next read brings
+  /// the new table.
   Future<String> create(BuildContext context, Map<String, dynamic> data) async {
     try {
       final response = await api.post(
-        path: "/tables/structure/",
+        path: "/inventory/products/builder/structure/",
         version: "v1",
         data: data,
       );
 
       final id = _readId(response);
 
-      // La tabla recien creada todavia no esta en la cache: se marca vencida
-      // para que el listado la vuelva a pedir al abrirse.
+      // The just-created table isn't in the cache yet: it's marked stale so
+      // the list requests it again once opened.
       _status = TablesStatus.idle;
 
       return id;
     } catch (error) {
-      // El error se registra siempre, incluso cuando se muestra al usuario: el
-      // texto que llega a pantalla suele estar recortado y aca queda el crudo.
+      // The error is always logged, even when it's shown to the user: the
+      // text that reaches the screen is often trimmed and this keeps the raw
+      // one.
       if (kDebugMode) print("createTable failed: $error");
 
       if (context.mounted) _report(context, error);
@@ -219,20 +289,20 @@ class TablesService extends ChangeNotifier {
     }
   }
 
-  /// Cambia el titulo y la descripcion de una tabla contra
-  /// `PUT /tables/structure/`.
+  /// Changes a table's title and description against
+  /// `PUT /inventory/products/builder/structure/`.
   ///
-  /// La cache no se invalida: lo que cambio es lo unico que el listado muestra
-  /// de esa tabla, asi que se reescribe la fila en memoria y el listado se
-  /// repinta solo. Volver a pedir las tablas enteras para cambiar dos textos
-  /// que ya se tienen seria una lectura de mas —y una espera de mas— por cada
-  /// renombre.
+  /// The cache isn't invalidated: what changed is the only thing the list
+  /// shows of that table, so the row is rewritten in memory and the list
+  /// repaints on its own. Requesting the whole set of tables again to change
+  /// two texts already in hand would be one read too many —and one wait too
+  /// many— per rename.
   ///
-  /// Las cantidades (columnas y registros) no se tocan: editar la cabecera no
-  /// las cambia.
+  /// Counts (columns and records) aren't touched: editing the header doesn't
+  /// change them.
   ///
-  /// Devuelve `true` si el cambio salio bien. Ante un error muestra la bandera
-  /// flotante y devuelve `false`, con la fila como estaba.
+  /// Returns `true` if the change went well. On error it shows the floating
+  /// banner and returns `false`, with the row as it was.
   Future<bool> edit(
     BuildContext context,
     TableLiteModel table, {
@@ -243,7 +313,7 @@ class TablesService extends ChangeNotifier {
 
     try {
       await api.put(
-        path: "/tables/structure/",
+        path: "/inventory/products/builder/structure/",
         version: "v1",
         data: editTableRequest(
           id: table.id,
@@ -259,9 +329,9 @@ class TablesService extends ChangeNotifier {
       return false;
     }
 
-    // La tabla puede haberse ido de la cache mientras el cambio viajaba (un
-    // cambio de empresa, una recarga): entonces no hay fila que reescribir y lo
-    // que se lea despues ya viene con el titulo nuevo.
+    // The table may have left the cache while the change was traveling (a
+    // business change, a reload): then there's no row to rewrite and what's
+    // read afterward already comes with the new title.
     final index = _tables.indexWhere((current) => current.id == table.id);
 
     if (index >= 0) {
@@ -277,25 +347,26 @@ class TablesService extends ChangeNotifier {
     return true;
   }
 
-  /// Corrige el titulo y/o la descripcion de una fila del listado **sin
-  /// escribir nada**.
+  /// Fixes the title and/or description of a row in the list **without
+  /// writing anything**.
   ///
-  /// Es para los cambios que escribio otro: la pantalla de ajustes de una
-  /// tabla edita contra su propio endpoint (`PUT /tables/details/`, ver
-  /// `TableDetailService.edit`) porque es una edicion parcial, y despues avisa
-  /// por aca para que el listado no siga mostrando el nombre viejo.
+  /// It's for changes someone else wrote: a table's settings screen edits
+  /// against its own endpoint (`PUT /inventory/products/builder/details/`,
+  /// see `TableDetailService.edit`) because it's a partial edit, and
+  /// afterward notifies through here so the list doesn't keep showing the old
+  /// name.
   ///
-  /// Es lo mismo que hace [edit] con la cache despues de guardar, y por eso no
-  /// invalida nada: lo que cambio es lo unico que el listado muestra de esa
-  /// tabla, y ya se sabe entero de este lado.
+  /// It's the same thing [edit] does to the cache after saving, and that's
+  /// why it invalidates nothing: what changed is the only thing the list
+  /// shows of that table, and it's already fully known on this side.
   void applyText(String tableId, {String? title, String? description}) {
     if (tableId.isEmpty || (title == null && description == null)) return;
 
     final index = _tables.indexWhere((current) => current.id == tableId);
 
-    // La tabla puede no estar en la cache: se cambio de empresa, o el listado
-    // nunca se llego a leer (se entro por deep link). Lo que se lea despues ya
-    // viene con el texto nuevo.
+    // The table may not be in the cache: the business changed, or the list
+    // was never actually read (entered via deep link). What's read
+    // afterward already comes with the new text.
     if (index < 0) return;
 
     _tables = List<TableLiteModel>.from(_tables)
@@ -307,21 +378,22 @@ class TablesService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Baja de una tabla contra `DELETE /tables/structure/`.
+  /// Deletes a table against `DELETE /inventory/products/builder/structure/`.
   ///
-  /// Se lleva la tabla, sus columnas y todo lo cargado en ella, asi que quien
-  /// la llama tiene que haberlo confirmado antes: el servicio no pregunta.
+  /// It takes the table, its columns and everything loaded in it, so whoever
+  /// calls it must have already confirmed: the service doesn't ask.
   ///
-  /// Como en la edicion, la cache se corrige en el acto —se saca la fila— en
-  /// vez de invalidarse: la tabla que se elimino es la unica que cambio, y asi
-  /// desaparece del listado sin que este parpadee cargando de nuevo. Si era la
-  /// ultima, el listado pasa a `empty` y muestra su mensaje.
+  /// As with editing, the cache is fixed on the spot —the row is removed—
+  /// instead of invalidated: the table that was deleted is the only thing
+  /// that changed, so it disappears from the list without it flickering into
+  /// a loading state again. If it was the last one, the list goes to `empty`
+  /// and shows its message.
   Future<bool> remove(BuildContext context, TableLiteModel table) async {
     if (table.id.isEmpty) return false;
 
     try {
       await api.delete(
-        path: "/tables/structure/",
+        path: "/inventory/products/builder/structure/",
         version: "v1",
         data: deleteTableRequest(id: table.id)
       );
@@ -337,14 +409,15 @@ class TablesService extends ChangeNotifier {
       .where((current) => current.id != table.id)
       .toList();
 
-    // Nada que sacar: la cache ya no era la que tenia esta tabla (se cambio de
-    // empresa, o se recargo el listado mientras la baja viajaba).
+    // Nothing to remove: the cache no longer was the one holding this table
+    // (the business changed, or the list reloaded while the deletion was
+    // traveling).
     if (remaining.length == _tables.length) return true;
 
     _tables = remaining;
 
-    // El estado sigue a lo que quedo: sin tablas, el listado tiene que mostrar
-    // su mensaje de vacio y no una lista en blanco.
+    // State follows what's left: with no tables, the list has to show its
+    // empty message and not a blank list.
     if (_status == TablesStatus.ready && _tables.isEmpty) {
       _status = TablesStatus.empty;
     }
@@ -354,55 +427,60 @@ class TablesService extends ChangeNotifier {
     return true;
   }
 
-  /// Importa una tabla desde una planilla o un CSV.
+  /// Imports a table from a spreadsheet or a CSV.
   ///
-  /// **Son dos subidas del mismo archivo, con una espera en el medio**, porque
-  /// asi lo parte el backend:
+  /// **They're two uploads of the same file, with a wait in between**,
+  /// because that's how the backend splits it:
   ///
-  /// 1. `POST /tables/import/structure/<formato>/` crea la tabla con las
-  ///    columnas de la fila de encabezados y devuelve su id **en el acto**. No
-  ///    guarda ni una fila de datos, y las columnas nacen todas en `text`: que
-  ///    tipo tiene cada una no lo dice el encabezado, hay que mirar los valores
-  ///    y preguntarle a un modelo, y eso el backend lo hace **detras de la
-  ///    respuesta**. Cuando termina avisa por socket (`table/ready`, ver
-  ///    [TableReadyModel]) y de paso deja puesta la columna de imagen.
-  /// 2. `POST /tables/import/records/<formato>/` sube el archivo otra vez, ahora
-  ///    contra esa tabla, y carga todo lo que hay debajo del encabezado. Las
-  ///    columnas se emparejan **por nombre**, asi que esta pasada no depende de
-  ///    en que orden quedaron los campos.
+  /// 1. `POST /inventory/products/import/structure/<format>/` creates the
+  ///    table with the columns from the header row and returns its id **on
+  ///    the spot**. It doesn't save a single data row, and columns are all
+  ///    born as `text`: what type each one has isn't told by the header,
+  ///    the values have to be looked at and a model asked, and the backend
+  ///    does that **behind the response**. When it's done it signals over
+  ///    socket (`table/ready`, see [TableReadyModel]) and along the way sets
+  ///    up the image column.
+  /// 2. `POST /inventory/products/import/records/<format>/` uploads the file
+  ///    again, now against that table, and loads everything under the
+  ///    header. Columns are matched **by name**, so this pass doesn't depend
+  ///    on what order the fields ended up in.
   ///
-  /// **La segunda subida espera al aviso de la primera**, y eso no es prolijidad
-  /// sino la unica forma de que la tabla quede bien: cada fila se guarda —y se
-  /// indexa para la busqueda semantica— con el tipo que la columna tiene **en
-  /// ese momento**. Subirlas antes las dejaria a todas como texto contra
-  /// columnas que van a ser numeros, fechas o precios, y sin un solo vector
-  /// generado: el backend no vuelve a pasar por ellas (normaliza con
-  /// `reindex: false`, justamente porque cuenta con que las filas todavia no
-  /// estan). Si el aviso no llega —la conexion en tiempo real esta caida— se
-  /// sube igual pasado [_kReadyTimeout]: una tabla con los tipos a medio poner
-  /// es mejor que una importacion que nunca termina.
+  /// **The second upload waits for the first one's notice**, and that isn't
+  /// tidiness but the only way for the table to come out right: each row is
+  /// saved —and indexed for semantic search— with the type the column has
+  /// **at that moment**. Uploading them earlier would leave them all as text
+  /// against columns that are going to be numbers, dates or prices, and with
+  /// not a single embedding generated: the backend doesn't pass over them
+  /// again (it normalizes with `reindex: false`, precisely because it counts
+  /// on the rows not being there yet). If the notice never arrives —the
+  /// realtime connection is down— it uploads anyway once [_kReadyTimeout]
+  /// passes: a table with its types half set is better than an import that
+  /// never finishes.
   ///
-  /// Por eso **la llamada vuelve apenas existe la tabla** y el resto sigue solo:
-  /// entre las dos subidas hay medio minuto largo, y dejar la pantalla colgada
-  /// de eso seria hacerle esperar a quien importa lo mismo que el backend
-  /// decidio no hacerle esperar. En que anda cada una lo cuenta
-  /// [importStage], que es lo que muestra el listado.
+  /// That's why **the call returns as soon as the table exists** and the rest
+  /// keeps going on its own: there's a good half a minute between the two
+  /// uploads, and leaving the screen hanging on that would make whoever's
+  /// importing wait for exactly what the backend decided not to make them
+  /// wait for. What each one is up to is told by [importStage], which is what
+  /// the list shows.
   ///
-  /// El archivo viaja entero las dos veces: es el precio de que el backend no
-  /// guarde nada entre una llamada y la otra, y a cambio no hay archivos a medio
-  /// subir del otro lado si la segunda no sale.
+  /// The file travels whole both times: it's the price paid for the backend
+  /// not keeping anything between one call and the other, and in exchange
+  /// there are no half-uploaded files on the other side if the second one
+  /// fails.
   ///
-  /// [headerRow] es cual de las filas del archivo trae los nombres de las
-  /// columnas (1-based). Se manda siempre, aunque sea la primera, para no
-  /// depender del valor por defecto del backend.
+  /// [headerRow] is which of the file's rows carries the column names
+  /// (1-based). It's always sent, even when it's the first one, so as not to
+  /// depend on the backend's default.
   ///
-  /// A que endpoint se sube lo decide la extension ([importFormatOf]); un
-  /// archivo que no sea planilla ni CSV no se sube (`unsupported`), porque no
-  /// habria a cual de los dos mandarlo.
+  /// Which endpoint it uploads to is decided by the extension
+  /// ([importFormatOf]); a file that's neither spreadsheet nor CSV isn't
+  /// uploaded (`unsupported`), since there'd be neither of the two to send it
+  /// to.
   ///
-  /// Como el alta, invalida la cache del listado en cuanto la tabla existe —
-  /// tambien si despues fallan las filas, porque la tabla vacia ya esta creada y
-  /// tiene que aparecer.
+  /// Like creation, it invalidates the list cache as soon as the table
+  /// exists —also if the rows fail afterward, because the empty table is
+  /// already created and has to show up.
   Future<TableImportResult> import(
     BuildContext context,
     File file, {
@@ -411,9 +489,10 @@ class TablesService extends ChangeNotifier {
     final format = importFormatOf(file.path);
     if (format == null) return TableImportResult.unsupported;
 
-    // Los dos avisos del final se arman **antes** de subir nada, con el unico
-    // contexto que se sabe montado: el que queda es de una pantalla que para
-    // entonces puede haberse ido, y no serviria ni para traducirlos.
+    // The two final notices are built **before** anything is uploaded, with
+    // the only context known to still be mounted: the one left over belongs
+    // to a screen that may be gone by then, and wouldn't even be usable to
+    // translate them.
     final done = S.of(context).import_table_done;
     final failure = S.of(context).import_table_partial;
 
@@ -422,12 +501,13 @@ class TablesService extends ChangeNotifier {
 
     try {
       final response = await api.file(
-        path: "/tables/import/structure/${format.segment}/",
+        path: "/inventory/products/import/structure/${format.segment}/",
         version: "v1",
         file: file,
         field: _kImportField,
-        // Un nombre vacio no se manda: mandarlo taparia el que el backend saca
-        // del archivo y la tabla nacería llamandose "table".
+        // An empty name isn't sent: sending it would cover up the one the
+        // backend pulls from the file, and the table would be born called
+        // "table".
         data: {if (name.isNotEmpty) "NAME": name, "ROW": "$headerRow"}
       );
 
@@ -440,15 +520,17 @@ class TablesService extends ChangeNotifier {
       return TableImportResult.failed;
     }
 
-    // La tabla ya existe aunque las filas todavia no: la cache vence aca y no
-    // recien al final, para que un fallo de la segunda subida igual muestre la
-    // tabla creada en vez de esconderla hasta la proxima recarga.
+    // The table already exists even though its rows don't yet: the cache
+    // expires here and not only at the end, so a failure in the second
+    // upload still shows the created table instead of hiding it until the
+    // next reload.
     _status = TablesStatus.idle;
     _importing[tableId] = TableImportStage.preparing;
     notifyListeners();
 
-    // Sin `await` a proposito: lo que sigue es la espera del backend y la
-    // segunda subida, y quien importo no tiene que quedarse mirandolas.
+    // No `await` on purpose: what follows is the wait on the backend and the
+    // second upload, and whoever imported doesn't have to stay watching
+    // them.
     unawaited(_importRecords(
       tableId: tableId,
       file: file,
@@ -461,17 +543,18 @@ class TablesService extends ChangeNotifier {
     return TableImportResult.started;
   }
 
-  /// La segunda mitad de la importacion, la que corre sola: esperar a que el
-  /// backend termine de preparar la tabla y recien ahi subirle las filas.
+  /// The second half of the import, the one that runs on its own: waiting
+  /// for the backend to finish preparing the table and only then uploading
+  /// its rows.
   ///
-  /// Se avisa con la bandera flotante y no devolviendo nada porque para cuando
-  /// esto termina la pantalla que lo disparo puede no existir; por eso tambien
-  /// los textos llegan ya traducidos y la bandera se cuelga del navegador
-  /// (`FloatFlag.of()` sin contexto).
+  /// It notifies with the floating banner and returns nothing because by the
+  /// time this finishes the screen that triggered it may no longer exist;
+  /// that's also why the texts arrive already translated and the banner
+  /// hangs off the navigator (`FloatFlag.of()` with no context).
   ///
-  /// Se abandona sin ruido si la importacion dejo de estar anotada: eso pasa
-  /// cuando se cierra la sesion o se cambia de empresa mientras se esperaba, y
-  /// ahi ya no hay a que tabla subirle nada.
+  /// It gives up quietly if the import stopped being registered: that
+  /// happens when the session closes or the business changes while it was
+  /// waiting, and by then there's no table left to upload anything to.
   Future<void> _importRecords({
     required String tableId,
     required File file,
@@ -491,7 +574,7 @@ class TablesService extends ChangeNotifier {
 
     try {
       await api.file(
-        path: "/tables/import/records/${format.segment}/",
+        path: "/inventory/products/import/records/${format.segment}/",
         version: "v1",
         file: file,
         field: _kImportField,
@@ -514,11 +597,13 @@ class TablesService extends ChangeNotifier {
     await _reload();
   }
 
-  /// Espera el `table/ready` de [tableId], o se rinde pasado [_kReadyTimeout].
+  /// Waits for [tableId]'s `table/ready`, or gives up once [_kReadyTimeout]
+  /// passes.
   ///
-  /// Devuelve `null` cuando se rindio: no es un fallo del que haya que avisar
-  /// —la tabla esta creada y el backend la preparo o no, pero eso ya no depende
-  /// de aca— sino la señal de seguir sin el aviso.
+  /// Returns `null` when it gave up: that's not a failure that needs
+  /// reporting —the table is created and the backend either prepared it or
+  /// not, but that no longer depends on this side— but the signal to keep
+  /// going without the notice.
   Future<TableReadyModel?> _awaitReady(String tableId) {
     final completer = Completer<TableReadyModel?>();
     _pending[tableId] = completer;
@@ -529,17 +614,58 @@ class TablesService extends ChangeNotifier {
     });
   }
 
-  /// El aviso de que una tabla quedo lista.
+  /// The notice that the backend started preparing a table.
   ///
-  /// Si es de una importacion que salio de aca, lo unico que hace es destrabar
-  /// la espera: quien la sigue es [_importRecords], que despues de subir las
-  /// filas recarga el listado una sola vez. Si no —la importo otro dispositivo,
-  /// o se pidio normalizar la tabla desde otro lado— no hay a quien destrabar y
-  /// lo unico que se puede hacer es traer el listado de nuevo: esa tabla acaba
-  /// de ganar tipos y una columna mas.
+  /// It's what marks a table as still being built **without this side having
+  /// imported it**: the spreadsheet went up from another device or another
+  /// tab, and until now the only trace of that here was a table that looked
+  /// finished and opened empty.
+  ///
+  /// An import running from here already marked it, and by now may be
+  /// further along than this event says (uploading its rows): its stage is
+  /// left alone, since going back to `preparing` would be undoing what this
+  /// side knows first-hand.
+  ///
+  /// The table is almost never in the list yet —the event travels right
+  /// behind the import that created it— so the list is fetched again, which
+  /// is what makes it **show up while it's being prepared** instead of after.
+  void _onNormalizing(dynamic data) {
+    final report = TableNormalizingModel.fromEvent(data);
+    if (report.isEmpty) return;
+
+    if (_importing.containsKey(report.id)) {
+      notifyListeners();
+      return;
+    }
+
+    _importing[report.id] = TableImportStage.preparing;
+
+    _watching.remove(report.id)?.cancel();
+    _watching[report.id] = Timer(_kReadyTimeout, () => _giveUp(report.id));
+
+    if (_tables.any((table) => table.id == report.id)) {
+      notifyListeners();
+      return;
+    }
+
+    _reload();
+  }
+
+  /// The notice that a table became ready.
+  ///
+  /// If it belongs to an import that started here, all it does is unblock the
+  /// wait: [_importRecords] takes it from there —it's the one that clears the
+  /// stage, once the rows are up— and reloads the list once.
+  ///
+  /// If not —another device imported it, or normalizing the table was
+  /// requested from elsewhere— the wait ends here: whatever [_onNormalizing]
+  /// marked is cleared, which is what opens the table again, and the list is
+  /// fetched: that table just gained types, names and one more column.
   void _onReady(dynamic data) {
     final report = TableReadyModel.fromEvent(data);
     if (report.isEmpty) return;
+
+    _watching.remove(report.id)?.cancel();
 
     final pending = _pending.remove(report.id);
 
@@ -548,15 +674,31 @@ class TablesService extends ChangeNotifier {
       return;
     }
 
+    _importing.remove(report.id);
+
     _reload();
   }
 
-  /// Vuelve a leer el listado si tiene sentido volver a leerlo.
+  /// Gives up on a table whose `table/ready` never arrived.
   ///
-  /// Solo cuando ya hay uno cargado: si esta vencido (`idle`) o nunca se leyo,
-  /// pedirlo aca seria una lectura para nadie —la seccion lo pide sola al
-  /// abrirse— y alcanza con avisar, que es lo que saca de la fila el cartel de
-  /// que la tabla se estaba armando.
+  /// The mark is dropped and the list reread, which is the honest answer: the
+  /// backend prepared that table or it did not, but from here there is no
+  /// longer any way to tell, and a table nobody can open is worse than one
+  /// that opens half done.
+  void _giveUp(String tableId) {
+    _watching.remove(tableId);
+
+    if (_importing.remove(tableId) == null) return;
+
+    _reload();
+  }
+
+  /// Reloads the list if rereading it makes sense.
+  ///
+  /// Only when one is already loaded: if it's stale (`idle`) or was never
+  /// read, requesting it here would be a read for no one —the section
+  /// requests it on its own when opened— and it's enough to just notify,
+  /// which is what clears the row's "table is still being built" banner.
   Future<void> _reload() {
     final businessId = _businessId;
 
@@ -569,13 +711,13 @@ class TablesService extends ChangeNotifier {
     return load(businessId, force: true);
   }
 
-  /// Vacia la cache. La llama el cierre de sesion, junto al resto de los
-  /// servicios de la sesion.
+  /// Empties the cache. Called on sign-out, along with the rest of the
+  /// session's services.
   ///
-  /// Se lleva tambien las importaciones a medio hacer, y eso es lo que las
-  /// corta: la que estuviera esperando el aviso del backend ve que ya no esta
-  /// anotada y se abandona sin subir nada. Subir las filas de una tabla de la
-  /// sesion que se acaba de cerrar no llegaria a ningun lado.
+  /// It also carries away half-done imports, and that's what cuts them off:
+  /// whichever one was waiting on the backend's notice sees it's no longer
+  /// registered and gives up without uploading anything. Uploading the rows
+  /// of a table from the session that just closed wouldn't reach anywhere.
   void clear() {
     _tables = const [];
     _status = TablesStatus.idle;
@@ -586,17 +728,26 @@ class TablesService extends ChangeNotifier {
 
   @override
   void dispose() {
-    _unlisten?.call();
-    _unlisten = null;
+    for (final unlisten in _unlisten) {
+      unlisten();
+    }
+
+    _unlisten = const [];
     _abandon();
     super.dispose();
   }
 
-  /// Suelta las importaciones pendientes: destraba a las que esperan (con
-  /// `null`, que es "segui sin el aviso") y borra en que andaban, que es lo que
-  /// las hace abandonar.
+  /// Releases pending imports: unblocks the ones waiting (with `null`, which
+  /// means "keep going without the notice") and clears what they were up to,
+  /// which is what makes them give up.
   void _abandon() {
     _importing.clear();
+
+    for (final timer in _watching.values) {
+      timer.cancel();
+    }
+
+    _watching.clear();
 
     for (final completer in _pending.values) {
       if (!completer.isCompleted) completer.complete(null);
@@ -605,16 +756,17 @@ class TablesService extends ChangeNotifier {
     _pending.clear();
   }
 
-  /// Muestra un error de una operacion sobre las tablas.
+  /// Shows an error from an operation on tables.
   ///
-  /// Nunca se cae en silencio: si el error no trae nada mostrable, igual se
-  /// avisa. Un `action` es una instruccion de navegacion (por ejemplo, sesion
-  /// vencida): se relanza tal cual para que la maneje quien corresponda, asi que
-  /// esta llamada puede no volver.
+  /// It never fails silently: if the error brings nothing showable, it still
+  /// notifies. An `action` is a navigation instruction (an expired session,
+  /// for example): it's rethrown as-is so whoever should handle it does, so
+  /// this call may not return.
   ///
-  /// Quien lo llama comprueba antes que la pantalla siga montada: con el arbol
-  /// desmontado no hay a quien avisarle, y que decidir en ese caso —relanzar,
-  /// devolver un resultado— es cosa de cada operacion.
+  /// Whoever calls it checks beforehand that the screen is still mounted:
+  /// with the tree unmounted there's no one to notify, and deciding what to
+  /// do in that case —rethrow, return a result— is each operation's own
+  /// call.
   void _report(BuildContext context, Object error) {
     if (error is Map && error["action"] != null) throw error["action"];
 
@@ -623,10 +775,10 @@ class TablesService extends ChangeNotifier {
     );
   }
 
-  /// Lee el identificador de la tabla de la respuesta del alta.
+  /// Reads the table's identifier from the creation response.
   ///
-  /// El backend puede devolver el id pelado (`5`, `"5"`) o envuelto en un objeto
-  /// (`{"id": 5}`), asi que se contemplan las dos formas antes de rendirse.
+  /// The backend can return the bare id (`5`, `"5"`) or wrapped in an object
+  /// (`{"id": 5}`), so both forms are checked before giving up.
   String _readId(dynamic response) {
     if (response is Map) {
       final id = response["id"] ?? response["table_id"] ?? response["ID"];

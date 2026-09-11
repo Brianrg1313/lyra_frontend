@@ -9,35 +9,49 @@ import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
 import 'package:app/toolkit/api.dart';
 
-/// Estado de la lectura del detalle de una tabla
-/// (`GET /tables/details/<table_id>`).
+/// State of the read of a table's detail
+/// (`GET /inventory/products/builder/details/<table_id>`).
 enum TableDetailStatus { idle, loading, ready, error }
 
-/// El detalle de una tabla abierta en su pantalla de ajustes: su cabecera, sus
-/// columnas, cuantos registros tiene y que bots la leen.
+/// The detail of a table opened in its settings screen: its header, its
+/// columns, how many records it has, and which bots read it.
 ///
-/// **No se cachea, y es a proposito.** Es lo contrario de [TablesService]: el
-/// listado se mira todo el tiempo y casi no cambia, mientras que esto se abre
-/// cada tanto y justamente para verificar el estado de la tabla —cuantas filas
-/// entraron, cuando fue el ultimo cambio, quien la esta leyendo—. Una respuesta
-/// guardada de la visita anterior contestaria esas tres preguntas con datos
-/// viejos, que es peor que no contestarlas.
+/// **It isn't cached, and that's on purpose.** It's the opposite of
+/// [TablesService]: the list is looked at all the time and barely changes,
+/// while this is opened every so often and precisely to check the table's
+/// state —how many rows came in, when the last change was, who's reading
+/// it—. A saved response from the previous visit would answer those three
+/// questions with old data, which is worse than not answering them.
 ///
-/// Por lo mismo lo posee la pantalla y no el scope de la app: se crea al entrar
-/// y se descarta al salir, igual que [TableViewService].
+/// For the same reason it's owned by the screen and not the app's scope: it's
+/// created on entry and discarded on exit, same as [TableViewService].
 ///
-/// Una relectura sobre un detalle ya dibujado **no vuelve a la pantalla en
-/// blanco** ([isReloading]): se avisa arriba y lo que hay se queda donde esta.
-/// Es lo que permite refrescar sin que la pagina salte, que es lo unico que se
-/// hace desde aca.
+/// A reread over an already-drawn detail **doesn't go back to a blank
+/// screen** ([isReloading]): it's signaled up top and what's there stays
+/// where it is. It's what lets it refresh without the page jumping, which is
+/// the only thing done from here.
 class TableDetailService extends ChangeNotifier {
+  TableDetailService({this.onSummaryChanged});
+
+  /// Notice that a column changed in something the **inventory summary**
+  /// draws: whether it's in it or what type it is.
+  ///
+  /// The panel opens to the side, over the section where that summary keeps
+  /// showing (see `showTableSettings`), so switching on a column's checkbox
+  /// has to show up there right away and not only once the panel closes.
+  ///
+  /// It's a notice and not the summary's service: this doesn't know whether
+  /// one is watching —the same panel opens from the sheet too, where there
+  /// isn't one— nor is it its place to know.
+  final VoidCallback? onSummaryChanged;
+
   TableDetailStatus _status = TableDetailStatus.idle;
   TableDetailModel _detail = const TableDetailModel();
 
-  /// Tabla que se esta mirando. Vacio hasta el primer [load].
+  /// Table being looked at. Empty until the first [load].
   String _tableId = "";
 
-  /// `true` mientras una lectura sobre un detalle ya dibujado esta en camino.
+  /// `true` while a read over an already-drawn detail is in flight.
   bool _reloading = false;
 
   TableDetailStatus get status => _status;
@@ -45,11 +59,11 @@ class TableDetailService extends ChangeNotifier {
   String get tableId => _tableId;
   bool get isReloading => _reloading;
 
-  /// Lee el detalle de [tableId].
+  /// Reads [tableId]'s detail.
   ///
-  /// Es la unica lectura de la pantalla: el endpoint junta en una sola
-  /// respuesta lo que vive en tres bases distintas, asi que no hay nada mas
-  /// que pedir despues.
+  /// It's the screen's only read: the endpoint gathers into a single response
+  /// what lives in three different stores, so there's nothing else to
+  /// request afterward.
   Future<void> load(String tableId) async {
     if (tableId.isEmpty) {
       _status = TableDetailStatus.error;
@@ -59,9 +73,9 @@ class TableDetailService extends ChangeNotifier {
 
     if (_status == TableDetailStatus.loading || _reloading) return;
 
-    // Ya hay un detalle dibujado: esto es una relectura, no una carga. Pasar
-    // por `loading` desmontaria la pagina entera —con su desplazamiento— por
-    // un refresco que casi siempre devuelve lo mismo.
+    // A detail is already drawn: this is a reread, not a load. Going through
+    // `loading` would unmount the whole page —with its scroll position— for
+    // a refresh that almost always returns the same thing.
     final reload = _status == TableDetailStatus.ready && _tableId == tableId;
 
     _tableId = tableId;
@@ -75,28 +89,30 @@ class TableDetailService extends ChangeNotifier {
 
     notifyListeners();
 
-    // Sin barra al final: el id es un segmento de la ruta (`params:
-    // ["TABLE_ID"]`), y una barra de mas lo dejaria vacio del otro lado.
+    // No trailing slash: the id is a path segment (`params:
+    // ["TABLE_ID"]`), and an extra slash would leave it empty on the other
+    // side.
     final data = await api
-      .get(path: "/tables/details/$tableId", version: "v1")
+      .get(path: "/inventory/products/builder/details/$tableId", version: "v1")
       .catchError((error) {
         if (kDebugMode) print("loadTableDetail failed: $error");
         return null;
       });
 
-    // La bandera se baja antes de mirar si la tabla cambio: soltarla despues
-    // dejaria una relectura descartada bloqueando para siempre a la siguiente,
-    // porque la guarda de arriba la mira para no pisar una lectura en curso.
+    // The flag is lowered before checking whether the table changed:
+    // releasing it later would leave a discarded reread blocking the next
+    // one forever, because the guard above checks it to avoid stepping on a
+    // read already in flight.
     _reloading = false;
 
-    // Mientras la lectura viajaba se pidio otra tabla: lo que llego es de la
-    // anterior y no tiene donde ir.
+    // Another table was requested while the read was traveling: what
+    // arrived belongs to the previous one and has nowhere to go.
     if (_tableId != tableId) return;
 
     if (data == null) {
-      // Una relectura que falla deja lo que ya habia: el detalle viejo sigue
-      // siendo el de la tabla, y tirarlo dejaria la pantalla en error por un
-      // refresco que no salio.
+      // A reread that fails leaves what was already there: the old detail is
+      // still the table's, and discarding it would leave the screen in
+      // error over a refresh that didn't go well.
       if (!reload) _status = TableDetailStatus.error;
 
       notifyListeners();
@@ -105,8 +121,8 @@ class TableDetailService extends ChangeNotifier {
 
     final detail = TableDetailModel.fromResponse(data);
 
-    // Una respuesta que no trae ni el id de la tabla no es un detalle: se
-    // trata como una lectura fallida en vez de dibujar una pantalla de huecos.
+    // A response that doesn't even bring the table's id isn't a detail: it's
+    // treated as a failed read instead of drawing a screen full of gaps.
     if (detail.isEmpty) {
       if (!reload) _status = TableDetailStatus.error;
 
@@ -120,38 +136,39 @@ class TableDetailService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vuelve a leer la tabla que se esta mirando.
+  /// Rereads the table being looked at.
   Future<void> refresh() => load(_tableId);
 
-  /// Reintenta despues de un error. Es [load] otra vez: la lectura fallida no
-  /// dejo nada que conservar.
+  /// Retries after an error. It's [load] again: the failed read left
+  /// nothing to keep.
   Future<void> retry() {
     if (_status == TableDetailStatus.error) _status = TableDetailStatus.idle;
     return load(_tableId);
   }
 
-  /// Cambia el nombre y/o la descripcion de la tabla que se esta mirando,
-  /// contra `PUT /tables/details/`.
+  /// Changes the name and/or description of the table being looked at,
+  /// against `PUT /inventory/products/builder/details/`.
   ///
-  /// Es una escritura **parcial**: viaja solo lo que se toco (ver
-  /// [editTableDetailsRequest]), asi que corregir la descripcion no reescribe
-  /// el nombre ni desconecta ningun canal. Esa es la diferencia con
-  /// `PUT /tables/structure/`, que es la caja de renombre de la planilla y por
-  /// eso pide el nombre siempre.
+  /// It's a **partial** write: only what was touched travels (see
+  /// [editTableDetailsRequest]), so correcting the description doesn't
+  /// rewrite the name nor disconnect any channel. That's the difference with
+  /// `PUT /inventory/products/builder/structure/`, which is the sheet's
+  /// rename box and so always asks for the name.
   ///
-  /// Lo escrito se pinta en el acto sobre el detalle que ya esta en pantalla y
-  /// recien despues se relee. Son dos cosas distintas: el texto nuevo ya se
-  /// sabe entero de este lado —lo acaba de escribir quien mira—, pero la fecha
-  /// de "estructura actualizada" la pone el backend al guardar, y esa fecha se
-  /// muestra en esta misma pagina. Sin la relectura quedaria contando el
-  /// cambio anterior justo al lado del que se acaba de hacer.
+  /// What was written is painted right away over the detail already on
+  /// screen, and only then is it reread. Those are two different things: the
+  /// new text is already fully known on this side —whoever's looking just
+  /// wrote it—, but the "structure updated" date is set by the backend on
+  /// save, and that date shows on this same page. Without the reread it
+  /// would be left showing the previous change right next to the one that
+  /// was just made.
   ///
-  /// La relectura no se espera: es una lectura cara (tres bases) y quien
-  /// guardo ya puede irse. Mientras viaja, la barra de arriba muestra que se
-  /// esta releyendo y la ficha se queda con lo que hay.
+  /// The reread isn't awaited: it's an expensive read (three stores) and
+  /// whoever saved can already leave. While it travels, the bar up top shows
+  /// it's reloading and the panel stays with what it has.
   ///
-  /// Devuelve `true` si el cambio entro. Ante un error muestra la bandera
-  /// flotante y devuelve `false`, con la ficha como estaba.
+  /// Returns `true` if the change went through. On error it shows the
+  /// floating banner and returns `false`, with the panel as it was.
   Future<bool> edit(
     BuildContext context, {
     String? name,
@@ -159,13 +176,14 @@ class TableDetailService extends ChangeNotifier {
   }) async {
     if (_tableId.isEmpty) return false;
 
-    // Nada que mandar. No es un error: es que quien llama no cambio ninguno de
-    // los dos textos, y el backend rechaza un cuerpo sin nada que escribir.
+    // Nothing to send. It's not an error: it's that whoever called didn't
+    // change either of the two texts, and the backend rejects a body with
+    // nothing to write.
     if (name == null && description == null) return false;
 
     try {
       await api.put(
-        path: "/tables/details/",
+        path: "/inventory/products/builder/details/",
         version: "v1",
         data: editTableDetailsRequest(
           id: _tableId,
@@ -181,8 +199,8 @@ class TableDetailService extends ChangeNotifier {
       return false;
     }
 
-    // Lo guardado viaja recortado, asi que la ficha muestra lo mismo que quedo
-    // del otro lado y no lo que se tipeo con espacios de mas.
+    // What's saved travels trimmed, so the panel shows the same thing that
+    // ended up on the other side and not what was typed with extra spaces.
     _detail = _detail.withText(
       name: name?.trim(),
       description: description?.trim()
@@ -190,52 +208,62 @@ class TableDetailService extends ChangeNotifier {
 
     notifyListeners();
 
-    // Ver la nota de arriba: la fecha del cambio la escribe el backend.
+    // See the note above: the change's date is set by the backend.
     unawaited(refresh());
 
     return true;
   }
 
-  /// Cambia el tipo, la visibilidad o las opciones de una columna, contra
-  /// `PUT /tables/fields/`.
+  /// Changes a column's type, visibility, options, or summary flag, against
+  /// `PUT /inventory/products/builder/fields/`.
   ///
-  /// Es la escritura de la lista de columnas de esta pantalla, donde cada
-  /// columna es una fila con sus tres desplegables. Solo viaja lo que se
-  /// eligio; el nombre va siempre porque el backend lo pide, asi que cambiarle
-  /// el tipo a una columna manda el nombre que ya tenia y no toca ni su
-  /// descripcion, ni su ancho, ni su lugar.
+  /// It's the write for this screen's column list, where each column is a
+  /// row with its three dropdowns and its summary checkbox. Only what was
+  /// chosen travels; the name always goes because the backend asks for it,
+  /// so changing a column's type sends the name it already had and touches
+  /// neither its description, its width, nor its position.
   ///
-  /// Es el mismo endpoint que usa la planilla ([TableViewService.editField]) y
-  /// no hay que sincronizar nada entre las dos: la planilla tiene su propio
-  /// servicio, que muere con la pantalla y vuelve a leer la estructura al
-  /// abrirse.
+  /// It's the same endpoint the sheet uses ([TableViewService.editField]) and
+  /// there's nothing to sync between the two: the sheet has its own service,
+  /// which dies with the screen and rereads the structure when it opens.
   ///
-  /// Lo elegido se pinta en el acto sobre la columna y despues se relee, por lo
-  /// mismo que en [edit]: el valor nuevo ya se sabe de este lado, pero las
-  /// cuentas de arriba —cuantas columnas de cada tipo, cuantas sin tipar, que
-  /// puede hacer el modelo con la tabla— las hace el backend y cambian con
-  /// esto. Un cambio de tipo ademas reescribe del otro lado los valores ya
-  /// cargados en esa columna, asi que la respuesta buena tampoco es el final de
-  /// la historia.
+  /// What was chosen is painted right away over the column and then reread,
+  /// for the same reason as in [edit]: the new value is already known on
+  /// this side, but the counts up top —how many columns of each type, how
+  /// many are still untyped, how many are in the summary, what the model can
+  /// do with the table— are computed by the backend and change with this. A
+  /// type change also rewrites the values already loaded in that column on
+  /// the other side, so a successful response isn't the end of the story
+  /// either.
   ///
-  /// Devuelve `true` si el cambio entro. Ante un error muestra la bandera
-  /// flotante y devuelve `false`, con la columna como estaba.
+  /// Returns `true` if the change went through. On error it shows the
+  /// floating banner and returns `false`, with the column as it was.
   Future<bool> editField(
     BuildContext context,
     TableDetailFieldModel field, {
     TableFieldType? type,
     TableFieldVisibility? visibility,
-    List<String>? options
+    List<String>? options,
+    String? unit,
+    bool? summary
   }) async {
-    // Sin FIELD_ID no hay columna que editar: es una columna que se leyo pero
-    // que el backend no identifico.
+    // Without a FIELD_ID there's no column to edit: it's a column that was
+    // read but that the backend didn't identify.
     if (field.id.isEmpty) return false;
 
-    if (type == null && visibility == null && options == null) return false;
+    // Nothing to write: none of the column's data was touched, and the
+    // backend rejects a body that changes nothing.
+    final untouched = type == null &&
+      visibility == null &&
+      options == null &&
+      unit == null &&
+      summary == null;
 
-    // Lo que de verdad va a quedar guardado: el cuerpo recorta las opciones y
-    // descarta las vacias, y la columna tiene que mostrar eso y no lo que se
-    // escribio.
+    if (untouched) return false;
+
+    // What actually ends up saved: the body trims the options and the unit
+    // and discards empty options, and the column has to show that and not
+    // what was typed.
     final saved = options == null
       ? null
       : [
@@ -243,16 +271,20 @@ class TableDetailService extends ChangeNotifier {
             if (option.trim().isNotEmpty) option.trim()
         ];
 
+    final symbol = unit?.trim();
+
     try {
       await api.put(
-        path: "/tables/fields/",
+        path: "/inventory/products/builder/fields/",
         version: "v1",
         data: editFieldRequest(
           id: field.id,
           name: field.name,
           type: type?.value,
           visibility: visibility?.value,
-          options: saved
+          summary: summary,
+          options: saved,
+          unit: symbol
         )
       );
     } catch (error) {
@@ -266,21 +298,32 @@ class TableDetailService extends ChangeNotifier {
     _detail = _detail.withField(field.withEdits(
       type: type,
       visibility: visibility,
-      options: saved
+      options: saved,
+      unit: symbol,
+      summary: summary
     ));
 
     notifyListeners();
 
-    // Ver la nota de arriba: las cuentas de la ficha las hace el backend.
+    // The inventory summary draws the columns that have their flag switched
+    // on and writes each value according to its own type and unit, so those
+    // three changes have to show up there right away. Visibility and options
+    // mean nothing to it —one is what the model sees and the other is what
+    // a list offers on load— and that's why they don't move it.
+    if (summary != null || type != null || unit != null) {
+      onSummaryChanged?.call();
+    }
+
+    // See the note above: the panel's counts are computed by the backend.
     unawaited(refresh());
 
     return true;
   }
 
-  /// Muestra el error de una escritura como lo muestra el resto de los
-  /// servicios: la bandera flotante con lo que el backend haya dicho, y el
-  /// crudo por consola aunque se haya mostrado (el texto de pantalla suele ir
-  /// recortado).
+  /// Shows a write's error the same way the rest of the services do: the
+  /// floating banner with whatever the backend said, and the raw one to the
+  /// console even when it was shown (the on-screen text is usually
+  /// trimmed).
   void _report(BuildContext context, Object error) {
     if (error is Map && error["action"] != null) throw error["action"];
 

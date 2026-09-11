@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 
-/// La respuesta de `GET /tables/structure/<UUID>` tal cual la define el
+/// La respuesta de `GET /inventory/products/builder/structure/<UUID>` tal cual la define el
 /// contrato: la cabecera de la tabla y sus campos en forma columnar.
 Map<String, dynamic> get _response => {
   "id": "8f2c1a90-3d7b-4e21-9c55-6ab0f1d2e4c7",
@@ -15,8 +15,8 @@ Map<String, dynamic> get _response => {
   "fields": {
     "keys": ["id", "name", "type"],
     "values": [
-      ["a1b2c3d4-1111-4aaa-8bbb-000000000001", "Nombre", "vector"],
-      ["a1b2c3d4-1111-4aaa-8bbb-000000000002", "Descripción", "vector"],
+      ["a1b2c3d4-1111-4aaa-8bbb-000000000001", "Nombre", "title"],
+      ["a1b2c3d4-1111-4aaa-8bbb-000000000002", "Descripción", "description"],
       ["a1b2c3d4-1111-4aaa-8bbb-000000000003", "Precio", "price"],
       ["a1b2c3d4-1111-4aaa-8bbb-000000000004", "Existencias", "stock"],
       ["a1b2c3d4-1111-4aaa-8bbb-000000000005", "Activo", "boolean"],
@@ -47,7 +47,7 @@ void main() {
       );
       expect(
         [for (final field in structure.fields) field.type],
-        ["vector", "vector", "price", "stock", "boolean", "date"]
+        ["title", "description", "price", "stock", "boolean", "date"]
       );
       expect(
         structure.fields.first.id,
@@ -71,7 +71,7 @@ void main() {
       final structure = TableStructureModel.fromResponse({
         ..._response,
         "fields": [
-          {"id": "f1", "name": "Nombre", "type": "vector"},
+          {"id": "f1", "name": "Nombre", "type": "title"},
           {"id": "f2", "name": "Precio", "type": "price"}
         ]
       });
@@ -103,7 +103,7 @@ void main() {
         "fields": {
           "keys": ["id", "name", "type", "width"],
           "values": [
-            ["f1", "Nombre", "vector", 240],
+            ["f1", "Nombre", "title", 240],
             ["f2", "Precio", "price", null]
           ]
         }
@@ -138,8 +138,8 @@ void main() {
         "fields": {
           "keys": ["id", "name", "type", "options"],
           "values": [
-            ["f1", "Color", "select", ["Rojo", "Verde"]],
-            ["f2", "Talle", "select", []],
+            ["f1", "Color", "options", ["Rojo", "Verde"]],
+            ["f2", "Talle", "options", []],
             ["f3", "Precio", "price", null]
           ]
         }
@@ -189,7 +189,7 @@ void main() {
         ..._response,
         "fields": {
           "keys": ["id", "name", "type"],
-          "values": [["f1", "", "vector"]]
+          "values": [["f1", "", "title"]]
         }
       });
 

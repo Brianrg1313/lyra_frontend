@@ -9,10 +9,10 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channel_provider_model.dart';
 import 'package:app/services/channels/channels_service.dart';
+import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
-import 'package:core/form.dart';
 import 'package:core/button.dart';
 import 'package:app/screens/home/sections/business_listener.dart';
 import 'package:app/screens/home/sections/section_message.dart';
@@ -20,47 +20,46 @@ import 'package:app/screens/home/sections/section_message.dart';
 import 'blocks/agent_picker.dart';
 import 'blocks/credentials_block.dart';
 import 'blocks/data_picker.dart';
+import 'blocks/payment_picker.dart';
 import 'blocks/provider_picker.dart';
 import 'blocks/tools_picker.dart';
-import 'widgets/form_block.dart';
 import 'widgets/missing_banner.dart';
 import 'state/channel_form_controller.dart';
 
-/// Alta y edicion de un canal. Es una sub-pagina de la seccion `channels`
-/// (`parents: ["channels"]`): se abre desde el listado y comparte el shell del
-/// home, por lo que la opcion del side bar sigue marcada.
+/// Editing an already-connected channel. It is a sub-page of the `channels`
+/// section (`parents: ["channels"]`): it opens from the table settings panel
+/// (which channel reads this table) and shares the home shell, so the
+/// sidebar option stays highlighted.
 ///
-/// Es una pagina y no un modal —a diferencia del alta de una tabla— porque son
-/// cinco decisiones y un formulario de credenciales entero: que red se conecta,
-/// que hace el agente que atiende, de donde saca los datos, que puede procesar
-/// y con que tokens entra. Ademas esos tokens se copian y pegan desde la
-/// consola de Meta, en otra ventana, y un modal se cierra de un clic afuera.
+/// **Creating one is not here any more.** It moved to a side panel
+/// (`showCreateChannel`, in `lib/screens/modals/channels/create_channel`): a create
+/// starts from nothing and fits a panel; an edit opens against a channel that
+/// already has credentials, a role, sources and possibly things missing, and
+/// reads better as its own page. The two used to be the same screen, told
+/// apart by whether the URL carried an id.
 ///
-/// **Es la misma pantalla para las dos cosas.** Que sea un alta o una edicion
-/// lo decide la URL: `/home/channels/new` no trae id y `/home/channels/:id` si.
-/// El id se lee de [Navis.currentArgs] y no por constructor porque la
-/// sub-pagina reusa la unica pagina del shell y el `Navigator` no reconstruye
-/// el arbol al navegar.
+/// It is a page and not a modal because it is a whole credentials form: what
+/// the answering agent does, where it gets its data, what it can process and
+/// with what tokens it logs in — those tokens are copied and pasted from the
+/// Meta console, in another window, and a modal closes with a click outside.
 ///
-/// Editando, la pantalla espera a que llegue el canal antes de dibujar nada: su
-/// configuracion es la que llena los campos, y montar el formulario vacio para
-/// llenarlo despues haria saltar el texto un frame mas tarde. Un alta no espera
-/// nada.
+/// The channel id is read from [Navis.currentArgs] and not by constructor
+/// because the sub-page reuses the shell's single page and the `Navigator`
+/// does not rebuild the tree on navigation. The screen waits for it to arrive
+/// before drawing anything: its configuration is what fills the fields, and
+/// mounting the empty form to fill it later would make it jump a frame later.
 ///
-/// Lo que **no** se puede hacer editando es cambiar la red. Los secretos
-/// guardados se juntaron para una, y apuntarlos a otra dejaria valores que ahi
-/// no significan nada: la otra red es un canal nuevo.
+/// What **cannot** be done here is changing the network. The stored secrets
+/// were gathered for one, and pointing them at another would leave values
+/// that mean nothing there: the other network is a new channel.
 ///
-/// El estado vive en [ChannelFormController], fuera de los widgets, para que
-/// cada bloque escuche solo lo suyo: elegir una herramienta no puede repintar
-/// los quince campos de credenciales de al lado.
+/// The state lives in [ChannelFormController], outside the widgets, so each
+/// block only listens to its own: choosing a tool cannot repaint the fifteen
+/// credential fields next to it.
 class ChannelFormSection extends StatefulWidget {
   const ChannelFormSection({super.key});
 
-  /// Key de la ruta del alta (`/home/channels/new`).
-  static const String createRouteKey = "channel_new";
-
-  /// Key de la ruta de la edicion (`/home/channels/:id`).
+  /// Route key of the edit (`/home/channels/:id`).
   static const String editRouteKey = "channel_detail";
 
   @override
@@ -71,83 +70,61 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
     with BusinessListener<ChannelFormSection> {
   late final ChannelFormController _controller;
 
-  /// Nombre del canal. Es lo unico que el backend exige de verdad, con el mismo
-  /// largo y los mismos caracteres que acepta del otro lado: letras, numeros,
-  /// espacios, guiones y guion bajo. Un nombre con parentesis o barras lo
-  /// rechazaria la api, asi que se frena aca con un mensaje que se entiende.
-  static const _namePattern = "[A-Za-zÀ-ÖØ-öø-ÿ0-9 _\\-]";
-
-  late final _name = InputController(
-    key: "NAME",
-    form: _controller.headerForm,
-    pattern: _namePattern,
-    min: 2,
-    max: 64,
-    obligatory: true,
-    initial: _controller.initialName,
-    customErrors: {
-      InputError.empty: S.of(context).form_empty_ma(S.of(context).channel_name_input),
-      InputError.invalid: S.of(context).form_invalid_ma(S.of(context).channel_name_input),
-      InputError.long: S.of(context).form_long_ma(S.of(context).channel_name_input),
-      InputError.incomplete: S.of(context).form_incomplete_ma(S.of(context).channel_name_input)
-    }
-  );
-
-  /// Descripcion opcional: sin `obligatory`, solo se valida el largo.
-  late final _description = InputController(
-    key: "DESCRIPTION",
-    form: _controller.headerForm,
-    max: 255,
-    initial: _controller.initialDescription,
-    customErrors: {
-      InputError.long: S.of(context).form_long_ma(S.of(context).channel_description_input)
-    }
-  );
+  /// The company's payment accounts, which are the payment block's options.
+  ///
+  /// Owned by the page and not registered app-wide for the same reason the
+  /// finance section owns its own copy: they are the active company's, and a
+  /// cache that outlived a company switch would offer another one's accounts.
+  /// This page goes back to the list when the company changes anyway.
+  final MoneyMethodsService _methods = MoneyMethodsService();
 
   @override
   void initState() {
     super.initState();
 
-    // El id vive en la URL: sin el, esto es un alta.
     _controller = ChannelFormController(
       channelId: Navis.currentArgs?["id"] ?? ""
     );
 
-    // Las cargas notifican a sus oyentes; se difieren al primer frame para no
-    // disparar un rebuild mientras el arbol todavia se esta montando.
+    // Loads notify their listeners; they are deferred to the first frame so a
+    // rebuild is not triggered while the tree is still mounting.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      // El catalogo dibuja el formulario entero (que campos pide cada red), asi
-      // que sin el no hay pantalla. Normalmente ya lo pidio el listado.
+      // The catalog draws the whole form (what fields each network asks for), so
+      // without it there is no screen. Normally the list already requested it.
       context.read<ChannelCatalogService>().load();
 
-      // Las tablas de productos son la fuente de datos elegible: se piden a la
-      // misma cache que usa la seccion de productos, asi que si ya se visito,
-      // esto no le pega al backend.
+      // The product tables are the selectable data source: they are requested
+      // from the same cache the products section uses, so if it was already
+      // visited this does not hit the backend.
       context.read<TablesService>().load(
         context.read<BusinessService>().active.id
       );
+
+      // What the channel may tell a customer to pay into.
+      _methods.load();
 
       if (_controller.isEditing) _open();
     });
   }
 
-  /// El canal que se esta editando es de la empresa que estaba activa: su id no
-  /// significa nada en la que se acaba de elegir. Se vuelve al listado, que es
-  /// lo unico que se puede mostrar de la empresa nueva.
+  /// The channel being edited belongs to the previously active business: its id
+  /// means nothing in the one just chosen. It goes back to the list, which is
+  /// the only thing that can be shown of the new business.
   @override
   void onBusinessChanged(String businessId) => _back();
 
   @override
   void dispose() {
     _controller.dispose();
+    _methods.dispose();
     super.dispose();
   }
 
-  /// Lee el canal que se va a editar. Trae su configuracion, que secretos ya
-  /// tiene guardados y la descripcion de su proveedor, todo en una sola
-  /// lectura.
+  /// Reads the channel to be edited. It brings its configuration, what secrets
+  /// it already has stored and its provider's description, all in a single
+  /// read.
   Future<void> _open() async {
     final channel = await context
       .read<ChannelsService>()
@@ -165,7 +142,14 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
   }
 
   @override
-  Widget build(BuildContext context) => Surface(
+  Widget build(BuildContext context) =>
+    ChangeNotifierProvider<MoneyMethodsService>.value(
+      value: _methods,
+      child: _page(context)
+    );
+
+  /// The page itself, under the accounts provider.
+  Widget _page(BuildContext context) => Surface(
     padding: EdgeInsets.all(AppSize.padding),
     child: Column(children: [
       _header(context),
@@ -189,11 +173,11 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
     ])
   );
 
-  /// Barra superior: volver al listado, el titulo y el boton de guardar.
+  /// Top bar: back to the list, the title and the save button.
   ///
-  /// El titulo de una edicion es el nombre que el canal tenia **al abrirlo** y
-  /// no lo que se este escribiendo en el campo: si siguiera al input, renombrar
-  /// el canal reescribiria el encabezado letra por letra.
+  /// The title of an edit is the name the channel had **when opened** and not
+  /// what is being typed in the field: if it followed the input, renaming the
+  /// channel would rewrite the header letter by letter.
   Widget _header(BuildContext context) => Row(children: [
     FeedbackButton(
       action: _back,
@@ -207,9 +191,9 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
     ),
     SizedBox(width: AppSize.spaceS),
     Expanded(child: TextMedium(
-      _controller.isEditing && _controller.initialName.isNotEmpty
+      _controller.initialName.isNotEmpty
         ? _controller.initialName
-        : S.of(context).create_channel,
+        : S.of(context).edit_channel,
       bold: true,
       ellipsis: true
     )),
@@ -217,8 +201,8 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
     ValueListenableBuilder<ChannelFormStatus>(
       valueListenable: _controller.status,
       builder: (context, status, _) => status != ChannelFormStatus.ready
-        // Sin formulario no hay nada que guardar: el boton no se muestra
-        // apagado, no se muestra.
+        // Without the form there is nothing to save: the button is not shown
+        // disabled, it is not shown.
         ? const SizedBox.shrink()
         : SizedBox(
             width: AppSize.action * 4,
@@ -231,69 +215,49 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
     )
   ]);
 
-  /// Ancho a partir del cual el formulario se abre en dos columnas.
+  /// Width from which the form opens in two columns.
   static double get _twoColumns => AppSize.action * 16;
 
-  /// El formulario, partido en dos mitades que se leen por separado: **a que se
-  /// conecta** (como se llama, que red, con que credenciales) y **como
-  /// atiende** (que hace el agente, de donde saca los datos, que puede
-  /// procesar).
+  /// The form, split into two halves that read separately: **what it connects
+  /// to** (what network, with what credentials) and **how it answers** (what
+  /// the agent does, where it gets its data, what it can process).
   ///
-  /// El corte no es solo para llenar el ancho. Los seis bloques en una sola
-  /// columna obligan a bajar hasta el final para llegar a las credenciales, que
-  /// es a lo que se vuelve cuando el canal quedo a medio configurar; asi quedan
-  /// arriba, del lado de la red que las pide.
+  /// The split is not just to fill the width. Five blocks in a single column
+  /// force scrolling to the end to reach the credentials, which is what one
+  /// comes back to when the channel was left half configured; this way they
+  /// stay up top, on the side of the network that asks for them.
   ///
-  /// En angosto se apilan en el orden en que se decide un canal, que es el
-  /// mismo de arriba leido de corrido.
+  /// When narrow they stack in the order a channel is decided, which is the
+  /// same order as above read straight through.
   ///
-  /// Las dos mitades van siempre en el mismo [Wrap] y lo unico que cambia con
-  /// el ancho es **cuanto mide cada una**: enteras se acomodan una debajo de la
-  /// otra, a la mitad entran lado a lado. No se arma un `Row` cuando hay lugar
-  /// y una `Column` cuando no, y no es por gusto: cambiar la forma del arbol al
-  /// cruzar el ancho desmonta y vuelve a montar los inputs, y un
-  /// [InputController] no sobrevive a eso —los widgets de `core` le asignan su
-  /// validacion al montarse y el campo es de una sola escritura—. Estirar la
-  /// ventana rompia el formulario.
+  /// Both halves always go in the same [Wrap] and the only thing that changes
+  /// with the width is **how much each one measures**: whole they stack one
+  /// below the other, at half they fit side by side. A `Row` is not built when
+  /// there is room and a `Column` when there is not, and not for fun: changing
+  /// the tree's shape when crossing the width unmounts and remounts the
+  /// inputs, and an [InputController] does not survive that —the `core`
+  /// widgets assign their validation on mount and the field is
+  /// single-write—. Stretching the window broke the form.
   Widget _body() => LayoutBuilder(builder: (context, constraints) {
-    // Un ancho sin medida no puede pasar a las mitades: se toma el minimo para
-    // partir, que deja una sola columna.
+    // An unmeasured width cannot be passed to the halves: the minimum for
+    // splitting is taken, which leaves a single column.
     final available = constraints.maxWidth.isFinite
       ? constraints.maxWidth
       : _twoColumns - 1;
 
     final split = available >= _twoColumns;
 
-    // Al piso: dos mitades que sumen un pelo mas que el ancho por el redondeo
-    // del punto flotante no entran en la misma fila, y el [Wrap] baja la
-    // segunda —una columna cuando habia lugar para dos.
+    // Floored: two halves that add up to a hair over the width due to
+    // floating-point rounding do not fit in the same row, and the [Wrap]
+    // drops the second one —one column when there was room for two.
     final column = split
       ? ((available - AppSize.spaceM) / 2).floorToDouble()
       : available;
 
     final connection = <Widget>[
-      FormBlock(
-        title: S.of(context).channel_identity_title,
-        subtitle: S.of(context).channel_identity_subtitle,
-        child: Column(children: [
-          Input(
-            title: S.of(context).channel_name_input,
-            placeholder: S.of(context).channel_name_placeholder,
-            controller: _name,
-            leftIcon: Icon(CI.tems, color: ThemeColor.of(context).icon),
-            next: _description.focus
-          ),
-          Input(
-            title: S.of(context).channel_description_input,
-            placeholder: S.of(context).channel_description_placeholder,
-            controller: _description,
-            leftIcon: Icon(CI.pen, color: ThemeColor.of(context).icon)
-          )
-        ])
-      ),
       ProviderPicker(controller: _controller),
-      // Las credenciales dependen de la red: hasta que no se elige una no hay
-      // campos que dibujar, porque cada red pide los suyos.
+      // The credentials depend on the network: until one is chosen there are no
+      // fields to draw, because each network asks for its own.
       ValueListenableBuilder<String>(
         valueListenable: _controller.provider,
         builder: (context, code, _) {
@@ -309,12 +273,13 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
     final agent = <Widget>[
       AgentPicker(controller: _controller),
       DataPicker(controller: _controller),
+      PaymentPicker(controller: _controller),
       ToolsPicker(controller: _controller)
     ];
 
     return ScrollableWidget(
       children: [
-        if (_controller.isEditing) MissingBanner(controller: _controller),
+        MissingBanner(controller: _controller),
         Wrap(
           spacing: AppSize.spaceM,
           crossAxisAlignment: WrapCrossAlignment.start,
@@ -333,11 +298,12 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
     );
   });
 
-  /// Descripcion de la red elegida.
+  /// Description of the chosen network.
   ///
-  /// Editando sale del propio canal (viene pegada al detalle) y si no, del
-  /// catalogo. Se prefiere la del canal porque es la que corresponde a lo que
-  /// tiene guardado, aunque el catalogo se haya movido.
+  /// While editing it comes from the channel itself (it comes attached to the
+  /// detail) and otherwise from the catalog. The channel's is preferred
+  /// because it is the one that matches what is stored, even if the catalog
+  /// has moved.
   ChannelProviderModel? _schemaOf(String code) {
     if (code.isEmpty) return null;
 
@@ -349,14 +315,14 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
 
   void _back() => Navis.push(context, "/home/channels");
 
-  /// Guarda el canal.
+  /// Saves the channel.
   ///
-  /// Lo unico que se exige es el nombre y la red: **el resto puede quedar a
-  /// medio llenar a proposito**, porque un canal se registra antes de que Meta
-  /// emita sus tokens y se termina de configurar despues. Lo que si se pide es
-  /// que la fuente de datos este completa: elegir "tabla de productos" y no
-  /// decir cual deja al agente sin nada que leer, y eso no es un canal a medio
-  /// configurar sino uno mal configurado.
+  /// The network is the only real requirement, and it is already fixed —this
+  /// page never lets it change—, so [schema] is here for the fields it
+  /// declares rather than as a gate. What is asked for is that the data
+  /// source be complete: choosing "product table" and not saying which leaves
+  /// the agent with nothing to read, and that is not a half-configured
+  /// channel but a misconfigured one.
   Future<void> _submit() async {
     if (_controller.saving.value) return;
 
@@ -369,8 +335,6 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
       return;
     }
 
-    if (!_controller.headerForm.validate()) return;
-
     if (_controller.source.value.needsTable && _controller.tableId.isEmpty) {
       FloatFlag.of(context).error(
         message: S.of(context).channel_source_missing
@@ -380,42 +344,22 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
 
     _controller.busy(true);
 
-    final saved = await _write(_controller.payload(schema));
+    final saved = await context.read<ChannelsService>().edit(
+      context,
+      _controller.payload(schema)
+    );
 
     if (!mounted) return;
 
     _controller.busy(false);
 
-    // Fallo: el error ya lo mostro el servicio y la pantalla se queda con todo
-    // lo escrito, que es lo unico razonable cuando alguien acaba de pegar
-    // cuatro tokens.
+    // Failed: the error was already shown by the service and the screen keeps
+    // everything typed, which is the only reasonable thing when someone just
+    // pasted four tokens.
     if (!saved) return;
 
-    FloatFlag.of(context).message(
-      _controller.isEditing
-        ? S.of(context).channel_saved
-        : S.of(context).channel_created
-    );
+    FloatFlag.of(context).message(S.of(context).channel_saved);
 
     _back();
-  }
-
-  /// Manda la escritura que corresponda y responde solo si salio o no.
-  ///
-  /// Las dos operaciones del servicio avisan distinto —la edicion devuelve un
-  /// booleano y el alta devuelve el id o relanza— y a esta pantalla le da igual
-  /// cual fue: en las dos ya se mostro el error y lo unico que cambia despues
-  /// es el texto del aviso.
-  Future<bool> _write(Map<String, dynamic> data) async {
-    final service = context.read<ChannelsService>();
-
-    if (_controller.isEditing) return service.edit(context, data);
-
-    try {
-      await service.create(context, data);
-      return true;
-    } catch (_) {
-      return false;
-    }
   }
 }

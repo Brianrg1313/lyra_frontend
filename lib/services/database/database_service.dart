@@ -20,8 +20,8 @@ class DatabaseService {
 
   late final FlutterSecureStorage _secureStorage;
 
-  // Cache de referencias a boxes abiertos — evita llamar Hive.box<T>() en
-  // boxes ya abiertos, lo que lanza HiveError por mismatch de tipo genérico.
+  // Cache of references to open boxes — avoids calling Hive.box<T>() on
+  // already-open boxes, which throws HiveError due to a generic type mismatch.
   final Map<String, Box<dynamic>> _boxes = {};
 
   // ───────────────────────────── lifecycle ─────────────────────────────
@@ -30,9 +30,9 @@ class DatabaseService {
   Future<void> initialize() async {
     if (_initialized) return;
     _initialized = true;
-    // Subcarpeta propia: `initFlutter()` sin nombre deja los `.hive` sueltos en
-    // la carpeta de documentos del usuario, donde chocan con los de cualquier
-    // otra app que abra un box con el mismo nombre.
+    // Own subfolder: `initFlutter()` without a name leaves the `.hive` files loose in
+    // the user's documents folder, where they clash with those of any
+    // other app that opens a box with the same name.
     await Hive.initFlutter('lyra');
     _secureStorage = const FlutterSecureStorage(
       aOptions: AndroidOptions(),
@@ -42,32 +42,32 @@ class DatabaseService {
 
   // ─────────────────────────── box access ──────────────────────────────
 
-  // Aperturas en vuelo. Dos llamadas seguidas al mismo box —el side bar y una
-  // seccion pidiendolo a la vez, por ejemplo— tienen que esperar la misma
-  // apertura en vez de lanzar dos contra el mismo archivo.
+  // In-flight openings. Two consecutive calls to the same box —the side bar and a
+  // section asking for it at the same time, for example— have to wait for the same
+  // opening instead of launching two against the same file.
   final Map<String, Future<Box<dynamic>>> _opening = {};
 
   Future<Box<dynamic>> _box(String name) {
     final opened = _boxes[name];
     if (opened != null) return Future<Box<dynamic>>.value(opened);
-    // El callback tiene cuerpo de bloque a proposito: con `=>` devolveria lo
-    // que saca `remove`, que es este mismo future, y `whenComplete` esperaria
-    // a que termine el future que esta completando —la apertura no volveria
-    // nunca aunque el box ya estuviera abierto.
+    // The callback has a block body on purpose: with `=>` it would return what
+    // `remove` returns, which is this same future, and `whenComplete` would wait
+    // for the future that it is completing to finish —the opening would never
+    // return even if the box was already open.
     return _opening[name] ??= _open(name).whenComplete(() {
       _opening.remove(name);
     });
   }
 
-  /// Abre [name] reintentando mientras el lock siga tomado.
+  /// Opens [name] retrying while the lock remains held.
   ///
-  /// En escritorio Hive bloquea un `.lock` por box, asi que dos instancias de
-  /// la app no pueden tener el mismo box abierto. El caso normal es relanzar
-  /// encima de la corrida anterior: la que se esta cerrando suelta el lock unos
-  /// milisegundos despues, y sin reintento la nueva se cae en el arranque.
+  /// On desktop Hive locks a `.lock` per box, so two instances of
+  /// the app cannot have the same box open. The normal case is relaunching
+  /// over the previous run: the one that is closing releases the lock a few
+  /// milliseconds later, and without a retry the new one crashes on startup.
   ///
-  /// Si el lock no se libera es porque hay otra instancia viva de verdad; ahi
-  /// no hay nada que hacer desde el codigo y el error se propaga.
+  /// If the lock is not released it is because there is really another live instance; there
+  /// is nothing to do from the code there and the error propagates.
   Future<Box<dynamic>> _open(String name) async {
     const maxAttempts = 5;
     for (var attempt = 1;; attempt++) {
@@ -135,15 +135,15 @@ class DatabaseService {
 
   /// Open [boxName] explicitly (optional — put/get open it automatically).
   ///
-  /// No propaga el error a proposito: esto corre en `preCall`, antes de
-  /// `runApp`, y una excepcion ahi deja la app sin arrancar. Un box que no se
-  /// pudo abrir degrada lo que dependa de el —los lectores sincronos ven su
-  /// default— pero la app levanta igual.
+  /// It does not propagate the error on purpose: this runs in `preCall`, before
+  /// `runApp`, and an exception there leaves the app unable to start. A box that could not
+  /// be opened degrades whatever depends on it —the synchronous readers see their
+  /// default— but the app still comes up.
   Future<void> openBox(String boxName) async {
     try {
       await _box(boxName);
     } catch (error) {
-      debugPrint('DatabaseService: no se pudo abrir el box "$boxName" ($error)');
+      debugPrint('DatabaseService: could not open the box "$boxName" ($error)');
     }
   }
 

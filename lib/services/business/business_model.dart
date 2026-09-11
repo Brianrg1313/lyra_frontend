@@ -6,30 +6,31 @@ class BusinessModel {
   final String name;
   final String caption;
 
-  /// Logo de la empresa, o `null` si todavia no subio ninguno. Es el mismo
-  /// archivo que devuelve el perfil ([FileModel]): trae su id y con que tamanos
-  /// existe, y la direccion se arma con la base que entrego `/init`.
+  /// Business logo, or `null` if none has been uploaded yet. It's the same
+  /// file the profile returns ([FileModel]): it carries its id and what sizes
+  /// it exists in, and the address is built with the base that `/init` handed
+  /// over.
   ///
-  /// Viene en `/init` con el nombre y la leyenda porque es con lo que se dibuja
-  /// una empresa: el selector del header la muestra apenas se levanta la app, y
-  /// sin el logo aca habria que pedir el perfil de cada empresa para pintar una
-  /// lista de cinco.
+  /// It comes in `/init` with the name and the caption because that's what a
+  /// business is drawn with: the header selector shows it the moment the app
+  /// starts, and without the logo here you'd have to fetch each business's
+  /// profile to paint a list of five.
   final FileModel? logo;
 
-  /// Solo llegan al crear la empresa desde la app; `/init` no los devuelve y
-  /// quedan vacios para las empresas que vienen de la sesion.
+  /// Only arrive when the business is created from the app; `/init` doesn't
+  /// return them and they stay empty for businesses coming from the session.
   final String activity;
   final String profile;
 
-  /// Codigo de la moneda en la que factura la empresa (ISO 4217), tal como lo
-  /// guarda el backend. Con ella se escriben los precios de su catalogo.
+  /// Code of the currency the business invoices in (ISO 4217), as the backend
+  /// saves it. It's what its catalog prices are written with.
   ///
-  /// Se guarda el codigo crudo y no la moneda ya resuelta a proposito: como se
-  /// escribe un importe lo dice el catalogo de `/init`
-  /// ([CurrencyCatalogService]), que se puede releer con la app andando. Guardar
-  /// aca la moneda resuelta dejaria a la empresa escribiendo sus precios con un
-  /// simbolo viejo hasta el proximo arranque. Vacio si la empresa todavia no
-  /// declaro ninguna: la resuelve [BusinessService.currency].
+  /// The raw code is saved and not the already-resolved currency on purpose:
+  /// how an amount is written is decided by the `/init` catalog
+  /// ([CurrencyCatalogService]), which can be re-read while the app runs.
+  /// Saving the resolved currency here would leave the business writing its
+  /// prices with an old symbol until the next launch. Empty if the business
+  /// hasn't declared one yet: [BusinessService.currency] resolves it.
   final String currency;
 
   const BusinessModel({
@@ -54,11 +55,11 @@ class BusinessModel {
     );
   }
 
-  /// Decodifica la tabla columnar de `/init`:
+  /// Decodes the `/init` columnar table:
   /// `{"keys": ["id", "name", "caption"], "values": [[...], ...]}`.
   ///
-  /// Las columnas se leen por nombre y no por posicion, asi que el backend
-  /// puede reordenarlas o agregar campos sin romper el parseo.
+  /// Columns are read by name and not by position, so the backend can reorder
+  /// them or add fields without breaking the parse.
   static List<BusinessModel> fromTable(dynamic table) {
     if (table is! Map) return const [];
 
@@ -88,10 +89,10 @@ class BusinessModel {
     };
   }
 
-  /// Centinela de [copyWith] para el logo. El resto de los campos son texto y
-  /// "no lo toques" se dice con `null`, pero el logo puede **ser** `null`: una
-  /// empresa que borra el suyo se quedaria con el viejo en el selector si las
-  /// dos cosas se dijeran igual.
+  /// Sentinel for [copyWith] for the logo. The rest of the fields are text and
+  /// "don't touch it" is said with `null`, but the logo can **be** `null`: a
+  /// business that deletes its own logo would keep the old one in the selector
+  /// if both things were said the same way.
   static const Object _keep = Object();
 
   BusinessModel copyWith({

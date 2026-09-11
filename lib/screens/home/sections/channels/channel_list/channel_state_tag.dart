@@ -4,21 +4,21 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/channels/channel_lite_model.dart';
 
-/// La etiqueta de estado de un canal, en la fila del listado.
+/// The state tag of a channel, in the list row.
 ///
-/// Un canal tiene **dos estados que no son lo mismo** y confundirlos hace
-/// perder tiempo:
+/// A channel has **two states that are not the same** and confusing them
+/// wastes time:
 ///
-/// - `ready` — si tiene cargado todo lo que su red le pide. Un canal recien
-///   registrado y todavia sin tokens es normal (se da de alta antes de que Meta
-///   los emita) y simplemente no esta listo. No es un error: es que falta
-///   terminarlo.
-/// - `enabled` — el interruptor de la empresa. Un canal completo se puede
-///   pausar sin perder su configuracion.
+/// - `ready` — whether it has loaded everything its network asks of it. A
+///   newly registered channel still without tokens is normal (it is created
+///   before Meta issues them) and is simply not ready. It is not an error: it
+///   just needs to be finished.
+/// - `enabled` — the business's switch. A complete channel can be paused
+///   without losing its configuration.
 ///
-/// De ahi los tres carteles: pausado gana sobre lo demas —si esta apagado no
-/// importa que este completo—, despues "falta configurar", y recien si esta
-/// entero y encendido, "conectado".
+/// Hence the three badges: paused wins over the rest —if it is off it does not
+/// matter that it is complete—, then "needs configuration", and only if it is
+/// whole and on, "connected".
 class ChannelStateTag extends StatelessWidget {
   const ChannelStateTag({super.key, required this.channel});
 
@@ -29,14 +29,15 @@ class ChannelStateTag extends StatelessWidget {
     final scheme = ThemeColor.of(context);
 
     final (label, color) = switch (channel) {
-      // Pausado primero: es lo que explica que un canal completo no conteste.
+      // Paused first: it is what explains that a complete channel does not
+      // answer.
       ChannelLiteModel(enabled: false) => (
         S.of(context).channel_state_paused,
         scheme.text.secondary
       ),
       ChannelLiteModel(ready: false) => (
         S.of(context).channel_state_pending,
-        // El color de marca y no un rojo: falta terminarlo, no se rompio nada.
+        // The brand color and not red: it needs finishing, nothing broke.
         scheme.accent
       ),
       _ => (S.of(context).channel_state_ready, scheme.primary)
@@ -48,8 +49,8 @@ class ChannelStateTag extends StatelessWidget {
         vertical: AppSize.gap * 0.4
       ),
       decoration: BoxDecoration(
-        // Un fondo apenas tenido en vez de uno lleno: la etiqueta acompana al
-        // nombre del canal, no compite con el.
+        // A barely tinted background instead of a solid one: the tag accompanies
+        // the channel's name, it does not compete with it.
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSize.corner)
       ),

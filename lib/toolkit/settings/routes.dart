@@ -7,12 +7,15 @@ import 'package:app/screens/login/code/_code.dart';
 import 'package:app/screens/sign_up/_sign_up.dart';
 import 'package:app/screens/sign_up/verify_code/_verify_code.dart';
 import 'package:app/screens/home/_home.dart';
+import 'package:app/screens/pos/_pos.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/business/_business_detail.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
 import 'package:app/screens/home/sections/channels/form/_channel_form.dart';
 import 'package:app/screens/home/sections/connections/form/_connection_form.dart';
+import 'package:app/screens/home/sections/finance/finance_tab.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
+import 'package:app/screens/home/sections/sales/sales_tab.dart';
 
 final List<ScreenRoute> routes = [
   ScreenRoute(
@@ -26,8 +29,8 @@ final List<ScreenRoute> routes = [
     url: "/login",
     page: (_) => const Login()
   ),
-  // Paso del codigo del login: se llega solo cuando el backend resolvio que la
-  // cuenta entra con codigo, nunca por si sola.
+  // Login's code step: it's only reached once the backend has resolved that
+  // the account signs in with a code, never on its own.
   ScreenRoute(
     key: "sign_in_code",
     url: "/login/code",
@@ -45,31 +48,33 @@ final List<ScreenRoute> routes = [
     parents: ["sign_up"],
     page: (_) => const VerifyCode()
   ),
-  // Cada seccion del home es una ruta propia: se refleja en la URL y se puede
-  // abrir por deep link, reusando siempre el mismo shell (side bar).
+  // Each home section is its own route: it's reflected in the URL and can be
+  // opened by deep link, always reusing the same shell (side bar).
   //
-  // Entre si las secciones son hermanas, no anidadas: aunque sus URLs cuelguen
-  // de `/home`, ninguna vive dentro de otra. Por eso no declaran parents; el
-  // home es el shell que las contiene a todas y no una pantalla mas.
-  // Las sub-paginas si declaran su seccion como parent (`business_detail` ->
-  // `parents: ["business"]`), que es lo que mantiene marcada la opcion del
-  // side bar mientras se navega dentro de ella.
+  // The sections are siblings among themselves, not nested: even though their
+  // URLs hang off `/home`, none lives inside another. That's why they don't
+  // declare parents; the home is the shell that contains all of them and not
+  // one more screen. Sub-pages do declare their section as a parent
+  // (`business_detail` -> `parents: ["business"]`), which is what keeps the
+  // side bar option marked while navigating inside it.
   //
-  // Todas comparten `shell`, por lo que ocupan una sola pagina del Navigator:
-  // cambiar de seccion actualiza el arbol en vez de apilar un shell nuevo. Por
-  // eso `Home` no recibe la seccion, la lee de `Navis.currentKey`.
+  // All of them share `shell`, so they occupy a single Navigator page:
+  // switching sections updates the tree instead of stacking a new shell.
+  // That's why `Home` doesn't receive the section, it reads it from
+  // `Navis.currentKey`.
   ...HomeSection.values.map((section) => ScreenRoute(
     key: section.key,
     url: section.path,
     shell: Home.shell,
     page: (_) => const Home()
   )),
-  // Una empresa: sub-pagina de la seccion `business`. Comparte el shell del
-  // home (misma pagina del Navigator) y declara `business` como parent para que
-  // su opcion siga marcada en el side bar. La empresa se resuelve del segmento
-  // `:id`; el shell no recibe args por constructor.
+  // A business: sub-page of the `business` section. It shares the home's
+  // shell (same Navigator page) and declares `business` as a parent so its
+  // option stays marked in the side bar. The business is resolved from the
+  // `:id` segment; the shell doesn't receive args through its constructor.
   //
-  // Sin pestana: es el link de una empresa "a secas" y abre la pestana inicial.
+  // Without a tab: it's the link to a business "on its own" and opens the
+  // initial tab.
   ScreenRoute(
     key: BusinessDetailSection.routeKey,
     url: "/home/business/:id",
@@ -77,16 +82,17 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   ),
-  // Cada pestana de una empresa es una ruta propia, por lo que se refleja en la
-  // URL y se puede copiar el link de lo que se esta mirando
+  // Each business tab is its own route, so it's reflected in the URL and the
+  // link to what's currently being looked at can be copied
   // (`/home/business/:id/statistics`).
   //
-  // Son rutas distintas y no una sola con un `:tab` como argumento porque el
-  // shell se entera de la pantalla abierta por `Navis.currentKey`: con una key
-  // para las cinco, cambiar de pestana cambiaria la URL sin repintar nada.
+  // They're separate routes and not a single one with a `:tab` argument
+  // because the shell finds out the open screen from `Navis.currentKey`: with
+  // one key for all five, switching tabs would change the URL without
+  // repainting anything.
   //
-  // La lista sale de [BusinessTab] y no se escribe aca: la pestana ya sabe su
-  // segmento y su key (ver `BusinessTab.path`).
+  // The list comes from [BusinessTab] and isn't written here: the tab already
+  // knows its segment and its key (see `BusinessTab.path`).
   ...BusinessTab.values.map((tab) => ScreenRoute(
     key: tab.routeKey,
     url: tab.path(":id"),
@@ -94,13 +100,41 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   )),
-  // Vista de una tabla y sus datos: sub-pagina de `inventory`, con el mismo
-  // criterio que la pagina de una empresa. La tabla se resuelve del segmento
-  // `:id`.
+  // Each tab of the money page is its own route, on the same criteria as a
+  // business's: the shell learns of a screen change from `Navis.currentKey`,
+  // so one route with a `:tab` argument would switch tabs without repainting.
   //
-  // Es la unica ruta que cuelga de una tabla: sus ajustes son un panel al
-  // costado (`showTableSettings`) que se abre encima del listado o de la
-  // planilla, asi que la URL sigue siendo la de lo que quedo debajo.
+  // None of them carries an id, which is the difference from the business
+  // tabs: every money endpoint answers for the active company (the
+  // `business_id` header), so what is being looked at is never in the URL.
+  ...FinanceTab.values.map((tab) => ScreenRoute(
+    key: tab.routeKey,
+    url: tab.path,
+    parents: ["finance"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  )),
+  // Each tab of the sales board is its own route, on the same criteria as the
+  // money page's: the shell learns of a screen change from `Navis.currentKey`,
+  // so one route with a `:tab` argument would switch lists without repainting.
+  //
+  // Neither carries an id, for the same reason: every sales endpoint answers
+  // for the active company (the `business_id` header), so what is being looked
+  // at is never in the URL.
+  ...SalesTab.values.map((tab) => ScreenRoute(
+    key: tab.routeKey,
+    url: tab.path,
+    parents: ["sales"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  )),
+  // View of a table and its data: sub-page of `inventory`, on the same
+  // criteria as the business page. The table is resolved from the `:id`
+  // segment.
+  //
+  // It's the only route that hangs off a table: its settings are a side
+  // panel (`showTableSettings`) that opens on top of the list or the sheet,
+  // so the URL stays that of whatever was left underneath.
   ScreenRoute(
     key: TableViewSection.routeKey,
     url: "/home/inventory/:id",
@@ -108,18 +142,10 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   ),
-  // Alta de un canal. Va **antes** que la ruta del canal por id y ademas es un
-  // segmento fijo, asi que `/home/channels/new` resuelve a esta y no se lee
-  // como el id de un canal llamado "new".
-  ScreenRoute(
-    key: ChannelFormSection.createRouteKey,
-    url: "/home/channels/new",
-    parents: ["channels"],
-    shell: Home.shell,
-    page: (_) => const Home()
-  ),
-  // Configuracion de un canal ya conectado: la misma pantalla que el alta, con
-  // el canal resuelto del segmento `:id`.
+  // Settings of an already-connected channel. Creating one is not a route any
+  // more — it opens as a side panel (`showCreateChannel`) over the section —
+  // so this is the only channel form route left, with the channel resolved
+  // from the `:id` segment.
   ScreenRoute(
     key: ChannelFormSection.editRouteKey,
     url: "/home/channels/:id",
@@ -127,9 +153,9 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   ),
-  // Alta de una conexion. Igual que la de un canal, va **antes** que la ruta por
-  // id y es un segmento fijo, asi que `/home/connections/new` resuelve a esta y
-  // no se lee como el id de una conexion llamada "new".
+  // Creating a connection. Same as with a channel, it goes **before** the
+  // by-id route and is a fixed segment, so `/home/connections/new` resolves
+  // to this one and isn't read as the id of a connection called "new".
   ScreenRoute(
     key: ConnectionFormSection.createRouteKey,
     url: "/home/connections/new",
@@ -137,13 +163,28 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   ),
-  // Credenciales de una cuenta ya conectada: la misma pantalla que el alta, con
-  // la conexion resuelta del segmento `:id`.
+  // Credentials of an already-connected account: the same screen as
+  // creation, with the connection resolved from the `:id` segment.
   ScreenRoute(
     key: ConnectionFormSection.editRouteKey,
     url: "/home/connections/:id",
     parents: ["connections"],
     shell: Home.shell,
     page: (_) => const Home()
+  ),
+  // POS mode: a standalone screen, without `shell` or `parents`.
+  //
+  // It doesn't hang off `/home` nor share its frame, on purpose: it isn't
+  // another home section but another mode of the app. The counter has no
+  // side bar, no global search, no business selector, so reusing the shell
+  // would mean mounting all of that just to cover it up.
+  //
+  // Being standalone, it does stack a page on top of home: coming back from
+  // the POS finds the section that was being looked at exactly as it was
+  // left.
+  ScreenRoute(
+    key: Pos.routeKey,
+    url: Pos.path,
+    page: (_) => const Pos()
   )
 ];

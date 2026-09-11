@@ -10,41 +10,49 @@ import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/inventory/table_settings/_table_settings.dart';
-import 'package:app/screens/modals/rename_table/_rename_table.dart';
+import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
+import 'package:app/screens/modals/inventory/rename_table/_rename_table.dart';
 
-/// El boton de las opciones de una tabla en el listado, con el desplegable que
-/// despliega. Lo usan las dos formas del listado: la fila del telefono
-/// ([TableListRow]) y la tarjeta del escritorio ([TableCard]).
+/// The options button of a table in the list, with the dropdown it deploys.
+/// Both forms of the list use it: the phone row ([TableListRow]) and the desktop
+/// card ([TableCard]).
 ///
-/// Es un widget aparte y no un metodo de la fila por dos motivos. El primero es
-/// que el desplegable se cuelga **de el**: se ancla al contexto de quien lo
-/// abre, y ese tiene que ser el boton y no la fila entera, o se abriria desde
-/// el borde izquierdo. El segundo es que la fila y la tarjeta son el mismo
-/// listado dibujado de dos maneras, y las opciones de una tabla no cambian
-/// porque cambie el ancho de la ventana.
+/// It's a separate widget and not a method of the row for two reasons. The
+/// first is that the dropdown hangs off **it**: it anchors to the context of
+/// whoever opens it, and that has to be the button and not the whole row, or it
+/// would open from the left edge. The second is that the row and the card are
+/// the same list drawn in two ways, and a table's options don't change because
+/// the window's width changes.
 ///
-/// Ofrece las tres cosas que se le pueden hacer a una tabla sin abrirla:
+/// It offers the three things that can be done to a table without opening it:
 ///
-/// - **Renombrarla**, que es lo unico de su cabecera que se lee desde aca.
-/// - **Abrir sus ajustes**, que es todo lo demas: la descripcion, las columnas,
-///   los canales y las fechas.
-/// - **Eliminarla**.
+/// - **Rename it**, which is the only thing of its header read from here.
+/// - **Open its settings**, which is everything else: the description, the
+///   columns, the channels and the dates.
+/// - **Delete it**.
 ///
-/// Renombrar y configurar son lo mismo visto de cerca y de lejos, y por eso son
-/// dos opciones y no una: cambiarle el nombre a una tabla es un campo y un
-/// Enter, y mandarlo a la ficha entera para eso seria cambiar de pantalla para
-/// escribir una palabra.
+/// Renaming and configuring are the same thing seen up close and from afar, and
+/// that's why they're two options and not one: changing a table's name is one
+/// field and one Enter, and sending it to the whole settings card for that
+/// would be changing screens to write one word.
 class TableOptionsButton extends StatelessWidget {
-  const TableOptionsButton({super.key, required this.table});
+  const TableOptionsButton({super.key, required this.table, this.size});
 
   final TableLiteModel table;
+
+  /// How much the button measures. By default that of an action, which is what
+  /// it measures in the phone row, where it's touched with a finger.
+  ///
+  /// The card asks for it smaller: it's the size of the icon on the other side
+  /// of the row, and an action button in there would fix the whole card's
+  /// height over a menu that's almost never opened.
+  final double? size;
 
   @override
   Widget build(BuildContext context) => FeedbackButton(
     action: () => _open(context),
-    width: AppSize.action,
-    height: AppSize.action,
+    width: size ?? AppSize.action,
+    height: size ?? AppSize.action,
     color: ThemeColor.of(context).surfaceOver,
     message: S.of(context).table_options,
     child: Center(child: Icon(
@@ -54,8 +62,8 @@ class TableOptionsButton extends StatelessWidget {
     ))
   );
 
-  /// Abre el desplegable anclado al boton. Sin buscador y sin la medida de un
-  /// formulario ([dense]): son tres opciones, no una lista.
+  /// Opens the dropdown anchored to the button. Without a search box and
+  /// without a form's size ([dense]): they're three options, not a list.
   Future<void> _open(BuildContext context) async {
     final picked = await showSelectMenu(
       context: context,
@@ -91,29 +99,31 @@ class TableOptionsButton extends StatelessWidget {
     }
   }
 
-  /// Abre el modal del nombre. Lo que cambie lo guarda el propio modal contra el
-  /// servicio, que corrige la fila del listado: aca no queda nada por hacer
-  /// cuando se cierra.
+  /// Opens the name modal. Whatever changes it saves, the modal itself against
+  /// the service, which corrects the list row: there's nothing left to do here
+  /// when it closes.
   Future<void> _rename(BuildContext context) => showModal(
     context: context,
     title: S.of(context).rename_table,
     builder: (BuildContext context) => RenameTableModal(table: table)
   );
 
-  /// Abre los ajustes de la tabla: todo lo que hay de ella menos sus filas.
+  /// Opens the table settings: everything there is of it except its rows.
   ///
-  /// Es el mismo panel que abre el boton de ajustes de la planilla, y se llega
-  /// sin pasar por ella: cambiarle el tipo a una columna o mirar que canales
-  /// leen la tabla no necesita cargar sus registros. Al cerrarlo se vuelve al
-  /// listado tal cual estaba, que es lo que el panel deja ver a su lado.
+  /// It's the same panel the spreadsheet settings button opens, and you get to
+  /// it without going through it: changing a column's type or looking at which
+  /// channels read the table doesn't need its records loaded. On closing, you
+  /// go back to the list just as it was, which is what the panel lets see next
+  /// to it.
   Future<void> _settings(BuildContext context) =>
     showTableSettings(context, table.id);
 
-  /// Elimina la tabla, previa confirmacion.
+  /// Deletes the table, after confirmation.
   ///
-  /// Se pregunta aca y no en el servicio porque lo que se lleva la baja no cabe
-  /// en el listado: la tabla, sus columnas y todo lo cargado en ellas. El aviso
-  /// nombra la tabla para que no se confirme sobre la fila equivocada.
+  /// It's asked here and not in the service because what the deletion carries
+  /// away doesn't fit in the list: the table, its columns and everything loaded
+  /// in them. The notice names the table so it isn't confirmed over the wrong
+  /// row.
   Future<void> _delete(BuildContext context) async {
     final confirmed = await showAlertModal(
       context: context,
@@ -125,19 +135,19 @@ class TableOptionsButton extends StatelessWidget {
 
     if (!confirmed || !context.mounted) return;
 
-    // El aviso se arma **antes** de la baja: cuando esta salga bien, esta fila
-    // ya no va a existir —el listado se repinta sin ella— y su contexto no
-    // servira ni para leer el texto.
+    // The notice is built **before** the deletion: when it goes well, this row
+    // won't exist anymore —the list repaints without it— and its context won't
+    // even serve to read the text.
     final message = S.of(context).table_deleted;
 
     final deleted = await context.read<TablesService>().remove(context, table);
 
-    // Si fallo, el error ya se mostro en el servicio y la tabla sigue en el
-    // listado, que es lo que corresponde: no se elimino nada.
+    // If it failed, the error was already shown in the service and the table
+    // stays in the list, which is what's right: nothing was deleted.
     if (!deleted) return;
 
-    // Sin contexto: el de la fila se desmonto con ella. La bandera flotante se
-    // cuelga del navegador, que sigue ahi.
+    // Without context: the row's was unmounted with it. The floating flag hangs
+    // off the navigator, which is still there.
     FloatFlag.of().message(message);
   }
 }

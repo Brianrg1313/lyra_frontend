@@ -18,10 +18,10 @@ class DesktopBody extends StatefulWidget {
   State<DesktopBody> createState() => _DesktopBodyState();
 }
 
-/// El login son dos envios sobre la misma pantalla: primero el correo, y con lo
-/// que responde el backend se sabe como se sigue. Solo la contraseña se pide
-/// aca; el codigo se completa en `/login/code` y los OAuth todavia no hacen
-/// nada.
+/// The login consists of two submissions on the same screen: first the email,
+/// and based on the backend's response we know how to proceed. Only the
+/// password is asked here; the code is completed in `/login/code` and OAuth
+/// methods don't do anything yet.
 class _DesktopBodyState extends State<DesktopBody> {
   final _form = FormController();
 
@@ -41,12 +41,13 @@ class _DesktopBodyState extends State<DesktopBody> {
     obligatory: true
   );
 
-  /// Correo del que el backend ya resolvio el metodo, y el metodo que resolvio.
+  /// Email for which the backend already resolved the method, and the method
+  /// that was resolved.
   ///
-  /// Se guarda el correo junto al metodo porque el campo se sigue pudiendo
-  /// editar: mientras lo escrito sea este, el proximo envio completa el metodo;
-  /// si cambia, se vuelve a preguntar en vez de mandar la contraseña a una
-  /// cuenta distinta de la que la pidio.
+  /// The email is stored along with the method because the field can still be
+  /// edited: as long as what is typed matches this, the next submission
+  /// completes the method; if it changes, it asks again instead of sending the
+  /// password to a different account than the one that requested it.
   String? _resolved;
   LoginMethod? _method;
 
@@ -123,8 +124,9 @@ class _DesktopBodyState extends State<DesktopBody> {
     _resolve();
   }
 
-  /// Primer paso. Valida solo el correo: el campo de contraseña puede seguir en
-  /// pantalla de un correo anterior y todavia vacio, y no es lo que se manda.
+  /// First step. Only validates the email: the password field may still be on
+  /// screen from a previous email and still empty, and it's not what's being
+  /// sent.
   void _resolve() {
     if (!_email.validate(_email)) return;
 
@@ -137,9 +139,9 @@ class _DesktopBodyState extends State<DesktopBody> {
         if (!mounted) return;
         _form.loading.value = false;
 
-        // Google, Apple y Facebook llegan hasta aca pero todavia no estan
-        // implementados: no hay pantalla a la que llevar ni nada mas que pedir,
-        // asi que el login se queda como esta.
+        // Google, Apple and Facebook make it this far but aren't implemented
+        // yet: there's no screen to go to or anything else to ask, so the
+        // login stays as is.
         if (method == null || !method.isAvailable) return;
 
         if (method == LoginMethod.code) {
@@ -156,15 +158,15 @@ class _DesktopBodyState extends State<DesktopBody> {
         if (!mounted) return;
         _form.loading.value = false;
 
-        // El backend responde lo mismo para un correo no registrado que para
-        // uno sin metodo configurado —a proposito, para que no se puedan
-        // averiguar correos registrados—, asi que lo unico que se puede marcar
-        // es el correo.
+        // The backend responds the same for an unregistered email as for
+        // one without a configured method —intentionally, so registered
+        // emails can't be looked up—, so the only thing that can be marked
+        // is the email.
         _email.status.setStatus(InputStatus.error, InputError.invalid);
       });
   }
 
-  /// Segundo paso cuando el metodo es contraseña.
+  /// Second step when the method is password.
   void _signIn() {
     if (!_form.validate()) return;
 
@@ -173,9 +175,9 @@ class _DesktopBodyState extends State<DesktopBody> {
     final client = context.read<ClientService>();
 
     context.read<SignInService>().signInWithPassword(context, _email.value, _password.value)
-      // El token ya quedo guardado, pero `resolve` solo corre al arrancar la
-      // app: sin esto la instancia global entraria al home sin cliente cargado
-      // y los widgets del side bar leerian una sesion vacia.
+      // The token is already saved, but `resolve` only runs when the app
+      // starts: without this, the global instance would enter the home with no
+      // client loaded and the sidebar widgets would read an empty session.
       .then((_) => client.resolve())
       .then((redirect) {
         if (!mounted) return;

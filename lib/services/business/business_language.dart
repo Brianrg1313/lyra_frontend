@@ -1,14 +1,15 @@
-/// Idioma en el que opera una empresa.
+/// Language a business operates in.
 ///
-/// El backend lo guarda como un tag de locale y lo unico que le hace es
-/// recortarlo y pasarlo a minusculas (`Business.language`), asi que esto no es
-/// una validacion: es el catalogo de los que se pueden **elegir** desde la app,
-/// que es lo que hace falta para ofrecer una lista en vez de un campo de texto
-/// donde cualquier cosa pasa por idioma.
+/// The backend saves it as a locale tag and all it does to it is trim it and
+/// lowercase it (`Business.language`), so this isn't a validation: it's the
+/// catalog of the languages that can be **picked** from the app, which is what
+/// is needed to offer a list instead of a text field where anything passes as
+/// a language.
 ///
-/// Los nombres no se traducen. Un idioma se nombra en si mismo: quien lo habla
-/// lo reconoce escrito asi aunque este leyendo la app en otro, y "Aleman" no le
-/// dice mas que "Deutsch" a quien lo va a elegir.
+/// The names aren't translated. A language names itself: whoever speaks it
+/// recognizes it written that way even while reading the app in another
+/// language, and "Aleman" doesn't say more to whoever is going to pick it than
+/// "Deutsch" does.
 enum BusinessLanguage {
   es(tag: "es", name: "Español"),
   en(tag: "en", name: "English"),
@@ -19,18 +20,19 @@ enum BusinessLanguage {
 
   const BusinessLanguage({required this.tag, required this.name});
 
-  /// Codigo que viaja al backend. No se traduce.
+  /// Code that travels to the backend. Not translated.
   final String tag;
 
-  /// Como se llama el idioma en el idioma mismo.
+  /// What the language calls itself in that language.
   final String name;
 
-  /// El idioma de un tag guardado, o `null` si no es ninguno del catalogo.
+  /// The language of a saved tag, or `null` if it's none of the catalog's.
   ///
-  /// Se mira solo la parte del idioma: `es-VE` es español escrito en Venezuela,
-  /// y para nombrarlo alcanza con "Español". Lo que no se reconoce devuelve
-  /// `null` en vez de caer en uno por defecto, porque el tag guardado es un
-  /// dato de la empresa y mostrar otro idioma seria mentir sobre el.
+  /// Only the language part is looked at: `es-VE` is Spanish written in
+  /// Venezuela, and "Español" is enough to name it. What isn't recognized
+  /// returns `null` instead of falling back to a default one, because the saved
+  /// tag is a piece of the business's data and showing another language would
+  /// be lying about it.
   static BusinessLanguage? from(String tag) {
     final code = tag.trim().toLowerCase().split(RegExp("[-_]")).first;
     if (code.isEmpty) return null;
@@ -42,7 +44,7 @@ enum BusinessLanguage {
     return null;
   }
 
-  /// Como se lee un tag guardado: el nombre del idioma, o el tag crudo si esta
-  /// version todavia no lo conoce.
+  /// How a saved tag is read: the language name, or the raw tag if this version
+  /// doesn't know it yet.
   static String label(String tag) => from(tag)?.name ?? tag;
 }

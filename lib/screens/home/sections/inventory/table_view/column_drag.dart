@@ -7,30 +7,31 @@ import 'sheet_style.dart';
 import 'state/sheet_controller.dart';
 import 'state/sheet_drag.dart';
 
-/// Lo que se ve mientras una columna esta en el aire: la que se lleva, el
-/// fantasma que sigue al puntero y la linea que marca donde va a caer.
+/// What is seen while a column is in the air: the one being carried, the ghost
+/// that follows the pointer, and the line that marks where it will land.
 ///
-/// Se dibuja **encima** de la planilla y en sus mismas coordenadas (las del
-/// contenido de la banda desplazable), asi que no hay que corregir nada por el
-/// desplazamiento: si la banda se corre, esto se corre con ella.
+/// It is drawn **on top** of the sheet and in the same coordinates (those of the
+/// scrollable band's content), so nothing needs to be corrected for the scroll:
+/// if the band moves, this moves with it.
 ///
-/// Y no es un detalle de presentacion: es lo que permite que arrastrar una
-/// columna no toque la grilla. Las celdas se enteran del cambio recien al
-/// soltar; hasta entonces lo unico que se mueve en pantalla son estas tres
-/// cosas, y cada una escucha su propio notificador:
+/// And it is not a presentation detail: it is what allows dragging a column to
+/// not touch the grid. The cells only learn of the change on release; until then
+/// the only things moving on screen are these three, and each listens to its own
+/// notifier:
 ///
-/// - Que haya un arrastre lo escucha este widget, y son dos avisos por arrastre.
-/// - El fantasma escucha donde esta el puntero, que cambia cada frame, y su
-///   contenido va como `child`: se mueve sin volver a construirse.
-/// - La linea escucha en que borde caeria, que cambia solo al pasar el medio de
-///   una vecina.
+/// - That there is a drag is listened to by this widget, which is two notices
+///   per drag.
+/// - The ghost listens to where the pointer is, which changes every frame, and
+///   its content goes as `child`: it moves without being rebuilt.
+/// - The line listens to which edge it would land on, which only changes when
+///   passing the middle of a neighbor.
 ///
-/// La banda que marca la columna que se esta llevando no escucha nada: se fija
-/// al empezar y no se mueve hasta que se suelta.
+/// The band that marks the column being carried listens to nothing: it is fixed
+/// when the drag starts and does not move until release.
 class ColumnDrag extends StatelessWidget {
   const ColumnDrag({super.key});
 
-  /// Ancho de la linea que marca el borde donde va a caer.
+  /// Width of the line that marks the edge where it will land.
   static const double _line = 2;
 
   @override
@@ -55,8 +56,8 @@ class _Ghost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Stack(children: [
-    // De donde se la esta sacando: la columna sigue en su lugar hasta que se
-    // suelte, apenas velada para que se vea que es la que viaja.
+    // Where it is being taken from: the column stays in place until it is
+    // released, barely veiled so you can see it is the one traveling.
     Positioned(
       left: drag.from,
       top: 0,
@@ -65,7 +66,7 @@ class _Ghost extends StatelessWidget {
       child: ColoredBox(color: style.accent.withValues(alpha: 0.08))
     ),
 
-    // Donde va a caer.
+    // Where it will land.
     ValueListenableBuilder<int>(
       valueListenable: drag.edge,
       builder: (context, edge, child) => Positioned(
@@ -78,8 +79,8 @@ class _Ghost extends StatelessWidget {
       child: ColoredBox(color: style.accent)
     ),
 
-    // El titulo de la columna siguiendo al puntero, como el encabezado que se
-    // arranco de la fila de campos.
+    // The column's title following the pointer, like the header torn off the
+    // fields row.
     ValueListenableBuilder<double>(
       valueListenable: drag.x,
       builder: (context, x, child) => Positioned(

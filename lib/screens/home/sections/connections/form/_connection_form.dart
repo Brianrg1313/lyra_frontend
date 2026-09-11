@@ -21,46 +21,47 @@ import 'widgets/form_block.dart';
 import 'widgets/missing_banner.dart';
 import 'state/connection_form_controller.dart';
 
-/// Alta y edicion de una conexion. Es una sub-pagina de la seccion `connections`
-/// (`parents: ["connections"]`): se abre desde el listado y comparte el shell del
-/// home, por lo que la opcion del side bar sigue marcada.
+/// Creation and editing of a connection. It's a sub-page of the `connections`
+/// section (`parents: ["connections"]`): it opens from the list and shares the
+/// home's shell, so the sidebar option stays highlighted.
 ///
-/// Son tres decisiones y nada mas: como se llama la cuenta, de que servicio es y
-/// con que credenciales se entra. **Lo que la cuenta hace no se decide aca**: no
-/// hay rol de agente, ni tabla de la que leer, ni herramientas; eso es un bot
-/// sobre esta conexion y se arma en otra parte. Una cuenta se autentica una vez y
-/// la comparten todos los bots que corran encima.
+/// There are three decisions and nothing else: what the account is called,
+/// which service it belongs to, and which credentials it logs in with. **What
+/// the account does is not decided here**: there's no agent role, no table to
+/// read from, no tools; that's a bot on this connection and it's built
+/// elsewhere. An account authenticates once and is shared by all the bots that
+/// run on top of it.
 ///
-/// Es una pagina y no un modal aunque sean tres bloques: los tokens se copian y
-/// pegan desde la consola del servicio, en otra ventana, y un modal se cierra de
-/// un clic afuera. Perder siete campos pegados a mano por un clic al lado no es
-/// una opcion.
+/// It's a page and not a modal even though there are three blocks: the tokens
+/// are copied and pasted from the service's console, in another window, and a
+/// modal closes with a single click outside. Losing seven manually-pasted
+/// fields because of a click to the side is not an option.
 ///
-/// **Es la misma pantalla para las dos cosas.** Que sea un alta o una edicion lo
-/// decide la URL: `/home/connections/new` no trae id y `/home/connections/:id` si.
-/// El id se lee de [Navis.currentArgs] y no por constructor porque la sub-pagina
-/// reusa la unica pagina del shell y el `Navigator` no reconstruye el arbol al
-/// navegar.
+/// **It's the same screen for both things.** Whether it's a creation or an
+/// edit is decided by the URL: `/home/connections/new` brings no id and
+/// `/home/connections/:id` does. The id is read from [Navis.currentArgs] and
+/// not through a constructor because the sub-page reuses the shell's single
+/// page and the `Navigator` doesn't rebuild the tree when navigating.
 ///
-/// Editando, la pantalla espera a que llegue la conexion antes de dibujar nada: su
-/// configuracion es la que llena los campos, y montar el formulario vacio para
-/// llenarlo despues haria saltar el texto un frame mas tarde. Un alta no espera
-/// nada.
+/// When editing, the screen waits for the connection to arrive before drawing
+/// anything: its configuration is what fills the fields, and mounting the empty
+/// form to fill it afterwards would make the text jump a frame later. A
+/// creation waits for nothing.
 ///
-/// Lo que **no** se puede hacer editando es cambiar el servicio. Los secretos
-/// guardados se juntaron para uno, y apuntarlos a otro dejaria valores que ahi no
-/// significan nada: el otro servicio es una conexion nueva.
+/// What **cannot** be done when editing is changing the service. The stored
+/// secrets were gathered for one, and pointing them at another would leave
+/// values that mean nothing there: the other service is a new connection.
 ///
-/// El estado vive en [ConnectionFormController], fuera de los widgets, para que
-/// cada bloque escuche solo lo suyo: elegir el servicio no puede repintar los
-/// campos que se estan escribiendo al lado.
+/// The state lives in [ConnectionFormController], outside the widgets, so each
+/// block only listens to its own thing: choosing the service cannot repaint the
+/// fields being typed into next to it.
 class ConnectionFormSection extends StatefulWidget {
   const ConnectionFormSection({super.key});
 
-  /// Key de la ruta del alta (`/home/connections/new`).
+  /// Key of the creation route (`/home/connections/new`).
   static const String createRouteKey = "connection_new";
 
-  /// Key de la ruta de la edicion (`/home/connections/:id`).
+  /// Key of the edit route (`/home/connections/:id`).
   static const String editRouteKey = "connection_detail";
 
   @override
@@ -71,10 +72,11 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     with BusinessListener<ConnectionFormSection> {
   late final ConnectionFormController _controller;
 
-  /// Nombre de la conexion. Es lo unico que el backend exige de verdad, con el
-  /// mismo largo y los mismos caracteres que acepta del otro lado: letras,
-  /// numeros, espacios, guiones y guion bajo. Un nombre con parentesis o barras lo
-  /// rechazaria la api, asi que se frena aca con un mensaje que se entiende.
+  /// Name of the connection. It's the only thing the backend really requires,
+  /// with the same length and the same characters it accepts on the other end:
+  /// letters, numbers, spaces, hyphens and underscore. A name with parentheses
+  /// or slashes would be rejected by the api, so it's stopped here with a
+  /// message that's understandable.
   static const _namePattern = "[A-Za-zÀ-ÖØ-öø-ÿ0-9 _\\-]";
 
   late final _name = InputController(
@@ -97,7 +99,7 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     }
   );
 
-  /// Descripcion opcional: sin `obligatory`, solo se valida el largo.
+  /// Optional description: without `obligatory`, only the length is validated.
   late final _description = InputController(
     key: "DESCRIPTION",
     form: _controller.headerForm,
@@ -113,27 +115,27 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
   void initState() {
     super.initState();
 
-    // El id vive en la URL: sin el, esto es un alta.
+    // The id lives in the URL: without it, this is a creation.
     _controller = ConnectionFormController(
       connectionId: Navis.currentArgs?["id"] ?? ""
     );
 
-    // Las cargas notifican a sus oyentes; se difieren al primer frame para no
-    // disparar un rebuild mientras el arbol todavia se esta montando.
+    // The loads notify their listeners; they're deferred to the first frame so
+    // a rebuild isn't triggered while the tree is still mounting.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      // El catalogo dibuja el formulario entero (que campos pide cada servicio),
-      // asi que sin el no hay pantalla. Normalmente ya lo pidio el listado.
+      // The catalog draws the whole form (which fields each service asks for),
+      // so without it there's no screen. Normally the list already fetched it.
       context.read<ConnectionCatalogService>().load();
 
       if (_controller.isEditing) _open();
     });
   }
 
-  /// La conexion que se esta editando es de la empresa que estaba activa: su id no
-  /// significa nada en la que se acaba de elegir. Se vuelve al listado, que es lo
-  /// unico que se puede mostrar de la empresa nueva.
+  /// The connection being edited belongs to the company that was active: its id
+  /// means nothing in the one that was just chosen. It goes back to the list,
+  /// which is the only thing that can be shown of the new company.
   @override
   void onBusinessChanged(String businessId) => _back();
 
@@ -143,8 +145,9 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     super.dispose();
   }
 
-  /// Lee la conexion que se va a editar. Trae su configuracion, que secretos ya
-  /// tiene guardados y la descripcion de su proveedor, todo en una sola lectura.
+  /// Reads the connection to be edited. It brings its configuration, which
+  /// secrets it already has stored, and its provider's description, all in one
+  /// read.
   Future<void> _open() async {
     final connection = await context
       .read<ConnectionsService>()
@@ -186,11 +189,11 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     ])
   );
 
-  /// Barra superior: volver al listado, el titulo y el boton de guardar.
+  /// Top bar: back to the list, the title and the save button.
   ///
-  /// El titulo de una edicion es el nombre que la conexion tenia **al abrirla** y
-  /// no lo que se este escribiendo en el campo: si siguiera al input, renombrarla
-  /// reescribiria el encabezado letra por letra.
+  /// The title of an edit is the name the connection had **when it was opened**
+  /// and not what's being typed into the field: if it followed the input,
+  /// renaming it would rewrite the header letter by letter.
   Widget _header(BuildContext context) => Row(children: [
     FeedbackButton(
       action: _back,
@@ -214,8 +217,8 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     ValueListenableBuilder<ConnectionFormStatus>(
       valueListenable: _controller.status,
       builder: (context, status, _) => status != ConnectionFormStatus.ready
-        // Sin formulario no hay nada que guardar: el boton no se muestra
-        // apagado, no se muestra.
+        // Without a form there's nothing to save: the button isn't shown dimmed,
+        // it isn't shown.
         ? const SizedBox.shrink()
         : SizedBox(
             width: AppSize.action * 4,
@@ -228,22 +231,22 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     )
   ]);
 
-  /// Ancho maximo del formulario.
+  /// Maximum form width.
   ///
-  /// Los tres bloques van en una sola columna —son pocos y se leen de corrido— y
-  /// esta es la unica medida que hace falta: en un monitor ancho, un campo de
-  /// texto de punta a punta para pegar un id de cuenta se lee peor, y el selector
-  /// de servicio queda con tarjetas mas anchas que altas. Lo que sobra queda como
-  /// aire a los costados.
+  /// The three blocks go in a single column —they're few and read straight
+  /// through— and this is the only measure needed: on a wide monitor, a
+  /// full-width text field to paste an account id reads worse, and the service
+  /// picker ends up with cards wider than they are tall. What's left over
+  /// becomes air on the sides.
   static double get _maxWidth => AppSize.action * 15;
 
-  /// El formulario: como se llama la cuenta, de que servicio es y sus
-  /// credenciales, en ese orden.
+  /// The form: what the account is called, which service it belongs to and its
+  /// credentials, in that order.
   ///
-  /// El orden no es arbitrario: el servicio decide **que campos existen** debajo,
-  /// asi que antes de elegirlo el bloque de credenciales no puede dibujarse. El
-  /// nombre va primero porque es lo unico que se puede llenar sin haber abierto la
-  /// consola de nadie.
+  /// The order isn't arbitrary: the service decides **which fields exist**
+  /// below, so before choosing it the credentials block can't be drawn. The
+  /// name goes first because it's the only thing that can be filled without
+  /// having opened anyone's console.
   Widget _body() => ScrollableWidget(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
@@ -273,8 +276,8 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
               ])
             ),
             ProviderPicker(controller: _controller),
-            // Las credenciales dependen del servicio: hasta que no se elige uno no
-            // hay campos que dibujar, porque cada uno pide los suyos.
+            // The credentials depend on the service: until one is chosen there are
+            // no fields to draw, because each one asks for its own.
             ValueListenableBuilder<String>(
               valueListenable: _controller.provider,
               builder: (context, code, _) {
@@ -294,11 +297,12 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     ]
   );
 
-  /// Descripcion del servicio elegido.
+  /// Description of the chosen service.
   ///
-  /// Editando sale de la propia conexion (viene pegada al detalle) y si no, del
-  /// catalogo. Se prefiere la de la conexion porque es la que corresponde a lo que
-  /// tiene guardado, aunque el catalogo se haya movido.
+  /// When editing it comes from the connection itself (it comes attached to the
+  /// detail) and otherwise from the catalog. The connection's is preferred
+  /// because it's the one that matches what it has stored, even if the catalog
+  /// has moved on.
   ConnectionProviderModel? _schemaOf(String code) {
     if (code.isEmpty) return null;
 
@@ -310,13 +314,13 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
 
   void _back() => Navis.push(context, "/home/connections");
 
-  /// Guarda la conexion.
+  /// Saves the connection.
   ///
-  /// Lo unico que se exige es el nombre y el servicio: **el resto puede quedar a
-  /// medio llenar a proposito**, porque una cuenta se registra antes de que el
-  /// servicio emita sus tokens y se termina de configurar despues. Queda como
-  /// "falta configurar" en el listado hasta entonces, que es exactamente lo que
-  /// es.
+  /// The only things required are the name and the service: **the rest can be
+  /// left half-filled on purpose**, because an account is registered before the
+  /// service issues its tokens and gets finished configuring later. It stays
+  /// as "needs configuration" in the list until then, which is exactly what it
+  /// is.
   Future<void> _submit() async {
     if (_controller.saving.value) return;
 
@@ -339,9 +343,9 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
 
     _controller.busy(false);
 
-    // Fallo: el error ya lo mostro el servicio y la pantalla se queda con todo lo
-    // escrito, que es lo unico razonable cuando alguien acaba de pegar cuatro
-    // tokens.
+    // Failed: the error was already shown by the service and the screen keeps
+    // everything written, which is the only reasonable thing when someone has
+    // just pasted four tokens.
     if (!saved) return;
 
     FloatFlag.of(context).message(
@@ -353,12 +357,12 @@ class _ConnectionFormSectionState extends State<ConnectionFormSection>
     _back();
   }
 
-  /// Manda la escritura que corresponda y responde solo si salio o no.
+  /// Sends the corresponding write and answers only whether it came out or not.
   ///
-  /// Las dos operaciones del servicio avisan distinto —la edicion devuelve un
-  /// booleano y el alta devuelve el id o relanza— y a esta pantalla le da igual
-  /// cual fue: en las dos ya se mostro el error y lo unico que cambia despues es el
-  /// texto del aviso.
+  /// The service's two operations notify differently —the edit returns a
+  /// boolean and the creation returns the id or rethrows— and this screen
+  /// doesn't care which one it was: in both, the error was already shown and
+  /// the only thing that changes afterwards is the notification text.
   Future<bool> _write(Map<String, dynamic> data) async {
     final service = context.read<ConnectionsService>();
 

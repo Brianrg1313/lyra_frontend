@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/channels/channel_agent_role.dart';
 import 'package:app/services/channels/channel_data_source.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
@@ -16,21 +17,29 @@ import '../widgets/option_card.dart';
 import '../widgets/option_grid.dart';
 import '../state/channel_form_controller.dart';
 
-/// De donde saca el modelo lo que sabe: una tabla de productos, un calendario
-/// de servicios o una base de conocimiento.
+/// Where the model gets what it knows from: a product table, a services
+/// calendar or a knowledge base.
 ///
-/// Es el bloque que ata el canal a datos reales de la empresa. Un canal sin
-/// fuente contesta de memoria, que es lo mismo que decir que inventa precios.
+/// It is the block that ties the channel to real business data. A channel
+/// without a source answers from memory, which is the same as saying it makes
+/// up prices.
 ///
-/// De las tres, hoy **solo la tabla de productos existe**. Las otras dos se
-/// muestran apagadas y con su leyenda a proposito: el calendario va a servir
-/// para agendar citas y la base de conocimiento para que el modelo responda
-/// preguntas o difunda marketing, y quien esta conectando un canal necesita
-/// saber que eso viene para no rearmarlo despues.
+/// **Which of the three are even offered depends on the agent's role**
+/// ([ChannelDataSource.allowedFor]): a seller reads product data (the table
+/// today, the calendar once it exists), while support and general agents are
+/// not there to sell and only get the knowledge base. Choosing a role that no
+/// longer allows the picked source corrects it on its own — see
+/// [ChannelFormController.role].
 ///
-/// Elegida la tabla de productos hay que decir **cual**: la empresa tiene
-/// varias y el canal lee de una. Se guarda el id, no el nombre, asi renombrar
-/// la tabla no desconecta el canal.
+/// Of the three, today **only the product table exists**. The other two are
+/// shown disabled and with their caption on purpose: the calendar will be for
+/// booking appointments and the knowledge base for the model to answer
+/// questions or run marketing, and whoever is connecting a channel needs to
+/// know that is coming so they do not rebuild it later.
+///
+/// Once the product table is chosen, **which one** has to be said: the
+/// business has several and the channel reads from one. The id is stored, not
+/// the name, so renaming the table does not disconnect the channel.
 class DataPicker extends StatelessWidget {
   const DataPicker({super.key, required this.controller});
 
@@ -40,37 +49,44 @@ class DataPicker extends StatelessWidget {
   Widget build(BuildContext context) => FormBlock(
     title: S.of(context).channel_source_title,
     subtitle: S.of(context).channel_source_subtitle,
-    child: ValueListenableBuilder<ChannelDataSource>(
-      valueListenable: controller.source,
-      builder: (context, selected, _) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          OptionGrid(children: [
-            for (final source in ChannelDataSource.values) OptionCard(
-              icon: source.icon,
-              title: source.title(context),
-              subtitle: source.subtitle(context),
-              selected: source == selected,
-              enabled: source.available,
-              badge: source.available
-                ? null
-                : S.of(context).channel_source_soon,
-              action: () => controller.source.value = source
-            )
-          ]),
-          if (selected.needsTable) _TableSelect(controller: controller)
-        ]
+    child: ValueListenableBuilder<ChannelAgentRole>(
+      valueListenable: controller.role,
+      builder: (context, role, _) => ValueListenableBuilder<ChannelDataSource>(
+        valueListenable: controller.source,
+        builder: (context, selected, _) {
+          final options = ChannelDataSource.allowedFor(role);
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              OptionGrid(children: [
+                for (final source in options) OptionCard(
+                  icon: source.icon,
+                  title: source.title(context),
+                  subtitle: source.subtitle(context),
+                  selected: source == selected,
+                  enabled: source.available,
+                  badge: source.available
+                    ? null
+                    : S.of(context).channel_source_soon,
+                  action: () => controller.source.value = source
+                )
+              ]),
+              if (selected.needsTable) _TableSelect(controller: controller)
+            ]
+          );
+        }
       )
     )
   );
 }
 
-/// Cual tabla de productos. Las trae [TablesService], que es la misma cache que
-/// usa la seccion de productos, asi que normalmente ya estan cargadas.
+/// Which product table. [TablesService] brings them, which is the same cache
+/// the products section uses, so normally they are already loaded.
 ///
-/// Si la empresa no tiene ninguna se dice, en vez de mostrar un desplegable
-/// vacio: lo que hay que hacer es crear una tabla, y eso no se resuelve desde
-/// este formulario.
+/// If the business has none it is said, instead of showing an empty dropdown:
+/// what needs to be done is create a table, and that is not solved from this
+/// form.
 class _TableSelect extends StatelessWidget {
   const _TableSelect({required this.controller});
 
@@ -119,8 +135,8 @@ class _TableSelect extends StatelessWidget {
           SelectOption(
             value: table.id,
             placeholder: table.title,
-            // La descripcion ayuda a distinguir dos tablas que se llaman
-            // parecido, que es el caso en el que uno duda.
+            // The description helps distinguish two tables with similar names,
+            // which is the case where one hesitates.
             subtitle: table.description.isEmpty ? null : table.description,
             icon: CI.list
           )

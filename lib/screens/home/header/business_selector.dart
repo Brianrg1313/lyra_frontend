@@ -14,15 +14,15 @@ import 'package:app/services/business/business_model.dart';
 import 'package:core/button.dart';
 import 'package:core/form/style.dart';
 import 'package:app/screens/home/sections/business/business_avatar.dart';
-import 'package:app/screens/modals/create_business/_create_business.dart';
+import 'package:app/screens/modals/business/create_business/_create_business.dart';
 
-/// Empresa activa y cambio de empresa. Vive en el header y no en el side bar
-/// porque lo que se elige aca manda sobre todo lo que se ve: cambiarla vuelve a
-/// montar la seccion abierta con los datos de la elegida.
+/// Active business and business switch. It lives in the header and not in the
+/// side bar because what is chosen here rules over everything that is seen:
+/// changing it remounts the open section with the chosen data.
 ///
-/// Se mide por su contenido: ocupa lo que ocupe el nombre de la empresa activa.
-/// Quien lo coloca ([HomeHeader]) solo le pone un techo, para que un nombre
-/// largo no se coma la barra entera.
+/// It is sized by its content: it takes as much as the name of the active
+/// business takes. Whoever places it ([HomeHeader]) only gives it a cap, so a
+/// long name does not eat the whole bar.
 class BusinessSelector extends StatefulWidget {
   const BusinessSelector({super.key});
 
@@ -38,9 +38,9 @@ class _BusinessSelectorState extends State<BusinessSelector> {
   bool _showing = false;
   int _highlighted = -1;
 
-  /// Ancho minimo del desplegable: el ancla muestra una empresa y la lista
-  /// muestra todas, cada una con su nombre y su descripcion, asi que seguir al
-  /// ancla la dejaria demasiado angosta para leerla.
+  /// Minimum width of the dropdown: the anchor shows one business and the list
+  /// shows all of them, each with its name and description, so following the
+  /// anchor would leave it too narrow to read.
   double get _minWidth => AppSize.action * 5.5;
 
   @override
@@ -52,9 +52,9 @@ class _BusinessSelectorState extends State<BusinessSelector> {
       : _createBusiness(context);
   }
 
-  // -- Ancla --
+  // -- Anchor --
 
-  /// Muestra la empresa activa y despliega la lista al pulsarla.
+  /// Shows the active business and unfolds the list when pressed.
   Widget _selectBusiness(BuildContext context, BusinessService service) => OverlayPortal(
     controller: _portal,
     overlayChildBuilder: (context) => _dropdown(context, service),
@@ -72,14 +72,14 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     )
   );
 
-  /// La fila se mide por lo que hay adentro (`min`), asi el boton vale lo que
-  /// vale el nombre y no un ancho inventado.
+  /// The row is sized by what is inside it (`min`), so the button is worth what
+  /// the name is worth and not a made-up width.
   ///
-  /// El nombre va en un Flexible y no en un Expanded: con Expanded se quedaria
-  /// con todo el techo que le da el header aunque la empresa se llame de dos
-  /// letras. Suelto se mide por el texto, y solo se recorta con puntos
-  /// suspensivos cuando el nombre no entra en ese techo; el avatar y el chevron
-  /// miden lo que miden.
+  /// The name is in a Flexible and not an Expanded: with Expanded it would keep
+  /// all the cap the header gives it even if the business were two letters long.
+  /// Loose it is sized by the text, and only truncated with ellipsis when the
+  /// name does not fit in that cap; the avatar and the chevron measure what
+  /// they measure.
   Widget _current(BuildContext context, BusinessModel business) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -110,20 +110,21 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     ]
   );
 
-  /// La cara de la empresa: su logo, y si todavia no subio ninguno la inicial
-  /// de su nombre. Es el mismo widget con el que se dibuja en su ficha
-  /// ([BusinessAvatar]), dibujado del alto de una fila: una empresa se reconoce
-  /// por la misma imagen se la mire donde se la mire.
+  /// The face of the business: its logo, and if it has not uploaded one yet the
+  /// initial of its name. It is the same widget used to draw it in its record
+  /// ([BusinessAvatar]), drawn at the height of a row: a business is recognized
+  /// by the same image no matter where it is looked at.
   ///
-  /// Pide la miniatura y no el archivo entero: aca ocupa lo que ocupa un icono,
-  /// y el original es el que subio la empresa, con el peso que tenga.
+  /// It asks for the thumbnail and not the whole file: here it takes as much as
+  /// an icon takes, and the original is the one the business uploaded, with
+  /// whatever weight it has.
   Widget _avatar(BusinessModel business) => BusinessAvatar(
     name: business.name,
     url: business.logo?.thumbnail,
     size: AppSize.action - AppSize.spaceXS
   );
 
-  // -- Despliegue --
+  // -- Dropdown --
 
   Widget _dropdown(BuildContext context, BusinessService service) {
     final geometry = _geometry(service);
@@ -209,8 +210,8 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     );
   }
 
-  /// [overlay] solo sirve para pintar: al pulsar se cierra el desplegable y ese
-  /// contexto queda desmontado, asi que el modal se abre con el del selector.
+  /// [overlay] only serves to paint: when pressed the dropdown closes and that
+  /// context is left unmounted, so the modal is opened with the selector's one.
   Widget _createOption(BuildContext overlay, int index) => _Hoverable(
     index: index,
     highlighted: _highlighted,
@@ -229,8 +230,8 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     ])
   );
 
-  /// Se recalcula en cada build del overlay, asi el desplegable reacciona a los
-  /// cambios de tamano de la ventana.
+  /// Recalculated on each build of the overlay, so the dropdown reacts to
+  /// window size changes.
   _DropdownGeometry? _geometry(BusinessService service) {
     final box = _anchor.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || !box.hasSize) return null;
@@ -244,13 +245,13 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     final below = (media.size.height - margin) - bottom - AppSize.gap;
     final above = top - (media.padding.top + margin) - AppSize.gap;
 
-    // Empresas + separador + la opcion de crear.
+    // Businesses + separator + the create option.
     final desired = (AppSize.gap * 2)
       + (_optionHeight * (service.businesses.length + 1))
       + (AppSize.gap * 2) + 1;
 
-    // Baja salvo que no quepa y arriba haya mas sitio; en el header el ancla
-    // esta arriba de todo, asi que casi siempre baja.
+    // It goes down unless it does not fit and there is more room up; in the
+    // header the anchor is at the top, so it almost always goes down.
     final upward = below < desired && above > below;
     double available = upward ? above : below;
 
@@ -265,7 +266,7 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     );
   }
 
-  // -- Interaccion --
+  // -- Interaction --
 
   void _toggle() => _showing ? _close() : _open();
 
@@ -293,10 +294,11 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     }
   }
 
-  // -- Sin empresas --
+  // -- No businesses --
 
-  /// Sin ninguna empresa no hay nada que elegir, asi que en lugar del selector
-  /// va el alta: es el unico camino desde el que arranca todo lo demas.
+  /// Without any business there is nothing to choose, so instead of the selector
+  /// the registration goes: it is the only path from which everything else
+  /// starts.
   Widget _createBusiness(BuildContext context) => Button(
     leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
     title: S.of(context).create_business,
@@ -310,13 +312,13 @@ class _BusinessSelectorState extends State<BusinessSelector> {
   );
 }
 
-/// Alto de cada fila del desplegable, al ras del avatar. Lo comparten el
-/// calculo de la geometria y las propias filas: si divergieran, el desplegable
-/// se recortaria o dejaria hueco muerto al final.
+/// Height of each dropdown row, flush with the avatar. It is shared by the
+/// geometry calculation and the rows themselves: if they diverged, the dropdown
+/// would be cut or leave dead space at the end.
 double get _optionHeight => AppSize.action;
 
-/// Fila del desplegable: resaltado al pasar el raton, con el mismo relleno que
-/// las opciones de `SelectInput`.
+/// Dropdown row: highlighted on hover, with the same padding as the
+/// `SelectInput` options.
 class _Hoverable extends StatelessWidget {
   const _Hoverable({
     required this.index,

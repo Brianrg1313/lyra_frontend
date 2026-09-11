@@ -1,12 +1,12 @@
-/// Una conexion tal como la devuelve `GET /connections/`, con lo justo para
-/// pintar su fila: de que servicio es la cuenta, como la llamo la empresa, si
-/// esta encendida, si esta lista para funcionar y cuantos bots estan corriendo
-/// sobre ella.
+/// A connection exactly as `GET /connections/` returns it, with just enough
+/// to paint its row: which service the account is for, what the business
+/// named it, whether it's on, whether it's ready to work, and how many bots
+/// are running on top of it.
 ///
-/// La configuracion no esta aca a proposito: los tokens y los ids de cuenta se
-/// leen de a una conexion por vez (`GET /connections/detail/:CONNECTION_ID`), y
-/// ningun listado tiene por que mover eso de un lado a otro. Los secretos,
-/// ademas, no los devuelve ninguna lectura.
+/// The configuration is deliberately not here: tokens and account ids are
+/// read one connection at a time (`GET /connections/detail/:CONNECTION_ID`),
+/// and no listing needs to move that around. The secrets, moreover, aren't
+/// returned by any read.
 class ConnectionLiteModel {
   const ConnectionLiteModel({
     required this.id,
@@ -21,38 +21,39 @@ class ConnectionLiteModel {
 
   final String id;
 
-  /// Codigo del servicio (`whatsapp`, `instagram`, ...). Con el se busca el
-  /// proveedor en el catalogo para saber su nombre y su icono.
+  /// Service code (`whatsapp`, `instagram`, ...). It's used to look up the
+  /// provider in the catalog to get its name and icon.
   final String provider;
 
-  /// Nombre que le puso la empresa ("Cuenta principal", "Ventas").
+  /// Name the business gave it ("Main account", "Sales").
   final String name;
 
-  /// Vacia cuando la conexion se creo sin descripcion.
+  /// Empty when the connection was created without a description.
   final String description;
 
-  /// Lugar que ocupa en el orden que armo la empresa.
+  /// Its position in the order the business arranged.
   final int position;
 
-  /// Interruptor de la empresa: una cuenta se puede pausar sin perder su
-  /// configuracion. Distinto de [ready], que es si le falta algo.
+  /// The business's on/off switch: an account can be paused without losing
+  /// its configuration. Different from [ready], which is whether it's
+  /// missing something.
   final bool enabled;
 
-  /// Cuantos bots estan contestando a traves de esta cuenta.
+  /// How many bots are answering through this account.
   ///
-  /// Es el numero que hace que la fila valga la pena leerse —que cuenta es, y
-  /// cuanto esta corriendo encima— y ademas **lo que se pierde al
-  /// desconectarla**: un bot sin cuenta no tiene por donde contestar, asi que la
-  /// baja se los lleva. Por eso la confirmacion los nombra.
+  /// It's the number that makes the row worth reading — which account it is,
+  /// and how much is running on top of it — and also **what gets lost when
+  /// it's disconnected**: a bot without an account has no way to answer, so
+  /// removal takes them down with it. That's why the confirmation names
+  /// them.
   final int bots;
 
-  /// `true` cuando todos los valores obligatorios de su servicio estan
-  /// cargados.
+  /// `true` when all of its service's required values are filled in.
   ///
-  /// Una conexion recien registrada y todavia sin credenciales es perfectamente
-  /// valida —se da de alta antes de que el servicio emita los tokens— y
-  /// simplemente no esta lista. La fila lo muestra como "falta configurar" y no
-  /// como error.
+  /// A freshly registered connection that still has no credentials is
+  /// perfectly valid — it's registered before the service issues its tokens
+  /// — and simply isn't ready yet. The row shows this as "needs configuring"
+  /// rather than as an error.
   final bool ready;
 
   factory ConnectionLiteModel.fromJson(Map json) => ConnectionLiteModel(
@@ -62,14 +63,16 @@ class ConnectionLiteModel {
     description: (json["description"] ?? json["DESCRIPTION"])?.toString() ?? "",
     position: _number(json["position"] ?? json["POSITION"]) ?? 0,
     bots: _number(json["bots"] ?? json["BOTS"]) ?? 0,
-    // Sin dato se asume encendida, que es como nace una conexion del otro lado.
+    // With no data it's assumed to be on, which is how a connection is born
+    // on the other side.
     enabled: _flag(json["enabled"] ?? json["ENABLED"]) ?? true,
-    // Sin dato se asume **no** lista: decir que una cuenta a medio configurar
-    // esta funcionando es peor que pedir que la revisen de mas.
+    // With no data it's assumed **not** ready: saying that a half-configured
+    // account is working is worse than asking for it to be checked
+    // unnecessarily.
     ready: _flag(json["ready"] ?? json["READY"]) ?? false
   );
 
-  /// Copia la fila con lo que se edita desde el listado.
+  /// Copies the row with what can be edited from the listing.
   ConnectionLiteModel copyWith({
     String? name,
     String? description,
@@ -86,8 +89,8 @@ class ConnectionLiteModel {
     ready: ready ?? this.ready
   );
 
-  /// Lee un booleano que puede llegar como tal, como numero o como texto: el
-  /// backend lo normaliza, pero la columna viaja por JSON y MySQL manda
+  /// Reads a boolean that can arrive as such, as a number, or as text: the
+  /// backend normalizes it, but the column travels over JSON and MySQL sends
   /// `TINYINT`.
   static bool? _flag(dynamic value) => switch (value) {
     final bool flag => flag,
@@ -103,9 +106,9 @@ class ConnectionLiteModel {
     _ => null
   };
 
-  /// Decodifica el listado. Como el resto de los listados de la app acepta la
-  /// tabla columnar (`{"keys": [...], "values": [...]}`) con la que viaja
-  /// comprimido y tambien una lista de objetos.
+  /// Decodes the listing. Like the rest of the app's listings, it accepts
+  /// the columnar table (`{"keys": [...], "values": [...]}`) that it travels
+  /// compressed as, and also a list of objects.
   static List<ConnectionLiteModel> fromResponse(dynamic data) {
     if (data is List) {
       return [

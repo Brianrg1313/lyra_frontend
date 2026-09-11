@@ -6,19 +6,20 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/business/business_service.dart';
 
-/// Avisa a una pantalla del home que se activo otra empresa.
+/// Tells a home screen that another business was activated.
 ///
-/// Todo lo que se ve dentro del home es de una empresa —las tablas, los
-/// productos, los reportes—, asi que elegir otra en el selector del side bar
-/// deja vieja a la pantalla que se este mirando. El caso general lo resuelve el
-/// shell montando la seccion de nuevo (ver `Home`): cada seccion vuelve a pedir
-/// sus datos en su `initState` sin escuchar nada por su cuenta.
+/// Everything seen inside the home belongs to a business —the tables, the
+/// products, the reports—, so choosing another one in the side bar selector
+/// makes the screen being looked at go stale. The general case is solved by
+/// the shell mounting the section again (see `Home`): every section requests
+/// its data again in its `initState` without listening to anything on its own.
 ///
-/// Este mixin es para lo que un montaje nuevo no arregla: las **sub-paginas
-/// atadas a un id** (`/home/inventory/:id`, `/home/business/:id`). Ese id es de
-/// la empresa anterior —una tabla que la empresa nueva no tiene—, asi que
-/// volver a montarlas con el mismo id pediria algo que ya no existe. Lo que
-/// corresponde ahi es irse a donde la empresa nueva si tiene algo que mostrar.
+/// This mixin is for what a fresh mount does not fix: the **sub-pages tied to
+/// an id** (`/home/inventory/:id`, `/home/business/:id`). That id belongs to
+/// the previous business —a table the new business does not have—, so
+/// remounting them with the same id would ask for something that no longer
+/// exists. What belongs there is to go where the new business does have
+/// something to show.
 ///
 /// ```dart
 /// class _State extends State<Screen> with BusinessListener<Screen> {
@@ -30,24 +31,24 @@ import 'package:app/services/business/business_service.dart';
 mixin BusinessListener<T extends StatefulWidget> on State<T> {
   BusinessService? _service;
 
-  /// Ultima empresa vista. Es contra la que se compara cada notificacion: el
-  /// servicio avisa por todo (un alta, la carga del detalle) y lo unico que
-  /// interesa aca es que haya cambiado la activa.
+  /// Last business seen. Each notification is compared against it: the service
+  /// notifies about everything (a sign-up, the detail load) and the only thing
+  /// that matters here is that the active one changed.
   String? _businessId;
 
-  /// Se acaba de activar [businessId], que no es la empresa que estaba activa.
+  /// [businessId] was just activated, which is not the business that was active.
   ///
-  /// Corre fuera del `build`, sincronicamente con el cambio, asi que desde aca
-  /// se puede navegar o pedir datos.
+  /// It runs outside the `build`, synchronously with the change, so from here
+  /// one can navigate or request data.
   void onBusinessChanged(String businessId);
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Se lee con `read` y no con `watch`: la suscripcion es a mano porque lo que
-    // se quiere es una llamada al cambiar de empresa, no un rebuild por cada
-    // notificacion del servicio.
+    // It is read with `read` and not with `watch`: the subscription is manual
+    // because what is wanted is a call when the business changes, not a rebuild
+    // for every notification of the service.
     final service = context.read<BusinessService>();
     if (identical(service, _service)) return;
 
@@ -68,9 +69,9 @@ mixin BusinessListener<T extends StatefulWidget> on State<T> {
 
     _businessId = id;
 
-    // Quedarse sin empresa no es cambiar de empresa: es el cierre de sesion, y
-    // de esa navegacion se encarga quien lo dispara. Avisarlo mandaria a la
-    // pantalla a moverse hacia algo que la sesion esta por dejar atras.
+    // Losing the business is not changing businesses: it is the sign-out, and
+    // whoever triggers it handles that navigation. Notifying it would send the
+    // screen moving towards something the session is about to leave behind.
     if (id == null || !mounted) return;
 
     onBusinessChanged(id);

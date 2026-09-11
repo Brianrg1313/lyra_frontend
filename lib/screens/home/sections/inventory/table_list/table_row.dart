@@ -8,25 +8,31 @@ import 'package:provider/provider.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
+import 'primary_mark.dart';
 import 'table_options.dart';
 
-/// Fila del listado de tablas: el icono, el titulo con lo que mide la tabla
-/// (cuantas columnas y cuantos registros) y, si la tiene, la descripcion. Al
-/// tocarla abre la vista de la tabla y sus datos (`/home/inventory/:id`).
+/// Row of the tables list: the icon, the title with what the table measures
+/// (how many columns and how many records) and, if it has one, the description.
+/// Tapping it opens the table's view and its data (`/home/inventory/:id`) —
+/// unless the table is still being imported, in which case it says what is
+/// missing instead of opening a sheet that isn't finished.
 ///
-/// A la derecha lleva el boton de sus opciones, que es desde donde se la
-/// renombra, se abren sus ajustes y se la elimina sin tener que abrirla
+/// On the right it carries its options button, from where it's renamed, its
+/// settings are opened and it's deleted without having to open it
 /// ([TableOptionsButton]).
 ///
-/// Es la forma que toma el listado en telefono; en escritorio la misma tabla se
-/// dibuja como una tarjeta de la grilla ([TableCard]).
+/// If it's the company's primary it says so ([PrimaryTableMark]): it's the one
+/// the stock summary is looking at.
 ///
-/// Lo unico que escucha es **si su tabla se esta importando todavia**: una
-/// importacion sigue corriendo despues de que la tabla ya esta en el listado
-/// (el backend le pone el tipo a las columnas y recien despues suben las filas,
-/// ver [TablesService.import]), y mientras dura la fila lo dice en vez de medir
-/// una tabla que todavia no esta. Se lee con `select` y no con `watch` para que
-/// una importacion repinte su fila y no el listado entero.
+/// It's the shape the list takes on the phone; on desktop the same table is
+/// drawn as a grid card ([TableCard]).
+///
+/// The only thing it listens to is **whether its table is still being
+/// imported**: an import keeps running after the table is already in the list
+/// (the backend types the columns and only then do the rows upload, see
+/// [TablesService.import]), and while it lasts the row says so instead of
+/// measuring a table that isn't there yet. It's read with `select` and not
+/// `watch` so an import repaints its row and not the whole list.
 class TableListRow extends StatelessWidget {
   const TableListRow({super.key, required this.table});
 
@@ -41,7 +47,10 @@ class TableListRow extends StatelessWidget {
     );
 
     return FeedbackButton(
-      action: () => Navis.push(context, "/home/inventory/${table.id}"),
+      action: () => _open(context, stage),
+      // The wait cursor says the row does not open **before** it is clicked,
+      // which is the only moment the notice cannot be given.
+      mouseCursor: stage == null ? null : SystemMouseCursors.wait,
       color: scheme.surfaceOver,
       padding: EdgeInsets.all(AppSize.spaceS),
       child: Row(children: [
@@ -66,6 +75,10 @@ class TableListRow extends StatelessWidget {
             Row(children: [
               Flexible(child: TextMedium(table.title, ellipsis: true, bold: true)),
               SizedBox(width: AppSize.spaceS),
+              if (table.primary) ...[
+                const PrimaryTableMark(),
+                SizedBox(width: AppSize.gap)
+              ],
               if (stage != null) ...[
                 SizedBox(
                   width: AppSize.text * 0.8,
@@ -99,12 +112,29 @@ class TableListRow extends StatelessWidget {
     );
   }
 
-  /// Lo que mide la tabla: sus columnas y sus registros, en un solo renglon.
+  /// Opens the table, unless it is still being built.
   ///
-  /// Los registros se cuentan aparte de las columnas y esa cuenta puede fallar
-  /// sola (ver [TableLiteModel.records]). Cuando no vino, la fila muestra solo
-  /// las columnas: es preferible decir menos a decir que una tabla cargada esta
-  /// vacia.
+  /// A table is in the list from the moment it exists, which is a good half a
+  /// minute before it is finished: its columns are still `text`, its rows are
+  /// not up yet, and a sheet in that state reads as an import that failed
+  /// rather than as one that is halfway. So the tap says what is missing
+  /// instead of opening it —doing nothing at all would read as a broken card,
+  /// which is the same misunderstanding one step earlier.
+  void _open(BuildContext context, TableImportStage? stage) {
+    if (stage != null) {
+      FloatFlag.of(context).message(S.of(context).import_table_busy);
+
+      return;
+    }
+
+    Navis.push(context, "/home/inventory/${table.id}");
+  }
+
+  /// What the table measures: its columns and its records, in a single row.
+  ///
+  /// Records are counted apart from columns and that count can fail on its own
+  /// (see [TableLiteModel.records]). When it didn't come, the row shows only
+  /// the columns: it's better to say less than to say a loaded table is empty.
   String _size(BuildContext context) {
     final fields = S.of(context).table_field_count(table.fields);
 
@@ -114,12 +144,13 @@ class TableListRow extends StatelessWidget {
     return "$fields · ${S.of(context).table_record_count(records)}";
   }
 
-  /// Que le falta a la tabla, mientras se la esta importando.
+  /// What the table is missing, while it's being imported.
   ///
-  /// Ocupa el lugar de la medida y no se suma a ella porque esa medida todavia
-  /// no significa nada: las columnas pueden cambiar de aca al final (el backend
-  /// le agrega la de imagen) y las filas ni siquiera empezaron a subir. Decir
-  /// "0 registros" de una planilla de mil filas seria peor que no decir nada.
+  /// It takes the place of the measure and isn't added to it because that
+  /// measure doesn't mean anything yet: the columns can change from here to the
+  /// end (the backend adds the image one) and the rows haven't even started
+  /// uploading. Saying "0 records" for a thousand-row spreadsheet would be worse
+  /// than saying nothing.
   String _stage(BuildContext context, TableImportStage stage) => switch (stage) {
     TableImportStage.preparing => S.of(context).import_table_preparing,
     TableImportStage.loading => S.of(context).import_table_loading

@@ -9,27 +9,27 @@ import 'package:app/services/business/business_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/modals/edit_business_field/business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
 import 'profile_field.dart';
 
-/// Un dato del perfil que se elige de una lista cerrada —el sector, el idioma,
-/// la moneda—, con el desplegable en el lugar del valor.
+/// A profile datum chosen from a closed list —the sector, the language, the
+/// currency—, with the dropdown in the place of the value.
 ///
-/// Elegir no es escribir: no hay nada que redactar, ni que validar, ni un error
-/// que leer debajo. Abrir un modal para eso es tres pasos (abrir, elegir,
-/// guardar) donde solo hay uno, y encima tapa la ficha desde la que se estaba
-/// mirando el resto. Aca la opcion elegida **es** el valor que se lee, y
-/// tocarla despliega las otras en el mismo sitio.
+/// Choosing isn't typing: there's nothing to draft, nothing to validate, or an
+/// error to read below. Opening a modal for that is three steps (open, choose,
+/// save) where there's only one, and on top it covers the sheet the rest was
+/// being looked at from. Here the chosen option **is** the value that's read,
+/// and touching it unfolds the others in the same spot.
 ///
-/// Por eso tampoco lleva boton de guardar: elegir una opcion es el cambio, asi
-/// que se manda ahi mismo. Mientras viaja, el campo queda deshabilitado —lo
-/// hace [FormController.loading]— para que no se elija otra cosa encima de la
-/// que todavia no se guardo.
+/// That's why it doesn't carry a save button either: choosing an option is the
+/// change, so it's sent right there. While it travels, the field stays
+/// disabled —[FormController.loading] does that— so nothing else is chosen on
+/// top of what hasn't been saved yet.
 ///
-/// Si el guardado falla, el desplegable vuelve a lo que habia: el error ya lo
-/// muestra el servicio, y dejar en pantalla una opcion que el backend no acepto
-/// es la unica forma de que la ficha mienta.
+/// If the save fails, the dropdown returns to what there was: the error is
+/// already shown by the service, and leaving on screen an option the backend
+/// didn't accept is the only way the sheet lies.
 class ProfileSelectField extends StatefulWidget {
   const ProfileSelectField({
     super.key,
@@ -42,7 +42,8 @@ class ProfileSelectField extends StatefulWidget {
   final IconData icon;
   final String label;
 
-  /// El dato: con que clave viaja, que hay elegido hoy y entre que opciones.
+  /// The datum: which key it travels with, what's chosen today and between
+  /// which options.
   final BusinessField field;
 
   final String? description;
@@ -54,8 +55,8 @@ class ProfileSelectField extends StatefulWidget {
 class _ProfileSelectFieldState extends State<ProfileSelectField> {
   final _form = FormController();
 
-  /// El `initial` es el codigo guardado (`RETAIL`) y no la etiqueta que se lee:
-  /// [SelectInput] lo traduce a su opcion al montarse.
+  /// The `initial` is the saved code (`RETAIL`) and not the label that's read:
+  /// [SelectInput] translates it to its option on mount.
   late final _input = InputController.select(
     key: widget.field.key,
     form: _form,
@@ -63,30 +64,31 @@ class _ProfileSelectFieldState extends State<ProfileSelectField> {
     obligatory: true
   );
 
-  /// Lo ultimo que el backend acepto. Es contra lo que se compara para saber si
-  /// hay algo que mandar, y a lo que se vuelve si el envio falla.
+  /// The last thing the backend accepted. It's what it's compared against to
+  /// know if there's something to send, and what's returned to if the send
+  /// fails.
   late String _saved = widget.field.value;
 
-  /// Cambia cada vez que hay que rearmar el desplegable con lo que dice el
-  /// controlador: al volver atras un envio fallido, o cuando el dato cambio por
-  /// fuera de esta fila. [SelectInput] se sincroniza al montarse, asi que la
-  /// unica forma de que relea el valor es que sea otro widget.
+  /// Changes every time the dropdown has to be rebuilt with what the controller
+  /// says: when returning from a failed send, or when the datum changed from
+  /// outside this row. [SelectInput] syncs on mount, so the only way it
+  /// re-reads the value is for it to be a different widget.
   int _revision = 0;
 
   @override
   void didUpdateWidget(ProfileSelectField old) {
     super.didUpdateWidget(old);
 
-    // El perfil se releyo y este dato quedo en otra cosa: no fue este
-    // desplegable (ahi [_saved] ya estaria al dia), asi que se lo alinea. Sin
-    // `setState`: el rebuild viene inmediatamente despues de esto.
+    // The profile was re-read and this datum ended up different: it wasn't this
+    // dropdown (there [_saved] would already be up to date), so it's aligned.
+    // Without `setState`: the rebuild comes immediately after this.
     if (widget.field.value != _saved) _reset(widget.field.value);
   }
 
   @override
   void dispose() {
-    // El form es de esta fila, asi que libera al controlador con el. El
-    // desplegable no lo toca: no es suyo, se lo prestamos.
+    // The form is of this row, so it frees the controller with it. The
+    // dropdown doesn't touch it: it isn't its own, we lend it to it.
     _form.dispose();
     super.dispose();
   }
@@ -97,9 +99,9 @@ class _ProfileSelectFieldState extends State<ProfileSelectField> {
     label: widget.label,
     description: widget.description,
     child: ConstrainedBox(
-      // El desplegable no se estira con la columna: es una lista de opciones
-      // cortas (un idioma, un codigo de moneda) y un campo del ancho de la
-      // ficha deja la etiqueta sola en un extremo y la flecha en el otro.
+      // The dropdown doesn't stretch with the column: it's a list of short
+      // options (a language, a currency code) and a field the width of the
+      // sheet leaves the label alone at one end and the arrow at the other.
       constraints: BoxConstraints(maxWidth: _fieldWidth),
       child: SelectInput(
         key: ValueKey("${widget.field.key}_${_saved}_$_revision"),
@@ -108,23 +110,23 @@ class _ProfileSelectFieldState extends State<ProfileSelectField> {
         placeholder: S.of(context).business_profile_select,
         emptyText: S.of(context).business_profile_select_empty,
         radius: AppSize.cornerInset(AppSize.gap),
-        // Sin hueco para el error debajo: lo unico que puede salir mal aca es
-        // el envio, y eso se avisa con la bandera flotante como el resto de las
-        // escrituras del perfil.
+        // No room for the error below: the only thing that can go wrong here is
+        // the send, and that's announced with the floating flag like the rest
+        // of the profile's writes.
         buttonSpace: false,
         onSelected: _save
       )
     )
   );
 
-  /// Ancho del desplegable. Es el de un campo de formulario, no el de la
-  /// columna: asi mide lo mismo en la ficha ancha y en la angosta, y las tres
-  /// listas del perfil quedan alineadas entre si.
+  /// Width of the dropdown. It's a form field's, not the column's: so it
+  /// measures the same in the wide sheet and the narrow one, and the three
+  /// profile lists stay aligned with each other.
   static double get _fieldWidth => AppSize.action * 6;
 
   Future<void> _save(SelectOption option) async {
-    // Volver a elegir lo mismo no es un cambio: se evita el viaje y la
-    // relectura del perfil que lo dejaria todo igual.
+    // Choosing the same thing again isn't a change: the trip and the profile
+    // re-read that would leave everything the same are avoided.
     if (option.value == _saved) return;
 
     final service = context.read<BusinessService>();
@@ -146,14 +148,14 @@ class _ProfileSelectFieldState extends State<ProfileSelectField> {
       return;
     }
 
-    // Sin aviso de guardado: la opcion elegida se quedo en el desplegable, que
-    // es donde se estaba mirando. Lo que si se avisa es el fallo, y de eso se
-    // encarga el servicio.
+    // Without a save notice: the chosen option stayed in the dropdown, which
+    // is where the eyes were. What is announced is the failure, and the
+    // service takes care of that.
     setState(() => _saved = option.value);
   }
 
-  /// Deja el desplegable mostrando [value]: se lo escribe al controlador y se
-  /// lo rearma, que es lo unico que hace que vuelva a leerlo.
+  /// Leaves the dropdown showing [value]: it's written to the controller and
+  /// it's rebuilt, which is the only thing that makes it read it again.
   void _reset(String value) {
     _saved = value;
     _input.selectedValue = value;

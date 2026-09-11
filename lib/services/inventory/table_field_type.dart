@@ -4,33 +4,45 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:core/form.dart';
 
-/// Tipo de informacion que guarda un campo de una tabla de productos.
+/// Type of information that a field of a product table stores.
 ///
-/// Cumple dos funciones y por eso no alcanza con "texto" a secas:
+/// It serves two purposes and that is why just "text" is not enough:
 ///
-/// 1. Le dice a la IA que esperar en esa columna (un importe, un codigo de
-///    articulo, una fecha de caducidad), para que pueda leer, completar y
-///    contrastar el catalogo sin que nadie se lo explique campo por campo.
-/// 2. Define con que UI se rellena el campo al cargar stock: un teclado
-///    numerico para [number], un selector de moneda para [price], un
-///    calendario para [date], un interruptor para [boolean].
+/// 1. It tells the AI what to expect in that column (an amount, an item
+///    code, an expiry date), so it can read, complete and
+///    cross-check the catalog without anyone explaining it field by field.
+/// 2. It defines which UI fills the field when loading stock: a numeric
+///    keyboard for [number], a currency picker for [price], a
+///    calendar for [date], a dropdown for [options].
 ///
-/// [vector] es la salida para lo que no encaja en ningun tipo concreto: texto
-/// libre que el backend indexa por significado para que la IA lo busque.
+/// [title] and [description] are the two that the backend **indexes by
+/// meaning**: they are the text the AI reads and searches by. They are two and not
+/// one because they answer different questions —how the product is **named** and what
+/// it **is**— and everything that has to name a row (the POS ticket, the
+/// agent's cart, the stock summary) reads the first one instead of
+/// guessing which of the text columns was the name.
 ///
-/// [counter] y [stock] no se escriben a mano: los lleva el backend (el segundo,
-/// contra el motor de inventario). Se declaran igual porque forman parte de la
-/// tabla y hay que reservarles la columna.
+/// [counter] and [stock] are not written by hand: the backend carries them (the second one,
+/// against the inventory engine). They are declared the same because they are part of the
+/// table and their column has to be reserved.
 ///
-/// La lista de codigos es la del backend y tiene que coincidir exactamente:
-/// es lo unico que viaja en el alta y en la lectura de una tabla.
+/// The code list is the backend's (the `TYPE` rule of its validator) and
+/// has to match exactly: it is the only thing that travels in creation and in
+/// reading a table. The order here is the one there, so both lists
+/// can be read side by side.
 enum TableFieldType {
   text,
   textarea,
+  title,
+  description,
+  sku,
+  barcode,
   number,
   decimal,
   price,
-  sku,
+  currency,
+  percentage,
+  measure,
   counter,
   boolean,
   date,
@@ -38,23 +50,38 @@ enum TableFieldType {
   email,
   phone,
   url,
-  select,
+  options,
+  categories,
   image,
-  vector,
   stock;
 
-  /// El desconocido cae en [text]: si el backend manda un tipo que esta
-  /// version todavia no conoce, el campo se sigue viendo y editando como texto
-  /// en vez de perderse. No cae en [vector] a proposito, que arrastra una
-  /// indexacion semantica que ese campo puede no tener.
+  /// The unknown falls into [text]: if the backend sends a type that this
+  /// version does not know yet, the field keeps being seen and edited as text
+  /// instead of being lost. It deliberately does not fall into any of the semantic ones, which
+  /// drag an indexing that field may not have.
+  ///
+  /// `SELECT` and `VECTOR` are the two old names and they keep being read: the
+  /// database migrates them on its own (`select` was renamed to `options`, and `vector` was
+  /// split into [title] and [description]), but an installation that has not
+  /// run the migration yet has to draw its columns anyway. A
+  /// surviving `VECTOR` falls into [description] and not [title] for the same reason
+  /// the migration leaves there everyone but the first one: a table can have
+  /// several, and assuming each one is the product name would be worse than
+  /// assuming none of them is.
   static TableFieldType from(dynamic raw) => switch (
     raw?.toString().toUpperCase()
   ) {
     "TEXTAREA" => textarea,
+    "TITLE" => title,
+    "DESCRIPTION" => description,
+    "SKU" => sku,
+    "BARCODE" => barcode,
     "NUMBER" => number,
     "DECIMAL" => decimal,
     "PRICE" => price,
-    "SKU" => sku,
+    "CURRENCY" => currency,
+    "PERCENTAGE" => percentage,
+    "MEASURE" => measure,
     "COUNTER" => counter,
     "BOOLEAN" => boolean,
     "DATE" => date,
@@ -62,41 +89,30 @@ enum TableFieldType {
     "EMAIL" => email,
     "PHONE" => phone,
     "URL" => url,
-    "SELECT" => select,
+    "OPTIONS" || "SELECT" => options,
+    "CATEGORIES" => categories,
     "IMAGE" => image,
-    "VECTOR" => vector,
     "STOCK" => stock,
+    "VECTOR" => description,
     _ => text
   };
 
-  /// Codigo que viaja al backend. No se traduce.
-  String get value => switch (this) {
-    text => "TEXT",
-    textarea => "TEXTAREA",
-    number => "NUMBER",
-    decimal => "DECIMAL",
-    price => "PRICE",
-    sku => "SKU",
-    counter => "COUNTER",
-    boolean => "BOOLEAN",
-    date => "DATE",
-    datetime => "DATETIME",
-    email => "EMAIL",
-    phone => "PHONE",
-    url => "URL",
-    select => "SELECT",
-    image => "IMAGE",
-    vector => "VECTOR",
-    stock => "STOCK"
-  };
+  /// Code that travels to the backend. It is not translated.
+  String get value => name.toUpperCase();
 
   String label(BuildContext context) => switch (this) {
     text => S.of(context).field_type_text,
     textarea => S.of(context).field_type_textarea,
+    title => S.of(context).field_type_title,
+    description => S.of(context).field_type_description,
+    sku => S.of(context).field_type_sku,
+    barcode => S.of(context).field_type_barcode,
     number => S.of(context).field_type_number,
     decimal => S.of(context).field_type_decimal,
     price => S.of(context).field_type_price,
-    sku => S.of(context).field_type_sku,
+    currency => S.of(context).field_type_currency,
+    percentage => S.of(context).field_type_percentage,
+    measure => S.of(context).field_type_measure,
     counter => S.of(context).field_type_counter,
     boolean => S.of(context).field_type_boolean,
     date => S.of(context).field_type_date,
@@ -104,21 +120,27 @@ enum TableFieldType {
     email => S.of(context).field_type_email,
     phone => S.of(context).field_type_phone,
     url => S.of(context).field_type_url,
-    select => S.of(context).field_type_select,
+    options => S.of(context).field_type_options,
+    categories => S.of(context).field_type_categories,
     image => S.of(context).field_type_image,
-    vector => S.of(context).field_type_vector,
     stock => S.of(context).field_type_stock
   };
 
-  /// Que informacion se espera encontrar en el campo. Se muestra bajo la
-  /// etiqueta al elegir el tipo, para que el administrador sepa cual encaja.
+  /// What information is expected to be found in the field. It is shown under the
+  /// label when choosing the type, so the administrator knows which one fits.
   String hint(BuildContext context) => switch (this) {
     text => S.of(context).field_type_text_hint,
     textarea => S.of(context).field_type_textarea_hint,
+    title => S.of(context).field_type_title_hint,
+    description => S.of(context).field_type_description_hint,
+    sku => S.of(context).field_type_sku_hint,
+    barcode => S.of(context).field_type_barcode_hint,
     number => S.of(context).field_type_number_hint,
     decimal => S.of(context).field_type_decimal_hint,
     price => S.of(context).field_type_price_hint,
-    sku => S.of(context).field_type_sku_hint,
+    currency => S.of(context).field_type_currency_hint,
+    percentage => S.of(context).field_type_percentage_hint,
+    measure => S.of(context).field_type_measure_hint,
     counter => S.of(context).field_type_counter_hint,
     boolean => S.of(context).field_type_boolean_hint,
     date => S.of(context).field_type_date_hint,
@@ -126,19 +148,25 @@ enum TableFieldType {
     email => S.of(context).field_type_email_hint,
     phone => S.of(context).field_type_phone_hint,
     url => S.of(context).field_type_url_hint,
-    select => S.of(context).field_type_select_hint,
+    options => S.of(context).field_type_options_hint,
+    categories => S.of(context).field_type_categories_hint,
     image => S.of(context).field_type_image_hint,
-    vector => S.of(context).field_type_vector_hint,
     stock => S.of(context).field_type_stock_hint
   };
 
   IconData get icon => switch (this) {
     text => Icons.short_text,
     textarea => Icons.notes_outlined,
+    title => Icons.title,
+    description => CI.ia,
+    sku => Icons.qr_code_2,
+    barcode => Icons.barcode_reader,
     number => Icons.numbers,
     decimal => Icons.straighten,
     price => CI.wallet,
-    sku => Icons.qr_code_2,
+    currency => CI.cashbox,
+    percentage => CI.discount,
+    measure => CI.kg_square,
     counter => Icons.plus_one,
     boolean => Icons.toggle_on_outlined,
     date => CI.calendar,
@@ -146,92 +174,145 @@ enum TableFieldType {
     email => CI.mail,
     phone => CI.phone,
     url => CI.link,
-    select => Icons.arrow_drop_down_circle_outlined,
+    options => Icons.arrow_drop_down_circle_outlined,
+    categories => CI.list,
     image => CI.image,
-    vector => CI.ia,
     stock => Icons.inventory_2_outlined
   };
 
-  /// Si el campo se carga a mano.
+  /// Whether the field is filled by hand.
   ///
-  /// [counter] y [stock] los lleva el backend (el segundo, contra el motor de
-  /// inventario): sus celdas se ven como un dato mas, pero apagadas y sin
-  /// editor.
+  /// [counter] and [stock] are carried by the backend (the second one, against the
+  /// inventory engine): their cells look like just another datum, but disabled and without
+  /// an editor.
   bool get editable => switch (this) {
     counter || stock => false,
     _ => true
   };
 
-  /// Si el campo se **toca** en vez de escribirse.
+  /// Whether the field text is **indexed by the backend by meaning**: it is what
+  /// the AI reads and searches by, and not just another datum of the row.
   ///
-  /// Ni una lista ni una imagen tienen editor de texto: su celda despliega algo
-  /// y se elige ahi —las opciones del campo en una, que hacer con la foto en la
-  /// otra—. Por eso hace falta distinguirlo de [editable] —que dice si el dato
-  /// se carga a mano, y las dos se cargan a mano— y por eso lo sabe el tipo y no
-  /// la celda: es la misma pregunta que decide si el cursor abre el editor o el
-  /// desplegable, y la hacen tanto el toque como el teclado.
-  ///
-  /// Es tambien lo que decide como respira la celda: las dos dibujan su propio
-  /// marco adentro, asi que les toca el aire de un marco y no el de un texto
-  /// (ver `SheetStyle.framePadding`).
-  bool get picker => this == select || this == image;
+  /// The type knows it because there are three who ask the same thing and all three
+  /// answer the same —with the brand color—: the cell, the editor and the
+  /// stock summary. They are [title] and [description], the two that replaced the
+  /// old `vector`.
+  bool get semantic => this == title || this == description;
 
-  /// Si el campo guarda una fecha.
+  /// Whether the field picks its values from a **closed list** that belongs to
+  /// the column (see `TableFieldModel.options`).
   ///
-  /// Las dos se escriben igual —se tipean numeros— y las dos se leen igual, asi
-  /// que lo que las distingue es solo si ademas llevan hora, y eso ya lo dice el
-  /// dato guardado (ver `ProductDate.hasTime`). Lo sabe el tipo porque son dos
-  /// los que preguntan lo mismo: la celda, para escribir la fecha en letras, y
-  /// el editor, para cambiarle el espacio por una barra mientras se tipea.
+  /// There are two and the difference is how many each record stores: from an [options]
+  /// only one (a condition, a size), from a [categories] several (a product
+  /// is "shoes" and "sports" at the same time). That is why they are two types and not one with
+  /// a switch: what changes is not how it is picked but what is stored in
+  /// the cell, a text versus a list.
+  bool get listed => this == options || this == categories;
+
+  /// Whether a cell of this field stores **several** values.
+  bool get multiple => this == categories;
+
+  /// Whether the field's numbers do not bring their own symbol, so the symbol belongs to
+  /// the column and travels with it (see `TableFieldModel.unit`): the currency of
+  /// [price] and [currency], the magnitude of [measure].
+  ///
+  /// [percentage] is deliberately left out: there the unit **is** the type.
+  bool get united => this == price || this == currency || this == measure;
+
+  /// Whether the field value is money. Both are read the same —an amount with the
+  /// symbol of its currency— and the only thing that separates them is that [price] is what
+  /// the company **charges**, and that is why it is the only one the agent can tell
+  /// a client.
+  bool get money => this == price || this == currency;
+
+  /// Whether the field is **touched** instead of written.
+  ///
+  /// Neither a list nor an image has a text editor: their cell deploys something
+  /// and it is chosen there —the field options in one, what to do with the photo in the
+  /// other—. That is why it needs to be distinguished from [editable] —which says whether the datum
+  /// is filled by hand, and both are filled by hand— and that is why the type knows it and not
+  /// the cell: it is the same question that decides whether the cursor opens the editor or the
+  /// dropdown, and both the touch and the keyboard ask it.
+  ///
+  /// It is also what decides how the cell breathes: both draw their own
+  /// frame inside, so they get the air of a frame and not of a text
+  /// (see `SheetStyle.framePadding`).
+  bool get picker => listed || this == image;
+
+  /// Whether the field stores a date.
+  ///
+  /// Both are written the same —numbers are typed— and both are read the same, so
+  /// the only thing that distinguishes them is whether they also carry a time, and that is already said by the
+  /// stored datum (see `ProductDate.hasTime`). The type knows it because there are two
+  /// who ask the same thing: the cell, to write the date in letters, and
+  /// the editor, to change its space for a slash while typing.
   bool get isDate => this == date || this == datetime;
 
-  /// Con que puntero se ve la celda de este campo.
+  /// With which pointer the cell of this field is seen.
   ///
-  /// Es [picker] contestado para el mouse: donde se escribe va el puntero de
-  /// escribir, y donde se toca y se despliega algo va el de un boton. El puntero
-  /// es lo unico que dice, **antes** de tocar, si esa celda se escribe o se
-  /// elige: los dos tipos de celda se ven parecidos y hasta ahora las dos
-  /// llevaban el mismo puntero de planilla, que no distingue nada.
+  /// It is [picker] answered for the mouse: where it is written goes the text
+  /// pointer, and where it is touched and something opens goes the one of a button. The pointer
+  /// is the only thing that says, **before** touching, whether that cell is written or
+  /// chosen: both cell types look similar and until now both
+  /// carried the same spreadsheet pointer, which distinguishes nothing.
   ///
-  /// Lo sabe el tipo y no la celda por lo mismo que [alignment]: es una
-  /// propiedad de la columna, igual en todas sus filas. Quien lo pinta decide
-  /// aparte que hacer con una celda que **no** se escribe (un campo que lleva el
-  /// backend, una fila que todavia no llego): ahi no va ninguno de los dos.
+  /// The type knows it and not the cell for the same reason as [alignment]: it is a
+  /// property of the column, the same in all its rows. Whoever paints it decides
+  /// separately what to do with a cell that is **not** written (a field carried by the
+  /// backend, a row that has not arrived yet): none of the two goes there.
   MouseCursor get cursor =>
     picker ? SystemMouseCursors.click : SystemMouseCursors.text;
 
-  /// Como se alinea el valor en su celda: los numeros a la derecha y el resto a
-  /// la izquierda, como en una planilla.
+  /// How the value is aligned in its cell: numbers to the right and the rest to
+  /// the left, like in a spreadsheet.
   TextAlign get alignment => switch (this) {
-    number || decimal || price || counter || stock => TextAlign.right,
+    number ||
+    decimal ||
+    price ||
+    currency ||
+    percentage ||
+    measure ||
+    counter ||
+    stock => TextAlign.right,
     _ => TextAlign.left
   };
 
-  /// Teclado con el que se escribe el campo. Los tipos numericos abren el de
-  /// numeros; el resto, el de texto.
+  /// Keyboard with which the field is written. The numeric types open the
+  /// numbers one; the rest, the text one.
   TextInputType get keyboard => switch (this) {
     number || counter || stock => TextInputType.number,
-    decimal || price => const TextInputType.numberWithOptions(decimal: true),
+    decimal ||
+    price ||
+    currency ||
+    percentage ||
+    measure => const TextInputType.numberWithOptions(decimal: true),
     email => TextInputType.emailAddress,
     phone => TextInputType.phone,
     url => TextInputType.url,
-    textarea => TextInputType.multiline,
+    textarea || description => TextInputType.multiline,
     _ => TextInputType.text
   };
 
-  /// Los tipos en el orden en que se ofrecen: [vector] primero y el resto como
-  /// estan declarados.
+  /// The types in the order they are offered: the two semantic ones first and the
+  /// rest as they are declared.
   ///
-  /// [vector] encabeza la lista porque es el que le da sentido al catalogo: es
-  /// el texto libre que el backend indexa por significado, o sea lo que la IA
-  /// lee, busca y contrasta. Una columna de texto suelto casi siempre quiere
-  /// ser eso, asi que se ofrece antes que el resto en vez de quedar perdida al
-  /// final de una lista de diecisiete.
-  static List<TableFieldType> get ordered =>
-    [vector, for (final type in values) if (type != vector) type];
+  /// [title] and [description] head the list because they are the ones that give
+  /// meaning to the catalog: they are the text the backend indexes by meaning, that
+  /// is, what the AI reads, searches and cross-checks. A loose text column almost
+  /// always wants to be one of the two, so they are offered before the rest instead
+  /// of getting lost in the middle of a list of twenty-three.
+  static List<TableFieldType> get ordered => [
+    title,
+    description,
+    for (final type in values)
+      if (type != title && type != description) type
+  ];
 
-  /// Opciones del desplegable de tipos, en el orden de [ordered].
-  static List<SelectOption> options(BuildContext context) => [
+  /// Type dropdown options, in the order of [ordered].
+  ///
+  /// It is called [menu] and not `options` because `options` is already one of the types: the
+  /// datum won the name before the list used to pick it.
+  static List<SelectOption> menu(BuildContext context) => [
     for (final type in ordered) SelectOption(
       value: type.value,
       placeholder: type.label(context),

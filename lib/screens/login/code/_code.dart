@@ -8,9 +8,9 @@ import 'package:app/services/sign_in/sign_in_service.dart';
 // WIDGETS
 import 'desktop/_body.dart';
 
-/// Segundo paso del login cuando el metodo de la cuenta es el codigo por
-/// correo. Se llega desde `Login`, que ya provoco el envio del codigo al
-/// resolver el metodo.
+/// Second step of the login when the account's method is the email code. Reached
+/// from `Login`, which already triggered sending the code when it resolved the
+/// method.
 class SignInCode extends PageBuilder {
   const SignInCode({super.key});
 

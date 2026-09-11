@@ -3,24 +3,24 @@ import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:app/toolkit/toolkit.dart';
 import 'package:core/form.dart' show SelectOption;
 
-/// Plantilla de tabla: un rubro con un nombre reconocible, para no arrancar de
-/// una tabla vacia sin ninguna pista de que cargar. Es solo un catalogo de
-/// nombres: quien arma las columnas de cada rubro es el backend, al recibir
-/// [value] en el alta ([TablesService.create]) cuando no es [blank]. El front
-/// no conoce ni carga columnas por su cuenta.
+/// Table template: a category with a recognizable name, so as not to start from
+/// an empty table with no clue of what to fill in. It is only a catalog of
+/// names: whoever builds the columns for each category is the backend, when it
+/// receives [value] on creation ([TablesService.create]) when it is not [blank]. The front
+/// does not know or load columns on its own.
 ///
-/// [blank] es la que arranca elegida y no manda rubro: elegir una plantilla
-/// nunca es obligatorio para crear una tabla.
+/// [blank] is the one that starts selected and sends no category: choosing a template
+/// is never required to create a table.
 ///
-/// Los rubros se pensaron para no confundirse entre si al elegirlos: por eso
-/// "belleza" y "accesorios de belleza" son uno solo (`beauty`) en vez de dos
-/// que un usuario apurado difícilmente distinga.
+/// The categories were designed not to be confused with each other when choosing them: that is why
+/// "beauty" and "beauty accessories" are one single one (`beauty`) instead of two
+/// that a rushed user would hardly tell apart.
 class TableTemplate {
   const TableTemplate({required this.value, required this.label});
 
-  /// Codigo del rubro. Viaja tal cual al backend (`TEMPLATE` en el alta)
-  /// cuando no es [blank]; del otro lado se resuelve a las columnas que le
-  /// correspondan.
+  /// Category code. It travels as-is to the backend (`TEMPLATE` on creation)
+  /// when it is not [blank]; on the other side it resolves to the columns that
+  /// correspond to it.
   final String value;
   final String label;
 
@@ -39,7 +39,7 @@ class TableTemplate {
     TableTemplate(value: "ACCESSORIES", label: S.of(context).table_template_accessories)
   ];
 
-  /// Opciones del desplegable, en el mismo orden que [all].
+  /// Dropdown options, in the same order as [all].
   static List<SelectOption> options(BuildContext context) => [
     for (final template in all(context))
       SelectOption(value: template.value, placeholder: template.label)

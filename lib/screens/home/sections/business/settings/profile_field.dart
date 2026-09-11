@@ -2,28 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
-import 'package:app/screens/modals/edit_business_field/_edit_business_field.dart';
-import 'package:app/screens/modals/edit_business_field/business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/_edit_business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
-/// El esqueleto de un dato del perfil, de arriba abajo: que dato es, para que
-/// sirve y cuanto vale.
+/// The skeleton of a profile datum, top to bottom: which datum it is, what
+/// it's for and how much it's worth.
 ///
-/// No es una fila de etiqueta y valor con el dato pegado al borde derecho: eso
-/// obliga a cruzar la pantalla para leer cada renglon y no deja lugar para
-/// explicar nada. Aca el dato se lee en una sola columna —icono y nombre, la
-/// explicacion debajo, el valor al final— y lo unico que queda a la derecha es
-/// lo que se puede hacer con el.
+/// It isn't a label-and-value row with the datum stuck to the right edge:
+/// that forces crossing the screen to read each row and leaves no room to
+/// explain anything. Here the datum is read in a single column —icon and name,
+/// the explanation below, the value at the end— and the only thing left on the
+/// right is what can be done with it.
 ///
-/// El valor es un [child] y no un texto porque no siempre es algo que se lee:
-/// los datos que se eligen de una lista traen ahi su propio desplegable (ver
-/// `ProfileSelectField`). Lo que se lee es [ProfileField], que es esta misma
-/// caja con un texto adentro.
+/// The value is a [child] and not text because it isn't always something read:
+/// the data chosen from a list bring their own dropdown there (see
+/// `ProfileSelectField`). What's read is [ProfileField], which is this same
+/// box with text inside.
 ///
-/// La [description] es opcional a proposito: se escribe donde el nombre del
-/// dato no alcanza para saber que se esta cargando (que es la razon social, a
-/// donde escribe un cliente que necesita ayuda) y se deja afuera donde el
-/// nombre ya lo dice todo. Explicar lo obvio es tanto ruido como no explicar lo
-/// que hace falta.
+/// The [description] is optional on purpose: it's written where the datum's
+/// name isn't enough to know what's being loaded (which is the legal name,
+/// where a customer who needs help writes) and left out where the name already
+/// says it all. Explaining the obvious is as much noise as not explaining what
+///'s needed.
 class ProfileFieldFrame extends StatelessWidget {
   const ProfileFieldFrame({
     super.key,
@@ -35,28 +35,29 @@ class ProfileFieldFrame extends StatelessWidget {
     this.action
   });
 
-  /// Con que se reconoce el dato de un vistazo, sin leer su nombre. Es lo que
-  /// deja recorrer la columna con la vista: los correos son sobres, las fechas
-  /// calendarios.
+  /// What the datum is recognized by at a glance, without reading its name. It's
+  /// what lets the eye run down the column: emails are envelopes, dates
+  /// calendars.
   final IconData icon;
 
   final String label;
 
-  /// Cuanto vale el dato: el texto que dice lo que hay guardado, o con que se
-  /// cambia cuando cambiarlo es elegir de una lista.
+  /// How much the datum is worth: the text saying what's saved, or what changes
+  /// it when changing it means choosing from a list.
   final Widget child;
 
-  /// Para que sirve el dato, en una linea. Ver la nota de la clase.
+  /// What the datum is for, in one line. See the class's note.
   final String? description;
 
-  /// Aclaracion al lado del nombre, para lo que el dato tiene que decir de si
-  /// mismo y no de su valor (que un correo es el principal). Va arriba y no
-  /// junto al valor porque califica al dato, no a lo que vale hoy.
+  /// Clarification next to the name, for what the datum has to say about
+  /// itself and not about its value (that an email is the primary one). It
+  /// goes up top and not next to the value because it qualifies the datum, not
+  /// what it's worth today.
   final String? note;
 
-  /// Lo que se puede hacer con el dato. En `null` queda el hueco igual, para
-  /// que los nombres midan lo mismo en todas las filas y la columna de botones
-  /// no se corra sola.
+  /// What can be done with the datum. On `null` the slot stays the same, so
+  /// that the names measure the same in every row and the button column
+  /// doesn't wander on its own.
   final Widget? action;
 
   @override
@@ -67,8 +68,8 @@ class ProfileFieldFrame extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          // Baja el icono hasta el renglon del nombre: alineado al tope queda
-          // colgando arriba de la primera letra.
+          // Lowers the icon to the name's row: aligned to the top it would
+          // hang above the first letter.
           padding: EdgeInsets.only(top: AppSize.gap),
           child: Icon(icon, size: AppSize.text, color: scheme.text.secondary)
         ),
@@ -94,14 +95,14 @@ class ProfileFieldFrame extends StatelessWidget {
     );
   }
 
-  /// El renglon del nombre: como se llama el dato a la izquierda y que se puede
-  /// hacer con el a la derecha.
+  /// The name's row: what the datum is called on the left and what can be
+  /// done with it on the right.
   Widget _title(BuildContext context, SchemeColor scheme) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Expanded(child: Padding(
-        // El mismo desplazamiento del icono, por lo mismo: el nombre convive
-        // con un boton mas alto que su renglon.
+        // The same offset as the icon, for the same reason: the name coexists
+        // with a button taller than its row.
         padding: EdgeInsets.only(top: AppSize.gap / 2),
         child: Row(children: [
           Flexible(child: TextMedium(label, bold: true, ellipsis: true)),
@@ -117,20 +118,20 @@ class ProfileFieldFrame extends StatelessWidget {
   );
 }
 
-/// Un dato del perfil que se lee: el valor escrito y, cuando se puede cambiar,
-/// el boton de editarlo.
+/// A profile datum that's read: the written value and, when it can be changed,
+/// the button to edit it.
 ///
-/// El formulario que lo cambia es un modal de un solo campo porque escribir
-/// pide sitio —un teclado, un error debajo, un boton de guardar— y eso no entra
-/// en el renglon de una ficha. Los datos que se eligen no pasan por ahi: se
-/// cambian donde se leen (`ProfileSelectField`).
+/// The form that changes it is a single-field modal because writing asks for
+/// room —a keyboard, an error below, a save button— and that doesn't fit in a
+/// sheet's row. The data chosen don't go through there: they're changed where
+/// they're read (`ProfileSelectField`).
 ///
-/// Un dato editable se dibuja **aunque este vacio**: casi todo el perfil es
-/// opcional y esta fila es el unico lugar desde donde se lo carga, asi que
-/// esconderla no seria no mostrar un dato, seria no dejar cargarlo. En ese caso
-/// dice que no hay nada y el boton pasa a ser el de agregar. Lo que no se
-/// edita —lo que escribe la plataforma— si desaparece cuando no esta: ahi la
-/// fila no ofreceria nada.
+/// An editable datum is drawn **even when empty**: nearly the whole profile is
+/// optional and this row is the only place from which it's loaded, so hiding
+/// it wouldn't be not showing a datum, it would be not letting it be loaded. In
+/// that case it says there's nothing and the button becomes the add one. What's
+/// not edited —what the platform writes— does disappear when missing: there the
+/// row would offer nothing.
 class ProfileField extends StatelessWidget {
   const ProfileField({
     super.key,
@@ -150,17 +151,17 @@ class ProfileField extends StatelessWidget {
   final String? description;
   final String? note;
 
-  /// Como se edita el dato, o `null` si no se edita desde aca: la situacion
-  /// legal la otorga la verificacion y las fechas de registro las pone el
-  /// sistema.
+  /// How the datum is edited, or `null` if it isn't edited from here: the
+  /// legal status is granted by verification and the registration dates are
+  /// set by the system.
   final BusinessField? field;
 
-  /// Si el valor se puede seleccionar para copiarlo. Va donde el dato se usa
-  /// afuera de la app (el correo, el sitio), no donde solo se lee.
+  /// Whether the value can be selected to copy it. It goes where the datum is
+  /// used outside the app (the email, the site), not where it's only read.
   final bool selectable;
 
-  /// Acciones propias del dato, cuando tiene alguna ademas de editarse (copiar
-  /// el identificador, taparlo). Reemplazan al boton de editar.
+  /// Actions specific to the datum, when it has one besides being edited
+  /// (copying the identifier, tapping it). They replace the edit button.
   final Widget? trailing;
 
   @override
@@ -173,9 +174,9 @@ class ProfileField extends StatelessWidget {
     child: _value(context)
   );
 
-  /// Lo que vale el dato, o que no vale nada. El aviso va en gris y con
-  /// palabras: un guion o un renglon en blanco se leen como que la ficha se
-  /// rompio, no como que ese dato todavia no se cargo.
+  /// What the datum is worth, or that it's worth nothing. The notice goes in
+  /// gray and in words: a dash or a blank row reads as the sheet having
+  /// broken, not as that datum not having loaded yet.
   Widget _value(BuildContext context) {
     if (value.isEmpty) {
       return TextMedium(
@@ -191,8 +192,8 @@ class ProfileField extends StatelessWidget {
     if (trailing != null) return trailing;
     if (field == null) return null;
 
-    // Sobre una fila vacia el lapiz miente: no hay nada que corregir. La misma
-    // accion, con el nombre y el icono de lo que de verdad va a pasar.
+    // Over an empty row the pencil lies: there's nothing to correct. The same
+    // action, with the name and icon of what will actually happen.
     return ProfileAction(
       icon: value.isEmpty ? CI.plus : CI.edit,
       message: _title(context),
@@ -200,16 +201,16 @@ class ProfileField extends StatelessWidget {
     );
   }
 
-  /// Como se llama la accion sobre el dato: cargarlo si no esta, cambiarlo si
-  /// esta. Es el mensaje del boton y el titulo del formulario, que son la misma
-  /// frase leida dos veces.
+  /// What the action on the datum is called: loading it if it isn't there,
+  /// changing it if it is. It's the button's message and the form's title,
+  /// which are the same sentence read twice.
   String _title(BuildContext context) => value.isEmpty
     ? S.of(context).business_profile_add(label)
     : S.of(context).business_profile_edit(label);
 
-  /// Abre el formulario del dato. Lo que cambie lo guarda el propio modal
-  /// contra el servicio, que relee el perfil: aca no queda nada por hacer
-  /// cuando se cierra.
+  /// Opens the datum's form. Whatever it changes is saved by the modal itself
+  /// against the service, which re-reads the profile: nothing is left to do
+  /// when it closes.
   Future<void> _edit(BuildContext context) => showModal(
     context: context,
     title: _title(context),
@@ -220,16 +221,16 @@ class ProfileField extends StatelessWidget {
   );
 }
 
-/// Accion de un dato escrita con todas las letras.
+/// A datum action written out in full letters.
 ///
-/// Es para lo que no tiene un icono que se entienda solo: agregar un correo es
-/// un mas, pero "volverlo el principal" no es ninguna forma. Un icono que hay
-/// que adivinar —o apuntar con el raton para leer su tooltip— es peor que el
-/// texto que iba a ahorrar.
+/// It's for what has no icon that understands itself: adding an email is a
+/// plus, but "make it the primary one" isn't any shape. An icon you have to
+/// guess —or point at with the mouse to read its tooltip— is worse than the
+/// text it was going to save.
 ///
-/// Del alto de [ProfileAction] y con el mismo reposo apagado: conviven en la
-/// misma fila, y uno de los dos mas alto o mas pintado se leeria como el
-/// importante.
+/// The same height as [ProfileAction] and with the same idle rest: they coexist
+/// in the same row, and either one taller or more painted would read as the
+/// important one.
 class ProfileTextAction extends StatelessWidget {
   const ProfileTextAction({
     super.key,
@@ -237,8 +238,8 @@ class ProfileTextAction extends StatelessWidget {
     required this.action
   });
 
-  /// Que hace el boton. Se lee dos veces: es su texto y tambien lo que le
-  /// anuncia al lector de pantalla.
+  /// What the button does. It's read twice: it's its text and also what it
+  /// announces to the screen reader.
   final String label;
 
   final void Function() action;
@@ -255,9 +256,9 @@ class ProfileTextAction extends StatelessWidget {
       radius: AppSize.cornerInset(AppSize.gap),
       color: scheme.surfaceOver,
       feedbackColor: scheme.line,
-      // `min` para que el boton mida lo que mide su texto: en la fila de
-      // acciones el ancho que llega es el que sobra, y una fila que se estira
-      // lo tomaria entero.
+      // `min` so the button measures what its text measures: in the actions
+      // row the width that arrives is what's left over, and a row that
+      // stretches would take it all.
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [TextSmall(label, color: scheme.primary)]
@@ -266,12 +267,13 @@ class ProfileTextAction extends StatelessWidget {
   }
 }
 
-/// Boton de una accion sobre un dato del perfil.
+/// Button for an action on a profile datum.
 ///
-/// Es del tamaño del renglon y sin relleno hasta que se lo apunta: son uno por
-/// fila y pintados todo el tiempo convertirian la ficha —que es para leer— en
-/// una botonera. El color de reposo es el de la tarjeta, no transparente, para
-/// que los dos extremos de la animacion de [FeedbackButton] sean opacos.
+/// It's the size of the row and without fill until you point at it: they're one
+/// per row and painted all the time would turn the sheet —which is for
+/// reading— into a button board. The idle color is the card's, not
+/// transparent, so that both ends of the [FeedbackButton] animation are
+/// opaque.
 class ProfileAction extends StatelessWidget {
   const ProfileAction({
     super.key,
@@ -282,13 +284,14 @@ class ProfileAction extends StatelessWidget {
 
   final IconData icon;
 
-  /// Que hace el boton. Es lo unico que lo nombra: no lleva texto.
+  /// What the button does. It's the only thing that names it: it carries no
+  /// text.
   final String message;
 
   final void Function() action;
 
-  /// Lado del boton. Sale del tamaño del texto y no de [AppSize.button] porque
-  /// convive con un renglon, no con una barra de acciones.
+  /// Side of the button. It comes from the text's size and not from
+  /// [AppSize.button] because it coexists with a row, not an actions bar.
   static double get size => AppSize.text * 2;
 
   @override

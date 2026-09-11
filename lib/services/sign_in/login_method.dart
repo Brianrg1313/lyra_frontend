@@ -1,19 +1,19 @@
-/// Manera en que una cuenta inicia sesion.
+/// The way an account signs in.
 ///
-/// No la elige la app: la resuelve el backend en `sign_in/email` a partir del
-/// correo y la devuelve como numero. Por eso el primer paso del login pide solo
-/// el correo — hasta que el backend no contesta, la pantalla no sabe si tiene
-/// que pedir una contraseña, un codigo o mandar a un OAuth.
+/// The app does not choose it: the backend resolves it in `sign_in/email` from
+/// the email and returns it as a number. That is why the first login step asks
+/// only for the email — until the backend answers, the screen does not know
+/// whether it has to ask for a password, a code or send to an OAuth.
 ///
-/// Los numeros son los de la columna `authentication.login_method` y tienen que
-/// coincidir con el enum del backend.
+/// The numbers are those of the `authentication.login_method` column and have
+/// to match the backend's enum.
 enum LoginMethod {
-  /// Codigo de verificacion por correo. `sign_in/email` ya lo envia al
-  /// responder, asi que la pantalla del codigo no tiene que pedirlo: solo
-  /// completarlo en `sign_in/code`.
+  /// Verification code by email. `sign_in/email` already sends it when
+  /// responding, so the code screen does not have to ask for it: only complete
+  /// it in `sign_in/code`.
   code(1),
 
-  /// Contraseña, que se completa en `sign_in/password`.
+  /// Password, completed in `sign_in/password`.
   password(2),
 
   google(3),
@@ -22,18 +22,18 @@ enum LoginMethod {
 
   const LoginMethod(this.value);
 
-  /// Numero con el que llega desde el backend.
+  /// Number with which it comes from the backend.
   final int value;
 
-  /// Si la app puede completar el metodo hoy. Los tres OAuth estan declarados
-  /// porque el backend ya los devuelve, pero todavia no hay nada detras: al
-  /// recibirlos el login se queda donde esta en vez de llevar a una pantalla
-  /// que no existe.
+  /// Whether the app can complete the method today. The three OAuths are
+  /// declared because the backend already returns them, but there is nothing
+  /// behind them yet: when received, the login stays where it is instead of
+  /// taking to a screen that does not exist.
   bool get isAvailable => this == code || this == password;
 
-  /// Lee el metodo tal como viene en el cuerpo de la respuesta. Devuelve `null`
-  /// para cualquier numero que esta version no conozca, para que un metodo
-  /// nuevo del backend no se confunda con uno viejo.
+  /// Reads the method as it comes in the response body. Returns `null` for any
+  /// number this version does not know, so a new backend method is not
+  /// confused with an old one.
   static LoginMethod? from(dynamic raw) => switch (
     raw is num ? raw.toInt() : int.tryParse(raw?.toString() ?? "")
   ) {

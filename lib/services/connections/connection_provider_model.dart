@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Que clase de dato pide un campo de un proveedor, tal como lo declara el
-/// backend (`ProviderField.type`).
+/// What kind of data a provider field asks for, exactly as the backend
+/// declares it (`ProviderField.type`).
 ///
-/// No es una validacion: es que teclado y que widget corresponde. El unico que
-/// cambia el comportamiento es [secret], que ademas decide **en que objeto
-/// viaja el valor** (ver [ConnectionProviderField.secret]).
+/// It isn't validation: it's which keyboard and which widget applies. The
+/// only one that changes behavior is [secret], which also decides **which
+/// object the value travels in** (see [ConnectionProviderField.secret]).
 enum ConnectionFieldType {
   text,
   secret,
@@ -15,9 +15,9 @@ enum ConnectionFieldType {
   email,
   phone;
 
-  /// Lee el tipo que mando el backend. Lo desconocido se lee como [text]: un
-  /// tipo nuevo del catalogo tiene que poder configurarse igual desde una app
-  /// vieja, aunque sea con un campo de texto pelado.
+  /// Reads the type the backend sent. Unknown values are read as [text]: a
+  /// new catalog type still has to be configurable from an old app, even if
+  /// only with a plain text field.
   static ConnectionFieldType from(dynamic raw) => switch (
     raw?.toString().trim().toLowerCase()
   ) {
@@ -30,13 +30,14 @@ enum ConnectionFieldType {
   };
 }
 
-/// Un valor que un proveedor necesita antes de poder conectar la cuenta: una
-/// entrada del formulario de configuracion de la conexion.
+/// A value a provider needs before the account can be connected: an entry in
+/// the connection's configuration form.
 ///
-/// El catalogo lo declara entero del lado del backend
-/// (`model:/connections/providers.js`), asi que **el front no conoce ni un solo
-/// token**: dibuja lo que le mandan, en el orden en que se lo mandan. Un
-/// proveedor agregado al catalogo aparece solo, sin tocar esta app.
+/// The catalog declares it entirely on the backend side
+/// (`model:/connections/providers.js`), so **the front end doesn't know a
+/// single token**: it draws whatever it's sent, in the order it's sent in. A
+/// provider added to the catalog shows up on its own, without touching this
+/// app.
 class ConnectionProviderField {
   const ConnectionProviderField({
     required this.key,
@@ -47,31 +48,32 @@ class ConnectionProviderField {
     this.hint = ""
   });
 
-  /// Clave con la que se guarda el valor, dentro de `SETTINGS` o `CREDENTIALS`
-  /// segun [secret].
+  /// Key the value is saved under, inside `SETTINGS` or `CREDENTIALS`
+  /// depending on [secret].
   final String key;
 
-  /// Etiqueta que muestra el formulario.
+  /// Label the form displays.
   final String label;
   final ConnectionFieldType type;
 
-  /// `true` si el valor es un secreto. Decide dos cosas: que viaje en
-  /// `CREDENTIALS` en vez de `SETTINGS`, y que **no se lea de vuelta nunca**.
-  /// De un secreto guardado el backend solo devuelve su nombre de clave, asi
-  /// que el formulario puede decir "ya configurado" pero no mostrarlo.
+  /// `true` if the value is a secret. It decides two things: that it travels
+  /// in `CREDENTIALS` instead of `SETTINGS`, and that **it's never read
+  /// back**. Of a saved secret the backend only returns its key name, so the
+  /// form can say "already configured" but can't show it.
   final bool secret;
 
-  /// `true` si la cuenta no funciona sin el.
+  /// `true` if the account doesn't work without it.
   ///
-  /// No es lo mismo que obligatorio para guardar: una conexion se registra a
-  /// proposito antes de tener sus credenciales —la empresa la da de alta hoy y
-  /// pega los tokens cuando el servicio se los emita—, asi que esto solo
-  /// alimenta el `ready` / `missing` de las lecturas y el aviso de "falta
-  /// configurar".
+  /// It isn't the same as required to save: a connection is deliberately
+  /// registered before it has its credentials — the business registers it
+  /// today and pastes the tokens once the service issues them — so this only
+  /// feeds the `ready` / `missing` on reads and the "needs configuring"
+  /// notice.
   final bool required;
 
-  /// Donde se encuentra el valor en la consola del proveedor. Lo escribe el
-  /// backend y se muestra tal cual: es la unica pista que tiene quien configura.
+  /// Where to find the value in the provider's console. The backend writes
+  /// it and it's shown as-is: it's the only hint whoever is configuring it
+  /// has.
   final String hint;
 
   factory ConnectionProviderField.fromJson(Map json) {
@@ -81,9 +83,9 @@ class ConnectionProviderField {
       key: json["key"]?.toString() ?? "",
       label: json["label"]?.toString() ?? "",
       type: type,
-      // El backend manda `secret` calculado, pero se cae al tipo si no vino:
-      // que un secreto se dibuje como texto plano no es un detalle estetico,
-      // es un token a la vista.
+      // The backend sends `secret` already computed, but it falls back to
+      // the type if it didn't come: a secret being drawn as plain text isn't
+      // a cosmetic detail, it's a token in plain sight.
       secret: json["secret"] == true || type == ConnectionFieldType.secret,
       required: json["required"] == true,
       hint: json["hint"]?.toString() ?? ""
@@ -91,23 +93,23 @@ class ConnectionProviderField {
   }
 }
 
-/// Un trabajo al que se puede poner la cuenta conectada: lo que contesta un bot
-/// creado sobre ella (mensajes directos, comentarios de publicaciones,
-/// comentarios de anuncios, menciones).
+/// A job the connected account can be put to work on: what a bot built on
+/// top of it answers (direct messages, post comments, ad comments,
+/// mentions).
 ///
-/// **Aca no se configura ninguno.** Una conexion es la cuenta y sus
-/// credenciales; los trabajos son bots y se arman en otra parte. Esto se lee
-/// para saber que se va a poder hacer con la cuenta que se esta conectando: un
-/// login de Instagram da cuatro trabajos, un numero de WhatsApp exactamente uno.
+/// **None is configured here.** A connection is the account and its
+/// credentials; jobs are bots and are built elsewhere. This is read to know
+/// what will be possible with the account being connected: an Instagram
+/// login gives four jobs, a WhatsApp number exactly one.
 class ConnectionScope {
   const ConnectionScope({required this.scope, required this.name});
 
-  /// Codigo del trabajo (`messages`, `comments`, `ad_comments`, ...).
+  /// Job code (`messages`, `comments`, `ad_comments`, ...).
   final String scope;
 
-  /// Nombre que le puso el backend. Se usa **solo como respaldo**: los codigos
-  /// conocidos se traducen en la app (ver `ProviderPicker`), porque el catalogo
-  /// los manda en un idioma solo.
+  /// Name the backend gave it. Used **only as a fallback**: known codes are
+  /// translated in the app (see `ProviderPicker`), because the catalog only
+  /// sends them in one language.
   final String name;
 
   factory ConnectionScope.fromJson(Map json) => ConnectionScope(
@@ -115,8 +117,8 @@ class ConnectionScope {
     name: json["name"]?.toString() ?? ""
   );
 
-  /// Lee un trabajo que puede venir como objeto (`{scope, name}`) o como el
-  /// codigo pelado, que es lo que manda cualquier lectura mas comprimida.
+  /// Reads a job that can arrive as an object (`{scope, name}`) or as a
+  /// plain code, which is what any more compressed read sends.
   static ConnectionScope? from(dynamic raw) {
     if (raw is Map) {
       final scope = ConnectionScope.fromJson(raw);
@@ -129,12 +131,12 @@ class ConnectionScope {
   }
 }
 
-/// Un proveedor del catalogo: un servicio al que se le puede conectar una
-/// cuenta, con **exactamente** lo que hay que cargarle para conectarla y para
-/// que sirve una vez conectada.
+/// A catalog provider: a service an account can be connected to, with
+/// **exactly** what needs to be filled in to connect it and what it's good
+/// for once connected.
 ///
-/// Sale de `GET /connections/providers` y tambien viene pegado al detalle de una
-/// conexion (`schema`), para que reabrir su formulario sea una sola lectura.
+/// It comes from `GET /connections/providers` and is also attached to a
+/// connection's detail (`schema`), so reopening its form is a single read.
 class ConnectionProviderModel {
   const ConnectionProviderModel({
     required this.provider,
@@ -145,37 +147,38 @@ class ConnectionProviderModel {
     this.fields = const []
   });
 
-  /// Codigo que se guarda en la conexion (`whatsapp`, `instagram`, ...). Es lo
-  /// que viaja en `PROVIDER` y lo unico que **no se puede cambiar** despues.
+  /// Code saved on the connection (`whatsapp`, `instagram`, ...). It's what
+  /// travels in `PROVIDER` and the only thing that **can't be changed**
+  /// afterward.
   final String provider;
 
-  /// Nombre comercial ("WhatsApp Business").
+  /// Commercial name ("WhatsApp Business").
   final String name;
 
-  /// Familia a la que pertenece: `messaging`, `social`, `voice`, `email`, `web`.
+  /// Family it belongs to: `messaging`, `social`, `voice`, `email`, `web`.
   final String category;
 
-  /// A que se puede poner a trabajar la cuenta. Es tambien cuantos bots puede
-  /// alimentar: uno por trabajo.
+  /// What the account can be put to work on. It's also how many bots it can
+  /// feed: one per job.
   final List<ConnectionScope> scopes;
 
-  /// Cual de los campos identifica la cuenta del lado del proveedor. Es el
-  /// valor que no se puede conectar dos veces en toda la plataforma, asi que
-  /// duplicarlo es el error `connection_already_exists`.
+  /// Which of the fields identifies the account on the provider's side. It's
+  /// the value that can't be connected twice across the whole platform, so
+  /// duplicating it is the `connection_already_exists` error.
   final String? external;
 
-  /// Todo lo que el proveedor necesita, en orden de formulario.
+  /// Everything the provider needs, in form order.
   final List<ConnectionProviderField> fields;
 
-  /// Proveedores que esta app sabe configurar hoy.
+  /// Providers this app already knows how to configure today.
   ///
-  /// El catalogo del backend trae muchos mas (Telegram, Slack, YouTube, correo,
-  /// llamadas...), pero las integraciones se van habilitando de a poco: las de
-  /// Meta primero. El resto se muestra en el selector, apagado, en vez de
-  /// esconderse, para que se vea hacia donde va la seccion.
+  /// The backend's catalog carries many more (Telegram, Slack, YouTube,
+  /// email, calls...), but integrations get enabled little by little: Meta's
+  /// first. The rest are shown in the selector, greyed out, instead of being
+  /// hidden, so it's clear where the section is headed.
   ///
-  /// Habilitar uno es agregar su codigo aca: sus campos ya vienen del catalogo
-  /// y el formulario los dibuja solo.
+  /// Enabling one just means adding its code here: its fields already come
+  /// from the catalog and the form draws them on its own.
   static const Set<String> supported = {
     "whatsapp",
     "messenger",
@@ -183,23 +186,23 @@ class ConnectionProviderModel {
     "instagram"
   };
 
-  /// `true` si este proveedor ya se puede configurar desde la app.
+  /// `true` if this provider can already be configured from the app.
   bool get isSupported => supported.contains(provider);
 
-  /// Campos que viajan en `SETTINGS` (todo lo que no es secreto).
+  /// Fields that travel in `SETTINGS` (everything that isn't secret).
   List<ConnectionProviderField> get settingsFields =>
     [for (final field in fields) if (!field.secret) field];
 
-  /// Campos que viajan en `CREDENTIALS`.
+  /// Fields that travel in `CREDENTIALS`.
   List<ConnectionProviderField> get secretFields =>
     [for (final field in fields) if (field.secret) field];
 
-  /// Icono del servicio. Es cosmetico y se resuelve por codigo de proveedor, no
-  /// por categoria: lo que se reconoce de un vistazo es la red, no la familia.
+  /// Service icon. It's cosmetic and resolved by provider code, not by
+  /// category: what's recognized at a glance is the network, not the family.
   IconData get icon => switch (provider) {
     "whatsapp" => CI.whatsapp,
-    // Messenger no tiene marca propia en el set: queda el globo de chat, que es
-    // lo que la app es.
+    // Messenger doesn't have its own brand in the icon set: it gets the chat
+    // bubble instead, which is what the app is.
     "messenger" => CI.chat,
     "facebook" => CI.facebook,
     "instagram" => CI.instagram,
@@ -232,12 +235,12 @@ class ConnectionProviderModel {
       ]
     );
 
-  /// Lee una lista que puede venir ya decodificada o no venir del todo.
+  /// Reads a list that may already come decoded or may not come at all.
   static List<dynamic> _list(dynamic value) => value is List ? value : const [];
 
-  /// Decodifica el catalogo. Acepta la tabla columnar
-  /// (`{"keys": [...], "values": [...]}`) con la que viaja y tambien una lista
-  /// de objetos, igual que el resto de los listados de la app.
+  /// Decodes the catalog. It accepts the columnar table
+  /// (`{"keys": [...], "values": [...]}`) that it travels as and also a list
+  /// of objects, just like the rest of the app's listings.
   static List<ConnectionProviderModel> fromResponse(dynamic data) {
     if (data is List) {
       return [

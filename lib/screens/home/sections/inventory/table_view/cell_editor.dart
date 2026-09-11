@@ -10,21 +10,21 @@ import 'package:app/services/inventory/table_field_type.dart';
 import 'sheet_style.dart';
 import 'state/sheet_controller.dart';
 
-/// El editor de la celda activa.
+/// The editor of the active cell.
 ///
-/// Es el **unico** [TextField] de la planilla: se mueve con el cursor, y su
-/// [FocusNode] es el que atiende las teclas de navegacion (las ve antes que el
-/// propio campo de texto, asi Tab no cambia de widget y Enter no dispara el
-/// submit).
+/// It is the **only** [TextField] in the sheet: it moves with the cursor, and its
+/// [FocusNode] is the one that handles the navigation keys (it sees them before
+/// the text field itself, so Tab does not change widgets and Enter does not
+/// trigger the submit).
 ///
-/// El controlador y el foco no son suyos: los crea y los libera
-/// [SheetController], que es quien sabe cuando se abre y se cierra una celda.
-/// Por eso este widget se lee con `context.read` y no escucha nada: cuando hay
-/// que moverlo, la celda que lo contiene ya se esta reconstruyendo.
+/// The controller and the focus are not its own: [SheetController] creates and
+/// releases them, since it is the one that knows when a cell opens and closes.
+/// That is why this widget is read with `context.read` and listens to nothing:
+/// when it must move, the cell containing it is already rebuilding.
 class CellEditor extends StatelessWidget {
   const CellEditor({super.key, required this.type, required this.alignment});
 
-  /// Tipo del campo, que decide con que teclado se escribe.
+  /// Type of the field, which decides which keyboard is used to type.
   final TableFieldType type;
 
   final TextAlign alignment;
@@ -41,13 +41,18 @@ class CellEditor extends StatelessWidget {
       textAlign: alignment,
       keyboardType: type.keyboard,
       onChanged: controller.onChanged,
-      // Una fecha se tipea con el teclado numerico, donde la barra no esta: el
-      // espacio la escribe por uno (ver [DateSeparatorFormatter]).
+      // A date is typed with the numeric keyboard, where the slash is not: the
+      // space types it in its place (see [DateSeparatorFormatter]).
       inputFormatters: type.isDate ? const [DateSeparatorFormatter()] : null,
-      // Se escribe con la letra con la que se lee. Es casi siempre la del dato,
-      // salvo en un codigo, que va en gris (ver [SkuCell]): con la de siempre,
-      // entrar en la celda le cambiaria el color al texto que ya estaba puesto.
-      style: type == TableFieldType.sku ? style.code : style.value,
+      // It is written with the letter it is read with. It is almost always that
+      // of the data, except for a code, which goes in gray (see [SkuCell]), and
+      // for the text the AI indexes by meaning, which goes with the brand color:
+      // with the usual one, entering the cell would change the color of the text
+      // that was already there.
+      style: switch (type) {
+        TableFieldType.sku => style.code,
+        _ => type.semantic ? style.semanticValue : style.value
+      },
       decoration: const InputDecoration(
         isDense: true,
         border: InputBorder.none,

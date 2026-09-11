@@ -15,48 +15,50 @@ import 'package:app/screens/home/sections/section_message.dart';
 import 'business_tab.dart';
 import 'detail_header.dart';
 
-/// La empresa: es el contenido de la seccion `business` del home.
+/// The business: it is the content of the `business` section of the home.
 ///
-/// No hay un listado por delante. Todo lo que se ve dentro del home es de una
-/// empresa —la que dice el selector del header—, asi que la seccion de empresas
-/// muestra **esa**: entrar a ella es abrir la empresa con la que se esta
-/// trabajando, no elegir cual mirar. Para cambiarla esta el selector, que se ve
-/// desde todas las secciones.
+/// There is no listing beforehand. Everything seen inside the home belongs to
+/// one business —the one the header selector says—, so the business section
+/// shows **that one**: entering it is opening the business being worked with,
+/// not choosing which one to look at. To change it there is the selector,
+/// which is visible from all sections.
 ///
-/// Lo que hay de la empresa esta repartido en pestanas (ver [BusinessTab]) y
-/// **cada pestana es una URL** (`/home/business/:id/statistics`): se copia el
-/// link de lo que se esta mirando y se abre ahi mismo. Cual esta abierta no es
-/// estado de esta pantalla sino la ruta activa; por eso cambiar de pestana es
-/// navegar y no un `setState`, y el boton de atras del navegador vuelve a la
-/// pestana anterior.
+/// The business stuff is spread across tabs (see [BusinessTab]) and **each tab
+/// is a URL** (`/home/business/:id/statistics`): the link of what is being
+/// looked at is copied and it opens right there. Which one is open is not
+/// state of this screen but the active route; that is why changing tabs is
+/// navigating and not a `setState`, and the browser's back button returns to
+/// the previous tab.
 ///
-/// La pagina esta partida en dos: la barra de pestanas apoyada sobre el fondo,
-/// y el cuerpo, que es **la unica superficie**. Las pestanas no son cinco
-/// tarjetas una al lado de la otra: son cinco caras de la misma hoja, y esa
-/// hoja es el cuerpo. Por eso ninguna trae su propia superficie y la pestana
-/// activa se dibuja con el color de la del cuerpo, como una lengueta.
+/// The page is split in two: the tab bar resting on the background, and the
+/// body, which is **the only surface**. The tabs are not five cards side by
+/// side: they are five faces of the same sheet, and that sheet is the body.
+/// That is why none brings its own surface and the active tab is drawn with
+/// the body's color, like a tongue.
 ///
-/// Cual empresa se resuelve del id en la URL, no por constructor: la pantalla
-/// comparte el shell del home, que reusa una sola pagina del `Navigator` y no
-/// reconstruye el arbol al navegar. Sin id —la seccion pelada,
-/// `/home/business`, que es a donde lleva el side bar— es la activa.
+/// Which business is resolved from the id in the URL, not by constructor: the
+/// screen shares the home shell, which reuses a single page of the `Navigator`
+/// and does not rebuild the tree when navigating. Without an id —the bare
+/// section, `/home/business`, which is where the side bar takes you— it is the
+/// active one.
 ///
-/// El detalle lo contesta `GET /business/profile/`, que **no recibe un id**:
-/// contesta por la empresa de la cabecera `business_id`, o sea la activa. Eso
-/// no es una limitacion del endpoint sino como esta pensado el acceso: leer una
-/// empresa no es pedirla por id, es tenerla y elegirla. Asi que entrar por el
-/// link de una empresa que no es la activa **la activa** (ver [_sync]); el
-/// shell vuelve a montar el contenido con la empresa nueva y esta pantalla, ya
-/// alineada, pide el perfil.
+/// The detail is answered by `GET /business/profile/`, which **does not
+/// receive an id**: it answers for the business of the `business_id` header,
+/// that is the active one. That is not a limitation of the endpoint but how
+/// access is designed: reading a business is not asking for it by id, it is
+/// having it and choosing it. So entering through the link of a business that
+/// is not the active one **activates it** (see [_sync]); the shell mounts the
+/// content again with the new business and this screen, already aligned,
+/// requests the profile.
 class BusinessDetailSection extends StatefulWidget {
   const BusinessDetailSection({super.key});
 
-  /// Key de la ruta de la empresa sin pestana (`/home/business/:id`). Es la
-  /// unica fuente: la usan tanto la tabla de rutas como el shell.
+  /// Key of the route of the business without a tab (`/home/business/:id`). It
+  /// is the only source: both the route table and the shell use it.
   ///
-  /// Es el link de una empresa "a secas", el que ya andaba dando vueltas antes
-  /// de que las pestanas tuvieran URL propia: abre la que diga
-  /// [BusinessTab.initial]. Cada pestana tiene la suya (ver
+  /// It is the link of a business "plain and simple", the one that was already
+  /// circulating before the tabs had their own URL: it opens whichever
+  /// [BusinessTab.initial] says. Each tab has its own (see
   /// [BusinessTab.routeKey]).
   static const String routeKey = "business_detail";
 
@@ -70,31 +72,32 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
   void initState() {
     super.initState();
 
-    // Se difiere al primer frame porque las dos ramas de [_sync] notifican al
-    // servicio, y notificar mientras el arbol se esta montando es un rebuild en
-    // pleno build.
+    // It is deferred to the first frame because the two branches of [_sync]
+    // notify the service, and notifying while the tree is mounting is a rebuild
+    // in the middle of a build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _sync();
     });
   }
 
-  /// Deja la empresa de la URL como la activa y pide su perfil.
+  /// Leaves the business of the URL as the active one and requests its profile.
   ///
-  /// Son los dos caminos por los que se llega aca: por el link de una empresa
-  /// que no es la activa, y a la que ya lo es (entre ellos, la seccion pelada,
-  /// que es la activa por definicion). En el primer caso solo se la elige y no
-  /// se pide nada: elegirla vuelve a montar el contenido del home —el shell lo
-  /// identifica por la empresa— y esta pantalla se monta de nuevo, ya por el
-  /// segundo camino.
+  /// They are the two paths that lead here: through the link of a business that
+  /// is not the active one, and through one that already is (among them, the
+  /// bare section, which is the active one by definition). In the first case it
+  /// is only chosen and nothing is requested: choosing it remounts the home
+  /// content —the shell identifies it by the business— and this screen mounts
+  /// again, already through the second path.
   ///
-  /// El perfil se pide aca y no en la pestana de ajustes porque es la otra
-  /// mitad de lo mismo: alinear la empresa activa con la de la URL y traer lo
-  /// que hay de ella. Partirlo dejaria la pestana pidiendo el detalle de una
-  /// empresa que esta pantalla todavia esta terminando de elegir.
+  /// The profile is requested here and not in the settings tab because it is
+  /// the other half of the same thing: aligning the active business with the
+  /// one of the URL and bringing what there is of it. Splitting it would leave
+  /// the tab requesting the detail of a business that this screen is still
+  /// finishing choosing.
   ///
-  /// Un id que el cliente no tiene lo ignora [BusinessService.selectBusiness],
-  /// y entonces no hay nada que pedir: el cuerpo muestra que esa empresa no
-  /// esta en su lista.
+  /// An id that the customer does not have is ignored by
+  /// [BusinessService.selectBusiness], and then there is nothing to request:
+  /// the body shows that that business is not in their list.
   void _sync() {
     final service = context.read<BusinessService>();
     final id = _businessId(service);
@@ -107,13 +110,14 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     service.loadProfile();
   }
 
-  /// Esta pantalla muestra la empresa que dice la URL. Elegir otra en el
-  /// selector es pedir ver **esa**, asi que se abre su link, lo que ademas deja
-  /// la URL coherente con la empresa que se esta mirando. Se abre en la misma
-  /// pestana: cambiar de empresa no es cambiar de tema.
+  /// This screen shows the business the URL says. Choosing another in the
+  /// selector is asking to see **that one**, so its link is opened, which also
+  /// leaves the URL consistent with the business being looked at. It opens in
+  /// the same tab: changing business is not changing topic.
   ///
-  /// Cuando el cambio de empresa lo disparo [_sync], la URL ya nombra a la
-  /// nueva y no hay a donde ir: navegar de nuevo apilaria la misma pagina.
+  /// When [_sync] triggered the business change, the URL already names the new
+  /// one and there is nowhere to go: navigating again would stack the same
+  /// page.
   @override
   void onBusinessChanged(String businessId) {
     if (_urlId == businessId) return;
@@ -121,15 +125,16 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     Navis.push(context, _tab.path(businessId));
   }
 
-  /// Empresa que nombra la URL, o `null` si es la seccion pelada.
+  /// Business that the URL names, or `null` if it is the bare section.
   String? get _urlId => Navis.currentArgs?["id"];
 
-  /// Empresa que se esta mirando: la de la URL, y sin ella la activa.
+  /// Business being looked at: the one of the URL, and without it the active
+  /// one.
   String _businessId(BusinessService service) =>
     _urlId ?? service.activeId ?? "";
 
-  /// Pestana abierta, que es la pantalla activa: cada pestana es una ruta. El
-  /// link de una empresa sin pestana abre la inicial.
+  /// Open tab, which is the active screen: every tab is a route. The link of a
+  /// business without a tab opens the initial one.
   BusinessTab get _tab =>
     BusinessTab.byRouteKey(Navis.currentKey.value) ?? BusinessTab.initial;
 
@@ -138,8 +143,9 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     final service = context.watch<BusinessService>();
     final id = _businessId(service);
 
-    // La coleccion de `/init` ya tiene todas las empresas del cliente, asi que
-    // alcanza para saber si el id es de una suya sin esperar al perfil.
+    // The `/init` collection already has all of the customer's businesses, so it
+    // is enough to know if the id is one of theirs without waiting for the
+    // profile.
     final business = service.byId(id);
 
     return Column(
@@ -154,31 +160,31 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
       ]);
   }
 
-  /// Abre otra pestana de la misma empresa.
+  /// Opens another tab of the same business.
   ///
-  /// Es una navegacion y no un `setState` porque la pestana abierta es la URL:
-  /// asi el link de la barra del navegador es el de lo que se esta mirando, y
-  /// el boton de atras vuelve a la pestana anterior. La pagina no se monta de
-  /// nuevo —todas las pestanas son la misma pantalla del shell—, solo cambia el
-  /// cuerpo.
+  /// It is a navigation and not a `setState` because the open tab is the URL:
+  /// that way the browser bar link is the one of what is being looked at, and
+  /// the back button returns to the previous tab. The page is not remounted
+  /// —all the tabs are the same shell screen—, only the body changes.
   void _openTab(BusinessTab tab) {
     if (tab == _tab) return;
 
     Navis.push(context, tab.path(_businessId(context.read<BusinessService>())));
   }
 
-  /// El cuerpo es de la pestana abierta, pero antes hay dos estados que son de
-  /// la pagina entera —la empresa no es del cliente, o todavia se la esta
-  /// activando— y en los que ninguna pestana tiene nada que mostrar.
+  /// The body is the open tab's, but before that there are two states that
+  /// belong to the whole page —the business is not the customer's, or it is
+  /// still being activated— and in which no tab has anything to show.
   Widget _body(
     BuildContext context,
     BusinessService service,
     String id,
     BusinessModel? business
   ) {
-    // El id no es de ninguna empresa del cliente: ni existe, ni le dieron
-    // acceso, ni se la dejo de dar. Solo se llega por un link ajeno o viejo,
-    // asi que la salida es la empresa con la que se venia trabajando.
+    // The id does not belong to any of the customer's businesses: it does not
+    // exist, nor was they given access, nor was access revoked. You only get
+    // here through a foreign or old link, so the way out is the business that
+    // was being worked with.
     if (business == null) {
       return SectionMessage(
         icon: CI.info,
@@ -189,16 +195,16 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
       );
     }
 
-    // Se la esta activando: lo que hay cargado (si hay) es de la empresa
-    // anterior, asi que no se muestra nada hasta que el shell vuelva a montar
-    // esta pantalla con la empresa nueva.
+    // It is being activated: what is loaded (if anything) belongs to the
+    // previous business, so nothing is shown until the shell remounts this
+    // screen with the new business.
     if (service.activeId != id) return const Center(child: Loading());
 
     return _tab.build();
   }
 
-  /// Vuelve a la empresa activa. Se va a la seccion pelada y no a su link con
-  /// id porque son lo mismo —la seccion es la empresa activa— y ahi el id no
-  /// puede quedar viejo.
+  /// Returns to the active business. It goes to the bare section and not to its
+  /// link with an id because they are the same —the section is the active
+  /// business— and there the id cannot go stale.
   void _openActive() => Navis.push(context, "/home/business");
 }

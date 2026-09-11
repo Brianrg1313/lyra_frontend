@@ -9,7 +9,7 @@ const _fields = [
   TableFieldModel(id: "f-nombre", name: "Nombre", type: "TEXT")
 ];
 
-/// Una pagina tal cual la devuelve `POST /tables/records/`: la paginacion
+/// Una pagina tal cual la devuelve `POST /inventory/products/records/list/`: la paginacion
 /// afuera, los datos comprimidos adentro y los encabezados pelados, que son los
 /// FIELD_ID con el id del registro al frente.
 const _page = {

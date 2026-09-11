@@ -3,48 +3,49 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/connections/connection_provider_model.dart';
 import 'package:app/toolkit/api.dart';
 
-/// Estado de la lectura del catalogo (`GET /connections/providers`).
+/// Status of reading the catalog (`GET /connections/providers`).
 enum ConnectionCatalogStatus { idle, loading, ready, error }
 
-/// Catalogo de servicios a los que se les puede conectar una cuenta y —lo
-/// importante— **que valores necesita cada uno**: tokens, secretos de app, ids de
-/// cuenta, tokens de verificacion del webhook.
+/// Catalog of services an account can be connected to and — the important
+/// part — **what values each one needs**: tokens, app secrets, account ids,
+/// webhook verification tokens.
 ///
-/// El formulario de una conexion se dibuja entero desde aca: ningun servicio esta
-/// escrito en esta app, asi que uno que se agregue del lado del backend aparece
-/// solo, con sus campos y sus pistas de donde encontrarlos. Lo unico que si
-/// decide el front es cuales ya se pueden configurar
-/// ([ConnectionProviderModel.supported]); el resto se muestra apagado.
+/// A connection's form is drawn entirely from here: no service is hardcoded
+/// in this app, so one added on the backend side shows up on its own, with
+/// its fields and its hints on where to find them. The only thing the front
+/// end does decide is which ones can already be configured
+/// ([ConnectionProviderModel.supported]); the rest are shown greyed out.
 ///
-/// Trae ademas los `scopes` de cada servicio: a que se puede poner a trabajar la
-/// cuenta una vez conectada, que es tambien cuantos bots puede alimentar. Aca no
-/// se elige ninguno —eso es de los bots— pero se muestra, porque es la diferencia
-/// entre dos entradas parecidas: una pagina de Facebook contesta comentarios y
-/// Messenger contesta mensajes, con credenciales distintas.
+/// It also brings each service's `scopes`: what the account can be put to
+/// work on once connected, which is also how many bots it can feed. None is
+/// chosen here — that's up to the bots — but it's shown, because it's the
+/// difference between two similar-looking entries: a Facebook page answers
+/// comments and Messenger answers messages, with different credentials.
 ///
-/// Es configuracion publica y no datos de una empresa: no trae credenciales de
-/// nadie y se lee igual para todos. Por eso **se cachea una sola vez para toda la
-/// sesion** y no por empresa, a diferencia de [ConnectionsService]: cambiar de
-/// empresa no cambia que campos pide WhatsApp.
+/// It's public configuration, not a business's data: it doesn't carry
+/// anyone's credentials and reads the same for everyone. That's why **it's
+/// cached only once for the whole session** and not per business, unlike
+/// [ConnectionsService]: switching business doesn't change what fields
+/// WhatsApp asks for.
 class ConnectionCatalogService extends ChangeNotifier {
   ConnectionCatalogStatus _status = ConnectionCatalogStatus.idle;
   List<ConnectionProviderModel> _providers = const [];
 
   ConnectionCatalogStatus get status => _status;
 
-  /// El catalogo entero, en el orden que lo manda el backend.
+  /// The entire catalog, in the order the backend sends it.
   List<ConnectionProviderModel> get providers => List.unmodifiable(_providers);
 
-  /// Los que esta app ya sabe configurar, primero, y los que todavia no,
-  /// despues. Es el orden en que el selector los muestra: lo que se puede elegir
-  /// no puede quedar debajo de lo que no.
+  /// The ones this app already knows how to configure, first, and the ones
+  /// it doesn't yet, after. It's the order the selector shows them in: what
+  /// can be picked can't end up below what can't.
   List<ConnectionProviderModel> get sorted => [
     for (final provider in _providers) if (provider.isSupported) provider,
     for (final provider in _providers) if (!provider.isSupported) provider
   ];
 
-  /// El proveedor con ese codigo, o `null` si el catalogo todavia no cargo o no
-  /// lo tiene.
+  /// The provider with that code, or `null` if the catalog hasn't loaded yet
+  /// or doesn't have it.
   ConnectionProviderModel? byCode(String code) {
     for (final provider in _providers) {
       if (provider.provider == code) return provider;
@@ -52,10 +53,11 @@ class ConnectionCatalogService extends ChangeNotifier {
     return null;
   }
 
-  /// Carga el catalogo si hace falta.
+  /// Loads the catalog if needed.
   ///
-  /// Una vez leido no se vuelve a pedir salvo [force]: es una constante del
-  /// backend, no un dato que cambie mientras alguien configura una cuenta.
+  /// Once read, it isn't requested again unless [force]: it's a backend
+  /// constant, not data that changes while someone is configuring an
+  /// account.
   Future<void> load({bool force = false}) async {
     if (_status == ConnectionCatalogStatus.loading) return;
     if (!force && _status == ConnectionCatalogStatus.ready) return;
@@ -78,9 +80,9 @@ class ConnectionCatalogService extends ChangeNotifier {
 
     _providers = ConnectionProviderModel.fromResponse(data);
 
-    // Un catalogo vacio no es un catalogo cargado: sin proveedores no se puede
-    // conectar ni una cuenta, asi que se trata como error y la pantalla ofrece
-    // reintentar en vez de mostrar un selector en blanco.
+    // An empty catalog isn't a loaded catalog: without providers not even
+    // one account can be connected, so it's treated as an error and the
+    // screen offers a retry instead of showing a blank selector.
     _status = _providers.isEmpty
       ? ConnectionCatalogStatus.error
       : ConnectionCatalogStatus.ready;
@@ -88,7 +90,7 @@ class ConnectionCatalogService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vacia la cache. Para el cierre de sesion, junto al resto de los servicios.
+  /// Empties the cache. For sign-out, along with the rest of the services.
   void clear() {
     _providers = const [];
     _status = ConnectionCatalogStatus.idle;

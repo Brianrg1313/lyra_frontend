@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Una opcion elegible del formulario de un canal: su icono, que es y una linea
-/// de para que sirve.
+/// A selectable option of a channel's form: its icon, what it is and a line
+/// about what it is for.
 ///
-/// Lo usan los cuatro selectores de la pagina (la red, el rol del agente, la
-/// fuente de datos y las herramientas) porque los cuatro eligen lo mismo: una
-/// cosa de un puñado, con el subtitulo haciendo el trabajo de explicar la
-/// diferencia. Un desplegable no servia: obliga a abrirlo para ver que hay, y
-/// lo que hay es justamente lo que se esta decidiendo.
+/// The page's four selectors use it (the network, the agent's role, the data
+/// source and the tools) because the four choose the same kind of thing: one
+/// item from a handful, with the subtitle doing the work of explaining the
+/// difference. A dropdown would not work: it forces opening it to see what
+/// there is, and what there is is exactly what is being decided.
 ///
-/// Va dentro de [OptionGrid], que es quien decide cuantas entran por fila. Por
-/// eso la tarjeta es **chica y de alto fijo** ([height]): dos lineas de texto y
-/// nada mas. Lo que no entra se corta con puntos suspensivos, y esta bien que
-/// se corte —el subtitulo desempata entre dos opciones, no las documenta.
+/// It goes inside [OptionGrid], which decides how many fit per row. That is
+/// why the card is **small and of fixed height** ([height]): two lines of text
+/// and nothing more. What does not fit is cut with ellipsis, and it is fine
+/// that it is cut —the subtitle breaks the tie between two options, it does
+/// not document them.
 ///
-/// [enabled] en `false` es la otra razon por la que existe. Hay opciones que
-/// **todavia no estan hechas** —el calendario de servicios, la base de
-/// conocimiento, las redes que no son de Meta— y se muestran igual, apagadas y
-/// con su leyenda: quien esta armando un canal necesita saber que eso va a
-/// existir para no armarlo dos veces. Una opcion apagada no responde al tap y
-/// se lee de un vistazo como no disponible.
+/// [enabled] in `false` is the other reason it exists. There are options that
+/// **are not made yet** —the services calendar, the knowledge base, the
+/// networks that are not Meta's— and they are shown all the same, disabled and
+/// with their caption: whoever is building a channel needs to know that is
+/// going to exist so they do not build it twice. A disabled option does not
+/// respond to tap and is read at a glance as unavailable.
 class OptionCard extends StatelessWidget {
   const OptionCard({
     super.key,
@@ -34,29 +35,30 @@ class OptionCard extends StatelessWidget {
     this.multiple = false
   });
 
-  /// Alto de todas las tarjetas, elegido para que entren el titulo y dos lineas
-  /// de subtitulo. Es fijo a proposito: en una rejilla, tarjetas de distinto
-  /// alto en la misma fila se leen como un error.
+  /// Height of all the cards, chosen so the title and two lines of subtitle
+  /// fit. It is fixed on purpose: in a grid, cards of different heights in the
+  /// same row read like an error.
   static double get height => AppSize.action * 1.7;
 
   final IconData icon;
   final String title;
   final String? subtitle;
 
-  /// `true` si esta elegida. En las herramientas ([multiple]) puede haber
-  /// varias a la vez; en el resto, una sola.
+  /// `true` if it is selected. In the tools ([multiple]) there can be several
+  /// at once; in the rest, a single one.
   final bool selected;
 
-  /// `false` para lo que todavia no se puede elegir.
+  /// `false` for what cannot be chosen yet.
   final bool enabled;
 
-  /// Leyenda corta ("Proximamente"), para decir **por que** una opcion esta
-  /// apagada. Sin esto, una opcion gris parece un error. Ocupa el lugar de la
-  /// marca de elegido, que en una opcion que no se puede elegir no dice nada.
+  /// Short caption ("Coming soon"), to say **why** an option is disabled.
+  /// Without this, a grey option looks like an error. It takes the place of
+  /// the selected mark, which in an option that cannot be chosen says nothing.
   final String? badge;
 
-  /// Cambia la marca: un tilde cuando se pueden elegir varias, un punto cuando
-  /// es una sola. Es la unica pista de si elegir esta reemplaza a lo anterior.
+  /// Changes the mark: a check when several can be chosen, a dot when it is a
+  /// single one. It is the only clue of whether choosing this one replaces
+  /// the previous.
   final bool multiple;
 
   final void Function() action;
@@ -66,9 +68,9 @@ class OptionCard extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final active = selected && enabled;
 
-    // Apagada se dibuja con el color secundario en todo, no solo en el texto:
-    // el icono y el borde tienen que irse con el, o la tarjeta sigue pareciendo
-    // elegible.
+    // Disabled is drawn with the secondary color everywhere, not only in the
+    // text: the icon and the border have to go with it, or the card still
+    // looks selectable.
     final tint = !enabled
       ? scheme.text.secondary
       : selected ? scheme.primary : scheme.icon;
@@ -76,8 +78,8 @@ class OptionCard extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1 : 0.55,
       child: FeedbackButton(
-        // Sin accion el widget deja de responder al tap y al teclado, que es
-        // exactamente lo que tiene que pasar con una opcion no disponible.
+        // Without an action the widget stops responding to tap and keyboard,
+        // which is exactly what has to happen with an unavailable option.
         action: enabled ? action : null,
         mouseCursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
         color: scheme.surfaceOver,
@@ -90,8 +92,8 @@ class OptionCard extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(AppSize.corner)
           ),
-          // El relleno va aca y no en el boton: son las dos unicas medidas de
-          // la tarjeta, y juntas es donde se ve si sobra aire.
+          // The padding goes here and not on the button: they are the card's only
+          // two measures, and together are where extra air shows.
           padding: EdgeInsets.symmetric(
             horizontal: AppSize.spaceXS,
             vertical: AppSize.gap * 1.5
@@ -115,8 +117,9 @@ class OptionCard extends StatelessWidget {
               ]),
               if (subtitle != null) ...[
                 SizedBox(height: AppSize.gap),
-                // Expanded y no un alto calculado: la tarjeta ya mide lo que
-                // mide, y asi el texto se queda con lo que sobre sin empujar.
+                // Expanded and not a computed height: the card already measures what it
+                // measures, and so the text keeps what is left over without
+                // pushing.
                 Expanded(child: TextSmall(
                   subtitle!,
                   lines: 2,
@@ -132,7 +135,7 @@ class OptionCard extends StatelessWidget {
   }
 }
 
-/// La leyenda de una opcion apagada.
+/// The caption of a disabled option.
 class _Badge extends StatelessWidget {
   const _Badge({required this.text});
 
@@ -156,7 +159,7 @@ class _Badge extends StatelessWidget {
   }
 }
 
-/// La marca de elegido, a la derecha del titulo.
+/// The selected mark, to the right of the title.
 class _Mark extends StatelessWidget {
   const _Mark({required this.selected, required this.multiple});
 
@@ -177,8 +180,8 @@ class _Mark extends StatelessWidget {
           color: selected ? scheme.primary : scheme.line,
           width: 1.5
         ),
-        // Cuadrado con puntas para varias, redondo para una sola: es la
-        // convencion de siempre y se entiende sin leer nada.
+        // Squared with rounded corners for several, round for a single one: it
+        // is the usual convention and is understood without reading anything.
         borderRadius: BorderRadius.circular(multiple ? AppSize.gap : size)
       ),
       child: selected

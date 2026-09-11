@@ -9,24 +9,25 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
+import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channels_service.dart';
 import 'package:app/services/connections/connection_catalog_service.dart';
 import 'package:app/services/connections/connections_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
-/// Instancia unica del cliente.
+/// Single instance of the client.
 ///
-/// Vive aca y no dentro del provider porque `initialValidator` corre fuera del
-/// arbol de widgets, sin BuildContext, y necesita cargar la sesion sobre la
-/// misma instancia que despues consumen las pantallas.
+/// It lives here and not inside the provider because `initialValidator` runs
+/// outside the widget tree, without a BuildContext, and needs to load the
+/// session onto the same instance that the screens consume afterward.
 final clientService = ClientService();
 
-/// Instancia unica de las empresas.
+/// Single instance of the businesses.
 ///
-/// Vive junto al cliente y por el mismo motivo: `ClientService.resolve` la puebla
-/// desde `/init` antes de levantar el arbol, sobre la misma instancia que
-/// consumen el selector del side bar y la seccion de empresas.
+/// It lives next to the client and for the same reason: `ClientService.resolve`
+/// populates it from `/init` before the tree is built, onto the same instance
+/// that the side bar's selector and the business section consume.
 final businessService = BusinessService();
 
 // Wraps the whole app before it is handed to MaterialApp.
@@ -37,47 +38,54 @@ final businessService = BusinessService();
 Widget initialBuilder(Widget app) => MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (_) => HomeService()),
-    // `.value` porque el ciclo de vida de la instancia es de este archivo, no
-    // del provider: no debe destruirse si el arbol se re-monta.
+    // `.value` because the instance's lifecycle belongs to this file, not to
+    // the provider: it must not be destroyed if the tree gets remounted.
     ChangeNotifierProvider.value(value: clientService),
     ChangeNotifierProvider.value(value: businessService),
-    // Tambien `.value`, y por un motivo mas fuerte: es un singleton y su
-    // ciclo de vida es el de la conexion, no el del arbol. Se registra solo
-    // para poder observar el estado con `context.watch`.
+    // Also `.value`, and for a stronger reason: it's a singleton and its
+    // lifecycle is that of the connection, not that of the tree. It's
+    // registered only so its state can be observed with `context.watch`.
     ChangeNotifierProvider.value(value: ConnectionService()),
-    // Los catalogos de plataforma: en que paises se opera y en que monedas se
-    // puede cobrar, con como se escribe cada importe. Tambien `.value` y por lo
-    // mismo que la conexion: son singletons que `ClientService.resolve` puebla
-    // desde `/init` antes de que exista el arbol, y se registran solo para que
-    // los formularios puedan observarlos con `context.watch` —lo que hace que
-    // una region habilitada hoy aparezca sin publicar una version nueva—.
+    // The platform catalogs: which countries are operated in and which
+    // currencies can be charged in, along with how each amount is written.
+    // Also `.value` and for the same reason as the connection: they're
+    // singletons that `ClientService.resolve` populates from `/init` before
+    // the tree exists, and they're registered only so forms can observe them
+    // with `context.watch` —which is what makes a region enabled today show
+    // up without publishing a new version—.
     ChangeNotifierProvider.value(value: CountryCatalogService()),
     ChangeNotifierProvider.value(value: CurrencyCatalogService()),
-    // Y de donde se bajan las imagenes, que llega en la misma respuesta y por
-    // el mismo motivo: ninguna respuesta trae direcciones de imagen, trae ids,
-    // y la direccion es configuracion del backend. Mudarlas a un CDN no es una
-    // version nueva de la app.
+    // And where images are downloaded from, which arrives in the same
+    // response and for the same reason: no response carries image addresses,
+    // it carries ids, and the address is backend configuration. Moving them
+    // to a CDN isn't a new app version.
     ChangeNotifierProvider.value(value: CdnService()),
-    // El estado (la cache del listado) debe sobrevivir a la navegacion entre el
-    // listado de tablas y la pantalla de creacion, asi que vive en el scope de
-    // la app y no en la seccion.
+    // The state (the list's cache) must survive navigation between the table
+    // list and the creation screen, so it lives at the app's scope and not
+    // the section's.
     ChangeNotifierProvider(create: (_) => TablesService()),
-    // Por lo mismo que las tablas: la cache del listado tiene que sobrevivir a
-    // la navegacion entre el listado de canales y el formulario de uno.
+    // Same reason as the tables: the list's cache has to survive navigation
+    // between the channel list and a channel's form.
     ChangeNotifierProvider(create: (_) => ChannelsService()),
-    // El catalogo de proveedores no es de una empresa ni de una pantalla: es
-    // configuracion publica que se lee una vez por sesion y la consumen tanto
-    // el listado (para el nombre y el icono de cada red) como el formulario
-    // (que se dibuja entero a partir de el).
+    // The provider catalog doesn't belong to a business or to a screen: it's
+    // public configuration that's read once per session and is consumed both
+    // by the list (for each network's name and icon) and by the form (which
+    // is drawn entirely from it).
     ChangeNotifierProvider(create: (_) => ChannelCatalogService()),
-    // Las conexiones (las cuentas de servicios de afuera) siguen el mismo par que
-    // los canales, y por los mismos motivos: la cache del listado tiene que
-    // sobrevivir a la navegacion entre el listado y el formulario de una cuenta...
+    // The sidecar link for WhatsApp Personal channels: which sessions
+    // `baileys_server` holds and their live status. App-wide because a
+    // session, once started, keeps running independently of which screen is
+    // open — same reasoning as `ConnectionService`.
+    ChangeNotifierProvider(create: (_) => BaileysService()),
+    // The connections (accounts for outside services) follow the same pair
+    // as the channels, and for the same reasons: the list's cache has to
+    // survive navigation between the list and an account's form...
     ChangeNotifierProvider(create: (_) => ConnectionsService()),
-    // ...y el catalogo de proveedores es configuracion publica que se lee una vez
-    // por sesion, no datos de una empresa. Es otro catalogo y no el de los
-    // canales porque describe otra cosa: que valores pide cada servicio para
-    // conectar una cuenta, y a que trabajos se la puede poner despues.
+    // ...and the provider catalog is public configuration read once per
+    // session, not a business's data. It's a different catalog from the
+    // channels' because it describes something else: what values each
+    // service asks for to connect an account, and what jobs it can be put on
+    // afterward.
     ChangeNotifierProvider(create: (_) => ConnectionCatalogService())
   ],
   child: app

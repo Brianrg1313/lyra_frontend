@@ -2,69 +2,69 @@
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/files/file_model.dart';
 
-/// Ancho de la miniatura que el backend renderiza para una foto de producto.
+/// Width of the thumbnail the backend renders for a product photo.
 ///
-/// Es la unica que existe (ver `Gallery`: sube con el proposito `product`, que
-/// recorta a 1400px y renderiza esta), asi que pedir otra no falla pero baja la
-/// grande. La celda de la planilla dibuja 40 pixeles y esta pesa 8 KB: es la
-/// diferencia entre abrir una tabla y bajar el catalogo entero.
+/// It is the only one that exists (see `Gallery`: it uploads with the `product` purpose, which
+/// crops to 1400px and renders this one), so asking for another does not fail but downloads the
+/// full one. The spreadsheet cell draws 40 pixels and this one weighs 8 KB: it is the
+/// difference between opening a table and downloading the whole catalog.
 const int kProductImageWidth = 320;
 
-/// Una foto de un producto, tal como quedo guardada en su celda.
+/// A product photo, as it ended up stored in its cell.
 ///
-/// La columna de imagenes de una tabla guarda **una lista de ids de archivo** y
-/// la primera es la portada (ver `Gallery` del backend). No guarda direcciones:
-/// una direccion envejece el dia que cambia el dominio o el CDN, y el id no
-/// envejece nunca —la direccion se arma con la base que `/init` reparte una sola
-/// vez ([CdnService])—.
+/// The image column of a table stores **a list of file ids** and
+/// the first one is the cover (see the backend's `Gallery`). It does not store addresses:
+/// an address ages the day the domain or CDN changes, and the id never
+/// ages —the address is built with the base that `/init` hands out a single
+/// time ([CdnService])—.
 ///
-/// La excepcion es lo que llego en una importacion: ahi la columna trae la
-/// direccion de la empresa, que es un dato suyo y no un archivo nuestro. Se
-/// distingue por [isStored] y hay que distinguirla, porque las dos cosas se
-/// borran distinto: la nuestra se baja del backend, la de ella se borra como se
-/// borra cualquier valor de una celda.
+/// The exception is what arrived in an import: there the column brings the
+/// company's address, which is its own datum and not one of our files. It is
+/// distinguished by [isStored] and it has to be distinguished, because the two things
+/// are deleted differently: ours is removed from the backend, hers is deleted like
+/// any cell value is deleted.
 class ProductImage {
   const ProductImage._(this.id, this.address);
 
-  /// Una foto que subio la empresa por la api: es un archivo nuestro y lo unico
-  /// que se guarda de ella es su id.
+  /// A photo the company uploaded through the api: it is one of our files and the only
+  /// thing stored about it is its id.
   const ProductImage.stored(String id) : this._(id, "");
 
-  /// Una direccion que trajo una importacion. No es un archivo de la
-  /// plataforma: no se puede pedir por id ni borrar del backend.
+  /// An address brought by an import. It is not a platform
+  /// file: it cannot be requested by id nor deleted from the backend.
   const ProductImage.external(String address) : this._("", address);
 
-  /// Id publico del archivo, o vacio si la foto es externa.
+  /// Public id of the file, or empty if the photo is external.
   final String id;
 
-  /// Direccion tal como la guardo la empresa, o vacia si la foto es nuestra.
+  /// Address as the company stored it, or empty if the photo is ours.
   final String address;
 
-  /// Si los bytes los guarda esta plataforma. Es lo que decide si eliminarla es
-  /// una baja contra el backend o vaciar la celda.
+  /// Whether the bytes are stored by this platform. It is what decides if deleting it is
+  /// a deletion against the backend or emptying the cell.
   bool get isStored => id.isNotEmpty;
 
-  /// La foto entera, para verla en grande. Vacia si todavia no hay base con que
-  /// armarla, que se lee igual que "no hay imagen".
+  /// The whole photo, to see it large. Empty if there is still no base to
+  /// build it with, which reads the same as "no image".
   String get url =>
     isStored ? CdnService().url(FileScope.media, id) : address;
 
-  /// La miniatura, que es con lo que se dibuja una celda. Una foto externa no
-  /// tiene: se baja tal cual esta, que es lo unico que hay de ella.
+  /// The thumbnail, which is what a cell is drawn with. An external photo does not
+  /// have one: it is downloaded as is, which is the only thing there is of it.
   String get thumbnail => isStored
     ? CdnService().url(FileScope.media, id, width: kProductImageWidth)
     : address;
 
-  /// Lo que se guarda en la celda por esta foto: su id, o la direccion si es de
-  /// la empresa.
+  /// What is stored in the cell for this photo: its id, or the address if it is
+  /// the company's.
   String get stored => isStored ? id : address;
 
-  /// Lee la galeria de una celda.
+  /// Reads the gallery of a cell.
   ///
-  /// El valor guardado puede ser cualquiera de estas cuatro cosas, y las cuatro
-  /// se leen igual porque las cuatro existen de verdad en las tablas: la lista
-  /// de ids que escribe la api, un id suelto de antes de que hubiera galerias,
-  /// una direccion que trajo una importacion, o nada.
+  /// The stored value can be any of these four things, and all four
+  /// are read the same because all four really exist in the tables: the list
+  /// of ids the api writes, a loose id from before galleries existed,
+  /// an address brought by an import, or nothing.
   static List<ProductImage> from(dynamic raw) {
     if (raw is List) {
       return [for (final entry in raw) ?_one(entry)];
@@ -75,13 +75,13 @@ class ProductImage {
     return image == null ? const [] : [image];
   }
 
-  /// Lee la galeria que devuelve el backend despues de agregar o quitar una foto
+  /// Reads the gallery the backend returns after adding or removing a photo
   /// (`{ images: [...] }`).
   ///
-  /// Es la lista que queda, ya resuelta: cada foto nuestra viene como un archivo
-  /// ([FileModel]) y las de una importacion, como `{ id: null, url }`. Se guarda
-  /// de ella lo unico que la celda necesita —el id, o la direccion— porque es lo
-  /// unico que la columna guarda.
+  /// It is the list that remains, already resolved: each of our photos comes as a file
+  /// ([FileModel]) and those from an import, as `{ id: null, url }`. Only what the cell
+  /// needs is stored from it —the id, or the address— because it is the only
+  /// thing the column stores.
   static List<ProductImage> fromResponse(dynamic data) {
     final images = data is Map ? data["images"] : data;
 
@@ -93,17 +93,17 @@ class ProductImage {
     ];
   }
 
-  /// Lo que hay que dejar en la celda por estas fotos: la lista de ids, en
-  /// orden, que es como la guarda el backend.
+  /// What has to be left in the cell for these photos: the list of ids, in
+  /// order, which is how the backend stores it.
   static List<String> valuesOf(List<ProductImage> images) =>
     [for (final image in images) image.stored];
 
-  /// Una entrada de la columna, sea lo que sea que haya guardado.
+  /// An entry of the column, whatever it stored.
   ///
-  /// Un uuid es un archivo nuestro y cualquier otra cosa con forma de direccion
-  /// es de la empresa. Lo que no es ni una cosa ni la otra —un resto de una
-  /// importacion torcida, un vacio— no es una foto y se deja afuera: la celda
-  /// muestra lo que se puede dibujar.
+  /// A uuid is one of our files and anything else with an address shape
+  /// is the company's. What is neither one nor the other —a leftover from a
+  /// broken import, an empty— is not a photo and is left out: the cell
+  /// shows what can be drawn.
   static ProductImage? _one(dynamic raw) {
     final value = raw?.toString().trim() ?? "";
 

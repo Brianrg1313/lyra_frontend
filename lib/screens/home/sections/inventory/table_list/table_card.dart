@@ -8,45 +8,86 @@ import 'package:provider/provider.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
+import 'primary_mark.dart';
 import 'table_options.dart';
 
-/// Tarjeta de una tabla: es como se ve el listado en escritorio, donde las filas
-/// a lo ancho dejaban medio metro de aire a la derecha de cada titulo.
+/// Card of a table: it's how the list looks on desktop, where rows across the
+/// width left half a meter of air to the right of each title.
 ///
-/// Lleva lo mismo que la fila del telefono ([TableListRow]) y en el mismo orden
-/// —el icono, el titulo, lo que mide la tabla y su descripcion—, solo que
-/// apilado en vez de en un renglon: el ancho de una tarjeta es el de una
-/// columna de la grilla, asi que la descripcion entra en dos lineas en lugar de
-/// cortarse a la mitad.
+/// It carries the same as the phone row ([TableListRow]) and in the same order
+/// —the icon and title on top, below it what the table measures and at the end
+/// its description—, in three rows instead of one: a card's width is that of a
+/// grid column and not of the screen.
 ///
-/// Toda la tarjeta abre la tabla (`/home/inventory/:id`); arriba a la derecha
-/// va el boton de sus opciones ([TableOptionsButton]), que es lo unico que se
-/// toca sin entrar.
+/// **It's a deliberately small card.** Tables are the top half of the section
+/// and the stock summary starts below them: each extra row in the card is one
+/// less row of inventory on the first screen. That's why the icon goes on the
+/// same row as the title, the options button measures what the icon does and
+/// the description fits in one line and not two: it's the one left over when you
+/// already know what the table is called and how big it is.
 ///
-/// Lo unico que escucha es **si su tabla se esta importando todavia**: una
-/// importacion sigue corriendo despues de que la tabla ya esta en el listado
-/// (el backend le pone el tipo a las columnas y recien despues suben las filas,
-/// ver [TablesService.import]), y mientras dura la tarjeta lo dice en vez de
-/// medir una tabla que todavia no esta. Se lee con `select` y no con `watch`
-/// para que una importacion repinte su tarjeta y no la grilla entera.
+/// The whole card opens the table (`/home/inventory/:id`); to the right of the
+/// title goes its options button ([TableOptionsButton]), which is the only
+/// thing touched without entering.
+///
+/// If it's the company's primary it says so ([PrimaryTableMark]): it's the one
+/// the summary below is looking at.
+///
+/// The only thing it listens to is **whether its table is still being
+/// imported**: an import keeps running after the table is already in the list
+/// (the backend types the columns and only then do the rows upload, see
+/// [TablesService.import]), and while it lasts the card says so instead of
+/// measuring a table that isn't there yet. It's read with `select` and not
+/// `watch` so an import repaints its card and not the whole grid.
+///
+/// And while it lasts **the card doesn't open the table** either: a sheet
+/// with untyped columns and no rows looks like an import that failed, and
+/// what people do about that is import the file again.
 class TableCard extends StatelessWidget {
   const TableCard({super.key, required this.table});
 
   final TableLiteModel table;
 
-  /// Alto de la tarjeta. Lo fija la grilla (`mainAxisExtent`) y no el contenido:
-  /// una tabla sin descripcion y otra con dos lineas tienen que medir lo mismo,
-  /// o la fila de la grilla quedaria despareja.
+  /// Height of the card. Set by the grid (`mainAxisExtent`) and not by content:
+  /// a table without a description and one with a line have to measure the same,
+  /// or the grid row would be uneven.
   ///
-  /// Sale de [AppSize] y no es un numero suelto porque las medidas del tema
-  /// escalan con la densidad de la pantalla: una tarjeta de alto fijo dejaria
-  /// afuera la ultima linea en las pantallas donde el texto crece.
-  static double get height => AppSize.action * 3.8;
+  /// It comes from [AppSize] and isn't a loose number because the theme's
+  /// measures scale with screen density: a fixed-height card would leave the
+  /// last line out on screens where the text grows.
+  ///
+  /// It's the three rows plus the card's air, with a little to spare: the icon
+  /// and title one, the measure one and the description one.
+  static double get height => AppSize.action * 2.3;
 
-  /// Ancho maximo de una columna de la grilla. Es un techo y no una medida: la
-  /// grilla reparte el ancho que tenga en tantas columnas como entren sin pasar
-  /// de esto, asi que la ventana define cuantas y todas terminan iguales.
-  static const double maxWidth = 320;
+  /// Max width of a grid column. It's a ceiling and not a measure: the grid
+  /// distributes whatever width it has into as many columns as fit without
+  /// going past this, so the window defines how many and they all end up equal.
+  ///
+  /// Narrower than a settings card so more fit per row: what a card has to let
+  /// read is the table's name, and for that the width left over after the icon
+  /// and the button is enough.
+  ///
+  /// It comes from [AppSize] for the same reason as the height: the icon, the
+  /// button and the letters inside grow with screen density, and a fixed-number
+  /// ceiling would leave the same card comfortable on one screen and cramped
+  /// on the other.
+  static double get maxWidth => AppSize.action * 5;
+
+  /// How the list's grid is laid out: how many cards fit per row, how much each
+  /// one measures and how much air goes between them.
+  ///
+  /// It lives in the card and not in the list because they're its own measures
+  /// —the height is what its rows occupy and the width is as far as its content
+  /// still fits—, and because that way what's tested is the same grid that's
+  /// drawn.
+  static SliverGridDelegate get grid =>
+    SliverGridDelegateWithMaxCrossAxisExtent(
+      maxCrossAxisExtent: maxWidth,
+      mainAxisExtent: height,
+      crossAxisSpacing: AppSize.gap,
+      mainAxisSpacing: AppSize.gap
+    );
 
   @override
   Widget build(BuildContext context) {
@@ -57,20 +98,26 @@ class TableCard extends StatelessWidget {
     );
 
     return FeedbackButton(
-      action: () => Navis.push(context, "/home/inventory/${table.id}"),
+      action: () => _open(context, stage),
+      // The wait cursor says the card does not open **before** it is clicked,
+      // which is the only moment the notice cannot be given.
+      mouseCursor: stage == null ? null : SystemMouseCursors.wait,
       color: scheme.surfaceOver,
-      padding: EdgeInsets.all(AppSize.spaceS),
+      padding: EdgeInsets.all(AppSize.spaceXS),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // The icon, the name and the options in a single row: all three are
+          // "which table is this", and stacked they were two rows to say one
+          // thing.
           Row(children: [
             Container(
-              width: AppSize.action,
-              height: AppSize.action,
+              width: AppSize.button,
+              height: AppSize.button,
               decoration: BoxDecoration(
                 color: scheme.surface,
                 borderRadius: BorderRadius.circular(
-                  AppSize.cornerInset(AppSize.spaceS)
+                  AppSize.cornerInset(AppSize.spaceXS)
                 )
               ),
               child: Center(child: Icon(
@@ -79,19 +126,20 @@ class TableCard extends StatelessWidget {
                 color: scheme.icon
               ))
             ),
-            const Spacer(),
-            // El boton se corre hacia la esquina: mide lo que mide un boton de
-            // icono y la tarjeta ya tiene su padding, asi que sin esto quedaria
-            // flotando lejos del borde.
-            Transform.translate(
-              offset: Offset(AppSize.gap, -AppSize.gap),
-              child: TableOptionsButton(table: table)
-            )
+            SizedBox(width: AppSize.gap),
+            Expanded(child: TextMedium(table.title, ellipsis: true, bold: true)),
+            SizedBox(width: AppSize.gap),
+            TableOptionsButton(table: table, size: AppSize.button)
           ]),
-          SizedBox(height: AppSize.spaceXS),
-          TextMedium(table.title, ellipsis: true, bold: true),
           SizedBox(height: AppSize.gap),
+          // What this table is for the company and how big it is. The mark goes
+          // first because it isn't a piece of the table's data but its role:
+          // the one the summary below is looking at.
           Row(children: [
+            if (table.primary) ...[
+              const PrimaryTableMark(),
+              SizedBox(width: AppSize.gap)
+            ],
             if (stage != null) ...[
               SizedBox(
                 width: AppSize.text * 0.8,
@@ -109,14 +157,13 @@ class TableCard extends StatelessWidget {
               color: scheme.text.secondary
             ))
           ]),
-          // La descripcion se lleva el resto del alto: es lo unico que puede
-          // faltar, y asi la tarjeta de una tabla que no la tiene no acomoda
-          // nada distinto, solo deja el hueco vacio.
+          // The description takes the rest of the height: it's the only thing
+          // that can be missing, and that way the card of a table without one
+          // doesn't fit anything different, it just leaves the empty gap.
           if (table.description.isNotEmpty) ...[
-            SizedBox(height: AppSize.spaceXS),
+            SizedBox(height: AppSize.gap * 0.5),
             Expanded(child: TextSmall(
               table.description,
-              lines: 2,
               ellipsis: true,
               color: scheme.text.secondary
             ))
@@ -126,12 +173,29 @@ class TableCard extends StatelessWidget {
     );
   }
 
-  /// Lo que mide la tabla: sus columnas y sus registros, en un solo renglon.
+  /// Opens the table, unless it is still being built.
   ///
-  /// Los registros se cuentan aparte de las columnas y esa cuenta puede fallar
-  /// sola (ver [TableLiteModel.records]). Cuando no vino, la tarjeta muestra
-  /// solo las columnas: es preferible decir menos a decir que una tabla cargada
-  /// esta vacia.
+  /// A table is in the list from the moment it exists, which is a good half a
+  /// minute before it is finished: its columns are still `text`, its rows are
+  /// not up yet, and a sheet in that state reads as an import that failed
+  /// rather than as one that is halfway. So the tap says what is missing
+  /// instead of opening it —doing nothing at all would read as a broken card,
+  /// which is the same misunderstanding one step earlier.
+  void _open(BuildContext context, TableImportStage? stage) {
+    if (stage != null) {
+      FloatFlag.of(context).message(S.of(context).import_table_busy);
+
+      return;
+    }
+
+    Navis.push(context, "/home/inventory/${table.id}");
+  }
+
+  /// What the table measures: its columns and its records, in a single row.
+  ///
+  /// Records are counted apart from columns and that count can fail on its own
+  /// (see [TableLiteModel.records]). When it didn't come, the card shows only
+  /// the columns: it's better to say less than to say a loaded table is empty.
   String _size(BuildContext context) {
     final fields = S.of(context).table_field_count(table.fields);
 
@@ -141,12 +205,13 @@ class TableCard extends StatelessWidget {
     return "$fields · ${S.of(context).table_record_count(records)}";
   }
 
-  /// Que le falta a la tabla, mientras se la esta importando.
+  /// What the table is missing, while it's being imported.
   ///
-  /// Ocupa el lugar de la medida y no se suma a ella porque esa medida todavia
-  /// no significa nada: las columnas pueden cambiar de aca al final (el backend
-  /// le agrega la de imagen) y las filas ni siquiera empezaron a subir. Decir
-  /// "0 registros" de una planilla de mil filas seria peor que no decir nada.
+  /// It takes the place of the measure and isn't added to it because that
+  /// measure doesn't mean anything yet: the columns can change from here to the
+  /// end (the backend adds the image one) and the rows haven't even started
+  /// uploading. Saying "0 records" for a thousand-row spreadsheet would be worse
+  /// than saying nothing.
   String _stage(BuildContext context, TableImportStage stage) => switch (stage) {
     TableImportStage.preparing => S.of(context).import_table_preparing,
     TableImportStage.loading => S.of(context).import_table_loading

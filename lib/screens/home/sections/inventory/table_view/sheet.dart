@@ -14,25 +14,25 @@ import 'sheet_style.dart';
 import 'state/sheet_columns.dart';
 import 'state/sheet_controller.dart';
 
-/// La planilla: la banda congelada de numeros de fila y, al lado, la de datos
-/// con la fila de campos arriba y los registros debajo.
+/// The sheet: the frozen band of row numbers and, next to it, the data one with
+/// the fields row on top and the records below.
 ///
-/// Ocupa todo lo que le den: no hay pie debajo, asi que la ultima fila visible
-/// llega hasta el borde y se sigue bajando desde ahi.
+/// It takes all it is given: there is no footer, so the last visible row reaches
+/// the edge and keeps scrolling down from there.
 ///
-/// Este widget solo se rehace cuando cambia **la forma** de la grilla: una
-/// columna que se agrega, se elimina o se arrastra a otro lugar, o el tamaño de
-/// la ventana. Nada mas. Renombrar una columna o cambiarle el tipo **no pasa por
-/// aca**, aunque los dos releen la estructura entera: lo que se escucha es
-/// [SheetColumns.shape], que sigue siendo la misma, y el titulo y el tipo se los
-/// pregunta cada celda por su cuenta.
+/// This widget is only rebuilt when **the shape** of the grid changes: a column
+/// that is added, deleted, or dragged elsewhere, or the size of the window.
+/// Nothing more. Renaming a column or changing its type **does not pass through
+/// here**, even though both re-read the whole structure: what is listened to is
+/// [SheetColumns.shape], which stays the same, and the title and the type are
+/// asked by each cell on its own.
 ///
-/// Arrastrar una columna tampoco pasa por aca **mientras dura**: lo que se mueve
-/// con el puntero es el fantasma de [ColumnDrag], dibujado encima. La grilla se
-/// entera una sola vez, al soltar.
+/// Dragging a column does not pass through here **while it lasts** either: what
+/// moves with the pointer is the ghost of [ColumnDrag], drawn on top. The grid
+/// finds out a single time, on release.
 ///
-/// El resto (el cursor, los anchos, los tramos de registros que van entrando, lo
-/// que se escribe) lo escuchan las celdas y las filas, cada una lo suyo.
+/// The rest (the cursor, the widths, the chunks of records that keep arriving,
+/// what is written) is listened to by the cells and the rows, each to its own.
 class Sheet extends StatelessWidget {
   const Sheet({super.key});
 
@@ -40,9 +40,9 @@ class Sheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.read<SheetController>();
 
-    // La forma conserva su instancia mientras las columnas no cambien de
-    // cantidad, de lugar ni de lado del que leen, asi que alcanza con
-    // compararla por identidad.
+    // The shape keeps its instance while the columns do not change in quantity,
+    // place, or which side they read from, so comparing it by identity is
+    // enough.
     final shape = context.select<SheetColumns, SheetShape>(
       (columns) => columns.shape
     );
@@ -57,16 +57,16 @@ class Sheet extends StatelessWidget {
       style: style,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Cuantas filas se ven de una: es lo que decide cuantas filas en
-          // blanco sobran, para que la planilla llegue siempre hasta abajo.
+          // How many rows are seen at once: it is what decides how many blank
+          // rows are left over, so the sheet always reaches the bottom.
           final visible = controller.metrics.visibleRows(constraints.maxHeight);
           final available = math.max(
             0.0,
             constraints.maxWidth - style.gutterWidth
           );
 
-          // Se apagan las scrollbars automaticas de cada banda para mostrar solo
-          // una vertical (la de la planilla entera) y una horizontal.
+          // The automatic scrollbars of each band are turned off to show only
+          // one vertical (the whole sheet's) and one horizontal.
           return Focus(
             focusNode: controller.grid,
             onKeyEvent: controller.handleKey,
@@ -94,10 +94,10 @@ class Sheet extends StatelessWidget {
                             width: math.max(total, available),
                             child: child
                           ),
-                          // El arrastre de una columna se dibuja encima de la
-                          // grilla y en sus mismas coordenadas. No recibe
-                          // toques: el arrastre lo lleva la celda de la que se
-                          // agarro la columna.
+                          // A column's drag is drawn on top of the grid and in
+                          // the same coordinates. It receives no touches: the
+                          // drag is carried by the cell the column was grabbed
+                          // from.
                           child: Stack(
                             fit: StackFit.expand,
                             children: [

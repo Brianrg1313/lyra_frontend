@@ -13,31 +13,31 @@ import 'package:app/services/files/image_file.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/business/business_avatar.dart';
-import 'package:app/screens/modals/crop_image/_crop_image.dart';
+import 'package:app/screens/modals/shared/crop_image/_crop_image.dart';
 
-/// La cara de la empresa: su logo, y desde donde se cambia.
+/// The company's face: its logo, and from where it's changed.
 ///
-/// Va a la izquierda del nombre y las etiquetas, dentro de la cabecera del
-/// perfil (ver [BusinessProfileHeader]): es la otra mitad de la misma
-/// presentacion —quien es la empresa— y no un bloque aparte. En una columna
-/// propia obligaba a cruzar la pantalla para saber de que ficha era el dato que
-/// se estaba corrigiendo, y dejaba una columna entera ocupada por una sola
-/// imagen.
+/// It goes to the left of the name and tags, inside the profile's header (see
+/// [BusinessProfileHeader]): it's the other half of the same presentation
+/// —who the company is— and not a separate block. In its own column it forced
+/// crossing the screen to know which sheet the datum being corrected belonged
+/// to, and left a whole column taken up by a single image.
 ///
-/// Que se puede cambiar no se explica con un texto: lleva el lapiz pegado abajo
-/// a la derecha, encima de la propia imagen. Es el mismo gesto que ya tienen
-/// las fotos en todos lados, y ocupa lo que ocupa un icono en vez de un renglon.
+/// That it can be changed isn't explained with text: it carries the pencil
+/// stuck at the bottom right, on top of the image itself. It's the same gesture
+/// photos already have everywhere, and it takes up what an icon takes up
+/// instead of a row.
 ///
-/// Cambiar el logo son tres pasos y ninguno se puede saltear: se elige el
-/// archivo, se encuadra ([CropImageModal]) y recien entonces se sube. El
-/// encuadre esta en el medio porque el logo se dibuja siempre cuadrado —en el
-/// selector, aca— y de una foto apaisada hay que dejar afuera la
-/// mitad: cual mitad es la unica parte de todo esto que el backend no puede
-/// resolver solo.
+/// Changing the logo is three steps and none can be skipped: the file is
+/// chosen, it's framed ([CropImageModal]) and only then is it uploaded. The
+/// framing is in the middle because the logo is always drawn square —in the
+/// selector, here— and from a landscape photo the half has to be left out:
+/// which half is the only part of all this that the backend can't resolve on
+/// its own.
 ///
-/// Mientras sube tapa el logo con su propio cargando y no con el de la pestana:
-/// lo unico que esta cambiando es la imagen, y el resto de la ficha se sigue
-/// leyendo.
+/// While uploading it covers the logo with its own loading and not the tab's:
+/// the only thing changing is the image, and the rest of the sheet keeps
+/// being read.
 class BusinessProfileLogo extends StatefulWidget {
   const BusinessProfileLogo({super.key, required this.profile});
 
@@ -48,14 +48,15 @@ class BusinessProfileLogo extends StatefulWidget {
 }
 
 class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
-  /// Lado del logo. Es el mismo widget que el del selector dibujado en grande,
-  /// pero no tanto como cuando tenia una columna para el solo: aca se mide
-  /// contra el nombre que tiene al lado, y mas alto que ese bloque de texto
-  /// dejaria a la cabecera con un hueco al costado.
+  /// Side of the logo. It's the same widget as the selector's drawn large,
+  /// but not as large as when it had a column for itself: here it's measured
+  /// against the name beside it, and taller than that block of text would
+  /// leave the header with a gap on the side.
   static double get _size => AppSize.picture * 1.5;
 
-  /// Se esta subiendo un logo. Bloquea la accion —dos subidas a la vez dejan a
-  /// la empresa con la que conteste ultimo— y tapa la imagen con el cargando.
+  /// A logo is being uploaded. It blocks the action —two uploads at once leave
+  /// the company with whichever answered last— and covers the image with the
+  /// loading.
   bool _busy = false;
 
   @override
@@ -66,14 +67,15 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
     child: _image(context, widget.profile)
   );
 
-  /// El logo, con el lapiz encima y el cargando mientras se sube el nuevo.
+  /// The logo, with the pencil on top and the loading while the new one is
+  /// uploaded.
   Widget _image(BuildContext context, BusinessProfileModel profile) => Stack(
     alignment: Alignment.center,
     children: [
       BusinessAvatar(
         name: profile.name,
-        // La version que cubra el lado con el que se dibuja, no la original: el
-        // logo se sube de hasta 10 MB y aca entra en un cuadrado chico.
+        // The version that covers the side it's drawn with, not the original:
+        // the logo is uploaded up to 10 MB and here it fits in a small square.
         url: profile.logo?.sized(_size.round()),
         size: _size
       ),
@@ -86,8 +88,9 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
         ),
         child: const Center(child: Loading())
       )
-      // El lapiz desaparece mientras sube: la accion ya esta en curso, y
-      // ofrecerla encima del cargando es ofrecer algo que no responde.
+      // The pencil disappears while uploading: the action is already in
+      // progress, and offering it over the loading is offering something that
+      // doesn't respond.
       else Positioned(
         right: AppSize.gap,
         bottom: AppSize.gap,
@@ -96,8 +99,8 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
     ]
   );
 
-  /// El distintivo que dice que la imagen se toca. Va opaco y con borde porque
-  /// se apoya sobre el logo: sobre una foto clara, un icono suelto no se ve.
+  /// The badge saying the image is touchable. It goes opaque and with a border
+  /// because it rests on the logo: over a light photo, a loose icon isn't seen.
   Widget _pen(BuildContext context) {
     final scheme = ThemeColor.of(context);
 
@@ -112,15 +115,16 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
     );
   }
 
-  /// Como se llama la accion: cargar el logo si no hay ninguno, cambiarlo si ya
-  /// hay. Es el texto del boton y lo que se le anuncia al lector de pantalla.
+  /// What the action is called: loading the logo if there's none, changing it
+  /// if there already is. It's the button's text and what's announced to the
+  /// screen reader.
   String _label(BuildContext context) => widget.profile.logo == null
     ? S.of(context).business_logo_add
     : S.of(context).business_logo_change;
 
-  /// Elegir, encuadrar y subir. Cualquiera de los dos primeros pasos se puede
-  /// abandonar —cerrando el dialogo del sistema o el modal— y ahi no pasa nada:
-  /// la empresa se queda con el logo que tenia.
+  /// Choose, frame and upload. Any of the first two steps can be abandoned
+  /// —closing the system dialog or the modal— and there nothing happens: the
+  /// company keeps the logo it had.
   Future<void> _change() async {
     if (_busy) return;
 
@@ -130,9 +134,9 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
 
     if (bytes == null || !mounted) return;
 
-    // El limite es el del backend. Se mide antes de leer la imagen: una foto
-    // de 40 MB hay que decodificarla entera en memoria para recortarla, y ese
-    // es el trabajo que no vale la pena hacer para que despues la rechacen.
+    // The limit is the backend's. It's measured before reading the image: a
+    // 40 MB photo has to be decoded entirely into memory to crop it, and that's
+    // the work not worth doing for them to reject it later.
     if (bytes.length > kImageMaxBytes) {
       FloatFlag.of(context).error(message: S.of(context).business_logo_large);
       return;
@@ -144,13 +148,14 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
       builder: (BuildContext context) => CropImageModal(bytes: bytes)
     );
 
-    // Se cerro el modal sin aceptar el encuadre.
+    // The modal was closed without accepting the framing.
     if (cropped is! Uint8List || !mounted) return;
 
     setState(() => _busy = true);
 
-    // Nada que avisar cuando entra: el logo nuevo ya esta en pantalla. Si
-    // fallo, el error lo mostro el servicio, asi que la respuesta no se mira.
+    // Nothing to announce when it enters: the new logo is already on screen. If
+    // it failed, the error was shown by the service, so the response isn't
+    // looked at.
     await _upload(cropped);
 
     if (!mounted) return;
@@ -158,10 +163,10 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
     setState(() => _busy = false);
   }
 
-  /// Sube el recorte. Viaja como archivo porque asi viaja un multipart, y el
-  /// recorte nacio en memoria: se escribe en la carpeta temporal el tiempo que
-  /// dura la subida y se borra pase lo que pase, incluso si la empresa se
-  /// cambio mientras tanto.
+  /// Uploads the crop. It travels as a file because that's how a multipart
+  /// travels, and the crop was born in memory: it's written to the temp folder
+  /// for as long as the upload lasts and deleted no matter what happens, even
+  /// if the company changed in the meantime.
   Future<bool> _upload(Uint8List bytes) async {
     final file = await writeTempImage(bytes, name: "logo");
 

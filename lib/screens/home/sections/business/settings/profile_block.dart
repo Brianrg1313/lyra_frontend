@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Los datos de un grupo, uno debajo del otro y separados por una linea.
+/// A group's data, one below the other and separated by a line.
 ///
-/// La separacion es mas ancha que la de una lista cualquiera porque cada dato
-/// ya no es un renglon: son tres —nombre, explicacion y valor— y apretados uno
-/// contra otro dejan de leerse como datos distintos.
+/// The separation is wider than that of any list because each datum is no
+/// longer a single row: they're three —name, explanation and value— and packed
+/// against one another they stop reading as distinct data.
 class ProfileFieldList extends StatelessWidget {
   const ProfileFieldList({super.key, required this.fields});
 
@@ -25,11 +25,11 @@ class ProfileFieldList extends StatelessWidget {
   );
 }
 
-/// Un grupo de datos con su titulo, sobre su propia superficie.
+/// A group of data with its title, on its own surface.
 ///
-/// La superficie es un bloque **sobre** la hoja del cuerpo ([Surface.over]) y
-/// no otra hoja: lo que separa es un grupo de datos del siguiente, no una
-/// pantalla de otra.
+/// The surface is a block **over** the body's sheet ([Surface.over]) and not
+/// another sheet: what separates is one data group from the next, not one
+/// screen from another.
 class ProfileBlock extends StatelessWidget {
   const ProfileBlock({
     super.key,
@@ -41,8 +41,8 @@ class ProfileBlock extends StatelessWidget {
   final String title;
   final List<Widget> fields;
 
-  /// Lo que se puede hacer con el grupo entero y no con un dato suyo (agregar
-  /// un correo). Va en el titulo porque no pertenece a ninguna fila.
+  /// What can be done with the whole group and not with one of its data (adding
+  /// an email). It goes in the title because it doesn't belong to any row.
   final Widget? action;
 
   @override

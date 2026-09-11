@@ -5,93 +5,96 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/business/business_email_model.dart';
 import 'package:app/services/files/file_model.dart';
 
-/// Empresa completa, tal como la devuelve `GET /business/profile/`.
+/// Full business, exactly as returned by `GET /business/profile/`.
 ///
-/// Es la cedula de identidad de la empresa: como se llama (comercial y
-/// legalmente), su handle publico y su logo, a que se dedica, en que situacion
-/// legal esta, donde opera, en que factura y como se la contacta.
+/// It's the business's ID card: what it's called (commercially and
+/// legally), its public handle and logo, what it does, what legal status
+/// it's in, where it operates, what currency it bills in, and how it's
+/// contacted.
 ///
-/// Lo que la empresa **es**, y nada mas: su gente, sus sucursales, sus clientes
-/// y sus numeros son cada uno su propia seccion y su propia lectura
-/// (`/business/employees/`, `/branches/`, `/clients/`, `/statistics/`), porque
-/// cambian por su cuenta y no son lo que edita esta ficha.
+/// What the business **is**, and nothing more: its people, its branches, its
+/// clients and its numbers are each their own section and their own read
+/// (`/business/employees/`, `/branches/`, `/clients/`, `/statistics/`),
+/// because they change on their own and aren't what this card edits.
 ///
-/// A diferencia de `BusinessModel`, que llega comprimido en `/init` con lo
-/// justo para pintar el selector, este es el detalle entero de **una sola**
-/// empresa: la activa. El endpoint no recibe un id, resuelve la empresa de la
-/// cabecera `business_id`, asi que pedir el perfil de otra es elegirla primero
-/// (ver `BusinessService.loadProfile`).
+/// Unlike `BusinessModel`, which arrives compressed in `/init` with just
+/// enough to render the selector, this is the full detail of **a single**
+/// business: the active one. The endpoint doesn't take an id, it resolves
+/// the business from the `business_id` header, so requesting another
+/// business's profile means selecting it first (see
+/// `BusinessService.loadProfile`).
 class BusinessProfileModel {
-  /// Identificador publico (uuid). Es el que viaja en `business_id`.
+  /// Public identifier (uuid). It's the one that travels in `business_id`.
   final String id;
 
-  /// Nombre comercial: el que se muestra en toda la app.
+  /// Commercial name: the one shown throughout the app.
   final String name;
 
-  /// Razon social. Puede diferir del comercial y puede no estar cargada.
+  /// Legal name. Can differ from the commercial one and may not be set.
   final String legalName;
 
-  /// Handle publico, sin arroba, para enlaces y busqueda.
+  /// Public handle, without the at-sign, for links and search.
   final String nickname;
 
-  /// Lema o descripcion corta.
+  /// Tagline or short description.
   final String caption;
 
-  /// Logo de la empresa, o `null` si no subio ninguno. Es un archivo del
-  /// backend: trae su id y con que tamanos existe, y la direccion se arma con
-  /// la base que entrego `/init` (ver [FileModel]).
+  /// The business's logo, or `null` if none was uploaded. It's a backend
+  /// file: it brings its id and the sizes it exists in, and the address is
+  /// built with the base that `/init` provided (see [FileModel]).
   final FileModel? logo;
 
   final BusinessActivity activity;
 
-  /// Situacion legal de la empresa. No se edita desde la app: la otorga el
-  /// proceso de verificacion.
+  /// The business's legal status. Not editable from the app: it's granted
+  /// by the verification process.
   final BusinessVerification verification;
   final DateTime? verifiedDate;
 
-  /// Identificador fiscal (RIF/NIF/EIN...).
+  /// Tax identifier (RIF/NIF/EIN...).
   final String taxId;
 
-  /// Codigo ISO 3166-1 alpha-2 del pais donde opera.
+  /// ISO 3166-1 alpha-2 code of the country of operation.
   final String country;
 
-  /// Domicilio de la oficina principal, en una linea.
+  /// Address of the main office, on a single line.
   final String address;
 
-  /// Tag de idioma en el que opera la empresa (`es`, `en`, `es-VE`).
+  /// Language tag the business operates in (`es`, `en`, `es-VE`).
   final String language;
 
-  /// Codigo (ISO 4217) de la moneda en la que escribe sus precios.
+  /// Currency code (ISO 4217) the business writes its prices in.
   ///
-  /// Como todos los codigos del perfil, se guarda crudo: quien lo tenga que
-  /// **escribir** le pide al catalogo de `/init` con que hacerlo
-  /// ([CurrencyCatalogService]), que es quien sabe el simbolo, el lado y los
-  /// decimales de cada una.
+  /// Like every code in the profile, it's stored raw: whoever needs to
+  /// **write** it asks the `/init` catalog how to do it
+  /// ([CurrencyCatalogService]), which is the one that knows the symbol,
+  /// the side, and the decimals for each one.
   final String currency;
 
-  /// Monedas secundarias en las que ademas cotiza, en codigo ISO 4217.
+  /// Secondary currencies the business also quotes in, as ISO 4217 codes.
   final List<String> currencies;
 
   final String phone;
 
-  /// Direccion principal de la empresa: la de [emails] marcada como tal. Llega
-  /// suelta ademas de en la lista para quien quiere una sola y no tiene por que
-  /// saber elegirla.
+  /// The business's main address: the one from [emails] marked as such. It
+  /// arrives loose in addition to being in the list for whoever wants just
+  /// one and doesn't need to know how to pick it.
   final String email;
 
-  /// Todas las direcciones de la empresa, la principal primero.
+  /// All of the business's addresses, main one first.
   final List<BusinessEmailModel> emails;
 
   final String website;
 
-  /// Fecha de constitucion legal de la empresa.
+  /// The business's legal incorporation date.
   final DateTime? incorporationDate;
 
-  /// `true` si la empresa la creo quien esta preguntando. El id de su creador
-  /// no llega: esto es lo unico que el cliente necesita saber de el.
+  /// `true` if the business was created by whoever is asking. Its creator's
+  /// id doesn't come through: this is the only thing the client needs to
+  /// know about them.
   final bool owner;
 
-  /// Cuando se registro la empresa en la plataforma.
+  /// When the business was registered on the platform.
   final DateTime? date;
 
   const BusinessProfileModel({
@@ -144,13 +147,14 @@ class BusinessProfileModel {
     date: _date(json["date"])
   );
 
-  /// Lo opcional del perfil llega como `null` desde el backend y aca queda como
-  /// texto vacio: el perfil pregunta una sola cosa —si hay algo que mostrar— y
-  /// con una sola forma de decir "no hay" no se puede olvidar la otra.
+  /// Whatever is optional in the profile arrives as `null` from the backend
+  /// and ends up here as empty text: the profile asks a single question
+  /// —whether there's something to show— and with a single way to say
+  /// "there's nothing", the other one can't be forgotten.
   static String _text(dynamic value) => value?.toString().trim() ?? "";
 
-  /// Las fechas viajan como texto ISO. Una que no se pueda leer vale lo mismo
-  /// que una que no vino: la fila no se muestra.
+  /// Dates travel as ISO text. One that can't be read is worth the same as
+  /// one that didn't come: the row isn't shown.
   static DateTime? _date(dynamic value) {
     if (value == null) return null;
     return DateTime.tryParse(value.toString());
@@ -166,18 +170,18 @@ class BusinessProfileModel {
   }
 }
 
-/// Sector al que se dedica una empresa.
+/// Sector a business operates in.
 ///
-/// Los codigos son los de `companies`.`activity_type` y son los mismos que se
-/// eligen al crearla: el alta ofrece [catalog] y el perfil traduce lo que
-/// devuelve el backend, asi que las dos pantallas no pueden nombrar distinto al
-/// mismo sector.
+/// The codes are those of `companies`.`activity_type` and are the same ones
+/// chosen when creating it: signup offers [catalog] and the profile
+/// translates what the backend returns, so the two screens can't name the
+/// same sector differently.
 ///
-/// La lista es **la del backend** y no una seleccion de ella: el sector se
-/// valida contra un enumerado cerrado (`ACTIVITY_TYPE` en `lib/extras/
-/// rules.json`), asi que uno de mas se rechaza al guardar y uno de menos deja a
-/// las empresas que lo tienen leyendose como "Otro". Si alla se agrega un
-/// sector, se agrega aca.
+/// The list is **the backend's** and not a selection of it: the sector is
+/// validated against a closed enum (`ACTIVITY_TYPE` in `lib/extras/
+/// rules.json`), so one too many gets rejected on save and one too few
+/// leaves the businesses that have it reading as "Other". If a sector is
+/// added there, it's added here.
 enum BusinessActivity {
   retail,
   wholesale,
@@ -227,13 +231,13 @@ enum BusinessActivity {
     _ => unknown
   };
 
-  /// Los sectores que se pueden elegir. [unknown] no esta: no es un sector, es
-  /// no haber reconocido el que mando el backend.
+  /// The sectors that can be chosen. [unknown] isn't among them: it isn't a
+  /// sector, it's the fact that the one the backend sent wasn't recognized.
   ///
-  /// El orden no es el del backend ni el alfabetico: son veinte y se eligen
-  /// leyendo, asi que van los parecidos juntos —lo que se vende, lo que se
-  /// atiende, lo que se produce, lo que se mueve— y "Otro" al final, que es
-  /// donde se busca cuando ninguno de los anteriores servia.
+  /// The order isn't the backend's nor alphabetical: there are twenty of
+  /// them and they're chosen by reading, so similar ones go together —what's
+  /// sold, what's serviced, what's produced, what's moved— and "Other" at
+  /// the end, which is where you look when none of the previous ones fit.
   static const List<BusinessActivity> catalog = [
     retail,
     wholesale,
@@ -257,7 +261,7 @@ enum BusinessActivity {
     other
   ];
 
-  /// Codigo que viaja al backend. No se traduce.
+  /// Code that travels to the backend. Not translated.
   String get value => switch (this) {
     retail => "RETAIL",
     wholesale => "WHOLESALE",
@@ -306,12 +310,12 @@ enum BusinessActivity {
   };
 }
 
-/// Situacion legal de una empresa dentro de la plataforma.
+/// A business's legal status within the platform.
 ///
-/// La otorga el proceso de verificacion y nunca el cliente: se muestra, no se
-/// edita. Manda sobre lo que la empresa puede hacer —una sin verificar opera
-/// con limites—, asi que el perfil la pone junto al nombre y no en una fila
-/// mas.
+/// It's granted by the verification process and never by the client: it's
+/// shown, not edited. It governs what the business can do —an unverified
+/// one operates with limits—, so the profile places it next to the name
+/// and not in one more row.
 enum BusinessVerification {
   untrusted,
   trusted,
@@ -319,9 +323,9 @@ enum BusinessVerification {
   verified,
   rejected;
 
-  /// Lo que no se reconoce cae en [untrusted], que es donde arranca toda
-  /// empresa: ante la duda se muestra la situacion mas conservadora, no una
-  /// confianza que nadie otorgo.
+  /// Anything not recognized falls into [untrusted], which is where every
+  /// business starts: when in doubt, the most conservative status is shown,
+  /// not a trust nobody granted.
   static BusinessVerification from(dynamic code) => switch (
     code?.toString().toLowerCase()
   ) {
@@ -340,8 +344,8 @@ enum BusinessVerification {
     rejected => S.of(context).business_verification_rejected
   };
 
-  /// Color de la etiqueta. Semantico y fijo, como el resto de los estados de
-  /// empresa: comunica lo mismo en tema claro y en oscuro.
+  /// Color of the label. Semantic and fixed, like the rest of a business's
+  /// states: it communicates the same thing in light and dark theme.
   Color get color => switch (this) {
     verified => const Color(0xFF2E9E5B),
     trusted => const Color(0xFF3D7EC4),
@@ -350,7 +354,7 @@ enum BusinessVerification {
     untrusted => const Color(0xFF9A9A9A)
   };
 
-  /// Icono de la etiqueta. El tilde es solo de lo verificado: en cualquier otra
-  /// situacion se leeria como aprobado.
+  /// Icon for the label. The checkmark is only for verified: in any other
+  /// state it would read as approved.
   IconData get icon => this == verified ? CI.check : CI.info;
 }

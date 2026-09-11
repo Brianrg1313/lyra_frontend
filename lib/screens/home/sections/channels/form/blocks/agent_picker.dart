@@ -9,15 +9,15 @@ import '../widgets/option_card.dart';
 import '../widgets/option_grid.dart';
 import '../state/channel_form_controller.dart';
 
-/// Que hace el agente que atiende el canal: vender, dar soporte o atender en
-/// general.
+/// What the agent answering the channel does: sell, give support or handle
+/// things in general.
 ///
-/// Es una sola eleccion y cambia como se comporta el modelo de punta a punta
-/// —el tono, hacia donde lleva la conversacion, que hace cuando no sabe algo—,
-/// no que datos ve: eso lo decide el bloque de datos.
+/// It is a single choice and it changes how the model behaves end to end —the
+/// tone, where it takes the conversation, what it does when it does not know
+/// something—, not what data it sees: that is decided by the data block.
 ///
-/// Escucha solo a `role`: elegir un rol no repinta ni las credenciales ni el
-/// resto del formulario.
+/// It only listens to `role`: choosing a role repaints neither the
+/// credentials nor the rest of the form.
 class AgentPicker extends StatelessWidget {
   const AgentPicker({super.key, required this.controller});
 

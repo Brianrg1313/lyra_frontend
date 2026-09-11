@@ -8,89 +8,90 @@ import 'package:app/services/connections/connection_request.dart';
 // WIDGETS
 import 'package:core/form.dart';
 
-/// En que esta la pagina del formulario.
+/// What state the form's page is in.
 ///
-/// Solo el alta arranca en [ready]: una conexion que ya existe hay que ir a
-/// buscarla antes de poder dibujar nada, porque su configuracion es la que llena
-/// los campos.
+/// Only the creation starts in [ready]: a connection that already exists has
+/// to be fetched before drawing anything, because its configuration is what
+/// fills the fields.
 enum ConnectionFormStatus { loading, ready, error }
 
-/// Todo el estado del formulario de una conexion, fuera de los widgets.
+/// All the state of a connection's form, outside the widgets.
 ///
-/// Vive aparte de la pantalla por lo mismo que el de la planilla: son piezas
-/// independientes —el servicio elegido y un campo por cada valor que pide— y
-/// ninguna tiene por que repintar a las demas. Por eso el servicio es su propio
-/// [ValueNotifier] y no un `setState` de la pagina: elegirlo no puede volver a
-/// construir los siete campos de credenciales de al lado mientras se escriben.
+/// It lives apart from the screen for the same reason the spreadsheet's does:
+/// they're independent pieces —the chosen service and one field per value it
+/// asks for— and none of them has to repaint the others. That's why the
+/// service is its own [ValueNotifier] and not a `setState` of the page:
+/// choosing it can't rebuild the seven credential fields next to it while
+/// they're being typed into.
 ///
-/// Los campos de configuracion se crean **a demanda y se reusan por clave**
-/// ([field]). Cambiar de servicio no los tira: `app_secret` es literalmente el
-/// mismo valor en WhatsApp, Messenger e Instagram —son la misma app de Meta— asi
-/// que quien lo pego una vez no tiene que volver a pegarlo si se equivoco de
-/// servicio al empezar.
+/// The configuration fields are created **on demand and reused by key**
+/// ([field]). Changing service doesn't throw them away: `app_secret` is
+/// literally the same value in WhatsApp, Messenger and Instagram —they're the
+/// same Meta app— so whoever pasted it once doesn't have to paste it again if
+/// they picked the wrong service to start.
 ///
-/// Los dos formularios estan separados a proposito:
+/// The two forms are separated on purpose:
 ///
-/// - [headerForm] tiene el nombre y la descripcion, y es el unico que se valida:
-///   son los unicos datos que el backend exige.
-/// - [configForm] tiene los campos del servicio, y **no se valida nunca**. No es
-///   descuido: una conexion se guarda a medio configurar por diseno (se registra
-///   antes de que Meta emita los tokens), asi que ningun campo de ahi puede frenar
-///   un guardado. Ademas guarda controladores de servicios que no se estan
-///   mostrando, y `FormController.validate` recorre todos los que tenga
-///   registrados, incluidos los que nunca se dibujaron.
+/// - [headerForm] has the name and the description, and it's the only one
+///   that gets validated: they're the only data the backend requires.
+/// - [configForm] has the service's fields, and it's **never validated**. It's
+///   not neglect: a connection is saved half-configured by design (it's
+///   registered before Meta issues the tokens), so no field in there can block
+///   a save. Besides, it holds controllers of services that aren't being
+///   shown, and `FormController.validate` goes through all the ones it has
+///   registered, including those that were never drawn.
 class ConnectionFormController {
   ConnectionFormController({required this.connectionId});
 
-  /// Id de la conexion que se esta editando, o vacio si se esta creando una.
+  /// Id of the connection being edited, or empty if one is being created.
   final String connectionId;
 
-  /// `true` si esto es la edicion de una conexion que ya existe.
+  /// `true` if this is the edit of a connection that already exists.
   bool get isEditing => connectionId.isNotEmpty;
 
-  /// Una conexion nueva no tiene nada que ir a buscar: se dibuja en el acto.
+  /// A new connection has nothing to go fetch: it's drawn on the spot.
   late final status = ValueNotifier<ConnectionFormStatus>(
     isEditing ? ConnectionFormStatus.loading : ConnectionFormStatus.ready
   );
 
-  /// Codigo del servicio elegido, o vacio si todavia no se eligio ninguno.
+  /// Code of the chosen service, or empty if none has been chosen yet.
   ///
-  /// En una edicion no se puede cambiar: las credenciales guardadas se juntaron
-  /// para un servicio y apuntarlas a otro dejaria valores que ahi no significan
-  /// nada. El backend lo rechaza (`provider_is_immutable`) y el selector ni
-  /// siquiera lo ofrece.
+  /// It can't be changed in an edit: the stored credentials were gathered for
+  /// one service and pointing them at another would leave values that mean
+  /// nothing there. The backend rejects it (`provider_is_immutable`) and the
+  /// picker doesn't even offer it.
   final provider = ValueNotifier<String>("");
 
-  /// `true` mientras el guardado viaja. Lo escucha el boton de guardar.
+  /// `true` while the save is in transit. The save button listens to it.
   final saving = ValueNotifier<bool>(false);
 
-  /// Detalle leido en una edicion. Es de donde sale que secretos ya estan
-  /// guardados (por nombre) y que le falta a la cuenta.
+  /// Detail read in an edit. It's where it comes from which secrets are
+  /// already stored (by name) and what the account is missing.
   ConnectionDetailModel? detail;
 
-  /// Nombre y descripcion con los que nacen sus campos.
+  /// Name and description that its fields are born with.
   ///
-  /// Se guardan como texto y no se escriben sobre los controladores porque
-  /// **cuando llega la conexion esos campos todavia no existen**: en una edicion
-  /// la pantalla muestra el spinner hasta que la lectura vuelve, asi que los
-  /// inputs se construyen despues de [apply]. Los crea la pagina ya con este valor
-  /// puesto (`initial`), que ademas evita que el texto aparezca un frame tarde.
+  /// They're stored as text and not written over the controllers because
+  /// **when the connection arrives those fields don't exist yet**: in an edit
+  /// the screen shows the spinner until the read comes back, so the inputs
+  /// are built after [apply]. The page creates them already with this value
+  /// set (`initial`), which also keeps the text from appearing a frame late.
   String initialName = "";
   String initialDescription = "";
 
   final headerForm = FormController();
   final configForm = FormController();
 
-  /// Campos del servicio, por clave. Ver la nota de la clase sobre por que se
-  /// reusan al cambiar de servicio.
+  /// Service fields, by key. See the class note on why they're reused when
+  /// changing service.
   final _fields = <String, InputController>{};
 
-  /// Controlador del campo [field], creandolo la primera vez.
+  /// Controller of the field [field], creating it the first time.
   ///
-  /// El tipo se traduce a lo que el input sabe hacer: un secreto se dibuja tapado,
-  /// un numero con teclado numerico. El largo maximo es el que acepta el backend
-  /// por valor de configuracion, que da de sobra para un token permanente o una
-  /// clave PEM.
+  /// The type is translated into what the input knows how to do: a secret is
+  /// drawn masked, a number with a numeric keyboard. The maximum length is the
+  /// one the backend accepts per configuration value, which is more than
+  /// enough for a permanent token or a PEM key.
   InputController field(ConnectionProviderField field) => _fields.putIfAbsent(
     field.key,
     () => InputController(
@@ -106,16 +107,16 @@ class ConnectionFormController {
     )
   );
 
-  /// Lo escrito en un campo del servicio, o vacio si no se creo (un servicio que
-  /// no se llego a dibujar).
+  /// What was typed into a service field, or empty if it wasn't created (a
+  /// service that never got drawn).
   String valueOf(String key) => _fields[key]?.value.trim() ?? "";
 
-  /// Vuelca en el formulario la conexion que se acaba de leer.
+  /// Dumps into the form the connection that was just read.
   ///
-  /// Los secretos **no se rellenan y no es un olvido**: el backend no los
-  /// devuelve, solo dice bajo que claves hay uno guardado. El campo queda vacio y
-  /// el formulario avisa que ya esta configurado; escribir algo lo reemplaza,
-  /// dejarlo en blanco lo conserva.
+  /// The secrets **aren't filled and it's not an oversight**: the backend
+  /// doesn't return them, it only says under which keys one is stored. The
+  /// field stays empty and the form lets you know it's already configured;
+  /// writing something replaces it, leaving it blank keeps it.
   void apply(ConnectionDetailModel connection) {
     detail = connection;
 
@@ -124,9 +125,9 @@ class ConnectionFormController {
     initialName = connection.name;
     initialDescription = connection.description;
 
-    // Los campos planos se crean ya cargados, antes de que los dibuje nadie:
-    // creados por el widget llegarian vacios y habria que llenarlos despues, con
-    // el texto apareciendo un frame tarde.
+    // The plain fields are created already loaded, before anyone draws them:
+    // created by the widget they'd arrive empty and would need filling
+    // afterwards, with the text appearing a frame late.
     final schema = connection.schema;
     if (schema == null) return;
 
@@ -135,12 +136,12 @@ class ConnectionFormController {
     }
   }
 
-  /// Ajustes que viajan en `SETTINGS`: los campos planos del servicio.
+  /// Settings that travel in `SETTINGS`: the service's plain fields.
   ///
-  /// Se manda **todo**, tambien lo vacio. En el alta los vacios se descartan al
-  /// armar el cuerpo; en la edicion son los que borran un ajuste que estaba
-  /// cargado, que es justo lo que hace falta para poder corregir un id de cuenta
-  /// mal pegado.
+  /// **Everything** is sent, even the empty ones. In a creation the empty ones
+  /// are discarded when building the body; in an edit they're what deletes a
+  /// setting that was loaded, which is exactly what's needed to be able to
+  /// correct a mispasted account id.
   Map<String, dynamic> settings(ConnectionProviderModel schema) {
     final settings = <String, dynamic>{};
 
@@ -151,12 +152,12 @@ class ConnectionFormController {
     return settings;
   }
 
-  /// Secretos que viajan en `CREDENTIALS`: solo los que se escribieron.
+  /// Secrets that travel in `CREDENTIALS`: only the ones written.
   ///
-  /// Un campo de secreto vacio significa "dejá el que ya estaba" y no "borralo":
-  /// el formulario no puede mostrar el token guardado, asi que dejarlo en blanco
-  /// es exactamente lo que hace quien vino a cambiar el nombre de la cuenta.
-  /// Mandarlo vacio le borraria el token a una conexion que estaba funcionando.
+  /// An empty secret field means "leave the one that was there" and not
+  /// "delete it": the form can't show the stored token, so leaving it blank is
+  /// exactly what someone who came to change the account's name does.
+  /// Sending it empty would delete the token of a connection that was working.
   Map<String, dynamic> credentials(ConnectionProviderModel schema) {
     final credentials = <String, dynamic>{};
 
@@ -168,7 +169,7 @@ class ConnectionFormController {
     return credentials;
   }
 
-  /// Cuerpo de la escritura que corresponde: el alta o la edicion.
+  /// Body of the corresponding write: the creation or the edit.
   Map<String, dynamic> payload(ConnectionProviderModel schema) => isEditing
     ? editConnectionRequest(
         id: connectionId,
@@ -189,8 +190,8 @@ class ConnectionFormController {
   String get descriptionValue =>
     headerForm.inputs["DESCRIPTION"]?.value.trim() ?? "";
 
-  /// Marca el formulario como ocupado. Las dos partes a la vez: los inputs se
-  /// bloquean escuchando el `loading` de **su** formulario, y son dos.
+  /// Marks the form as busy. Both parts at once: the inputs block listening
+  /// to the `loading` of **their** form, and there are two.
   void busy(bool value) {
     saving.value = value;
     headerForm.loading.value = value;
@@ -202,16 +203,17 @@ class ConnectionFormController {
     provider.dispose();
     saving.dispose();
 
-    // El nombre y la descripcion los libera su formulario: siempre se dibujaron,
-    // asi que estan registrados en el.
+    // The name and description are released by their form: they were always
+    // drawn, so they're registered in it.
     headerForm.dispose();
 
-    // Los de configuracion se liberan a mano, y no con `configForm.dispose()`,
-    // porque un formulario solo conoce los controladores que **se llegaron a
-    // dibujar** (se registran al montarse el input). Aca hay de los otros: los que
-    // creo [apply] antes del primer frame y los de un servicio que se eligio y
-    // despues se cambio. Recorrer el mapa los alcanza a todos, y saltear el
-    // dispose del formulario evita liberar dos veces los que si estan en ambos.
+    // The configuration ones are released by hand, and not with
+    // `configForm.dispose()`, because a form only knows the controllers that
+    // **got drawn** (they register when the input mounts). Here there are the
+    // other kind: the ones [apply] created before the first frame and those of
+    // a service that was chosen and then changed. Walking the map reaches
+    // them all, and skipping the form's dispose avoids releasing twice the
+    // ones that are in both.
     for (final input in _fields.values) {
       input.dispose();
     }

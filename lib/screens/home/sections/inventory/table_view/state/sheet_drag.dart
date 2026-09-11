@@ -2,69 +2,69 @@ import 'package:flutter/foundation.dart';
 
 import 'sheet_order.dart';
 
-/// El arrastre de una columna, mientras dura.
+/// The drag of a column, while it lasts.
 ///
-/// Es lo que mas seguido cambia de toda la planilla —un evento de puntero por
-/// frame, como el arrastre de un ancho— asi que **no puede tocar la grilla**.
-/// Lo que se mueve es un fantasma dibujado encima de las celdas; las columnas no
-/// se enteran de nada hasta que se suelta, y ahi se reordenan de una vez.
+/// It's what changes most often in the whole spreadsheet —a pointer event per
+/// frame, like a width drag— so it **can't touch the grid**. What moves is a
+/// ghost drawn on top of the cells; the columns don't find out about anything
+/// until it's dropped, and then they reorder all at once.
 ///
-/// Por eso son tres notificadores y no uno:
+/// That's why there are three notifiers and not one:
 ///
-/// - [active] avisa cuando el arrastre empieza y termina. Son dos avisos por
-///   arrastre y es lo unico que monta y desmonta el fantasma.
-/// - [x] se mueve con el puntero, y lo escucha solo el fantasma.
-/// - [edge] cambia cuando la columna pasa el medio de una vecina, que es lo
-///   unico que mueve la linea.
+/// - [active] notifies when the drag starts and ends. It's two notices per
+///   drag and the only thing that mounts and unmounts the ghost.
+/// - [x] moves with the pointer, and only the ghost listens to it.
+/// - [edge] changes when the column passes the middle of a neighbor, which is
+///   the only thing that moves the line.
 ///
-/// Con un solo notificador, cada frame del arrastre repintaria las tres cosas; y
-/// si el estado viviera en las columnas, repintaria la planilla entera.
+/// With a single notifier, each drag frame would repaint the three things; and
+/// if the state lived in the columns, it would repaint the whole spreadsheet.
 ///
-/// Todo lo demas ([source], [label], [width], [edges]) se fija al empezar y no
-/// cambia: los anchos no se pueden arrastrar mientras se mueve una columna, asi
-/// que la geometria se calcula **una vez** y de ahi en mas cada evento del
-/// puntero es una resta y una busqueda sobre una lista de `double`.
+/// Everything else ([source], [label], [width], [edges]) is fixed at the
+/// start and doesn't change: widths can't be dragged while a column is
+/// moving, so the geometry is computed **once** and from then on each pointer
+/// event is a subtraction and a lookup over a list of `double`.
 ///
-/// Las coordenadas son las **del contenido** de la banda desplazable (el 0 es el
-/// borde izquierdo de la primera columna, no el de la pantalla), que son las
-/// mismas en las que estan [edges] y en las que se dibuja el fantasma. Quien
-/// traduce el puntero a esas coordenadas es el controlador, que es el que sabe
-/// donde esta parada la banda.
+/// The coordinates are **those of the content** of the scrollable band (0 is
+/// the left edge of the first column, not of the screen), which are the same
+/// ones [edges] sit in and in which the ghost is drawn. Whoever translates
+/// the pointer into those coordinates is the controller, which is the one
+/// that knows where the band stands.
 class SheetDrag {
-  /// Columna que se esta arrastrando, o `-1` si no hay arrastre.
+  /// Column being dragged, or `-1` if there's no drag.
   int source = -1;
 
-  /// Titulo de esa columna, para el fantasma.
+  /// Title of that column, for the ghost.
   String label = "";
 
-  /// Ancho de esa columna.
+  /// Width of that column.
   double width = 0;
 
-  /// En que parte de la celda se la agarro. Es lo que hace que el fantasma no
-  /// salte bajo el puntero al empezar a moverlo.
+  /// Which part of the cell it was grabbed by. It's what keeps the ghost from
+  /// jumping under the pointer when it starts moving.
   double grab = 0;
 
-  /// Bordes izquierdos de todas las columnas, mas el final de la ultima.
+  /// Left edges of all columns, plus the end of the last one.
   List<double> edges = const [];
 
-  /// Cuantas de esas columnas son campos de la tabla: detras estan las libres,
-  /// y ahi no se puede soltar nada.
+  /// How many of those columns are fields of the table: past them are the free
+  /// ones, and nothing can be dropped there.
   int fields = 0;
 
-  /// Si hay una columna en el aire.
+  /// Whether a column is in the air.
   final ValueNotifier<bool> active = ValueNotifier(false);
 
-  /// Borde izquierdo del fantasma.
+  /// Left edge of the ghost.
   final ValueNotifier<double> x = ValueNotifier(0);
 
-  /// Borde donde caeria la columna si se la soltara ahora.
+  /// Edge where the column would land if it were dropped right now.
   final ValueNotifier<int> edge = ValueNotifier(-1);
 
-  /// Donde esta el borde [index], para dibujar la linea.
+  /// Where edge [index] is, to draw the line.
   double edgeAt(int index) =>
     index >= 0 && index < edges.length ? edges[index] : 0;
 
-  /// Donde empieza la columna que se esta arrastrando, para marcarla.
+  /// Where the column being dragged starts, to mark it.
   double get from => edgeAt(source);
 
   void start({
@@ -86,12 +86,13 @@ class SheetDrag {
     active.value = true;
   }
 
-  /// El puntero esta en [pointer] (en coordenadas del contenido).
+  /// The pointer is at [pointer] (in content coordinates).
   ///
-  /// El borde donde caeria se calcula desde el **medio del fantasma** y no desde
-  /// el puntero: es el fantasma lo que se ve moverse, asi que es lo que tiene
-  /// que decidir cuando salta la linea. Agarrar una columna ancha de una punta y
-  /// mirar la del puntero se leeria como que la linea va atrasada.
+  /// The edge where it would land is computed from the **middle of the
+  /// ghost** and not from the pointer: it's the ghost that's seen moving, so
+  /// it's what has to decide when the line jumps. Grabbing a wide column at
+  /// one end and watching the pointer's position would read as the line
+  /// lagging behind.
   void moveTo(double pointer) {
     final left = pointer - grab;
     x.value = left;
@@ -102,8 +103,8 @@ class SheetDrag {
     edge.value = at;
   }
 
-  /// Termina el arrastre y devuelve que columna se solto y en que borde, o
-  /// `(-1, -1)` si no habia ninguna en el aire.
+  /// Ends the drag and returns which column was dropped and at which edge, or
+  /// `(-1, -1)` if there was none in the air.
   (int, int) stop() {
     if (!active.value) return (-1, -1);
 

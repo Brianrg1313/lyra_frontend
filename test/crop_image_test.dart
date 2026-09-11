@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
-import 'package:app/screens/modals/crop_image/_crop_image.dart';
+import 'package:app/screens/modals/shared/crop_image/_crop_image.dart';
 
 /// Una imagen apaisada con una franja al medio: es el caso que el recorte tiene
 /// que resolver —de un rectangulo sale un cuadrado— y la franja dice **cual**

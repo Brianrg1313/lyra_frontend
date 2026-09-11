@@ -12,7 +12,7 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/modals/edit_business_field/business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
 import 'country_flag.dart';
 import 'profile_block.dart';
@@ -26,20 +26,21 @@ import 'profile_phone.dart';
 import 'profile_select.dart';
 import 'profile_website.dart';
 
-/// El perfil de la empresa: todo lo que **tiene cargado**, agrupado por lo que
-/// contesta —quien es en papel, como opera, como se la contacta y de que cuenta
-/// cuelga— y en un solo hilo de arriba abajo.
+/// The company's profile: everything it has **loaded**, grouped by what it
+/// answers —who it is on paper, how it operates, how it's contacted, and which
+/// account it hangs from— and in a single top-to-bottom thread.
 ///
-/// Arranca diciendo de quien es todo lo que sigue —el logo, y al lado el nombre
-/// en grande con la situacion legal y si la empresa es de quien la mira— y
-/// recien despues empiezan los datos (ver [BusinessProfileHeader]).
+/// It starts by saying whose everything that follows is —the logo, and beside
+/// it the name up large with the legal status and whether the company belongs
+/// to whoever is looking— and only then the data begin (see
+/// [BusinessProfileHeader]).
 ///
-/// Casi todo el perfil es opcional. Lo que **se edita** se dibuja igual cuando
-/// no esta cargado —la fila vacia es el unico lugar desde donde se lo carga
-/// (ver [ProfileField])—; lo que escribe la plataforma y no se toca desde aca
-/// desaparece cuando no esta, porque esa fila no ofreceria nada. Un bloque que
-/// se queda sin filas tampoco se dibuja. Un perfil a medio llenar se ve corto,
-/// no se ve roto ni lleno de guiones.
+/// Nearly the whole profile is optional. What **is edited** is drawn the same
+/// when it's not loaded —the empty row is the only place from which it's
+/// loaded (see [ProfileField])—; what the platform writes and isn't touched
+/// from here disappears when it's missing, because that row would offer
+/// nothing. A block that runs out of rows isn't drawn either. A half-filled
+/// profile looks short, not broken or full of dashes.
 class BusinessProfileDetails extends StatelessWidget {
   const BusinessProfileDetails({super.key, required this.profile});
 
@@ -47,8 +48,8 @@ class BusinessProfileDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Los grupos que pueden quedarse sin datos. La identidad no esta en la
-    // lista porque no puede: el sector siempre viene.
+    // The groups that can run out of data. Identity isn't in the list because
+    // it can't: the sector always comes.
     final optional = <ProfileBlock>[
       ProfileBlock(
         title: S.of(context).business_profile_section_operation,
@@ -58,8 +59,8 @@ class BusinessProfileDetails extends StatelessWidget {
         title: S.of(context).business_profile_section_contact,
         fields: _contact(context)
       ),
-      // Este bloque se dibuja siempre, aunque la empresa no tenga ninguna
-      // direccion: es el unico lugar desde donde se agrega la primera.
+      // This block is always drawn, even if the company has no address: it's
+      // the only place from which the first one is added.
       ProfileBlock(
         title: S.of(context).business_profile_section_emails,
         fields: _emails(context),
@@ -79,9 +80,9 @@ class BusinessProfileDetails extends StatelessWidget {
       Separator.horizontal(),
       BusinessProfileIdentity(profile: profile),
       ...optional.where((block) => block.fields.isNotEmpty),
-      // Borrar la empresa va al final de todo y solo para quien la creo: es lo
-      // unico de la ficha que no se deshace, y no es un dato mas (ver
-      // [BusinessProfileDanger]).
+      // Deleting the company goes at the very end and only for whoever created
+      // it: it's the only thing on the sheet that can't be undone, and it's
+      // not one more datum (see [BusinessProfileDanger]).
       if (profile.owner) BusinessProfileDanger(profile: profile)
     ];
 
@@ -95,14 +96,15 @@ class BusinessProfileDetails extends StatelessWidget {
       ]);
   }
 
-  /// Como opera: donde esta, en que idioma y con que monedas trabaja.
+  /// How it operates: where it is, in what language and with which currencies
+  /// it works.
   ///
-  /// El pais y la moneda no salen de una lista escrita aca sino de los catalogos
-  /// que trae `/init` ([CountryCatalogService], [CurrencyCatalogService]): la
-  /// plataforma habilita una region o una moneda del lado del backend y esta
-  /// ficha la ofrece sin que haya que publicar una version de la app. Por eso se
-  /// los observa y no se los lee una sola vez: si el catalogo se relee con la
-  /// ficha abierta, las listas se rearman solas.
+  /// The country and currency don't come from a list written here but from the
+  /// catalogs that `/init` brings ([CountryCatalogService],
+  /// [CurrencyCatalogService]): the platform enables a region or a currency on
+  /// the backend side and this sheet offers it without shipping a version of
+  /// the app. That's why they're watched and not read once: if the catalog is
+  /// re-read with the sheet open, the lists rebuild by themselves.
   List<Widget> _operation(BuildContext context) => [
     _country(context),
     ProfileField(
@@ -128,10 +130,10 @@ class BusinessProfileDetails extends StatelessWidget {
             value: language.tag,
             placeholder: language.name
           ),
-          // Lo guardado puede no ser ninguno del catalogo: lleva region
-          // (`es-ve`) o es un idioma que esta version todavia no ofrece. Se
-          // agrega como una opcion mas para que la lista muestre lo que la
-          // empresa tiene y no un campo vacio; elegir otra cosa lo reemplaza.
+          // What's saved may not be any of the catalog's: it carries a region
+          // (`es-ve`) or it's a language this version doesn't offer yet. It's
+          // added as one more option so the list shows what the company has
+          // and not an empty field; choosing something else replaces it.
           if (profile.language.isNotEmpty &&
               BusinessLanguage.values.every((l) => l.tag != profile.language))
             SelectOption(
@@ -142,9 +144,9 @@ class BusinessProfileDetails extends StatelessWidget {
       )
     ),
     _currency(context),
-    // Las secundarias son una lista y no un dato: elegir varias no es lo que
-    // hace este formulario, asi que por ahora se leen y se cambian donde se
-    // configuran las monedas de la empresa.
+    // The secondaries are a list and not a single datum: choosing several isn't
+    // what this form does, so for now they're read and changed where the
+    // company's currencies are configured.
     if (profile.currencies.isNotEmpty) ProfileField(
       icon: CI.list,
       label: S.of(context).business_profile_currencies,
@@ -153,15 +155,16 @@ class BusinessProfileDetails extends StatelessWidget {
     )
   ];
 
-  /// El pais donde opera, elegido entre los que la plataforma tiene habilitados.
+  /// The country where it operates, chosen among the ones the platform has
+  /// enabled.
   ///
-  /// La opcion lleva la bandera y el nombre del pais, que es como se lo
-  /// reconoce. El codigo no se muestra: es el dato que viaja, no algo que
-  /// alguien tenga que leer para elegir su pais.
+  /// The option carries the flag and the country's name, which is how it's
+  /// recognized. The code isn't shown: it's the data that travels, not
+  /// something someone has to read to choose their country.
   ///
-  /// Sin catalogo se vuelve justamente a ese campo de dos letras. Es la unica
-  /// salida honesta: un desplegable vacio no deja cargar el pais, y esta fila es
-  /// el unico lugar de la app desde donde se lo carga.
+  /// Without a catalog it falls back exactly to that two-letter field. It's the
+  /// only honest way out: an empty dropdown can't load the country, and this
+  /// row is the only place in the app from which it's loaded.
   Widget _country(BuildContext context) {
     final catalog = context.watch<CountryCatalogService>();
 
@@ -195,11 +198,11 @@ class BusinessProfileDetails extends StatelessWidget {
             placeholder: country.name,
             leading: CountryFlag(country: country)
           ),
-          // El pais guardado puede no estar en el catalogo: la region se
-          // deshabilito despues de que la empresa se registrara. Se agrega como
-          // una opcion mas —con el codigo por nombre, que es lo unico que se
-          // sabe de el— para que la ficha muestre lo que la empresa tiene y no
-          // una lista donde no esta lo suyo.
+          // The saved country may not be in the catalog: the region was
+          // disabled after the company registered. It's added as one more
+          // option —with the code as the name, which is the only thing known
+          // about it— so the sheet shows what the company has and not a list
+          // where its own isn't there.
           if (profile.country.isNotEmpty &&
               catalog.byCode(profile.country) == null)
             SelectOption(
@@ -211,15 +214,16 @@ class BusinessProfileDetails extends StatelessWidget {
     );
   }
 
-  /// La moneda en la que factura, elegida entre las que la plataforma tiene
-  /// habilitadas.
+  /// The currency it invoices in, chosen among the ones the platform has
+  /// enabled.
   ///
-  /// La opcion lleva el codigo y, debajo, el simbolo y el nombre: el codigo es
-  /// el dato y el simbolo es con lo que se reconocen los precios de esta empresa
-  /// en el resto de la app.
+  /// The option carries the code and, below it, the symbol and the name: the
+  /// code is the data and the symbol is what this company's prices are
+  /// recognized by elsewhere in the app.
   ///
-  /// Sin catalogo se cae a un campo de texto de tres letras, por lo mismo que el
-  /// pais: es preferible escribir el codigo a mano a no poder cambiar la moneda.
+  /// Without a catalog it falls to a three-letter text field, for the same
+  /// reason as the country: it's better to type the code by hand than to not
+  /// be able to change the currency.
   Widget _currency(BuildContext context) {
     final catalog = context.watch<CurrencyCatalogService>();
 
@@ -254,9 +258,9 @@ class BusinessProfileDetails extends StatelessWidget {
               ? currency.symbol
               : "${currency.symbol} · ${currency.name}"
           ),
-          // Igual que con el pais: la moneda guardada puede haberse
-          // deshabilitado, y esconderla dejaria la lista sin lo que la empresa
-          // tiene hoy.
+          // Same as with the country: the saved currency may have been
+          // disabled, and hiding it would leave the list without what the
+          // company has today.
           if (profile.currency.isNotEmpty &&
               catalog.byCode(profile.currency) == null)
             SelectOption(
@@ -269,28 +273,28 @@ class BusinessProfileDetails extends StatelessWidget {
     );
   }
 
-  /// Como se la contacta, sin los correos: esos son una lista y tienen bloque
-  /// propio.
+  /// How it's contacted, without the emails: those are a list and have their
+  /// own block.
   ///
-  /// Los dos se dibujan aunque esten vacios, como los de identidad y por lo
-  /// mismo: son datos que se editan, y esta fila es el unico lugar desde donde
-  /// se cargan. Escondidas, una empresa que nunca cargo su sitio no tenia como
-  /// cargarlo —que es la situacion de **todas** apenas el dato existe—.
+  /// Both are drawn even when empty, like the identity ones and for the same
+  /// reason: they're data that get edited, and this row is the only place from
+  /// which they're loaded. Hidden, a company that never loaded its site had no
+  /// way to load it —which is the situation of **all** of them as soon as the
+  /// datum exists—.
   List<Widget> _contact(BuildContext context) => [
     BusinessProfilePhone(phone: profile.phone, country: profile.country),
     BusinessProfileWebsite(website: profile.website)
   ];
 
-  /// Las direcciones de la empresa, la principal primero (las ordena el
-  /// backend).
+  /// The company's addresses, the primary first (the backend orders them).
   ///
-  /// Sin ninguna queda una fila vacia y no un aviso suelto: el bloque se dibuja
-  /// igual —una empresa sin correos es justamente la que tiene que poder cargar
-  /// uno— y una linea de texto gris en el lugar donde el resto de los grupos
-  /// tiene datos se lee como que la lista no cargo. La fila dice de que dato se
-  /// trata y que no esta, como cualquier otro campo sin llenar; con que
-  /// cargarlo esta en el titulo del bloque ([ProfileEmailAdd]), porque agregar
-  /// es de la lista y no de esta fila.
+  /// With none left there's an empty row and not a loose notice: the block is
+  /// drawn the same —a company without emails is precisely the one that has to
+  /// be able to load one— and a gray line of text in the place where the rest
+  /// of the groups have data reads as the list not having loaded. The row says
+  /// which datum it's about and that it isn't there, like any other unfilled
+  /// field; with what to load it in the block's title ([ProfileEmailAdd]),
+  /// because adding belongs to the list and not to this row.
   List<Widget> _emails(BuildContext context) {
     if (profile.emails.isEmpty) {
       return [ProfileField(
@@ -306,9 +310,9 @@ class BusinessProfileDetails extends StatelessWidget {
     ];
   }
 
-  /// De que cuenta cuelga: el identificador con el que la nombra el backend y
-  /// desde cuando esta registrada. Ninguno de los dos se edita: los pone la
-  /// plataforma.
+  /// Which account it hangs from: the identifier the backend names it with and
+  /// since when it's been registered. Neither is edited: the platform sets
+  /// them.
   List<Widget> _account(BuildContext context) => [
     BusinessProfileId(id: profile.id),
     if (profile.date != null) ProfileField(

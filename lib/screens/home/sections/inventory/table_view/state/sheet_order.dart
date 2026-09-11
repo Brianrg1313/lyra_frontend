@@ -1,33 +1,34 @@
-/// El orden en que el usuario dejo las columnas, y la aritmetica de arrastrarlas
-/// de lugar.
+/// The order in which the user left the columns, and the arithmetic of
+/// dragging them out of place.
 ///
-/// Vive aparte y es puro por el mismo motivo que la geometria de la planilla
-/// (`SheetMetrics`): no depende de nada del arbol de widgets ni de la red, asi
-/// que se prueba solo.
+/// It lives apart and is pure for the same reason as the spreadsheet geometry
+/// (`SheetMetrics`): it depends on nothing of the widget tree nor the network,
+/// so it's tested on its own.
 ///
-/// El orden se guarda como una lista de FIELD_ID y no de posiciones, y esa es
-/// toda la gracia: una lista de posiciones se rompe con cualquier cambio de la
-/// estructura —una columna que se crea, otra que se elimina, la que el backend
-/// devuelve en otro lugar— y una de ids sigue valiendo igual. Por eso el orden
-/// que eligio el usuario sobrevive a que la tabla se relea entera.
+/// Order is stored as a list of FIELD_IDs and not of positions, and that's
+/// the whole point: a list of positions breaks with any change of the
+/// structure —a column created, another deleted, one the backend returns in a
+/// different place— and one of ids stays equally valid. That's why the order
+/// the user chose survives the whole table being re-read.
 library;
 
 import 'package:app/services/stock/tables/table_structure_model.dart';
 
-/// Los campos de [fields] puestos en el orden de [order] (FIELD_IDs).
+/// The fields of [fields] set in the order of [order] (FIELD_IDs).
 ///
-/// Lo que manda es [order]. Un campo que no este ahi —uno recien creado, o uno
-/// que agrego otro cliente— va al final, en el orden en que lo trajo la
-/// estructura: es el mismo lugar donde nace una columna nueva, asi que no se
-/// mueve nada de lugar por haberla creado.
+/// [order] rules. A field that isn't there —one recently created, or one that
+/// another client added— goes at the end, in the order the structure brought
+/// it: it's the same place where a new column is born, so nothing moves out
+/// of place because of having created it.
 ///
-/// Con [order] vacio no hay nada que reordenar y se devuelve **la misma lista**,
-/// sin copiarla: es lo que pasa mientras el usuario no arrastro ninguna columna,
-/// que es casi siempre.
+/// With empty [order] there's nothing to reorder and **the same list** is
+/// returned, without copying it: it's what happens while the user hasn't
+/// dragged any column, which is almost always.
 ///
-/// Un campo sin FIELD_ID no se puede emparejar con nada, asi que tampoco se
-/// ordena: queda al final junto con los que no estaban en [order]. Por eso
-/// `SheetColumns` no deja arrastrar en una tabla que tenga alguno.
+/// A field without a FIELD_ID can't be paired with anything, so it isn't
+/// ordered either: it stays at the end along with those that weren't in
+/// [order]. That's why `SheetColumns` doesn't allow dragging in a table that
+/// has one.
 List<TableFieldModel> fieldsInOrder(
   List<TableFieldModel> fields,
   List<String> order
@@ -53,17 +54,17 @@ List<TableFieldModel> fieldsInOrder(
   return [...known, ...rest];
 }
 
-/// De que lugar de la fila sale el valor de cada columna de la planilla.
+/// From which place of the row each spreadsheet column's value comes.
 ///
-/// [fields] son los campos como los da la estructura —que es contra lo que estan
-/// alineados los registros leidos— y [ordered] los mismos, en el orden en que se
-/// los ve. Detras van [free] columnas libres, que todavia no son campos: no
-/// tienen donde guardar, pero lo que se escriba en ellas necesita un lugar
-/// propio en el borrador de la fila, y se les da el que les tocaria si se
-/// crearan (detras de todos los campos, que es donde nacen).
+/// [fields] are the fields as the structure provides them —which is what read
+/// records are aligned against— and [ordered] the same ones, in the order in
+/// which they're seen. After them go [free] free columns, which aren't fields
+/// yet: they have nowhere to store, but what's written in them needs its own
+/// place in the row's draft, and they're given the one they'd get if they
+/// were created (behind all the fields, which is where they're born).
 ///
-/// Esto es lo que hace que arrastrar una columna no cueste nada: lo unico que
-/// cambia de lugar es un `int` por columna, y ni un registro se toca.
+/// This is what makes dragging a column cost nothing: the only thing that
+/// changes place is an `int` per column, and not a single record is touched.
 List<int> slotsOf(
   List<TableFieldModel> fields,
   List<TableFieldModel> ordered, {
@@ -77,16 +78,16 @@ List<int> slotsOf(
   ];
 }
 
-/// El orden que queda al llevar la columna [from] hasta el borde [to].
+/// The order left after taking column [from] to edge [to].
 ///
-/// [to] es un **borde** y no una columna: `0` es delante de la primera y
-/// `order.length` es detras de la ultima. Se lee asi porque es exactamente lo
-/// que marca la linea mientras se arrastra —cae *entre* dos columnas, no
-/// *sobre* una— y por eso soltar en el borde izquierdo de la propia columna, o
-/// en el derecho, no la mueve.
+/// [to] is an **edge** and not a column: `0` is in front of the first and
+/// `order.length` is behind the last. It reads that way because it's exactly
+/// what the line marks while dragging —it lands *between* two columns, not
+/// *on* one— and that's why dropping on the left edge of the column itself,
+/// or on the right one, doesn't move it.
 ///
-/// Devuelve **la misma lista** cuando no hay nada que mover, para que quien
-/// llama pueda saberlo comparando identidades y no gastar un repintado.
+/// Returns **the same list** when there's nothing to move, so whoever calls
+/// can know by comparing identities and not spend a repaint.
 List<String> movedOrder(
   List<String> order, {
   required int from,
@@ -95,29 +96,30 @@ List<String> movedOrder(
   if (from < 0 || from >= order.length) return order;
   if (to < 0 || to > order.length) return order;
 
-  // Soltarla donde ya estaba: los dos bordes que la rodean la dejan igual.
+  // Dropping it where it already was: the two edges around it leave it the
+  // same.
   if (to == from || to == from + 1) return order;
 
   final moved = [...order];
   final id = moved.removeAt(from);
 
-  // Sacarla corrio un lugar todo lo que tenia detras, incluido el borde donde
-  // se la quiere dejar.
+// Taking it out shifted everything behind it one place, including the edge
+    // where it's meant to land.
   moved.insert(to > from ? to - 1 : to, id);
 
   return moved;
 }
 
-/// El borde donde caeria una columna que se suelta en [x].
+/// The edge where a column dropped at [x] would land.
 ///
-/// [edges] son los bordes izquierdos de cada columna mas el final de la ultima
-/// (un valor mas que columnas hay), y solo se miran las primeras [columns]:
-/// detras estan las libres del final, que todavia no son campos de la tabla y
-/// no reciben nada.
+/// [edges] are the left edges of each column plus the end of the last one
+/// (one value more than there are columns), and only the first [columns] are
+/// looked at: past them are the free ones at the end, which aren't fields of
+/// the table yet and receive nothing.
 ///
-/// Se compara contra el **medio** de cada columna y no contra su borde, que es
-/// lo que hace que la linea salte cuando la columna arrastrada ya tapo mas de
-/// media vecina en vez de en cuanto la roza.
+/// It's compared against the **middle** of each column and not against its
+/// edge, which is what makes the line jump when the dragged column already
+/// covers more than half a neighbor instead of as soon as it grazes it.
 int dropEdgeAt(List<double> edges, double x, {required int columns}) {
   final last = columns < edges.length - 1 ? columns : edges.length - 1;
 

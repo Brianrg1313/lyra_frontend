@@ -2,9 +2,9 @@ import 'package:intl/intl.dart';
 
 import 'catalog_table.dart';
 
-/// Naturaleza de una moneda. La manda el backend y sirve para agrupar el
-/// selector: el dinero de curso legal primero y las cripto despues, que es como
-/// llegan ordenadas.
+/// Nature of a currency. Decided by the backend and used to group the
+/// selector: legal tender first and crypto after, which is the order they
+/// arrive in.
 enum CurrencyKind {
   fiat,
   crypto;
@@ -15,26 +15,26 @@ enum CurrencyKind {
   String get value => name;
 }
 
-/// Una moneda en la que se puede escribir un precio, tal como la lista `/init`.
+/// A currency in which a price can be written, as listed by `/init`.
 ///
-/// La lista es del backend (`lyra_admin`.`currencies`, solo las habilitadas) y
-/// no de esta app: **como se escribe un importe tampoco esta escrito aca**.
-/// Cada moneda llega sabiendo lo que hace falta para escribir uno como lo
-/// escribe quien lo cobra:
+/// The list comes from the backend (`lyra_admin`.`currencies`, only the enabled
+/// ones) and not from this app: **how an amount is written isn't hard-coded
+/// here either**. Each currency arrives knowing what it takes to write an
+/// amount the way the one charging it does:
 ///
-/// - El [symbol] y de que lado va ([leading]): `$22.23` pero `22.23€`.
-/// - Si va pegado al importe o separado ([space]): `Bs. 22,23`.
-/// - Con cuantos [decimals] se muestra: casi todas con dos, pero el peso
-///   chileno y el guarani no tienen fraccion y `1.500,00` ahi no significa
-///   nada, y una cripto puede tener ocho.
-/// - Con que puntuacion se agrupa ([locale]): `1.234,56` o `1,234.56`. Es de la
-///   **moneda** y no del idioma de la app a proposito: un precio es de quien lo
-///   cobra, no de quien lo mira, y una lista de precios venezolana escrita
-///   `Bs. 1,234.50` porque la app esta en ingles no es una cifra que su cliente
-///   reconozca.
+/// - The [symbol] and which side it goes on ([leading]): `$22.23` but `22.23€`.
+/// - Whether it's attached to the amount or separated ([space]): `Bs. 22,23`.
+/// - How many [decimals] it's shown with: almost all with two, but the Chilean
+///   peso and the guarani have no fraction and `1.500,00` there means nothing,
+///   and a crypto can have eight.
+/// - How it's grouped ([locale]): `1.234,56` or `1,234.56`. It's of the
+///   **currency** and not of the app's language on purpose: a price belongs to
+///   who charges it, not who looks at it, and a Venezuelan price list written
+///   `Bs. 1,234.50` because the app is in English isn't a figure its customer
+///   recognizes.
 ///
-/// Asi, habilitar una moneda —o corregirle el simbolo a una— es una fila en el
-/// backend y no una version nueva de la app.
+/// So enabling a currency —or fixing its symbol— is a row in the backend and
+/// not a new version of the app.
 class CurrencyModel {
   const CurrencyModel({
     required this.code,
@@ -47,32 +47,33 @@ class CurrencyModel {
     this.kind = CurrencyKind.fiat
   });
 
-  /// Codigo ISO 4217 en las de curso legal, el ticker en las cripto (`USDT`).
-  /// En mayusculas: es el valor que viaja al backend.
+  /// ISO 4217 code for legal tender, the ticker for crypto (`USDT`).
+  /// In uppercase: it's the value that travels to the backend.
   final String code;
 
-  /// Nombre de la moneda, tal como llega.
+  /// Name of the currency, as it arrives.
   final String name;
 
-  /// Lo que se dibuja en lugar del codigo (`$`, `€`, `Bs.`, `₿`).
+  /// What is drawn in place of the code (`$`, `€`, `Bs.`, `₿`).
   final String symbol;
 
-  /// Si el simbolo va delante del importe.
+  /// Whether the symbol goes in front of the amount.
   final bool leading;
 
-  /// Si un espacio separa el simbolo del importe.
+  /// Whether a space separates the symbol from the amount.
   final bool space;
 
-  /// Cuantos decimales tiene la moneda de verdad: 0 en el peso chileno, 8 en
+  /// How many decimals the currency actually has: 0 for the Chilean peso, 8 for
   /// bitcoin.
   final int decimals;
 
-  /// Tag BCP-47 con el que se agrupa el importe (`es-VE` da `1.234,50`). Vacio
-  /// si el catalogo no lo trae, y ahi se puntua con el idioma de la app.
+  /// BCP-47 tag used to group the amount (`es-VE` gives `1.234,50`). Empty if
+  /// the catalog doesn't bring it, and then it's grouped with the app's
+  /// language.
   ///
-  /// Es un tag y no un par de caracteres porque agrupar es un patron y no un
-  /// separador: `es-VE` corta cada tres digitos y `hi-IN` escribe `12,34,567`,
-  /// y no hay dos caracteres que digan esa diferencia.
+  /// It's a tag and not a pair of characters because grouping is a pattern, not
+  /// a separator: `es-VE` cuts every three digits and `hi-IN` writes
+  /// `12,34,567`, and there aren't two characters that convey that difference.
   final String locale;
 
   final CurrencyKind kind;
@@ -84,8 +85,8 @@ class CurrencyModel {
     return CurrencyModel(
       code: code,
       name: json["name"]?.toString().trim() ?? "",
-      // Sin simbolo se escribe con el codigo: un importe pelado en una columna
-      // de precios no se lee como precio.
+      // Without a symbol it's written with the code: a bare amount in a price
+      // column doesn't read as a price.
       symbol: symbol.isEmpty ? code : symbol,
       leading: json["position"]?.toString().toLowerCase() != "right",
       space: json["space"] == true || json["space"] == 1,
@@ -95,9 +96,9 @@ class CurrencyModel {
     );
   }
 
-  /// Las monedas del catalogo, en el orden que las manda el backend (las de
-  /// curso legal primero, cada grupo alfabetico). Las que llegan sin codigo se
-  /// descartan: es el dato que viaja.
+  /// The catalog currencies, in the order the backend sends them (legal tender
+  /// first, each group alphabetical). Those arriving without a code are
+  /// discarded: it's the data that travels.
   static List<CurrencyModel> fromResponse(dynamic data) {
     final currencies = <CurrencyModel>[];
 
@@ -109,13 +110,14 @@ class CurrencyModel {
     return currencies;
   }
 
-  /// Una moneda que no esta en el catalogo, escrita con lo unico que se sabe de
-  /// ella: su codigo.
+  /// A currency that's not in the catalog, built from the only thing known
+  /// about it: its code.
   ///
-  /// Es para lo guardado que el catalogo no explica —una empresa que factura en
-  /// una moneda que se deshabilito, o una pantalla que se pinto antes de que el
-  /// catalogo llegara—. Se muestra el codigo tal cual en vez de caer en otra
-  /// moneda: pintar `$` sobre un importe en bolivares es mentir sobre el dato.
+  /// It's for saved data the catalog doesn't explain —a business that invoices
+  /// in a currency that was disabled, or a screen painted before the catalog
+  /// arrived—. The code is shown as-is instead of falling back to another
+  /// currency: drawing `$` over an amount in bolivars would be lying about the
+  /// data.
   factory CurrencyModel.unknown(String code) {
     final value = code.trim().toUpperCase();
 
@@ -123,8 +125,8 @@ class CurrencyModel {
       code: value,
       name: value,
       symbol: value,
-      // Con espacio porque el simbolo es el codigo: `USD 22.23` se lee,
-      // `USD22.23` no.
+      // With a space because the symbol is the code: `USD 22.23` reads,
+      // `USD22.23` doesn't.
       space: true
     );
   }
@@ -133,37 +135,37 @@ class CurrencyModel {
     final value = raw is num ? raw.toInt() : int.tryParse("$raw");
     if (value == null || value < 0) return 2;
 
-    // Un tope defensivo: [NumberFormat] no acepta cualquier cantidad y el dato
-    // sale de una tabla que se edita a mano.
+    // A defensive cap: [NumberFormat] doesn't accept any amount and the data
+    // comes from a table edited by hand.
     return value > 8 ? 8 : value;
   }
 
-  /// El espacio que separa el simbolo del importe: `" "` o nada. Lo usa quien
-  /// pinta el simbolo aparte y necesita el hueco del lado correcto.
+  /// The space separating the symbol from the amount: `" "` or nothing. Used by
+  /// whoever paints the symbol separately and needs the gap on the right side.
   String get gap => space ? " " : "";
 
   bool get isCrypto => kind == CurrencyKind.crypto;
 
-  /// Un formateador por puntuacion y cantidad de decimales, creado la primera
-  /// vez que se lo pide y compartido desde ahi.
+  /// One formatter per grouping and decimal count, created the first time it's
+  /// asked for and shared from then on.
   ///
-  /// Importa: una planilla de stock pinta miles de celdas de precio y cada
-  /// [NumberFormat] nuevo se lee la tabla de simbolos de su locale. Son unos
-  /// pocos objetos en toda la vida de la app.
+  /// It matters: a stock sheet paints thousands of price cells and each new
+  /// [NumberFormat] reads its locale's symbol table. It's just a few objects in
+  /// the whole life of the app.
   static final Map<String, NumberFormat> _formats = {};
 
-  /// Con que se puntua: el tag de la moneda, y el idioma de la app cuando la
-  /// moneda no trae ninguno (una fila vieja del catalogo, o una moneda armada a
-  /// mano con [CurrencyModel.unknown]).
+  /// What it's grouped with: the currency's tag, and the app's language when
+  /// the currency brings none (an old catalog row, or a currency hand-built
+  /// with [CurrencyModel.unknown]).
   String get _tag => locale.isEmpty ? Intl.getCurrentLocale() : locale;
 
   NumberFormat get _format => _formats["${_tag}_$decimals"] ??= _build();
 
-  /// [NumberFormat] no conoce todos los tags: los que no estan en su tabla caen
-  /// al idioma solo (`es-VE` → `es`), que es lo que se busca, pero uno que no
-  /// sea un tag —el catalogo se edita a mano— lanza. Ahi se puntua con el
-  /// idioma de la app: un precio mal agrupado se lee, una excepcion en medio de
-  /// una planilla no.
+  /// [NumberFormat] doesn't know every tag: those not in its table fall back to
+  /// the language alone (`es-VE` → `es`), which is what's wanted, but one that
+  /// isn't a tag —the catalog is edited by hand— throws. Then it's grouped with
+  /// the app's language: a badly grouped price can still be read, an exception
+  /// in the middle of a sheet can't.
   NumberFormat _build() {
     try {
       return NumberFormat.decimalPatternDigits(
@@ -178,38 +180,38 @@ class CurrencyModel {
     }
   }
 
-  /// El importe con la puntuacion y los decimales de esta moneda (`22.23`,
-  /// `1,500.00`), o `null` si [raw] no se puede leer como numero.
+  /// The amount with this currency's grouping and decimals (`22.23`,
+  /// `1,500.00`), or `null` if [raw] can't be read as a number.
   ///
-  /// Ese `null` es el que decide que se ve: lo que no es un importe se muestra
-  /// tal como se guardo y sin simbolo, en vez de desaparecer de la celda o
-  /// mostrarse como cero.
+  /// That `null` is what decides what's shown: what isn't an amount is shown as
+  /// it was saved and without a symbol, instead of disappearing from the cell
+  /// or being shown as zero.
   String? amount(String raw) {
     final value = parse(raw);
     return value == null ? null : _format.format(value);
   }
 
-  /// El importe ya escrito entero, simbolo incluido. Es para donde no se puede
-  /// pintar el simbolo aparte (un tooltip, un texto de una linea); la celda de
-  /// la planilla usa [amount] y [symbol] por separado, que los muestra con
-  /// distinto color.
+  /// The amount fully written, symbol included. It's for where the symbol can't
+  /// be painted separately (a tooltip, a single-line text); the sheet cell uses
+  /// [amount] and [symbol] separately, which shows them in different colors.
   String? label(String raw) {
     final text = amount(raw);
     return text == null ? null : write(text);
   }
 
-  /// Le pone el simbolo a un importe ya escrito, del lado y con el espacio que
-  /// correspondan.
+  /// Puts the symbol on an already written amount, on the side and with the
+  /// space that fits.
   String write(String amount) =>
     leading ? "$symbol$gap$amount" : "$amount$gap$symbol";
 
-  /// Lee un importe escrito de cualquiera de las dos maneras.
+  /// Reads an amount written in either of the two ways.
   ///
-  /// Los precios llegan de dos lados y no coinciden: el backend los manda con
-  /// punto decimal (`22.23`) y quien los carga los escribe como los escribe su
-  /// moneda (`22,23`, y a veces con separador de miles). Se toma como separador
-  /// decimal **el ultimo** de los dos que aparezca y el otro como de miles, que
-  /// es lo unico que distingue `1.234,56` de `1,234.56` sin preguntarle a nadie.
+  /// Prices arrive from two sides and don't agree: the backend sends them with
+  /// a decimal point (`22.23`) and whoever loads them writes them the way their
+  /// currency does (`22,23`, and sometimes with a thousands separator). **The
+  /// last** of the two separators that appear is taken as the decimal one and
+  /// the other as thousands, which is the only thing that tells `1.234,56`
+  /// apart from `1,234.56` without asking anyone.
   static double? parse(String raw) {
     final text = raw.replaceAll(RegExp(r"\s"), "");
     if (text.isEmpty) return null;
@@ -222,11 +224,11 @@ class CurrencyModel {
     );
   }
 
-  /// La igualdad es por valor y no por identidad porque asi se la lee: las
-  /// celdas de precio se suscriben a la moneda de la empresa activa
-  /// (`context.select`), que compara lo que devuelve con lo anterior para
-  /// decidir si repintar. Comparadas por identidad, releer el catalogo
-  /// repintaria toda la planilla aunque la moneda sea la misma.
+  /// Equality is by value and not by identity because that's how it's used:
+  /// price cells subscribe to the active business's currency (`context.select`),
+  /// which compares what it returns against the previous one to decide whether
+  /// to repaint. Compared by identity, rereading the catalog would repaint the
+  /// whole sheet even when the currency is the same.
   @override
   bool operator ==(Object other) =>
     other is CurrencyModel &&

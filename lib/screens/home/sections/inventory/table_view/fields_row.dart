@@ -4,20 +4,21 @@ import 'field_cell.dart';
 import 'sheet_style.dart';
 import 'state/sheet_columns.dart';
 
-/// La fila 1 de la planilla: los campos de la tabla.
+/// Row 1 of the sheet: the table's fields.
 ///
-/// Los ya creados muestran el icono de su tipo y su nombre; las columnas libres
-/// del final estan en blanco y esperan que se les escriba un titulo, que es lo
-/// que las convierte en campo. Todas se redimensionan desde su borde derecho, y
-/// las que ya son un campo se arrastran de lugar desde la celda misma.
+/// The already created ones show their type's icon and name; the free columns
+/// at the end are blank and await a title to be written, which is what turns
+/// them into fields. All are resized from their right edge, and the ones that
+/// are already a field are dragged into place from the cell itself.
 ///
-/// No escucha nada, y ni siquiera sabe que columnas son: le llega la forma de la
-/// planilla, asi que solo se rehace cuando gana, pierde o mueve una columna. El
-/// titulo, el tipo, el cursor y el ancho los escucha cada celda por su cuenta.
+/// It listens to nothing, and does not even know which the columns are: it
+/// receives the sheet's shape, so it is only rebuilt when a column is gained,
+/// lost, or moved. The title, the type, the cursor, and the width are each
+/// listened to by each cell on its own.
 class FieldsRow extends StatelessWidget {
   const FieldsRow({super.key, required this.shape});
 
-  /// La forma de la planilla: una columna por clave, en orden.
+  /// The shape of the sheet: one column per key, in order.
   final SheetShape shape;
 
   @override

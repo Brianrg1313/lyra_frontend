@@ -13,19 +13,19 @@ import '../widgets/option_card.dart';
 import '../widgets/option_grid.dart';
 import '../state/connection_form_controller.dart';
 
-/// A que servicio pertenece la cuenta: el primer bloque del formulario, y el que
-/// decide todo lo que viene despues —los campos de credenciales salen del
-/// proveedor elegido.
+/// Which service the account belongs to: the form's first block, and the one
+/// that decides everything that comes after —the credential fields come from
+/// the chosen provider.
 ///
-/// El listado sale del catalogo del backend, no de esta app. Los servicios que ya
-/// se pueden configurar van arriba y el resto se muestra apagado, con su leyenda:
-/// las integraciones se habilitan de a poco (las de Meta primero) y esconder las
-/// que faltan haria parecer que nunca van a estar.
+/// The list comes from the backend's catalog, not from this app. The services
+/// that can already be configured go on top and the rest is shown dimmed, with
+/// its caption: integrations are enabled gradually (Meta's first) and hiding
+/// the missing ones would make it seem like they'll never be there.
 ///
-/// **En una edicion no se puede cambiar.** Los secretos guardados se juntaron para
-/// un servicio, y apuntarlos a otro dejaria valores que ahi no significan nada; el
-/// backend lo rechaza y aca directamente no se ofrece. En su lugar se muestra cual
-/// es, apagado.
+/// **It can't be changed in an edit.** The stored secrets were gathered for
+/// one service, and pointing them at another would leave values that mean
+/// nothing there; the backend rejects it and here it's simply not offered. In
+/// its place, what it is is shown, dimmed.
 class ProviderPicker extends StatelessWidget {
   const ProviderPicker({super.key, required this.controller});
 
@@ -54,8 +54,8 @@ class ProviderPicker extends StatelessWidget {
               title: provider.name,
               subtitle: _scopes(context, provider),
               selected: provider.provider == selected,
-              // Editando, el servicio esta decidido: la tarjeta se muestra para
-              // saber cual es, pero no responde.
+              // When editing, the service is decided: the card is shown to know
+              // which one it is, but it doesn't respond.
               enabled: provider.isSupported && !controller.isEditing,
               badge: provider.isSupported
                 ? null
@@ -68,8 +68,9 @@ class ProviderPicker extends StatelessWidget {
     );
   }
 
-  /// Que servicios mostrar. Editando, solo el de la cuenta: el resto no es una
-  /// opcion y ocuparia media pantalla de tarjetas que no se pueden tocar.
+  /// Which services to show. When editing, only the account's: the rest isn't
+  /// an option and would take up half a screen of cards that can't be
+  /// touched.
   List<ConnectionProviderModel> _visible(
     ConnectionCatalogService catalog,
     String selected
@@ -81,20 +82,20 @@ class ProviderPicker extends StatelessWidget {
     return current == null ? const [] : [current];
   }
 
-  /// A que se va a poder poner la cuenta, en una linea: mensajes directos,
-  /// comentarios, comentarios de anuncios.
+  /// What the account will be able to be put on, in one line: direct
+  /// messages, comments, ad comments.
   ///
-  /// Es lo que diferencia dos entradas parecidas: la pagina de Facebook y
-  /// Messenger son la misma pagina, pero una contesta comentarios y la otra
-  /// mensajes —y cada una pide sus propias credenciales—. Ademas es cuantos bots
-  /// va a poder alimentar la cuenta, que es lo que se viene a hacer despues.
+  /// It's what tells two similar entries apart: the Facebook page and
+  /// Messenger are the same page, but one answers comments and the other
+  /// messages —and each one asks for its own credentials—. Besides, it's how
+  /// many bots the account will be able to feed, which is what comes next.
   ///
-  /// Los codigos conocidos se traducen aca y los que no, se muestran con el nombre
-  /// que mando el backend: un trabajo nuevo del catalogo tiene que poder leerse
-  /// desde una app vieja, aunque sea en el idioma del servidor.
+  /// The known codes are translated here and the ones that aren't are shown
+  /// with the name the backend sent: a new job in the catalog has to be
+  /// readable from an old app, even if it's in the server's language.
   ///
-  /// Devuelve `null` si el servicio no declaro ninguno, para que la tarjeta no
-  /// guarde el lugar de un subtitulo que no existe.
+  /// Returns `null` if the service didn't declare any, so the card doesn't
+  /// reserve the place of a subtitle that doesn't exist.
   String? _scopes(BuildContext context, ConnectionProviderModel provider) {
     final labels = [
       for (final scope in provider.scopes)
@@ -113,8 +114,8 @@ class ProviderPicker extends StatelessWidget {
   }
 }
 
-/// El catalogo no cargo. Sin el no hay formulario que dibujar —los campos de
-/// credenciales salen de ahi— asi que se ofrece reintentar en el lugar.
+/// The catalog didn't load. Without it there's no form to draw —the
+/// credential fields come from there— so retrying is offered in place.
 class _Error extends StatelessWidget {
   const _Error({required this.onRetry});
 

@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
-import 'package:app/screens/home/sections/inventory/table_settings/summary_block.dart';
+import 'package:app/screens/modals/inventory/table_settings/summary_block.dart';
 
 /// El bloque solo, sin la pantalla: lo que se comprueba es como se lee la
 /// cabecera de una tabla, no como se navega hasta ella.

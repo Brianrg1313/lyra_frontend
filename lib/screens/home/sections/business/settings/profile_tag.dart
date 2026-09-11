@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Etiqueta de un estado: icono y texto sobre un relleno tenue de su propio
-/// color.
+/// Tag of a state: icon and text over a faint fill of its own color.
 ///
-/// Es para lo que la ficha **dice** de un dato y no para lo que el dato vale:
-/// la situacion legal de la empresa junto a su nombre, y si una direccion de
-/// correo se comprobo junto a la direccion. Los dos se leen de un vistazo y
-/// ninguno de los dos se edita, asi que no son una fila mas.
+/// It's for what the sheet **says** about a datum and not for what the datum
+/// is worth: the company's legal status next to its name, and whether an email
+/// address was verified next to the address. Both are read at a glance and
+/// neither is edited, so they aren't one more row.
 ///
-/// El color lo pone quien la usa y no la etiqueta: es semantico —verde llega,
-/// ambar nadie lo comprobo— y vive junto al estado que lo significa, no aca.
+/// The color is put by whoever uses it and not by the tag: it's semantic
+/// —green arrives, amber nobody verified it— and lives next to the state it
+/// signifies, not here.
 class ProfileTag extends StatelessWidget {
   const ProfileTag({
     super.key,

@@ -9,23 +9,26 @@ import './channels/_channels.dart';
 import './channels/form/_channel_form.dart';
 import './connections/_connections.dart';
 import './connections/form/_connection_form.dart';
+import './finance/_finance.dart';
 import './inventory/table_list/_table_list.dart';
 import './inventory/table_view/_table_view.dart';
+import './sales/_sales.dart';
 
-/// Secciones que viven dentro del shell del home.
+/// Sections that live inside the home shell.
 ///
-/// Cada seccion es una ruta propia (`/home/...`) por lo que se refleja en la
-/// URL y se puede abrir directamente por deep link. El shell (side bar) es el
-/// mismo para todas, solo cambia el contenido de [build].
+/// Each section is its own route (`/home/...`), so it is reflected in the URL
+/// and can be opened directly by deep link. The shell (side bar) is the same
+/// for all of them, only the content of [build] changes.
 enum HomeSection {
-  // La key es la de la seccion, no la de la pagina home: el home es el shell
-  // que contiene a todas, mientras que el dashboard es solo una mas de ellas.
+  // The key is that of the section, not the home page: the home is the shell
+  // that contains them all, while the dashboard is just one more of them.
   dashboard(key: "dashboard", path: "/home", icon: CI.home),
   business(key: "business", path: "/home/business", icon: CI.store),
   inventory(key: "inventory", path: "/home/inventory", icon: CI.shop),
   services(key: "services", path: "/home/services", icon: CI.task_list),
   channels(key: "channels", path: "/home/channels", icon: CI.ia),
   connections(key: "connections", path: "/home/connections", icon: CI.cloud_connected),
+  sales(key: "sales", path: "/home/sales", icon: CI.sale),
   finance(key: "finance", path: "/home/finance", icon: CI.wallet),
   marketing(key: "marketing", path: "/home/marketing", icon: Icons.campaign_outlined),
   report(key: "report", path: "/home/report", icon: CI.chart),
@@ -37,41 +40,69 @@ enum HomeSection {
     required this.icon
   });
 
-  /// Identificador corto de la seccion, usado como key de su [ScreenRoute].
+  /// Short identifier of the section, used as the key of its [ScreenRoute].
   final String key;
 
-  /// URL de la seccion. Es la unica fuente del `url` de su [ScreenRoute]: la
-  /// resolucion de path a pantalla la hace `Navis`, no esta clase, para que la
-  /// tabla de rutas no quede duplicada.
+  /// URL of the section. It is the only source of the `url` of its
+  /// [ScreenRoute]: the path-to-screen resolution is done by `Navis`, not this
+  /// class, so that the route table is not duplicated.
   final String path;
   final IconData icon;
 
-  /// Grupo de productos del side bar.
+  /// First group of the side bar: what the company **is**.
+  ///
+  /// The money used to be here, right after the business, on the grounds that
+  /// it is the same subject seen from the other side. It moved out when there
+  /// was somewhere better for it to be: a group of its own with the two screens
+  /// it is really used next to (see [transactions]).
   static const List<HomeSection> home = [
     dashboard,
     business
   ];
 
-  /// Grupo de productos del side bar.
-  static const List<HomeSection> productos = [
+  /// Transactions group of the side bar: **the sale, end to end**.
+  ///
+  /// [sales] is what the company has going right now —every sale, whatever
+  /// channel it came in through, and what each one is still waiting for— and
+  /// [finance] is the money those sales brought in, plus the accounts they can
+  /// arrive into. They are grouped because they are two views of one thing and
+  /// somebody working a shift moves between them all day: a sale that reads
+  /// "verificando el pago" is answered in the money screen, and one settled
+  /// there stops waiting in the board a second later.
+  ///
+  /// The POS closes the same group in the bar and is **not** in this list: it
+  /// is not a section but a page of its own, without the home's shell (see
+  /// `Pos`), so the side bar builds that option by hand — see
+  /// `desktop/side_bar/options.dart`.
+  static const List<HomeSection> transactions = [
+    sales,
+    finance
+  ];
+
+  /// Product group of the side bar.
+  static const List<HomeSection> products = [
     inventory,
     services,
     channels
   ];
 
-  /// Grupo de reportes del side bar.
-  static const List<HomeSection> reportes = [
-    finance,
+  /// Report group of the side bar.
+  ///
+  /// The money used to be listed here, back when it was a placeholder: as a
+  /// screen it is not a report but the place where the company's accounts are
+  /// configured and its movements are recorded, so it moved up to
+  /// [transactions].
+  static const List<HomeSection> reports = [
     marketing,
     report
   ];
 
-  /// Grupo de conexiones del side bar.
+  /// Connections group of the side bar.
   ///
-  /// Las conexiones van primero porque son las cuentas propias de la empresa
-  /// —lo que se conecta y se mira seguido—; los servicios externos son lo que
-  /// la plataforma consume por detras.
-  static const List<HomeSection> conexiones = [
+  /// Connections come first because they are the company's own accounts —what
+  /// gets connected and looked at often—; external services are what the
+  /// platform consumes behind the scenes.
+  static const List<HomeSection> connectionGroups = [
     connections,
     externalServices
   ];
@@ -80,11 +111,11 @@ enum HomeSection {
     for (final section in values) section.key: section
   };
 
-  /// Seccion registrada con esa key, o `null` si la key no es de una seccion
-  /// (por ejemplo, la de una sub-pagina).
+  /// Section registered with that key, or `null` if the key is not a section
+  /// (for example, that of a sub-page).
   static HomeSection? byKey(String key) => _byKey[key];
 
-  /// Seccion que contiene a la pantalla [currentKey], o `null` si ninguna.
+  /// Section that contains the screen [currentKey], or `null` if none.
   static HomeSection? containing(String currentKey) {
     for (final section in values) {
       if (section.isCurrent(currentKey)) return section;
@@ -92,9 +123,9 @@ enum HomeSection {
     return null;
   }
 
-  /// `true` si la pantalla [currentKey] pertenece a esta seccion: o es la
-  /// seccion misma, o es una sub-pagina suya. Asi `business_detail`, que
-  /// declara `parents: ["business"]`, mantiene marcada a [business].
+  /// `true` if the screen [currentKey] belongs to this section: either it is the
+  /// section itself, or it is a sub-page of it. In this way `business_detail`,
+  /// which declares `parents: ["business"]`, keeps [business] marked.
   bool isCurrent(String currentKey) => currentKey == key
     || (Navis.byKey(currentKey)?.isInside(key) ?? false);
 
@@ -105,80 +136,95 @@ enum HomeSection {
     services => S.of(context).services,
     channels => S.of(context).channels,
     connections => S.of(context).connections,
+    sales => S.of(context).sales,
     finance => S.of(context).finance,
     marketing => S.of(context).marketing,
     report => S.of(context).report,
     externalServices => S.of(context).external_services
   };
 
-  /// `true` si la seccion no se puede abrir sin una empresa activa.
+  /// `true` if the section cannot be opened without an active business.
   ///
-  /// Casi todas lo son: lo que muestran —las tablas, los canales, las
-  /// conexiones— cuelga de una empresa, y lo piden en su `initState` leyendo
-  /// `BusinessService.active`, que da por sentado que la hay.
+  /// Almost all of them are: what they show —the tables, the channels, the
+  /// connections— hangs off a business, and they request it in their
+  /// `initState` by reading `BusinessService.active`, which takes its existence
+  /// for granted.
   ///
-  /// Las dos que no son el dashboard, que es la portada del home y lo primero
-  /// que un cliente sin empresas tiene que poder ver, y la seccion de empresas
-  /// misma: bloquearla seria bloquear justamente el lugar donde se crea la
-  /// primera. Sin ninguna no muestra un detalle sino el alta (ver [_screen]),
-  /// que es el mismo camino que ofrece el selector del header.
+  /// The two that are not are the dashboard, which is the home cover page and
+  /// the first thing a customer without businesses has to be able to see, and
+  /// the business section itself: blocking it would be blocking exactly the
+  /// place where the first one is created. Without any, it shows not a detail
+  /// but the sign-up (see [_screen]), which is the same path that the header
+  /// selector offers.
   ///
-  /// Lo miran los dos lados de la misma regla: el side bar, para bloquear la
-  /// opcion (ver `options`), y el shell, para no montar la seccion aunque se
-  /// llegue por URL (ver [homeContent]).
+  /// Both sides of the same rule look at it: the side bar, to block the option
+  /// (see `options`), and the shell, to not mount the section even if it is
+  /// reached by URL (see [homeContent]).
   bool get needsBusiness => this != dashboard && this != business;
 
-  /// Contenido de la seccion.
+  /// Section content.
   ///
-  /// [business] no tiene caso: su contenido lo arma [homeContent], que es quien
-  /// conoce la empresa de la URL y le da su identidad. Es la unica seccion que
-  /// tambien es la pagina de sus sub-paginas —sus pestanas—, asi que armarla
-  /// aca la dejaria sin key y cambiar de empresa no la volveria a montar.
+  /// There is no case for [business]: its content is assembled by [homeContent],
+  /// which is the one that knows the business of the URL and gives it its
+  /// identity. It is the only section that is also the page of its sub-pages
+  /// —its tabs—, so building it here would leave it without a key and changing
+  /// business would not remount it.
   Widget build() => switch (this) {
     inventory => const InventorySection(),
     channels => const ChannelsSection(),
     connections => const ConnectionsSection(),
+    // The money page is built here and not by [homeContent], unlike the
+    // business's: its tabs carry no id —every money endpoint answers for the
+    // active company— so the bare section and each of its tabs are the same
+    // widget, and the section resolves which tab from `Navis.currentKey`.
+    // The sales board is built here on the same criteria as the money page:
+    // its tabs carry no id —every sales endpoint answers for the active
+    // company— so the bare section and each of its tabs are the same widget,
+    // and the section resolves which tab from `Navis.currentKey`.
+    sales => const SalesSection(),
+    finance => const FinanceSection(),
     _ => SectionPlaceholder(section: this)
   };
 }
 
-/// Contenido que el shell debe mostrar para la pantalla [currentKey], atado a la
-/// empresa [businessId].
+/// Content that the shell must show for the screen [currentKey], tied to the
+/// business [businessId].
 ///
-/// Normalmente es la propia [section] (resuelta ya en `Home`), pero cuando la
-/// pantalla activa es una sub-pagina se muestra la sub-pagina en su lugar,
-/// mientras la [section] que la contiene sigue marcando su opcion en el side
-/// bar. Es el punto donde se enrutan las sub-paginas del home.
+/// Normally it is the [section] itself (already resolved in `Home`), but when
+/// the active screen is a sub-page, the sub-page is shown instead, while the
+/// [section] that contains it keeps marking its option in the side bar. It is
+/// the point where the home's sub-pages are routed.
 ///
-/// Lo que se ve dentro del home es siempre de una empresa, asi que el contenido
-/// se identifica con ella: cambiar de empresa cambia la identidad de esta parte
-/// del arbol y el `Navigator` la monta de nuevo en vez de actualizarla. Es lo
-/// que hace que **cada seccion vuelva a pedir sus datos** —los que carga en su
-/// `initState`— sin tener que escuchar a la empresa por su cuenta, incluidas las
-/// secciones que todavia no existen.
+/// What is seen inside the home always belongs to a business, so the content
+/// is identified with it: changing business changes the identity of this part
+/// of the tree and the `Navigator` mounts it again instead of updating it.
+/// That is what makes **every section request its data again** —the data it
+/// loads in its `initState`— without having to listen to the business on its
+/// own, including sections that do not exist yet.
 ///
-/// Se monta de nuevo y no se refresca a proposito: de la empresa anterior no es
-/// solo lo cargado, tambien es lo que se escribio en el buscador, donde estaba
-/// parada la planilla o la celda que se estaba editando. Conservarlo seria
-/// mezclar dos empresas en la misma pantalla.
+/// It is remounted and not refreshed on purpose: of the previous business it
+/// is not only what was loaded, but also what was written in the search box,
+/// where the spreadsheet was stopped or the cell that was being edited.
+/// Keeping it would be mixing two businesses on the same screen.
 ///
-/// Lo unico que esto no arregla son las sub-paginas atadas a un id de la empresa
-/// anterior (`/home/inventory/:id`): montarlas de nuevo pediria una tabla que la
-/// empresa nueva no tiene. Esas escuchan el cambio y se mueven solas, ver
-/// [BusinessListener].
+/// The only thing this does not fix are the sub-pages tied to an id of the
+/// previous business (`/home/inventory/:id`): remounting them would request a
+/// table that the new business does not have. Those listen to the change and
+/// move on their own, see [BusinessListener].
 ///
-/// Sin [businessId] no hay empresa activa (un cliente recien registrado, o uno
-/// que todavia no creo la suya) y las secciones que dependen de una no se
-/// montan: piden sus datos en su `initState` —`BusinessService.active` da por
-/// sentado que la hay—, asi que entrar a una sin empresa reventaria antes de
-/// pintar. En su lugar va [NoBusinessSection], que ofrece el alta. Las que se
-/// muestran igual son las de [HomeSection.needsBusiness] en `false`, las mismas
-/// que el side bar deja habilitadas: el dashboard y la seccion de empresas, que
-/// sin ninguna es tambien el alta (ver [_screen]).
+/// Without [businessId] there is no active business (a newly registered
+/// customer, or one that has not created theirs yet) and the sections that
+/// depend on one are not mounted: they request their data in their `initState`
+/// —`BusinessService.active` takes its existence for granted—, so entering one
+/// without a business would crash before painting. In its place goes
+/// [NoBusinessSection], which offers the sign-up. The ones that still show are
+/// those with [HomeSection.needsBusiness] at `false`, the same ones that the
+/// side bar leaves enabled: the dashboard and the business section, which
+/// without any is also the sign-up (see [_screen]).
 ///
-/// Se comprueba aca ademas de en el side bar porque una seccion es una URL: con
-/// las opciones bloqueadas todavia se puede llegar por deep link, recargando la
-/// pagina o con el boton de atras del navegador.
+/// It is checked here in addition to the side bar because a section is a URL:
+/// with the options blocked it can still be reached by deep link, reloading
+/// the page or with the browser's back button.
 Widget homeContent(
   String currentKey,
   HomeSection section,
@@ -190,32 +236,35 @@ Widget homeContent(
     : _screen(currentKey, section, businessId)
 );
 
-/// La pantalla que va dentro del shell: la [section] abierta, o la sub-pagina
-/// suya que diga [currentKey].
+/// The screen that goes inside the shell: the open [section], or its sub-page
+/// indicated by [currentKey].
 Widget _screen(String currentKey, HomeSection section, String? businessId) {
-  // La seccion de empresas y sus pestanas son la misma pantalla, y son las
-  // pestanas las que traen el id en la URL: se resuelve por la seccion y no por
-  // la pantalla abierta, que es una key distinta por pestana.
+  // The business section and its tabs are the same screen, and it is the tabs
+  // that carry the id in the URL: it is resolved by the section and not by the
+  // open screen, which is a different key per tab.
   if (section == HomeSection.business) {
-    // Sin empresa activa no hay detalle que mostrar, pero la seccion se abre
-    // igual: es el lugar natural para crear la primera. Se pide el alta en vez
-    // de montar el detalle, que sin empresa buscaria un perfil que no existe.
+    // Without an active business there is no detail to show, but the section opens
+    // anyway: it is the natural place to create the first one. The sign-up is
+    // requested instead of mounting the detail, which without a business would
+    // look for a profile that does not exist.
     //
-    // Se mira tambien la URL para no pisar el link de una empresa concreta: ese
-    // id no es del cliente (si lo fuera seria la activa) y el detalle ya sabe
-    // decirlo.
+    // The URL is also checked so as not to override the link of a specific
+    // business: that id does not belong to the customer (if it did it would be
+    // the active one) and the detail already knows how to tell.
     if (businessId == null && Navis.currentArgs?["id"] == null) {
       return const NoBusinessSection();
     }
 
-    // Una key por empresa: la pagina lee el id de la URL al montarse y desde
-    // ahi alinea la empresa activa con el. Sin esto, ir de una empresa a otra
-    // por el historial del navegador reusaria el `State` anterior y la pantalla
-    // se quedaria esperando una empresa que nadie va a activar.
+    // One key per business: the page reads the id from the URL when it mounts and
+    // from there aligns the active business with it. Without this, moving from
+    // one business to another through the browser history would reuse the
+    // previous `State` and the screen would stay waiting for a business that
+    // nobody is going to activate.
     //
-    // Sin id en la URL la empresa es la activa, asi que esa es la key: la
-    // seccion pelada y el link de la empresa que ya se esta mirando son la
-    // misma pagina, y pasar de una al otro no tiene por que montarla de nuevo.
+    // Without an id in the URL the business is the active one, so that is the
+    // key: the bare section and the link of the business already being looked
+    // at are the same page, and moving from one to the other should not have to
+    // remount it.
     return BusinessDetailSection(
       key: ValueKey("business_${Navis.currentArgs?["id"] ?? businessId}")
     );
@@ -223,17 +272,14 @@ Widget _screen(String currentKey, HomeSection section, String? businessId) {
 
   return switch (currentKey) {
     TableViewSection.routeKey => const TableViewSection(),
-    // Las dos rutas del formulario de un canal son la misma pantalla, asi que
-    // se le da una key distinta a cada una: sin eso, pasar del alta a un canal
-    // (o de un canal a otro) reusaria el `State` anterior, que ya leyo el id de
-    // la URL en su `initState` y seguiria editando el canal de antes.
-    ChannelFormSection.createRouteKey =>
-      const ChannelFormSection(key: ValueKey("channel_new")),
+    // Keyed by id: without it, going from one channel's edit page straight to
+    // another's would reuse the previous `State`, which already read the id
+    // from the URL in its `initState` and would keep editing the first one.
     ChannelFormSection.editRouteKey => ChannelFormSection(
       key: ValueKey("channel_${Navis.currentArgs?["id"]}")
     ),
-    // Lo mismo para el formulario de una conexion, y por el mismo motivo: las
-    // dos rutas son la misma pantalla, que lee el id en su `initState`.
+    // The same for the connection form, and for the same reason: the two routes are
+    // the same screen, which reads the id in its `initState`.
     ConnectionFormSection.createRouteKey =>
       const ConnectionFormSection(key: ValueKey("connection_new")),
     ConnectionFormSection.editRouteKey => ConnectionFormSection(

@@ -3,53 +3,64 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/channels/channel_provider_model.dart';
 import 'package:app/toolkit/api.dart';
 
-/// Estado de la lectura del catalogo (`GET /channels/set_up/providers`).
+/// Status of the catalog read (`GET /channels/providers`).
 enum ChannelCatalogStatus { idle, loading, ready, error }
 
-/// Catalogo de redes a las que se puede conectar un canal, y —lo importante—
-/// **que valores necesita cada una**: tokens, secretos de app, ids de cuenta,
-/// tokens de verificacion del webhook.
+/// Catalog of networks to which a channel can connect, and —the important
+/// part— **which values each one needs**: tokens, app secrets, account ids,
+/// webhook verification tokens.
 ///
-/// El formulario de un canal se dibuja entero desde aca: ninguna red esta
-/// escrita en esta app, asi que una que se agregue del lado del backend aparece
-/// sola, con sus campos y sus pistas de donde encontrarlos. Lo unico que si
-/// decide el front es cuales ya se pueden configurar
-/// ([ChannelProviderModel.supported]); el resto se muestra apagado.
+/// A channel's form is drawn entirely from here: no network is written in this
+/// app, so one that is added on the backend side shows up on its own, with its
+/// fields and its hints on where to find them. The only thing the front does
+/// decide is which ones can already be configured
+/// ([ChannelProviderModel.supported]); the rest are shown disabled.
 ///
-/// Es configuracion publica y no datos de una empresa: no trae credenciales de
-/// nadie y se lee igual para todos. Por eso **se cachea una sola vez para toda
-/// la sesion** y no por empresa, a diferencia de [ChannelsService]: cambiar de
-/// empresa no cambia que campos pide WhatsApp.
+/// It is public configuration and not a company's data: it brings nobody's
+/// credentials and is read the same for everyone. That is why **it is cached
+/// once for the whole session** and not per company, unlike [ChannelsService]:
+/// changing company does not change which fields WhatsApp asks for.
 class ChannelCatalogService extends ChangeNotifier {
   ChannelCatalogStatus _status = ChannelCatalogStatus.idle;
   List<ChannelProviderModel> _providers = const [];
 
   ChannelCatalogStatus get status => _status;
 
-  /// El catalogo entero, en el orden que lo manda el backend.
+  /// The whole catalog, in the order the backend sends it.
   List<ChannelProviderModel> get providers => List.unmodifiable(_providers);
 
-  /// Los que esta app ya sabe configurar, primero, y los que todavia no,
-  /// despues. Es el orden en que el selector los muestra: lo que se puede
-  /// elegir no puede quedar debajo de lo que no.
+  /// The ones this app already knows how to configure, first, and the ones it
+  /// does not yet, later. It is the order in which the selector shows them:
+  /// what can be chosen cannot end up below what cannot.
   List<ChannelProviderModel> get sorted => [
     for (final provider in _providers) if (provider.isSupported) provider,
     for (final provider in _providers) if (!provider.isSupported) provider
   ];
 
-  /// El proveedor con ese codigo, o `null` si el catalogo todavia no cargo o no
-  /// lo tiene.
+  /// The provider with that code, or `null` if the catalog has not loaded yet
+  /// or does not have it.
+  ///
+  /// WhatsApp Personal ([ChannelProviderModel.whatsappPersonalCode]) is
+  /// answered here too, even though it never comes from the backend catalog
+  /// — see the field's own doc. Every caller that resolves "the schema for
+  /// this provider code" goes through this method, so handling it once here
+  /// is what lets the form, the card and the picker treat it like any other
+  /// provider without each one special-casing it separately.
   ChannelProviderModel? byCode(String code) {
+    if (code == ChannelProviderModel.whatsappPersonalCode) {
+      return ChannelProviderModel.whatsappPersonal();
+    }
+
     for (final provider in _providers) {
       if (provider.provider == code) return provider;
     }
     return null;
   }
 
-  /// Carga el catalogo si hace falta.
+  /// Loads the catalog if needed.
   ///
-  /// Una vez leido no se vuelve a pedir salvo [force]: es una constante del
-  /// backend, no un dato que cambie mientras alguien configura un canal.
+  /// Once read it is not requested again unless [force]: it is a backend
+  /// constant, not data that changes while someone configures a channel.
   Future<void> load({bool force = false}) async {
     if (_status == ChannelCatalogStatus.loading) return;
     if (!force && _status == ChannelCatalogStatus.ready) return;
@@ -58,7 +69,7 @@ class ChannelCatalogService extends ChangeNotifier {
     notifyListeners();
 
     final data = await api
-      .get(path: "/channels/set_up/providers/", version: "v1")
+      .get(path: "/channels/providers/", version: "v1")
       .catchError((error) {
         if (kDebugMode) print("loadChannelProviders failed: $error");
         return null;
@@ -72,9 +83,9 @@ class ChannelCatalogService extends ChangeNotifier {
 
     _providers = ChannelProviderModel.fromResponse(data);
 
-    // Un catalogo vacio no es un catalogo cargado: sin proveedores no se puede
-    // crear ni un canal, asi que se trata como error y la pantalla ofrece
-    // reintentar en vez de mostrar un selector en blanco.
+    // An empty catalog is not a loaded catalog: without providers not even a
+    // channel can be created, so it is treated as an error and the screen
+    // offers to retry instead of showing a blank selector.
     _status = _providers.isEmpty
       ? ChannelCatalogStatus.error
       : ChannelCatalogStatus.ready;
@@ -82,7 +93,7 @@ class ChannelCatalogService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vacia la cache. Para el cierre de sesion, junto al resto de los servicios.
+  /// Empties the cache. For signing out, together with the rest of the services.
   void clear() {
     _providers = const [];
     _status = ChannelCatalogStatus.idle;

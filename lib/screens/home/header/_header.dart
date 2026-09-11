@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/home/home_service.dart';
+import 'package:app/services/business/business_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -13,56 +14,57 @@ import 'package:app/screens/home/sections/business_listener.dart';
 
 import './business_selector.dart';
 
-/// Barra superior del home: el buscador de la app, la empresa activa y los
-/// accesos que no son de ninguna seccion en particular (notificaciones y bandeja
-/// de entrada).
+/// Top bar of the home: the app search, the active business and the accesses
+/// that belong to no particular section (notifications and inbox).
 ///
-/// Es fija igual que el side bar: se construye una sola vez en el shell y no se
-/// vuelve a montar al cambiar de seccion, asi que conserva su estado (lo que se
-/// escribio, el foco del campo) mientras se navega. Por eso el buscador es uno
-/// solo para todo el home en vez de uno por seccion.
+/// Like the side bar it is fixed: it is built once in the shell and is not
+/// remounted when the section changes, so it keeps its state (what was typed,
+/// the field focus) while navigating. That is why there is a single search for
+/// the whole home instead of one per section.
 ///
-/// Lo que se escribe no se guarda aca sino en [HomeService.searchQuery]: el
-/// header esta afuera de la seccion abierta, y ese es el punto donde las dos
-/// partes se encuentran. Cada seccion decide que hacer con el texto y las que
-/// todavia no buscan nada simplemente no lo leen. Los listados (las tablas, las
-/// conexiones) filtran las filas que ya tienen por el nombre o la descripcion;
-/// una planilla abierta se lo manda al backend y vuelve a leer sus filas ya
-/// filtradas, porque de una tabla de cientos de miles de registros lo que tiene
-/// es un puñado de tramos y buscar en ellos no seria buscar en la tabla.
+/// What is typed is not stored here but in [HomeService.searchQuery]: the
+/// header is outside the open section, and that is the point where the two
+/// sides meet. Each section decides what to do with the text and the ones that
+/// do not search anything yet simply do not read it. The listings (tables,
+/// connections) filter the rows they already have by name or description; an
+/// open spreadsheet sends it to the backend and reads its already-filtered rows
+/// again, because with a table of hundreds of thousands of records what it has
+/// is a handful of stretches and searching within them would not be searching
+/// the table.
 class HomeHeader extends StatefulWidget {
   const HomeHeader({super.key});
 
-  /// Ancho maximo del buscador. Se corta antes del borde porque un campo de
-  /// texto tan ancho como la pantalla es incomodo de leer, y porque el resto de
-  /// la barra queda libre para lo que se agregue mas adelante.
+  /// Max width of the search. It is cut before the edge because a text field as
+  /// wide as the screen is uncomfortable to read, and because the rest of the
+  /// bar stays free for whatever is added later.
   static const double _searchWidth = 320;
 
-  /// Techo del selector de empresa. No mide su ancho —el selector se mide por
-  /// el nombre de la empresa activa—, solo evita que uno largo empuje al
-  /// buscador contra el borde.
+  /// Cap for the business selector. It does not measure its width —the selector
+  /// is sized by the name of the active business—, it only keeps a long one from
+  /// pushing the search against the edge.
   static double get _businessMaxWidth => AppSize.action * 4.5;
 
   @override
   State<HomeHeader> createState() => _HomeHeaderState();
 }
 
-/// Escucha el cambio de empresa con el mismo mixin que las sub-paginas: la
-/// suscripcion al servicio se arma en `didChangeDependencies` y se suelta en
-/// `dispose` contra la referencia guardada, no contra el `context`. Un header
-/// que se desmonta —cambiar de disposicion al redimensionar la ventana— ya no
-/// tiene arbol arriba desde donde volver a buscar el servicio.
+/// Listens to the business change with the same mixin as the sub-pages: the
+/// subscription to the service is set up in `didChangeDependencies` and released
+/// in `dispose` against the stored reference, not against the `context`. A
+/// header that gets unmounted —changing layout when resizing the window— no
+/// longer has a tree above it from which to look the service up again.
 class _HomeHeaderState extends State<HomeHeader>
     with BusinessListener<HomeHeader> {
-  /// El buscador vive lo que vive el header, asi que el controlador es de esta
-  /// pantalla y no del input que lo dibuja.
+  /// The search lives as long as the header, so the controller belongs to this
+  /// screen and not to the input that draws it.
   ///
-  /// Por eso se crea con un form propio: sin el, `InputController.search()` arma
-  /// uno marcado como `controlledByInput` y entonces [SearchInput] se toma por
-  /// dueno y lo libera al desmontarse. Como el header sigue vivo y guarda el
-  /// mismo controlador, cualquier remontaje del input —un cambio de disposicion,
-  /// un hot reload que mueva el arbol— lo dejaria dibujando un campo con el
-  /// `FocusNode` ya desechado: "A FocusNode was used after being disposed".
+  /// That is why it is created with its own form: without it,
+  /// `InputController.search()` creates one marked as `controlledByInput` and
+  /// then [SearchInput] becomes its owner and releases it when unmounted. Since
+  /// the header stays alive and keeps the same controller, any remount of the
+  /// input —a layout change, a hot reload that moves the tree— would leave it
+  /// drawing a field with a already-disposed `FocusNode`:
+  /// "A FocusNode was used after being disposed".
   final _form = FormController();
   late final _search = InputController.search(form: _form);
 
@@ -70,14 +72,14 @@ class _HomeHeaderState extends State<HomeHeader>
   void initState() {
     super.initState();
 
-    // La busqueda se vacia al cambiar de pantalla, no al cambiar de seccion: una
-    // sub-pagina (el perfil de una empresa, una planilla) tampoco busca lo mismo
-    // que el listado del que se entro.
+    // The search is emptied when changing screen, not when changing section: a
+    // sub-page (a business profile, a spreadsheet) does not search the same
+    // thing as the listing it was entered from either.
     Navis.currentKey.addListener(_screenChanged);
   }
 
-  /// Y tambien al cambiar de empresa, por lo mismo que el shell vuelve a montar
-  /// la seccion entera: lo que se escribio era sobre la empresa anterior.
+  /// And also when changing business, for the same reason the shell remounts
+  /// the whole section: what was typed was about the previous business.
   @override
   void onBusinessChanged(String businessId) => _clear();
 
@@ -85,91 +87,132 @@ class _HomeHeaderState extends State<HomeHeader>
   void dispose() {
     Navis.currentKey.removeListener(_screenChanged);
 
-    // El form libera a sus inputs, el buscador entre ellos. Va despues de los
-    // listeners y antes de `super.dispose()`: el input ya se desmonto (los hijos
-    // se desmontan primero) y por lo tanto ya se solto de todo lo del form.
+    // The form releases its inputs, the search among them. It goes after the
+    // listeners and before `super.dispose()`: the input has already been
+    // unmounted (children unmount first) and therefore has already released
+    // itself from everything in the form.
     _form.dispose();
     super.dispose();
   }
 
   void _screenChanged() => _clear();
 
-  /// Vacia el buscador: el campo y el texto que leen las secciones.
+  /// Empties the search: the field and the text the sections read.
   ///
-  /// Se limpia el `textController` en vez de reconstruir el input para no perder
-  /// el controlador: el campo es el mismo de siempre, lo unico que se va es lo
-  /// que decia.
+  /// The `textController` is cleared instead of rebuilding the input to not lose
+  /// the controller: the field is the same as always, the only thing that goes
+  /// away is what it said.
   void _clear() {
     if (!mounted) return;
     if (_search.text.isNotEmpty) _search.textController.clear();
     context.read<HomeService>().clearSearch();
   }
 
-  /// Todo lo de la derecha mide lo que mide y el buscador se queda con el resto:
-  /// es lo unico que no se rompe por ser mas angosto.
+  /// Everything on the right measures what it measures and the search keeps the
+  /// rest: it is the only thing that does not break by being narrower.
+  ///
+  /// It only checks whether an active business **exists** for the POS access:
+  /// which one it is changes nothing here (the counter reads it when opening),
+  /// and listening to the whole service would rebuild the bar on each of its
+  /// notifications.
   @override
-  Widget build(BuildContext context) => Surface(
-    padding: EdgeInsets.all(AppSize.gap),
-    child: Row(children: [
-      ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: HomeHeader._businessMaxWidth),
-        child: const BusinessSelector()
-      ),
-      Expanded(child: Align(
-        alignment: Alignment.center,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: HomeHeader._searchWidth),
-          child: SearchInput(
-            controller: _search,
-            placeholder: S.of(context).search_in_app,
-            // [SearchInput] ya espera a que se deje de escribir, asi que esto
-            // corre por busqueda y no por tecla.
-            onSearch: (value) => context.read<HomeService>().search(value)
-          )
-        )
-      )),
-      _HeaderAction(
-        icon: CI.notification,
-        message: S.of(context).notifications,
-        action: _soon
-      ),
-      _HeaderAction(
-        icon: CI.mail,
-        message: S.of(context).inbox,
-        action: _soon
-      )
-    ])
-  );
+  Widget build(BuildContext context) {
+    final hasBusiness = context.select<BusinessService, bool>(
+      (service) => service.activeId != null
+    );
 
-  // Ninguno de los dos paneles existe todavia. Se avisa en vez de dejar el boton
-  // mudo: un boton que no hace nada al tocarlo se lee como que la app fallo.
+    return Surface(
+      padding: EdgeInsets.all(AppSize.gap),
+      child: Row(children: [
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: HomeHeader._businessMaxWidth),
+          child: const BusinessSelector()
+        ),
+        Expanded(child: Align(
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: HomeHeader._searchWidth),
+            child: SearchInput(
+              controller: _search,
+              placeholder: S.of(context).search_in_app,
+              // [SearchInput] already waits for the user to stop typing, so this
+              // runs per search and not per key.
+              onSearch: (value) => context.read<HomeService>().search(value)
+            )
+          )
+        )),
+        // The POS is here in addition to the side bar because it is the only
+        // place that stays visible with the bar compressed, and because going to
+        // charge is not going to a section: it is leaving the home.
+        _HeaderAction(
+          icon: CI.cashbox,
+          isLocked: !hasBusiness,
+          message: S.of(context).pos_mode,
+          action: () => context.read<HomeService>().goToPos(context)
+        ),
+        _HeaderAction(
+          icon: CI.notification,
+          message: S.of(context).notifications,
+          action: _soon
+        ),
+        _HeaderAction(
+          icon: CI.mail,
+          message: S.of(context).inbox,
+          action: _soon
+        )
+      ])
+    );
+  }
+
+  // Neither panel exists yet. A message is shown instead of leaving the button
+  // silent: a button that does nothing when tapped reads as the app failing.
   void _soon() => FloatFlag.of(context).message(S.of(context).coming_soon);
 }
 
-/// Boton de icono de la barra: mismo alto que el buscador para que la fila
-/// quede pareja.
+/// Icon button of the bar: same height as the search so the row stays even.
 class _HeaderAction extends StatelessWidget {
   const _HeaderAction({
     required this.icon,
     required this.message,
-    required this.action
+    required this.action,
+    this.isLocked = false
   });
 
   final IconData icon;
 
-  /// Que es el boton. Es su tooltip, y lo unico que lo nombra: el boton es solo
-  /// el icono.
+  /// What the button is. It is its tooltip, and the only thing that names it:
+  /// the button is just the icon.
   final String message;
 
   final void Function() action;
 
+  /// The button is shown but leads nowhere: what it opens needs an active
+  /// business and there is still none.
+  ///
+  /// Same treatment as the locked side bar option —dimmed and not opening— and
+  /// for the same reason: the bar keeps its shape when the first business is
+  /// created, instead of a button appearing where there was nothing. The tooltip
+  /// then says why it cannot be entered.
+  final bool isLocked;
+
   @override
-  Widget build(BuildContext context) => FeedbackButton(
-    action: action,
-    message: message,
+  Widget build(BuildContext context) => isLocked
+    ? Opacity(opacity: 0.4, child: _action(context))
+    : _action(context);
+
+  Widget _action(BuildContext context) => FeedbackButton(
+    // Without an action there is no reason to respond to the mouse either: the
+    // cursor warns before the click that it does not open.
+    action: isLocked ? null : action,
+    mouseCursor: isLocked ? SystemMouseCursors.basic : null,
+    message: isLocked
+      ? S.of(context).section_no_business_subtitle
+      : message,
     radius: AppSize.cornerInset(AppSize.gap),
     color: ThemeColor.of(context).surface,
-    feedbackColor: ThemeColor.of(context).line,
+    feedbackColor: isLocked
+      ? Colors.transparent
+      : ThemeColor.of(context).surfaceFeedback,
     child: SizedBox(
       width: AppSize.action,
       height: AppSize.action,

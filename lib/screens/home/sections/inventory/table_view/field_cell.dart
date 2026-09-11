@@ -15,23 +15,23 @@ import 'state/sheet_controller.dart';
 import 'state/sheet_cursor.dart';
 import 'state/sheet_widths.dart';
 
-/// La celda de un campo: la fila 1 de la planilla.
+/// A field's cell: row 1 of the sheet.
 ///
-/// Se comporta como cualquier otra celda, y ahi esta toda la gracia de la
-/// pantalla: **el campo se edita donde se lo ve**. Escribirle un titulo a una
-/// columna libre la crea, escribirle otro a un campo lo renombra, vaciarselo lo
-/// elimina (con confirmacion) y la flecha le cambia el tipo. Quien decide cual
-/// de las cuatro cosas es, al salir de la celda, es `FieldEdit`.
+/// It behaves like any other cell, and there lies the whole point of the
+/// screen: **the field is edited where you see it**. Typing a title into a free
+/// column creates it, typing another into a field renames it, emptying it
+/// deletes it (with confirmation), and the arrow changes its type. Who decides
+/// which of the four things it is, on leaving the cell, is `FieldEdit`.
 ///
-/// Y de la misma celda se agarra la columna para llevarla a otro lugar. El
-/// arrastre no pasa por aca mas que para empezarlo: lo lleva el controlador y lo
-/// dibuja `ColumnDrag` encima de la planilla, asi que mover una columna no
-/// vuelve a construir esta celda ni ninguna otra hasta que se la suelta.
+/// And from the same cell the column is grabbed to take it elsewhere. The drag
+/// goes through here only to start it: the controller carries it and `ColumnDrag`
+/// draws it over the sheet, so moving a column does not rebuild this cell or any
+/// other until it is released.
 ///
-/// Todo lo suyo lo pregunta ella: el titulo, el tipo y si hay un cambio en
-/// camino. Por eso renombrar una columna, cambiarle el tipo o mandar su alta
-/// repinta **esta celda** y no la fila de campos, aunque los tres releen la
-/// estructura entera de la tabla.
+/// It asks its own everything: the title, the type, and whether there is a
+/// change on the way. That is why renaming a column, changing its type, or
+/// sending its create repaints **this cell** and not the fields row, even
+/// though all three re-read the whole table structure.
 class FieldCell extends StatelessWidget {
   const FieldCell({
     super.key,
@@ -51,8 +51,8 @@ class FieldCell extends StatelessWidget {
       (cursor) => cursor.stateAt(kFieldsRow, index)
     );
 
-    // Las cuatro cosas cambian juntas y se leen juntas: un registro las compara
-    // de una y ahorra tres suscripciones por celda.
+    // The four things change together and are read together: a comparator looks
+    // at them at once and saves three subscriptions per cell.
     final (name, busy, type, isField) = context
       .select<SheetColumns, (String, bool, String, bool)>(
         (columns) => (
@@ -63,14 +63,14 @@ class FieldCell extends StatelessWidget {
         )
       );
 
-    // El modelo del campo solo lo necesita la flecha, para mandar el cambio de
-    // tipo. Se lee sin suscribirse: lo que de el se muestra —nombre y tipo— ya
-    // esta arriba, asi que esta celda se rehace cuando cambia.
+    // The field's model is only needed by the arrow, to send the type change.
+    // It is read without subscribing: what of it is shown —name and type— is
+    // already above, so this cell is redone when it changes.
     final field = isField ? context.read<SheetColumns>().fieldAt(index) : null;
 
-    // El titulo de un campo se escribe como el de una columna libre: es la misma
-    // celda, y lo que cambia es que salir de ella renombra el campo (o lo
-    // elimina, si quedo vacia) en vez de crear uno.
+    // A field's title is written like a free column's: it is the same cell, and
+    // what changes is that leaving it renames the field (or deletes it, if it
+    // was left empty) instead of creating one.
     final Widget content = state == SheetCellState.editing
       ? const CellEditor(type: TableFieldType.text, alignment: TextAlign.left)
       : Row(children: [
@@ -85,41 +85,41 @@ class FieldCell extends StatelessWidget {
           Expanded(child: Text(
             name,
             overflow: TextOverflow.ellipsis,
-            // Mientras el cambio viaja (se esta creando, renombrando o
-            // eliminando), el titulo se ve apagado: ya es lo que va a quedar,
-            // pero todavia no volvio del backend.
+            // While the change travels (it is being created, renamed, or
+            // deleted), the title looks dimmed: it is already what will remain,
+            // but it has not yet come back from the backend.
             style: busy ? style.pendingTitle : style.title
           )),
-          // La flecha del tipo solo esta donde hay un campo: una columna libre
-          // todavia no tiene tipo que cambiar, es una celda en blanco. Tampoco
-          // esta mientras el campo tenga un cambio en camino: el cambio de tipo
-          // manda tambien el nombre que trae la estructura, que hasta que el
-          // renombre no vuelva es el viejo, y lo desharia.
+          // The type arrow is only where there is a field: a free column does
+          // not yet have a type to change, it is a blank cell. Nor is it there
+          // while the field has a change on the way: the type change also sends
+          // the name the structure carries, which until the rename comes back is
+          // the old one, and it would undo it.
           if (field != null && !busy) TypeArrow(field: field)
         ]);
 
-    // Un campo se arrastra de lugar desde su propia celda, como en una planilla.
-    // Una columna libre no: todavia no es un campo, no tiene posicion que
-    // guardar. Tampoco una que tenga un cambio en camino.
+    // A field is dragged into place from its own cell, like in a sheet. A free
+    // column is not: it is not yet a field, it has no position to save. Nor one
+    // with a change on the way.
     final movable = isField && !busy;
 
     Widget cell = MouseRegion(
-      // El puntero avisa que ahi se escribe: es lo unico que queda del boton de
-      // agregar columna, y ahora tambien del de renombrarla. Es el de escribir y
-      // no el de una planilla porque lo que hay ahi es un titulo que se tipea;
-      // lo que se toca de esta celda —la flecha del tipo— lleva el suyo. Mientras
-      // el cambio viaja no se puede escribir, asi que vuelve al puntero de
-      // siempre.
+      // The pointer announces that writing happens there: it is all that remains
+      // of the add-column button, and now also of the rename one. It is the
+      // write one and not the sheet's because what is there is a title that is
+      // typed; what is touched of this cell —the type arrow— carries its own.
+      // While the change travels, nothing can be written, so it goes back to the
+      // usual pointer.
       cursor: busy ? SystemMouseCursors.basic : SystemMouseCursors.text,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => controller.tap(kFieldsRow, index),
-        // El arrastre horizontal y el toque conviven en el mismo detector: la
-        // arena de gestos le da el toque al que no se movio y el arrastre al que
-        // si, que es exactamente como se lee la celda —se la toca para escribir
-        // el titulo, se la arrastra para mover la columna—. La franja del borde
-        // derecho, que cambia el ancho, esta encima de esto en el Stack, asi que
-        // se queda ella con el arrastre que empieza ahi.
+        // The horizontal drag and the tap live together in the same detector:
+        // the gesture arena gives the tap to the one that did not move and the
+        // drag to the one that did, which is exactly how the cell is read —it is
+        // tapped to write the title, it is dragged to move the column—. The
+        // right-edge strip, which changes the width, sits above this in the
+        // Stack, so it keeps the drag that starts there.
         onHorizontalDragStart: movable
           ? (details) => controller.startColumnDrag(index, details)
           : null,
@@ -149,14 +149,15 @@ class FieldCell extends StatelessWidget {
       builder: (context, width, child) => SizedBox(width: width, child: child),
       child: Stack(children: [
         cell,
-        // Tirador de ancho: la franja del borde derecho de la celda de campo,
-        // como en una planilla. Arrastrarlo solo mueve el notificador de esta
-        // columna, asi que el resto de la planilla ni se entera.
+        // Width handle: the right-edge strip of the field cell, like in a sheet.
+        // Dragging it only moves this column's notifier, so the rest of the
+        // sheet does not even know.
         //
-        // Al soltarlo, el ancho se guarda con el campo (`PUT /tables/fields/`):
-        // no es una preferencia de quien lo arrastro sino como queda la tabla, y
-        // la proxima vez que se la abra —la abra quien la abra— las columnas
-        // miden esto. Viaja al soltar y no en cada evento del arrastre.
+        // On release, the width saves with the field (`PUT /inventory/products/builder/fields/`):
+        // it is not the preference of whoever dragged it but how the table
+        // stays, and the next time it is opened —by whoever opens it— the
+        // columns measure this. It travels on release and not on each drag
+        // event.
         Positioned(
           top: 0,
           bottom: 0,
@@ -170,9 +171,9 @@ class FieldCell extends StatelessWidget {
               onHorizontalDragUpdate: (details) =>
                 controller.resize(index, details.delta.dx),
               onHorizontalDragEnd: (_) => controller.endResize(index),
-              // Un arrastre que se corta (se perdio el puntero, se abrio algo
-              // encima) deja la columna con el ancho que alcanzo a tomar, asi
-              // que se guarda igual: es el que se ve.
+              // A drag that is cut short (the pointer was lost, something opened
+              // on top) leaves the column with the width it managed to take, so
+              // it saves the same: it is the one that is seen.
               onHorizontalDragCancel: () => controller.endResize(index),
               child: const SizedBox.shrink()
             )

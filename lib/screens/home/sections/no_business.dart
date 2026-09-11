@@ -3,22 +3,21 @@ import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/section_message.dart';
-import 'package:app/screens/modals/create_business/_create_business.dart';
+import 'package:app/screens/modals/business/create_business/_create_business.dart';
 
-/// Lo que se ve en una seccion del home cuando el cliente todavia no tiene
-/// ninguna empresa.
+/// What is seen in a home section when the customer still has no business.
 ///
-/// Todo lo que vive dentro del home cuelga de la empresa activa —las tablas,
-/// los canales, las conexiones, la empresa misma—, asi que sin ninguna no hay
-/// nada que pedirle al backend: la seccion no se monta y en su lugar va este
-/// mensaje con el alta, que es el unico camino desde el que arranca lo demas
-/// (ver `homeContent`).
+/// Everything that lives inside the home hangs off the active business —the
+/// tables, the channels, the connections, the business itself—, so without any
+/// there is nothing to ask the backend: the section is not mounted and in its
+/// place goes this message with the sign-up, which is the only path from which
+/// the rest starts (see `homeContent`).
 ///
-/// La que no pasa por aca es el dashboard, que es la portada del home y se ve
-/// desde el primer dia. La seccion de empresas si, pero por el otro camino: no
-/// esta bloqueada —es justamente donde se crea la primera— asi que se abre y
-/// muestra esto como su contenido, porque sin ninguna empresa no hay detalle
-/// que mostrar.
+/// The one that does not go through here is the dashboard, which is the home
+/// cover page and is seen from day one. The business section does, but through
+/// the other path: it is not blocked —it is exactly where the first one is
+/// created— so it opens and shows this as its content, because without any
+/// business there is no detail to show.
 class NoBusinessSection extends StatelessWidget {
   const NoBusinessSection({super.key});
 

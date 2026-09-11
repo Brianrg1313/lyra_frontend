@@ -10,24 +10,26 @@ import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/inventory/table_settings/_table_settings.dart';
+import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
 
 import 'header_actions.dart';
+import 'normalize_button.dart';
 import 'state/sheet_controller.dart';
 
-/// Barra superior: el boton de volver al listado, el color de la tabla, su
-/// nombre y, a la derecha, el estado de la lectura y el guardado de las filas
-/// pendientes.
+/// Top bar: the back-to-listing button, the table's color, its name, and, on
+/// the right, the state of the reading and saving of the pending rows.
 ///
-/// El nombre lo da la estructura, que es la que trae el de verdad; hasta que
-/// llega se muestra el que ya tenia cacheado el listado de tablas y, si tampoco
-/// esta (se entro por deep link con el listado sin cargar), uno generico.
+/// The name comes from the structure, which is the one that brings the real
+/// one; until it arrives, the one the table listing already had cached is
+/// shown and, if it is not there either (entered through a deep link with the
+/// listing unloaded), a generic one.
 ///
-/// De los dos servicios que mira, de cada uno se lleva **textos ya resueltos** y
-/// no los objetos: del listado, el titulo cacheado; de la tabla abierta, el
-/// nombre, la descripcion y el color. Las dos cosas se releen seguido —el
-/// listado por su cuenta, la estructura cada vez que cambia una columna— y con
-/// los objetos esta barra se repintaria por cambios que no son suyos.
+/// Of the two services it looks at, from each one it takes **already resolved
+/// texts** and not the objects: from the listing, the cached title; from the
+/// open table, the name, the description, and the color. Both things are
+/// re-read often —the listing on its own, the structure every time a column
+/// changes— and with the objects this bar would be repainted by changes that
+/// are not its own.
 class TableHeader extends StatelessWidget {
   const TableHeader({super.key, required this.tableId});
 
@@ -42,16 +44,16 @@ class TableHeader extends StatelessWidget {
       (tables) => _cachedTitle(tables.tables, tableId)
     );
 
-    // Del listado tambien sale si esta tabla se sigue importando. Es lo que
-    // explica lo que se ve: una planilla de mil filas abierta a los diez
-    // segundos de importarla no esta vacia, esta a medio subir.
+    // From the listing also comes whether this table is still being imported. It
+    // is what explains what is seen: a thousand-row sheet opened ten seconds
+    // after importing it is not empty, it is halfway up.
     final stage = context.select<TablesService, TableImportStage?>(
       (tables) => tables.importStage(tableId)
     );
 
-    // De la estructura se lleva lo que muestra y no el objeto: se relee entera
-    // cada vez que cambia una columna, y con el objeto esta barra se repintaria
-    // por un titulo de columna que no dice nada de ella.
+    // From the structure it takes what it shows and not the object: it is
+    // re-read whole every time a column changes, and with the object this bar
+    // would be repainted by a column title that says nothing about it.
     final (name, description, color) = context
       .select<TableViewService, (String, String, String)>(
         (service) => (
@@ -116,20 +118,27 @@ class TableHeader extends StatelessWidget {
         ],
         const HeaderActions(),
         SizedBox(width: AppSize.gap),
-        // Los ajustes de la tabla: todo lo que hay de ella menos sus filas
-        // —cuantos registros tiene, de que columnas esta hecha, cuanto ve el
-        // modelo y que canales la leen—.
+        // Normalize the table: give each column the type that matches what it
+        // holds and seed how much of it the agent sees. See [NormalizeButton].
         //
-        // Se abren al costado y no en otra pantalla: son los ajustes de **esta**
-        // planilla, y con el panel abierto la planilla se sigue viendo al lado.
-        // Cerrarlo la devuelve entera, con su desplazamiento y su cursor donde
-        // estaban. Ver [showTableSettings].
+        // It goes before the settings because it is what is pressed **instead**
+        // of entering them: both fix the same thing, but one asks to know which
+        // column is wrong and the other does not.
+        const NormalizeButton(),
+        // The table's settings: everything there is of it except its rows —how
+        // many records it has, what columns it is made of, how much the model
+        // sees, and which channels read it—.
+        //
+        // They open to the side and not in another screen: they are the settings
+        // of **this** sheet, and with the panel open the sheet keeps being seen
+        // next to it. Closing it returns it whole, with its scroll and cursor
+        // where they were. See [showTableSettings].
         FeedbackButton(
           action: () => showTableSettings(context, tableId),
           width: AppSize.action,
           height: AppSize.action,
-          color: scheme.surfaceOver,
           message: S.of(context).table_settings_title,
+          feedbackColor: ThemeColor.of(context).surfaceFeedback,
           child: Center(child: Icon(
             CI.setting,
             color: scheme.text.primary
@@ -139,20 +148,20 @@ class TableHeader extends StatelessWidget {
     );
   }
 
-  /// Que le falta a la tabla, mientras se la esta importando.
+  /// What the table is missing, while it is being imported.
   ///
-  /// Lleva su propio spinner y no se apoya en el de [HeaderActions]: ese avisa
-  /// de las lecturas de esta pantalla, y durante la primera etapa —el backend
-  /// tipando las columnas— desde aca no viaja nada, asi que estaria quieto
-  /// justo cuando mas falta hace decir que la tabla no esta terminada.
+  /// It carries its own spinner and does not rely on the [HeaderActions] one:
+  /// that one announces this screen's reads, and during the first stage —the
+  /// backend typing the columns— nothing travels from here, so it would be
+  /// still just when it is most needed to say the table is not finished.
   static String _stage(BuildContext context, TableImportStage stage) =>
     switch (stage) {
       TableImportStage.preparing => S.of(context).import_table_preparing,
       TableImportStage.loading => S.of(context).import_table_loading
     };
 
-  /// Titulo de la tabla segun el listado cacheado, o vacio si todavia no esta
-  /// cargado.
+  /// Table title according to the cached listing, or empty if it has not loaded
+  /// yet.
   static String _cachedTitle(List<TableLiteModel> tables, String id) {
     for (final table in tables) {
       if (table.id == id && table.title.isNotEmpty) return table.title;
@@ -160,9 +169,9 @@ class TableHeader extends StatelessWidget {
     return "";
   }
 
-  /// Color de la tabla a partir del literal ARGB que trae la estructura
-  /// (`0xFF2196F3`), o `null` si no vino o no se puede leer: es un adorno del
-  /// encabezado y la pantalla se ve igual sin el.
+  /// Table color from the ARGB literal the structure brings (`0xFF2196F3`), or
+  /// `null` if it did not come or cannot be read: it is a header adornment and
+  /// the screen looks the same without it.
   static Color? _tint(String raw) {
     if (raw.isEmpty) return null;
 

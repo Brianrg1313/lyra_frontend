@@ -1,42 +1,53 @@
-/// Tabla de productos tal como la devuelve `GET /tables/list/`, pero solo
-/// con lo justo para pintar el listado: el identificador, el titulo, la
-/// descripcion y que tan grande es (cuantas columnas y cuantos registros).
+/// A product table as returned by `GET /inventory/products/builder/list/`,
+/// but only with what's needed to draw the listing: the identifier, the
+/// title, the description, and how big it is (how many columns and how many
+/// records).
 ///
-/// Es la version "lite" a proposito: la estructura completa (el detalle de cada
-/// campo, su tipo y su orden) no hace falta para listar las tablas de una
-/// empresa, asi que no se carga hasta que se abra una. Aca solo entra lo que se
-/// ve en la fila.
+/// It's the "lite" version on purpose: the full structure (each field's
+/// detail, its type and its order) isn't needed to list a business's tables,
+/// so it isn't loaded until one is opened. Only what shows in the row goes
+/// in here.
 class TableLiteModel {
   final String id;
   final String title;
 
-  /// Vacia cuando la tabla se creo sin descripcion (es opcional en el alta).
+  /// Empty when the table was created without a description (it's optional
+  /// at creation).
   final String description;
 
-  /// Cantidad de columnas de la tabla. Se muestra como referencia rapida de
-  /// que tan grande es sin tener que abrirla.
+  /// How many columns the table has. Shown as a quick reference of how big
+  /// it is without having to open it.
   final int fields;
 
-  /// Cantidad de registros cargados en la tabla.
+  /// How many records are loaded in the table.
   ///
-  /// Es nulo —y no cero— cuando el backend no pudo contarlos: las filas viven
-  /// en otra base que las columnas, asi que la cuenta puede fallar sola. Una
-  /// tabla cuyos registros no se pudieron contar no es una tabla vacia, y el
-  /// listado prefiere no decir nada antes que decir que esta vacia.
+  /// It's `null` —not zero— when the backend couldn't count them: the rows
+  /// live in a different store than the columns, so the count can fail on
+  /// its own. A table whose records couldn't be counted isn't an empty
+  /// table, and the list would rather say nothing than say it's empty.
   final int? records;
+
+  /// Whether it's the business's **primary** table (`tables`.`primary`).
+  ///
+  /// There's only one and the backend marks it: the first one created,
+  /// unless it was changed. It matters outside this list because it's the
+  /// one the stock summary reads without anyone choosing it (see
+  /// `StockSummaryService`), so switching a column of this table on or off
+  /// is what shows up below.
+  final bool primary;
 
   const TableLiteModel({
     required this.id,
     required this.title,
     this.description = "",
     this.fields = 0,
-    this.records
+    this.records,
+    this.primary = false
   });
 
-  /// Lee una fila. Las claves se contemplan en las dos convenciones que puede
-  /// mandar el backend —las mayusculas del contrato de alta (`TITLE`, `FIELDS`)
-  /// y las minusculas habituales de una lectura— asi el parseo no se ata a una
-  /// sola forma.
+  /// Reads a row. Keys are checked in both conventions the backend can send
+  /// —the creation contract's uppercase (`TITLE`, `FIELDS`) and a read's
+  /// usual lowercase— so parsing doesn't lock to a single shape.
   factory TableLiteModel.fromJson(Map json) => TableLiteModel(
     id: (json["id"] ?? json["ID"] ?? json["table_id"])?.toString() ?? "",
     title: json["TITLE"] ?? json["title"] ?? json["name"] ?? "",
@@ -48,16 +59,35 @@ class TableLiteModel {
     records: _count(
       json["RECORDS"] ?? json["records"] ??
       json["records_count"] ?? json["record_count"]
+    ),
+    primary: _primary(
+      json["PRIMARY"] ?? json["primary"] ?? json["is_primary"]
     )
   );
 
-  /// Lee una cantidad de la respuesta.
+  /// Whether the row comes marked as the primary one.
   ///
-  /// Puede venir ya contada (un numero, o el texto de uno) o como la lista
-  /// entera de la que solo interesa el largo —asi llegan los campos cuando se
-  /// lee la estructura completa—. Lo que no sea ninguna de las dos cosas
-  /// (incluido no venir) se lee como "no se sabe", que es distinto de cero:
-  /// quien la use decide que hacer con eso.
+  /// Unlike other flags, what isn't understood reads as **no**: there's only
+  /// one primary table, and two tables both claiming the summary is theirs
+  /// is worse than none. Without the data nothing is marked either, which
+  /// is exactly what's known.
+  static bool _primary(dynamic value) => switch (value) {
+    final bool flag => flag,
+    final num number => number != 0,
+    final String text => switch (text.trim().toLowerCase()) {
+      "1" || "true" || "yes" => true,
+      _ => false
+    },
+    _ => false
+  };
+
+  /// Reads a count from the response.
+  ///
+  /// It can arrive already counted (a number, or the text of one) or as the
+  /// whole list of which only the length matters —that's how fields arrive
+  /// when the full structure is read—. Anything that's neither of those two
+  /// (including not coming at all) reads as "unknown", which is different
+  /// from zero: whoever uses it decides what to do with that.
   static int? _count(dynamic value) => switch (value) {
     final List list => list.length,
     final num number => number.toInt(),
@@ -65,23 +95,25 @@ class TableLiteModel {
     _ => null
   };
 
-  /// Copia la tabla con los textos cambiados. La usa el listado para reflejar
-  /// una edicion sin volver a pedirle todo al backend: lo unico que se edita
-  /// desde ahi son el titulo y la descripcion, y las cantidades siguen siendo
-  /// las mismas.
+  /// Copies the table with its texts changed. Used by the list to reflect an
+  /// edit without requesting everything from the backend again: the only
+  /// things edited from there are the title and the description, and the
+  /// counts stay the same.
   TableLiteModel withText({String? title, String? description}) =>
     TableLiteModel(
       id: id,
       title: title ?? this.title,
       description: description ?? this.description,
       fields: fields,
-      records: records
+      records: records,
+      primary: primary
     );
 
-  /// Decodifica la respuesta del listado sin atarse a un unico formato: acepta
-  /// tanto una lista de objetos como la tabla columnar
-  /// (`{"keys": [...], "values": [...]}`) que ya usan `/init` y `/business/list/`.
-  /// Asi el parseo no se rompe si el backend cambia de forma.
+  /// Decodes the list's response without locking to a single format: it
+  /// accepts both a list of objects and the columnar table
+  /// (`{"keys": [...], "values": [...]}`) already used by `/init` and
+  /// `/business/list/`. That way parsing doesn't break if the backend
+  /// changes shape.
   static List<TableLiteModel> fromResponse(dynamic data) {
     if (data is List) {
       return [
@@ -91,7 +123,7 @@ class TableLiteModel {
     }
 
     if (data is Map) {
-      // Algunos endpoints envuelven el listado en una clave.
+      // Some endpoints wrap the list in a key.
       final inner = data["tables"] ?? data["results"] ?? data["data"];
       if (inner != null && inner is! Map) return fromResponse(inner);
 

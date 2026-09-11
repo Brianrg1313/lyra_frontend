@@ -10,52 +10,68 @@ import 'package:app/services/catalog/currency_model.dart';
 
 import '../sheet_style.dart';
 
-/// La celda de un campo de tipo precio, fuera de edicion.
+/// The cell of a money field —a price or any other amount—, out of
+/// editing.
 ///
-/// Un precio no es un numero: es un numero **en una moneda**, y la moneda no
-/// esta en el dato sino en la empresa que lo cobra (ver
-/// [BusinessService.currencyCode]) —y como se escribe esa moneda tampoco esta
-/// aca, sino en el catalogo de plataforma ([CurrencyCatalogService])—. Por eso
-/// esta celda es la unica que mira fuera de la planilla, y por eso es un widget
-/// aparte: las dos suscripciones viven aca y no en [SheetCellView], donde las
-/// pagarian tambien las celdas de texto —que son casi todas— para no usarlas
-/// nunca.
+/// A price isn't a number: it's a number **in a currency**, and the currency
+/// isn't in the datum. It comes from two places, in this order: from the
+/// column, when the field declared its own ([unit]), and otherwise from the
+/// company that charges (see [BusinessService.currencyCode]) —and how that
+/// currency is written isn't here either, but in the platform catalog
+/// ([CurrencyCatalogService])—. That the column wins is what allows a table with
+/// the sale price in one currency and the cost in another, which is the case for
+/// which the backend put a unit on the column. That's why this cell is the only
+/// one that looks outside the sheet, and why it's a widget of its own: the two
+/// subscriptions live here and not in [SheetCellView], where the text cells
+/// —which are almost all of them— would also pay for them without ever using them.
 ///
-/// Lo que se escribe son dos cosas de distinto peso y se pintan como tales: el
-/// importe con el color del dato y el simbolo en gris, del lado que corresponda
-/// (`$22,23`, `22,23€`). Asi la columna se lee como una columna de numeros
-/// —que es como se compara un precio con otro— y el simbolo queda de fondo,
-/// repetido en cada fila y sin robarle la vista al valor.
+/// What's written are two things of different weight and they're painted as
+/// such: the amount in the datum's color and the symbol in gray, on whichever
+/// side corresponds (`$22,23`, `22,23€`). So the column reads as a column of
+/// numbers —which is how one price compares to another— and the symbol stays in
+/// the background, repeated in every row without stealing the eye from the value.
 ///
-/// Un valor que no es un importe se muestra tal como se guardo y sin simbolo:
-/// mientras el dato no sea un numero, ponerle moneda seria afirmar algo que no
-/// se sabe.
+/// A value that isn't an amount shows just as it was stored and without a
+/// symbol: while the datum isn't a number, putting a currency on it would affirm
+/// something that isn't known.
 class PriceCell extends StatelessWidget {
   const PriceCell({
     super.key,
     required this.value,
     required this.style,
-    required this.alignment
+    required this.alignment,
+    this.unit = ""
   });
 
-  /// El precio tal como esta guardado (o tal como se acaba de escribir en el
-  /// borrador de la fila).
+  /// The price as stored (or as just typed in the
+  /// row's draft).
   final String value;
 
-  /// Estilo del importe. Lo decide la celda, que sabe si el campo se escribe.
+  /// Style of the amount. The cell decides it, since it knows if the field is typed.
   final TextStyle style;
 
   final TextAlign alignment;
 
+  /// The currency code the column declared (`USD`, `VES`), or empty when it
+  /// declared none and the company's rules.
+  final String unit;
+
   @override
   Widget build(BuildContext context) {
-    // Dos suscripciones y no una: la empresa dice **en que moneda** cobra y el
-    // catalogo dice **como se escribe**. Cambiar de empresa avisa lo primero y
-    // releer el catalogo lo segundo, y la celda tiene que repintarse con
-    // cualquiera de los dos.
-    final code = context.select<BusinessService, String>(
+    // Two subscriptions and not one: the company says **in which currency** it
+    // charges and the catalog says **how it's written**. Changing company notifies
+    // the first and rereading the catalog the second, and the cell has to repaint
+    // with either of the two. The company's is always requested —and not only
+    // when needed— because a conditional subscription would change the cell's
+    // dependencies depending on which column it's in.
+    final business = context.select<BusinessService, String>(
       (business) => business.currencyCode
     );
+
+    // The column's wins: it's the one that says what **this**
+    // number is written in, and the company's is just the default answer for a
+    // column that never declared its own.
+    final code = unit.isNotEmpty ? unit : business;
 
     final currency = context.select<CurrencyCatalogService, CurrencyModel>(
       (catalog) => catalog.resolve(code)
@@ -63,8 +79,8 @@ class PriceCell extends StatelessWidget {
 
     final amount = currency.amount(value);
 
-    // Lo que no es un importe (una celda vacia, un "consultar") se muestra tal
-    // como se guardo: ponerle moneda seria afirmar algo que no se sabe.
+    // What isn't an amount (an empty cell, a "consult") shows just as it was
+    // stored: putting a currency on it would affirm something that isn't known.
     if (amount == null) {
       return Text(
         value,
@@ -75,9 +91,9 @@ class PriceCell extends StatelessWidget {
       );
     }
 
-    // El hueco entre el simbolo y el importe va con el simbolo (y no como un
-    // espacio suelto) para que se pinte con su mismo estilo: lo decide la
-    // moneda, no la celda.
+    // The gap between the symbol and the amount travels with the symbol (and not as
+    // a loose space) so it's painted in its same style: the currency decides it,
+    // not the cell.
     final symbol = TextSpan(
       text: currency.leading
         ? "${currency.symbol}${currency.gap}"

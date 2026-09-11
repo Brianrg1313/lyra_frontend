@@ -1,65 +1,65 @@
 import 'package:flutter/foundation.dart';
 
-/// Una fila escrita y sin guardar. Guarda el texto de cada celda por posicion de
-/// columna y si esa fila en particular se esta mandando, para que el spinner de
-/// su numero de fila afecte solo a la fila que se guarda.
+/// A written, unsaved row. Stores each cell's text by column position and
+/// whether that particular row is being sent, so the spinner on its row number
+/// affects only the row being saved.
 class SheetDraft {
   final Map<int, String> values = {};
   bool saving = false;
 
-  /// `true` si la fila tiene algo escrito: es lo que la vuelve guardable.
+  /// `true` if the row has something written: it's what makes it saveable.
   bool get hasData => values.values.any((value) => value.trim().isNotEmpty);
 }
 
-/// Las filas escritas que todavia no se guardaron, en el orden en que aparecen
-/// debajo de los registros del backend.
+/// The written rows that haven't been saved yet, in the order in which they
+/// appear below the backend's records.
 ///
-/// Una fila en blanco **no tiene borrador**: recien se crea uno cuando se
-/// escribe algo en ella, asi las decenas de filas vacias que muestra la planilla
-/// (y las cientos de miles de filas de registros que hay encima) no cuestan
-/// nada.
+/// A blank row **has no draft**: one is only created when something is written
+/// in it, so the dozens of empty rows the spreadsheet shows (and the hundreds
+/// of thousands of record rows above them) cost nothing.
 ///
-/// Notifica solo cuando cambia algo que se ve: que una fila pase de vacia a
-/// escrita —ahi la planilla gana una fila y aparece otra en blanco detras—, que
-/// empiece o termine de guardarse, o que se vaya. Cada tecla, en cambio, no
-/// notifica: el texto ya lo esta mostrando el editor de esa celda.
+/// Notifies only when something visible changes: a row going from empty to
+/// written —there the spreadsheet gains a row and another blank appears
+/// behind—, starting or finishing saving, or being removed. Each key, on the
+/// other hand, doesn't notify: the editor of that cell already shows the text.
 ///
-/// Ese ultimo ahorro vale **porque hay un editor delante**. Las celdas que no lo
-/// tienen —una lista, que se elige en un desplegable— dejan su valor por
-/// [choose], que avisa siempre: ahi lo unico que muestra lo elegido es la propia
-/// celda, y sin aviso no se rehace nadie.
+/// That last saving works **because there's an editor in front**. The cells
+/// that don't have one —a list, chosen in a dropdown— leave their value via
+/// [choose], which always notifies: there the only thing showing what was
+/// chosen is the cell itself, and without a notice nobody rebuilds.
 class SheetDrafts extends ChangeNotifier {
   final List<SheetDraft> _drafts = [];
 
   int get length => _drafts.length;
 
-  /// El borrador de esa fila, o `null` si todavia no se escribio nada en ella.
+  /// The draft of that row, or `null` if nothing has been written in it yet.
   SheetDraft? at(int index) =>
     index >= 0 && index < _drafts.length ? _drafts[index] : null;
 
-  /// Lo que hay escrito en esa celda.
+  /// What's written in that cell.
   String textAt(int index, int column) => at(index)?.values[column] ?? "";
 
-  /// Vuelca el texto de una celda que se esta **escribiendo**.
+  /// Dumps the text of a cell that's being **written**.
   ///
-  /// Una celda que queda vacia se borra del borrador, asi una fila que se vacia
-  /// deja de contar como pendiente. Se avisa solo si la fila cambio de estado:
-  /// escribir la segunda letra no mueve nada en pantalla, porque lo que se
-  /// escribe ya lo esta mostrando el editor de esa celda.
+  /// A cell left empty is erased from the draft, so a row that's emptied
+  /// stops counting as pending. It only notifies if the row changed state:
+  /// writing the second letter doesn't move anything on screen, because what
+  /// is being written is already shown by that cell's editor.
   void write(int index, int column, String text) => _put(index, column, text);
 
-  /// Vuelca el valor de una celda que se **elige** (una lista).
+  /// Dumps the value of a cell that's **chosen** (a list).
   ///
-  /// Es [write] pero avisando siempre que el valor cambie: una celda de lista no
-  /// tiene editor delante, asi que lo elegido no se ve hasta que ella misma se
-  /// rehaga, y quien la rehace es este aviso. Es una vez por eleccion —un toque
-  /// en un desplegable— y no una por tecla, que es lo que [write] ahorra.
+  /// It's [write] but always notifying when the value changes: a list cell has
+  /// no editor in front, so what's chosen isn't seen until the cell itself
+  /// rebuilds, and what rebuilds it is this notice. It's once per choice —a
+  /// tap on a dropdown— and not once per key, which is what [write] saves.
   void choose(int index, int column, String value) =>
     _put(index, column, value, silent: false);
 
-  /// El volcado de una celda al borrador. [silent] es lo unico que distingue las
-  /// dos formas de dejar un valor: si alcanza con que la fila avise cuando
-  /// cambia de estado, o si tiene que avisar tambien cuando solo cambio el valor.
+  /// The dumping of a cell into the draft. [silent] is the only thing that
+  /// distinguishes the two ways of leaving a value: whether it's enough for
+  /// the row to notify when its state changes, or if it also has to notify
+  /// when only the value changed.
   void _put(int index, int column, String text, {bool silent = true}) {
     if (index < 0) return;
 
@@ -69,8 +69,8 @@ class SheetDrafts extends ChangeNotifier {
     if (text.trim().isEmpty) {
       at(index)?.values.remove(column);
     } else {
-      // Recien aca la fila en blanco se vuelve un borrador: escribir es lo que
-      // la crea, no seleccionarla.
+      // Only here does the blank row become a draft: writing is what creates
+      // it, not selecting it.
       while (_drafts.length <= index) {
         _drafts.add(SheetDraft());
       }
@@ -93,12 +93,12 @@ class SheetDrafts extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Saca una fila que ya quedo persistida: ahora es un registro de la tabla.
+  /// Removes a row that's already persisted: it's now a record of the table.
   ///
-  /// Quien la saca tiene que hacerlo **en el mismo instante** en que la tabla
-  /// empieza a contar el registro nuevo: las filas de aca abajo se ubican
-  /// restando la cantidad de registros, asi que una cosa sin la otra las corre
-  /// de lugar (ver `SheetController._dropPersisted`).
+  /// Whoever removes it has to do so **at the same instant** the table starts
+  /// counting the new record: the rows down here are located by subtracting
+  /// the number of records, so one thing without the other moves them out of
+  /// place (see `SheetController._dropPersisted`).
   void remove(SheetDraft draft) {
     if (!_drafts.remove(draft)) return;
     notifyListeners();

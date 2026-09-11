@@ -6,29 +6,30 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/inventory/table_field_type.dart';
 
-/// Cuanto ve el modelo de IA de una columna.
+/// How much the AI model sees of a column.
 ///
-/// Son tres estados y no un interruptor porque hay un punto intermedio que se
-/// usa todo el tiempo: una columna que el agente puede **usar** para filtrar
-/// sin poder **decir** lo que vale. El precio de costo es el ejemplo de
-/// siempre: sirve para elegir que ofrecer y no puede salir por WhatsApp.
+/// There are three states and not a switch because there is a middle ground
+/// that gets used all the time: a column the agent can **use** to filter
+/// without being able to **say** what it holds. The cost price is the usual
+/// example: it's good for picking what to offer and can't go out over
+/// WhatsApp.
 ///
-/// Los codigos son los del backend (`visible` · `declared` · `hidden`) y tienen
-/// que coincidir exactamente: es lo que viaja en la lectura de la tabla.
+/// The codes are the backend's (`visible` · `declared` · `hidden`) and have to
+/// match exactly: it's what travels when the table is read.
 enum TableFieldVisibility {
-  /// El agente lee sus valores y los puede citar.
+  /// The agent reads its values and can quote them.
   visible,
 
-  /// El agente sabe que la columna existe y filtra por ella, pero nunca dice
-  /// lo que vale.
+  /// The agent knows the column exists and filters by it, but never says what
+  /// it holds.
   declared,
 
-  /// El agente no sabe que la columna existe.
+  /// The agent doesn't know the column exists.
   hidden;
 
-  /// Lo desconocido cae en [visible], que es como nace una columna: una
-  /// visibilidad que esta version todavia no conoce se muestra como el estado
-  /// mas comun en vez de dejar la columna sin estado.
+  /// The unknown falls into [visible], which is how a column is born: a
+  /// visibility this version doesn't know yet is shown as the most common
+  /// state instead of leaving the column without one.
   static TableFieldVisibility from(dynamic raw) =>
     switch (raw?.toString().trim().toLowerCase()) {
       "declared" => declared,
@@ -36,7 +37,7 @@ enum TableFieldVisibility {
       _ => visible
     };
 
-  /// Codigo que usa el backend. No se traduce.
+  /// Code the backend uses. Not translated.
   String get value => name;
 
   String label(BuildContext context) => switch (this) {
@@ -45,9 +46,8 @@ enum TableFieldVisibility {
     hidden => S.of(context).field_visibility_hidden
   };
 
-  /// Que significa el estado, con todas las letras. Los tres nombres se
-  /// parecen demasiado entre si como para explicarse solos, y el del medio no
-  /// lo adivina nadie.
+  /// What the state means, spelled out. The three names look too much alike
+  /// to explain themselves, and nobody guesses the middle one.
   String hint(BuildContext context) => switch (this) {
     visible => S.of(context).field_visibility_visible_hint,
     declared => S.of(context).field_visibility_declared_hint,
@@ -61,13 +61,14 @@ enum TableFieldVisibility {
   };
 }
 
-/// Una columna de la tabla, tal como la describe
-/// `GET /tables/details/<table_id>`.
+/// A column of the table, as described by
+/// `GET /inventory/products/builder/details/<table_id>`.
 ///
-/// Es la misma columna que dibuja la planilla pero contada entera: ademas de
-/// su nombre y su tipo trae para que sirve, en que lugar esta, cuanto ve de
-/// ella el modelo y sus dos fechas. Nada de eso hace falta para pintar la
-/// grilla, y por eso no viene con la estructura (ver `TableFieldModel`).
+/// It's the same column the sheet draws but told in full: besides its name and
+/// type it carries what it's for, where it sits, how much of it the model
+/// sees, whether it's in the inventory summary, and its two dates. None of
+/// that is needed to paint the grid, which is why it doesn't come with the
+/// structure (see `TableFieldModel`).
 class TableDetailFieldModel {
   const TableDetailFieldModel({
     required this.id,
@@ -76,53 +77,82 @@ class TableDetailFieldModel {
     this.position = 0,
     this.type = TableFieldType.text,
     this.options = const [],
+    this.unit = "",
     this.visibility = TableFieldVisibility.visible,
+    this.summary = true,
     this.date,
     this.updated
   });
 
-  /// FIELD_ID: UUID publico de la columna.
+  /// FIELD_ID: the column's public UUID.
   final String id;
 
-  /// Titulo visible de la columna.
+  /// The column's visible title.
   final String name;
 
-  /// Que guarda la columna. Vacia cuando se creo sin descripcion, que es lo
-  /// normal en las columnas importadas de una planilla.
+  /// Empty when the column was created without a description, which is the
+  /// norm for columns imported from a spreadsheet.
   final String description;
 
-  /// Lugar que ocupa de izquierda a derecha, empezando en cero.
+  /// Its position from left to right, starting at zero.
   final int position;
 
   final TableFieldType type;
 
-  /// Las opciones de una columna de lista, en el orden en que se ofrecen.
-  /// Vacia en todos los demas tipos.
+  /// The options of a list column, in the order they're offered. Empty in
+  /// every other type.
   final List<String> options;
+
+  /// The symbol the column's numbers are written with: the currency code of a
+  /// price or an amount, the unit of a measurement (`USD`, `Bs.`, `kg`).
+  /// Empty in every other type, and also in a money column that didn't
+  /// declare its own: there, the business's billing currency takes over.
+  ///
+  /// A percentage doesn't carry one: there the unit **is** the type (see
+  /// [TableFieldType.united]).
+  final String unit;
 
   final TableFieldVisibility visibility;
 
-  /// Cuando se creo la columna.
+  /// Whether the column shows in the **inventory summary**: the short view
+  /// that answers "what do we have and how much", as opposed to the full
+  /// sheet, which has everything the business ever imported.
+  ///
+  /// It's a different question from [visibility] and that's why it's a
+  /// different field: one says what **the AI** can read, and this one says
+  /// what's shown to **a person** at a glance, and the two don't go together.
+  /// A cost price is hidden from the agent and is exactly what the owner
+  /// wants to see in their summary; a color is `declared` for the agent and
+  /// is noise in a summary.
+  ///
+  /// It's born `true` —a table nobody curated shows the summary it always
+  /// showed, the full sheet— so this trims a view rather than emptying one.
+  final bool summary;
+
+  /// When the column was created.
   final DateTime? date;
 
-  /// Cuando se la renombro, se le cambio el tipo, se la redimensiono o se le
-  /// movio la visibilidad por ultima vez.
+  /// When it was last renamed, had its type changed, was resized, had its
+  /// visibility moved, or was taken out of the summary.
   final DateTime? updated;
 
-  /// La misma columna con otro tipo, otra visibilidad, otras opciones, o
-  /// varias de las tres.
+  /// The same column with a different type, visibility, options, unit, in or
+  /// out of the summary, or several of those five.
   ///
-  /// Es lo que deja que un cambio hecho desde la ficha se vea apenas el backend
-  /// lo acepta, sin esperar a que vuelva la lectura entera: lo que se eligio ya
-  /// se sabe de este lado. `null` es "no se toco", igual que en el cuerpo que
-  /// viaja ([editFieldRequest]).
+  /// It's what lets a change made from the detail view show up as soon as the
+  /// backend accepts it, without waiting for the whole thing to be re-read:
+  /// what was chosen is already known on this side. `null` means "not
+  /// touched", the same as in the body that travels ([editFieldRequest]).
   ///
-  /// Las opciones se vacian pasando una lista vacia, no `null`: es la misma
-  /// regla del backend, donde el vacio es un valor y la ausencia no.
+  /// Options and unit are emptied by passing an empty value (an empty list, an
+  /// empty text) and not `null`: it's the same rule the backend follows, where
+  /// empty is a value and absence isn't.
   TableDetailFieldModel withEdits({
     TableFieldType? type,
     TableFieldVisibility? visibility,
-    List<String>? options
+    List<String>? options,
+    String? unit,
+    bool? summary
   }) => TableDetailFieldModel(
     id: id,
     name: name,
@@ -130,7 +160,9 @@ class TableDetailFieldModel {
     position: position,
     type: type ?? this.type,
     options: options ?? this.options,
+    unit: unit ?? this.unit,
     visibility: visibility ?? this.visibility,
+    summary: summary ?? this.summary,
     date: date,
     updated: updated
   );
@@ -141,57 +173,64 @@ class TableDetailFieldModel {
 
     return TableDetailFieldModel(
       id: id,
-      // Sin nombre, el id sirve de titulo antes que dejar la fila en blanco.
+      // Without a name, the id works as a title before leaving the row blank.
       name: name.isNotEmpty ? name : id,
       description: (json["description"] ?? json["DESCRIPTION"] ?? "").toString(),
       position: _int(json["position"] ?? json["POSITION"]) ?? 0,
       type: TableFieldType.from(json["type"] ?? json["TYPE"]),
       options: _options(json["options"] ?? json["OPTIONS"]),
+      unit: (json["unit"] ?? json["UNIT"] ?? "").toString().trim(),
       visibility: TableFieldVisibility.from(
         json["visibility"] ?? json["VISIBILITY"]
       ),
+      summary: _flag(json["summary"] ?? json["SUMMARY"]),
       date: _date(json["date"] ?? json["DATE"]),
       updated: _date(json["updated"] ?? json["UPDATED"])
     );
   }
 }
 
-/// Cuantas columnas tiene la tabla y de que clase son.
+/// How many columns the table has and of what kind.
 ///
-/// Las cuentas las hace el backend sobre las filas que ya tiene en la mano, no
-/// esta app sobre [TableDetailModel.fields]: son la respuesta a "que tan
-/// grande es esta tabla" y tienen que poder leerse sin recorrer veinte
-/// columnas.
+/// The counting is done by the backend over the rows it already has in hand,
+/// not by this app over [TableDetailModel.fields]: they're the answer to "how
+/// big is this table" and have to be readable without scanning twenty
+/// columns.
 class TableColumnsSummary {
   const TableColumnsSummary({
     this.total = 0,
     this.types = const {},
     this.visibility = const {},
+    this.summary = 0,
     this.untyped = 0
   });
 
-  /// Cuantas columnas hay.
+  /// How many columns there are.
   final int total;
 
-  /// Cuantas de cada tipo. Un codigo que esta version no conoce cae en
-  /// [TableFieldType.text], igual que en la planilla.
+  /// How many of each type. A code this version doesn't know falls into
+  /// [TableFieldType.text], same as in the sheet.
   final Map<TableFieldType, int> types;
 
-  /// Cuantas de cada estado de visibilidad.
+  /// How many of each visibility state.
   final Map<TableFieldVisibility, int> visibility;
 
-  /// Cuantas siguen siendo texto pelado, que es el tipo con el que nace toda
-  /// columna importada.
+  /// How many are in the inventory summary. In a table nobody trimmed, that's
+  /// all of them, which is what makes the offer to trim it an honest one.
+  final int summary;
+
+  /// How many are still bare text, which is the type every imported column is
+  /// born with.
   ///
-  /// No es un error —una tabla puede ser legitimamente toda texto— pero es la
-  /// diferencia entre una tabla que contesta preguntas y una que solo las
-  /// guarda, asi que la pantalla lo dice.
+  /// It's not an error —a table can legitimately be all text— but it's the
+  /// difference between a table that answers questions and one that only
+  /// stores them, so the screen says so.
   final int untyped;
 
   factory TableColumnsSummary.fromJson(Map json) {
-    // Los tipos se suman en vez de asignarse: dos codigos distintos que esta
-    // version no conoce caen los dos en `text`, y el segundo no puede pisar al
-    // primero.
+    // Types are summed instead of assigned: two different codes this version
+    // doesn't know both fall into `text`, and the second can't overwrite the
+    // first.
     final types = <TableFieldType, int>{};
     final rawTypes = json["types"] ?? json["TYPES"];
 
@@ -216,16 +255,17 @@ class TableColumnsSummary {
       total: _int(json["total"] ?? json["TOTAL"]) ?? 0,
       types: types,
       visibility: visibility,
+      summary: _int(json["summary"] ?? json["SUMMARY"]) ?? 0,
       untyped: _int(json["untyped"] ?? json["UNTYPED"]) ?? 0
     );
   }
 
-  /// Cuantas columnas hay en ese estado.
+  /// How many columns are in that state.
   int of(TableFieldVisibility state) => visibility[state] ?? 0;
 
-  /// Los tipos presentes, del mas usado al menos, y a igualdad de cantidad en
-  /// el orden en que se ofrecen al crear una columna. Es como se leen: primero
-  /// de que es la tabla y despues los detalles.
+  /// The types present, from most used to least, and at equal count in the
+  /// order they're offered when creating a column. It's how they're read:
+  /// first what the table is, then the details.
   List<MapEntry<TableFieldType, int>> get sorted {
     final order = TableFieldType.ordered;
 
@@ -239,10 +279,10 @@ class TableColumnsSummary {
   }
 }
 
-/// Que puede hacer el modelo de IA con esta tabla.
+/// What the AI model can do with this table.
 ///
-/// Son cuatro respuestas que salen de los tipos de sus columnas y no de una
-/// configuracion aparte: la tabla habilita al agente por lo que tiene adentro.
+/// There are four answers that come out of its columns' types and not out of
+/// a separate setting: the table enables the agent by what it holds inside.
 class TableAgentSummary {
   const TableAgentSummary({
     this.searchable = false,
@@ -251,21 +291,21 @@ class TableAgentSummary {
     this.image = false
   });
 
-  /// `true` si tiene una columna indexada por significado (`VECTOR`), que es
-  /// lo que permite preguntarle al agente por algo descrito con palabras y no
-  /// por un valor exacto.
+  /// `true` if it has a column indexed by meaning (`TITLE` or `DESCRIPTION`,
+  /// see [TableFieldType.semantic]), which is what lets the agent be asked
+  /// about something described in words rather than by an exact value.
   final bool searchable;
 
-  /// Por cuantas columnas puede filtrar y ordenar: todas las que no esten
-  /// escondidas.
+  /// How many columns it can filter and sort by: all the ones that aren't
+  /// hidden.
   final int filterable;
 
-  /// `true` si una columna de stock la ata al motor de inventario, que es
-  /// tambien lo que habilita reservar productos.
+  /// `true` if a stock column ties it to the inventory engine, which is also
+  /// what enables reserving products.
   final bool stock;
 
-  /// `true` si tiene una columna de imagen, o sea si el agente puede mandar
-  /// fotos de estos registros.
+  /// `true` if it has an image column, i.e. whether the agent can send photos
+  /// of these records.
   final bool image;
 
   factory TableAgentSummary.fromJson(Map json) => TableAgentSummary(
@@ -276,11 +316,11 @@ class TableAgentSummary {
   );
 }
 
-/// Un canal que lee esta tabla.
+/// A channel that reads this table.
 ///
-/// Es el bot visto desde la tabla y no desde el listado de canales: de el
-/// interesa como se llama, por que red contesta y si esta funcionando, que es
-/// lo que contesta "quien esta usando estos datos".
+/// It's the bot seen from the table rather than from the channel list: what
+/// matters here is its name, which network it answers on, and whether it's
+/// working, which is what answers "who is using this data".
 class TableChannelReader {
   const TableChannelReader({
     required this.id,
@@ -298,25 +338,25 @@ class TableChannelReader {
   final String name;
   final String description;
 
-  /// Codigo de la red (`whatsapp`, `instagram`, ...). Con el se busca el
-  /// nombre y el icono en el catalogo de canales.
+  /// Network code (`whatsapp`, `instagram`, ...). Used to look up the name and
+  /// icon in the channel catalog.
   final String provider;
 
-  /// Nombre que la empresa le puso a la cuenta por la que contesta.
+  /// Name the business gave the account it answers through.
   final String connectionName;
 
-  /// Que atiende de esa cuenta (mensajes directos, comentarios), ya resuelto a
-  /// texto por el backend.
+  /// What it handles on that account (direct messages, comments), already
+  /// resolved to text by the backend.
   final String scopeName;
 
-  /// Con que papel atiende el agente (`seller`, `support`, `agent`).
+  /// What role the agent answers with (`seller`, `support`, `agent`).
   final String role;
 
-  /// Interruptor de la empresa: un canal pausado sigue conectado a la tabla
-  /// pero no contesta.
+  /// The business's switch: a paused channel stays connected to the table but
+  /// doesn't answer.
   final bool enabled;
 
-  /// `true` cuando tiene cargado todo lo que su red le pide.
+  /// `true` when everything its network requires is loaded.
   final bool ready;
 
   factory TableChannelReader.fromJson(Map json) => TableChannelReader(
@@ -338,17 +378,18 @@ class TableChannelReader {
   ];
 }
 
-/// Hasta donde llega la tabla: que bots la leen y por que.
+/// How far the table's reach goes: which bots read it and why.
 ///
-/// Vienen dos listas y no una porque son dos cosas distintas y solo una es una
-/// decision. [linked] son los que eligieron esta tabla como fuente; [open] son
-/// los que **no configuraron ninguna**, que el runtime lee como "todas las de
-/// la empresa" y por lo tanto tambien leen esta, sin que nadie lo haya pedido.
+/// Two lists come in and not one because they're two different things and
+/// only one is a choice. [linked] are the ones that picked this table as a
+/// source; [open] are the ones that **configured none at all**, which the
+/// runtime reads as "all of the business's" and so read this one too, without
+/// anyone having asked for it.
 ///
-/// Mostrar solo la primera seria la respuesta comoda y la equivocada: una
-/// empresa mirando "no esta conectada a ningun canal" mientras un bot sin
-/// fuentes dicta sus precios de costo por WhatsApp es justo lo que esta
-/// pantalla existe para evitar.
+/// Showing only the first would be the comfortable answer and the wrong one: a
+/// business looking at "not connected to any channel" while a sourceless bot
+/// dictates its cost prices over WhatsApp is exactly what this screen exists
+/// to prevent.
 class TableChannelsSummary {
   const TableChannelsSummary({
     this.reached = false,
@@ -356,13 +397,13 @@ class TableChannelsSummary {
     this.open = const []
   });
 
-  /// `true` si algun bot llega a esta tabla, por el camino que sea.
+  /// `true` if any bot reaches this table, by whatever path.
   final bool reached;
 
-  /// Los que nombran esta tabla como fuente de datos.
+  /// The ones that name this table as a data source.
   final List<TableChannelReader> linked;
 
-  /// Los que no configuraron ninguna fuente y por eso leen todas.
+  /// The ones that configured no source at all and so read all of them.
   final List<TableChannelReader> open;
 
   factory TableChannelsSummary.fromJson(Map json) {
@@ -370,9 +411,9 @@ class TableChannelsSummary {
     final open = TableChannelReader.listOf(json["open"]);
 
     return TableChannelsSummary(
-      // Se recalcula sobre lo que de verdad se pudo leer en vez de tomar el
-      // booleano del backend tal cual: decir que la tabla esta alcanzada sin
-      // poder mostrar por quien seria una alarma sin explicacion.
+      // Recalculated over what could actually be read instead of taking the
+      // backend's boolean as-is: saying the table is reached without being
+      // able to show by whom would be an alarm with no explanation.
       reached: json["reached"] == true || linked.isNotEmpty || open.isNotEmpty,
       linked: linked,
       open: open
@@ -380,26 +421,28 @@ class TableChannelsSummary {
   }
 }
 
-/// Todo lo que hay que saber de una tabla menos sus filas, tal como lo
-/// devuelve `GET /tables/details/<table_id>`.
+/// Everything worth knowing about a table except its rows, as returned by
+/// `GET /inventory/products/builder/details/<table_id>`.
 ///
-/// Es la pantalla de ajustes de una tabla en una sola lectura, y por eso es un
-/// endpoint aparte y no una estructura mas grande: contesta cosas que viven en
-/// tres bases distintas —la cabecera y las columnas en MySQL, cuantos
-/// registros hay en Mongo, que bots la leen en la base de la empresa— y se
-/// pide una vez cada tanto. La estructura (`/tables/structure/`) sigue siendo
-/// la lectura barata que dibuja la planilla en cada clic.
+/// It's a table's settings screen in a single read, which is why it's a
+/// separate endpoint and not a bigger structure: it answers things that live
+/// in three different stores —the header and columns in MySQL, how many
+/// records there are in Mongo, which bots read it in the business's own
+/// database— and is requested every so often. The structure
+/// (`/inventory/products/builder/structure/`) stays the cheap read that draws
+/// the sheet on every click.
 ///
-/// **Son dos fechas porque la tabla tiene dos**, y juntarlas perderia la que
-/// se estuviera preguntando: [updated] es el ultimo cambio de **estructura**
-/// —la tabla o cualquiera de sus columnas—, y [lastRecord] es cuando entro el
-/// ultimo dato. Una lista de precios importada en marzo y recargada esta
-/// manana tiene un [updated] viejo y un [lastRecord] de hoy.
+/// **There are two dates because the table has two**, and merging them would
+/// lose whichever one was being asked about: [updated] is the last
+/// **structure** change —the table itself or any of its columns— and
+/// [lastRecord] is when the last piece of data came in. A price list imported
+/// in March and reloaded this morning has an old [updated] and a [lastRecord]
+/// of today.
 ///
-/// [records] es `null` —y no cero— cuando la cuenta no se pudo leer: las filas
-/// viven en otra base que las columnas, asi que puede fallar sola. Una tabla
-/// cuyos registros no se pudieron contar no es una tabla vacia, y la
-/// diferencia importa justo en la pantalla que ofrece borrarla.
+/// [records] is `null` —not zero— when the count couldn't be read: the rows
+/// live in a different store than the columns, so it can fail on its own. A
+/// table whose records couldn't be counted isn't an empty table, and the
+/// difference matters exactly on the screen that offers to delete it.
 class TableDetailModel {
   const TableDetailModel({
     this.id = "",
@@ -416,53 +459,54 @@ class TableDetailModel {
     this.fields = const []
   });
 
-  /// UUID de la tabla.
+  /// The table's UUID.
   final String id;
 
-  /// Nombre visible de la tabla.
+  /// The table's visible name.
   final String name;
 
-  /// Vacia cuando la tabla se creo sin descripcion.
+  /// Empty when the table was created without a description.
   final String description;
 
-  /// Literal ARGB con el que se identifica la tabla (`0xFF2196F3`), tal como
-  /// viaja al backend. Vacio si no vino.
+  /// ARGB literal that identifies the table (`0xFF2196F3`), exactly as it
+  /// travels to the backend. Empty if none came.
   final String color;
 
-  /// Cuando se creo la tabla.
+  /// When the table was created.
   final DateTime? date;
 
-  /// El ultimo cambio de estructura, sea de la tabla o de una de sus columnas.
+  /// The last structure change, whether to the table or to one of its
+  /// columns.
   final DateTime? updated;
 
-  /// Cuantas filas tiene, o `null` si no se pudieron contar. Ver la nota de la
-  /// clase.
+  /// How many rows it has, or `null` if they couldn't be counted. See the
+  /// class note.
   final int? records;
 
-  /// Cuando entro la ultima fila, o `null` si la tabla esta vacia (o si la
-  /// cuenta no se pudo leer).
+  /// When the last row came in, or `null` if the table is empty (or if the
+  /// count couldn't be read).
   final DateTime? lastRecord;
 
   final TableColumnsSummary columns;
   final TableAgentSummary agent;
   final TableChannelsSummary channels;
 
-  /// Las columnas, en el orden en que se muestran.
+  /// The columns, in the order they're shown.
   final List<TableDetailFieldModel> fields;
 
-  /// `true` mientras el detalle este sin cargar: una tabla siempre tiene id.
+  /// `true` while the detail is still unloaded: a table always has an id.
   bool get isEmpty => id.isEmpty;
 
-  /// El mismo detalle con otro nombre, otra descripcion, o las dos cosas.
+  /// The same detail with a different name, a different description, or both.
   ///
-  /// Es lo que deja que un cambio hecho desde la ficha se vea en el acto: la
-  /// escritura ya volvio bien y lo unico distinto es el texto que se acaba de
-  /// escribir, asi que no hace falta esperar a releer las tres bases para
-  /// mostrarlo. Lo demas —las cuentas, las columnas, los canales— una edicion
-  /// de cabecera no lo toca.
+  /// It's what lets a change made from the detail view show up right away:
+  /// the write already came back fine and the only thing that changed is the
+  /// text just written, so there's no need to wait to re-read all three
+  /// stores to show it. Everything else —the counts, the columns, the
+  /// channels— a header edit doesn't touch.
   ///
-  /// `null` es "no se cambio" y no "se vacio", igual que en el cuerpo que
-  /// viaja al backend: una descripcion se borra pasandola vacia.
+  /// `null` means "not changed", not "emptied", the same as in the body that
+  /// travels to the backend: a description is cleared by passing it empty.
   TableDetailModel withText({String? name, String? description}) =>
     TableDetailModel(
       id: id,
@@ -479,18 +523,19 @@ class TableDetailModel {
       fields: fields
     );
 
-  /// El mismo detalle con una de sus columnas cambiada.
+  /// The same detail with one of its columns changed.
   ///
-  /// Reemplaza la columna que tenga el id de [field] y deja el resto como
-  /// estaba. Si no esta —el detalle se releyo y la columna ya no existe— no
-  /// cambia nada: no se agrega una columna que el backend no devolvio.
+  /// Replaces the column whose id matches [field]'s and leaves the rest as
+  /// they were. If it isn't there —the detail was reloaded and the column no
+  /// longer exists— nothing changes: a column the backend didn't return isn't
+  /// added.
   ///
-  /// **Los resumenes de arriba no se recalculan.** Cuantas columnas hay de cada
-  /// tipo, cuantas siguen siendo texto pelado y que puede hacer el modelo con
-  /// la tabla los cuenta el backend (ver [TableColumnsSummary]), y contarlos
-  /// aca seria escribir dos veces la misma regla para adelantar un segundo.
-  /// Llegan con la relectura que dispara la propia escritura, mientras la barra
-  /// de arriba avisa que se esta releyendo.
+  /// **The summaries above are not recalculated.** How many columns there are
+  /// of each type, how many are still bare text, and what the model can do
+  /// with the table are counted by the backend (see [TableColumnsSummary]),
+  /// and counting them here would mean writing the same rule twice just to be
+  /// a second early. They arrive with the reread that the write itself
+  /// triggers, while the bar up top signals that it's reloading.
   TableDetailModel withField(TableDetailFieldModel field) {
     final index = fields.indexWhere((current) => current.id == field.id);
     if (index < 0) return this;
@@ -511,8 +556,8 @@ class TableDetailModel {
     );
   }
 
-  /// El color de la tabla ya leido, o `null` si no vino o no se puede
-  /// interpretar: es un adorno y la pantalla se ve igual sin el.
+  /// The table's color already parsed, or `null` if none came or it can't be
+  /// read: it's decoration and the screen looks the same without it.
   Color? get tint {
     if (color.isEmpty) return null;
 
@@ -520,15 +565,15 @@ class TableDetailModel {
     return parsed == null ? null : Color(parsed);
   }
 
-  /// Decodifica la respuesta sin atarse a una sola forma, como el resto de las
-  /// lecturas de la app: las columnas se aceptan en la tabla columnar
-  /// (`{"keys": [...], "values": [...]}`) con la que viajan comprimidas y
-  /// tambien como una lista de objetos.
+  /// Decodes the response without locking to a single shape, like the rest of
+  /// the app's reads: columns are accepted in the columnar table form
+  /// (`{"keys": [...], "values": [...]}`) they travel compressed in, and also
+  /// as a list of objects.
   factory TableDetailModel.fromResponse(dynamic data) {
     if (data is! Map) return const TableDetailModel();
 
-    // Algunos endpoints envuelven la respuesta en una clave: se baja un nivel
-    // antes de rendirse.
+    // Some endpoints wrap the response in a key: go down one level before
+    // giving up.
     if (data["id"] == null && data["ID"] == null) {
       final inner = data["data"] ?? data["table"] ?? data["details"];
       if (inner is Map) return TableDetailModel.fromResponse(inner);
@@ -543,8 +588,9 @@ class TableDetailModel {
       color: (data["color"] ?? data["COLOR"] ?? "").toString(),
       date: _date(data["date"] ?? data["DATE"]),
       updated: _date(data["updated"] ?? data["UPDATED"]),
-      // El objeto entero en `null` es "no se pudo contar"; un total ilegible
-      // se lee igual, porque no decir nada es la respuesta correcta a los dos.
+      // The whole object being `null` means "couldn't be counted"; an
+      // unreadable total is read the same way, because saying nothing is the
+      // right answer to both.
       records: records is Map ? _int(records["total"]) : null,
       lastRecord: records is Map ? _date(records["last"]) : null,
       columns: data["columns"] is Map
@@ -574,7 +620,7 @@ class TableDetailModel {
               for (int i = 0; i < keys.length && i < row.length; i++)
                 keys[i].toString(): row[i]
             })
-          // Por las dudas la fila venga ya como objeto.
+          // Just in case the row already comes as an object.
           else if (row is Map)
             TableDetailFieldModel.fromJson(row)
       ];
@@ -591,9 +637,9 @@ class TableDetailModel {
   }
 }
 
-/// Las opciones de una columna de lista. Se aceptan como lista (la forma en
-/// que viajan) y como el texto JSON de esa lista, por si la columna llega sin
-/// decodificar.
+/// The options of a list column. Accepted as a list (the shape they travel
+/// in) and as the JSON text of that list, in case the column arrives
+/// undecoded.
 List<String> _options(dynamic raw) {
   if (raw is String) {
     final text = raw.trim();
@@ -615,16 +661,32 @@ List<String> _options(dynamic raw) {
   ];
 }
 
-/// Un entero de la respuesta, o `null` si no vino o no se puede leer como tal:
-/// MySQL manda cantidades como texto mas seguido de lo que parece.
+/// A `1`/`0` flag from the response, read with the same criteria used on the
+/// other side: the only thing that turns it off is a recognizable "no".
+///
+/// Everything else —including the `null` of a row written before the column
+/// existed— leaves it on. It's on purpose: an unreadable flag can't silently
+/// pull a column out of the view it was always in.
+bool _flag(dynamic raw) => switch (raw) {
+  final bool value => value,
+  final num number => number != 0,
+  final String text => switch (text.trim().toLowerCase()) {
+    "0" || "false" => false,
+    _ => true
+  },
+  _ => true
+};
+
+/// An integer from the response, or `null` if none came or it can't be read
+/// as one: MySQL sends counts as text more often than it seems.
 int? _int(dynamic raw) => switch (raw) {
   final num number => number.toInt(),
   final String text => int.tryParse(text.trim()),
   _ => null
 };
 
-/// Las fechas llegan en ISO 8601 (`2026-07-14T10:32:11.000Z`). Una fecha
-/// ilegible no rompe la pantalla: se descarta y esa fila dice que no hay.
+/// Dates arrive in ISO 8601 (`2026-07-14T10:32:11.000Z`). An unreadable date
+/// doesn't break the screen: it's discarded and that row says there is none.
 DateTime? _date(dynamic raw) {
   if (raw == null) return null;
   return DateTime.tryParse(raw.toString());

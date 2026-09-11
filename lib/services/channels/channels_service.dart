@@ -6,53 +6,56 @@ import 'package:app/services/channels/channel_lite_model.dart';
 import 'package:app/services/channels/channel_request.dart';
 import 'package:app/toolkit/api.dart';
 
-/// Estado de la carga del listado de canales (`GET /channels/set_up/`).
+/// Status of the channel list load (`GET /channels/`).
 enum ChannelsStatus { idle, loading, ready, empty, error }
 
-/// Los canales de comunicacion de la empresa activa: a que redes esta conectada
-/// su cuenta, como se llama cada conexion y en que orden se muestran.
+/// The active company's communication channels: which networks its account is
+/// connected to, what each connection is called and in what order they are
+/// shown.
 ///
-/// Concentra las operaciones sobre los canales: el listado que consume la
-/// seccion `channels`, el alta, la edicion y la baja, mas la lectura del
-/// detalle de uno solo, que es lo que reabre su formulario.
+/// It concentrates the operations on the channels: the list consumed by the
+/// `channels` section, the creation, the edit and the deletion, plus reading a
+/// single channel's detail, which is what reopens its form.
 ///
-/// Las escrituras dejan la cache al dia sin releer el listado, y cada una a su
-/// manera, con el mismo criterio que [TablesService]: el alta la invalida
-/// (`idle`) porque el canal nuevo hay que ir a buscarlo —el backend le pone el
-/// id y calcula si quedo listo—; la baja corrige la fila en memoria, porque lo
-/// que cambio ya se sabe entero de este lado. La edicion tambien invalida: si
-/// se toco la configuracion, **si quedo listo o no lo decide el backend**
-/// comparando contra lo que pide esa red, y eso no se puede adivinar aca.
+/// The writes keep the cache up to date without rereading the list, each one
+/// in its own way, with the same criterion as [TablesService]: the creation
+/// invalidates it (`idle`) because the new channel has to be fetched —the
+/// backend gives it the id and computes whether it ended up ready—; the
+/// deletion corrects the row in memory, because what changed is already known
+/// in full on this side. The edit also invalidates: if the configuration was
+/// touched, **whether it ended up ready is decided by the backend** comparing
+/// against what that network asks for, and that cannot be guessed here.
 ///
-/// El detalle no se cachea. Es lo unico que trae la configuracion, se lee al
-/// abrir un canal y se descarta al salir: dejarlo en memoria seria guardar ids
-/// de cuenta y hosts de un canal que ya nadie esta mirando.
+/// The detail is not cached. It is the only thing that brings the
+/// configuration, it is read when opening a channel and discarded when leaving
+/// it: keeping it in memory would be storing account ids and hosts of a channel
+/// nobody is looking at anymore.
 ///
-/// La cache del listado es por empresa: los canales viajan atados a la empresa
-/// activa (la cabecera `business_id` que pone [useBusiness]), asi que al
-/// cambiar de empresa el listado se recarga solo. Por eso [load] recibe el id
-/// de la empresa y no lo deduce, igual que en las tablas.
+/// The list cache is per company: the channels travel tied to the active
+/// company (the `business_id` header that [useBusiness] sets), so when changing
+/// company the list reloads on its own. That is why [load] receives the
+/// company id and does not deduce it, just like in the tables.
 class ChannelsService extends ChangeNotifier {
   ChannelsStatus _status = ChannelsStatus.idle;
   List<ChannelLiteModel> _channels = const [];
 
-  /// Empresa para la que se cargo la cache actual. Si no coincide con la
-  /// activa, [load] refresca aunque la cache este `ready`.
+  /// Company for which the current cache was loaded. If it does not match the
+  /// active one, [load] refreshes even if the cache is `ready`.
   String? _businessId;
 
   ChannelsStatus get status => _status;
   List<ChannelLiteModel> get channels => List.unmodifiable(_channels);
 
-  /// Carga los canales de [businessId].
+  /// Loads the channels of [businessId].
   ///
-  /// Se cachea: volver a la seccion no vuelve a pegarle al backend salvo que se
-  /// pida [force], que cambie la empresa activa, o que una escritura haya
-  /// invalidado la cache dejando el estado en `idle`.
+  /// It is cached: returning to the section does not hit the backend again
+  /// unless [force] is requested, the active company changes, or a write
+  /// invalidated the cache leaving the state in `idle`.
   ///
-  /// Un cambio de empresa manda siempre: no lo frena ni una lectura en curso
-  /// (que es de la empresa anterior) ni una cache `ready` (idem), y lo cargado
-  /// se suelta en el acto para que nadie llegue a ver los canales de la otra
-  /// empresa mientras llegan los de esta.
+  /// A company change always wins: it is not stopped by an ongoing read (which
+  /// belongs to the previous company) nor by a `ready` cache (same), and what
+  /// was loaded is released on the spot so nobody ends up seeing the other
+  /// company's channels while this one's arrive.
   Future<void> load(String businessId, {bool force = false}) async {
     final changed = _businessId != businessId;
 
@@ -68,15 +71,16 @@ class ChannelsService extends ChangeNotifier {
     notifyListeners();
 
     final data = await api
-      .get(path: "/channels/set_up/", version: "v1")
+      .get(path: "/channels/", version: "v1")
       .catchError((error) {
         if (kDebugMode) print("loadChannels failed: $error");
         return null;
       });
 
-    // Mientras la lectura viajaba se cambio de empresa: lo que llego es de la
-    // anterior. Se descarta entero, tambien el error, porque la lectura que
-    // vale es la que disparo el cambio y ya esta en camino.
+    // While the read was in flight the company changed: what arrived belongs
+    // to the previous one. It is discarded entirely, including the error,
+    // because the read that matters is the one that triggered the change and it
+    // is already on its way.
     if (_businessId != businessId) return;
 
     if (data == null) {
@@ -91,21 +95,22 @@ class ChannelsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Lee un canal entero (`GET /channels/set_up/detail/:ID`): su configuracion,
-  /// que secretos ya tiene guardados —por nombre, nunca su valor— y que le
-  /// falta para poder funcionar. Trae ademas la descripcion de su proveedor,
-  /// asi que con esta sola lectura se dibuja el formulario.
+  /// Reads a whole channel (`GET /channels/detail/:ID`): its
+  /// configuration, which secrets it already has stored —by name, never their
+  /// value— and what it needs to work. It also brings its provider's
+  /// description, so with this single read the form is drawn.
   ///
-  /// Devuelve `null` si fallo, habiendo mostrado el error: quien la llama
-  /// muestra su pantalla de "no se pudo abrir" y ofrece reintentar.
+  /// Returns `null` if it failed, having shown the error: whoever calls it
+  /// shows its "could not open" screen and offers to retry.
   Future<ChannelDetailModel?> detail(BuildContext context, String id) async {
     if (id.isEmpty) return null;
 
     try {
-      // Sin barra al final: el id es un segmento de la ruta (`params:
-      // ["CHANNEL_ID"]`), y una barra de mas lo dejaria vacio del otro lado.
+      // No trailing slash: the id is a route segment (`params:
+      // ["CHANNEL_ID"]`), and an extra slash would leave it empty on the other
+      // side.
       final response = await api.get(
-        path: "/channels/set_up/detail/$id",
+        path: "/channels/detail/$id",
         version: "v1"
       );
 
@@ -121,21 +126,20 @@ class ChannelsService extends ChangeNotifier {
     }
   }
 
-  /// Alta de un canal contra `POST /channels/set_up/`.
+  /// Creation of a channel against `POST /channels/`.
   ///
-  /// Devuelve el id del canal creado. Ante un error muestra la bandera flotante
-  /// y relanza, para que la pantalla apague su estado de carga.
+  /// Returns the id of the created channel. On an error it shows the floating
+  /// flag and rethrows, so the screen turns off its loading state.
   ///
-  /// Al terminar bien invalida la cache del listado (`idle`) para que la
-  /// proxima lectura traiga el canal nuevo con el `ready` que calculo el
-  /// backend.
+  /// When it ends well it invalidates the list cache (`idle`) so the next read
+  /// brings the new channel with the `ready` the backend computed.
   Future<String> create(
     BuildContext context,
     Map<String, dynamic> data
   ) async {
     try {
       final response = await api.post(
-        path: "/channels/set_up/",
+        path: "/channels/",
         version: "v1",
         data: data
       );
@@ -146,8 +150,8 @@ class ChannelsService extends ChangeNotifier {
 
       return id;
     } catch (error) {
-      // El error se registra siempre, tambien cuando se muestra: el texto que
-      // llega a pantalla suele estar recortado y aca queda el crudo.
+      // The error is always logged, also when it is shown: the text that
+      // reaches the screen is usually truncated and the raw one stays here.
       if (kDebugMode) print("createChannel failed: $error");
 
       if (context.mounted) _report(context, error);
@@ -156,19 +160,20 @@ class ChannelsService extends ChangeNotifier {
     }
   }
 
-  /// Edicion de un canal contra `PUT /channels/set_up/`.
+  /// Edit of a channel against `PUT /channels/`.
   ///
-  /// La cache se invalida en vez de corregirse en memoria, al reves que en las
-  /// tablas, y por una razon concreta: una edicion puede completar (o vaciar)
-  /// la configuracion, y si el canal quedo listo lo resuelve el backend contra
-  /// lo que pide esa red. Reescribir la fila aca seria adivinar ese `ready`.
+  /// The cache is invalidated instead of being corrected in memory, the
+  /// opposite of the tables, and for a concrete reason: an edit can complete
+  /// (or empty) the configuration, and whether the channel ended up ready is
+  /// resolved by the backend against what that network asks for. Rewriting the
+  /// row here would be guessing that `ready`.
   ///
-  /// Devuelve `true` si el cambio salio bien. Ante un error muestra la bandera
-  /// flotante y devuelve `false`, con el canal como estaba.
+  /// Returns `true` if the change went well. On an error it shows the floating
+  /// flag and returns `false`, with the channel as it was.
   Future<bool> edit(BuildContext context, Map<String, dynamic> data) async {
     try {
       await api.put(
-        path: "/channels/set_up/",
+        path: "/channels/",
         version: "v1",
         data: data
       );
@@ -185,12 +190,13 @@ class ChannelsService extends ChangeNotifier {
     return true;
   }
 
-  /// Cambia solo el interruptor de un canal (`ENABLED`), sin tocar nada mas.
+  /// Changes only a channel's switch (`ENABLED`), without touching anything
+  /// else.
   ///
-  /// Es el unico cambio que si corrige la fila en memoria: pausar un canal no
-  /// cambia su configuracion, asi que su `ready` sigue siendo el mismo y no hay
-  /// nada que ir a buscar. La fila se actualiza al instante y el cambio viaja
-  /// detras; si falla, se vuelve a poner como estaba.
+  /// It is the only change that does correct the row in memory: pausing a
+  /// channel does not change its configuration, so its `ready` stays the same
+  /// and there is nothing to go fetch. The row is updated instantly and the
+  /// change travels behind; if it fails, it is put back as it was.
   Future<bool> toggle(BuildContext context, ChannelLiteModel channel) async {
     if (channel.id.isEmpty) return false;
 
@@ -200,7 +206,7 @@ class ChannelsService extends ChangeNotifier {
 
     try {
       await api.put(
-        path: "/channels/set_up/",
+        path: "/channels/",
         version: "v1",
         data: {"ID": channel.id, "ENABLED": enabled}
       );
@@ -219,21 +225,21 @@ class ChannelsService extends ChangeNotifier {
     return true;
   }
 
-  /// Baja de un canal contra `DELETE /channels/set_up/`.
+  /// Deletion of a channel against `DELETE /channels/`.
   ///
-  /// Se lleva sus credenciales, asi que quien la llama tiene que haberlo
-  /// confirmado antes: el servicio no pregunta. La cuenta que ocupaba queda
-  /// libre y se puede volver a conectar, pero configurandola de nuevo.
+  /// It takes its credentials with it, so whoever calls it must have confirmed
+  /// it before: the service does not ask. The account it was using becomes
+  /// free and can be reconnected, but by configuring it anew.
   ///
-  /// La cache se corrige en el acto —se saca la fila— en vez de invalidarse:
-  /// el canal eliminado es lo unico que cambio, y asi desaparece del listado
-  /// sin que este parpadee cargando de nuevo.
+  /// The cache is corrected on the spot —the row is removed— instead of being
+  /// invalidated: the deleted channel is the only thing that changed, and so
+  /// it disappears from the list without it flickering while loading again.
   Future<bool> remove(BuildContext context, ChannelLiteModel channel) async {
     if (channel.id.isEmpty) return false;
 
     try {
       await api.delete(
-        path: "/channels/set_up/",
+        path: "/channels/",
         version: "v1",
         data: deleteChannelRequest(id: channel.id)
       );
@@ -249,14 +255,15 @@ class ChannelsService extends ChangeNotifier {
       .where((current) => current.id != channel.id)
       .toList();
 
-    // Nada que sacar: la cache ya no era la que tenia este canal (se cambio de
-    // empresa, o se recargo el listado mientras la baja viajaba).
+    // Nothing to remove: the cache was no longer the one that had this channel
+    // (the company changed, or the list reloaded while the deletion was in
+    // flight).
     if (remaining.length == _channels.length) return true;
 
     _channels = remaining;
 
-    // El estado sigue a lo que quedo: sin canales, el listado tiene que mostrar
-    // su mensaje de vacio y no una lista en blanco.
+    // The state follows what is left: without channels, the list has to show
+    // its empty message and not a blank list.
     if (_status == ChannelsStatus.ready && _channels.isEmpty) {
       _status = ChannelsStatus.empty;
     }
@@ -266,8 +273,8 @@ class ChannelsService extends ChangeNotifier {
     return true;
   }
 
-  /// Vacia la cache. La llama el cierre de sesion, junto al resto de los
-  /// servicios de la sesion.
+  /// Empties the cache. Called on sign out, together with the rest of the
+  /// session services.
   void clear() {
     _channels = const [];
     _status = ChannelsStatus.idle;
@@ -275,11 +282,11 @@ class ChannelsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Reescribe una fila de la cache, si todavia esta.
+  /// Rewrites a cache row, if it is still there.
   ///
-  /// El canal puede haberse ido mientras un cambio viajaba (un cambio de
-  /// empresa, una recarga): entonces no hay nada que corregir y lo que se lea
-  /// despues ya viene bien.
+  /// The channel may have gone while a change was in flight (a company change,
+  /// a reload): then there is nothing to correct and what is read later already
+  /// comes right.
   void _replace(
     String id,
     ChannelLiteModel Function(ChannelLiteModel current) change
@@ -293,12 +300,12 @@ class ChannelsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Muestra un error de una operacion sobre los canales.
+  /// Shows an error of an operation on the channels.
   ///
-  /// Nunca se cae en silencio: si el error no trae nada mostrable, igual se
-  /// avisa. Un `action` es una instruccion de navegacion (por ejemplo, sesion
-  /// vencida): se relanza tal cual para que la maneje quien corresponda, asi
-  /// que esta llamada puede no volver.
+  /// It never fails silently: if the error does not bring anything displayable,
+  /// it still warns. An `action` is a navigation instruction (for example, an
+  /// expired session): it is rethrown as is so the one in charge handles it,
+  /// so this call may not return.
   void _report(BuildContext context, Object error) {
     if (error is Map && error["action"] != null) throw error["action"];
 
@@ -307,8 +314,8 @@ class ChannelsService extends ChangeNotifier {
     );
   }
 
-  /// Lee el identificador del canal de la respuesta del alta, que lo devuelve
-  /// pelado (`"a1b2..."`) aunque se contempla envuelto por las dudas.
+  /// Reads the channel id from the creation response, which returns it bare
+  /// (`"a1b2..."`) although wrapped is also considered, just in case.
   String _readId(dynamic response) {
     if (response is Map) {
       final id = response["id"] ?? response["channel_id"] ?? response["ID"];

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
-import 'package:app/screens/modals/create_table/_create_table.dart';
+import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 
 void main() {
   testWidgets('CreateTableModal renders without overflow and opens the template dropdown', (tester) async {

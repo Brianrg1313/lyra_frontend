@@ -7,28 +7,30 @@ import 'package:app/services/business/business_profile_model.dart';
 import 'profile_logo.dart';
 import 'profile_tag.dart';
 
-/// De quien es todo lo que sigue: el logo de la empresa y, al lado, su nombre
-/// en grande con en que situacion legal esta y si es de quien la esta mirando.
+/// Whose everything that follows is: the company logo and, beside it, its name
+/// up large with what legal status it's in and whether it belongs to whoever is
+/// looking at it.
 ///
-/// Abre el perfil porque no es una ficha que se mira de reojo: es el titulo de
-/// lo que se esta leyendo. Puesto al costado obligaba a cruzar la pantalla para
-/// saber de que empresa era el telefono que se estaba corrigiendo; puesto
-/// arriba se lee una vez y vale para todo lo de abajo.
+/// It opens the profile because it isn't a sheet looked at out of the corner
+/// of the eye: it's the title of what's being read. Placed to the side it
+/// forced crossing the screen to know which company the phone being corrected
+/// belonged to; placed up top it's read once and holds for everything below.
 ///
-/// El logo esta aca y no en una columna propia por lo mismo: es la otra mitad
-/// de la misma presentacion —lo unico que se reconoce sin leerlo—, y una
-/// columna entera para una sola imagen le sacaba el ancho a los datos, que es
-/// lo que si lo necesita. Va primero porque es lo que se reconoce de un
-/// vistazo: se ve de que empresa es la ficha antes de leer el nombre.
+/// The logo is here and not in its own column for the same reason: it's the
+/// other half of the same presentation —the only thing recognized without
+/// reading it—, and a whole column for a single image took the width away
+/// from the data, which is what does need it. It goes first because it's what's
+/// recognized at a glance: you see whose sheet it is before reading the name.
 ///
-/// Lleva el nombre y no lo demas que identifica a la empresa —el handle, el
-/// lema— porque esos son datos y estan cargados como tales unas lineas mas
-/// abajo (ver [BusinessProfileIdentity]). Escribirlos aca era escribirlos dos
-/// veces en la misma pantalla.
+/// It carries the name and not the rest that identifies the company —the
+/// handle, the caption— because those are data and are loaded as such a few
+/// lines further down (see [BusinessProfileIdentity]). Writing them here was
+/// writing them twice on the same screen.
 ///
-/// Las dos etiquetas si van aca aunque no sean datos que se editan: cambian
-/// como se lee todo el resto. Una empresa sin verificar opera con limites, y
-/// que la ficha sea de uno o de otro decide que se puede hacer con ella.
+/// The two tags do go here even though they aren't data that get edited: they
+/// change how all the rest is read. An unverified company operates with
+/// limits, and whether the sheet is one or the other decides what can be done
+/// with it.
 class BusinessProfileHeader extends StatelessWidget {
   const BusinessProfileHeader({super.key, required this.profile});
 
@@ -40,13 +42,14 @@ class BusinessProfileHeader extends StatelessWidget {
     children: [
       BusinessProfileLogo(profile: profile),
       SizedBox(width: AppSize.padding),
-      // El texto se lleva todo el ancho que sobra: el logo mide lo mismo
-      // siempre, y lo que se parte en varios renglones es el nombre.
+      // The text takes all the width that's left over: the logo measures the
+      // same always, and what breaks into several rows is the name.
       Expanded(child: _identity(context))
     ]
   );
 
-  /// El nombre y, debajo, como esta la empresa: verificada o no, y de quien es.
+  /// The name and, below it, how the company is: verified or not, and whose it
+  /// is.
   Widget _identity(BuildContext context) {
     final scheme = ThemeColor.of(context);
 
@@ -55,8 +58,8 @@ class BusinessProfileHeader extends StatelessWidget {
       children: [
         TextLarge(profile.name, lines: 2, ellipsis: true),
         SizedBox(height: AppSize.spaceXS),
-        // Envuelven porque son dos etiquetas de largo variable: en una fila
-        // fija, la segunda se recortaria en una ventana angosta.
+        // They wrap because they're two tags of variable length: in a fixed
+        // row, the second would get clipped in a narrow window.
         Wrap(
           spacing: AppSize.gap,
           runSpacing: AppSize.gap,

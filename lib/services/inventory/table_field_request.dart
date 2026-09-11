@@ -1,29 +1,29 @@
-/// Cuerpos de las tres escrituras de una columna (campo) de una tabla ya
-/// creada: el alta (`POST /v1/tables/fields/`), la edicion
-/// (`PUT /v1/tables/fields/`) y la baja (`DELETE /v1/tables/fields/`).
+/// Bodies of the three write operations for a column (field) of an already
+/// created table: creation (`POST /v1/inventory/products/builder/fields/`), editing
+/// (`PUT /v1/inventory/products/builder/fields/`) and deletion (`DELETE /v1/inventory/products/builder/fields/`).
 ///
-/// Viven aparte de la pantalla porque son el contrato con el backend: lo que se
-/// arma aca es lo que se documenta del otro lado, y asi se puede probar sin
-/// montar el modal.
+/// They live apart from the screen because they are the contract with the backend: what is
+/// built here is what is documented on the other side, and thus it can be tested without
+/// mounting the modal.
 ///
-/// La empresa dueña no va en el cuerpo: viaja en la cabecera `business_id` de
-/// todas las peticiones (ver `useBusiness` en `toolkit/api.dart`). El [tableId]
-/// si viaja en el alta, porque el campo pertenece a una tabla concreta; en la
-/// edicion alcanza con el id del campo, que ya sabe de que tabla es.
+/// The owning company does not go in the body: it travels in the `business_id` header of
+/// all requests (see `useBusiness` in `toolkit/api.dart`). The [tableId]
+/// does travel in creation, because the field belongs to a concrete table; in
+/// editing the field id is enough, which already knows which table it belongs to.
 ///
-/// Forma del alta:
+/// Creation shape:
 ///
 /// ```json
 /// {
 ///   "TABLE_ID": "a1b2c3",
-///   "NAME": "Precio",
-///   "DESCRIPTION": "Precio de venta con IVA",
+///   "NAME": "Price",
+///   "DESCRIPTION": "Sale price including tax",
 ///   "POSITION": 3,
 ///   "TYPE": "PRICE"
 /// }
 /// ```
 ///
-/// Forma de la edicion:
+/// Editing shape:
 ///
 /// ```json
 /// {
@@ -35,69 +35,97 @@
 /// }
 /// ```
 ///
-/// Las opciones de un campo `SELECT` viajan en `OPTIONS`, como la lista entera y
-/// no como la que se agrega: le pertenecen al campo, asi que se guardan igual
-/// que su nombre o su ancho —escribiendo el valor que queda— y no con un alta
-/// aparte.
+/// The options of an `OPTIONS` or `CATEGORIES` field travel in `OPTIONS`, as
+/// the whole list and not as the one being added: they belong to the field, so
+/// they are stored just like its name or its width —writing the resulting value— and
+/// not with a separate creation. The unit of a `PRICE`, a `CURRENCY` or a `MEASURE`
+/// travels the same way, in `UNIT`: it is the symbol with which the numbers of
+/// that column are written, and it also belongs to the column and not to each value.
 ///
 /// ```json
 /// { "ID": "d4e5f6", "NAME": "Color", "OPTIONS": ["Rojo", "Verde"] }
+/// { "ID": "a7b8c9", "NAME": "Costo", "UNIT": "USD" }
 /// ```
 ///
-/// Forma de la baja:
+/// Deletion shape:
 ///
 /// ```json
 /// { "ID": "d4e5f6" }
 /// ```
 library;
 
-/// Arma el cuerpo del alta de un campo.
+/// Builds the creation body of a field.
 ///
-/// Recorta los textos y omite la descripcion cuando queda vacia, en vez de
-/// mandarla en blanco: asi el backend distingue "sin descripcion" de
-/// "descripcion borrada", igual que el resto de los opcionales de la api.
+/// Trims the texts and omits the description when it ends up empty, instead of
+/// sending it blank: thus the backend distinguishes "no description" from
+/// "description deleted", just like the rest of the optional api fields.
 ///
-/// La [position] ordena las columnas: quien crea el campo la resuelve como la
-/// cantidad de columnas actuales, de modo que la nueva quede al final.
+/// The [position] orders the columns: whoever creates the field resolves it as the
+/// current number of columns, so the new one ends up last.
+///
+/// The [options] and the [unit] are omitted when not passed, like the description:
+/// a column is born without a list and without a symbol, and both are set later from
+/// the table sheet or from the cell itself.
 Map<String, dynamic> createFieldRequest({
   required String tableId,
   required String name,
   required String description,
   required String type,
-  required int position
+  required int position,
+  List<String>? options,
+  String? unit
 }) {
   final trimmed = description.trim();
+  final symbol = unit?.trim() ?? "";
 
   return {
     "TABLE_ID": tableId,
     "NAME": name.trim(),
     if (trimmed.isNotEmpty) "DESCRIPTION": trimmed,
     "POSITION": position,
-    "TYPE": type
+    "TYPE": type,
+    if (options != null) "OPTIONS": [
+      for (final option in options)
+        if (option.trim().isNotEmpty) option.trim()
+    ],
+    if (symbol.isNotEmpty) "UNIT": symbol
   };
 }
 
-/// Arma el cuerpo de la edicion de un campo.
+/// Builds the editing body of a field.
 ///
-/// El nombre es obligatorio aunque no se lo este cambiando: el backend lo pide
-/// siempre, asi que quien edita solo el tipo manda el que el campo ya tenia. El
-/// resto son opcionales de verdad y lo que no se manda no se toca, de modo que
-/// cambiar el tipo no borra la descripcion, no corre la columna de lugar ni le
-/// cambia el ancho.
+/// The name is required even when it is not being changed: the backend always asks
+/// for it, so whoever edits only the type sends the one the field already had. The
+/// rest are truly optional and what is not sent is not touched, so that
+/// changing the type does not delete the description, does not move the column nor
+/// change its width.
 ///
-/// El [width] es el ancho de la columna en pantalla y va entero: es una medida
-/// en pixeles logicos, y el fraccion que deja un arrastre no significa nada del
-/// otro lado.
+/// The [width] is the width of the column on screen and goes whole: it is a measure
+/// in logical pixels, and the fraction left by a drag means nothing on the
+/// other side.
 ///
-/// La [visibility] es cuanto ve el modelo de IA de la columna
-/// (`visible` / `declared` / `hidden`). Viaja igual que el tipo —solo cuando se
-/// la cambia— porque es lo mismo: una propiedad de la columna que se corrige
-/// sola, sin tocar nada de lo que hay escrito en ella.
+/// The [visibility] is how much the AI model sees of the column
+/// (`visible` / `declared` / `hidden`). It travels like the type —only when it is
+/// changed— because it is the same: a property of the column that corrects itself,
+/// without touching anything written in it.
 ///
-/// Las [options] son la lista completa de un campo `SELECT` tal como tiene que
-/// quedar. Una lista vacia **si** viaja, y es lo que borra las opciones del
-/// campo: es la unica de las claves donde "vacio" es un valor y no la ausencia
-/// de uno. No mandarlas las deja como estaban, como el resto de los opcionales.
+/// The [summary] is whether the column is shown in the inventory summary, the
+/// short view a person reads. It travels as the `1`/`0` that the backend
+/// documents and not as a boolean —on the other side it accepts both, but what is
+/// stored is the number—, and only when it is changed: not sending it leaves the
+/// column where it was, inside or outside the summary.
+///
+/// The [options] are the full list of an `OPTIONS` or `CATEGORIES` field just
+/// as it has to remain. An empty list **does** travel, and it is what deletes the
+/// field's options. Not sending them leaves them as they were, like the rest of the
+/// optional fields.
+///
+/// The [unit] is the symbol with which the numbers of a `PRICE`, a
+/// `CURRENCY` or a `MEASURE` are written. It behaves like the options: an empty text
+/// **does** travel and is what removes the unit from the column, and not sending it leaves it
+/// as it was. They are the only two keys where "empty" is a value and
+/// not the absence of one, which is why they are not trimmed to `null` like the
+/// description.
 Map<String, dynamic> editFieldRequest({
   required String id,
   required String name,
@@ -106,7 +134,9 @@ Map<String, dynamic> editFieldRequest({
   int? position,
   int? width,
   String? visibility,
-  List<String>? options
+  bool? summary,
+  List<String>? options,
+  String? unit
 }) {
   final trimmed = description?.trim() ?? "";
 
@@ -118,17 +148,19 @@ Map<String, dynamic> editFieldRequest({
     if (type != null && type.isNotEmpty) "TYPE": type,
     "WIDTH": ?width,
     if (visibility != null && visibility.isNotEmpty) "VISIBILITY": visibility,
+    if (summary != null) "SUMMARY": summary ? 1 : 0,
     if (options != null) "OPTIONS": [
       for (final option in options)
         if (option.trim().isNotEmpty) option.trim()
-    ]
+    ],
+    if (unit != null) "UNIT": unit.trim()
   };
 }
 
-/// Arma el cuerpo de la baja de un campo.
+/// Builds the deletion body of a field.
 ///
-/// Es solo el id: el campo ya sabe de que tabla es y de que empresa, y el
-/// backend lo da de baja logica (`status = 0`) junto con lo que se haya cargado
-/// en esa columna. Tiene su funcion igual que las otras dos, para que las tres
-/// escrituras del campo se lean —y se prueben— en el mismo lugar.
+/// It is only the id: the field already knows which table and company it belongs to, and the
+/// backend gives it a logical deletion (`status = 0`) together with whatever was loaded
+/// in that column. It has its function just like the other two, so the three
+/// write operations of the field are read —and tested— in the same place.
 Map<String, dynamic> deleteFieldRequest({required String id}) => {"ID": id};

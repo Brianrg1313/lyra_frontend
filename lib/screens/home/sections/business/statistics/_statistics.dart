@@ -4,12 +4,12 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/section_message.dart';
 
-/// Pestana de estadisticas: como le va a la empresa —ventas, movimiento,
-/// crecimiento— sin salir de ella.
+/// Statistics tab: how the company is doing —sales, movement, growth— without
+/// leaving it.
 ///
-/// Es lo mismo que miran las secciones de reportes del side bar, pero de esta
-/// empresa y resumido; todavia no hay de donde sacarlo, asi que la pestana
-/// existe pero avisa que falta (ver `BusinessEmployeesTab`).
+/// It is the same thing the side bar's report sections look at, but of this
+/// company and summarized; there is still no source for it, so the tab exists
+/// but notifies that it is missing (see `BusinessEmployeesTab`).
 class BusinessStatisticsTab extends StatelessWidget {
   const BusinessStatisticsTab({super.key});
 

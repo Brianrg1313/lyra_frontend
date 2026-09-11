@@ -5,32 +5,30 @@ import 'package:app/toolkit/toolkit.dart';
 
 import 'option_card.dart';
 
-/// Acomoda las opciones de un bloque en las columnas que entren en el ancho que
-/// hay.
+/// Arranges the options of a block in the columns that fit in the available
+/// width.
 ///
-/// Una debajo de otra, cada opcion se estira de punta a punta para decir tres
-/// palabras: el 90% de la tarjeta queda vacio y las cuatro decisiones del
-/// formulario se vuelven una lista que hay que recorrer scrolleando. En
-/// horizontal el problema es todo el tiempo, porque el ancho es justamente lo
-/// que sobra.
+/// One below the other, each option stretches edge to edge to say three
+/// words: 90% of the card is left empty and the form's four decisions become
+/// a list that has to be gone through scrolling. Horizontally the problem is
+/// all the time, because width is precisely what is left over.
 ///
-/// Las columnas no se fijan de antemano sino que salen de [minWidth]: entran
-/// las que entren sin bajar de ese ancho, y el sobrante se reparte entre ellas
-/// para que la fila cierre justo. Asi el mismo bloque da cuatro columnas a
-/// pantalla completa y dos cuando esta en media, sin que nadie declare
-/// tamanos por dispositivo.
+/// The columns are not fixed in advance but come out of [minWidth]: as many
+/// fit as can without going below that width, and the surplus is distributed
+/// among them so the row closes just right. That way the same block gives
+/// four columns on a full screen and two when it is at half, without anyone
+/// declaring sizes per device.
 ///
-/// Todas las tarjetas miden lo mismo de alto ([OptionCard.height]): en una
-/// rejilla, una tarjeta mas alta que su vecina —porque su descripcion ocupaba
-/// dos lineas en vez de una— se lee como un error de alineacion.
+/// All the cards measure the same height ([OptionCard.height]): in a grid, a
+/// card taller than its neighbour —because its description took two lines
+/// instead of one— reads like an alignment error.
 class OptionGrid extends StatelessWidget {
   const OptionGrid({super.key, required this.children, this.minWidth});
 
   final List<Widget> children;
 
-  /// Lo mas angosta que puede quedar una tarjeta antes de sacar una columna.
-  /// Por debajo de esto el titulo empieza a cortarse, que es peor que tener una
-  /// columna menos.
+  /// The narrowest a card can get before taking out a column. Below this the
+  /// title starts getting cut, which is worse than having one column less.
   final double? minWidth;
 
   @override
@@ -41,8 +39,9 @@ class OptionGrid extends StatelessWidget {
       final gap = AppSize.gap;
       final available = constraints.maxWidth;
 
-      // Sin ancho conocido (dentro de algo que scrollea en horizontal) no hay
-      // rejilla posible: se apilan, que es lo unico que siempre funciona.
+      // Without a known width (inside something that scrolls horizontally) there
+      // is no possible grid: they stack, which is the only thing that always
+      // works.
       if (!available.isFinite) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,19 +56,19 @@ class OptionGrid extends StatelessWidget {
 
       final minimum = minWidth ?? AppSize.action * 4.5;
 
-      // Nunca menos de una columna, y nunca mas que opciones hay: tres opciones
-      // en un ancho de cinco columnas son tres tarjetas, no cinco huecos.
+      // Never less than one column, and never more than options there are: three
+      // options in a width of five columns is three cards, not five slots.
       final columns = ((available + gap) / (minimum + gap))
         .floor()
         .clamp(1, children.length);
 
-      // El sobrante se reparte, pero hasta ahi: una sola opcion —la red, cuando
-      // se esta editando y ya no se puede cambiar— estirada de punta a punta es
-      // el mismo problema que se vino a arreglar.
+      // The surplus is shared, but up to a point: a single option —the network,
+      // when editing and it can no longer be changed— stretched edge to edge
+      // is the same problem this came to fix.
       //
-      // Al piso, porque la suma de las tarjetas y sus separaciones tiene que
-      // entrar en la fila: un pelo de mas por el redondeo del punto flotante y
-      // la ultima se cae al renglon siguiente.
+      // Floored, because the sum of the cards and their separations has to
+      // fit in the row: a hair over due to floating-point rounding and the
+      // last one falls to the next line.
       final width = math.min(
         (available - gap * (columns - 1)) / columns,
         minimum * 2

@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 
-/// La fila de los campos es la fila 1 de la planilla; como el cuerpo se numera
-/// desde 0 (el primer registro), a ella le toca el -1.
+/// The field row is row 1 of the spreadsheet; since the body is numbered
+/// from 0 (the first record), it gets the -1.
 const int kFieldsRow = -1;
 
-/// Celda de la planilla en coordenadas del cuerpo: la fila 0 es el primer
-/// registro (la fila 2 de la planilla, porque la 1 son los campos, que es la
-/// fila [kFieldsRow]) y la columna es la posicion dentro de las columnas de la
-/// planilla.
+/// Cell of the spreadsheet in body coordinates: row 0 is the first record
+/// (row 2 of the spreadsheet, because row 1 is the fields, which is the row
+/// [kFieldsRow]) and the column is the position within the spreadsheet's
+/// columns.
 class SheetCell {
   const SheetCell(this.row, this.column);
 
@@ -24,65 +24,68 @@ class SheetCell {
   int get hashCode => Object.hash(row, column);
 }
 
-/// Como esta una celda respecto del cursor.
+/// How a cell stands with respect to the cursor.
 ///
-/// Es lo que una celda necesita saber del cursor para pintar **su borde**, y por
-/// eso es un valor y no tres booleanos sueltos: la celda se suscribe a esto, asi
-/// que mover el cursor la vuelve a construir solo si cambio de estado. De las
-/// cientos de celdas que hay en pantalla, eso son dos.
+/// It's what a cell needs to know about the cursor to paint **its border**,
+/// and that's why it's a value and not three loose booleans: the cell
+/// subscribes to this, so moving the cursor rebuilds it only if its state
+/// changed. Of the hundreds of cells on screen, that's two.
 ///
-/// Su **fondo** es otra cosa y sale de otra pregunta ([SheetCursor.isRow]): el
-/// cursor resalta la fila entera, asi que ahi lo que cambia son las dos filas.
+/// Its **background** is something else and comes from another question
+/// ([SheetCursor.isRow]): the cursor highlights the whole row, so there what
+/// changes are the two rows.
 enum SheetCellState {
-  /// Ni elegida ni escribiendose.
+  /// Neither selected nor being written.
   idle,
 
-  /// Elegida, sin editor: es lo que queda al tocar una celda que no se escribe.
+  /// Selected, without an editor: it's what's left after tapping a cell that
+  /// isn't written.
   selected,
 
-  /// Elegida y con el editor de texto abierto.
+  /// Selected and with the text editor open.
   editing
 }
 
-/// La celda elegida y si se la esta escribiendo.
+/// The chosen cell and whether it's being written.
 ///
-/// Vive aparte de la pantalla y notifica por su cuenta porque es lo que mas
-/// seguido cambia: cada tecla de navegacion y cada toque lo mueven. Las celdas
-/// se suscriben con `context.select(...)`, asi que mover el cursor vuelve a
-/// construir **las dos filas** que cambiaron —la que se dejo y la que se tomo— y
-/// no la planilla entera. Son dos filas y no dos celdas porque el cursor resalta
-/// la fila donde esta parado, no solo su celda.
+/// It lives apart from the screen and notifies on its own because it's what
+/// changes most often: every navigation key and every tap moves it. Cells
+/// subscribe with `context.select(...)`, so moving the cursor rebuilds **the
+/// two rows** that changed —the one left and the one taken— and not the whole
+/// spreadsheet. It's two rows and not two cells because the cursor highlights
+/// the row it stands on, not just its cell.
 class SheetCursor extends ChangeNotifier {
   SheetCell? _cell;
   bool _editing = false;
 
   SheetCell? get cell => _cell;
 
-  /// Fila del cursor, o `null` si no hay celda elegida. Lo mira la banda de
-  /// numeros para resaltar la fila.
+  /// Row of the cursor, or `null` if there's no chosen cell. The row-number
+  /// gutter looks at it to highlight the row.
   int? get row => _cell?.row;
 
   int? get column => _cell?.column;
 
-  /// `true` cuando la celda del cursor tiene el editor de texto abierto.
-  /// Seleccionada sin editar es lo que queda al tocar una celda que no se puede
-  /// escribir.
+  /// `true` when the cursor's cell has the text editor open.
+  /// Selected without editing is what's left after tapping a cell that can't
+  /// be written.
   bool get editing => _editing;
 
   bool isAt(int row, int column) => _cell?.at(row, column) ?? false;
 
-  /// Como esta esa celda respecto del cursor. Es a lo que se suscribe cada
-  /// celda de la planilla.
+  /// How that cell stands with respect to the cursor. It's what each
+  /// spreadsheet cell subscribes to.
   SheetCellState stateAt(int row, int column) {
     if (!isAt(row, column)) return SheetCellState.idle;
     return _editing ? SheetCellState.editing : SheetCellState.selected;
   }
 
-  /// `true` si el cursor esta en esa fila, sin importar la columna.
+  /// `true` if the cursor is in that row, regardless of the column.
   bool isRow(int row) => _cell?.row == row;
 
-  /// Mueve el cursor. No notifica si nada cambio: entrar y salir de la misma
-  /// celda es lo mas comun al recorrer la planilla y no tiene por que repintar.
+  /// Moves the cursor. Doesn't notify if nothing changed: entering and leaving
+  /// the same cell is the most common thing when moving around the
+  /// spreadsheet and doesn't need to repaint.
   void move(SheetCell? cell, {bool editing = false}) {
     if (_cell == cell && _editing == editing) return;
 
@@ -91,7 +94,7 @@ class SheetCursor extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cierra el editor dejando la celda elegida.
+  /// Closes the editor leaving the cell selected.
   void stopEditing() {
     if (!_editing) return;
 

@@ -1,21 +1,21 @@
-/// Cuerpos de las escrituras de un **registro** (una fila) de una tabla de
-/// productos: el alta (`POST /v1/products/manage/`) y la edicion
-/// (`PUT /v1/products/manage/`).
+/// Bodies of the write operations for a **record** (a row) of a product
+/// table: creation (`POST /v1/inventory/products/records/manage/`) and editing
+/// (`PUT /v1/inventory/products/records/manage/`).
 ///
-/// Viven aparte de la pantalla por el mismo motivo que los de las columnas (ver
-/// `table_field_request.dart`): son el contrato con el backend, lo que se arma
-/// aca es lo que se documenta del otro lado, y asi se puede probar sin montar la
-/// planilla.
+/// They live apart from the screen for the same reason as the columns ones (see
+/// `table_field_request.dart`): they are the contract with the backend, what is built
+/// here is what is documented on the other side, and thus it can be tested without mounting the
+/// spreadsheet.
 ///
-/// La empresa dueña no va en el cuerpo: viaja en la cabecera `business_id` de
-/// todas las peticiones (ver `useBusiness` en `toolkit/api.dart`).
+/// The owning company does not go in the body: it travels in the `business_id` header of
+/// all requests (see `useBusiness` in `toolkit/api.dart`).
 ///
-/// `DATA` esta indexado por FIELD_ID y **solo lleva lo que se toca**: la
-/// planilla edita de a una celda, asi que mandar la fila entera reescribiria
-/// campos que nadie miro (y pisaria lo que otro haya cargado en ellos mientras
-/// tanto).
+/// `DATA` is indexed by FIELD_ID and **only carries what was touched**: the
+/// spreadsheet edits one cell at a time, so sending the whole row would rewrite
+/// fields nobody looked at (and would overwrite what someone else loaded in them in the
+/// meantime).
 ///
-/// Forma del alta:
+/// Creation shape:
 ///
 /// ```json
 /// {
@@ -24,7 +24,7 @@
 /// }
 /// ```
 ///
-/// Forma de la edicion:
+/// Editing shape:
 ///
 /// ```json
 /// {
@@ -35,17 +35,17 @@
 /// ```
 library;
 
-/// Arma el cuerpo del alta de un registro.
+/// Builds the creation body of a record.
 Map<String, dynamic> createRecordRequest({
   required String tableId,
   required Map<String, dynamic> values
 }) => {"TABLE_ID": tableId, "DATA": values};
 
-/// Arma el cuerpo de la edicion de un registro.
+/// Builds the editing body of a record.
 ///
-/// [id] es el identificador del registro, el que viene en la primera columna de
-/// la pagina de datos y que la planilla no muestra. Sin el no hay edicion
-/// posible: es lo unico que dice a que fila de la tabla se le esta escribiendo.
+/// [id] is the record identifier, the one that comes in the first column of
+/// the data page and that the spreadsheet does not show. Without it there is no edit
+/// possible: it is the only thing that says which row of the table is being written to.
 Map<String, dynamic> editRecordRequest({
   required String tableId,
   required String id,

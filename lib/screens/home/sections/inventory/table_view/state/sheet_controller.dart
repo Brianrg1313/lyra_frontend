@@ -20,7 +20,7 @@ import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
 // WIDGETS
-import 'package:app/screens/modals/image_viewer/_image_viewer.dart';
+import 'package:app/screens/modals/shared/image_viewer/_image_viewer.dart';
 
 import 'field_edit.dart';
 import 'free_column.dart';
@@ -34,40 +34,39 @@ import 'sheet_keys.dart';
 import 'sheet_metrics.dart';
 import 'sheet_widths.dart';
 
-/// Franja de los costados de la planilla en la que, arrastrando una columna, la
-/// banda empieza a correrse sola.
+/// Strip at the sides of the spreadsheet in which, while dragging a column,
+/// the band starts scrolling on its own.
 const double _kEdgeMargin = 48;
 
-/// Cuanto se corre como mucho en cada frame de ese desplazamiento.
+/// How much it scrolls at most in each frame of that scrolling.
 const double _kEdgeStep = 24;
 
-/// A partir de cuantas opciones el desplegable de una celda de lista trae
-/// buscador.
+/// From how many options the dropdown of a list cell brings a search box.
 ///
-/// Por debajo de eso la lista se recorre de un vistazo y el buscador seria una
-/// fila de mas entre la celda y lo que se quiere tocar; por encima, es lo que
-/// convierte elegir en escribir tres letras.
+/// Below that the list is gone through at a glance and the search box would
+/// be one more row between the cell and what one wants to tap; above that,
+/// it's what turns choosing into typing three letters.
 const int _kOptionSearchFrom = 10;
 
-// Las acciones del desplegable de una celda de imagen. Son valores internos —no
-// se guardan ni viajan a ningun lado— y estan nombrados para que el `switch` que
-// los reparte se lea.
+// The actions of an image cell's dropdown. They're internal values —they're
+// not stored nor travel anywhere— and they're named so that the `switch` that
+// dispatches them reads well.
 const String _kImageView = "view";
 const String _kImageUpload = "upload";
 const String _kImageLibrary = "library";
 const String _kImageRemove = "remove";
 
-/// El cerebro de la planilla: todo lo que se puede *hacer* sobre ella.
+/// The brain of the spreadsheet: everything that can be *done* on it.
 ///
-/// No es un [Listenable] a proposito. Si lo fuera, cualquier widget que quisiera
-/// llamar a una accion tendria que suscribirse a el, y con eso volveriamos al
-/// punto de partida: un solo aviso que repinta la pantalla entera. Aca los
-/// widgets lo leen (`context.read`) para pedirle cosas, y escuchan a los
-/// pedacitos de estado que si notifican y que son chicos a proposito:
-/// [cursor], [columns], [drafts] y los anchos de [widths], uno por columna.
+/// It's not a [Listenable] on purpose. If it were, any widget that wanted to
+/// call an action would have to subscribe to it, and with that we'd be back
+/// to square one: a single notice that repaints the whole screen. Here
+/// widgets read it (`context.read`) to ask it for things, and listen to the
+/// little pieces of state that do notify and that are small on purpose:
+/// [cursor], [columns], [drafts], and the widths of [widths], one per column.
 ///
-/// El reparto es: este objeto decide **que pasa**, los notificadores dicen
-/// **quien se entera** y los widgets solo dibujan.
+/// The division is: this object decides **what happens**, the notifiers say
+/// **who finds out**, and the widgets only draw.
 class SheetController {
   SheetController({
     required this.service,
@@ -88,135 +87,137 @@ class SheetController {
     _onRows();
   }
 
-  /// El estado de la tabla abierta: la estructura y los registros. Lo posee la
-  /// pantalla, no este controlador, que solo lo usa.
+  /// The state of the open table: the structure and the records. The screen
+  /// owns it, not this controller, which only uses it.
   final TableViewService service;
 
-  /// La geometria de la planilla. Es inmutable y pura.
+  /// The geometry of the spreadsheet. It's immutable and pure.
   final SheetMetrics metrics;
 
-  /// El ancho de cada columna, con un notificador por columna.
+  /// The width of each column, with one notifier per column.
   final SheetWidths widths;
 
-  /// El contexto de la pantalla. Hace falta para lo que sale de la planilla
-  /// —pedir confirmacion, mostrar una bandera de error, traducir— y se pide
-  /// como funcion porque el controlador vive mas que cualquier `build`.
+  /// The context of the screen. It's needed for what leaves the spreadsheet
+  /// —asking for confirmation, showing an error flag, translating— and it's
+  /// requested as a function because the controller outlives any `build`.
   final BuildContext Function() _context;
 
   final SheetCursor cursor = SheetCursor();
   final SheetDrafts drafts = SheetDrafts();
 
-  /// La fila que tiene el mouse encima. No la mira nada de lo que hace la
-  /// planilla —no cambia lo que pasa al tocar ni al escribir—: es solo con que
-  /// se pinta esa fila.
+  /// The row the mouse is over. Nothing the spreadsheet does looks at it —it
+  /// doesn't change what happens when tapping or writing—: it's only what
+  /// that row is painted with.
   final SheetHover hover = SheetHover();
 
-  /// En que formato se esta leyendo cada columna de fechas. Como [hover], no
-  /// cambia lo que la planilla hace: es solo con que se escribe esa columna.
+  /// In which format each date column is being read. Like [hover], it doesn't
+  /// change what the spreadsheet does: it's only what that column is written
+  /// with.
   final SheetDates dates = SheetDates();
 
-  /// La columna que se esta arrastrando de lugar, mientras dura. No lo escucha
-  /// la grilla: solo el fantasma que se dibuja encima.
+  /// The column being dragged out of place, while it lasts. The grid doesn't
+  /// listen to it: only the ghost drawn on top does.
   final SheetDrag drag = SheetDrag();
 
   late final SheetColumns columns;
 
-  // Bandas de la planilla: la de numeros de fila (congelada a la izquierda) y la
-  // de datos. Se desplazan juntas en vertical; la horizontal es solo de la banda
-  // de datos, para que los numeros de fila no se vayan de pantalla.
+  // Spreadsheet bands: the row-number one (frozen on the left) and the data
+  // one. They scroll together vertically; the horizontal one is only for the
+  // data band, so the row numbers don't leave the screen.
   final ScrollController vGutter = ScrollController();
   final ScrollController vBody = ScrollController();
   final ScrollController horizontal = ScrollController();
 
-  // Se guarda la referencia para mantener vivos los listeners que sincronizan
-  // las dos bandas verticales.
+  // The reference is kept to keep alive the listeners that synchronize the two
+  // vertical bands.
   // ignore: unused_field
   late final LinkedScrollGroup _vertical;
 
-  /// Foco de la planilla entera. Atiende las teclas de navegacion cuando el
-  /// cursor esta en una celda que no se escribe (un campo que lleva el backend,
-  /// una fila que todavia no llego), donde no hay editor que las reciba, para
-  /// que se pueda seguir recorriendo la grilla.
+  /// Focus of the whole spreadsheet. It handles the navigation keys when the
+  /// cursor is in a cell that isn't written (a field the backend carries, a
+  /// row that hasn't arrived yet), where there's no editor to receive them,
+  /// so the grid can keep being traversed.
   final FocusNode grid = FocusNode();
 
-  /// Filas ocupadas: registros + borradores + las que se ganaron bajando con el
-  /// teclado. Es lo unico que escucha el cuerpo de la planilla; las filas en
-  /// blanco que sobran las pone el `build`, que es el que sabe cuantas entran en
-  /// pantalla.
+  /// Occupied rows: records + drafts + the ones gained by going down with the
+  /// keyboard. It's the only thing the spreadsheet body listens to; the extra
+  /// blank rows are put by the `build`, which is the one that knows how many
+  /// fit on screen.
   final ValueNotifier<int> usedRows = ValueNotifier(0);
 
-  /// La celda cuya foto se esta subiendo, mientras dura, o `null` si no hay
-  /// ninguna.
+  /// The cell whose photo is being uploaded, while it lasts, or `null` if there
+  /// is none.
   ///
-  /// Es una sola —no se pueden empezar dos subidas sin cerrar el desplegable de
-  /// la primera— y por eso es un valor y no una lista. Lo escucha cada celda de
-  /// imagen, que es lo unico que hay que repintar: la fila no cambia de tamano
-  /// ni de contenido mientras la foto viaja, solo ese cuadradito muestra su
-  /// cargando (ver [ImageCell]).
+  /// It's a single one —two uploads can't be started without closing the first
+  /// one's dropdown— and that's why it's a value and not a list. Each image
+  /// cell listens to it, which is the only thing that needs repainting: the
+  /// row doesn't change size or content while the photo travels, only that
+  /// little square shows its loading (see [ImageCell]).
   final ValueNotifier<SheetCell?> uploading = ValueNotifier(null);
 
-  // Editor de la celda activa. Se crea uno nuevo por celda (no se reusa el
-  // mismo [FocusNode] entre dos posiciones del arbol) y el anterior se libera
-  // despues del frame, cuando su [TextField] ya se desmonto.
+  // Editor of the active cell. A new one is created per cell (the same
+  // [FocusNode] isn't reused between two positions of the tree) and the
+  // previous one is released after the frame, when its [TextField] has been
+  // unmounted.
   TextEditingController? editor;
   FocusNode? focus;
 
-  /// Lo que tenia la celda al abrirse. Es a lo que vuelve con Escape, porque
-  /// cada tecla ya se volco al borrador (o al titulo de la columna) y sin esto
-  /// no habria nada que deshacer.
+  /// What the cell had when it opened. It's what Escape goes back to, because
+  /// every key was already dumped into the draft (or the column's title) and
+  /// without this there'd be nothing to undo.
   String _initial = "";
 
-  /// Escrituras de columna encoladas (altas, renombres y bajas). Cada una
-  /// recarga la tabla y el servicio ignora una recarga mientras hay otra en
-  /// curso, asi que dos cambios seguidos se mandan uno detras del otro y no a
-  /// la vez.
+  /// Queued column writes (creations, renames, and deletions). Each one
+  /// reloads the table and the service ignores a reload while another is in
+  /// progress, so two consecutive changes are sent one after the other and
+  /// not at the same time.
   Future<void> _columnQueue = Future.value();
 
-  /// Altas de fila encoladas. Es la misma razon que la cola de las columnas:
-  /// cada alta relee la tabla y el servicio ignora un alta mientras hay otra en
-  /// curso, asi que dos filas escritas una detras de la otra —que es lo normal
-  /// cargando— se mandan en fila y no a la vez.
+  /// Queued row creations. It's the same reason as the column queue:
+  /// each creation re-reads the table and the service ignores a creation
+  /// while another is in progress, so two rows written one after the other
+  /// —which is the norm when loading— are sent in line and not at once.
   Future<void> _rowQueue = Future.value();
 
-  /// La fila que ya quedo guardada pero que sigue dibujada, y cuantos registros
-  /// tenia la tabla cuando se la mando.
+  /// The row that's already saved but is still drawn, and how many records the
+  /// table had when it was sent.
   ///
-  /// Las dos mitades de la planilla se separan por la cantidad de registros
-  /// ([draftIndex]), asi que el borrador no se puede sacar antes de que la
-  /// tabla cuente el registro nuevo: entre una cosa y la otra las filas de
-  /// abajo se correrian de lugar, y ese es justo el rato que se pasa
-  /// escribiendo la fila siguiente. Ver [_dropPersisted].
+  /// The two halves of the spreadsheet are separated by the number of records
+  /// ([draftIndex]), so the draft can't be removed before the table counts
+  /// the new record: between one thing and the other, the rows below would
+  /// move out of place, and that's precisely the moment spent writing the
+  /// next row. See [_dropPersisted].
   SheetDraft? _persisted;
   int _persistedAt = 0;
 
-  /// Filas en blanco extra que se ganaron bajando con el teclado mas alla del
-  /// final de la planilla.
+  /// Extra blank rows gained by going down with the keyboard past the end of
+  /// the spreadsheet.
   int _extraRows = 0;
 
-  /// Donde cae, en la pantalla, el borde izquierdo de la primera columna. Es lo
-  /// unico que hace falta para llevar el puntero a las coordenadas del contenido
-  /// (`contenido = pantalla - origen`), que son en las que estan los bordes de
-  /// las columnas y en las que se dibuja el fantasma. Se resuelve una vez al
-  /// empezar a arrastrar y se corrige cuando la banda se desplaza sola.
+  /// Where, on the screen, the left edge of the first column lands. It's the
+  /// only thing needed to take the pointer to the content coordinates
+  /// (`content = screen - origin`), which are the ones the column edges sit
+  /// in and in which the ghost is drawn. It's solved once when the drag
+  /// starts and corrected when the band scrolls on its own.
   double _dragOrigin = 0;
 
-  /// Ultima posicion del puntero en la pantalla. La necesita el desplazamiento
-  /// automatico: mientras la banda se corre bajo un puntero quieto, la columna
-  /// igual cambia de vecinas.
+  /// Last position of the pointer on the screen. The auto-scroll needs it:
+  /// while the band scrolls under a still pointer, the column still changes
+  /// neighbors.
   double _dragPointer = 0;
 
-  /// Corre la planilla mientras se arrastra una columna contra un borde.
+  /// Scrolls the spreadsheet while a column is dragged against an edge.
   Timer? _dragScroll;
 
-  /// La columna cuyo ancho se esta arrastrando, y el ancho que tenia al empezar:
-  /// es lo que se compara al soltar para saber si hay algo que guardar, y a lo
-  /// que vuelve si el guardado no sale.
+  /// The column whose width is being dragged, and the width it had when
+  /// starting: it's what's compared at release to know if there's something
+  /// to save, and what it goes back to if the save doesn't go through.
   int _resizing = -1;
   double _resizedFrom = 0;
 
-  /// Cuantas filas tiene el cuerpo ahora mismo. Lo deja el `build`, que es quien
-  /// sabe cuantas entran en pantalla, y lo leen el teclado y la lectura por
-  /// tramos.
+  /// How many rows the body has right now. The `build` sets it, which is the
+  /// one that knows how many fit on screen, and the keyboard and the batch
+  /// reading read it.
   int _rows = 0;
 
   bool _disposed = false;
@@ -224,22 +225,22 @@ class SheetController {
 
   int get rows => _rows;
 
-  /// Le avisa cuantas filas quedaron dibujadas. Se llama desde el `build`, por
-  /// eso es una asignacion pelada: no notifica a nadie.
+  /// Tells it how many rows stayed drawn. It's called from the `build`, that's
+  /// why it's a bare assignment: it doesn't notify anyone.
   void setRows(int rows) => _rows = rows;
 
-  // ---- Cursor y edicion ----------------------------------------------------
+  // ---- Cursor and editing --------------------------------------------------
 
-  /// Toque en una celda: si se puede escribir abre el editor; si no (un campo
-  /// que lleva el backend, una fila que todavia no llego, una columna que se
-  /// esta creando) solo la selecciona, como una planilla en la que se puede
-  /// recorrer todo aunque no todo se escriba.
+  /// Tap on a cell: if it can be written, it opens the editor; if not (a field
+  /// the backend carries, a row that hasn't arrived yet, a column being
+  /// created) it just selects it, like a spreadsheet in which everything can
+  /// be traversed even if not everything is written.
   ///
-  /// Los campos que se **eligen** en vez de escribirse (una lista) abren su
-  /// desplegable en lugar del editor, anclado a la celda: para eso hace falta
-  /// [anchor], que es el contexto de la celda tocada. Sin el —un toque que no lo
-  /// pasa— la celda queda elegida y nada mas, que es lo mismo que hace el
-  /// teclado.
+  /// Fields that are **chosen** instead of written (a list) open their
+  /// dropdown instead of the editor, anchored to the cell: that's what
+  /// [anchor] is for, which is the context of the tapped cell. Without it —a
+  /// tap that doesn't pass it— the cell stays selected and nothing else,
+  /// which is the same thing the keyboard does.
   void tap(int row, int column, {BuildContext? anchor}) {
     final cell = SheetCell(row, column);
 
@@ -248,8 +249,8 @@ class SheetController {
       return;
     }
 
-    // La fila de los campos siempre se escribe: ahi lo que hay es el titulo de
-    // la columna, no un dato de su tipo.
+    // The field row is always written: what's there is the column's title, not
+    // a datum of its type.
     if (row != kFieldsRow && isPicker(column)) {
       if (typeAt(column) == TableFieldType.image) {
         pickImage(cell, anchor);
@@ -262,18 +263,18 @@ class SheetController {
     open(cell);
   }
 
-  /// Si esa columna se toca en vez de escribirse: una lista o una imagen, cuyas
-  /// celdas despliegan algo y no abren editor de texto.
+  /// Whether that column is tapped instead of written: a list or an image,
+  /// whose cells unfold something and don't open a text editor.
   bool isPicker(int column) => typeAt(column).picker;
 
-  /// El tipo de esa columna. Una columna libre —que todavia no es un campo— no
-  /// tiene tipo y cae en texto, como cualquier codigo desconocido.
+  /// The type of that column. A free column —which isn't a field yet— has no
+  /// type and falls into text, like any unknown code.
   TableFieldType typeAt(int column) =>
     TableFieldType.from(columns.typeOf(column));
 
-  /// Deja la celda seleccionada pero sin editor (una celda que no se escribe).
-  /// El foco pasa a la planilla para que las teclas de navegacion sigan
-  /// llegando, ya que no hay editor que las reciba.
+  /// Leaves the cell selected but without an editor (a cell that isn't
+  /// written). Focus moves to the spreadsheet so the navigation keys keep
+  /// arriving, since there's no editor to receive them.
   void select(SheetCell cell) {
     close();
     _leaveRow(cell.row);
@@ -283,17 +284,19 @@ class SheetController {
     reveal(cell);
   }
 
-  /// Abre el editor en [cell] con lo que esa celda ya tuviera escrito.
+  /// Opens the editor in [cell] with what that cell already had written.
   ///
-  /// Se crea un [TextEditingController] y un [FocusNode] nuevos por celda en vez
-  /// de reusar los mismos: el [TextField] cambia de lugar en el arbol y un
-  /// [FocusNode] no se puede compartir entre dos posiciones. Los anteriores se
-  /// liberan despues del frame, cuando su widget ya se desmonto.
+  /// A new [TextEditingController] and [FocusNode] are created per cell
+  /// instead of reusing the same ones: the [TextField] changes place in the
+  /// tree and a [FocusNode] can't be shared between two positions. The
+  /// previous ones are released after the frame, when their widget has been
+  /// unmounted.
   void open(SheetCell cell) {
-    // Tocar la celda que ya se esta editando (un doble click, por ejemplo)
-    // no debe recrear el editor: `cursor.move` no avisa si la celda y el
-    // estado no cambian, asi que cerrar y reabrir dejaria el `TextField`
-    // montado usando un `FocusNode` que este metodo ya mando a disponer.
+    // Tapping the cell that's already being edited (a double click, for
+    // example) must not recreate the editor: `cursor.move` doesn't notify if
+    // the cell and the state don't change, so closing and reopening would
+    // leave the `TextField` mounted using a `FocusNode` that this method
+    // already sent to dispose.
     if (cursor.editing && cursor.cell == cell) return;
 
     close();
@@ -313,20 +316,20 @@ class SheetController {
     reveal(cell);
   }
 
-  /// Cierra el editor guardando en el borrador lo que se haya escrito. No toca
-  /// el cursor: la celda sigue seleccionada.
+  /// Closes the editor saving in the draft what was written. It doesn't touch
+  /// the cursor: the cell stays selected.
   ///
-  /// **Salir de la celda es lo que manda el cambio**, y por eso nada de esto va
-  /// en [commit], que corre en cada tecla: se escribe entera y recien al salir
-  /// viaja. En la fila de los campos eso es el alta de una columna libre con
-  /// titulo, el renombre de un campo o su baja si quedo sin titulo
-  /// ([finishField]); en una fila ya guardada, la correccion de esa celda
-  /// ([finishRecord]).
+  /// **Leaving the cell is what sends the change**, and that's why none of
+  /// this goes in [commit], which runs on every key: it's written whole and
+  /// only travels on leaving. In the field row that's the creation of a free
+  /// column with a title, the rename of a field, or its deletion if it was
+  /// left without a title ([finishField]); in an already saved row, the
+  /// correction of that cell ([finishRecord]).
   ///
-  /// Las filas en blanco de abajo son las unicas que no mandan nada al salir de
-  /// la **celda**: se juntan como borrador y se guardan enteras al salir de la
-  /// **fila** ([_leaveRow]), porque hasta que no se guardan no son un registro
-  /// al que escribirle una celda suelta.
+  /// The blank rows below are the only ones that send nothing when leaving
+  /// the **cell**: they're gathered as a draft and saved whole when leaving
+  /// the **row** ([_leaveRow]), because until they're saved they aren't a
+  /// record to write an individual cell to.
   void close({bool commit = true}) {
     final cell = cursor.cell;
     final editing = cursor.editing;
@@ -352,24 +355,24 @@ class SheetController {
 
     if (closing == null && closingFocus == null) return;
 
-    // El [TextField] todavia esta montado en este frame: liberar su controlador
-    // y su foco ahora lo dejaria usando objetos muertos.
+    // The [TextField] is still mounted in this frame: releasing its controller
+    // and its focus now would leave it using dead objects.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       closing?.dispose();
       closingFocus?.dispose();
     });
   }
 
-  /// Deja escrita la fecha de la celda como la guarda la tabla.
+  /// Leaves the cell's date written as the table saves it.
   ///
-  /// Es lo que permite escribirla como a uno le salga —`12 2 26`, `12/02/2026`,
-  /// `2026.02.12`— y que en la tabla quede una sola forma (ver
-  /// [ProductDate.normalize]). Corre al salir de la celda y no en [commit], que
-  /// se ejecuta en cada tecla: normalizar mientras se tipea le reescribiria a
-  /// uno lo que esta escribiendo a mitad de camino.
+  /// It's what lets one write it however it comes out —`12 2 26`,
+  /// `12/02/2026`, `2026.02.12`— and have only one form remain in the table
+  /// (see [ProductDate.normalize]). It runs on leaving the cell and not in
+  /// [commit], which runs on every key: normalizing while typing would
+  /// rewrite for one what they're writing midway.
   ///
-  /// Lo que no es una fecha se queda tal cual. La celda tampoco lo tira: se
-  /// sigue viendo lo que alguien puso (ver [DateCell]).
+  /// What isn't a date stays as is. The cell doesn't throw it away either:
+  /// what someone put remains visible (see [DateCell]).
   void _normalizeDate(SheetCell? cell) {
     final editor = this.editor;
 
@@ -380,23 +383,23 @@ class SheetController {
     if (text != editor.text) editor.text = text;
   }
 
-  /// Cada tecla se vuelca al borrador (o al titulo de la columna), no recien al
-  /// salir de la celda: asi la fila ofrece guardarse —el tilde de su numero, el
-  /// boton de la barra— desde la primera letra, y escribir el titulo de la
-  /// ultima columna libre hace aparecer la siguiente mientras se tipea.
+  /// Every key is dumped into the draft (or the column's title), not only when
+  /// leaving the cell: that way the row offers to be saved —the check on its
+  /// number, the bar's button— from the first letter, and writing the title
+  /// of the last free column makes the next one appear while typing.
   ///
-  /// Quien decide si eso repinta algo es cada notificador, y ninguno avisa por
-  /// una letra que no cambia nada en pantalla.
+  /// Each notifier decides whether that repaints something, and none notifies
+  /// for a letter that doesn't change anything on screen.
   void onChanged(String text) => commit();
 
-  /// Vuelca el texto del editor donde corresponda.
+  /// Dumps the editor's text where it belongs.
   void commit() {
     final cell = cursor.cell;
     final text = editor?.text;
     if (!cursor.editing || cell == null || text == null) return;
 
-    // El titulo de una columna libre vive en las columnas libres hasta que el
-    // campo se crea.
+    // The title of a free column lives in the free columns until the field is
+    // created.
     if (cell.row == kFieldsRow) {
       columns.writeFree(cell.column, text);
       return;
@@ -405,16 +408,17 @@ class SheetController {
     final index = draftIndex(cell.row);
     if (index < 0) return;
 
-    // Se guarda por el lugar del campo en la estructura y no por donde se lo ve,
-    // que es lo mismo que hacen los registros leidos: asi arrastrar una columna
-    // de lugar se lleva con ella lo que se estaba escribiendo, sin tocar ni un
-    // borrador.
+    // It's saved by the field's place in the structure and not by where it's
+    // seen, which is the same thing read records do: that way dragging a
+    // column out of place carries what was being written with it, without
+    // touching a single draft.
     drafts.write(index, columns.slotAt(cell.column), text);
   }
 
-  /// Deshace lo escrito en la celda y cierra el editor: la celda vuelve a lo que
-  /// tenia al abrirse. Una columna libre que se estaba titulando no se crea, y
-  /// si le queda el titulo de antes es porque ya lo tenia.
+  /// Undoes what was written in the cell and closes the editor: the cell goes
+  /// back to what it had when it opened. A free column whose title was being
+  /// written isn't created, and if it keeps the previous title it's because
+  /// it already had it.
   void cancel() {
     final editor = this.editor;
 
@@ -426,17 +430,19 @@ class SheetController {
     close(commit: false);
   }
 
-  /// Deja la planilla como recien abierta: sin cursor, sin las filas de mas que
-  /// se hubieran ganado bajando con el teclado y arriba de todo.
+  /// Leaves the spreadsheet as if just opened: no cursor, without the extra
+  /// rows that might have been gained going down with the keyboard, and at
+  /// the top.
   ///
-  /// Lo llama la pantalla al cambiar la busqueda, que es cuando las filas pasan a
-  /// ser otras: dejar el cursor donde estaba lo dejaria sobre la fila que ahora
-  /// ocupa ese lugar —que no es la que se estaba mirando— y dejar el
-  /// desplazamiento, en medio de un resultado mas corto que lo que se habia
-  /// bajado.
+  /// The screen calls it when changing the search, which is when the rows
+  /// become other ones: leaving the cursor where it was would leave it over
+  /// the row that now occupies that place —which isn't the one being looked
+  /// at— and leaving the scroll, in the middle of a result shorter than what
+  /// had been scrolled.
   ///
-  /// No cierra ningun editor: para escribir en el buscador hubo que salir de la
-  /// planilla, y eso ya lo cerro y dejo la fila guardada ([_onFocus]).
+  /// It doesn't close any editor: to write in the search box one had to leave
+  /// the spreadsheet, and that already closed it and left the row saved
+  /// ([_onFocus]).
   void reset() {
     cursor.clear();
 
@@ -446,14 +452,14 @@ class SheetController {
     if (vBody.hasClients) vBody.jumpTo(0);
   }
 
-  /// Perder el foco (tocar fuera de la planilla, abrir un modal) confirma lo
-  /// escrito y cierra el editor, como al salir de una celda. Y como ahi no se
-  /// va a otra fila sino a ninguna, la fila que se estaba escribiendo tambien se
-  /// deja: si tenia algo cargado, se guarda.
+  /// Losing focus (tapping outside the spreadsheet, opening a modal) confirms
+  /// what was written and closes the editor, like leaving a cell. And since
+  /// there it goes not to another row but to none, the row being written is
+  /// also left: if it had something loaded, it's saved.
   void _onFocus(FocusNode node) {
-    // Salir de la pantalla con una celda abierta libera su [FocusNode], y eso
-    // tambien avisa que perdio el foco: sin esta guarda se tocaria una pantalla
-    // que ya no esta.
+    // Leaving the screen with a cell open releases its [FocusNode], and that
+    // also notifies that it lost focus: without this guard a screen that's no
+    // longer there would be touched.
     if (_disposed) return;
     if (!identical(node, focus) || node.hasFocus) return;
 
@@ -461,17 +467,18 @@ class SheetController {
     _leaveRow(null);
   }
 
-  /// Teclas de la planilla. Las atiende el [FocusNode] del editor, que las ve
-  /// antes que el propio [TextField] (asi Tab no cambia de widget y Enter no
-  /// dispara el submit) y, cuando no hay editor abierto, el foco de la grilla,
-  /// que es su ancestro y recibe lo que el editor deja pasar.
+  /// Keys of the spreadsheet. The editor's [FocusNode] handles them, seeing
+  /// them before the [TextField] itself (so Tab doesn't change widget and
+  /// Enter doesn't trigger submit) and, when there's no editor open, the grid
+  /// focus, which is its ancestor and receives what the editor lets through.
   KeyEventResult handleKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
 
-    // Sin celda elegida no hay nada que mover: las teclas siguen su camino (el
-    // Tab vuelve a recorrer la pantalla, el Escape cierra lo que haya abierto).
+    // Without a chosen cell there's nothing to move: the keys continue their way
+    // (Tab goes back to tabbing through the screen, Escape closes whatever is
+    // open).
     final cell = cursor.cell;
     if (cell == null) return KeyEventResult.ignored;
 
@@ -494,12 +501,12 @@ class SheetController {
     return KeyEventResult.handled;
   }
 
-  /// Mueve el cursor, arrastrando el editor. Pasarse de la ultima fila agrega
-  /// otra en blanco: la planilla no se termina.
+  /// Moves the cursor, dragging the editor along. Going past the last row adds
+  /// another blank one: the spreadsheet doesn't end.
   ///
-  /// Salvo buscando, que es lo unico que si se termina: lo que se ve son las
-  /// filas que coinciden y debajo no hay donde escribir (ver [_onRows]), asi que
-  /// bajar de la ultima se queda en la ultima.
+  /// Except when searching, which is the only thing that does end: what's
+  /// seen are the matching rows and below there's nowhere to write (see
+  /// [_onRows]), so going below the last one stays on the last one.
   void _move(
     SheetCell from, {
     required int rows,
@@ -525,10 +532,11 @@ class SheetController {
       _onRows();
     }
 
-    // Lo que no se escribe (un campo que lleva el backend, una fila que todavia
-    // no llego) se selecciona igual, y desde ahi se sigue navegando. Una lista
-    // tampoco abre editor: se recorre con las flechas como cualquier celda y se
-    // despliega tocandola, que es de donde sale el ancla del desplegable.
+    // What can't be written (a field the backend carries, a row that hasn't
+    // arrived yet) gets selected anyway, and from there navigation continues.
+    // A list doesn't open an editor either: it's gone through with the arrows
+    // like any cell and unfolds by tapping it, which is where the dropdown's
+    // anchor comes from.
     if (!canEdit(target.row, target.column) ||
         (target.row != kFieldsRow && isPicker(target.column))) {
       select(target);
@@ -538,8 +546,8 @@ class SheetController {
     open(target);
   }
 
-  /// Trae a la vista la celda [cell]. Se hace despues del frame porque la fila
-  /// puede ser una que recien se agrego y todavia no tiene extent.
+  /// Brings cell [cell] into view. It's done after the frame because the row
+  /// might be one just added that doesn't have an extent yet.
   void reveal(SheetCell cell) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_disposed) return;
@@ -569,83 +577,100 @@ class SheetController {
     });
   }
 
-  /// Si la celda se puede escribir.
+  /// Whether the cell can be written.
   ///
-  /// En la fila de los campos lo decide [SheetColumns.canEditAt]. En el cuerpo
-  /// se escriben las dos mitades de la planilla —los registros y las filas en
-  /// blanco de abajo—, siempre que la columna ya sea un campo con un tipo que se
-  /// carga a mano.
+  /// In the field row, [SheetColumns.canEditAt] decides it. In the body, both
+  /// halves of the spreadsheet are written —the records and the blank rows
+  /// below—, as long as the column is already a field with a type that's
+  /// loaded by hand.
   ///
-  /// Lo unico que distingue a un registro es que tiene que **haber llegado**:
-  /// una fila cuyo tramo todavia no entro existe y ocupa su lugar, pero no se
-  /// sabe ni que tiene cargado ni cual es, asi que se la puede recorrer y
-  /// todavia no escribir.
+  /// The only thing that distinguishes a record is that it has to **have
+  /// arrived**: a row whose batch hasn't entered yet exists and occupies its
+  /// place, but neither what it has loaded nor which one it is is known, so
+  /// it can be traversed and still not written.
   bool canEdit(int row, int column) {
     final sheet = columns.at(column);
     if (sheet == null) return false;
 
     if (row == kFieldsRow) return columns.canEditAt(column);
 
-    // Una columna libre no tiene donde guardar hasta que se cree, y lo que lleva
-    // el backend (contador, stock) no se escribe a mano.
+    // A free column has nowhere to store until it's created, and what the
+    // backend carries (counter, stock) isn't written by hand.
     if (!sheet.isField || !TableFieldType.from(sheet.type).editable) {
       return false;
     }
 
-    // Sin el id del registro no hay a que fila de la tabla mandarle el cambio.
+    // Without the record's id there's no table row to send the change to.
     if (row < service.records) return service.rowAt(row)?.id.isNotEmpty ?? false;
 
-    // Una fila que se esta guardando esta por dejar de ser un borrador: lo que
-    // se le escriba encima se perderia al llegar el registro. Se la puede
-    // recorrer, como cualquier fila que todavia no se escribe.
+    // A row being saved is about to stop being a draft: what's written over it
+    // would be lost when the record arrives. It can be traversed, like any
+    // row that isn't written yet.
     return !(drafts.at(draftIndex(row))?.saving ?? false);
   }
 
-  /// Lo que la celda ya tiene escrito: el titulo del campo o de la columna
-  /// libre, si es la fila de los campos; el valor guardado, si es un registro; o
-  /// lo que se haya cargado en la fila-borrador.
+  /// What the cell already has written: the title of the field or the free
+  /// column, if it's the field row; the saved value, if it's a record; or
+  /// what's been loaded in the draft row.
   String valueOf(SheetCell cell) {
     if (cell.row == kFieldsRow) return columns.nameOf(cell.column);
 
     final slot = columns.slotAt(cell.column);
     final index = draftIndex(cell.row);
 
-    // Un registro se abre con lo que tiene cargado: editarlo es corregir ese
-    // valor, no escribir sobre una celda en blanco.
+    // A record opens with what it has loaded: editing it is correcting that
+    // value, not writing over a blank cell.
     if (index < 0) return service.rowAt(cell.row)?.at(slot)?.toString() ?? "";
 
     return drafts.textAt(index, slot);
   }
 
-  /// Indice del borrador que le toca a esa fila del cuerpo, o negativo si esa
-  /// fila es un registro de la tabla.
+  /// The cell's value **without converting to text**.
   ///
-  /// Las filas que se escriben empiezan detras del ultimo registro, y cuantos
-  /// hay lo dice la estructura desde el principio: por eso una fila en blanco no
-  /// se corre de lugar cuando entra un tramo nuevo de registros, aunque se lo
-  /// este leyendo mientras se escribe en ella.
+  /// It's [valueOf] for the only type whose datum isn't a text: a multi-tag
+  /// cell stores a list, and the `toString()` of a list (`[a, b]`) isn't any
+  /// of its tags. A draft stores text the same —a line is written and the
+  /// backend splits it—, so from there comes back the same as from [valueOf].
+  dynamic rawOf(SheetCell cell) {
+    if (cell.row == kFieldsRow) return columns.nameOf(cell.column);
+
+    final slot = columns.slotAt(cell.column);
+    final index = draftIndex(cell.row);
+
+    if (index < 0) return service.rowAt(cell.row)?.at(slot);
+
+    return drafts.textAt(index, slot);
+  }
+
+  /// Index of the draft that row of the body gets, or negative if that row is
+  /// a record of the table.
+  ///
+  /// The rows that are written start behind the last record, and how many
+  /// there are is told by the structure from the start: that's why a blank
+  /// row doesn't move out of place when a new batch of records comes in, even
+  /// if it's being read while writing in it.
   int draftIndex(int row) => row - service.records;
 
-  // ---- Ancho de las columnas -----------------------------------------------
+  // ---- Column widths -------------------------------------------------------
 
-  /// Empieza a arrastrar el ancho de una columna: se anota el que tenia, que es
-  /// a lo que vuelve si el guardado no sale.
+  /// Starts dragging a column's width: the one it had is noted, which is what
+  /// it goes back to if the save doesn't go through.
   void startResize(int index) {
     _resizing = index;
     _resizedFrom = widths.valueOf(columns.keyOf(index));
   }
 
-  /// Arrastra el ancho de una columna. Solo se entera esa columna.
+  /// Drags a column's width. Only that column finds out.
   void resize(int index, double delta) =>
     widths.resize(columns.keyOf(index), delta);
 
-  /// Suelta el borde: el ancho con el que quedo la columna se guarda.
+  /// Releases the edge: the width the column ended up with is saved.
   ///
-  /// Se manda **al soltar** y no en cada evento del arrastre, que son decenas
-  /// por segundo. Si no cambio nada —un toque en el borde, o una columna que ya
-  /// estaba en el minimo— no viaja nada, y tampoco viaja el de una columna libre
-  /// del final: todavia no es un campo, no hay donde guardarle el ancho (lo
-  /// tendra recien cuando se la cree y se la vuelva a arrastrar).
+  /// It's sent **on release** and not on every drag event, which are dozens
+  /// per second. If nothing changed —a tap on the edge, or a column that was
+  /// already at the minimum— nothing travels, and neither does the one of a
+  /// free column at the end: it isn't a field yet, there's nowhere to save
+  /// its width (it'll have it only when it's created and dragged again).
   void endResize(int index) {
     final from = _resizedFrom;
     final resizing = _resizing;
@@ -662,13 +687,14 @@ class SheetController {
     _columnQueue = _columnQueue.then((_) => _sendWidth(field, width, from));
   }
 
-  /// Manda el ancho nuevo. Va por la misma cola que las altas, los renombres y
-  /// las bajas: cada uno de esos relee la estructura, y mandar el ancho mientras
-  /// una relectura esta en el aire lo escribiria contra un nombre viejo (la
-  /// edicion de un campo manda tambien su nombre, que el backend pide siempre).
+  /// Sends the new width. It goes through the same queue as the creations,
+  /// renames, and deletions: each of those re-reads the structure, and sending
+  /// the width while a re-read is in the air would write it against an old
+  /// name (editing a field also sends its name, which the backend always asks
+  /// for).
   ///
-  /// Si no sale, la columna vuelve al ancho que tenia. El error ya lo mostro el
-  /// servicio.
+  /// If it doesn't go through, the column goes back to the width it had. The
+  /// service already showed the error.
   Future<void> _sendWidth(
     TableFieldModel field,
     double width,
@@ -682,26 +708,25 @@ class SheetController {
     widths.restore(field.id, before);
   }
 
-  // ---- Arrastre de columnas ------------------------------------------------
+  // ---- Column dragging -----------------------------------------------------
 
-  /// Empieza a arrastrar de lugar la columna [index], agarrandola de su celda de
-  /// campo.
+  /// Starts dragging column [index] out of place, grabbing it by its field
+  /// cell.
   ///
-  /// Solo se arrastran los campos de la tabla, y solo mientras no tengan un
-  /// cambio en camino: una columna libre del final no tiene posicion que
-  /// guardar, y una que se esta creando o eliminando todavia no se sabe donde
-  /// va a quedar.
+  /// Only the table's fields are dragged, and only while they don't have a
+  /// change on the way: a free column at the end has no position to save, and
+  /// one being created or deleted still doesn't have a known place to fall.
   ///
-  /// Lo que se estuviera escribiendo se cierra antes: la celda esta por cambiar
-  /// de lugar y el editor no puede seguirla.
+  /// Whatever was being written is closed first: the cell is about to change
+  /// place and the editor can't follow it.
   void startColumnDrag(int index, DragStartDetails details) {
     close();
 
     final column = columns.at(index);
     if (column == null || !column.isField || columns.busyAt(index)) return;
 
-    // La geometria de la planilla se resuelve **una vez**: de aca en mas, cada
-    // evento del puntero es una resta y una busqueda sobre esta lista.
+    // The spreadsheet's geometry is solved **once**: from here on, each
+    // pointer event is a subtraction and a search over this list.
     final edges = widths.edges();
     if (index + 1 >= edges.length) return;
 
@@ -713,8 +738,8 @@ class SheetController {
       fields: columns.fieldCount
     );
 
-    // Donde esta el 0 del contenido: el puntero cayo en `edges[index]` mas lo
-    // que se corrio dentro de la celda.
+    // Where the 0 of the content is: the pointer fell on `edges[index]` plus
+    // how much it moved inside the cell.
     _dragOrigin =
       details.globalPosition.dx - edges[index] - details.localPosition.dx;
     _dragPointer = details.globalPosition.dx;
@@ -729,11 +754,12 @@ class SheetController {
     _edgeScroll();
   }
 
-  /// Suelta la columna donde quedo la linea.
+  /// Releases the column where the line ended up.
   ///
-  /// El orden nuevo se aplica **ya**, sin esperar al backend: la planilla se
-  /// reordena sola (que no cuesta mas que rehacer la grilla, porque los
-  /// registros no se mueven de donde estan) y las posiciones viajan detras.
+  /// The new order is applied **now**, without waiting for the backend: the
+  /// spreadsheet reorders itself (which costs no more than redoing the grid,
+  /// because the records don't move from where they are) and the positions
+  /// travel behind.
   void endColumnDrag() {
     _stopEdgeScroll();
 
@@ -743,27 +769,27 @@ class SheetController {
     final before = columns.reorder(from, to);
     if (before == null) return;
 
-    // La columna se fue a otro lugar y con ella el sentido de la celda elegida:
-    // el cursor apunta a una posicion que ahora es otra columna.
+    // The column moved to another place and took with it the meaning of the
+    // chosen cell: the cursor points at a position that is now another column.
     cursor.clear();
 
     _columnQueue = _columnQueue.then((_) => _sendOrder(before));
   }
 
-  /// El arrastre se corto sin soltar (se perdio el puntero, se abrio algo
-  /// encima): la columna se queda donde estaba.
+  /// The drag was cut without releasing (the pointer was lost, something
+  /// opened on top): the column stays where it was.
   void cancelColumnDrag() {
     _stopEdgeScroll();
     drag.stop();
   }
 
-  /// Manda el orden nuevo. Va por la misma cola que las altas, los renombres y
-  /// las bajas: cada uno de esos relee la estructura, y mandar las posiciones
-  /// mientras una relectura esta en el aire las escribiria contra nombres
-  /// viejos.
+  /// Sends the new order. It goes through the same queue as the creations,
+  /// renames, and deletions: each of those re-reads the structure, and sending
+  /// the positions while a re-read is in the air would write them against old
+  /// names.
   ///
-  /// Si no sale, la planilla vuelve al orden que tenia. El error ya lo mostro el
-  /// servicio.
+  /// If it doesn't go through, the spreadsheet goes back to the order it had.
+  /// The service already showed the error.
   Future<void> _sendOrder(List<String> before) async {
     if (_disposed) return;
 
@@ -773,12 +799,12 @@ class SheetController {
     columns.restoreOrder(before);
   }
 
-  /// Corre la planilla cuando la columna arrastrada llega a un borde, para poder
-  /// llevarla mas alla de lo que se ve.
+  /// Scrolls the spreadsheet when the dragged column reaches an edge, so it
+  /// can be taken further than what's seen.
   ///
-  /// El puntero puede quedarse quieto contra el borde, asi que el
-  /// desplazamiento no lo puede disparar el evento: se prende un tic mientras
-  /// haga falta y se apaga en cuanto la columna vuelve al medio.
+  /// The pointer can stay still against the edge, so the scroll can't be
+  /// triggered by the event: a tick is turned on for as long as it's needed
+  /// and goes off as soon as the column comes back to the middle.
   void _edgeScroll() {
     if (_edgeOvershoot() == 0) {
       _stopEdgeScroll();
@@ -791,12 +817,12 @@ class SheetController {
     );
   }
 
-  /// Cuanto se metio el puntero en el margen de un costado, con signo: negativo
-  /// contra el izquierdo, positivo contra el derecho, `0` en el medio.
+  /// How much the pointer went into a side's margin, with sign: negative
+  /// against the left, positive against the right, `0` in the middle.
   ///
-  /// Es lo que decide si hay que correr la planilla y a que velocidad: rozar el
-  /// borde la corre despacio y apoyarse contra el va rapido, como en cualquier
-  /// planilla.
+  /// It's what decides whether to scroll the spreadsheet and at what speed:
+  /// grazing the edge scrolls it slowly and leaning against it goes fast, like
+  /// in any spreadsheet.
   double _edgeOvershoot() {
     if (!horizontal.hasClients) return 0;
 
@@ -814,8 +840,9 @@ class SheetController {
     return 0;
   }
 
-  /// Un tic: corre la planilla lo que toque y se apaga cuando ya no hay para
-  /// donde ir (la columna volvio al medio, o la banda llego hasta el final).
+  /// A tick: scrolls the spreadsheet what's due and goes off when there's no
+  /// direction left (the column came back to the middle, or the band reached
+  /// the end).
   void _edgeStep() {
     final step = _disposed || !drag.active.value ? 0.0 : _edgeOvershoot();
 
@@ -835,9 +862,9 @@ class SheetController {
 
     horizontal.jumpTo(to);
 
-    // El contenido se corrio bajo un puntero que no se movio: el mismo lugar de
-    // la pantalla es ahora otro lugar del contenido, asi que el fantasma tiene
-    // que seguir a la planilla y no al puntero.
+    // The content moved under a pointer that didn't: the same place on the
+    // screen is now another place of the content, so the ghost has to follow
+    // the spreadsheet and not the pointer.
     _dragOrigin -= moved;
     drag.moveTo(_dragPointer - _dragOrigin);
   }
@@ -847,22 +874,23 @@ class SheetController {
     _dragScroll = null;
   }
 
-  // ---- Acciones ------------------------------------------------------------
+  // ---- Actions -------------------------------------------------------------
 
-  /// Se va el cursor de la fila en la que estaba, hacia [to] (o hacia ninguna,
-  /// si lo que se perdio es el foco). Si la que deja es una de las filas en
-  /// blanco de abajo y quedo con algo escrito, esa fila se guarda sola.
+  /// The cursor leaves the row it was in, towards [to] (or towards none, if
+  /// what was lost is focus). If the one it leaves is one of the blank rows
+  /// below and it was left with something written, that row saves itself.
   ///
-  /// **Salir de la fila es lo que crea el registro**, igual que salir de la
-  /// celda es lo que manda la correccion de un registro ([close]) o el alta de
-  /// una columna ([finishField]). No hay nada que confirmar: se escribe y se
-  /// sigue.
+  /// **Leaving the row is what creates the record**, the same way leaving the
+  /// cell is what sends a record's correction ([close]) or a column's creation
+  /// ([finishField]). There's nothing to confirm: it's written and on it
+  /// goes.
   ///
-  /// Es la fila y no la celda porque la fila se escribe de a varias columnas:
-  /// recorrerla con Tab no manda nada y al dejarla viaja entera, que es **un**
-  /// alta y no una por columna. Guardar celda por celda ademas convertiria la
-  /// fila en un registro en medio de la carga, y a partir de ahi cada Tab seria
-  /// una correccion sobre una fila recien creada.
+  /// It's the row and not the cell because the row is written across several
+  /// columns: crossing it with Tab sends nothing and leaving it sends the
+  /// whole thing, which is **one** creation and not one per column. Saving
+  /// cell by cell would also turn the row into a record in the middle of the
+  /// load, and from there on each Tab would be a correction on a row just
+  /// created.
   void _leaveRow(int? to) {
     final from = cursor.cell?.row;
     if (from == null || from == to || from == kFieldsRow) return;
@@ -870,35 +898,36 @@ class SheetController {
     _queueDraft(drafts.at(draftIndex(from)));
   }
 
-  /// Pone una fila-borrador en la cola de altas, si tiene algo que guardar y no
-  /// se esta guardando ya.
+  /// Puts a draft row in the creations queue, if it has something to save and
+  /// isn't being saved already.
   ///
-  /// La cola es una sola para toda la planilla: dos altas en vuelo al mismo
-  /// tiempo se pisarian la relectura con la que cada una se despide de su
-  /// borrador (ver [_saveDraft]).
+  /// The queue is one for the whole spreadsheet: two creations in flight at
+  /// the same time would step on the re-read with which each one says goodbye
+  /// to its draft (see [_saveDraft]).
   void _queueDraft(SheetDraft? draft) {
     if (draft == null || !draft.hasData || draft.saving) return;
 
     _rowQueue = _rowQueue.then((_) => _saveDraft(draft)).catchError(
-      // Lo que el servicio relanza (una sesion vencida) sigue su camino de
-      // siempre —el manejador del zone, como cualquier escritura que no se
-      // espera— pero no puede quedar en la cola: un solo error asi dejaria sin
-      // guardar todas las filas que se escriban despues.
+      // What the service rethrows (an expired session) follows its usual way
+      // —the zone's handler, like any write that isn't awaited— but can't stay
+      // in the queue: one such error alone would leave without
+      // saving all the rows written afterwards.
       (Object error, StackTrace stack) =>
         Zone.current.handleUncaughtError(error, stack)
     );
   }
 
-  /// Manda una fila-borrador como item nuevo (`POST /products/manage/`).
+  /// Sends a draft row as a new item (`POST /inventory/products/records/manage/`).
   ///
-  /// Arma el `DATA` del alta indexado por FIELD_ID, salteando las celdas vacias
-  /// y las columnas sin id. Una fila escrita **solo** en columnas libres no
-  /// tiene todavia donde guardarse: se queda como esta, sin avisar nada, y sale
-  /// sola la proxima vez que se la deje, cuando esas columnas ya sean campos.
+  /// It builds the creation's `DATA` indexed by FIELD_ID, skipping the empty
+  /// cells and the columns without an id. A row written **only** in free
+  /// columns still has nowhere to save itself: it stays as it is, without
+  /// saying anything, and leaves on its own the next time it's left, when
+  /// those columns are already fields.
   ///
-  /// Si no sale, el borrador queda intacto y la fila sigue siendo una fila en
-  /// blanco escrita: se reintenta con solo volver a salir de ella. El error ya
-  /// lo mostro el servicio.
+  /// If it doesn't go through, the draft stays intact and the row is still a
+  /// written blank row: it's retried with just leaving it again. The service
+  /// already showed the error.
   Future<void> _saveDraft(SheetDraft draft) async {
     if (_disposed || draft.saving) return;
 
@@ -919,9 +948,9 @@ class SheetController {
 
     drafts.setSaving(draft, true);
 
-    // El alta va sin relectura y la relectura se pide aca abajo, con la fila ya
-    // anotada como persistida: asi el borrador se puede sacar en el mismo
-    // instante en que la tabla empieza a contar el registro nuevo.
+    // The creation goes without a re-read and the re-read is asked here below,
+    // with the row already noted as persisted: that way the draft can be
+    // removed at the same instant the table starts counting the new record.
     final saved = await service.add(_context(), values, refresh: false);
     if (_disposed) return;
 
@@ -930,34 +959,34 @@ class SheetController {
       return;
     }
 
-    // La fila ya es un registro del backend, pero la planilla todavia cuenta los
-    // de antes: se la deja donde esta —y en spinner, para que no se la escriba
-    // encima— hasta que la relectura traiga el registro nuevo.
+    // The row is already a record of the backend, but the spreadsheet still
+    // counts the previous ones: it's left where it is —and in a spinner, so
+    // nothing is written over it— until the re-read brings the new record.
     _persisted = draft;
     _persistedAt = service.records;
 
     await service.refresh();
     if (_disposed) return;
 
-    // Si la cuenta no se movio (la relectura no llego, o la tabla no dice
-    // cuantos registros tiene) nadie la va a sacar de [_onRows]: se la saca
-    // aca, que si no queda repetida sobre el registro que acaba de aparecer.
+    // If the count didn't move (the re-read didn't arrive, or the table doesn't
+    // tell how many records it has) nobody will remove it from [_onRows]: it's
+    // removed here, because otherwise it would stay repeated over the record
+    // that just appeared.
     _dropPersisted(force: true);
   }
 
-  /// Saca de la planilla la fila que ya quedo persistida, ahora que la tabla la
-  /// cuenta como registro.
+  /// Removes from the spreadsheet the row that's already persisted, now that
+  /// the table counts it as a record.
   ///
-  /// Las dos cosas —que suba la cuenta de registros y que se vaya el borrador—
-  /// tienen que pasar **juntas**: las filas de abajo se ubican restando la una
-  /// del otro ([draftIndex]), asi que si una se adelanta, por un rato cada fila
-  /// en blanco muestra el borrador de la de al lado. Ese rato es el que dura
-  /// una relectura entera, o sea justo el que se pasa escribiendo la fila
-  /// siguiente.
+  /// Both things —the record count going up and the draft going away— have to
+  /// happen **together**: the rows below place themselves subtracting one from
+  /// the other ([draftIndex]), so if one gets ahead, for a while each blank
+  /// row shows its neighbor's draft. That while lasts a whole re-read, which
+  /// is exactly the time spent writing the next row.
   ///
-  /// Por eso esto cuelga de [_onRows], que corre **dentro** del aviso del
-  /// servicio y antes de que se rehaga una sola celda: cuando la planilla mira,
-  /// las dos cosas ya pasaron.
+  /// That's why this hangs from [_onRows], which runs **inside** the service's
+  /// notice and before a single cell is redone: when the spreadsheet looks,
+  /// both things already happened.
   void _dropPersisted({bool force = false}) {
     final draft = _persisted;
     if (draft == null) return;
@@ -967,23 +996,25 @@ class SheetController {
     drafts.remove(draft);
   }
 
-  /// Manda la correccion de una celda de un registro que se acaba de dejar.
+  /// Sends the correction of a cell in a record that was just left.
   ///
-  /// Se compara con lo que la celda tenia al abrirse: recorrer una fila con Tab
-  /// sin tocar nada no manda nada, que es lo que permite navegar una tabla
-  /// entera sin escribirle encima. Ese "antes" es [_initial] —lo que el editor
-  /// encontro al abrirse— salvo que se pase otro en [before], que es lo que hace
-  /// la celda que no tiene editor: una lista se elige de un desplegable, asi que
-  /// lo que tenia se lee en el momento de elegir.
+  /// It's compared to what the cell had when it opened: crossing a row with
+  /// Tab without touching anything sends nothing, which is what lets one
+  /// navigate a whole table without writing over it. That "before" is
+  /// [_initial] —what the editor found when it opened— unless another is
+  /// passed in [before], which is what the cell does that has no editor: a
+  /// list is chosen from a dropdown, so what it had is read at the moment of
+  /// choosing.
   ///
-  /// No se encola ni se espera: cada celda es una escritura independiente
-  /// —campos distintos de filas distintas— y ninguna vuelve a leer la tabla, asi
-  /// que no hay nada que se pisen entre ellas. El cambio ya se ve en la
-  /// planilla; si no sale, el servicio devuelve la celda a lo que tenia y avisa.
+  /// It's neither queued nor awaited: each cell is an independent write
+  /// —different fields of different rows— and none re-reads the table, so
+  /// there's nothing for them to step on between them. The change is already
+  /// seen in the spreadsheet; if it doesn't go through, the service gives the
+  /// cell back what it had and says so.
   void finishRecord(SheetCell cell, String text, {String? before}) {
     if (text == (before ?? _initial)) return;
 
-    // Detras de los campos estan las columnas libres: ahi no hay donde guardar.
+    // Behind the fields are the free columns: there's nowhere to save there.
     final field = columns.fieldAt(cell.column);
     if (field == null || field.id.isEmpty) return;
 
@@ -996,12 +1027,12 @@ class SheetController {
     ));
   }
 
-  /// Lleva a cabo lo que decide [FieldEdit] para la celda de campo que se acaba
-  /// de dejar: crear la columna, renombrar el campo o eliminarlo.
+  /// Carries out what [FieldEdit] decides for the field cell that was just
+  /// left: create the column, rename the field, or delete it.
   void finishField(int column, String text) {
     if (column < 0) return;
 
-    // Detras de los campos estan las columnas libres: ahi todavia no hay campo.
+    // Behind the fields are the free columns: there's still no field there.
     final field = columns.fieldAt(column);
 
     switch (FieldEdit.of(
@@ -1020,14 +1051,15 @@ class SheetController {
     }
   }
 
-  /// Manda el titulo nuevo de un campo. Va por la misma cola que las altas:
-  /// cada cambio recarga la tabla, asi que dos seguidos se mandan uno detras
-  /// del otro.
+  /// Sends a field's new title. It goes through the same queue as the
+  /// creations: each change reloads the table, so two in a row are sent one
+  /// after the other.
   ///
-  /// Hasta que vuelva, la celda muestra el titulo nuevo apagado: es lo que el
-  /// usuario acaba de escribir, y volver por un instante al viejo se leeria como
-  /// que el cambio se perdio. Si falla, la estructura que llega trae el de antes
-  /// y la celda vuelve sola a el; el error ya lo mostro el servicio.
+  /// Until it comes back, the cell shows the new title dimmed: it's what the
+  /// user just wrote, and going back to the old one for an instant would read
+  /// as the change being lost. If it fails, the structure that arrives brings
+  /// the old one and the cell goes back to it on its own; the service already
+  /// showed the error.
   void _renameColumn(TableFieldModel field, String name) {
     columns.startRename(field.id, name);
 
@@ -1041,14 +1073,14 @@ class SheetController {
     });
   }
 
-  /// Pregunta antes de eliminar el campo al que se le vacio el titulo y, si se
-  /// confirma, lo manda.
+  /// Asks before deleting the field whose title was emptied and, if confirmed,
+  /// sends it.
   ///
-  /// Es lo unico de la planilla que se pregunta: agregar una columna o
-  /// renombrarla se deshace escribiendo de nuevo, pero la baja se lleva la
-  /// columna **y todo lo cargado en ella**, y eso no vuelve. Cancelar no toca
-  /// nada: la celda sigue mostrando el campo tal como estaba, porque el titulo
-  /// vaciado nunca salio del editor.
+  /// It's the only thing in the spreadsheet that's asked: adding a column or
+  /// renaming it is undone by writing again, but the deletion takes the column
+  /// **and everything loaded in it**, and that doesn't come back. Canceling
+  /// touches nothing: the cell keeps showing the field as it was, because the
+  /// emptied title never left the editor.
   Future<void> _confirmDelete(TableFieldModel field) async {
     final context = _context();
 
@@ -1072,18 +1104,18 @@ class SheetController {
 
       columns.endDelete(field.id);
 
-      // La columna ya no esta: el cursor apuntaba a un lugar que ahora es otra
-      // columna.
+      // The column is no longer there: the cursor pointed at a place that is now
+      // another column.
       if (deleted) cursor.clear();
     });
   }
 
-  /// Crea el campo de la columna libre que quedo con titulo. Es lo unico que
-  /// hace falta para agregar una columna: escribir su titulo y salir de la
-  /// celda, sin formularios de por medio.
+  /// Creates the field of the free column that was left with a title. It's all
+  /// that's needed to add a column: write its title and leave the cell,
+  /// without any forms in between.
   ///
-  /// El tipo es `TEXT`, el que sirve para todo: la planilla no pregunta y el
-  /// backend siempre puede leer lo que se cargue ahi.
+  /// The type is `TEXT`, the one that serves for everything: the spreadsheet
+  /// doesn't ask and the backend can always read what's loaded there.
   void _createColumn(int column) {
     final free = columns.freeAt(column);
     if (free == null || free.creating || free.name.isEmpty) return;
@@ -1092,13 +1124,13 @@ class SheetController {
     _columnQueue = _columnQueue.then((_) => _sendColumn(free));
   }
 
-  /// Manda el alta del campo. Al volver bien, la columna deja de ser libre: la
-  /// recarga del servicio ya la trae como campo de la tabla, en el mismo lugar
-  /// donde se la escribio.
+  /// Sends the field's creation. When it comes back well, the column stops
+  /// being free: the service's reload already brings it as a field of the
+  /// table, in the same place where it was written.
   ///
-  /// No se avisa nada al terminar: el alta se confirma sola al aparecer la
-  /// columna, como en una planilla. Si fallo, la columna sigue siendo libre y
-  /// con su titulo puesto, y se reintenta volviendo a salir de la celda.
+  /// Nothing is said when it's done: the creation confirms itself when the
+  /// column appears, like in a spreadsheet. If it failed, the column stays
+  /// free and with its title set, and it's retried by leaving the cell again.
   Future<void> _sendColumn(FreeColumn free) async {
     if (_disposed) return;
 
@@ -1113,23 +1145,24 @@ class SheetController {
     columns.endCreate(free, created: created);
   }
 
-  /// Abre el desplegable de tipos de una columna, anclado a la flecha de su
-  /// celda de campo ([anchor] es el contexto de la flecha, que es lo que da su
-  /// posicion en pantalla).
+  /// Opens the dropdown of a column's types, anchored to the arrow of its
+  /// field cell ([anchor] is the arrow's context, which is what gives its
+  /// position on screen).
   ///
-  /// Es el desplegable de siempre ([showSelectMenu]): no se estira mas alla de
-  /// unas pocas opciones —los tipos son muchos y llenaban la pantalla— y trae
-  /// buscador, que con esta lista es lo que hace que elegir sea escribir tres
-  /// letras en vez de recorrerla entera.
+  /// It's the usual dropdown ([showSelectMenu]): it doesn't stretch further
+  /// than a few options —the types are many and they filled the screen— and it
+  /// brings a search box, which with this list is what makes choosing a matter
+  /// of writing three letters instead of going through it all.
   ///
-  /// Elegir un tipo lo manda; elegir el que ya tenia, o cerrar el desplegable
-  /// sin elegir, no hace nada. El error, si lo hay, ya lo mostro el servicio.
+  /// Choosing a type sends it; choosing the one it already had, or closing the
+  /// dropdown without choosing, does nothing. The error, if any, was already
+  /// shown by the service.
   Future<void> pickType(BuildContext anchor, TableFieldModel field) async {
     final current = TableFieldType.from(field.type);
 
     final picked = await showSelectMenu(
       context: anchor,
-      options: TableFieldType.options(anchor),
+      options: TableFieldType.menu(anchor),
       selected: current.value,
       searchPlaceholder: S.of(anchor).table_field_type_placeholder,
       emptyText: S.of(anchor).table_field_type_empty,
@@ -1141,46 +1174,61 @@ class SheetController {
     await service.editField(_context(), field, type: picked.value);
   }
 
-  /// Abre el desplegable de una celda de lista, anclado a la celda ([anchor] es
-  /// su contexto).
+  /// Opens the dropdown of a list cell, anchored to the cell ([anchor] is its
+  /// context).
   ///
-  /// Es la version de [open] para los campos que se eligen: la celda queda
-  /// elegida como cualquier otra y en vez del editor se despliegan **las
-  /// opciones de esa columna**, que le pertenecen al campo y no a la empresa
-  /// (ver [TableFieldModel.options]).
+  /// It's the version of [open] for the fields that are chosen: the cell ends
+  /// up selected like any other and instead of the editor, **that column's
+  /// options** are unfolded, which belong to the field and not to the company
+  /// (see [TableFieldModel.options]).
   ///
-  /// El desplegable trae buscador recien pasadas [_kOptionSearchFrom] opciones:
-  /// con una lista corta el buscador es una fila de mas entre la celda y lo que
-  /// se quiere tocar, y con una larga es lo que hace que elegir sea escribir
-  /// tres letras. Y trae siempre la fila de crear una opcion nueva, que es lo
-  /// que permite armar la lista mientras se carga la tabla en vez de tener que
-  /// definirla de antemano: la opcion que falta se escribe ahi mismo, se guarda
-  /// en el campo y queda elegida en la celda de una sola pasada.
+  /// The dropdown brings a search box only past [_kOptionSearchFrom] options:
+  /// with a short list the search box is one extra row between the cell and
+  /// what one wants to touch, and with a long one it's what makes choosing a
+  /// matter of writing three letters. And it always brings the row to create a
+  /// new option, which is what lets one build the list while loading the table
+  /// instead of having to define it in advance: the missing option is written
+  /// right there, saved in the field, and left chosen in the cell in a single
+  /// pass.
   ///
-  /// Elegir la misma que ya tenia no manda nada, como salir de una celda de
-  /// texto sin tocarla.
+  /// Choosing the same one it already had sends nothing, like leaving a text
+  /// cell without touching it. In a multi-tag column
+  /// ([TableFieldType.multiple]) choosing is **putting or taking off** that
+  /// tag: the dropdown is a single-choice one, so touching one that was
+  /// already set takes it off instead of replacing all the others, which is
+  /// the only thing a single touch can mean there.
   Future<void> pickOption(SheetCell cell, BuildContext? anchor) async {
     select(cell);
 
     if (anchor == null || !anchor.mounted) return;
 
-    // Detras de los campos estan las columnas libres: ahi no hay campo del que
-    // sacar opciones ni al que agregarselas.
+    // Behind the fields are the free columns: there's no field there to pull
+    // options from or to add them to.
     final field = columns.fieldAt(cell.column);
     if (field == null || field.id.isEmpty) return;
 
-    final current = valueOf(cell);
+    final type = TableFieldType.from(field.type);
+
+    // A multi-tag cell is saved as a list, so what it has set is read from the
+    // raw value and not from its text (see [rawOf]).
+    final chosen = type.multiple
+      ? fieldLabelsOf(rawOf(cell))
+      : const <String>[];
+
+    final current = type.multiple ? "" : valueOf(cell);
 
     final picked = await showSelectMenu(
       context: anchor,
-      options: _optionsOf(anchor, field, current),
-      selected: current,
+      options: _optionsOf(anchor, field, current: current, chosen: chosen),
+      // With several set there's no "the chosen one": which is set and which
+      // isn't is told by the check of each row ([_optionsOf]).
+      selected: type.multiple ? null : current,
       searchPlaceholder: field.options.length > _kOptionSearchFrom
         ? S.of(anchor).table_field_option_search
         : null,
       emptyText: S.of(anchor).table_field_option_empty,
-      // Cuelga de una celda, que mide una fila: con la medida de siempre —la de
-      // un campo de formulario— cinco opciones taparian media planilla.
+      // Hangs from a cell, which measures one row: with the usual size —a form
+      // field's— five options would cover half the spreadsheet.
       dense: true,
       createText: S.of(anchor).table_field_option_create,
       createPlaceholder: S.of(anchor).table_field_option_placeholder,
@@ -1189,44 +1237,67 @@ class SheetController {
 
     if (_disposed || picked == null) return;
 
-    _writeOption(cell, picked.value);
+    if (!type.multiple) {
+      _writeOption(cell, picked.value);
+      return;
+    }
+
+    // Emptying the cell is a row of the dropdown like any other and arrives
+    // with the empty value: there's no tag to put on or take off there.
+    _writeOption(
+      cell,
+      picked.value.isEmpty
+        ? ""
+        : fieldLabelsValue(fieldLabelsToggled(chosen, picked.value))
+    );
   }
 
-  /// Las opciones que se ofrecen en el desplegable de una celda.
+  /// The options offered in a cell's dropdown.
   ///
-  /// Son las del campo y, arriba de todas, la de vaciar la celda —pero solo si
-  /// hay algo que vaciar—. Sin ella una celda de lista no tendria vuelta atras:
-  /// no hay editor donde borrar el texto, asi que una opcion elegida por error
-  /// quedaria puesta para siempre.
+  /// They're the field's and, above all of them, the one that empties the
+  /// cell —but only if there's something to empty. Without it a list cell
+  /// would have no way back: there's no editor to erase the text, so an
+  /// option chosen by mistake would stay set forever.
+  ///
+  /// In a multi-tag column, the ones the cell already has set go with a
+  /// check: the dropdown can't mark them as "the chosen one" —it only knows
+  /// about one— and without the mark there'd be no way to see, before
+  /// touching, whether that row is going to put the tag on or take it off.
+  /// [chosen] arrives empty in a single-tag column, where `selected` says it.
   List<SelectOption> _optionsOf(
     BuildContext context,
-    TableFieldModel field,
-    String current
-  ) => [
-    if (current.isNotEmpty) SelectOption(
+    TableFieldModel field, {
+    required String current,
+    required List<String> chosen
+  }) => [
+    if (current.isNotEmpty || chosen.isNotEmpty) SelectOption(
       value: "",
       placeholder: S.of(context).table_field_option_none,
       icon: Icons.remove
     ),
     for (final option in field.options)
-      SelectOption(value: option, placeholder: option)
+      SelectOption(
+        value: option,
+        placeholder: option,
+        icon: fieldOptionLike(chosen, option) != null ? Icons.check : null
+      )
   ];
 
-  /// Agrega una opcion a la lista del campo desde el propio desplegable.
+  /// Adds an option to the field's list from the dropdown itself.
   ///
-  /// Una opcion es una propiedad de la columna, asi que se guarda como se guarda
-  /// cualquier otra: mandando el campo con la lista que tiene que quedar. Eso
-  /// vuelve a leer la estructura —es la que acaba de cambiar— y con ella llega
-  /// la lista nueva, asi que la proxima vez que se despliegue esa columna la
-  /// opcion ya esta.
+  /// An option is a property of the column, so it's saved the way any other
+  /// is: sending the field with the list it has to end up with. That
+  /// re-reads the structure —it's the one that just changed— and with it comes
+  /// the new list, so the next time that column is unfolded the option is
+  /// already there.
   ///
-  /// Escribir una que ya estaba no crea nada ni falla: se devuelve la que hay,
-  /// que es lo que quiso decir quien la escribio. Dos opciones que solo se
-  /// distinguen en mayusculas o tildes son la misma ([sameFieldOption]), porque
-  /// serian indistinguibles en la lista.
+  /// Writing one that was already there creates nothing and doesn't fail: the
+  /// one that exists is returned, which is what whoever wrote it meant. Two
+  /// options that only differ in capitals or accents are the same
+  /// ([sameFieldOption]), because they'd be indistinguishable in the list.
   ///
-  /// Devuelve `null` si no se pudo guardar; el error ya lo mostro el servicio y
-  /// la fila del desplegable queda abierta con lo escrito para reintentar.
+  /// Returns `null` if it couldn't be saved; the service already showed the
+  /// error and the dropdown row stays open with what was written to retry.
   Future<SelectOption?> _createOption(
     TableFieldModel field,
     String name
@@ -1246,25 +1317,26 @@ class SheetController {
     return SelectOption(value: created, placeholder: created);
   }
 
-  // ---- Imagenes ------------------------------------------------------------
+  // ---- Images --------------------------------------------------------------
 
-  /// Abre el desplegable de una celda de imagen, anclado a la celda ([anchor] es
-  /// su contexto).
+  /// Opens the dropdown of an image cell, anchored to the cell ([anchor] is
+  /// its context).
   ///
-  /// Es el equivalente de [pickOption] para las fotos, y por eso es un
-  /// desplegable y no un editor: una imagen no se escribe. Lo que se elige no es
-  /// un valor sino **que hacer con ella** —verla, cargar una, eliminarla— porque
-  /// el dato de la celda no es algo que alguien pueda tipear.
+  /// It's the equivalent of [pickOption] for photos, and that's why it's a
+  /// dropdown and not an editor: an image isn't written. What's chosen isn't
+  /// a value but **what to do with it** —see it, load one, remove it— because
+  /// the cell's datum isn't something someone can type.
   ///
-  /// Las opciones dependen de lo que la celda tenga: ver y eliminar solo
-  /// aparecen si hay una foto, porque ofrecerlas sobre una celda vacia es
-  /// ofrecer dos cosas que no hacen nada. Elegir una de una biblioteca todavia
-  /// no esta —el backend ya lo acepta (`FILE_ID`), falta de que lista elegirla—
-  /// asi que se muestra anunciada y no hace nada al tocarla.
+  /// The options depend on what the cell has: seeing and removing only appear
+  /// if there's a photo, because offering them over an empty cell is offering
+  /// two things that do nothing. Choosing one from a library isn't available
+  /// yet —the backend already accepts it (`FILE_ID`), what's missing is from
+  /// which list to choose it— so it's shown announced and does nothing when
+  /// touched.
   ///
-  /// Una fila que todavia no es un registro no puede tener fotos: la foto se
-  /// sube **contra un producto**, y el producto todavia no existe. Se avisa en
-  /// vez de abrir un desplegable donde todo estaria apagado.
+  /// A row that isn't a record yet can't have photos: the photo is uploaded
+  /// **against a product**, and the product doesn't exist yet. It's said so
+  /// instead of opening a dropdown where everything would be off.
   Future<void> pickImage(SheetCell cell, BuildContext? anchor) async {
     select(cell);
 
@@ -1309,8 +1381,8 @@ class SheetController {
           icon: CI.trash
         )
       ],
-      // Cuelga de una celda, que mide una fila: con la medida de siempre —la de
-      // un campo de formulario— cuatro opciones taparian media planilla.
+      // Hangs from a cell, which measures one row: with the usual size —a form
+      // field's— four options would cover half the spreadsheet.
       dense: true
     );
 
@@ -1323,22 +1395,23 @@ class SheetController {
         await _uploadImage(cell, anchor, slot);
       case _kImageRemove:
         await _removeImage(cell, anchor, slot, cover!);
-      // La biblioteca todavia no esta: la opcion se ve anunciada y no hace nada.
+      // The library isn't available yet: the option is shown announced and does
+      // nothing.
       default:
         break;
     }
   }
 
-  /// Elige una foto del disco y la sube a la celda.
+  /// Picks a photo from the disk and uploads it to the cell.
   ///
-  /// El peso se mide **antes** de subir nada: el limite es el del multipart del
-  /// backend, asi que pasarse es un rechazo del otro lado y avisarlo aca ahorra
-  /// el viaje entero.
+  /// The weight is measured **before** uploading anything: the limit is the
+  /// backend's multipart one, so going over it is a rejection on the other
+  /// side and saying it here saves the whole trip.
   ///
-  /// No se recorta, al reves que el logo de una empresa: un logo se dibuja
-  /// siempre cuadrado y hay que decidir que mitad de una foto apaisada se ve,
-  /// pero una foto de producto se guarda como es y la celda ya la encuadra sola
-  /// (ver [ImageCell]). Lo que se sube es lo que se eligio.
+  /// It's not cropped, unlike a company's logo: a logo is always drawn square
+  /// and one has to decide which half of a landscape photo is seen, but a
+  /// product photo is saved as it is and the cell frames it on its own (see
+  /// [ImageCell]). What's uploaded is what was chosen.
   Future<void> _uploadImage(
     SheetCell cell,
     BuildContext anchor,
@@ -1359,9 +1432,9 @@ class SheetController {
       return;
     }
 
-    // La subida viaja como multipart y eso pide un archivo, no un bloque de
-    // memoria: se deja en la carpeta temporal el tiempo que dura y se borra pase
-    // lo que pase.
+    // The upload travels as multipart and that asks for a file, not a block
+    // of memory: it's left in the temp folder for as long as it lasts and
+    // deleted no matter what happens.
     final file = await writeTempImage(bytes, name: "product");
 
     uploading.value = cell;
@@ -1379,13 +1452,14 @@ class SheetController {
     }
   }
 
-  /// Saca la portada de la celda.
+  /// Removes the cover from the cell.
   ///
-  /// Son dos bajas distintas segun de quien sea la foto, y hay que distinguirlo:
-  /// la que guarda esta plataforma se baja contra el backend, que ademas borra
-  /// los bytes cuando ningun otro producto los muestra; una direccion que llego
-  /// en una importacion no es un archivo nuestro —no hay nada que borrar— asi
-  /// que se vacia la celda, que es lo que esa columna guarda.
+  /// They're two different removals depending on whose the photo is, and it
+  /// has to be told apart: the one this platform stores is removed against
+  /// the backend, which also deletes the bytes when no other product shows
+  /// them; an address that arrived in an import isn't a file of ours —there's
+  /// nothing to delete— so the cell is emptied, which is what that column
+  /// stores.
   Future<void> _removeImage(
     SheetCell cell,
     BuildContext anchor,
@@ -1405,9 +1479,9 @@ class SheetController {
     );
   }
 
-  /// Guarda la opcion elegida en la celda, por el mismo camino que el texto que
-  /// se escribe: al borrador si la fila todavia se esta armando, y como
-  /// correccion del registro si ya es una fila de la tabla.
+  /// Saves the chosen option in the cell, through the same path as the text
+  /// that's written: to the draft if the row is still being put together, and
+  /// as a correction of the record if it's already a row of the table.
   void _writeOption(SheetCell cell, String value) {
     final index = draftIndex(cell.row);
 
@@ -1419,20 +1493,21 @@ class SheetController {
     finishRecord(cell, value, before: valueOf(cell));
   }
 
-  /// Arma un SKU al azar y lo guarda en [cell].
+  /// Builds a random SKU and saves it in [cell].
   ///
-  /// En un registro es una correccion mas, como elegir una opcion de una lista
-  /// ([_writeOption]). En una de las filas en blanco de abajo, ademas, **la da
-  /// de alta en el acto**: no espera a que el cursor se vaya de la fila, que es
-  /// lo que crea el registro cuando la fila se escribe a mano ([_leaveRow]).
+  /// In a record it's one more correction, like choosing an option from a
+  /// list ([_writeOption]). In one of the blank rows below, besides, **it
+  /// creates it on the spot**: it doesn't wait for the cursor to leave the
+  /// row, which is what creates the record when the row is written by hand
+  /// ([_leaveRow]).
   ///
-  /// Es la excepcion a esa regla y tiene por que serlo. Tocar el boton es un
-  /// gesto completo —no queda nada a medio escribir despues de el, como si
-  /// quedaria despues de una letra— y encima se toca sin entrar en la fila: el
-  /// boton se come el toque de la celda, asi que el cursor nunca estuvo ahi y
-  /// nunca va a salir de ahi. Sin esto la fila se queda con su codigo puesto y
-  /// sin registro hasta que alguien la toque por otro motivo, que es
-  /// exactamente lo que pasaba.
+  /// It's the exception to that rule and it has to be. Tapping the button is
+  /// a complete gesture —nothing stays half-written after it, like it would
+  /// stay after a letter— and on top of that it's tapped without entering the
+  /// row: the button eats the cell's tap, so the cursor was never there and
+  /// will never leave from there. Without this the row would stay with its
+  /// code set and without a record until someone touches it for another
+  /// reason, which is exactly what used to happen.
   void generateSku(SheetCell cell) {
     final index = draftIndex(cell.row);
 
@@ -1440,11 +1515,11 @@ class SheetController {
 
     if (index < 0) return;
 
-    // El editor puede estar abierto en otra celda de esta misma fila. Se cierra
-    // antes del alta para que lo tipeado entre al borrador —y viaje con el—, y
-    // no quede editando una fila que en un instante va a ser un registro: al
-    // cerrarse ahi mandaria de nuevo, ya como correccion, lo que acaba de
-    // guardarse.
+    // The editor can be open in another cell of this same row. It's closed
+    // before the creation so what was typed goes into the draft —and travels
+    // with it— and doesn't stay editing a row that in an instant is going to
+    // be a record: on closing it would send again there, already as a
+    // correction, what was just saved.
     if (cursor.editing && cursor.cell?.row == cell.row) close();
 
     _queueDraft(drafts.at(index));
@@ -1452,41 +1527,41 @@ class SheetController {
 
   void back(BuildContext context) => Navis.push(context, "/home/inventory");
 
-  // ---- Reacciones ----------------------------------------------------------
+  // ---- Reactions -----------------------------------------------------------
 
-  /// Gano o perdio una columna: los anchos tienen que saber cual es la lista de
-  /// ahora para poder sumar el ancho total de la planilla, y las columnas que
-  /// aparecen se abren con el ancho que tuvieran guardado.
+  /// Gained or lost a column: the widths have to know which is the current
+  /// list to be able to add up the spreadsheet's total width, and the columns
+  /// that appear open with the width they had saved.
   void _onColumns() {
     widths.setKeys(columns.keys);
 
-    // El ancho viene con el campo, asi que la tabla se dibuja como la dejo el
-    // ultimo que la acomodo desde el primer frame. Solo lo adopta la primera vez
-    // que ve cada columna: lo que se arrastre despues manda sobre lo que traiga
-    // una estructura releida (ver [SheetWidths.adopt]).
+    // The width comes with the field, so the table draws itself as the last
+    // one who set it up left it from the first frame. Only the first time it
+    // sees each column adopts it: whatever is dragged afterwards rules over
+    // what a re-read structure brings (see [SheetWidths.adopt]).
     for (final field in columns.ordered) {
       if (field.id.isEmpty) continue;
       widths.adopt(field.id, field.width);
     }
   }
 
-  /// Cambio la cantidad de filas ocupadas. Es lo unico que el servicio le manda
-  /// al cuerpo de la planilla: los tramos de registros que van entrando los
-  /// escucha cada fila por su cuenta.
+  /// The number of occupied rows changed. It's the only thing the service
+  /// sends the spreadsheet's body: the batches of records that keep entering
+  /// are heard by each row on its own.
   ///
-  /// Es tambien donde se despide la fila que se acaba de guardar: el aviso que
-  /// trae un registro mas es el mismo que tiene que llevarse su borrador (ver
-  /// [_dropPersisted]).
-  /// Buscando, la planilla mide **exactamente** las filas que coinciden: ni
-  /// borradores ni filas de mas.
+  /// It's also where the row that was just saved says goodbye: the notice that
+  /// brings one more record is the same one that has to take its draft away
+  /// (see [_dropPersisted]).
+  /// Searching, the spreadsheet measures **exactly** the matching rows: neither
+  /// drafts nor extra rows.
   ///
-  /// Una planilla filtrada no es donde se carga: la fila que se escribiera abajo
-  /// no seria de la busqueda —nace vacia, no menciona lo que se busco— asi que
-  /// al guardarse se iria de la pantalla en la que se la escribio. Y el lugar
-  /// donde se la escribio tampoco es un lugar de la tabla: las filas de una
-  /// busqueda estan salteadas, la de abajo de todo no es la ultima de la tabla.
-  /// Para cargar se vacia el buscador, que devuelve la planilla entera con sus
-  /// filas en blanco al final.
+  /// A filtered spreadsheet isn't where one loads: the row written below
+  /// wouldn't belong to the search —it's born empty, it doesn't mention what
+  /// was searched— so on saving it would leave the screen it was written on.
+  /// And the place where it was written isn't a place of the table either: the
+  /// rows of a search are skipped, the one at the very bottom isn't the last
+  /// of the table. To load, the search box is emptied, which brings back the
+  /// whole spreadsheet with its blank rows at the end.
   void _onRows() {
     _dropPersisted();
 
@@ -1497,12 +1572,12 @@ class SheetController {
     _schedulePrefetch();
   }
 
-  /// Pide los tramos de las filas que se estan por mirar.
+  /// Asks for the batches of the rows that are about to be looked at.
   ///
-  /// Antes esto lo disparaba el `build` de cada fila, o sea que construir la
-  /// pantalla pedia datos. Ahora lo dispara el desplazamiento, que es lo que
-  /// realmente cambia lo que se ve: con `itemExtent` la primera y la ultima fila
-  /// visibles salen de una division, sin construir nada.
+  /// Before, the `build` of each row triggered this, meaning building the
+  /// screen asked for data. Now the scroll triggers it, which is what really
+  /// changes what's seen: with `itemExtent` the first and last visible rows
+  /// come out of a division, without building anything.
   void _prefetch() {
     if (_disposed || !vBody.hasClients) return;
 
@@ -1517,8 +1592,8 @@ class SheetController {
     service.ensureRange(first, last + metrics.prefetch);
   }
 
-  /// El primer tramo (y el de despues de cada recarga) se pide cuando la banda
-  /// ya tiene medidas, no antes.
+  /// The first batch (and the one after each reload) is asked for when the
+  /// band already has measurements, not before.
   void _schedulePrefetch() {
     if (_prefetchScheduled) return;
 

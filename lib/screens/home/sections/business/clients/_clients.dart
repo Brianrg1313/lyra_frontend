@@ -4,10 +4,10 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/section_message.dart';
 
-/// Pestana de clientes: a quien le vende la empresa y que le compro.
+/// Clients tab: who the company sells to and what they bought.
 ///
-/// Todavia no hay de donde sacarlos, asi que la pestana existe pero avisa que
-/// falta (ver `BusinessEmployeesTab`).
+/// There is still no source for them, so the tab exists but notifies that it
+/// is missing (see `BusinessEmployeesTab`).
 class BusinessClientsTab extends StatelessWidget {
   const BusinessClientsTab({super.key});
 

@@ -1,21 +1,21 @@
-/// Cuerpos de las escrituras de una tabla: el alta
-/// (`POST /v1/tables/structure/`), la edicion (`PUT /v1/tables/structure/`),
-/// la baja (`DELETE /v1/tables/structure/`) y la edicion parcial de la
-/// pantalla de ajustes (`PUT /v1/tables/details/`).
+/// Bodies of the write operations for a table: creation
+/// (`POST /v1/inventory/products/builder/structure/`), editing (`PUT /v1/inventory/products/builder/structure/`),
+/// deletion (`DELETE /v1/inventory/products/builder/structure/`) and the partial edit from the
+/// settings screen (`PUT /v1/inventory/products/builder/details/`).
 ///
-/// Viven aparte de la pantalla porque son el contrato con el backend: lo que se
-/// arma aca es lo que se documenta del otro lado, y asi se puede probar sin
-/// montar el formulario.
+/// They live apart from the screen because they are the contract with the backend: what is
+/// built here is what is documented on the other side, and thus it can be tested without
+/// mounting the form.
 ///
-/// La empresa dueña no va en el cuerpo: viaja en la cabecera `business_id` de
-/// todas las peticiones (ver `useBusiness` en `toolkit/api.dart`).
+/// The owning company does not go in the body: it travels in the `business_id` header of
+/// all requests (see `useBusiness` in `toolkit/api.dart`).
 ///
-/// La tabla se crea con su cabecera (titulo, descripcion y color) y, si se
-/// eligio un rubro de plantilla, con ese rubro. Las columnas nunca las arma el
-/// front: cuando viaja [template] es el backend quien las crea del otro lado,
-/// en la misma alta y sin una segunda peticion.
+/// The table is created with its header (title, description and color) and, if a
+/// template category was chosen, with that category. The columns are never built by the
+/// front: when [template] travels it is the backend who creates them on the other side,
+/// in the same creation and without a second request.
 ///
-/// Forma del alta:
+/// Creation shape:
 ///
 /// ```json
 /// {
@@ -26,38 +26,38 @@
 /// }
 /// ```
 ///
-/// Forma de la edicion:
+/// Editing shape:
 ///
 /// ```json
 /// { "ID": "a1b2c3", "NAME": "Vinos", "DESCRIPTION": "Catalogo de la bodega" }
 /// ```
 ///
-/// Forma de la baja:
+/// Deletion shape:
 ///
 /// ```json
 /// { "ID": "a1b2c3" }
 /// ```
 ///
-/// Forma de la edicion parcial:
+/// Partial edit shape:
 ///
 /// ```json
 /// { "ID": "a1b2c3", "DESCRIPTION": "Catalogo de la bodega" }
 /// ```
 library;
 
-/// Arma el cuerpo del alta.
+/// Builds the creation body.
 ///
-/// Recorta los textos y omite la descripcion cuando queda vacia, en vez de
-/// mandarla en blanco: el resto de los opcionales de la api se comporta igual y
-/// asi el backend distingue "sin descripcion" de "descripcion borrada".
+/// Trims the texts and omits the description when it ends up empty, instead of
+/// sending it blank: the rest of the optional api fields behave the same and
+/// thus the backend distinguishes "no description" from "description deleted".
 ///
-/// El [color] es el string que identifica visualmente a la tabla (un literal
-/// ARGB de Flutter como `0xFF60A5FA`); siempre viaja, porque el formulario
-/// arranca con uno elegido.
+/// The [color] is the string that visually identifies the table (a Flutter
+/// ARGB literal like `0xFF60A5FA`); it always travels, because the form
+/// starts with one chosen.
 ///
-/// El [template] es el codigo del rubro elegido (por ejemplo `"FOOD"`); se
-/// omite cuando no se eligio ninguno, para que el backend cree la tabla sin
-/// columnas igual que antes.
+/// The [template] is the code of the chosen category (for example `"FOOD"`); it is
+/// omitted when none was chosen, so the backend creates the table without
+/// columns just as before.
 Map<String, dynamic> createTableRequest({
   required String title,
   required String description,
@@ -74,17 +74,17 @@ Map<String, dynamic> createTableRequest({
   };
 }
 
-/// Arma el cuerpo de la edicion de una tabla.
+/// Builds the body of a table edit.
 ///
-/// El titulo viaja en `NAME` y no en `TITLE` como en el alta: es la clave que
-/// pide la edicion del otro lado. Es obligatorio aunque no se lo este
-/// cambiando, asi que quien edita solo la descripcion manda el que la tabla ya
-/// tenia.
+/// The title travels in `NAME` and not in `TITLE` as in creation: it is the key that
+/// the edit asks for on the other side. It is required even when it is not being
+/// changed, so whoever edits only the description sends the one the table already
+/// had.
 ///
-/// La descripcion **siempre viaja**, tambien vacia, y ahi esta la diferencia
-/// con el alta: en una tabla que ya existe, vaciarla es borrar la que tenia. No
-/// mandarla la dejaria como estaba y una descripcion puesta por error no
-/// tendria vuelta atras.
+/// The description **always travels**, even empty, and there lies the difference
+/// with creation: in a table that already exists, emptying it deletes the one it had. Not
+/// sending it would leave it as it was and a description set by mistake would have
+/// no way back.
 Map<String, dynamic> editTableRequest({
   required String id,
   required String title,
@@ -95,28 +95,28 @@ Map<String, dynamic> editTableRequest({
   "DESCRIPTION": description.trim()
 };
 
-/// Arma el cuerpo de la baja de una tabla.
+/// Builds the body of a table deletion.
 ///
-/// Es solo el id: la tabla ya sabe de que empresa es, y el backend le da de
-/// baja logica (`status = 0`) a ella y a sus columnas. Tiene su funcion igual
-/// que las otras dos, para que las tres escrituras se lean —y se prueben— en el
-/// mismo lugar.
+/// It is only the id: the table already knows which company it belongs to, and the backend gives
+/// a logical deletion (`status = 0`) to it and its columns. It has its function just like
+/// the other two, so the three write operations are read —and tested— in the
+/// same place.
 Map<String, dynamic> deleteTableRequest({required String id}) => {"ID": id};
 
-/// Arma el cuerpo de la edicion **parcial** de una tabla
-/// (`PUT /v1/tables/details/`).
+/// Builds the body of a table **partial** edit
+/// (`PUT /v1/inventory/products/builder/details/`).
 ///
-/// Es la escritura de la pantalla de ajustes y no la de la planilla: viaja
-/// solo lo que se toco, asi que cambiar la descripcion no reescribe el nombre
-/// —ni al reves—. Por eso los dos textos son opcionales y `null` significa "no
-/// se cambio", que del otro lado es "dejalo como estaba".
+/// It is the write for the settings screen and not the spreadsheet one: only what was
+/// touched travels, so changing the description does not rewrite the name
+/// —nor the other way around—. That is why both texts are optional and `null` means "not
+/// changed", which on the other side means "leave it as it was".
 ///
-/// La descripcion en blanco **si viaja**, y ahi esta la diferencia con `null`:
-/// es el unico lugar donde el vacio es un valor y no la ausencia de uno, y es
-/// lo que borra una descripcion puesta por error. `null` la deja intacta.
+/// The blank description **does travel**, and there lies the difference with `null`:
+/// it is the only place where empty is a value and not the absence of one, and it is
+/// what deletes a description set by mistake. `null` leaves it intact.
 ///
-/// Es la misma clave `NAME` de [editTableRequest] porque es el mismo dato en
-/// el mismo backend; lo que cambia es que aca no es obligatoria.
+/// It is the same `NAME` key as [editTableRequest] because it is the same datum in
+/// the same backend; what changes is that here it is not required.
 Map<String, dynamic> editTableDetailsRequest({
   required String id,
   String? name,

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Un bloque del formulario de un canal: su titulo, una linea que explica para
-/// que sirve y lo que se elige debajo.
+/// A block of a channel's form: its title, a line explaining what it is for
+/// and what is chosen below.
 ///
-/// El formulario son cinco decisiones distintas —que red, que hace el agente,
-/// de donde saca los datos, que puede procesar y con que credenciales entra— y
-/// sin separarlas se lee como una lista de campos sueltos. El subtitulo no es
-/// decorativo: casi ninguna de esas decisiones se explica sola con su titulo.
+/// The form is five different decisions —what network, what the agent does,
+/// where it gets the data from, what it can process and with what credentials
+/// it logs in— and without separating them it reads like a list of loose
+/// fields. The subtitle is not decorative: almost none of those decisions
+/// explains itself with its title alone.
 class FormBlock extends StatelessWidget {
   const FormBlock({
     super.key,

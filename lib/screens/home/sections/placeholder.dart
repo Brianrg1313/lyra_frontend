@@ -3,8 +3,8 @@ import 'package:app/toolkit/toolkit.dart';
 
 import './_sections.dart';
 
-/// Contenido temporal de las secciones que todavia no tienen pantalla propia.
-/// A medida que cada una se construya se reemplaza en `HomeSection.build`.
+/// Temporary content of the sections that do not have their own screen yet.
+/// As each one is built it is replaced in `HomeSection.build`.
 class SectionPlaceholder extends StatelessWidget {
   const SectionPlaceholder({
     required this.section,

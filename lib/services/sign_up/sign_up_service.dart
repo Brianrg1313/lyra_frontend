@@ -6,11 +6,11 @@ import 'package:flutter/widgets.dart' show BuildContext;
 // SERVICES
 import 'package:app/services/database/database_service.dart';
 
-/// Servicio del flujo de registro.
+/// Service for the sign-up flow.
 ///
-/// No es global: lo proveen las pantallas `SignUp` y `VerifyCode`. Cada una
-/// crea su propia instancia, lo cual es seguro porque el estado pendiente del
-/// flujo vive en el almacenamiento seguro, no en el servicio.
+/// It is not global: provided by the `SignUp` and `VerifyCode` screens. Each
+/// one creates its own instance, which is safe because the flow's pending
+/// state lives in secure storage, not in the service.
 class SignUpService {
   static const _pendingUsernameKey = "SIGN_UP_USERNAME";
   static const _pendingDataKey = "SIGN_UP_DATA";

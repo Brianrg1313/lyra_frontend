@@ -1,22 +1,23 @@
-/// Una columna libre del final de la planilla: su titulo mientras se escribe y
-/// si ya se esta creando. Es un objeto y no un texto suelto porque el alta viaja
-/// encolada y tiene que encontrar despues a su columna, aunque para entonces se
-/// hayan corrido de lugar.
+/// A free column at the end of the spreadsheet: its title while it's being
+/// written and whether it's already being created. It's an object and not a
+/// loose string because the creation travels queued and has to find its
+/// column afterwards, even if by then it has moved places.
 class FreeColumn {
   String name = "";
   bool creating = false;
 
-  /// Una columna libre esta en blanco mientras no tenga titulo. La que se esta
-  /// creando nunca lo esta: ya es de la tabla aunque el backend todavia no la
-  /// devuelva.
+  /// A free column is blank while it has no title. The one being created never
+  /// is: it already belongs to the table even if the backend doesn't return it
+  /// yet.
   bool get isBlank => name.isEmpty && !creating;
 
-  /// Deja [columns] con exactamente [free] columnas en blanco al final.
+  /// Leaves [columns] with exactly [free] blank columns at the end.
   ///
-  /// Es la unica regla del crecimiento horizontal de la planilla, y se aplica
-  /// despues de cada cambio de titulo: si se lleno la ultima libre, aparece otra
-  /// detras; si una se vacio, se va la que sobra. Las del medio se respetan
-  /// aunque esten en blanco: son un hueco que el usuario dejo a proposito.
+  /// It's the only rule of the spreadsheet's horizontal growth, and it applies
+  /// after every title change: if the last free one was filled, another
+  /// appears behind it; if one was emptied, the leftover one goes away. The
+  /// ones in the middle are respected even if blank: they're a gap the user
+  /// left on purpose.
   static void normalize(List<FreeColumn> columns, {int free = 2}) {
     while (columns.isNotEmpty && columns.last.isBlank) {
       columns.removeLast();

@@ -1,7 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'intl/messages_all.dart';
 
 // **************************************************************************
@@ -19,10 +18,8 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(
-      _current != null,
-      'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
-    );
+    assert(_current != null,
+        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
     return _current!;
   }
 
@@ -44,10 +41,8 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(
-      instance != null,
-      'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?',
-    );
+    assert(instance != null,
+        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
     return instance!;
   }
 
@@ -57,7 +52,12 @@ class S {
 
   /// `Search`
   String get search {
-    return Intl.message('Search', name: 'search', desc: '', args: []);
+    return Intl.message(
+      'Search',
+      name: 'search',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Hide keyboard`
@@ -72,22 +72,42 @@ class S {
 
   /// `Email`
   String get email_input {
-    return Intl.message('Email', name: 'email_input', desc: '', args: []);
+    return Intl.message(
+      'Email',
+      name: 'email_input',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Password`
   String get password_input {
-    return Intl.message('Password', name: 'password_input', desc: '', args: []);
+    return Intl.message(
+      'Password',
+      name: 'password_input',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Version`
   String get version {
-    return Intl.message('Version', name: 'version', desc: '', args: []);
+    return Intl.message(
+      'Version',
+      name: 'version',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Login`
   String get login {
-    return Intl.message('Login', name: 'login', desc: '', args: []);
+    return Intl.message(
+      'Login',
+      name: 'login',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `The {email} is very long`
@@ -132,22 +152,42 @@ class S {
 
   /// `Sign in`
   String get sign_in {
-    return Intl.message('Sign in', name: 'sign_in', desc: '', args: []);
+    return Intl.message(
+      'Sign in',
+      name: 'sign_in',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Edit`
   String get edit {
-    return Intl.message('Edit', name: 'edit', desc: '', args: []);
+    return Intl.message(
+      'Edit',
+      name: 'edit',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Cancel`
   String get cancel {
-    return Intl.message('Cancel', name: 'cancel', desc: '', args: []);
+    return Intl.message(
+      'Cancel',
+      name: 'cancel',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Save`
   String get save {
-    return Intl.message('Save', name: 'save', desc: '', args: []);
+    return Intl.message(
+      'Save',
+      name: 'save',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Title and description`
@@ -242,7 +282,12 @@ class S {
 
   /// `Sign up`
   String get sign_up {
-    return Intl.message('Sign up', name: 'sign_up', desc: '', args: []);
+    return Intl.message(
+      'Sign up',
+      name: 'sign_up',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Create an account with your email address`
@@ -387,7 +432,12 @@ class S {
 
   /// `Code`
   String get code_input {
-    return Intl.message('Code', name: 'code_input', desc: '', args: []);
+    return Intl.message(
+      'Code',
+      name: 'code_input',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Resend code in {time}`
@@ -402,22 +452,42 @@ class S {
 
   /// `Resend code`
   String get resend_code {
-    return Intl.message('Resend code', name: 'resend_code', desc: '', args: []);
+    return Intl.message(
+      'Resend code',
+      name: 'resend_code',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Title`
   String get title {
-    return Intl.message('Title', name: 'title', desc: '', args: []);
+    return Intl.message(
+      'Title',
+      name: 'title',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Wallet`
   String get wallet {
-    return Intl.message('Wallet', name: 'wallet', desc: '', args: []);
+    return Intl.message(
+      'Wallet',
+      name: 'wallet',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Add`
   String get add {
-    return Intl.message('Add', name: 'add', desc: '', args: []);
+    return Intl.message(
+      'Add',
+      name: 'add',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Add subscription`
@@ -522,27 +592,52 @@ class S {
 
   /// `Day`
   String get billing_day {
-    return Intl.message('Day', name: 'billing_day', desc: '', args: []);
+    return Intl.message(
+      'Day',
+      name: 'billing_day',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Amount`
   String get amount {
-    return Intl.message('Amount', name: 'amount', desc: '', args: []);
+    return Intl.message(
+      'Amount',
+      name: 'amount',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Home`
   String get home {
-    return Intl.message('Home', name: 'home', desc: '', args: []);
+    return Intl.message(
+      'Home',
+      name: 'home',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Shop`
   String get shop {
-    return Intl.message('Shop', name: 'shop', desc: '', args: []);
+    return Intl.message(
+      'Shop',
+      name: 'shop',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Account`
   String get account {
-    return Intl.message('Account', name: 'account', desc: '', args: []);
+    return Intl.message(
+      'Account',
+      name: 'account',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Billing period`
@@ -557,32 +652,62 @@ class S {
 
   /// `Weekly`
   String get weekly {
-    return Intl.message('Weekly', name: 'weekly', desc: '', args: []);
+    return Intl.message(
+      'Weekly',
+      name: 'weekly',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Monthly`
   String get monthly {
-    return Intl.message('Monthly', name: 'monthly', desc: '', args: []);
+    return Intl.message(
+      'Monthly',
+      name: 'monthly',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Annual`
   String get annual {
-    return Intl.message('Annual', name: 'annual', desc: '', args: []);
+    return Intl.message(
+      'Annual',
+      name: 'annual',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Custom`
   String get custom {
-    return Intl.message('Custom', name: 'custom', desc: '', args: []);
+    return Intl.message(
+      'Custom',
+      name: 'custom',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Days`
   String get custom_days {
-    return Intl.message('Days', name: 'custom_days', desc: '', args: []);
+    return Intl.message(
+      'Days',
+      name: 'custom_days',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `New service`
   String get new_service {
-    return Intl.message('New service', name: 'new_service', desc: '', args: []);
+    return Intl.message(
+      'New service',
+      name: 'new_service',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Trial period`
@@ -597,47 +722,92 @@ class S {
 
   /// `Duration`
   String get trial_duration {
-    return Intl.message('Duration', name: 'trial_duration', desc: '', args: []);
+    return Intl.message(
+      'Duration',
+      name: 'trial_duration',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Trial price`
   String get trial_price {
-    return Intl.message('Trial price', name: 'trial_price', desc: '', args: []);
+    return Intl.message(
+      'Trial price',
+      name: 'trial_price',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Back`
   String get back {
-    return Intl.message('Back', name: 'back', desc: '', args: []);
+    return Intl.message(
+      'Back',
+      name: 'back',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `a`
   String get a {
-    return Intl.message('a', name: 'a', desc: '', args: []);
+    return Intl.message(
+      'a',
+      name: 'a',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Next`
   String get next {
-    return Intl.message('Next', name: 'next', desc: '', args: []);
+    return Intl.message(
+      'Next',
+      name: 'next',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Currency`
   String get currency {
-    return Intl.message('Currency', name: 'currency', desc: '', args: []);
+    return Intl.message(
+      'Currency',
+      name: 'currency',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `USD`
   String get currency_usd {
-    return Intl.message('USD', name: 'currency_usd', desc: '', args: []);
+    return Intl.message(
+      'USD',
+      name: 'currency_usd',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `EUR`
   String get currency_eur {
-    return Intl.message('EUR', name: 'currency_eur', desc: '', args: []);
+    return Intl.message(
+      'EUR',
+      name: 'currency_eur',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Local`
   String get currency_local {
-    return Intl.message('Local', name: 'currency_local', desc: '', args: []);
+    return Intl.message(
+      'Local',
+      name: 'currency_local',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `How often do you pay?`
@@ -652,12 +822,22 @@ class S {
 
   /// `Once a year`
   String get once_a_year {
-    return Intl.message('Once a year', name: 'once_a_year', desc: '', args: []);
+    return Intl.message(
+      'Once a year',
+      name: 'once_a_year',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `You decide`
   String get you_decide {
-    return Intl.message('You decide', name: 'you_decide', desc: '', args: []);
+    return Intl.message(
+      'You decide',
+      name: 'you_decide',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Number of days`
@@ -752,22 +932,42 @@ class S {
 
   /// `Confirm`
   String get confirm {
-    return Intl.message('Confirm', name: 'confirm', desc: '', args: []);
+    return Intl.message(
+      'Confirm',
+      name: 'confirm',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `All set!`
   String get summary_title {
-    return Intl.message('All set!', name: 'summary_title', desc: '', args: []);
+    return Intl.message(
+      'All set!',
+      name: 'summary_title',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Service`
   String get summary_service {
-    return Intl.message('Service', name: 'summary_service', desc: '', args: []);
+    return Intl.message(
+      'Service',
+      name: 'summary_service',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Period`
   String get summary_period {
-    return Intl.message('Period', name: 'summary_period', desc: '', args: []);
+    return Intl.message(
+      'Period',
+      name: 'summary_period',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Billing date`
@@ -782,12 +982,22 @@ class S {
 
   /// `Price`
   String get summary_price {
-    return Intl.message('Price', name: 'summary_price', desc: '', args: []);
+    return Intl.message(
+      'Price',
+      name: 'summary_price',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Description`
   String get description {
-    return Intl.message('Description', name: 'description', desc: '', args: []);
+    return Intl.message(
+      'Description',
+      name: 'description',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Optional description...`
@@ -802,17 +1012,32 @@ class S {
 
   /// `Upcoming`
   String get upcoming {
-    return Intl.message('Upcoming', name: 'upcoming', desc: '', args: []);
+    return Intl.message(
+      'Upcoming',
+      name: 'upcoming',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Past`
   String get past_due {
-    return Intl.message('Past', name: 'past_due', desc: '', args: []);
+    return Intl.message(
+      'Past',
+      name: 'past_due',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Today`
   String get billing_today {
-    return Intl.message('Today', name: 'billing_today', desc: '', args: []);
+    return Intl.message(
+      'Today',
+      name: 'billing_today',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `in {days} days`
@@ -837,42 +1062,82 @@ class S {
 
   /// `Simple`
   String get plan_simple {
-    return Intl.message('Simple', name: 'plan_simple', desc: '', args: []);
+    return Intl.message(
+      'Simple',
+      name: 'plan_simple',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Normal`
   String get plan_normal {
-    return Intl.message('Normal', name: 'plan_normal', desc: '', args: []);
+    return Intl.message(
+      'Normal',
+      name: 'plan_normal',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Freemium`
   String get plan_freemium {
-    return Intl.message('Freemium', name: 'plan_freemium', desc: '', args: []);
+    return Intl.message(
+      'Freemium',
+      name: 'plan_freemium',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Basic`
   String get plan_basic {
-    return Intl.message('Basic', name: 'plan_basic', desc: '', args: []);
+    return Intl.message(
+      'Basic',
+      name: 'plan_basic',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Plus`
   String get plan_plus {
-    return Intl.message('Plus', name: 'plan_plus', desc: '', args: []);
+    return Intl.message(
+      'Plus',
+      name: 'plan_plus',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Pro`
   String get plan_pro {
-    return Intl.message('Pro', name: 'plan_pro', desc: '', args: []);
+    return Intl.message(
+      'Pro',
+      name: 'plan_pro',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Duo`
   String get plan_duo {
-    return Intl.message('Duo', name: 'plan_duo', desc: '', args: []);
+    return Intl.message(
+      'Duo',
+      name: 'plan_duo',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Family`
   String get plan_family {
-    return Intl.message('Family', name: 'plan_family', desc: '', args: []);
+    return Intl.message(
+      'Family',
+      name: 'plan_family',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Next billing`
@@ -987,42 +1252,82 @@ class S {
 
   /// `Business`
   String get business {
-    return Intl.message('Business', name: 'business', desc: '', args: []);
+    return Intl.message(
+      'Business',
+      name: 'business',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Products`
   String get products {
-    return Intl.message('Products', name: 'products', desc: '', args: []);
+    return Intl.message(
+      'Products',
+      name: 'products',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Inventory`
   String get inventory {
-    return Intl.message('Inventory', name: 'inventory', desc: '', args: []);
+    return Intl.message(
+      'Inventory',
+      name: 'inventory',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Services`
   String get services {
-    return Intl.message('Services', name: 'services', desc: '', args: []);
+    return Intl.message(
+      'Services',
+      name: 'services',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Channels`
   String get channels {
-    return Intl.message('Channels', name: 'channels', desc: '', args: []);
+    return Intl.message(
+      'Channels',
+      name: 'channels',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Finance`
   String get finance {
-    return Intl.message('Finance', name: 'finance', desc: '', args: []);
+    return Intl.message(
+      'Finance',
+      name: 'finance',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Marketing`
   String get marketing {
-    return Intl.message('Marketing', name: 'marketing', desc: '', args: []);
+    return Intl.message(
+      'Marketing',
+      name: 'marketing',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Report`
   String get report {
-    return Intl.message('Report', name: 'report', desc: '', args: []);
+    return Intl.message(
+      'Report',
+      name: 'report',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `External Services`
@@ -1037,17 +1342,32 @@ class S {
 
   /// `Sign out`
   String get sign_out {
-    return Intl.message('Sign out', name: 'sign_out', desc: '', args: []);
+    return Intl.message(
+      'Sign out',
+      name: 'sign_out',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Expand`
   String get expand {
-    return Intl.message('Expand', name: 'expand', desc: '', args: []);
+    return Intl.message(
+      'Expand',
+      name: 'expand',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Collapse`
   String get collapse {
-    return Intl.message('Collapse', name: 'collapse', desc: '', args: []);
+    return Intl.message(
+      'Collapse',
+      name: 'collapse',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Tell us about the business you want to manage`
@@ -2920,6 +3240,16 @@ class S {
     );
   }
 
+  /// `This table is still being imported. It opens once its columns and rows are in`
+  String get import_table_busy {
+    return Intl.message(
+      'This table is still being imported. It opens once its columns and rows are in',
+      name: 'import_table_busy',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Setting up columns`
   String get import_table_preparing {
     return Intl.message(
@@ -2935,6 +3265,316 @@ class S {
     return Intl.message(
       'Loading rows',
       name: 'import_table_loading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose where this table's products come from`
+  String get import_source_subtitle {
+    return Intl.message(
+      'Choose where this table\'s products come from',
+      name: 'import_source_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search a source`
+  String get import_source_search {
+    return Intl.message(
+      'Search a source',
+      name: 'import_source_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No source matches your search`
+  String get import_source_search_empty {
+    return Intl.message(
+      'No source matches your search',
+      name: 'import_source_search_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From this device`
+  String get import_source_device {
+    return Intl.message(
+      'From this device',
+      name: 'import_source_device',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Apps and stores`
+  String get import_source_apps {
+    return Intl.message(
+      'Apps and stores',
+      name: 'import_source_apps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other formats`
+  String get import_source_formats {
+    return Intl.message(
+      'Other formats',
+      name: 'import_source_formats',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Soon`
+  String get import_source_soon {
+    return Intl.message(
+      'Soon',
+      name: 'import_source_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upload spreadsheet`
+  String get import_source_spreadsheet {
+    return Intl.message(
+      'Upload spreadsheet',
+      name: 'import_source_spreadsheet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An Excel, CSV or ODS file from this device`
+  String get import_source_spreadsheet_hint {
+    return Intl.message(
+      'An Excel, CSV or ODS file from this device',
+      name: 'import_source_spreadsheet_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Google Sheets`
+  String get import_source_google_sheets {
+    return Intl.message(
+      'Google Sheets',
+      name: 'import_source_google_sheets',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A sheet from your Google Drive`
+  String get import_source_google_sheets_hint {
+    return Intl.message(
+      'A sheet from your Google Drive',
+      name: 'import_source_google_sheets_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `JSON`
+  String get import_source_json {
+    return Intl.message(
+      'JSON',
+      name: 'import_source_json',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A products file exported as JSON`
+  String get import_source_json_hint {
+    return Intl.message(
+      'A products file exported as JSON',
+      name: 'import_source_json_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `XML`
+  String get import_source_xml {
+    return Intl.message(
+      'XML',
+      name: 'import_source_xml',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A products feed in XML`
+  String get import_source_xml_hint {
+    return Intl.message(
+      'A products feed in XML',
+      name: 'import_source_xml_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OpenDocument`
+  String get import_source_ods {
+    return Intl.message(
+      'OpenDocument',
+      name: 'import_source_ods',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A sheet from LibreOffice or OpenOffice`
+  String get import_source_ods_hint {
+    return Intl.message(
+      'A sheet from LibreOffice or OpenOffice',
+      name: 'import_source_ods_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Airtable`
+  String get import_source_airtable {
+    return Intl.message(
+      'Airtable',
+      name: 'import_source_airtable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A table from one of your bases`
+  String get import_source_airtable_hint {
+    return Intl.message(
+      'A table from one of your bases',
+      name: 'import_source_airtable_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notion`
+  String get import_source_notion {
+    return Intl.message(
+      'Notion',
+      name: 'import_source_notion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A database from your workspace`
+  String get import_source_notion_hint {
+    return Intl.message(
+      'A database from your workspace',
+      name: 'import_source_notion_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Smartsheet`
+  String get import_source_smartsheet {
+    return Intl.message(
+      'Smartsheet',
+      name: 'import_source_smartsheet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A sheet from your workspace`
+  String get import_source_smartsheet_hint {
+    return Intl.message(
+      'A sheet from your workspace',
+      name: 'import_source_smartsheet_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Trello`
+  String get import_source_trello {
+    return Intl.message(
+      'Trello',
+      name: 'import_source_trello',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The cards of one of your boards`
+  String get import_source_trello_hint {
+    return Intl.message(
+      'The cards of one of your boards',
+      name: 'import_source_trello_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Shopify`
+  String get import_source_shopify {
+    return Intl.message(
+      'Shopify',
+      name: 'import_source_shopify',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The catalog of your store`
+  String get import_source_shopify_hint {
+    return Intl.message(
+      'The catalog of your store',
+      name: 'import_source_shopify_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `WooCommerce`
+  String get import_source_woocommerce {
+    return Intl.message(
+      'WooCommerce',
+      name: 'import_source_woocommerce',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The catalog of your store`
+  String get import_source_woocommerce_hint {
+    return Intl.message(
+      'The catalog of your store',
+      name: 'import_source_woocommerce_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Magento`
+  String get import_source_magento {
+    return Intl.message(
+      'Magento',
+      name: 'import_source_magento',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The catalog of your store`
+  String get import_source_magento_hint {
+    return Intl.message(
+      'The catalog of your store',
+      name: 'import_source_magento_hint',
       desc: '',
       args: [],
     );
@@ -3023,6 +3663,26 @@ class S {
       name: 'table_record_count',
       desc: '',
       args: [count],
+    );
+  }
+
+  /// `Primary`
+  String get table_primary {
+    return Intl.message(
+      'Primary',
+      name: 'table_primary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your main table. The stock summary always reads this one, so it's the table whose columns show up below.`
+  String get table_primary_hint {
+    return Intl.message(
+      'Your main table. The stock summary always reads this one, so it\'s the table whose columns show up below.',
+      name: 'table_primary_hint',
+      desc: '',
+      args: [],
     );
   }
 
@@ -3301,7 +3961,12 @@ class S {
 
   /// `Title`
   String get table_title_input {
-    return Intl.message('Title', name: 'table_title_input', desc: '', args: []);
+    return Intl.message(
+      'Title',
+      name: 'table_title_input',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Name of the table`
@@ -3336,7 +4001,12 @@ class S {
 
   /// `Color`
   String get table_color_title {
-    return Intl.message('Color', name: 'table_color_title', desc: '', args: []);
+    return Intl.message(
+      'Color',
+      name: 'table_color_title',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Template`
@@ -3661,7 +4331,12 @@ class S {
 
   /// `Add field`
   String get add_field {
-    return Intl.message('Add field', name: 'add_field', desc: '', args: []);
+    return Intl.message(
+      'Add field',
+      name: 'add_field',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Add a column and choose the kind of information it holds`
@@ -3676,7 +4351,12 @@ class S {
 
   /// `Field added`
   String get field_added {
-    return Intl.message('Field added', name: 'field_added', desc: '', args: []);
+    return Intl.message(
+      'Field added',
+      name: 'field_added',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Table created`
@@ -3771,7 +4451,12 @@ class S {
 
   /// `Text`
   String get field_type_text {
-    return Intl.message('Text', name: 'field_type_text', desc: '', args: []);
+    return Intl.message(
+      'Text',
+      name: 'field_type_text',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Short one-line text: names, brands, references`
@@ -3794,11 +4479,91 @@ class S {
     );
   }
 
-  /// `Multiline text: descriptions and notes`
+  /// `Multiline text customers don't search by`
   String get field_type_textarea_hint {
     return Intl.message(
-      'Multiline text: descriptions and notes',
+      'Multiline text customers don\'t search by',
       name: 'field_type_textarea_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Product name`
+  String get field_type_title {
+    return Intl.message(
+      'Product name',
+      name: 'field_type_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the product is called. The AI searches by it and names the product with it`
+  String get field_type_title_hint {
+    return Intl.message(
+      'What the product is called. The AI searches by it and names the product with it',
+      name: 'field_type_title_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Description`
+  String get field_type_description {
+    return Intl.message(
+      'Description',
+      name: 'field_type_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the product is, in words. The AI reads it and searches by meaning`
+  String get field_type_description_hint {
+    return Intl.message(
+      'What the product is, in words. The AI reads it and searches by meaning',
+      name: 'field_type_description_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `SKU`
+  String get field_type_sku {
+    return Intl.message(
+      'SKU',
+      name: 'field_type_sku',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your own reference or part number`
+  String get field_type_sku_hint {
+    return Intl.message(
+      'Your own reference or part number',
+      name: 'field_type_sku_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Barcode`
+  String get field_type_barcode {
+    return Intl.message(
+      'Barcode',
+      name: 'field_type_barcode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The code printed on the product: EAN, UPC, ISBN`
+  String get field_type_barcode_hint {
+    return Intl.message(
+      'The code printed on the product: EAN, UPC, ISBN',
+      name: 'field_type_barcode_hint',
       desc: '',
       args: [],
     );
@@ -3834,10 +4599,10 @@ class S {
     );
   }
 
-  /// `Numbers with decimals: weights and measures`
+  /// `Numbers with decimals`
   String get field_type_decimal_hint {
     return Intl.message(
-      'Numbers with decimals: weights and measures',
+      'Numbers with decimals',
       name: 'field_type_decimal_hint',
       desc: '',
       args: [],
@@ -3846,29 +4611,79 @@ class S {
 
   /// `Price`
   String get field_type_price {
-    return Intl.message('Price', name: 'field_type_price', desc: '', args: []);
+    return Intl.message(
+      'Price',
+      name: 'field_type_price',
+      desc: '',
+      args: [],
+    );
   }
 
-  /// `A monetary amount`
+  /// `The selling price: what a customer pays`
   String get field_type_price_hint {
     return Intl.message(
-      'A monetary amount',
+      'The selling price: what a customer pays',
       name: 'field_type_price_hint',
       desc: '',
       args: [],
     );
   }
 
-  /// `SKU`
-  String get field_type_sku {
-    return Intl.message('SKU', name: 'field_type_sku', desc: '', args: []);
+  /// `Other amount`
+  String get field_type_currency {
+    return Intl.message(
+      'Other amount',
+      name: 'field_type_currency',
+      desc: '',
+      args: [],
+    );
   }
 
-  /// `Reference or article code, like a barcode`
-  String get field_type_sku_hint {
+  /// `Money that is not the selling price: cost, wholesale, margin`
+  String get field_type_currency_hint {
     return Intl.message(
-      'Reference or article code, like a barcode',
-      name: 'field_type_sku_hint',
+      'Money that is not the selling price: cost, wholesale, margin',
+      name: 'field_type_currency_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Percentage`
+  String get field_type_percentage {
+    return Intl.message(
+      'Percentage',
+      name: 'field_type_percentage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A rate written as 16, not as 0.16: discount, tax, margin`
+  String get field_type_percentage_hint {
+    return Intl.message(
+      'A rate written as 16, not as 0.16: discount, tax, margin',
+      name: 'field_type_percentage_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Measure`
+  String get field_type_measure {
+    return Intl.message(
+      'Measure',
+      name: 'field_type_measure',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A magnitude with a unit: weight, volume, length`
+  String get field_type_measure_hint {
+    return Intl.message(
+      'A magnitude with a unit: weight, volume, length',
+      name: 'field_type_measure_hint',
       desc: '',
       args: [],
     );
@@ -3916,7 +4731,12 @@ class S {
 
   /// `Date`
   String get field_type_date {
-    return Intl.message('Date', name: 'field_type_date', desc: '', args: []);
+    return Intl.message(
+      'Date',
+      name: 'field_type_date',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `A day: expiry, arrival or release`
@@ -3951,7 +4771,12 @@ class S {
 
   /// `Email`
   String get field_type_email {
-    return Intl.message('Email', name: 'field_type_email', desc: '', args: []);
+    return Intl.message(
+      'Email',
+      name: 'field_type_email',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `An email address`
@@ -3966,7 +4791,12 @@ class S {
 
   /// `Phone`
   String get field_type_phone {
-    return Intl.message('Phone', name: 'field_type_phone', desc: '', args: []);
+    return Intl.message(
+      'Phone',
+      name: 'field_type_phone',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `A phone number`
@@ -3981,7 +4811,12 @@ class S {
 
   /// `Link`
   String get field_type_url {
-    return Intl.message('Link', name: 'field_type_url', desc: '', args: []);
+    return Intl.message(
+      'Link',
+      name: 'field_type_url',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `A web address`
@@ -3995,20 +4830,40 @@ class S {
   }
 
   /// `Options list`
-  String get field_type_select {
+  String get field_type_options {
     return Intl.message(
       'Options list',
-      name: 'field_type_select',
+      name: 'field_type_options',
       desc: '',
       args: [],
     );
   }
 
-  /// `A closed list of options to pick from`
-  String get field_type_select_hint {
+  /// `A closed list of labels, one per product: size, colour, condition`
+  String get field_type_options_hint {
     return Intl.message(
-      'A closed list of options to pick from',
-      name: 'field_type_select_hint',
+      'A closed list of labels, one per product: size, colour, condition',
+      name: 'field_type_options_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Categories`
+  String get field_type_categories {
+    return Intl.message(
+      'Categories',
+      name: 'field_type_categories',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A closed list of labels, several per product`
+  String get field_type_categories_hint {
+    return Intl.message(
+      'A closed list of labels, several per product',
+      name: 'field_type_categories_hint',
       desc: '',
       args: [],
     );
@@ -4016,7 +4871,12 @@ class S {
 
   /// `Image`
   String get field_type_image {
-    return Intl.message('Image', name: 'field_type_image', desc: '', args: []);
+    return Intl.message(
+      'Image',
+      name: 'field_type_image',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Photos of the product`
@@ -4029,29 +4889,14 @@ class S {
     );
   }
 
-  /// `Smart text`
-  String get field_type_vector {
-    return Intl.message(
-      'Smart text',
-      name: 'field_type_vector',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Free text the AI reads and searches by meaning`
-  String get field_type_vector_hint {
-    return Intl.message(
-      'Free text the AI reads and searches by meaning',
-      name: 'field_type_vector_hint',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Stock`
   String get field_type_stock {
-    return Intl.message('Stock', name: 'field_type_stock', desc: '', args: []);
+    return Intl.message(
+      'Stock',
+      name: 'field_type_stock',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Units on hand, kept by the inventory engine`
@@ -4076,7 +4921,12 @@ class S {
 
   /// `Reports`
   String get section_reports {
-    return Intl.message('Reports', name: 'section_reports', desc: '', args: []);
+    return Intl.message(
+      'Reports',
+      name: 'section_reports',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Connections`
@@ -4104,66 +4954,6 @@ class S {
     return Intl.message(
       'Configure channel',
       name: 'edit_channel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Disconnect channel`
-  String get delete_channel {
-    return Intl.message(
-      'Disconnect channel',
-      name: 'delete_channel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Channel options`
-  String get channel_options {
-    return Intl.message(
-      'Channel options',
-      name: 'channel_options',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Search channels`
-  String get search_channel {
-    return Intl.message(
-      'Search channels',
-      name: 'search_channel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Conversations`
-  String get conversations {
-    return Intl.message(
-      'Conversations',
-      name: 'conversations',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No conversations yet`
-  String get conversations_empty_title {
-    return Intl.message(
-      'No conversations yet',
-      name: 'conversations_empty_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Here you'll read what your channels are talking about with your customers`
-  String get conversations_empty_subtitle {
-    return Intl.message(
-      'Here you\'ll read what your channels are talking about with your customers',
-      name: 'conversations_empty_subtitle',
       desc: '',
       args: [],
     );
@@ -4214,16 +5004,6 @@ class S {
     return Intl.message(
       'Connect a WhatsApp number, a Facebook page or an Instagram account and let an agent answer for you',
       name: 'channels_empty_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No channel matches your search`
-  String get channels_search_empty {
-    return Intl.message(
-      'No channel matches your search',
-      name: 'channels_search_empty',
       desc: '',
       args: [],
     );
@@ -4369,61 +5149,6 @@ class S {
     );
   }
 
-  /// `Channel`
-  String get channel_identity_title {
-    return Intl.message(
-      'Channel',
-      name: 'channel_identity_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `How you'll recognize this channel in your list`
-  String get channel_identity_subtitle {
-    return Intl.message(
-      'How you\'ll recognize this channel in your list',
-      name: 'channel_identity_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Name`
-  String get channel_name_input {
-    return Intl.message('Name', name: 'channel_name_input', desc: '', args: []);
-  }
-
-  /// `Sales, Support...`
-  String get channel_name_placeholder {
-    return Intl.message(
-      'Sales, Support...',
-      name: 'channel_name_placeholder',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Description`
-  String get channel_description_input {
-    return Intl.message(
-      'Description',
-      name: 'channel_description_input',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Optional description...`
-  String get channel_description_placeholder {
-    return Intl.message(
-      'Optional description...',
-      name: 'channel_description_placeholder',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Channel type`
   String get channel_type_title {
     return Intl.message(
@@ -4456,7 +5181,32 @@ class S {
 
   /// `Soon`
   String get channel_type_soon {
-    return Intl.message('Soon', name: 'channel_type_soon', desc: '', args: []);
+    return Intl.message(
+      'Soon',
+      name: 'channel_type_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `WhatsApp Personal`
+  String get channel_type_whatsapp_personal {
+    return Intl.message(
+      'WhatsApp Personal',
+      name: 'channel_type_whatsapp_personal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A personal number, without a Meta business account`
+  String get channel_type_whatsapp_personal_hint {
+    return Intl.message(
+      'A personal number, without a Meta business account',
+      name: 'channel_type_whatsapp_personal_hint',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Choose the type of channel you want to connect`
@@ -4466,6 +5216,176 @@ class S {
       name: 'channel_type_missing',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Link your number`
+  String get channel_whatsapp_personal_notice_title {
+    return Intl.message(
+      'Link your number',
+      name: 'channel_whatsapp_personal_notice_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There are no tokens to paste. Once this channel is created, turn it on from the channels list to scan a QR code and link your WhatsApp`
+  String get channel_whatsapp_personal_notice_subtitle {
+    return Intl.message(
+      'There are no tokens to paste. Once this channel is created, turn it on from the channels list to scan a QR code and link your WhatsApp',
+      name: 'channel_whatsapp_personal_notice_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Off`
+  String get baileys_status_stopped {
+    return Intl.message(
+      'Off',
+      name: 'baileys_status_stopped',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Starting…`
+  String get baileys_status_starting {
+    return Intl.message(
+      'Starting…',
+      name: 'baileys_status_starting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan the QR to link`
+  String get baileys_status_qr_pending {
+    return Intl.message(
+      'Scan the QR to link',
+      name: 'baileys_status_qr_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connected`
+  String get baileys_status_connected {
+    return Intl.message(
+      'Connected',
+      name: 'baileys_status_connected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reconnecting…`
+  String get baileys_status_reconnecting {
+    return Intl.message(
+      'Reconnecting…',
+      name: 'baileys_status_reconnecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlinked — scan a new QR`
+  String get baileys_status_logged_out {
+    return Intl.message(
+      'Unlinked — scan a new QR',
+      name: 'baileys_status_logged_out',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connection error`
+  String get baileys_status_error {
+    return Intl.message(
+      'Connection error',
+      name: 'baileys_status_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Off`
+  String get baileys_status_unknown {
+    return Intl.message(
+      'Off',
+      name: 'baileys_status_unknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't start the WhatsApp service`
+  String get baileys_start_error {
+    return Intl.message(
+      'Couldn\'t start the WhatsApp service',
+      name: 'baileys_start_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't stop the WhatsApp service`
+  String get baileys_stop_error {
+    return Intl.message(
+      'Couldn\'t stop the WhatsApp service',
+      name: 'baileys_stop_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Link WhatsApp`
+  String get baileys_pairing_title {
+    return Intl.message(
+      'Link WhatsApp',
+      name: 'baileys_pairing_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open WhatsApp on your phone, go to Linked Devices and scan this code`
+  String get baileys_pairing_instructions {
+    return Intl.message(
+      'Open WhatsApp on your phone, go to Linked Devices and scan this code',
+      name: 'baileys_pairing_instructions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Preparing the QR code…`
+  String get baileys_pairing_waiting {
+    return Intl.message(
+      'Preparing the QR code…',
+      name: 'baileys_pairing_waiting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `WhatsApp linked`
+  String get baileys_pairing_connected {
+    return Intl.message(
+      'WhatsApp linked',
+      name: 'baileys_pairing_connected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't link WhatsApp: {error}`
+  String baileys_pairing_error(Object error) {
+    return Intl.message(
+      'Couldn\'t link WhatsApp: $error',
+      name: 'baileys_pairing_error',
+      desc: '',
+      args: [error],
     );
   }
 
@@ -4749,6 +5669,56 @@ class S {
     );
   }
 
+  /// `No data source`
+  String get channel_source_none {
+    return Intl.message(
+      'No data source',
+      name: 'channel_source_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment methods`
+  String get channel_payments_title {
+    return Intl.message(
+      'Payment methods',
+      name: 'channel_payments_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Which of your accounts the agent may give a customer to pay into. It offers these and no others`
+  String get channel_payments_subtitle {
+    return Intl.message(
+      'Which of your accounts the agent may give a customer to pay into. It offers these and no others',
+      name: 'channel_payments_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This business has no payment accounts yet. Add one in Finance and come back`
+  String get channel_payments_empty {
+    return Intl.message(
+      'This business has no payment accounts yet. Add one in Finance and come back',
+      name: 'channel_payments_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We couldn't load your payment accounts`
+  String get channel_payments_error {
+    return Intl.message(
+      'We couldn\'t load your payment accounts',
+      name: 'channel_payments_error',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Tools`
   String get channel_tools_title {
     return Intl.message(
@@ -4909,9 +5879,144 @@ class S {
     );
   }
 
+  /// `Account`
+  String get channel_account_title {
+    return Intl.message(
+      'Account',
+      name: 'channel_account_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On the network`
+  String get channel_account_id {
+    return Intl.message(
+      'On the network',
+      name: 'channel_account_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Channel id`
+  String get channel_own_id {
+    return Intl.message(
+      'Channel id',
+      name: 'channel_own_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You have unsaved changes on this channel`
+  String get channel_changes_pending {
+    return Intl.message(
+      'You have unsaved changes on this channel',
+      name: 'channel_changes_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Undoing this channel`
+  String get channel_danger_section {
+    return Intl.message(
+      'Undoing this channel',
+      name: 'channel_danger_section',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disconnect channel`
+  String get delete_channel {
+    return Intl.message(
+      'Disconnect channel',
+      name: 'delete_channel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disconnecting deletes the credentials stored for this channel and takes it off the list. The account can be connected again, but you'll have to set it up from scratch.`
+  String get channel_delete_explanation {
+    return Intl.message(
+      'Disconnecting deletes the credentials stored for this channel and takes it off the list. The account can be connected again, but you\'ll have to set it up from scratch.',
+      name: 'channel_delete_explanation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlink WhatsApp`
+  String get baileys_unlink_action {
+    return Intl.message(
+      'Unlink WhatsApp',
+      name: 'baileys_unlink_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlinking drops this computer's link to your phone. The channel stays exactly as it is — its role, its data and its place here — and turning it back on asks for a new QR code.`
+  String get baileys_unlink_explanation {
+    return Intl.message(
+      'Unlinking drops this computer\'s link to your phone. The channel stays exactly as it is — its role, its data and its place here — and turning it back on asks for a new QR code.',
+      name: 'baileys_unlink_explanation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlink this WhatsApp?`
+  String get baileys_unlink_title {
+    return Intl.message(
+      'Unlink this WhatsApp?',
+      name: 'baileys_unlink_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This channel stops answering on WhatsApp until you scan a new QR code. Nothing you set up on it is lost.`
+  String get baileys_unlink_message {
+    return Intl.message(
+      'This channel stops answering on WhatsApp until you scan a new QR code. Nothing you set up on it is lost.',
+      name: 'baileys_unlink_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `WhatsApp unlinked`
+  String get baileys_unlinked {
+    return Intl.message(
+      'WhatsApp unlinked',
+      name: 'baileys_unlinked',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't unlink WhatsApp`
+  String get baileys_unlink_error {
+    return Intl.message(
+      'Couldn\'t unlink WhatsApp',
+      name: 'baileys_unlink_error',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Connections`
   String get connections {
-    return Intl.message('Connections', name: 'connections', desc: '', args: []);
+    return Intl.message(
+      'Connections',
+      name: 'connections',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Connect account`
@@ -5111,7 +6216,8 @@ class S {
   String connection_delete_bots(num count) {
     return Intl.plural(
       count,
-      one: 'The bot answering through it is deleted too — pause the account instead to keep it.',
+      one:
+          'The bot answering through it is deleted too — pause the account instead to keep it.',
       other:
           'The $count bots answering through it are deleted too — pause the account instead to keep them.',
       name: 'connection_delete_bots',
@@ -5412,12 +6518,22 @@ class S {
 
   /// `Inbox`
   String get inbox {
-    return Intl.message('Inbox', name: 'inbox', desc: '', args: []);
+    return Intl.message(
+      'Inbox',
+      name: 'inbox',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Coming soon`
   String get coming_soon {
-    return Intl.message('Coming soon', name: 'coming_soon', desc: '', args: []);
+    return Intl.message(
+      'Coming soon',
+      name: 'coming_soon',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Visible`
@@ -5477,6 +6593,114 @@ class S {
       name: 'field_visibility_hidden_hint',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Normalize columns`
+  String get table_normalize {
+    return Intl.message(
+      'Normalize columns',
+      name: 'table_normalize',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Normalize this table?`
+  String get table_normalize_title {
+    return Intl.message(
+      'Normalize this table?',
+      name: 'table_normalize_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We read a sample of every column and give it the type it should have — a price that compares as a number, a date that sorts, a description the AI can search by meaning — and set how much of each one a bot may see. Columns you already typed or marked yourself are left alone.`
+  String get table_normalize_message {
+    return Intl.message(
+      'We read a sample of every column and give it the type it should have — a price that compares as a number, a date that sorts, a description the AI can search by meaning — and set how much of each one a bot may see. Columns you already typed or marked yourself are left alone.',
+      name: 'table_normalize_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Normalize`
+  String get table_normalize_confirm {
+    return Intl.message(
+      'Normalize',
+      name: 'table_normalize_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Normalizing this table`
+  String get table_normalize_running {
+    return Intl.message(
+      'Normalizing this table',
+      name: 'table_normalize_running',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every column was already right`
+  String get table_normalize_none {
+    return Intl.message(
+      'Every column was already right',
+      name: 'table_normalize_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{1 column retyped} other{{count} columns retyped}}`
+  String table_normalize_retyped(num count) {
+    return Intl.plural(
+      count,
+      one: '1 column retyped',
+      other: '$count columns retyped',
+      name: 'table_normalize_retyped',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{visibility set on 1 column} other{visibility set on {count} columns}}`
+  String table_normalize_narrowed(num count) {
+    return Intl.plural(
+      count,
+      one: 'visibility set on 1 column',
+      other: 'visibility set on $count columns',
+      name: 'table_normalize_narrowed',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 column renamed} other{{count} columns renamed}}`
+  String table_normalize_renamed(num count) {
+    return Intl.plural(
+      count,
+      one: '1 column renamed',
+      other: '$count columns renamed',
+      name: 'table_normalize_renamed',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 column added to the summary} other{{count} columns added to the summary}}`
+  String table_normalize_summarized(num count) {
+    return Intl.plural(
+      count,
+      one: '1 column added to the summary',
+      other: '$count columns added to the summary',
+      name: 'table_normalize_summarized',
+      desc: '',
+      args: [count],
     );
   }
 
@@ -5800,10 +7024,10 @@ class S {
     );
   }
 
-  /// `What each one holds and how much of it the AI sees. Both are changed right here`
+  /// `What each one holds, how much of it the AI sees and which ones the inventory summary shows. All of it is changed right here`
   String get table_settings_columns_subtitle {
     return Intl.message(
-      'What each one holds and how much of it the AI sees. Both are changed right here',
+      'What each one holds, how much of it the AI sees and which ones the inventory summary shows. All of it is changed right here',
       name: 'table_settings_columns_subtitle',
       desc: '',
       args: [],
@@ -5902,6 +7126,76 @@ class S {
     );
   }
 
+  /// `Unit`
+  String get table_settings_column_unit {
+    return Intl.message(
+      'Unit',
+      name: 'table_settings_column_unit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Inventory summary`
+  String get table_settings_column_summary {
+    return Intl.message(
+      'Inventory summary',
+      name: 'table_settings_column_summary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Shown`
+  String get table_settings_column_summary_on {
+    return Intl.message(
+      'Shown',
+      name: 'table_settings_column_summary_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Excluded`
+  String get table_settings_column_summary_off {
+    return Intl.message(
+      'Excluded',
+      name: 'table_settings_column_summary_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show this column in the inventory summary`
+  String get table_settings_column_summary_show {
+    return Intl.message(
+      'Show this column in the inventory summary',
+      name: 'table_settings_column_summary_show',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Leave this column out of the inventory summary`
+  String get table_settings_column_summary_hide {
+    return Intl.message(
+      'Leave this column out of the inventory summary',
+      name: 'table_settings_column_summary_hide',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Inventory summary: {count} of {total} columns`
+  String table_settings_columns_summary_count(Object count, Object total) {
+    return Intl.message(
+      'Inventory summary: $count of $total columns',
+      name: 'table_settings_columns_summary_count',
+      desc: '',
+      args: [count, total],
+    );
+  }
+
   /// `Change what this column holds`
   String get table_settings_pick_type {
     return Intl.message(
@@ -5927,6 +7221,56 @@ class S {
     return Intl.message(
       'The options this column offers',
       name: 'table_settings_pick_options',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The symbol this column's numbers are written in`
+  String get table_settings_pick_unit {
+    return Intl.message(
+      'The symbol this column\'s numbers are written in',
+      name: 'table_settings_pick_unit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No unit`
+  String get table_settings_unit_empty {
+    return Intl.message(
+      'No unit',
+      name: 'table_settings_unit_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Without unit`
+  String get table_settings_unit_none {
+    return Intl.message(
+      'Without unit',
+      name: 'table_settings_unit_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set unit`
+  String get table_settings_unit_create {
+    return Intl.message(
+      'Set unit',
+      name: 'table_settings_unit_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `USD, Bs., kg`
+  String get table_settings_unit_placeholder {
+    return Intl.message(
+      'USD, Bs., kg',
+      name: 'table_settings_unit_placeholder',
       desc: '',
       args: [],
     );
@@ -6206,13 +7550,4047 @@ class S {
       args: [],
     );
   }
+
+  /// `POS`
+  String get pos {
+    return Intl.message(
+      'POS',
+      name: 'pos',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close POS`
+  String get pos_close {
+    return Intl.message(
+      'Close POS',
+      name: 'pos_close',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `POS mode`
+  String get pos_mode {
+    return Intl.message(
+      'POS mode',
+      name: 'pos_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =0{No sales today} =1{1 sale today} other{{count} sales today}}`
+  String pos_sales_today(num count) {
+    return Intl.plural(
+      count,
+      zero: 'No sales today',
+      one: '1 sale today',
+      other: '$count sales today',
+      name: 'pos_sales_today',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `All`
+  String get pos_category_all {
+    return Intl.message(
+      'All',
+      name: 'pos_category_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search products`
+  String get pos_search_product {
+    return Intl.message(
+      'Search products',
+      name: 'pos_search_product',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The catalog could not be loaded`
+  String get pos_catalog_error_title {
+    return Intl.message(
+      'The catalog could not be loaded',
+      name: 'pos_catalog_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The products did not arrive. Try again.`
+  String get pos_catalog_error_subtitle {
+    return Intl.message(
+      'The products did not arrive. Try again.',
+      name: 'pos_catalog_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get pos_catalog_retry {
+    return Intl.message(
+      'Try again',
+      name: 'pos_catalog_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There are no products yet`
+  String get pos_catalog_empty_title {
+    return Intl.message(
+      'There are no products yet',
+      name: 'pos_catalog_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import a price list from the inventory section and it will be sold from here`
+  String get pos_catalog_empty_subtitle {
+    return Intl.message(
+      'Import a price list from the inventory section and it will be sold from here',
+      name: 'pos_catalog_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No product matches`
+  String get pos_catalog_search_empty {
+    return Intl.message(
+      'No product matches',
+      name: 'pos_catalog_search_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There is no catalog to sell from`
+  String get pos_catalog_missing_title {
+    return Intl.message(
+      'There is no catalog to sell from',
+      name: 'pos_catalog_missing_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This business has no products table yet, so there is nothing to ring up`
+  String get pos_catalog_missing_subtitle {
+    return Intl.message(
+      'This business has no products table yet, so there is nothing to ring up',
+      name: 'pos_catalog_missing_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unnamed product`
+  String get pos_product_unnamed {
+    return Intl.message(
+      'Unnamed product',
+      name: 'pos_product_unnamed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No price`
+  String get pos_product_no_price {
+    return Intl.message(
+      'No price',
+      name: 'pos_product_no_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =0{Out of stock} =1{1 left} other{{count} left}}`
+  String pos_product_stock(num count) {
+    return Intl.plural(
+      count,
+      zero: 'Out of stock',
+      one: '1 left',
+      other: '$count left',
+      name: 'pos_product_stock',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `That product has no price, so it cannot be rung up`
+  String get pos_product_no_price_flag {
+    return Intl.message(
+      'That product has no price, so it cannot be rung up',
+      name: 'pos_product_no_price_flag',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket #{number}`
+  String pos_ticket_number(Object number) {
+    return Intl.message(
+      'Ticket #$number',
+      name: 'pos_ticket_number',
+      desc: '',
+      args: [number],
+    );
+  }
+
+  /// `{count, plural, =0{Nothing on it yet} =1{1 product} other{{count} products}}`
+  String pos_ticket_units(num count) {
+    return Intl.plural(
+      count,
+      zero: 'Nothing on it yet',
+      one: '1 product',
+      other: '$count products',
+      name: 'pos_ticket_units',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `The ticket is empty`
+  String get pos_ticket_empty_title {
+    return Intl.message(
+      'The ticket is empty',
+      name: 'pos_ticket_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a product from the catalog and it lands here`
+  String get pos_ticket_empty_subtitle {
+    return Intl.message(
+      'Pick a product from the catalog and it lands here',
+      name: 'pos_ticket_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{price} each`
+  String pos_ticket_each(Object price) {
+    return Intl.message(
+      '$price each',
+      name: 'pos_ticket_each',
+      desc: '',
+      args: [price],
+    );
+  }
+
+  /// `One less`
+  String get pos_ticket_less {
+    return Intl.message(
+      'One less',
+      name: 'pos_ticket_less',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One more`
+  String get pos_ticket_more {
+    return Intl.message(
+      'One more',
+      name: 'pos_ticket_more',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Take it off the ticket`
+  String get pos_ticket_remove {
+    return Intl.message(
+      'Take it off the ticket',
+      name: 'pos_ticket_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Charge an amount`
+  String get pos_ticket_add_amount {
+    return Intl.message(
+      'Charge an amount',
+      name: 'pos_ticket_add_amount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VAT {rate}%`
+  String pos_ticket_tax(Object rate) {
+    return Intl.message(
+      'VAT $rate%',
+      name: 'pos_ticket_tax',
+      desc: '',
+      args: [rate],
+    );
+  }
+
+  /// `Change the rate charged on this ticket`
+  String get pos_ticket_tax_edit {
+    return Intl.message(
+      'Change the rate charged on this ticket',
+      name: 'pos_ticket_tax_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subtotal`
+  String get pos_ticket_subtotal {
+    return Intl.message(
+      'Subtotal',
+      name: 'pos_ticket_subtotal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total`
+  String get pos_ticket_total {
+    return Intl.message(
+      'Total',
+      name: 'pos_ticket_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete ticket`
+  String get pos_ticket_clear {
+    return Intl.message(
+      'Delete ticket',
+      name: 'pos_ticket_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete this ticket?`
+  String get pos_ticket_clear_title {
+    return Intl.message(
+      'Delete this ticket?',
+      name: 'pos_ticket_clear_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Everything on it comes off, the units it was holding go back on sale and nothing is charged.`
+  String get pos_ticket_clear_message {
+    return Intl.message(
+      'Everything on it comes off, the units it was holding go back on sale and nothing is charged.',
+      name: 'pos_ticket_clear_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete it`
+  String get pos_ticket_clear_confirm {
+    return Intl.message(
+      'Delete it',
+      name: 'pos_ticket_clear_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket deleted`
+  String get pos_ticket_cleared {
+    return Intl.message(
+      'Ticket deleted',
+      name: 'pos_ticket_cleared',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No longer set aside`
+  String get pos_ticket_unheld {
+    return Intl.message(
+      'No longer set aside',
+      name: 'pos_ticket_unheld',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The units of {product} were released from the stock screen and are no longer set aside for this ticket`
+  String pos_ticket_released(Object product) {
+    return Intl.message(
+      'The units of $product were released from the stock screen and are no longer set aside for this ticket',
+      name: 'pos_ticket_released',
+      desc: '',
+      args: [product],
+    );
+  }
+
+  /// `This ticket was just charged from another register`
+  String get pos_ticket_taken {
+    return Intl.message(
+      'This ticket was just charged from another register',
+      name: 'pos_ticket_taken',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This ticket was just cancelled from another screen`
+  String get pos_ticket_dropped {
+    return Intl.message(
+      'This ticket was just cancelled from another screen',
+      name: 'pos_ticket_dropped',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Complete purchase`
+  String get pos_ticket_checkout {
+    return Intl.message(
+      'Complete purchase',
+      name: 'pos_ticket_checkout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Charge the ticket`
+  String get pos_checkout_title {
+    return Intl.message(
+      'Charge the ticket',
+      name: 'pos_checkout_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To charge`
+  String get pos_checkout_total {
+    return Intl.message(
+      'To charge',
+      name: 'pos_checkout_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment method`
+  String get pos_checkout_method {
+    return Intl.message(
+      'Payment method',
+      name: 'pos_checkout_method',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How it is being paid`
+  String get pos_checkout_method_placeholder {
+    return Intl.message(
+      'How it is being paid',
+      name: 'pos_checkout_method_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No payment method`
+  String get pos_checkout_method_empty {
+    return Intl.message(
+      'No payment method',
+      name: 'pos_checkout_method_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reference`
+  String get pos_checkout_reference {
+    return Intl.message(
+      'Reference',
+      name: 'pos_checkout_reference',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirmation or authorization number`
+  String get pos_checkout_reference_placeholder {
+    return Intl.message(
+      'Confirmation or authorization number',
+      name: 'pos_checkout_reference_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write the payment's reference so it can be reconciled`
+  String get pos_checkout_reference_error {
+    return Intl.message(
+      'Write the payment\'s reference so it can be reconciled',
+      name: 'pos_checkout_reference_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Charge`
+  String get pos_checkout_confirm {
+    return Intl.message(
+      'Charge',
+      name: 'pos_checkout_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket {ticket} charged`
+  String pos_checkout_done(Object ticket) {
+    return Intl.message(
+      'Ticket $ticket charged',
+      name: 'pos_checkout_done',
+      desc: '',
+      args: [ticket],
+    );
+  }
+
+  /// `The payment methods have not been loaded, so nothing can be charged yet`
+  String get pos_checkout_methods_error {
+    return Intl.message(
+      'The payment methods have not been loaded, so nothing can be charged yet',
+      name: 'pos_checkout_methods_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Charge an amount`
+  String get pos_amount_title {
+    return Intl.message(
+      'Charge an amount',
+      name: 'pos_amount_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For something the catalog does not have: a delivery, a repair, a fee.`
+  String get pos_amount_subtitle {
+    return Intl.message(
+      'For something the catalog does not have: a delivery, a repair, a fee.',
+      name: 'pos_amount_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Concept`
+  String get pos_amount_concept {
+    return Intl.message(
+      'Concept',
+      name: 'pos_amount_concept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What is being charged`
+  String get pos_amount_concept_placeholder {
+    return Intl.message(
+      'What is being charged',
+      name: 'pos_amount_concept_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price`
+  String get pos_amount_price {
+    return Intl.message(
+      'Price',
+      name: 'pos_amount_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `0`
+  String get pos_amount_price_placeholder {
+    return Intl.message(
+      '0',
+      name: 'pos_amount_price_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write the price as a number, zero or more`
+  String get pos_amount_price_error {
+    return Intl.message(
+      'Write the price as a number, zero or more',
+      name: 'pos_amount_price_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add to ticket`
+  String get pos_amount_add {
+    return Intl.message(
+      'Add to ticket',
+      name: 'pos_amount_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VAT rate`
+  String get pos_tax_title {
+    return Intl.message(
+      'VAT rate',
+      name: 'pos_tax_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The percentage charged on this ticket. Written as 16, not as 0.16.`
+  String get pos_tax_subtitle {
+    return Intl.message(
+      'The percentage charged on this ticket. Written as 16, not as 0.16.',
+      name: 'pos_tax_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Percentage`
+  String get pos_tax_input {
+    return Intl.message(
+      'Percentage',
+      name: 'pos_tax_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `0`
+  String get pos_tax_placeholder {
+    return Intl.message(
+      '0',
+      name: 'pos_tax_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A rate between 0 and 100`
+  String get pos_tax_error {
+    return Intl.message(
+      'A rate between 0 and 100',
+      name: 'pos_tax_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stock summary`
+  String get stock_summary_title {
+    return Intl.message(
+      'Stock summary',
+      name: 'stock_summary_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =0{No products} =1{1 product} other{{count} products}}`
+  String stock_summary_count(num count) {
+    return Intl.plural(
+      count,
+      zero: 'No products',
+      one: '1 product',
+      other: '$count products',
+      name: 'stock_summary_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Stock`
+  String get stock_summary_stock {
+    return Intl.message(
+      'Stock',
+      name: 'stock_summary_stock',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reserved`
+  String get stock_summary_reserved {
+    return Intl.message(
+      'Reserved',
+      name: 'stock_summary_reserved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Performance`
+  String get stock_summary_performance {
+    return Intl.message(
+      'Performance',
+      name: 'stock_summary_performance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing to count yet`
+  String get stock_summary_empty_title {
+    return Intl.message(
+      'Nothing to count yet',
+      name: 'stock_summary_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The products of your main table show up here, with what's left of each one.`
+  String get stock_summary_empty_subtitle {
+    return Intl.message(
+      'The products of your main table show up here, with what\'s left of each one.',
+      name: 'stock_summary_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No products match your search`
+  String get stock_summary_search_empty {
+    return Intl.message(
+      'No products match your search',
+      name: 'stock_summary_search_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't load your stock`
+  String get stock_summary_error_title {
+    return Intl.message(
+      'Couldn\'t load your stock',
+      name: 'stock_summary_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something went wrong. Please try again.`
+  String get stock_summary_error_subtitle {
+    return Intl.message(
+      'Something went wrong. Please try again.',
+      name: 'stock_summary_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get stock_summary_retry {
+    return Intl.message(
+      'Try again',
+      name: 'stock_summary_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Take out of stock`
+  String get stock_move_take_stock {
+    return Intl.message(
+      'Take out of stock',
+      name: 'stock_move_take_stock',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add to stock`
+  String get stock_move_add_stock {
+    return Intl.message(
+      'Add to stock',
+      name: 'stock_move_add_stock',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Release reservations`
+  String get stock_move_take_reserved {
+    return Intl.message(
+      'Release reservations',
+      name: 'stock_move_take_reserved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reserve units`
+  String get stock_move_add_reserved {
+    return Intl.message(
+      'Reserve units',
+      name: 'stock_move_add_reserved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =0{Nothing available right now} =1{1 unit available} other{{count} units available}}`
+  String stock_move_available(num count) {
+    return Intl.plural(
+      count,
+      zero: 'Nothing available right now',
+      one: '1 unit available',
+      other: '$count units available',
+      name: 'stock_move_available',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =0{Nothing reserved right now} =1{1 unit reserved} other{{count} units reserved}}`
+  String stock_move_reserved(num count) {
+    return Intl.plural(
+      count,
+      zero: 'Nothing reserved right now',
+      one: '1 unit reserved',
+      other: '$count units reserved',
+      name: 'stock_move_reserved',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Quantity`
+  String get stock_move_quantity {
+    return Intl.message(
+      'Quantity',
+      name: 'stock_move_quantity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How many units`
+  String get stock_move_quantity_placeholder {
+    return Intl.message(
+      'How many units',
+      name: 'stock_move_quantity_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter a whole number between 1 and {max}`
+  String stock_move_quantity_error(Object max) {
+    return Intl.message(
+      'Enter a whole number between 1 and $max',
+      name: 'stock_move_quantity_error',
+      desc: '',
+      args: [max],
+    );
+  }
+
+  /// `Enter a whole number greater than zero`
+  String get stock_move_quantity_error_free {
+    return Intl.message(
+      'Enter a whole number greater than zero',
+      name: 'stock_move_quantity_error_free',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What happens with them`
+  String get stock_move_destination {
+    return Intl.message(
+      'What happens with them',
+      name: 'stock_move_destination',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reason`
+  String get stock_move_reason {
+    return Intl.message(
+      'Reason',
+      name: 'stock_move_reason',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick one`
+  String get stock_move_reason_placeholder {
+    return Intl.message(
+      'Pick one',
+      name: 'stock_move_reason_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No reasons`
+  String get stock_move_reason_empty {
+    return Intl.message(
+      'No reasons',
+      name: 'stock_move_reason_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note`
+  String get stock_move_note {
+    return Intl.message(
+      'Note',
+      name: 'stock_move_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Explain the movement for whoever audits it later`
+  String get stock_move_note_placeholder {
+    return Intl.message(
+      'Explain the movement for whoever audits it later',
+      name: 'stock_move_note_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Take out`
+  String get stock_move_take_action {
+    return Intl.message(
+      'Take out',
+      name: 'stock_move_take_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add`
+  String get stock_move_add_action {
+    return Intl.message(
+      'Add',
+      name: 'stock_move_add_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stock updated`
+  String get stock_move_saved {
+    return Intl.message(
+      'Stock updated',
+      name: 'stock_move_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Take units out`
+  String get stock_move_take_hint {
+    return Intl.message(
+      'Take units out',
+      name: 'stock_move_take_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add units`
+  String get stock_move_add_hint {
+    return Intl.message(
+      'Add units',
+      name: 'stock_move_add_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{One less} other{{count} less}}`
+  String stock_move_step_less(num count) {
+    return Intl.plural(
+      count,
+      one: 'One less',
+      other: '$count less',
+      name: 'stock_move_step_less',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{One more} other{{count} more}}`
+  String stock_move_step_more(num count) {
+    return Intl.plural(
+      count,
+      one: 'One more',
+      other: '$count more',
+      name: 'stock_move_step_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `They leave`
+  String get stock_move_dest_leave {
+    return Intl.message(
+      'They leave',
+      name: 'stock_move_dest_leave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold, damaged, lost or miscounted: they are not coming back.`
+  String get stock_move_dest_leave_hint {
+    return Intl.message(
+      'Sold, damaged, lost or miscounted: they are not coming back.',
+      name: 'stock_move_dest_leave_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To reservations`
+  String get stock_move_dest_reserve {
+    return Intl.message(
+      'To reservations',
+      name: 'stock_move_dest_reserve',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Held for someone. They stop being available to sell.`
+  String get stock_move_dest_reserve_hint {
+    return Intl.message(
+      'Held for someone. They stop being available to sell.',
+      name: 'stock_move_dest_reserve_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To returns`
+  String get stock_move_dest_returns {
+    return Intl.message(
+      'To returns',
+      name: 'stock_move_dest_returns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Units a customer brought back. They wait there until somebody checks them.`
+  String get stock_move_dest_returns_hint {
+    return Intl.message(
+      'Units a customer brought back. They wait there until somebody checks them.',
+      name: 'stock_move_dest_returns_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `They go back on sale.`
+  String get stock_move_release_hint {
+    return Intl.message(
+      'They go back on sale.',
+      name: 'stock_move_release_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restock`
+  String get stock_reason_restock {
+    return Intl.message(
+      'Restock',
+      name: 'stock_reason_restock',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approved return`
+  String get stock_reason_return_approved {
+    return Intl.message(
+      'Approved return',
+      name: 'stock_reason_return_approved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Count correction`
+  String get stock_reason_correction {
+    return Intl.message(
+      'Count correction',
+      name: 'stock_reason_correction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sale`
+  String get stock_reason_sale {
+    return Intl.message(
+      'Sale',
+      name: 'stock_reason_sale',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Damaged`
+  String get stock_reason_damage {
+    return Intl.message(
+      'Damaged',
+      name: 'stock_reason_damage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lost`
+  String get stock_reason_loss {
+    return Intl.message(
+      'Lost',
+      name: 'stock_reason_loss',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expired`
+  String get stock_reason_expiration {
+    return Intl.message(
+      'Expired',
+      name: 'stock_reason_expiration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Theft`
+  String get stock_reason_theft {
+    return Intl.message(
+      'Theft',
+      name: 'stock_reason_theft',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer return`
+  String get stock_reason_customer {
+    return Intl.message(
+      'Customer return',
+      name: 'stock_reason_customer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Defective`
+  String get stock_reason_defective {
+    return Intl.message(
+      'Defective',
+      name: 'stock_reason_defective',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Wrong item`
+  String get stock_reason_wrong_item {
+    return Intl.message(
+      'Wrong item',
+      name: 'stock_reason_wrong_item',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Warranty`
+  String get stock_reason_warranty {
+    return Intl.message(
+      'Warranty',
+      name: 'stock_reason_warranty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Back on sale`
+  String get stock_reason_reintegration {
+    return Intl.message(
+      'Back on sale',
+      name: 'stock_reason_reintegration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The hold ran out`
+  String get stock_reason_hold_expired {
+    return Intl.message(
+      'The hold ran out',
+      name: 'stock_reason_hold_expired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer cancelled`
+  String get stock_reason_cancelled {
+    return Intl.message(
+      'Customer cancelled',
+      name: 'stock_reason_cancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overview`
+  String get finance_tab_overview {
+    return Intl.message(
+      'Overview',
+      name: 'finance_tab_overview',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payments`
+  String get finance_tab_payments {
+    return Intl.message(
+      'Payments',
+      name: 'finance_tab_payments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receivables`
+  String get finance_tab_receivables {
+    return Intl.message(
+      'Receivables',
+      name: 'finance_tab_receivables',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment methods`
+  String get finance_tab_methods {
+    return Intl.message(
+      'Payment methods',
+      name: 'finance_tab_methods',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get finance_retry {
+    return Intl.message(
+      'Try again',
+      name: 'finance_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No option matches your search`
+  String get finance_select_empty {
+    return Intl.message(
+      'No option matches your search',
+      name: 'finance_select_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Load {count} more`
+  String finance_more(Object count) {
+    return Intl.message(
+      'Load $count more',
+      name: 'finance_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Today`
+  String get finance_range_today {
+    return Intl.message(
+      'Today',
+      name: 'finance_range_today',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last 7 days`
+  String get finance_range_week {
+    return Intl.message(
+      'Last 7 days',
+      name: 'finance_range_week',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last 30 days`
+  String get finance_range_month {
+    return Intl.message(
+      'Last 30 days',
+      name: 'finance_range_month',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last 12 months`
+  String get finance_range_year {
+    return Intl.message(
+      'Last 12 months',
+      name: 'finance_range_year',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From {from} to {to}`
+  String finance_window(Object from, Object to) {
+    return Intl.message(
+      'From $from to $to',
+      name: 'finance_window',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `Received`
+  String get finance_income {
+    return Intl.message(
+      'Received',
+      name: 'finance_income',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales`
+  String get finance_income_sales {
+    return Intl.message(
+      'Sales',
+      name: 'finance_income_sales',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other income`
+  String get finance_income_payments {
+    return Intl.message(
+      'Other income',
+      name: 'finance_income_payments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid`
+  String get finance_expenses {
+    return Intl.message(
+      'Paid',
+      name: 'finance_expenses',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Net`
+  String get finance_net {
+    return Intl.message(
+      'Net',
+      name: 'finance_net',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Received minus paid`
+  String get finance_net_hint {
+    return Intl.message(
+      'Received minus paid',
+      name: 'finance_net_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold on credit`
+  String get finance_credit {
+    return Intl.message(
+      'Sold on credit',
+      name: 'finance_credit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not collected yet, so it is not income`
+  String get finance_credit_hint {
+    return Intl.message(
+      'Not collected yet, so it is not income',
+      name: 'finance_credit_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} movements`
+  String finance_movements(Object count) {
+    return Intl.message(
+      '$count movements',
+      name: 'finance_movements',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `By method`
+  String get finance_by_method {
+    return Intl.message(
+      'By method',
+      name: 'finance_by_method',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By concept`
+  String get finance_by_concept {
+    return Intl.message(
+      'By concept',
+      name: 'finance_by_concept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing moved in this period`
+  String get finance_breakdown_empty {
+    return Intl.message(
+      'Nothing moved in this period',
+      name: 'finance_breakdown_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The figures could not be loaded`
+  String get finance_summary_error_title {
+    return Intl.message(
+      'The figures could not be loaded',
+      name: 'finance_summary_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The money of this period could not be read. Try again in a moment.`
+  String get finance_summary_error_subtitle {
+    return Intl.message(
+      'The money of this period could not be read. Try again in a moment.',
+      name: 'finance_summary_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No money moved`
+  String get finance_summary_empty_title {
+    return Intl.message(
+      'No money moved',
+      name: 'finance_summary_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing came in and nothing went out in this period.`
+  String get finance_summary_empty_subtitle {
+    return Intl.message(
+      'Nothing came in and nothing went out in this period.',
+      name: 'finance_summary_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra spend`
+  String get finance_bot_title {
+    return Intl.message(
+      'Lyra spend',
+      name: 'finance_bot_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What Lyra, the bot that answers your customers, cost to run — billed in {currency}. It is measured and not recorded, so it is not part of the money above.`
+  String finance_bot_hint(Object currency) {
+    return Intl.message(
+      'What Lyra, the bot that answers your customers, cost to run — billed in $currency. It is measured and not recorded, so it is not part of the money above.',
+      name: 'finance_bot_hint',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `Answering messages`
+  String get finance_bot_answers {
+    return Intl.message(
+      'Answering messages',
+      name: 'finance_bot_answers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Replies`
+  String get finance_bot_text {
+    return Intl.message(
+      'Replies',
+      name: 'finance_bot_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Images and audio`
+  String get finance_bot_media {
+    return Intl.message(
+      'Images and audio',
+      name: 'finance_bot_media',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Web lookups`
+  String get finance_bot_research {
+    return Intl.message(
+      'Web lookups',
+      name: 'finance_bot_research',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reading your tables`
+  String get finance_bot_tables {
+    return Intl.message(
+      'Reading your tables',
+      name: 'finance_bot_tables',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} runs`
+  String finance_bot_tables_hint(Object count) {
+    return Intl.message(
+      '$count runs',
+      name: 'finance_bot_tables_hint',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Search index`
+  String get finance_bot_vectors {
+    return Intl.message(
+      'Search index',
+      name: 'finance_bot_vectors',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Catalog`
+  String get finance_bot_catalog {
+    return Intl.message(
+      'Catalog',
+      name: 'finance_bot_catalog',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Searches`
+  String get finance_bot_queries {
+    return Intl.message(
+      'Searches',
+      name: 'finance_bot_queries',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unattributed`
+  String get finance_bot_other {
+    return Intl.message(
+      'Unattributed',
+      name: 'finance_bot_other',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Spend of no known area`
+  String get finance_bot_other_hint {
+    return Intl.message(
+      'Spend of no known area',
+      name: 'finance_bot_other_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{conversations} conversations · {messages} replies`
+  String finance_bot_activity(Object conversations, Object messages) {
+    return Intl.message(
+      '$conversations conversations · $messages replies',
+      name: 'finance_bot_activity',
+      desc: '',
+      args: [conversations, messages],
+    );
+  }
+
+  /// `What Lyra cost could not be read`
+  String get finance_bot_error_title {
+    return Intl.message(
+      'What Lyra cost could not be read',
+      name: 'finance_bot_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The figures behind the bot could not be measured, which is not the same as it having cost nothing. Try again in a moment.`
+  String get finance_bot_error_subtitle {
+    return Intl.message(
+      'The figures behind the bot could not be measured, which is not the same as it having cost nothing. Try again in a moment.',
+      name: 'finance_bot_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra cost nothing in this period`
+  String get finance_bot_empty {
+    return Intl.message(
+      'Lyra cost nothing in this period',
+      name: 'finance_bot_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Record payment`
+  String get finance_payments_record {
+    return Intl.message(
+      'Record payment',
+      name: 'finance_payments_record',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All`
+  String get finance_payments_all {
+    return Intl.message(
+      'All',
+      name: 'finance_payments_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Received`
+  String get finance_payments_in {
+    return Intl.message(
+      'Received',
+      name: 'finance_payments_in',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid`
+  String get finance_payments_out {
+    return Intl.message(
+      'Paid',
+      name: 'finance_payments_out',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Any`
+  String get finance_payments_any {
+    return Intl.message(
+      'Any',
+      name: 'finance_payments_any',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recorded and voided`
+  String get finance_payments_any_state {
+    return Intl.message(
+      'Recorded and voided',
+      name: 'finance_payments_any_state',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recorded`
+  String get finance_payments_recorded {
+    return Intl.message(
+      'Recorded',
+      name: 'finance_payments_recorded',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Voided`
+  String get finance_payments_voided {
+    return Intl.message(
+      'Voided',
+      name: 'finance_payments_voided',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear filters`
+  String get finance_payments_clear {
+    return Intl.message(
+      'Clear filters',
+      name: 'finance_payments_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The history could not be loaded`
+  String get finance_payments_error_title {
+    return Intl.message(
+      'The history could not be loaded',
+      name: 'finance_payments_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The movements of this company could not be read. Try again in a moment.`
+  String get finance_payments_error_subtitle {
+    return Intl.message(
+      'The movements of this company could not be read. Try again in a moment.',
+      name: 'finance_payments_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No payments recorded yet`
+  String get finance_payments_empty_title {
+    return Intl.message(
+      'No payments recorded yet',
+      name: 'finance_payments_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Money paid to a supplier or collected outside the counter is recorded here.`
+  String get finance_payments_empty_subtitle {
+    return Intl.message(
+      'Money paid to a supplier or collected outside the counter is recorded here.',
+      name: 'finance_payments_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No movement matches`
+  String get finance_payments_none_title {
+    return Intl.message(
+      'No movement matches',
+      name: 'finance_payments_none_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing was received or paid under these filters.`
+  String get finance_payments_none_subtitle {
+    return Intl.message(
+      'Nothing was received or paid under these filters.',
+      name: 'finance_payments_none_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Date`
+  String get finance_payment_date {
+    return Intl.message(
+      'Date',
+      name: 'finance_payment_date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Concept`
+  String get finance_payment_concept {
+    return Intl.message(
+      'Concept',
+      name: 'finance_payment_concept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Counterpart`
+  String get finance_payment_counterpart {
+    return Intl.message(
+      'Counterpart',
+      name: 'finance_payment_counterpart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Method`
+  String get finance_payment_method {
+    return Intl.message(
+      'Method',
+      name: 'finance_payment_method',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reference`
+  String get finance_payment_reference {
+    return Intl.message(
+      'Reference',
+      name: 'finance_payment_reference',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Amount`
+  String get finance_payment_amount {
+    return Intl.message(
+      'Amount',
+      name: 'finance_payment_amount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket`
+  String get finance_payment_ticket {
+    return Intl.message(
+      'Ticket',
+      name: 'finance_payment_ticket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note`
+  String get finance_payment_note {
+    return Intl.message(
+      'Note',
+      name: 'finance_payment_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Void`
+  String get finance_payment_void {
+    return Intl.message(
+      'Void',
+      name: 'finance_payment_void',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Void this payment?`
+  String get finance_payment_void_title {
+    return Intl.message(
+      'Void this payment?',
+      name: 'finance_payment_void_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The payment of {amount} stops counting, but stays in the history. It cannot be undone: a mistake is voided and recorded again.`
+  String finance_payment_void_message(Object amount) {
+    return Intl.message(
+      'The payment of $amount stops counting, but stays in the history. It cannot be undone: a mistake is voided and recorded again.',
+      name: 'finance_payment_void_message',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Record a payment`
+  String get finance_record_title {
+    return Intl.message(
+      'Record a payment',
+      name: 'finance_record_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Money the company received or paid outside the counter. A sale's own payment is already on its ticket.`
+  String get finance_record_subtitle {
+    return Intl.message(
+      'Money the company received or paid outside the counter. A sale\'s own payment is already on its ticket.',
+      name: 'finance_record_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Record`
+  String get finance_record_save {
+    return Intl.message(
+      'Record',
+      name: 'finance_record_save',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write how much money moved`
+  String get finance_record_amount_error {
+    return Intl.message(
+      'Write how much money moved',
+      name: 'finance_record_amount_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What was it for?`
+  String get finance_record_concept_placeholder {
+    return Intl.message(
+      'What was it for?',
+      name: 'finance_record_concept_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket code`
+  String get finance_record_ticket_placeholder {
+    return Intl.message(
+      'Ticket code',
+      name: 'finance_record_ticket_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account`
+  String get finance_record_account {
+    return Intl.message(
+      'Account',
+      name: 'finance_record_account',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where did the money land?`
+  String get finance_record_account_placeholder {
+    return Intl.message(
+      'Where did the money land?',
+      name: 'finance_record_account_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No account`
+  String get finance_record_no_account {
+    return Intl.message(
+      'No account',
+      name: 'finance_record_no_account',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How did it move?`
+  String get finance_record_method_placeholder {
+    return Intl.message(
+      'How did it move?',
+      name: 'finance_record_method_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirmation number`
+  String get finance_record_reference_placeholder {
+    return Intl.message(
+      'Confirmation number',
+      name: 'finance_record_reference_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who paid, or who was paid`
+  String get finance_record_counterpart_placeholder {
+    return Intl.message(
+      'Who paid, or who was paid',
+      name: 'finance_record_counterpart_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What should be remembered about it`
+  String get finance_record_note_placeholder {
+    return Intl.message(
+      'What should be remembered about it',
+      name: 'finance_record_note_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The debts could not be loaded`
+  String get finance_receivables_error_title {
+    return Intl.message(
+      'The debts could not be loaded',
+      name: 'finance_receivables_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The credit sales of this company could not be read. Try again in a moment.`
+  String get finance_receivables_error_subtitle {
+    return Intl.message(
+      'The credit sales of this company could not be read. Try again in a moment.',
+      name: 'finance_receivables_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nobody owes anything`
+  String get finance_receivables_empty_title {
+    return Intl.message(
+      'Nobody owes anything',
+      name: 'finance_receivables_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every credit sale has been collected.`
+  String get finance_receivables_empty_subtitle {
+    return Intl.message(
+      'Every credit sale has been collected.',
+      name: 'finance_receivables_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only unpaid`
+  String get finance_receivables_open_only {
+    return Intl.message(
+      'Only unpaid',
+      name: 'finance_receivables_open_only',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold on credit`
+  String get finance_receivables_sold {
+    return Intl.message(
+      'Sold on credit',
+      name: 'finance_receivables_sold',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Collected`
+  String get finance_receivables_collected {
+    return Intl.message(
+      'Collected',
+      name: 'finance_receivables_collected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outstanding`
+  String get finance_receivables_outstanding {
+    return Intl.message(
+      'Outstanding',
+      name: 'finance_receivables_outstanding',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket`
+  String get finance_receivable_ticket {
+    return Intl.message(
+      'Ticket',
+      name: 'finance_receivable_ticket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer`
+  String get finance_receivable_customer {
+    return Intl.message(
+      'Customer',
+      name: 'finance_receivable_customer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold on`
+  String get finance_receivable_date {
+    return Intl.message(
+      'Sold on',
+      name: 'finance_receivable_date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total`
+  String get finance_receivable_total {
+    return Intl.message(
+      'Total',
+      name: 'finance_receivable_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Collected`
+  String get finance_receivable_collected {
+    return Intl.message(
+      'Collected',
+      name: 'finance_receivable_collected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outstanding`
+  String get finance_receivable_outstanding {
+    return Intl.message(
+      'Outstanding',
+      name: 'finance_receivable_outstanding',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Record collection`
+  String get finance_receivable_collect {
+    return Intl.message(
+      'Record collection',
+      name: 'finance_receivable_collect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add method`
+  String get finance_methods_add {
+    return Intl.message(
+      'Add method',
+      name: 'finance_methods_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The payment methods could not be loaded`
+  String get finance_methods_error_title {
+    return Intl.message(
+      'The payment methods could not be loaded',
+      name: 'finance_methods_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The accounts of this company could not be read. Try again in a moment.`
+  String get finance_methods_error_subtitle {
+    return Intl.message(
+      'The accounts of this company could not be read. Try again in a moment.',
+      name: 'finance_methods_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No payment method yet`
+  String get finance_methods_empty_title {
+    return Intl.message(
+      'No payment method yet',
+      name: 'finance_methods_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add the account a customer is told to send money to.`
+  String get finance_methods_empty_subtitle {
+    return Intl.message(
+      'Add the account a customer is told to send money to.',
+      name: 'finance_methods_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a payment method`
+  String get finance_method_create_title {
+    return Intl.message(
+      'Add a payment method',
+      name: 'finance_method_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit payment method`
+  String get finance_method_edit_title {
+    return Intl.message(
+      'Edit payment method',
+      name: 'finance_method_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What a customer is told when they ask how to pay. Each method asks only for what it needs to receive money.`
+  String get finance_method_subtitle {
+    return Intl.message(
+      'What a customer is told when they ask how to pay. Each method asks only for what it needs to receive money.',
+      name: 'finance_method_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Method`
+  String get finance_method_rail {
+    return Intl.message(
+      'Method',
+      name: 'finance_method_rail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Which one do you accept?`
+  String get finance_method_rail_placeholder {
+    return Intl.message(
+      'Which one do you accept?',
+      name: 'finance_method_rail_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cannot be changed`
+  String get finance_method_rail_fixed {
+    return Intl.message(
+      'Cannot be changed',
+      name: 'finance_method_rail_fixed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The available methods could not be read. Go back to the tab and try again.`
+  String get finance_method_no_rails {
+    return Intl.message(
+      'The available methods could not be read. Go back to the tab and try again.',
+      name: 'finance_method_no_rails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name`
+  String get finance_method_label {
+    return Intl.message(
+      'Name',
+      name: 'finance_method_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How you call this account`
+  String get finance_method_label_placeholder {
+    return Intl.message(
+      'How you call this account',
+      name: 'finance_method_label_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holder`
+  String get finance_method_holder {
+    return Intl.message(
+      'Holder',
+      name: 'finance_method_holder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name the account is under`
+  String get finance_method_holder_placeholder {
+    return Intl.message(
+      'Name the account is under',
+      name: 'finance_method_holder_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Id number`
+  String get finance_method_document {
+    return Intl.message(
+      'Id number',
+      name: 'finance_method_document',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tax or personal id`
+  String get finance_method_document_placeholder {
+    return Intl.message(
+      'Tax or personal id',
+      name: 'finance_method_document_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Institution`
+  String get finance_method_institution {
+    return Intl.message(
+      'Institution',
+      name: 'finance_method_institution',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bank, wallet or network`
+  String get finance_method_institution_placeholder {
+    return Intl.message(
+      'Bank, wallet or network',
+      name: 'finance_method_institution_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account`
+  String get finance_method_account {
+    return Intl.message(
+      'Account',
+      name: 'finance_method_account',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Number, phone, email or address`
+  String get finance_method_account_placeholder {
+    return Intl.message(
+      'Number, phone, email or address',
+      name: 'finance_method_account_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Instructions`
+  String get finance_method_instructions {
+    return Intl.message(
+      'Instructions',
+      name: 'finance_method_instructions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the customer has to do besides sending it`
+  String get finance_method_instructions_placeholder {
+    return Intl.message(
+      'What the customer has to do besides sending it',
+      name: 'finance_method_instructions_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `optional`
+  String get finance_method_optional {
+    return Intl.message(
+      'optional',
+      name: 'finance_method_optional',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type`
+  String get finance_method_document_type {
+    return Intl.message(
+      'Type',
+      name: 'finance_method_document_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This method needs no account details: name it if you want and save it.`
+  String get finance_method_nothing {
+    return Intl.message(
+      'This method needs no account details: name it if you want and save it.',
+      name: 'finance_method_nothing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn off`
+  String get finance_method_remove {
+    return Intl.message(
+      'Turn off',
+      name: 'finance_method_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn this method off?`
+  String get finance_method_remove_title {
+    return Intl.message(
+      'Turn this method off?',
+      name: 'finance_method_remove_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} stops being offered. The payments already recorded through it stay in the history.`
+  String finance_method_remove_message(Object name) {
+    return Intl.message(
+      '$name stops being offered. The payments already recorded through it stay in the history.',
+      name: 'finance_method_remove_message',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Sales`
+  String get sales {
+    return Intl.message(
+      'Sales',
+      name: 'sales',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transactions`
+  String get section_transactions {
+    return Intl.message(
+      'Transactions',
+      name: 'section_transactions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In progress`
+  String get sales_tab_process {
+    return Intl.message(
+      'In progress',
+      name: 'sales_tab_process',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Completed`
+  String get sales_tab_done {
+    return Intl.message(
+      'Completed',
+      name: 'sales_tab_done',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} sales`
+  String sales_count(Object count) {
+    return Intl.message(
+      '$count sales',
+      name: 'sales_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} moved`
+  String sales_pending(Object count) {
+    return Intl.message(
+      '$count moved',
+      name: 'sales_pending',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Load more`
+  String get sales_more {
+    return Intl.message(
+      'Load more',
+      name: 'sales_more',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get sales_retry {
+    return Intl.message(
+      'Try again',
+      name: 'sales_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every state`
+  String get sales_all_stages {
+    return Intl.message(
+      'Every state',
+      name: 'sales_all_stages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Channel`
+  String get sales_channel {
+    return Intl.message(
+      'Channel',
+      name: 'sales_channel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every channel`
+  String get sales_any_channel {
+    return Intl.message(
+      'Every channel',
+      name: 'sales_any_channel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold by me`
+  String get sales_mine {
+    return Intl.message(
+      'Sold by me',
+      name: 'sales_mine',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear filters`
+  String get sales_clear {
+    return Intl.message(
+      'Clear filters',
+      name: 'sales_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing to choose from`
+  String get sales_select_empty {
+    return Intl.message(
+      'Nothing to choose from',
+      name: 'sales_select_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filtering by channel or by seller answers with tickets only: a conversation the assistant is still holding has neither.`
+  String get sales_tickets_only {
+    return Intl.message(
+      'Filtering by channel or by seller answers with tickets only: a conversation the assistant is still holding has neither.',
+      name: 'sales_tickets_only',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The states could not be read`
+  String get sales_catalog_error {
+    return Intl.message(
+      'The states could not be read',
+      name: 'sales_catalog_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `State`
+  String get sales_column_stage {
+    return Intl.message(
+      'State',
+      name: 'sales_column_stage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer`
+  String get sales_column_customer {
+    return Intl.message(
+      'Customer',
+      name: 'sales_column_customer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Came in through`
+  String get sales_column_channel {
+    return Intl.message(
+      'Came in through',
+      name: 'sales_column_channel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting`
+  String get sales_column_wait {
+    return Intl.message(
+      'Waiting',
+      name: 'sales_column_wait',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket`
+  String get sales_column_ticket {
+    return Intl.message(
+      'Ticket',
+      name: 'sales_column_ticket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Units`
+  String get sales_column_units {
+    return Intl.message(
+      'Units',
+      name: 'sales_column_units',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total`
+  String get sales_column_total {
+    return Intl.message(
+      'Total',
+      name: 'sales_column_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outstanding`
+  String get sales_column_outstanding {
+    return Intl.message(
+      'Outstanding',
+      name: 'sales_column_outstanding',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold by`
+  String get sales_column_seller {
+    return Intl.message(
+      'Sold by',
+      name: 'sales_column_seller',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `just now`
+  String get sales_wait_now {
+    return Intl.message(
+      'just now',
+      name: 'sales_wait_now',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} min`
+  String sales_wait_minutes(Object count) {
+    return Intl.message(
+      '$count min',
+      name: 'sales_wait_minutes',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} h`
+  String sales_wait_hours(Object count) {
+    return Intl.message(
+      '$count h',
+      name: 'sales_wait_hours',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} d`
+  String sales_wait_days(Object count) {
+    return Intl.message(
+      '$count d',
+      name: 'sales_wait_days',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `The sales could not be read`
+  String get sales_error_title {
+    return Intl.message(
+      'The sales could not be read',
+      name: 'sales_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the connection and try again.`
+  String get sales_error_subtitle {
+    return Intl.message(
+      'Check the connection and try again.',
+      name: 'sales_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing pending`
+  String get sales_empty_process_title {
+    return Intl.message(
+      'Nothing pending',
+      name: 'sales_empty_process_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No sale is waiting on anybody: nothing to charge, nothing to verify, nothing to hand over.`
+  String get sales_empty_process_subtitle {
+    return Intl.message(
+      'No sale is waiting on anybody: nothing to charge, nothing to verify, nothing to hand over.',
+      name: 'sales_empty_process_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No sale finished yet`
+  String get sales_empty_done_title {
+    return Intl.message(
+      'No sale finished yet',
+      name: 'sales_empty_done_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A sale lands here once the money has arrived and the customer has the goods.`
+  String get sales_empty_done_subtitle {
+    return Intl.message(
+      'A sale lands here once the money has arrived and the customer has the goods.',
+      name: 'sales_empty_done_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No sale matches`
+  String get sales_empty_filter_title {
+    return Intl.message(
+      'No sale matches',
+      name: 'sales_empty_filter_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing is at that state, or came in through that channel.`
+  String get sales_empty_filter_subtitle {
+    return Intl.message(
+      'Nothing is at that state, or came in through that channel.',
+      name: 'sales_empty_filter_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The search narrows the sales already read, by ticket code, customer and seller.`
+  String get sales_search_scope {
+    return Intl.message(
+      'The search narrows the sales already read, by ticket code, customer and seller.',
+      name: 'sales_search_scope',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No sale matches the search`
+  String get sales_search_empty_title {
+    return Intl.message(
+      'No sale matches the search',
+      name: 'sales_search_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing read so far carries that ticket code, customer or seller. The sale may be further down: load more and search again.`
+  String get sales_search_empty_subtitle {
+    return Intl.message(
+      'Nothing read so far carries that ticket code, customer or seller. The sale may be further down: load more and search again.',
+      name: 'sales_search_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Record the handover`
+  String get sales_handover_action {
+    return Intl.message(
+      'Record the handover',
+      name: 'sales_handover_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Handover`
+  String get sales_handover_title {
+    return Intl.message(
+      'Handover',
+      name: 'sales_handover_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Say how the customer gets this sale and how far that got. Nobody else can: the shelf knows the units left and the ticket knows the money arrived, but only a person knows whether the delivery went out or the customer came for it.`
+  String get sales_handover_subtitle {
+    return Intl.message(
+      'Say how the customer gets this sale and how far that got. Nobody else can: the shelf knows the units left and the ticket knows the money arrived, but only a person knows whether the delivery went out or the customer came for it.',
+      name: 'sales_handover_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How they get it`
+  String get sales_handover_mode {
+    return Intl.message(
+      'How they get it',
+      name: 'sales_handover_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Handed over, collected or delivered`
+  String get sales_handover_mode_placeholder {
+    return Intl.message(
+      'Handed over, collected or delivered',
+      name: 'sales_handover_mode_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose how the customer gets it`
+  String get sales_handover_mode_error {
+    return Intl.message(
+      'Choose how the customer gets it',
+      name: 'sales_handover_mode_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That is what the sale already says`
+  String get sales_handover_same_error {
+    return Intl.message(
+      'That is what the sale already says',
+      name: 'sales_handover_same_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where it got to`
+  String get sales_handover_state {
+    return Intl.message(
+      'Where it got to',
+      name: 'sales_handover_state',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not sent, dispatched or delivered`
+  String get sales_handover_state_placeholder {
+    return Intl.message(
+      'Not sent, dispatched or delivered',
+      name: 'sales_handover_state_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note`
+  String get sales_handover_note {
+    return Intl.message(
+      'Note',
+      name: 'sales_handover_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A tracking number, who collected it`
+  String get sales_handover_note_placeholder {
+    return Intl.message(
+      'A tracking number, who collected it',
+      name: 'sales_handover_note_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Record`
+  String get sales_handover_save {
+    return Intl.message(
+      'Record',
+      name: 'sales_handover_save',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Handover recorded`
+  String get sales_handover_saved {
+    return Intl.message(
+      'Handover recorded',
+      name: 'sales_handover_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sale`
+  String get sales_detail_title {
+    return Intl.message(
+      'Sale',
+      name: 'sales_detail_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open the sale`
+  String get sales_detail_open {
+    return Intl.message(
+      'Open the sale',
+      name: 'sales_detail_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The sale could not be read`
+  String get sales_detail_error_title {
+    return Intl.message(
+      'The sale could not be read',
+      name: 'sales_detail_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the connection and try again.`
+  String get sales_detail_error_subtitle {
+    return Intl.message(
+      'Check the connection and try again.',
+      name: 'sales_detail_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is no longer a sale`
+  String get sales_detail_missing_title {
+    return Intl.message(
+      'This is no longer a sale',
+      name: 'sales_detail_missing_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing is held for it and nothing was agreed on the money, or it was rung up under another record. Refresh the board to see where it went.`
+  String get sales_detail_missing_subtitle {
+    return Intl.message(
+      'Nothing is held for it and nothing was agreed on the money, or it was rung up under another record. Refresh the board to see where it went.',
+      name: 'sales_detail_missing_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Charged`
+  String get sales_detail_source_ticket {
+    return Intl.message(
+      'Charged',
+      name: 'sales_detail_source_ticket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open at the till`
+  String get sales_detail_source_invoice {
+    return Intl.message(
+      'Open at the till',
+      name: 'sales_detail_source_invoice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Being arranged`
+  String get sales_detail_source_chat {
+    return Intl.message(
+      'Being arranged',
+      name: 'sales_detail_source_chat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open`
+  String get sales_detail_status_open {
+    return Intl.message(
+      'Open',
+      name: 'sales_detail_status_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Charged`
+  String get sales_detail_status_completed {
+    return Intl.message(
+      'Charged',
+      name: 'sales_detail_status_completed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelled`
+  String get sales_detail_status_cancelled {
+    return Intl.message(
+      'Cancelled',
+      name: 'sales_detail_status_cancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed`
+  String get sales_detail_status_failed {
+    return Intl.message(
+      'Failed',
+      name: 'sales_detail_status_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting on you`
+  String get sales_detail_attention {
+    return Intl.message(
+      'Waiting on you',
+      name: 'sales_detail_attention',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No name given`
+  String get sales_detail_customer_unknown {
+    return Intl.message(
+      'No name given',
+      name: 'sales_detail_customer_unknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not said`
+  String get sales_detail_none {
+    return Intl.message(
+      'Not said',
+      name: 'sales_detail_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The money`
+  String get sales_detail_money {
+    return Intl.message(
+      'The money',
+      name: 'sales_detail_money',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Units`
+  String get sales_detail_units {
+    return Intl.message(
+      'Units',
+      name: 'sales_detail_units',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subtotal`
+  String get sales_detail_subtotal {
+    return Intl.message(
+      'Subtotal',
+      name: 'sales_detail_subtotal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tax`
+  String get sales_detail_tax {
+    return Intl.message(
+      'Tax',
+      name: 'sales_detail_tax',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total`
+  String get sales_detail_total {
+    return Intl.message(
+      'Total',
+      name: 'sales_detail_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nobody has priced it`
+  String get sales_detail_unpriced {
+    return Intl.message(
+      'Nobody has priced it',
+      name: 'sales_detail_unpriced',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing has been rung up`
+  String get sales_detail_untaxed {
+    return Intl.message(
+      'Nothing has been rung up',
+      name: 'sales_detail_untaxed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{rate}% on {base}`
+  String sales_detail_tax_rate(Object rate, Object base) {
+    return Intl.message(
+      '$rate% on $base',
+      name: 'sales_detail_tax_rate',
+      desc: '',
+      args: [rate, base],
+    );
+  }
+
+  /// `Paid with`
+  String get sales_detail_method {
+    return Intl.message(
+      'Paid with',
+      name: 'sales_detail_method',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Offered to pay with`
+  String get sales_detail_method_offered {
+    return Intl.message(
+      'Offered to pay with',
+      name: 'sales_detail_method_offered',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reference`
+  String get sales_detail_reference {
+    return Intl.message(
+      'Reference',
+      name: 'sales_detail_reference',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold on credit`
+  String get sales_detail_credit {
+    return Intl.message(
+      'Sold on credit',
+      name: 'sales_detail_credit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Collected`
+  String get sales_detail_collected {
+    return Intl.message(
+      'Collected',
+      name: 'sales_detail_collected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Still owed`
+  String get sales_detail_outstanding {
+    return Intl.message(
+      'Still owed',
+      name: 'sales_detail_outstanding',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing owed`
+  String get sales_detail_settled {
+    return Intl.message(
+      'Nothing owed',
+      name: 'sales_detail_settled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What is on it`
+  String get sales_detail_items {
+    return Intl.message(
+      'What is on it',
+      name: 'sales_detail_items',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing on it yet`
+  String get sales_detail_items_empty {
+    return Intl.message(
+      'Nothing on it yet',
+      name: 'sales_detail_items_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Product`
+  String get sales_detail_item_product {
+    return Intl.message(
+      'Product',
+      name: 'sales_detail_item_product',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qty`
+  String get sales_detail_item_qty {
+    return Intl.message(
+      'Qty',
+      name: 'sales_detail_item_qty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price`
+  String get sales_detail_item_price {
+    return Intl.message(
+      'Price',
+      name: 'sales_detail_item_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total`
+  String get sales_detail_item_total {
+    return Intl.message(
+      'Total',
+      name: 'sales_detail_item_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No longer sold`
+  String get sales_detail_item_gone {
+    return Intl.message(
+      'No longer sold',
+      name: 'sales_detail_item_gone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Said to be held, and nothing is`
+  String get sales_detail_item_unheld {
+    return Intl.message(
+      'Said to be held, and nothing is',
+      name: 'sales_detail_item_unheld',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} held`
+  String sales_detail_item_held(Object count) {
+    return Intl.message(
+      '$count held',
+      name: 'sales_detail_item_held',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} left`
+  String sales_detail_item_available(Object count) {
+    return Intl.message(
+      '$count left',
+      name: 'sales_detail_item_available',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `was {price}`
+  String sales_detail_item_list(Object price) {
+    return Intl.message(
+      'was $price',
+      name: 'sales_detail_item_list',
+      desc: '',
+      args: [price],
+    );
+  }
+
+  /// `Not a product`
+  String get sales_detail_item_concept {
+    return Intl.message(
+      'Not a product',
+      name: 'sales_detail_item_concept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The handover`
+  String get sales_detail_handover {
+    return Intl.message(
+      'The handover',
+      name: 'sales_detail_handover',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How they get it`
+  String get sales_detail_handover_mode {
+    return Intl.message(
+      'How they get it',
+      name: 'sales_detail_handover_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where it got to`
+  String get sales_detail_handover_state {
+    return Intl.message(
+      'Where it got to',
+      name: 'sales_detail_handover_state',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recorded`
+  String get sales_detail_handover_at {
+    return Intl.message(
+      'Recorded',
+      name: 'sales_detail_handover_at',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recorded by`
+  String get sales_detail_handover_by {
+    return Intl.message(
+      'Recorded by',
+      name: 'sales_detail_handover_by',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note`
+  String get sales_detail_handover_note {
+    return Intl.message(
+      'Note',
+      name: 'sales_detail_handover_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nobody has recorded this: it is how the sale reads, not what somebody said.`
+  String get sales_detail_handover_unstored {
+    return Intl.message(
+      'Nobody has recorded this: it is how the sale reads, not what somebody said.',
+      name: 'sales_detail_handover_unstored',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There is nothing to hand over yet`
+  String get sales_detail_handover_none {
+    return Intl.message(
+      'There is nothing to hand over yet',
+      name: 'sales_detail_handover_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The ticket has not been charged, so nothing has left the shelf for good.`
+  String get sales_detail_handover_none_open {
+    return Intl.message(
+      'The ticket has not been charged, so nothing has left the shelf for good.',
+      name: 'sales_detail_handover_none_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nobody has rung this up: there is no document to hand over.`
+  String get sales_detail_handover_none_deal {
+    return Intl.message(
+      'Nobody has rung this up: there is no document to hand over.',
+      name: 'sales_detail_handover_none_deal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the shelf is keeping`
+  String get sales_detail_holds {
+    return Intl.message(
+      'What the shelf is keeping',
+      name: 'sales_detail_holds',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Units held`
+  String get sales_detail_held {
+    return Intl.message(
+      'Units held',
+      name: 'sales_detail_held',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing is set aside for this customer.`
+  String get sales_detail_holds_empty {
+    return Intl.message(
+      'Nothing is set aside for this customer.',
+      name: 'sales_detail_holds_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lapses`
+  String get sales_detail_hold_expires {
+    return Intl.message(
+      'Lapses',
+      name: 'sales_detail_hold_expires',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} units`
+  String sales_detail_hold_units(Object count) {
+    return Intl.message(
+      '$count units',
+      name: 'sales_detail_hold_units',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Where it comes from`
+  String get sales_detail_trace {
+    return Intl.message(
+      'Where it comes from',
+      name: 'sales_detail_trace',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Came in through`
+  String get sales_detail_channel {
+    return Intl.message(
+      'Came in through',
+      name: 'sales_detail_channel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Till`
+  String get sales_detail_terminal {
+    return Intl.message(
+      'Till',
+      name: 'sales_detail_terminal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Answered by`
+  String get sales_detail_bot {
+    return Intl.message(
+      'Answered by',
+      name: 'sales_detail_bot',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On the number`
+  String get sales_detail_address {
+    return Intl.message(
+      'On the number',
+      name: 'sales_detail_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold by`
+  String get sales_detail_seller {
+    return Intl.message(
+      'Sold by',
+      name: 'sales_detail_seller',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contact`
+  String get sales_detail_contact {
+    return Intl.message(
+      'Contact',
+      name: 'sales_detail_contact',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note on the ticket`
+  String get sales_detail_note {
+    return Intl.message(
+      'Note on the ticket',
+      name: 'sales_detail_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `At this state since`
+  String get sales_detail_stage_since {
+    return Intl.message(
+      'At this state since',
+      name: 'sales_detail_stage_since',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Opened`
+  String get sales_detail_opened {
+    return Intl.message(
+      'Opened',
+      name: 'sales_detail_opened',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Charged`
+  String get sales_detail_closed {
+    return Intl.message(
+      'Charged',
+      name: 'sales_detail_closed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last movement`
+  String get sales_detail_updated {
+    return Intl.message(
+      'Last movement',
+      name: 'sales_detail_updated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sale id`
+  String get sales_detail_id {
+    return Intl.message(
+      'Sale id',
+      name: 'sales_detail_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Conversation`
+  String get sales_detail_chat {
+    return Intl.message(
+      'Conversation',
+      name: 'sales_detail_chat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment proof`
+  String get sales_detail_proof {
+    return Intl.message(
+      'Payment proof',
+      name: 'sales_detail_proof',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the customer sent to show the money went out. It is what they said and showed, not something anybody here checked.`
+  String get sales_detail_proof_subtitle {
+    return Intl.message(
+      'What the customer sent to show the money went out. It is what they said and showed, not something anybody here checked.',
+      name: 'sales_detail_proof_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing has been sent for this sale yet.`
+  String get sales_detail_proof_empty {
+    return Intl.message(
+      'Nothing has been sent for this sale yet.',
+      name: 'sales_detail_proof_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Picture sent`
+  String get sales_detail_proof_image {
+    return Intl.message(
+      'Picture sent',
+      name: 'sales_detail_proof_image',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `File sent`
+  String get sales_detail_proof_file {
+    return Intl.message(
+      'File sent',
+      name: 'sales_detail_proof_file',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What they wrote`
+  String get sales_detail_proof_said {
+    return Intl.message(
+      'What they wrote',
+      name: 'sales_detail_proof_said',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reference given`
+  String get sales_detail_proof_reference {
+    return Intl.message(
+      'Reference given',
+      name: 'sales_detail_proof_reference',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sent`
+  String get sales_detail_proof_at {
+    return Intl.message(
+      'Sent',
+      name: 'sales_detail_proof_at',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `See it full size`
+  String get sales_detail_proof_open {
+    return Intl.message(
+      'See it full size',
+      name: 'sales_detail_proof_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open the file`
+  String get sales_detail_proof_file_open {
+    return Intl.message(
+      'Open the file',
+      name: 'sales_detail_proof_file_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The file could not be opened`
+  String get sales_detail_proof_file_failed {
+    return Intl.message(
+      'The file could not be opened',
+      name: 'sales_detail_proof_file_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A picture came and could not be stored. This is what came with it.`
+  String get sales_detail_proof_lost {
+    return Intl.message(
+      'A picture came and could not be stored. This is what came with it.',
+      name: 'sales_detail_proof_lost',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} sent in all`
+  String sales_detail_proof_count(Object count) {
+    return Intl.message(
+      '$count sent in all',
+      name: 'sales_detail_proof_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Approve the sale`
+  String get sales_approve_action {
+    return Intl.message(
+      'Approve the sale',
+      name: 'sales_approve_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approve this payment?`
+  String get sales_approve_title {
+    return Intl.message(
+      'Approve this payment?',
+      name: 'sales_approve_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It says the money arrived and closes the sale. Nothing here can see a bank, so this is your word on it: look at the payment proof first.`
+  String get sales_approve_message {
+    return Intl.message(
+      'It says the money arrived and closes the sale. Nothing here can see a bank, so this is your word on it: look at the payment proof first.',
+      name: 'sales_approve_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approve`
+  String get sales_approve_confirm {
+    return Intl.message(
+      'Approve',
+      name: 'sales_approve_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancel`
+  String get sales_approve_cancel {
+    return Intl.message(
+      'Cancel',
+      name: 'sales_approve_cancel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sale approved`
+  String get sales_approve_done {
+    return Intl.message(
+      'Sale approved',
+      name: 'sales_approve_done',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lines`
+  String get sales_detail_items_lines {
+    return Intl.message(
+      'Lines',
+      name: 'sales_detail_items_lines',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `See the products`
+  String get sales_detail_items_open {
+    return Intl.message(
+      'See the products',
+      name: 'sales_detail_items_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Worth checking`
+  String get sales_detail_items_flags {
+    return Intl.message(
+      'Worth checking',
+      name: 'sales_detail_items_flags',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} said to be held, and nothing is`
+  String sales_detail_items_unheld_count(Object count) {
+    return Intl.message(
+      '$count said to be held, and nothing is',
+      name: 'sales_detail_items_unheld_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} no longer sold`
+  String sales_detail_items_gone_count(Object count) {
+    return Intl.message(
+      '$count no longer sold',
+      name: 'sales_detail_items_gone_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Search a product or its code`
+  String get sales_detail_items_search {
+    return Intl.message(
+      'Search a product or its code',
+      name: 'sales_detail_items_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No line matches the search`
+  String get sales_detail_items_no_match {
+    return Intl.message(
+      'No line matches the search',
+      name: 'sales_detail_items_no_match',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[Locale.fromSubtags(languageCode: 'en')];
+    return const <Locale>[
+      Locale.fromSubtags(languageCode: 'en'),
+    ];
   }
 
   @override

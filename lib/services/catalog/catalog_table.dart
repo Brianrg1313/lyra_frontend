@@ -1,15 +1,15 @@
-/// Decodifica un catalogo de `/init` sin atarse a un unico formato.
+/// Decodes a `/init` catalog without tying it to a single format.
 ///
-/// Los catalogos viajan como la tabla columnar que arma `Response.parse` en el
-/// backend (`{"keys": [...], "values": [[...], ...]}`), que es la forma en la
-/// que ya llegan las empresas de la sesion y el listado de tablas. Se acepta
-/// igual una lista de objetos: es lo que devuelve el mismo endpoint si alguna
-/// vez deja de comprimir, y leer las dos formas cuesta cuatro lineas.
+/// Catalogs travel as the columnar table assembled by `Response.parse` in the
+/// backend (`{"keys": [...], "values": [[...], ...]}`), which is the form the
+/// session's businesses and the table listing already arrive in. A list of
+/// objects is accepted too: it's what the same endpoint returns if it ever
+/// stops compressing, and reading both forms costs four lines.
 ///
-/// Las columnas se leen **por nombre y no por posicion**, asi que el backend
-/// puede reordenarlas o agregar una sin romper el parseo. Lo que no se entiende
-/// devuelve la lista vacia y no una excepcion: un catalogo que no llego deja a
-/// la app sin opciones que ofrecer, no rota.
+/// Columns are read **by name and not by position**, so the backend can reorder
+/// them or add one without breaking the parse. What isn't understood returns
+/// the empty list and not an exception: a catalog that didn't arrive leaves the
+/// app with no options to offer, it doesn't crash it.
 List<Map<String, dynamic>> catalogRows(dynamic data) {
   if (data is List) {
     return [

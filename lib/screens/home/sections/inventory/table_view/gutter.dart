@@ -13,9 +13,9 @@ import 'state/sheet_cursor.dart';
 import 'state/sheet_drafts.dart';
 import 'state/sheet_hover.dart';
 
-/// La columna congelada de la izquierda: arriba la esquina (el numero de la fila
-/// de campos, que es la 1) y debajo el numero de cada fila, que en la que se
-/// esta guardando deja lugar a un spinner.
+/// The frozen column on the left: at the top the corner (the number of the
+/// fields row, which is 1) and below the number of each row, which on the one
+/// being saved gives way to a spinner.
 class SheetGutter extends StatelessWidget {
   const SheetGutter({super.key, required this.visible});
 
@@ -26,8 +26,8 @@ class SheetGutter extends StatelessWidget {
     final controller = context.read<SheetController>();
     final style = SheetTheme.of(context);
 
-    // La banda de numeros enumera exactamente las filas del cuerpo, asi que
-    // cuenta igual que el: buscando no hay filas en blanco que numerar.
+    // The band of numbers enumerates exactly the body's rows, so it counts the
+    // same as it: while searching there are no blank rows to number.
     final searching = context.select<TableViewService, bool>(
       (service) => service.isSearching
     );
@@ -37,10 +37,10 @@ class SheetGutter extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // La esquina lleva el alto de fila a mano: es la unica celda que no
-          // esta dentro de un `itemExtent`, y sin el se encogeria al alto de su
-          // texto, corriendo hacia arriba toda la banda de numeros respecto de
-          // las filas que enumera.
+          // The corner carries the row height by hand: it is the only cell not
+          // inside an `itemExtent`, and without it it would shrink to its text's
+          // height, shifting the whole band of numbers up relative to the rows
+          // it enumerates.
           SizedBox(
             height: style.rowHeight,
             child: DecoratedBox(
@@ -69,12 +69,12 @@ class SheetGutter extends StatelessWidget {
   }
 }
 
-/// El numero de una fila, o el spinner de la que se esta guardando.
+/// A row's number, or the spinner of the one being saved.
 ///
-/// Escucha dos cosas chicas: si el cursor esta en su fila (para resaltarla) y si
-/// el borrador de esa fila esta viajando. **No hay ningun boton**: una fila
-/// escrita se guarda sola al salir de ella (ver [SheetController]), y lo unico
-/// que esta banda tiene que mostrar es que el alta va en camino.
+/// It listens to two small things: whether the cursor is on its row (to
+/// highlight it) and whether that row's draft is traveling. **There is no
+/// button**: a written row saves itself on leaving it (see [SheetController]),
+/// and the only thing this band has to show is that the create is on its way.
 class GutterCell extends StatelessWidget {
   const GutterCell({super.key, required this.index});
 
@@ -88,9 +88,9 @@ class GutterCell extends StatelessWidget {
       (service) => service.records
     );
 
-    // La suscripcion se pide siempre, aunque la fila sea un registro y no pueda
-    // tener borrador: tiene que ser la misma en cada construccion para no
-    // depender de en que orden se registraron.
+    // The subscription is always requested, even if the row is a record and
+    // cannot have a draft: it must be the same on each build so as not to depend
+    // on the order in which they were registered.
     final saving = context.select<SheetDrafts, bool>(
       (drafts) => index >= records
         && (drafts.at(index - records)?.saving ?? false)
@@ -104,9 +104,10 @@ class GutterCell extends StatelessWidget {
       (hover) => hover.at(index)
     );
 
-    // El numero se resalta con su fila —si no, el resaltado se cortaria justo
-    // donde empieza— y ademas la enciende: pasar el mouse por el numero es estar
-    // sobre esa fila, aunque la banda de numeros sea otra lista.
+    // The number is highlighted with its row —otherwise the highlight would cut
+    // off exactly where it starts— and it also turns it on: passing the mouse
+    // over the number is being over that row, even though the band of numbers
+    // is another list.
     return MouseRegion(
       onEnter: (_) => context.read<SheetHover>().enter(index),
       onExit: (_) => context.read<SheetHover>().leave(index),
@@ -125,7 +126,7 @@ class GutterCell extends StatelessWidget {
                 color: style.accent
               )
             )
-          // La fila de campos es la 1, asi que el primer registro es la fila 2.
+          // The fields row is 1, so the first record is row 2.
           : Text("${index + 2}", style: style.number))
       )
     );

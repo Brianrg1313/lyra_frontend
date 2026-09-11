@@ -12,33 +12,34 @@ import 'package:app/screens/home/sections/section_message.dart';
 
 import 'profile_details.dart';
 
-/// Pestana de ajustes: como esta configurada la empresa. Hoy es su perfil
-/// —quien es, como opera, como se la contacta— que es lo que contesta
-/// `GET /business/profile/`, en una sola columna de arriba abajo.
+/// Settings tab: how the company is configured. Today that's its profile
+/// —who it is, how it operates, how it's contacted— which is what
+/// `GET /business/profile/` answers, in a single top-to-bottom column.
 ///
-/// Se llama ajustes y no perfil porque es donde se **cambia** la empresa, no
-/// donde se la mira: el perfil es lo unico que hay para configurar por ahora,
-/// pero lo que venga —quien puede hacer que, como factura, que avisa— entra
-/// aca y no en una pestana nueva. Por eso los widgets de adentro siguen
-/// llamandose `profile_*`: son los del perfil, que es uno de los ajustes.
+/// It's called settings and not profile because it's where the company is
+/// **changed**, not where it's looked at: the profile is all there is to
+/// configure for now, but what comes next —who can do what, how it invoices,
+/// what it notifies— goes here and not in a new tab. Hence the widgets inside
+/// staying named `profile_*`: they're the profile's, which is one of the
+/// settings.
 ///
-/// Arranca por la cabecera —el logo, y al lado el nombre en grande con la
-/// situacion legal y el rol de quien mira— y sigue con los datos uno por uno,
-/// agrupados por lo que contestan.
+/// It starts with the header —the logo, and beside it the name up large with
+/// the legal status and the role of whoever is looking— and continues with the
+/// data one by one, grouped by what they answer.
 ///
-/// No hay una columna aparte para el logo: era una columna entera ocupada por
-/// una sola imagen, y ese ancho es el que necesitan los datos, que son los que
-/// se leen. Puesto junto al nombre, lo que identifica a la empresa se lee de
-/// una sola vez y en el mismo lugar, en cualquier ancho de ventana.
+/// There is no separate column for the logo: it was a whole column taken up by
+/// a single image, and that width is what the data needs, since the data is
+/// what gets read. Placed next to the name, what identifies the company is read
+/// once and in the same place, at any window width.
 ///
-/// El perfil no se pide aca: lo pide la pagina al montarse, porque el nombre
-/// que trae es el de la cabecera y se ve desde cualquiera de las pestanas (ver
-/// `BusinessDetailSection`). Esta solo mira como viene.
+/// The profile isn't fetched here: the page fetches it on mount, because the
+/// name it brings is the header's and it's seen from any of the tabs (see
+/// `BusinessDetailSection`). This one just watches how it comes in.
 ///
-/// No trae superficie propia: la de la pagina es la del cuerpo, y esta pestana
-/// es uno de sus contenidos. Las que si son superficies son las tarjetas de
-/// adentro ([Surface.over]): una por cada grupo de datos. Son bloques sobre esa
-/// hoja, no otra hoja.
+/// It brings no surface of its own: the page's is the body's, and this tab is
+/// one of its contents. The ones that are surfaces are the cards inside
+/// ([Surface.over]): one per data group. They're blocks on that sheet, not
+/// another sheet.
 class BusinessSettingsTab extends StatelessWidget {
   const BusinessSettingsTab({super.key});
 

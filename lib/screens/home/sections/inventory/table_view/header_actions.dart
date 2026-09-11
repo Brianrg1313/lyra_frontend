@@ -7,19 +7,20 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/stock/tables/table_view_service.dart';
 
-/// El estado de la lectura de registros y de la busqueda, arriba a la derecha.
+/// The state of the records reading and of the search, top right.
 ///
-/// Va arriba y no debajo de la planilla porque la planilla ya no termina: se
-/// sigue de largo bajando, asi que no hay un final donde apoyar una barra. Y
-/// mientras se escribe conviene que lo de arriba no se mueva, cosa que el borde
-/// de abajo no puede prometer.
+/// It goes on top and not below the sheet because the sheet never ends: it
+/// keeps going as you scroll down, so there is no end to rest a bar on. And
+/// while typing it is convenient that what is on top does not move, which the
+/// bottom edge cannot promise.
 ///
-/// No hay aca ningun boton de guardar: las filas escritas se guardan solas al
-/// salir de ellas (ver `SheetController`), asi que no queda nada pendiente que
-/// juntar en un boton.
+/// There is no save button here: written rows save themselves on leaving them
+/// (see `SheetController`), so there is nothing pending left to gather in a
+/// button.
 ///
-/// Es lo unico de la pantalla que escucha el ir y venir de la lectura: los
-/// tramos que entran y salen mueven este spinner, no la grilla.
+/// It is the only thing on the screen that listens to the coming and going of
+/// the reading: the chunks that enter and leave move this spinner, not the
+/// grid.
 class HeaderActions extends StatelessWidget {
   const HeaderActions({super.key});
 
@@ -27,11 +28,11 @@ class HeaderActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
 
-    // El spinner cubre las dos esperas que no tapan la planilla: un tramo de
-    // registros que esta entrando y una relectura de la estructura (un cambio de
-    // columna). La segunda importa desde que la pantalla dejo de desmontarse
-    // para releerla: sin esto, el unico aviso de que el cambio viaja seria el
-    // titulo apagado de esa celda.
+    // The spinner covers the two waits that do not cover the sheet: a chunk of
+    // records entering and a re-read of the structure (a column change). The
+    // second matters since the screen stopped unmounting to re-read it: without
+    // this, the only notice that the change travels would be that cell's dimmed
+    // title.
     final (loading, failed) = context.select<TableViewService, (bool, bool)>(
       (service) => (
         service.isLoadingRows || service.isReloading,
@@ -39,10 +40,10 @@ class HeaderActions extends StatelessWidget {
       )
     );
 
-    // Cuantas filas coinciden con lo que se busco, o `null` si no se esta
-    // buscando nada. Es lo unico que dice que la planilla esta filtrada: sin
-    // esto, una tabla de mil filas mostrando tres se leeria como una tabla de
-    // tres filas.
+    // How many rows match what was searched, or `null` if nothing is being
+    // searched. It is the only thing that says the sheet is filtered: without
+    // this, a thousand-row table showing three would be read as a three-row
+    // table.
     final matches = context.select<TableViewService, int?>(
       (service) => service.isSearching ? service.records : null
     );
@@ -50,9 +51,10 @@ class HeaderActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Mientras el tramo viaja no se dice nada: hasta que llegue la cuenta es
-        // cero, y anunciar que no hay resultados para despues mostrarlos es
-        // peor que no decir nada. El spinner de al lado ya explica la espera.
+        // While the chunk travels nothing is said: until it arrives the count is
+        // zero, and announcing that there are no results only to show them
+        // later is worse than saying nothing. The spinner next to it already
+        // explains the wait.
         if (matches != null && !loading) ...[
           TextSmall(
             S.of(context).product_table_view_search_count(matches),
@@ -89,8 +91,7 @@ class HeaderActions extends StatelessWidget {
   }
 }
 
-/// Boton de icono de la barra superior. Apagado (gris, sin accion) cuando
-/// [action] es nulo.
+/// Icon button of the top bar. Dimmed (gray, no action) when [action] is null.
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
     required this.icon,

@@ -11,29 +11,28 @@ import '../sheet_style.dart';
 import '../state/sheet_controller.dart';
 import '../state/sheet_cursor.dart';
 
-/// La celda de un campo de tipo imagen.
+/// The cell of an image-type field.
 ///
-/// **Siempre es un cuadrado**, y del mismo lado en todas las filas: el alto de
-/// una fila menos su aire. La columna se sigue pudiendo ensanchar —es una
-/// columna como cualquier otra— pero la foto no se estira con ella: se dibuja en
-/// su cuadrado contra el borde izquierdo y lo que sobra queda vacio. Es lo que
-/// hace que una columna de fotos se lea como una tira pareja: con la foto
-/// ocupando la celda entera, cada ancho de columna daria un recorte distinto y
-/// una foto vertical se veria como una franja.
+/// **Always a square**, and of the same side in every row: a row's height minus
+/// its air. The column can still be widened —it's a column like any other— but
+/// the photo doesn't stretch with it: it's drawn in its square against the left
+/// border and what's left over stays empty. That's what makes a photo column
+/// read as an even strip: with the photo taking up the whole cell, each column
+/// width would give a different crop and a vertical photo would look like a band.
 ///
-/// Lo que se ve es la **portada** —la primera de la galeria— y no la galeria
-/// entera: en una fila de planilla no entran tres fotos, y la que define al
-/// producto es la primera (ver `Gallery` del backend). Las demas existen igual y
-/// se cargan desde el mismo desplegable.
+/// What's shown is the **cover** —the first of the gallery— and not the whole
+/// gallery: three photos don't fit in a sheet row, and the one that defines the
+/// product is the first (see `Gallery` in the backend). The others exist just
+/// the same and are loaded from the same dropdown.
 ///
-/// Y se dibuja la miniatura, no la foto: el backend renderiza una de 320px al
-/// subirla ([kProductImageWidth]) y esto mide cuarenta. Pedir la grande seria
-/// bajar megas por fila para dibujar un cuadradito.
+/// And it's the thumbnail that's drawn, not the photo: the backend renders a
+/// 320px one when it's uploaded ([kProductImageWidth]) and this measures forty.
+/// Asking for the big one would download megabytes per row to draw a little square.
 ///
-/// Vacia se ve como un boton de agregar y no como una celda en blanco: es lo que
-/// dice que ahi va una foto y que se pone tocando. Toda la celda abre el
-/// desplegable ([SheetController.pickImage]) —eso lo maneja [SheetCellView],
-/// como en cualquier otra— asi que aca no hay ningun toque propio.
+/// Empty it looks like an add button and not like a blank cell: it's what
+/// says a photo goes there and that you put it by tapping. The whole cell opens
+/// the dropdown ([SheetController.pickImage]) —[SheetCellView] handles that,
+/// like in any other— so there's no tapping of its own here.
 class ImageCell extends StatelessWidget {
   const ImageCell({
     super.key,
@@ -42,18 +41,18 @@ class ImageCell extends StatelessWidget {
     required this.column
   });
 
-  /// El valor guardado de la celda, tal como vino: la lista de ids de la
-  /// galeria, un id suelto o la direccion que trajo una importacion. Se lee sin
-  /// convertirlo a texto porque una galeria **no es** un texto: `toString()` de
-  /// una lista da `[a, b]`, que no es ninguna imagen.
+  /// The cell's stored value, as it came: the gallery's list of ids, a loose
+  /// id or the address an import brought. It's read without converting it to
+  /// text because a gallery **is not** text: a list's `toString()` gives
+  /// `[a, b]`, which is no image.
   final dynamic raw;
 
-  /// En que fila esta. Decide de que banda de la cebra es su fondo, y con eso el
-  /// relleno del cuadro (ver [SheetStyle.frameFill]).
+  /// Which row it's in. It decides which zebra band its background belongs to,
+  /// and with that the frame's fill (see [SheetStyle.frameFill]).
   final int row;
 
-  /// En que columna esta. Junto con [row] es lo que le permite reconocer que la
-  /// subida en curso es la suya.
+  /// Which column it's in. Together with [row] it's what lets it recognize that
+  /// the current upload is its own.
   final int column;
 
   @override
@@ -62,9 +61,9 @@ class ImageCell extends StatelessWidget {
     final images = ProductImage.from(raw);
     final cover = images.isEmpty ? null : images.first;
 
-    // El cuadrado sale del alto de la fila y no de un numero propio: la fila
-    // mide siempre lo mismo, asi que la celda tambien, y con `AspectRatio` no
-    // hay que descontar a mano ni el aire de la celda ni el grosor del borde.
+    // The square comes out of the row's height and not of its own number: the row
+    // always measures the same, so the cell does too, and with `AspectRatio` there's
+    // no need to manually subtract either the cell's air or the border's thickness.
     return SizedBox(
       height: double.infinity,
       child: Center(child: MouseRegion(
@@ -84,8 +83,8 @@ class ImageCell extends StatelessWidget {
     );
   }
 
-  /// El cuadro: la foto, el cargando mientras sube una, o el hueco de cuando no
-  /// hay ninguna.
+  /// The frame: the photo, the loading spinner while one uploads, or the empty
+  /// slot when there's none.
   Widget _frame(
     BuildContext context,
     SheetStyle sheet,
@@ -103,9 +102,9 @@ class ImageCell extends StatelessWidget {
         : _picture(sheet, cover)
   );
 
-  /// La foto. Va recortada al cuadro y llenandolo ([BoxFit.cover]): una foto de
-  /// producto no tiene por que ser cuadrada, y dejarla entera seria dibujarla
-  /// diminuta con dos franjas vacias a los costados.
+  /// The photo. It crops to the frame and fills it ([BoxFit.cover]): a product
+  /// photo needn't be square, and leaving it whole would draw it tiny with two
+  /// empty strips on the sides.
   Widget _picture(SheetStyle sheet, ProductImage cover) => ClipRRect(
     borderRadius: BorderRadius.circular(sheet.frameRadius),
     child: Image.network(
@@ -113,15 +112,15 @@ class ImageCell extends StatelessWidget {
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      // Un id que ya no resuelve, o una direccion de una importacion que se
-      // cayo: se ve como una celda sin foto, que es lo que hay.
+      // An id that no longer resolves, or an import address that
+      // fell apart: it shows as a cell without a photo, which is what there is.
       errorBuilder: (context, error, stack) => _empty(sheet)
     )
   );
 
-  /// Lo que se ve cuando el producto no tiene foto: el mismo cuadro con el icono
-  /// de agregar, en gris. No es un aviso de que falta algo —una foto es
-  /// opcional— sino donde tocar para ponerla.
+  /// What shows when the product has no photo: the same frame with the add
+  /// icon, in gray. It's not a warning that something's missing —a photo is
+  /// optional— but where to tap to put one.
   Widget _empty(SheetStyle sheet) => Center(child: Icon(
     CI.add_image,
     size: AppSize.text * 1.2,

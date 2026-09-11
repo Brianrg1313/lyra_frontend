@@ -7,7 +7,7 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/services/files/file_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/screens/home/sections/business/business_avatar.dart';
-import 'package:app/screens/home/sections/business/business_detail/settings/profile_logo.dart';
+import 'package:app/screens/home/sections/business/settings/profile_logo.dart';
 
 BusinessProfileModel _profile({FileModel? logo}) => BusinessProfileModel(
   id: "550e8400-e29b-41d4-a716-446655440000",

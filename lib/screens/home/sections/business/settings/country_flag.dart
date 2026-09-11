@@ -4,31 +4,32 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/catalog/country_model.dart';
 
-/// La bandera de un pais, del tamano de un renglon.
+/// A country's flag, the size of a row.
 ///
-/// El icono no viene con la app: es un archivo de la plataforma y llega como un
-/// id en el catalogo de paises, asi que se baja de donde `/init` dijo (ver
-/// [CountryModel.flagUrl]). Eso es lo que deja habilitar una region nueva sin
-/// publicar una version: la bandera llega con la fila.
+/// The icon doesn't ship with the app: it's a platform file that arrives as an
+/// id in the countries catalog, so it's downloaded from where `/init` said (see
+/// [CountryModel.flagUrl]). That's what lets a new region be enabled without
+/// shipping a release: the flag arrives with the row.
 ///
-/// Un pais sin bandera cargada —o una que no se pueda bajar, o el catalogo sin
-/// base todavia— deja su hueco vacio y no un cartel roto: la lista se sigue
-/// leyendo por el nombre, que es el dato. El hueco se ocupa igual para que las
-/// opciones de la lista queden alineadas entre si.
+/// A country without a loaded flag —or one that can't be downloaded, or the
+/// catalog without a base yet— leaves its slot empty and not a broken sign: the
+/// list is still read by name, which is the data. The slot is kept occupied so
+/// the list's options stay aligned with each other.
 class CountryFlag extends StatelessWidget {
   const CountryFlag({super.key, required this.country, this.size});
 
   final CountryModel country;
 
-  /// Alto de la bandera. Por defecto la altura de un renglon de texto.
+  /// Height of the flag. By default the height of a text row.
   final double? size;
 
   @override
   Widget build(BuildContext context) {
     final height = size ?? AppSize.text;
 
-    // Casi todas las banderas son 4:3. El ancho se reserva completo aunque la
-    // imagen no baje: sin eso, la lista se acomoda distinto en cada fila.
+    // Nearly all flags are 4:3. The width is reserved in full even if the
+    // image doesn't download: without that, the list fits itself differently
+    // in each row.
     final width = height * 4 / 3;
     final url = country.flagUrl(width.round());
 

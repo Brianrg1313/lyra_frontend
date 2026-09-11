@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Todo lo que las celdas necesitan para pintarse, resuelto **una sola vez** por
-/// planilla.
+/// Everything the cells need to paint themselves, resolved **only once** per
+/// sheet.
 ///
-/// Una celda no tiene nada propio que decidir: el color de fondo, el borde y la
-/// tipografia son los mismos para todas, y solo cambian segun cuatro estados
-/// (fila par o impar de la cebra, elegida o no). Si cada una los armara por su
-/// cuenta —que es lo que pasaba— cada repintado alocaria un [BoxDecoration] y un
-/// [TextStyle] nuevos por celda, y como Flutter compara esos objetos para
-/// decidir si hace falta repintar, dos objetos iguales pero distintos lo obligan
-/// a repintar igual.
+/// A cell has nothing of its own to decide: the background color, the border,
+/// and the typography are the same for all, and only change according to four
+/// states (even or odd zebra row, selected or not). If each one built them on
+/// its own —which is what used to happen— each repaint would allocate a new
+/// [BoxDecoration] and [TextStyle] per cell, and since Flutter compares those
+/// objects to decide whether it needs to repaint, two equal but distinct objects
+/// force it to repaint anyway.
 ///
-/// Aca se arman una vez y se comparten: las celdas reciben **la misma instancia**
-/// y el motor puede saltear el repintado.
+/// Here they are built once and shared: the cells receive **the same instance**
+/// and the engine can skip the repaint.
 class SheetStyle {
   SheetStyle({
     required this.scheme,
@@ -22,12 +22,13 @@ class SheetStyle {
   }) : cellPadding = EdgeInsets.symmetric(horizontal: AppSize.spaceXS),
        framePadding = EdgeInsets.all(AppSize.gap),
        frameRadius = AppSize.gap,
-       // Los cuatro lados estan **siempre**, y los dos que no son la cuadricula
-       // van transparentes. Un borde ocupa lugar: si el del cursor apareciera
-       // recien al elegir la celda, entrar en ella le comeria un pixel por lado
-       // al contenido y el texto pegaria un salto —justo cuando se lo va a
-       // escribir, que es cuando mas se nota—. Asi la caja mide lo mismo elegida
-       // que no, y lo unico que cambia al elegirla es el color.
+       // All four sides are **always** there, and the two that are not the grid
+       // go transparent. A border takes up space: if the cursor's only appeared
+       // when selecting the cell, entering it would eat a pixel per side from
+       // the content and the text would jump —right when it is about to be
+       // written, which is when it is most noticeable—. This way the box
+       // measures the same selected or not, and the only thing that changes when
+       // selecting it is the color.
        _line = Border(
          top: const BorderSide(color: Colors.transparent),
          left: const BorderSide(color: Colors.transparent),
@@ -40,6 +41,7 @@ class SheetStyle {
          fontSize: AppSize.text,
          color: scheme.text.secondary
        ),
+       semanticValue = TextStyle(fontSize: AppSize.text, color: scheme.primary),
        title = TextStyle(
          fontSize: AppSize.text,
          fontWeight: FontWeight.w600,
@@ -63,87 +65,99 @@ class SheetStyle {
 
   final EdgeInsets cellPadding;
 
-  /// Aire de una celda que dibuja **su propio marco** adentro (la de una lista,
-  /// que se ve como el boton de un desplegable).
+  /// The air of a cell that draws **its own frame** inside (the list one, which
+  /// looks like a dropdown's button).
   ///
-  /// Es parejo por los cuatro lados, y ahi esta la diferencia con
-  /// [cellPadding]: ese separa un texto de los bordes y solo tiene sentido a los
-  /// costados, pero un marco que se apoya arriba y abajo contra la cuadricula se
-  /// confunde con ella. Deja el marco despegado de la celda por igual, que es lo
-  /// que lo hace leer como algo que esta **dentro** de la celda y no como la
-  /// celda misma.
+  /// It is even on all four sides, and there lies the difference with
+  /// [cellPadding]: that one separates text from the borders and only makes
+  /// sense on the sides, but a frame that rests top and bottom against the grid
+  /// blends in with it. It keeps the frame detached from the cell equally,
+  /// which is what makes it read as something **inside** the cell and not as the
+  /// cell itself.
   final EdgeInsets framePadding;
 
-  /// Cuanto se redondea ese marco. Es un radio corto a proposito: el de siempre
-  /// ([AppSize.corner]) es el de una tarjeta y en una caja del alto de una fila
-  /// se come las esquinas.
+  /// How much that frame is rounded. It is a short radius on purpose: the usual
+  /// one ([AppSize.corner]) is a card's, and in a box the height of a row it
+  /// eats the corners.
   final double frameRadius;
 
-  /// Los dos bordes de una celda: el de siempre (la cuadricula a la derecha y
-  /// abajo, `table.lines`, y los otros dos lados transparentes) y el del cursor
-  /// (los cuatro lados, `table.currentCell`).
+  /// A cell's two borders: the usual one (the grid to the right and below,
+  /// `table.lines`, and the other two sides transparent) and the cursor's (all
+  /// four sides, `table.currentCell`).
   ///
-  /// Los dos miden lo mismo —un pixel por lado, los cuatro lados siempre— y esa
-  /// es toda la gracia: elegir una celda cambia un color y no la caja, asi que
-  /// el contenido no se mueve.
+  /// Both measure the same —one pixel per side, all four sides always— and that
+  /// is the whole point: selecting a cell changes a color and not the box, so
+  /// the content does not move.
   final Border _line;
   final Border _selected;
 
-  /// Color de lo que senala donde se esta parado: la linea de donde va a caer
-  /// una columna que se arrastra, el velo sobre la que viaja y el spinner de la
-  /// fila que se esta guardando. Es el mismo del borde del cursor
-  /// (`table.currentCell`), asi que todo lo que marca la posicion se lee como
-  /// una sola cosa.
+  /// Color of what marks where you are standing: the line of where a dragged
+  /// column will land, the veil over the one traveling, and the spinner of the
+  /// row being saved. It is the same as the cursor's border (`table.currentCell`),
+  /// so everything that marks position reads as a single thing.
   ///
-  /// Va aca y no en cada pieza para que no queden colores de la planilla fuera
-  /// de esta clase: las que lo usan ya reciben el estilo.
+  /// It goes here and not in each piece so that no sheet colors remain outside
+  /// this class: the ones that use it already receive the style.
   late final Color accent = scheme.table.currentCell;
 
-  /// Fondo de las bandas que no son datos —la fila de campos y la de numeros—
-  /// y del encabezado fantasma de una columna que se arrastra. Es
-  /// `table.headers`.
+  /// Background of the bands that are not data —the fields row and the numbers
+  /// one— and of a dragged column's ghost header. It is `table.headers`.
   late final Color headerFill = scheme.table.headers;
 
-  /// Texto de una celda que se escribe, y de una que no (los campos que lleva el
-  /// backend: se ven como un dato mas, pero apagados).
+  /// Text of a writable cell, and of a non-writable one (the fields the backend
+  /// carries: they look like one more datum, but dimmed).
   final TextStyle value;
   final TextStyle readOnlyValue;
 
-  /// Titulo de un campo, y el mismo mientras el cambio viaja: ya es lo que va a
-  /// quedar, pero todavia no volvio del backend.
+  /// Text of a cell the backend indexes by meaning: the product's name and
+  /// description (see [TableFieldType.semantic]).
+  ///
+  /// It goes with the brand color and **always the same**: whether written or
+  /// not, whether the cursor's cell or not. It is the only thing in the sheet
+  /// the AI searches for, and that difference is what the color tells. That is
+  /// why it is not dimmed like [readOnlyValue] either: that it is not written by
+  /// hand is not what must be said about it.
+  final TextStyle semanticValue;
+
+  /// A field's title, and the same while the change travels: it is already what
+  /// will remain, but it has not yet come back from the backend.
   final TextStyle title;
   final TextStyle pendingTitle;
 
-  /// Numero de fila de la banda de la izquierda.
+  /// Row number of the left band.
   final TextStyle number;
 
-  /// Lo que acompana a un valor sin ser el valor: el simbolo de la moneda de un
-  /// precio, y lo que venga despues de la misma naturaleza. Va en gris al lado
-  /// del dato para que se lea de un vistazo cual es el numero y cual la unidad.
+  /// What accompanies a value without being the value: the currency symbol of a
+  /// price, and whatever of the same nature comes after. It goes gray next to
+  /// the datum so it can be read at a glance which is the number and which the
+  /// unit.
   final TextStyle symbol;
 
-  /// El texto de un codigo: el SKU.
+  /// The text of a code: the SKU.
   ///
-  /// Va en gris y no con el color del dato porque un codigo no es un dato que se
-  /// lea: es una etiqueta con la que se encuentra el producto. Nadie compara dos
-  /// SKU de un vistazo como compara dos precios, asi que en una planilla llena
-  /// esa columna no tiene por que pesar como las demas —al contrario, en negro
-  /// es la que mas ruido hace, porque son las cadenas mas largas y las mas
-  /// ilegibles—.
+  /// It goes gray and not with the data color because a code is not a datum to
+  /// be read: it is a label with which the product is found. No one compares two
+  /// SKUs at a glance like comparing two prices, so in a sheet full of them that
+  /// column does not have to weigh like the others —on the contrary, in black it
+  /// is the one that makes the most noise, because they are the longest and most
+  /// unreadable strings—.
   ///
-  /// Se escribe igual que cualquier celda: gris no quiere decir apagado (ver
-  /// [readOnlyValue], que es otra cosa aunque hoy se vean parecidas).
+  /// It is written like any cell: gray does not mean dimmed (see
+  /// [readOnlyValue], which is another thing even though they look similar
+  /// today).
   final TextStyle code;
 
-  /// Decoracion de una celda del cuerpo.
+  /// Decoration of a body cell.
   ///
-  /// Son dos cosas independientes: el **borde** lo decide el cursor ([selected]
-  /// es esta celda, no su fila) y el **fondo** lo decide la fila entera
-  /// ([fill]). Por eso viajan separadas: la celda del cursor lleva su marco
-  /// dentro de una fila que ya esta resaltada, y no al reves.
+  /// They are two independent things: the **border** is decided by the cursor
+  /// ([selected] is this cell, not its row) and the **background** by the whole
+  /// row ([fill]). That is why they travel separately: the cursor's cell carries
+  /// its frame inside a row that is already highlighted, and not the other way
+  /// around.
   ///
-  /// [row] solo se mira cuando el fondo es el de siempre, que es la cebra: esa
-  /// alterna por posicion y no por lo que la fila sea (ver [_cells]).
+  /// [row] is only looked at when the background is the usual one, which is the
+  /// zebra: that one alternates by position and not by what the row is (see
+  /// [_cells]).
   BoxDecoration cell({
     required int row,
     required bool selected,
@@ -154,29 +168,28 @@ class SheetStyle {
     SheetRowFill.selected => 6
   } + (selected ? 1 : 0)];
 
-  /// Relleno del marco de una celda que se ve como un control (la de una lista).
+  /// Fill of the frame of a cell that looks like a control (the list one).
   ///
-  /// Tiene que despegarse del fondo de **su** fila, y ahi esta el detalle: con
-  /// la cebra la planilla usa sus dos superficies fila por medio (ver [_cells]),
-  /// asi que no hay un solo color que se note en las dos. En el tema claro, un
-  /// marco del color de una fila par desaparece sobre una par y se ve sobre una
-  /// impar; con el otro pasa lo contrario.
+  /// It must detach from **its** row's background, and there is the detail:
+  /// with the zebra the sheet uses its two surfaces every other row (see
+  /// [_cells]), so there is no single color that stands out on both. In the
+  /// light theme, a frame the color of an even row disappears over an even one
+  /// and shows over an odd one; with the other it is the opposite.
   ///
-  /// Por eso el marco se lleva **la que su fila no esta usando**: siempre es la
-  /// otra, asi que siempre se ve, en los dos temas y en las dos bandas de la
-  /// cebra.
+  /// That is why the frame carries **the one its row is not using**: it is
+  /// always the other, so it always shows, in both themes and both zebra bands.
   Color frameFill({required int row}) =>
     row.isOdd ? scheme.table.background : scheme.table.even;
 
-  /// Decoracion de una celda de la fila de campos.
+  /// Decoration of a fields-row cell.
   BoxDecoration field({required bool selected}) =>
     selected ? _fieldSelected : _field;
 
-  /// Decoracion de una celda de la banda de numeros.
+  /// Decoration of a numbers-band cell.
   ///
-  /// Sigue a su fila: el resaltado no se puede cortar en el numero, o la fila
-  /// quedaria pintada a medias. Por eso toma el mismo [SheetRowFill] que el
-  /// cuerpo y no un booleano suyo.
+  /// It follows its row: the highlight cannot cut off at the number, or the row
+  /// would end up half painted. That is why it takes the same [SheetRowFill] as
+  /// the body and not a boolean of its own.
   BoxDecoration gutter({SheetRowFill fill = SheetRowFill.plain}) =>
     switch (fill) {
       SheetRowFill.plain => _gutter,
@@ -184,17 +197,17 @@ class SheetStyle {
       SheetRowFill.selected => _gutterSelected
     };
 
-  /// La cebra: las filas pares van sobre `table.background`, el fondo de una
-  /// fila cualquiera, y las impares sobre `table.even`, que el esquema ofrece
-  /// justamente para distinguir una fila de la de al lado.
+  /// The zebra: even rows go over `table.background`, the background of any
+  /// row, and odd ones over `table.even`, which the scheme offers precisely to
+  /// tell a row apart from the one next to it.
   ///
-  /// Alterna por **posicion** y nada mas: los registros y las filas en blanco de
-  /// abajo son una sola grilla continua, asi que la banda sigue de largo y no se
-  /// corta donde termina lo cargado.
-  /// Los cuatro fondos que puede tener una fila —las dos bandas de la cebra, la
-  /// que tiene el mouse encima y la del cursor— cada uno con sus dos bordes. El
-  /// orden es el que arma [cell]: de a pares, primero el borde de la cuadricula
-  /// y despues el del cursor.
+  /// It alternates by **position** and nothing more: the records and the blank
+  /// rows below are one continuous grid, so the band keeps going and does not
+  /// cut off where the loaded data ends.
+  /// The four backgrounds a row can have —the two zebra bands, the one the
+  /// mouse is over, and the cursor's— each with its two borders. The order is
+  /// the one [cell] builds: in pairs, first the grid border and then the
+  /// cursor's.
   late final List<BoxDecoration> _cells = [
     BoxDecoration(color: scheme.table.background, border: _line),
     BoxDecoration(color: scheme.table.background, border: _selected),
@@ -219,30 +232,31 @@ class SheetStyle {
     BoxDecoration(color: scheme.table.rowSelected, border: _line);
 }
 
-/// Con que se pinta el fondo de una fila.
+/// What a row's background is painted with.
 ///
-/// Son los tres estados en que puede estar una fila entera, y estan aca —y no
-/// como dos booleanos sueltos en cada celda— porque son excluyentes y tienen un
-/// orden: el cursor le gana al mouse. Una fila donde se esta parado y encima
-/// tiene el puntero se ve como la fila donde se esta parado; si fuera al reves,
-/// pasar el mouse por la planilla taparia el unico rastro de donde se habia
-/// quedado uno.
+/// They are the three states a whole row can be in, and they are here —and not
+/// as two loose booleans in each cell— because they are mutually exclusive and
+/// have an order: the cursor beats the mouse. A row where you are standing and
+/// over which the pointer is hovering looks like the row where you are standing;
+/// if it were the other way, passing the mouse over the sheet would cover the
+/// only trace of where one had been.
 enum SheetRowFill {
-  /// El fondo de siempre: la cebra, que alterna por posicion.
+  /// The usual background: the zebra, which alternates by position.
   plain,
 
-  /// La fila que tiene el mouse encima (`table.over`).
+  /// The row the mouse is over (`table.over`).
   over,
 
-  /// La fila donde esta el cursor (`table.rowSelected`).
+  /// The row where the cursor is (`table.rowSelected`).
   selected
 }
 
-/// Baja el [SheetStyle] a todas las celdas.
+/// Passes the [SheetStyle] down to all the cells.
 ///
-/// Es un [InheritedWidget] y no un provider porque no cambia nunca mientras la
-/// planilla este abierta: solo se rehace si cambia el tema, y ahi `SchemeColor`
-/// es otra instancia. Comparar por identidad alcanza y es lo mas barato que hay.
+/// It is an [InheritedWidget] and not a provider because it never changes while
+/// the sheet is open: it is only redone if the theme changes, and then
+/// `SchemeColor` is another instance. Comparing by identity is enough and is the
+/// cheapest there is.
 class SheetTheme extends InheritedWidget {
   const SheetTheme({super.key, required this.style, required super.child});
 

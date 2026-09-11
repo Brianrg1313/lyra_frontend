@@ -4,17 +4,16 @@ import 'package:app/services/files/file_model.dart';
 
 import 'catalog_table.dart';
 
-/// Un pais en el que la plataforma opera, tal como lo lista `/init`.
+/// A country where the platform operates, as listed by `/init`.
 ///
-/// La lista es del backend (`lyra_admin`.`countries`, solo los habilitados) y
-/// no de esta app: habilitar una region es agregar una fila alla, y la app la
-/// ofrece en la proxima sesion sin que haya que publicar una version nueva.
-/// Por eso nada de esto es un enumerado.
+/// The list belongs to the backend (`lyra_admin`.`countries`, only the enabled
+/// ones) and not to this app: enabling a region is adding a row there, and the
+/// app offers it in the next session without publishing a new version. That's
+/// why none of this is an enum.
 ///
-/// Cada pais trae lo que hace falta para ofrecerlo y para llenar lo que se
-/// deduce de el: como se llama en su propio idioma ([name]), su codigo
-/// telefonico ([phone]), en que moneda factura ([currency]) y su bandera
-/// ([flag]).
+/// Each country brings what's needed to offer it and to fill in what's derived
+/// from it: how it's called in its own language ([name]), its phone code
+/// ([phone]), what currency it invoices in ([currency]) and its flag ([flag]).
 class CountryModel {
   const CountryModel({
     required this.code,
@@ -24,24 +23,25 @@ class CountryModel {
     this.flag = ""
   });
 
-  /// Codigo ISO 3166-1 alpha-2, en mayusculas. Es el valor que viaja al backend
-  /// (`companies`.`country`).
+  /// ISO 3166-1 alpha-2 code, in uppercase. It's the value that travels to the
+  /// backend (`companies`.`country`).
   final String code;
 
-  /// Nombre del pais en su propio idioma. No se traduce: llega escrito.
+  /// Name of the country in its own language. Not translated: it arrives
+  /// written.
   final String name;
 
-  /// Codigo telefonico, sin el `+`.
+  /// Phone code, without the `+`.
   final String phone;
 
-  /// Codigo ISO 4217 de su moneda nacional. Es una sugerencia para los
-  /// formularios —elegir pais propone su moneda—, no la moneda de la empresa:
-  /// esa la elige quien la crea.
+  /// ISO 4217 code of its national currency. It's a suggestion for forms
+  /// —picking a country proposes its currency—, not the business currency:
+  /// that one is chosen by whoever creates it.
   final String currency;
 
-  /// Id del icono de la bandera, o `""` si el pais todavia no tiene uno
-  /// cargado. Es un archivo de la plataforma y no de una empresa, asi que se
-  /// baja de [FileScope.assets]; la direccion se arma con [flagUrl].
+  /// Id of the flag icon, or `""` if the country doesn't have one loaded yet.
+  /// It's a platform file and not a business one, so it's downloaded from
+  /// [FileScope.assets]; the address is built with [flagUrl].
   final String flag;
 
   factory CountryModel.fromJson(Map<String, dynamic> json) => CountryModel(
@@ -52,9 +52,9 @@ class CountryModel {
     flag: json["flag"]?.toString().trim() ?? ""
   );
 
-  /// Los paises del catalogo, en el orden que los manda el backend (alfabetico
-  /// por su nombre). Los que llegan sin codigo se descartan: el codigo es el
-  /// dato que viaja, y una opcion que no se puede guardar no es una opcion.
+  /// The catalog countries, in the order the backend sends them (alphabetical
+  /// by name). Those arriving without a code are discarded: the code is the
+  /// data that travels, and an option that can't be saved isn't an option.
   static List<CountryModel> fromResponse(dynamic data) {
     final countries = <CountryModel>[];
 
@@ -66,15 +66,16 @@ class CountryModel {
     return countries;
   }
 
-  /// El codigo telefonico como se escribe: `+58`. Vacio si el pais no lo trae.
+  /// The phone code as it's written: `+58`. Empty if the country doesn't bring
+  /// one.
   String get dial => phone.isEmpty ? "" : "+$phone";
 
-  /// La direccion de la bandera, o `""` si el pais no tiene una —o si la base
-  /// de las imagenes todavia no llego—. Vacia se lee como "sin bandera", que es
-  /// una respuesta valida: el pais se ofrece igual, por su nombre.
+  /// The flag address, or `""` if the country has none —or if the image base
+  /// hasn't arrived yet—. Empty reads as "no flag", which is a valid answer:
+  /// the country is offered all the same, by its name.
   ///
-  /// [width] pide una version chica. Una bandera se dibuja al lado de un
-  /// renglon de texto, asi que casi siempre conviene pedirla.
+  /// [width] asks for a small version. A flag is drawn next to a row of text,
+  /// so it's almost always worth asking for it.
   String flagUrl([int? width]) =>
     CdnService().url(FileScope.assets, flag, width: width);
 

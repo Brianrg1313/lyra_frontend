@@ -9,6 +9,11 @@
 # packages, and plugins designed to encourage good coding practices.
 analyzer:
   exclude:
+    # Flutter Intl output. It is rewritten in full every time intl_en.arb is
+    # saved, so any lint reported here comes back on the next regeneration and
+    # cannot be fixed in place. Excluded rather than ignored file by file
+    # because the generator would drop an ignore comment too.
+    - lib/generated/**
     - build/**
     - android/**
     - ios/**

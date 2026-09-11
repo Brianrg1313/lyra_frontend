@@ -1,47 +1,48 @@
 import 'package:flutter/material.dart';
 
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/services/channels/channel_agent_role.dart';
 
-/// De donde saca el modelo de IA lo que sabe cuando atiende un canal.
+/// Where the AI model gets what it knows when it handles a channel.
 ///
-/// Un canal sin fuente contesta de memoria, que es lo mismo que decir que
-/// inventa: esto es lo que lo ata a datos reales de la empresa.
+/// A channel without a source answers from memory, which is the same as saying
+/// it makes things up: this is what ties it to the company's real data.
 ///
-/// Hoy solo una esta hecha. Las otras dos se muestran igual, apagadas, y no
-/// porque sea bonito: quien conecta un canal necesita saber que agendar citas y
-/// responder por documentos son cosas que van a existir, para no armar el canal
-/// dos veces.
+/// Today only one is built. The other two are shown just as well, disabled, and
+/// not because it is pretty: whoever connects a channel needs to know that
+/// scheduling appointments and answering from documents are things that will
+/// exist, so as not to set up the channel twice.
 ///
-/// **Viaja dentro de `SETTINGS`** ([settingKey]), junto con la tabla elegida
-/// ([tableSettingKey]) cuando corresponde. Ver [ChannelAgentRole] por que el
-/// backend no conoce estas claves.
+/// **It travels inside `SETTINGS`** ([settingKey]), together with the chosen
+/// table ([tableSettingKey]) when applicable. See [ChannelAgentRole] for why
+/// the backend does not know these keys.
 enum ChannelDataSource {
-  /// Una tabla de productos de la seccion de productos: el modelo responde
-  /// precios, stock y fichas leyendo de ahi.
+  /// A product table from the products section: the model answers prices,
+  /// stock and sheets reading from there.
   productTable("table", available: true),
 
-  /// Un calendario de servicios, para agendar citas. Todavia no existe.
+  /// A services calendar, for scheduling appointments. It does not exist yet.
   serviceCalendar("calendar", available: false),
 
-  /// Una base de conocimiento: informacion suelta con la que el modelo
-  /// responde preguntas o arma piezas de marketing. Todavia no existe.
+  /// A knowledge base: loose information with which the model answers questions
+  /// or builds marketing pieces. It does not exist yet.
   knowledgeBase("knowledge", available: false);
 
   const ChannelDataSource(this.value, {required this.available});
 
-  /// Codigo que se guarda en el canal.
+  /// Code stored in the channel.
   final String value;
 
-  /// `false` mientras la fuente no este construida. El selector la muestra
-  /// apagada y el formulario no la deja elegir.
+  /// `false` while the source is not built. The selector shows it disabled and
+  /// the form does not let it be chosen.
   final bool available;
 
-  /// Clave del ajuste dentro de `SETTINGS`.
+  /// Key of the setting inside `SETTINGS`.
   static const String settingKey = "data_source";
 
-  /// Clave donde se guarda **cual** tabla de productos se eligio, cuando la
-  /// fuente es [productTable]. Es el id de la tabla, no su nombre: renombrarla
-  /// no puede desconectar el canal.
+  /// Key where **which** product table was chosen is stored, when the source
+  /// is [productTable]. It is the table's id, not its name: renaming it cannot
+  /// disconnect the channel.
   static const String tableSettingKey = "data_table_id";
 
   static const ChannelDataSource initial = productTable;
@@ -56,8 +57,21 @@ enum ChannelDataSource {
     return initial;
   }
 
-  /// `true` si al elegir esta fuente hay que decir ademas cual: la tabla de
-  /// productos son varias, y el canal lee de una.
+  /// What a channel with [role] may read from.
+  ///
+  /// A seller reads product data — a table today, a services calendar once it
+  /// exists. Support and general agents are not there to sell: what they read
+  /// is a knowledge base, not the catalog, so the two product sources are not
+  /// even offered to them.
+  static List<ChannelDataSource> allowedFor(ChannelAgentRole role) =>
+    switch (role) {
+      ChannelAgentRole.seller => const [productTable, serviceCalendar],
+      ChannelAgentRole.support ||
+      ChannelAgentRole.agent => const [knowledgeBase]
+    };
+
+  /// `true` if, when choosing this source, you also have to say which one:
+  /// the product tables are several, and the channel reads from one.
   bool get needsTable => this == productTable;
 
   String title(BuildContext context) => switch (this) {

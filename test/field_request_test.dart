@@ -146,6 +146,47 @@ void main() {
     expect(body.containsKey("VISIBILITY"), isFalse);
   });
 
+  test('el resumen viaja como el 1/0 que el backend guarda', () {
+    // Es una casilla de este lado y una bandera del otro: el backend acepta el
+    // booleano, pero lo que queda escrito es el numero, asi que se manda el
+    // numero.
+    final body = editFieldRequest(
+      id: "d4e5f6",
+      name: "Costo",
+      summary: false
+    );
+
+    expect(body, {"ID": "d4e5f6", "NAME": "Costo", "SUMMARY": 0});
+    expect(jsonDecode(jsonEncode(body)), body);
+
+    expect(
+      editFieldRequest(id: "d4e5f6", name: "Costo", summary: true)["SUMMARY"],
+      1
+    );
+  });
+
+  test('sin resumen la clave no viaja', () {
+    // Renombrar una columna, ensancharla o cambiarle el tipo no la saca ni la
+    // mete en el resumen del inventario.
+    final body = editFieldRequest(id: "d4e5f6", name: "Costo", width: 240);
+
+    expect(body.containsKey("SUMMARY"), isFalse);
+  });
+
+  test('el resumen y la visibilidad son dos claves distintas', () {
+    // Contestan preguntas distintas —que ve la IA y que ve una persona— y por
+    // eso se pueden mover en el mismo cuerpo sin arrastrarse una a la otra.
+    final body = editFieldRequest(
+      id: "d4e5f6",
+      name: "Costo",
+      visibility: "hidden",
+      summary: true
+    );
+
+    expect(body["VISIBILITY"], "hidden");
+    expect(body["SUMMARY"], 1);
+  });
+
   test('el tipo y la visibilidad viajan juntos si se cambian los dos', () {
     final body = editFieldRequest(
       id: "d4e5f6",

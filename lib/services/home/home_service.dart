@@ -7,23 +7,24 @@ import 'package:app/services/database/database_service.dart';
 
 // MODELS
 import 'package:app/screens/home/sections/_sections.dart';
+import 'package:app/screens/pos/_pos.dart';
 
-/// Estado y comportamiento de la pantalla principal.
+/// State and behavior of the main screen.
 ///
-/// Se registra en el scope mas alto de la app (`initialBuilder`) porque su
-/// estado debe sobrevivir a la navegacion entre las secciones del home.
+/// It is registered in the app's highest scope (`initialBuilder`) because its
+/// state must survive navigation between the home sections.
 class HomeService extends ChangeNotifier {
   HomeService() {
-    // Lectura sincrona: el box ya quedo abierto en [preload], que corre dentro
-    // de `preCall`. Asi el side bar se pinta directo en su ultimo estado y no
-    // hay parpadeo de expandido a comprimido al recargar.
+    // Synchronous read: the box was already left open in [preload], which runs inside
+    // `preCall`. Thus the side bar paints directly in its last state and there
+    // is no flicker from expanded to collapsed on reload.
     _isSideBarExpanded = _database.get<bool>(_box, _sideBarKey) ?? true;
   }
 
   static const String _box = "home";
   static const String _sideBarKey = "side_bar_expanded";
 
-  /// Ancho del side bar cuando esta expandido.
+  /// Width of the side bar when expanded.
   static const double expandedWidth = 240;
 
   final DatabaseService _database = DatabaseService();
@@ -31,17 +32,17 @@ class HomeService extends ChangeNotifier {
   late bool _isSideBarExpanded;
   bool get isSideBarExpanded => _isSideBarExpanded;
 
-  /// Lo que se escribio en el buscador del header, ya normalizado (sin espacios
-  /// en los bordes y en minusculas), que es como lo comparan las secciones.
+  /// What was written in the header search, already normalized (no spaces
+  /// on the edges and lowercase), which is how the sections compare it.
   ///
-  /// El buscador es uno solo para todo el home y vive en el header, que esta
-  /// afuera de la seccion abierta; el texto tiene que llegar igual a la seccion
-  /// que se este mirando, asi que se guarda aca, que es lo que ambos comparten.
+  /// The search is a single one for the whole home and lives in the header, which is
+  /// outside the open section; the text has to arrive the same to the section
+  /// being looked at, so it is stored here, which is what both share.
   ///
-  /// Es un [ValueNotifier] aparte y no un campo mas del servicio porque el
-  /// buscador escribe en el a cada letra: si notificara como el resto, tipear
-  /// volveria a construir tambien el side bar —que escucha al servicio entero
-  /// con `context.watch`— en vez de solo la lista que se esta filtrando.
+  /// It is a separate [ValueNotifier] and not one more field of the service because the
+  /// search writes to it on every keystroke: if it notified like the rest, typing
+  /// would also rebuild the side bar —which listens to the whole service
+  /// with `context.watch`— instead of only the list being filtered.
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>("");
   ValueListenable<String> get searchQuery => _searchQuery;
 
@@ -51,22 +52,22 @@ class HomeService extends ChangeNotifier {
     super.dispose();
   }
 
-  /// Guarda lo que se escribio en el buscador. Lo llama el header; las secciones
-  /// solo leen [searchQuery].
+  /// Stores what was written in the search. The header calls it; the sections
+  /// only read [searchQuery].
   void search(String value) {
     _searchQuery.value = value.trim().toLowerCase();
   }
 
-  /// Vacia la busqueda. Se llama al cambiar de pantalla: cada seccion busca
-  /// sobre lo suyo, asi que entrar a una con el texto de la anterior esconderia
-  /// filas sin motivo.
+  /// Empties the search. It is called when changing screens: each section searches
+  /// over its own, so entering one with the previous one's text would hide
+  /// rows for no reason.
   void clearSearch() => _searchQuery.value = "";
 
-  /// Abre el box del home. Debe llamarse en `preCall`, antes de levantar la
-  /// app, porque `DatabaseService.get` solo lee de boxes ya abiertos.
+  /// Opens the home box. It must be called in `preCall`, before bringing up the
+  /// app, because `DatabaseService.get` only reads from already-open boxes.
   static Future<void> preload() => DatabaseService().openBox(_box);
 
-  /// Ancho que debe ocupar el side bar segun el estado actual.
+  /// Width the side bar should occupy according to the current state.
   double get sideBarWidth => _isSideBarExpanded
     ? expandedWidth
     : AppSize.action + (AppSize.padding * 2);
@@ -78,9 +79,19 @@ class HomeService extends ChangeNotifier {
     await _database.put(_box, _sideBarKey, _isSideBarExpanded);
   }
 
-  /// Navega a [section]. Cada seccion es una ruta propia, por lo que el cambio
-  /// queda reflejado en la URL y se puede volver con el boton de atras.
+  /// Navigates to [section]. Each section is its own route, so the change
+  /// is reflected in the URL and one can go back with the back button.
   void goTo(BuildContext context, HomeSection section) {
     Navis.push(context, section.path);
+  }
+
+  /// Opens POS mode. It is not a section but a standalone page (see [Pos]), so
+  /// it is navigated apart from [goTo]: when coming back, the home stays where it was.
+  ///
+  /// It lives here just like [goTo] because the two places that offer it —the side
+  /// bar and the header— already read this service, so neither of the two has to
+  /// know the URL.
+  void goToPos(BuildContext context) {
+    Navis.push(context, Pos.path);
   }
 }

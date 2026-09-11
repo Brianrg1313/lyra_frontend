@@ -9,32 +9,32 @@ import 'package:app/services/business/business_email_model.dart';
 import 'package:app/services/business/business_service.dart';
 
 // WIDGETS
-import 'package:app/screens/modals/edit_business_email/_edit_business_email.dart';
-import 'package:app/screens/modals/verify_business_email/_verify_business_email.dart';
+import 'package:app/screens/modals/business/edit_business_email/_edit_business_email.dart';
+import 'package:app/screens/modals/business/verify_business_email/_verify_business_email.dart';
 
 import 'profile_field.dart';
 import 'profile_tag.dart';
 
-/// Una direccion de correo de la empresa, como fila del bloque de correos.
+/// A company email address, as a row of the emails block.
 ///
-/// El nombre es como la llama la empresa —el suyo, o para que es—, la
-/// explicacion es que se hace con ella y el valor la direccion, que se puede
-/// seleccionar porque se usa afuera de la app.
+/// The name is what the company calls it —its own, or what it's for—, the
+/// explanation is what's done with it and the value the address, which can be
+/// selected because it's used outside the app.
 ///
-/// Al lado de la direccion va si esta verificada, que es lo unico que dice si
-/// **funciona**: una direccion es lo que alguien escribio en un formulario, y
-/// hasta que no llego un codigo a esa casilla nadie sabe si lo que se le manda
-/// llega o rebota. Se muestran los dos estados y no solo el malo: la fila sin
-/// etiqueta no se leeria como verificada, se leeria como incompleta.
+/// Beside the address goes whether it's verified, which is the only thing that
+/// says if it **works**: an address is what someone typed in a form, and until
+/// a code reaches that mailbox nobody knows whether what's sent to it arrives
+/// or bounces. Both states are shown and not just the bad one: a row without a
+/// tag wouldn't read as verified, it would read as incomplete.
 ///
-/// La accion de verificar va junto a la etiqueta y no arriba con las demas: es
-/// la respuesta a lo que se acaba de leer ahi mismo, y arriba ya conviven
-/// ascender, cambiar y borrar.
+/// The verify action goes next to the tag and not up top with the others: it's
+/// the answer to what was just read right there, and up top promote, change
+/// and delete already coexist.
 ///
-/// Las tres cosas que se le pueden hacer estan juntas arriba: ascenderla a
-/// principal (solo si no lo es), cambiarla y borrarla. Ascender no pregunta
-/// nada —es un cambio que se deshace ascendiendo otra— pero borrar si: la
-/// direccion se va con su nombre y su proposito.
+/// The three things that can be done to it are together on top: promote it to
+/// primary (only if it isn't), change it and delete it. Promoting doesn't ask
+/// anything —it's a change undone by promoting another— but deleting does: the
+/// address leaves with its name and its purpose.
 class ProfileEmailField extends StatelessWidget {
   const ProfileEmailField({super.key, required this.email});
 
@@ -44,21 +44,22 @@ class ProfileEmailField extends StatelessWidget {
   Widget build(BuildContext context) => ProfileFieldFrame(
     icon: email.purpose.icon,
     label: email.title(context),
-    // Que se hace con esta direccion, y no que es una direccion: la lista es de
-    // correos, lo que cambia de uno a otro es a donde va lo que se escribe.
-    // Vale incluso cuando la empresa le puso nombre propio ("Facturacion
-    // Colombia"), porque el nombre dice cual es y no para que es.
+    // What's done with this address, and not that it's an address: the list is
+    // of emails, what changes from one to another is where what's written goes.
+    // It holds even when the company gave it its own name ("Billing
+    // Colombia"), because the name says which one it is and not what it's for.
     description: email.purpose.description(context),
-    // La principal se marca arriba y no ordenandola primero a mano: ya llega
-    // primera, pero eso no se ve, y cual es la que publica la empresa es lo
-    // primero que se viene a mirar de esta lista.
+    // The primary is marked up top and not by manually ordering it first: it
+    // already arrives first, but that isn't visible, and which one the company
+    // publishes is the first thing one comes to look at in this list.
     note: email.main ? S.of(context).business_email_main : null,
     action: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (!email.main) ...[
-          // Escrito y no un tilde: cual de las direcciones publica la empresa
-          // es una decision, y un icono no dice cual se estaria tomando.
+          // Written out and not a check mark: which of the addresses the
+          // company publishes is a decision, and an icon doesn't say which one
+          // is being taken.
           ProfileTextAction(
             label: S.of(context).business_email_promote,
             action: () => _promote(context)
@@ -83,9 +84,10 @@ class ProfileEmailField extends StatelessWidget {
     child: _value(context)
   );
 
-  /// La direccion y, pegado a ella, si se comprobo que llega. Envuelven porque
-  /// son tres cosas de largo variable —una direccion larga, la etiqueta y, si
-  /// falta verificarla, el boton— y en una fila fija la ultima se recortaria.
+  /// The address and, stuck to it, whether it was proven to arrive. They wrap
+  /// because they're three things of variable length —a long address, the tag
+  /// and, if verification is missing, the button— and in a fixed row the last
+  /// one would get clipped.
   Widget _value(BuildContext context) => Wrap(
     crossAxisAlignment: WrapCrossAlignment.center,
     spacing: AppSize.spaceXS,
@@ -104,17 +106,18 @@ class ProfileEmailField extends StatelessWidget {
     ]
   );
 
-  /// Abre la verificacion. Lo que pase adentro lo guarda el propio modal contra
-  /// el servicio, que relee el perfil: aca no queda nada por hacer al cerrarse.
+  /// Opens verification. What happens inside is saved by the modal itself
+  /// against the service, which re-reads the profile: nothing is left to do
+  /// here when it closes.
   Future<void> _verify(BuildContext context) => showModal(
     context: context,
     title: S.of(context).business_email_verify_title,
     builder: (BuildContext context) => VerifyBusinessEmailModal(email: email)
   );
 
-  /// Ascender no avisa nada al salir bien: la etiqueta de principal se movio a
-  /// esta fila y el boton de ascenderla desaparecio, que es todo lo que habia
-  /// para contar. El error lo muestra el servicio.
+  /// Promoting doesn't announce anything on success: the primary tag moved to
+  /// this row and the promote button disappeared, which is all there was to
+  /// tell. The error is shown by the service.
   Future<void> _promote(BuildContext context) => context
     .read<BusinessService>()
     .editEmail(context, email.id, {"MAIN": true});
@@ -147,10 +150,10 @@ class ProfileEmailField extends StatelessWidget {
   }
 }
 
-/// El boton de agregar una direccion, para el titulo del bloque de correos.
+/// The button to add an address, for the emails block's title.
 ///
-/// Va en el titulo y no como una fila mas porque agregar no es un dato de la
-/// empresa: es lo que se hace con la lista entera, incluso cuando esta vacia.
+/// It goes in the title and not as one more row because adding isn't a company
+/// datum: it's what's done with the whole list, even when it's empty.
 class ProfileEmailAdd extends StatelessWidget {
   const ProfileEmailAdd({super.key});
 

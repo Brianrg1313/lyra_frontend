@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
-import 'package:app/screens/modals/edit_business_field/_edit_business_field.dart';
-import 'package:app/screens/modals/edit_business_field/business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/_edit_business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
 Widget _app(String label, BusinessField field) => MaterialApp(
   localizationsDelegates: const [

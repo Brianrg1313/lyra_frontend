@@ -6,62 +6,67 @@ import 'package:app/services/connections/connection_lite_model.dart';
 import 'package:app/services/connections/connection_request.dart';
 import 'package:app/toolkit/api.dart';
 
-/// Estado de la carga del listado de conexiones (`GET /connections/`).
+/// Status of loading the connections listing (`GET /connections/`).
 enum ConnectionsStatus { idle, loading, ready, empty, error }
 
-/// Las cuentas externas que la empresa tiene conectadas: de que servicio es cada
-/// una, como la llamo, si esta lista para funcionar y cuantos bots corren encima.
+/// The external accounts the business has connected: which service each one
+/// is for, what it was named, whether it's ready to work, and how many bots
+/// run on top of it.
 ///
-/// Una conexion es **la cuenta y sus credenciales**, nada mas: un numero de
-/// WhatsApp, un perfil de Instagram, una pagina de Facebook. Lo que la cuenta
-/// contesta se decide despues, en los bots que se arman sobre ella, y por eso
-/// este servicio no sabe nada de roles, tablas ni herramientas.
+/// A connection is **the account and its credentials**, nothing more: a
+/// WhatsApp number, an Instagram profile, a Facebook page. What the account
+/// answers is decided later, in the bots built on top of it, and that's why
+/// this service knows nothing about roles, tables, or tools.
 ///
-/// Concentra las operaciones sobre las conexiones: el listado que consume la
-/// seccion `connections`, el alta, la edicion y la baja, mas la lectura del
-/// detalle de una sola, que es lo que reabre su formulario.
+/// Concentrates the operations on connections: the listing the `connections`
+/// section consumes, creation, editing, and deletion, plus reading the
+/// detail of a single one, which is what reopens its form.
 ///
-/// No confundir con `ConnectionService` (en `services/connection/`), que es el
-/// socket: ese es *la* conexion con el servidor, esto son *las* conexiones de la
-/// empresa con servicios de afuera.
+/// Not to be confused with `ConnectionService` (in `services/connection/`),
+/// which is the socket: that one is *the* connection to the server, this is
+/// *the* business's connections to outside services.
 ///
-/// Las escrituras dejan la cache al dia sin releer el listado, y cada una a su
-/// manera, con el mismo criterio que [TablesService]: el alta la invalida
-/// (`idle`) porque la conexion nueva hay que ir a buscarla —el backend le pone el
-/// id y calcula si quedo lista—; la baja corrige la fila en memoria, porque lo
-/// que cambio ya se sabe entero de este lado. La edicion tambien invalida: si se
-/// toco la configuracion, **si quedo lista o no lo decide el backend**
-/// comparando contra lo que pide ese servicio, y eso no se puede adivinar aca.
+/// Writes keep the cache up to date without re-reading the listing, each in
+/// its own way, with the same criterion as [TablesService]: creation
+/// invalidates it (`idle`) because the new connection has to be fetched —
+/// the backend assigns its id and computes whether it's ready —; deletion
+/// corrects the row in memory, because what changed is already fully known
+/// on this side. Editing also invalidates: if the configuration was
+/// touched, **whether it ended up ready or not is decided by the backend**
+/// by comparing it against what that service requires, and that can't be
+/// guessed here.
 ///
-/// El detalle no se cachea. Es lo unico que trae la configuracion, se lee al
-/// abrir una conexion y se descarta al salir: dejarlo en memoria seria guardar
-/// ids de cuenta y hosts de una cuenta que ya nadie esta mirando.
+/// The detail isn't cached. It's the only thing that carries the
+/// configuration, it's read when a connection is opened and discarded on
+/// exit: keeping it in memory would mean holding on to account ids and hosts
+/// of an account nobody's looking at anymore.
 ///
-/// La cache del listado es por empresa: las conexiones viajan atadas a la empresa
-/// activa (la cabecera `business_id` que pone [useBusiness]), asi que al cambiar
-/// de empresa el listado se recarga solo. Por eso [load] recibe el id de la
-/// empresa y no lo deduce, igual que en las tablas.
+/// The listing cache is per business: connections travel tied to the active
+/// business (the `business_id` header that [useBusiness] sets), so the
+/// listing reloads on its own when the business changes. That's why [load]
+/// receives the business id instead of inferring it, same as with tables.
 class ConnectionsService extends ChangeNotifier {
   ConnectionsStatus _status = ConnectionsStatus.idle;
   List<ConnectionLiteModel> _connections = const [];
 
-  /// Empresa para la que se cargo la cache actual. Si no coincide con la activa,
-  /// [load] refresca aunque la cache este `ready`.
+  /// Business the current cache was loaded for. If it doesn't match the
+  /// active one, [load] refreshes even if the cache is `ready`.
   String? _businessId;
 
   ConnectionsStatus get status => _status;
   List<ConnectionLiteModel> get connections => List.unmodifiable(_connections);
 
-  /// Carga las conexiones de [businessId].
+  /// Loads the connections for [businessId].
   ///
-  /// Se cachea: volver a la seccion no vuelve a pegarle al backend salvo que se
-  /// pida [force], que cambie la empresa activa, o que una escritura haya
-  /// invalidado la cache dejando el estado en `idle`.
+  /// It's cached: coming back to the section doesn't hit the backend again
+  /// unless [force] is requested, the active business changes, or a write
+  /// has invalidated the cache leaving the status at `idle`.
   ///
-  /// Un cambio de empresa manda siempre: no lo frena ni una lectura en curso
-  /// (que es de la empresa anterior) ni una cache `ready` (idem), y lo cargado
-  /// se suelta en el acto para que nadie llegue a ver las cuentas de la otra
-  /// empresa mientras llegan las de esta.
+  /// A business change always takes priority: it isn't held back by a read
+  /// in progress (which belongs to the previous business) or by a `ready`
+  /// cache (same reason), and what was loaded is dropped immediately so no
+  /// one ever sees the other business's accounts while this one's are still
+  /// arriving.
   Future<void> load(String businessId, {bool force = false}) async {
     final changed = _businessId != businessId;
 
@@ -83,9 +88,10 @@ class ConnectionsService extends ChangeNotifier {
         return null;
       });
 
-    // Mientras la lectura viajaba se cambio de empresa: lo que llego es de la
-    // anterior. Se descarta entero, tambien el error, porque la lectura que vale
-    // es la que disparo el cambio y ya esta en camino.
+    // The business changed while the read was in flight: what arrived
+    // belongs to the previous one. It's discarded entirely, including the
+    // error, because the read that counts is the one the change triggered
+    // and that one is already on its way.
     if (_businessId != businessId) return;
 
     if (data == null) {
@@ -102,14 +108,14 @@ class ConnectionsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Lee una conexion entera (`GET /connections/detail/:CONNECTION_ID`): su
-  /// configuracion, que secretos ya tiene guardados —por nombre, nunca su
-  /// valor—, que le falta para poder funcionar y que trabajos ya tienen un bot.
-  /// Trae ademas la descripcion de su proveedor, asi que con esta sola lectura se
-  /// dibuja el formulario.
+  /// Reads a connection in full (`GET /connections/detail/:CONNECTION_ID`):
+  /// its configuration, which secrets it already has saved — by name, never
+  /// their value —, what it's missing to be able to work, and which jobs
+  /// already have a bot. It also brings its provider's description, so this
+  /// single read is enough to draw the form.
   ///
-  /// Devuelve `null` si fallo, habiendo mostrado el error: quien la llama muestra
-  /// su pantalla de "no se pudo abrir" y ofrece reintentar.
+  /// Returns `null` if it failed, having already shown the error: whoever
+  /// calls it shows its "couldn't open" screen and offers a retry.
   Future<ConnectionDetailModel?> detail(
     BuildContext context,
     String id
@@ -117,8 +123,9 @@ class ConnectionsService extends ChangeNotifier {
     if (id.isEmpty) return null;
 
     try {
-      // Sin barra al final: el id es un segmento de la ruta (`params:
-      // ["CONNECTION_ID"]`), y una barra de mas lo dejaria vacio del otro lado.
+      // No trailing slash: the id is a route segment (`params:
+      // ["CONNECTION_ID"]`), and an extra slash would leave it empty on the
+      // other side.
       final response = await api.get(
         path: "/connections/detail/$id",
         version: "v1"
@@ -136,13 +143,13 @@ class ConnectionsService extends ChangeNotifier {
     }
   }
 
-  /// Alta de una conexion contra `POST /connections/`.
+  /// Creates a connection against `POST /connections/`.
   ///
-  /// Devuelve el id de la conexion creada. Ante un error muestra la bandera
-  /// flotante y relanza, para que la pantalla apague su estado de carga.
+  /// Returns the created connection's id. On error it shows the floating
+  /// flag and rethrows, so the screen can turn off its loading state.
   ///
-  /// Al terminar bien invalida la cache del listado (`idle`) para que la proxima
-  /// lectura traiga la cuenta nueva con el `ready` que calculo el backend.
+  /// On success it invalidates the listing cache (`idle`) so the next read
+  /// brings back the new account with the `ready` the backend computed.
   Future<String> create(
     BuildContext context,
     Map<String, dynamic> data
@@ -160,8 +167,9 @@ class ConnectionsService extends ChangeNotifier {
 
       return id;
     } catch (error) {
-      // El error se registra siempre, tambien cuando se muestra: el texto que
-      // llega a pantalla suele estar recortado y aca queda el crudo.
+      // The error is always logged, even when it's shown on screen: the
+      // text that reaches the screen is often trimmed and this keeps the
+      // raw version.
       if (kDebugMode) print("createConnection failed: $error");
 
       if (context.mounted) _report(context, error);
@@ -170,15 +178,16 @@ class ConnectionsService extends ChangeNotifier {
     }
   }
 
-  /// Edicion de una conexion contra `PUT /connections/`.
+  /// Edits a connection against `PUT /connections/`.
   ///
-  /// La cache se invalida en vez de corregirse en memoria, al reves que en las
-  /// tablas, y por una razon concreta: una edicion puede completar (o vaciar) la
-  /// configuracion, y si la cuenta quedo lista lo resuelve el backend contra lo
-  /// que pide ese servicio. Reescribir la fila aca seria adivinar ese `ready`.
+  /// The cache is invalidated instead of being corrected in memory, unlike
+  /// with tables, and for a concrete reason: an edit can complete (or empty
+  /// out) the configuration, and whether the account ended up ready is
+  /// resolved by the backend against what that service requires. Rewriting
+  /// the row here would mean guessing at that `ready`.
   ///
-  /// Devuelve `true` si el cambio salio bien. Ante un error muestra la bandera
-  /// flotante y devuelve `false`, con la conexion como estaba.
+  /// Returns `true` if the change went through. On error it shows the
+  /// floating flag and returns `false`, with the connection left as it was.
   Future<bool> edit(BuildContext context, Map<String, dynamic> data) async {
     try {
       await api.put(
@@ -199,16 +208,17 @@ class ConnectionsService extends ChangeNotifier {
     return true;
   }
 
-  /// Cambia solo el interruptor de una conexion (`ENABLED`), sin tocar nada mas.
+  /// Changes only a connection's switch (`ENABLED`), without touching
+  /// anything else.
   ///
-  /// Es el unico cambio que si corrige la fila en memoria: pausar una cuenta no
-  /// cambia su configuracion, asi que su `ready` sigue siendo el mismo y no hay
-  /// nada que ir a buscar. La fila se actualiza al instante y el cambio viaja
-  /// detras; si falla, se vuelve a poner como estaba.
+  /// It's the only change that does correct the row in memory: pausing an
+  /// account doesn't change its configuration, so its `ready` stays the same
+  /// and there's nothing to go fetch. The row updates instantly and the
+  /// change travels behind it; if it fails, it's set back the way it was.
   ///
-  /// Es ademas lo que hay que ofrecer en lugar de la baja cuando lo que se quiere
-  /// es que la cuenta deje de contestar: pausarla no pierde ni las credenciales
-  /// ni los bots que corren sobre ella.
+  /// It's also what should be offered instead of deletion when what's
+  /// wanted is for the account to stop answering: pausing it loses neither
+  /// the credentials nor the bots running on top of it.
   Future<bool> toggle(
     BuildContext context,
     ConnectionLiteModel connection
@@ -240,16 +250,17 @@ class ConnectionsService extends ChangeNotifier {
     return true;
   }
 
-  /// Baja de una conexion contra `DELETE /connections/`.
+  /// Deletes a connection against `DELETE /connections/`.
   ///
-  /// Se lleva sus credenciales **y los bots que contestaban a traves de ella**,
-  /// asi que quien la llama tiene que haberlo confirmado antes: el servicio no
-  /// pregunta. La cuenta que ocupaba queda libre y se puede volver a conectar,
-  /// pero configurandola de nuevo.
+  /// It takes down its credentials **and the bots that were answering
+  /// through it**, so whoever calls this has to have confirmed it
+  /// beforehand: the service doesn't ask. The account it occupied is freed
+  /// and can be connected again, but only by configuring it from scratch.
   ///
-  /// La cache se corrige en el acto —se saca la fila— en vez de invalidarse: la
-  /// conexion eliminada es lo unico que cambio, y asi desaparece del listado sin
-  /// que este parpadee cargando de nuevo.
+  /// The cache is corrected on the spot — the row is removed — instead of
+  /// being invalidated: the deleted connection is the only thing that
+  /// changed, so it disappears from the listing without the listing
+  /// flickering through a reload.
   Future<bool> remove(
     BuildContext context,
     ConnectionLiteModel connection
@@ -274,14 +285,15 @@ class ConnectionsService extends ChangeNotifier {
       .where((current) => current.id != connection.id)
       .toList();
 
-    // Nada que sacar: la cache ya no era la que tenia esta conexion (se cambio
-    // de empresa, o se recargo el listado mientras la baja viajaba).
+    // Nothing to remove: the cache no longer was the one holding this
+    // connection (the business changed, or the listing reloaded while the
+    // deletion was in flight).
     if (remaining.length == _connections.length) return true;
 
     _connections = remaining;
 
-    // El estado sigue a lo que quedo: sin conexiones, el listado tiene que
-    // mostrar su mensaje de vacio y no una lista en blanco.
+    // The status follows what's left: with no connections, the listing has
+    // to show its empty message and not a blank list.
     if (_status == ConnectionsStatus.ready && _connections.isEmpty) {
       _status = ConnectionsStatus.empty;
     }
@@ -291,8 +303,8 @@ class ConnectionsService extends ChangeNotifier {
     return true;
   }
 
-  /// Vacia la cache. La llama el cierre de sesion, junto al resto de los
-  /// servicios de la sesion.
+  /// Empties the cache. Called on sign-out, along with the rest of the
+  /// session's services.
   void clear() {
     _connections = const [];
     _status = ConnectionsStatus.idle;
@@ -300,11 +312,11 @@ class ConnectionsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Reescribe una fila de la cache, si todavia esta.
+  /// Rewrites a row in the cache, if it's still there.
   ///
-  /// La conexion puede haberse ido mientras un cambio viajaba (un cambio de
-  /// empresa, una recarga): entonces no hay nada que corregir y lo que se lea
-  /// despues ya viene bien.
+  /// The connection may have gone away while a change was in flight (a
+  /// business change, a reload): in that case there's nothing to correct
+  /// and whatever gets read afterward will already come back right.
   void _replace(
     String id,
     ConnectionLiteModel Function(ConnectionLiteModel current) change
@@ -318,12 +330,12 @@ class ConnectionsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Muestra un error de una operacion sobre las conexiones.
+  /// Shows an error from an operation on the connections.
   ///
-  /// Nunca se cae en silencio: si el error no trae nada mostrable, igual se
-  /// avisa. Un `action` es una instruccion de navegacion (por ejemplo, sesion
-  /// vencida): se relanza tal cual para que la maneje quien corresponda, asi que
-  /// esta llamada puede no volver.
+  /// It never fails silently: if the error doesn't carry anything showable,
+  /// it still warns. An `action` is a navigation instruction (for example,
+  /// an expired session): it's rethrown as-is so whoever should handle it
+  /// does, so this call may not return.
   void _report(BuildContext context, Object error) {
     if (error is Map && error["action"] != null) throw error["action"];
 
@@ -332,8 +344,9 @@ class ConnectionsService extends ChangeNotifier {
     );
   }
 
-  /// Lee el identificador de la conexion de la respuesta del alta, que lo
-  /// devuelve pelado (`"a1b2..."`) aunque se contempla envuelto por las dudas.
+  /// Reads the connection's identifier from the creation response, which
+  /// returns it bare (`"a1b2..."`) though a wrapped form is also handled
+  /// just in case.
   String _readId(dynamic response) {
     if (response is Map) {
       final id = response["id"] ?? response["connection_id"] ?? response["ID"];

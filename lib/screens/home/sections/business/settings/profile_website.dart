@@ -6,26 +6,26 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // WIDGETS
-import 'package:app/screens/modals/edit_business_field/_edit_business_field.dart';
-import 'package:app/screens/modals/edit_business_field/business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/_edit_business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
 import 'profile_field.dart';
 
-/// El sitio de la empresa: la unica fila del perfil que **lleva a otro lado**.
+/// The company's site: the only profile row that **leads elsewhere**.
 ///
-/// Por eso no se dibuja como el resto de los datos sino dentro de una caja que
-/// se puede tocar ([Surface.over]): un texto suelto en una ficha se lee, no se
-/// toca, y nada en el renglon decia que ahi habia un enlace. La caja mide lo que
-/// mide la direccion y no el ancho de la columna, para que lo que se puede tocar
-/// sea lo que se puede tocar.
+/// That's why it's not drawn like the rest of the data but inside a box that
+/// can be touched ([Surface.over]): a loose text in a sheet is read, not
+/// touched, and nothing in the row said there was a link there. The box
+/// measures what the address measures and not the column's width, so what can
+/// be touched is what can be touched.
 ///
-/// Sin sitio cargado no hay caja: queda el aviso de que el dato falta, como en
-/// cualquier otra fila vacia. Una caja vacia invitaria a tocar algo que no
-/// lleva a ningun lado.
+/// Without a site loaded there's no box: the notice that the datum is missing
+/// stays, like in any other empty row. An empty box would invite touching
+/// something that leads nowhere.
 ///
-/// La direccion se guarda como la escribe quien la carga (`ryzer.com`), asi que
-/// abrirla es completarle el esquema: sin el, el sistema no sabe que es una
-/// pagina web.
+/// The address is saved as whoever loads it writes it (`ryzer.com`), so
+/// opening it is completing its scheme: without it, the system doesn't know
+/// it's a web page.
 class BusinessProfileWebsite extends StatelessWidget {
   const BusinessProfileWebsite({super.key, required this.website});
 
@@ -55,9 +55,9 @@ class BusinessProfileWebsite extends StatelessWidget {
     color: ThemeColor.of(context).text.secondary
   );
 
-  /// La direccion dentro de una caja que se abre. Alineada a la izquierda y
-  /// midiendo su texto: es un boton, y un boton del ancho de la ficha no se lee
-  /// como un enlace sino como una barra.
+  /// The address inside a box that opens. Aligned to the left and measuring
+  /// its text: it's a button, and a button the width of the sheet doesn't read
+  /// as a link but as a bar.
   Widget _link(BuildContext context) {
     final scheme = ThemeColor.of(context);
 
@@ -93,17 +93,17 @@ class BusinessProfileWebsite extends StatelessWidget {
     );
   }
 
-  /// Abre el sitio en el navegador del sistema.
+  /// Opens the site in the system browser.
   ///
-  /// Que no se pueda abrir se avisa: es lo unico que distingue una direccion
-  /// mal cargada de un toque que no hizo nada, y el que la cargo es el unico
-  /// que puede corregirla.
+  /// That it can't be opened is announced: it's the only thing that tells a
+  /// badly loaded address apart from a touch that did nothing, and whoever
+  /// loaded it is the only one who can correct it.
   ///
-  /// Abrir es cosa del sistema y puede fallar por algo que no es la direccion
-  /// —no hay navegador, el sistema lo niega—, y eso llega como excepcion. Se
-  /// atrapa y se cuenta igual: lo que hay que saber es que el sitio no se
-  /// abrio, y una excepcion suelta desde el toque de un boton no se la cuenta a
-  /// nadie.
+  /// Opening is the system's business and can fail for something that isn't
+  /// the address —no browser, the system denies it—, and that arrives as an
+  /// exception. It's caught and told the same: what has to be known is that
+  /// the site didn't open, and a bare exception from a button's touch isn't
+  /// told to anyone.
   Future<void> _open(BuildContext context) async {
     bool opened = false;
 
@@ -114,7 +114,7 @@ class BusinessProfileWebsite extends StatelessWidget {
         opened = await launchUrl(url, mode: LaunchMode.externalApplication);
       } catch (E) {
         if (kDebugMode) {
-          print("No se pudo abrir $url: $E");
+          print("Could not open $url: $E");
         }
       }
     }
@@ -126,17 +126,17 @@ class BusinessProfileWebsite extends StatelessWidget {
     );
   }
 
-  /// La direccion como la entiende el sistema. Lo guardado casi nunca trae
-  /// esquema —se carga `ryzer.com`, que es como se dice— y sin el, `Uri` lo lee
-  /// como una ruta de archivo.
+  /// The address as the system understands it. What's saved almost never
+  /// carries a scheme —`ryzer.com` is loaded, which is how it's said— and
+  /// without it, `Uri` reads it as a file path.
   String get _address {
     final value = website.trim();
 
     return value.contains("://") ? value : "https://$value";
   }
 
-  /// Cambiar el sitio es escribir, asi que se hace donde se escribe: el modal
-  /// de un campo, igual que el resto de los datos de texto de la ficha.
+  /// Changing the site is writing, so it's done where one writes: the single
+  /// field modal, same as the rest of the sheet's text data.
   Future<void> _edit(BuildContext context) => showModal(
     context: context,
     title: website.isEmpty

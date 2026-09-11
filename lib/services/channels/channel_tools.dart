@@ -2,37 +2,38 @@ import 'package:flutter/material.dart';
 
 import 'package:app/toolkit/toolkit.dart';
 
-/// Que tipos de contenido, ademas de texto, puede **entender y producir** el
-/// modelo que atiende un canal.
+/// What kinds of content, in addition to text, the model **can understand and
+/// produce** for a channel's replies.
 ///
-/// Con [voice] encendida un audio de WhatsApp se transcribe y se contesta
-/// hablando; con [images] o [video] el modelo mira lo que le mandan —la foto de
-/// un producto, el video de una falla— y responde sobre eso; con [documents]
-/// lee lo adjunto.
+/// With [voice] turned on, a WhatsApp audio is transcribed and answered by
+/// speaking; with [images] or [video] the model looks at what is sent to it —a
+/// product photo, the video of a fault— and responds about it; with [documents]
+/// it reads the attachment.
 ///
-/// **Cada una encarece el procesamiento**, y no poco: procesar audio, imagen o
-/// video cuesta bastante mas que leer texto, y se paga por conversacion
-/// atendida. Por eso se eligen de a una y el formulario lo dice donde se
-/// eligen, no en la letra chica.
+/// **Each one makes processing more expensive**, and not a little: processing
+/// audio, image or video costs quite a bit more than reading text, and it is
+/// paid per conversation handled. That is why they are chosen one at a time and
+/// the form says so where they are chosen, not in the fine print.
 ///
-/// **Viajan dentro de `SETTINGS`**, una clave booleana por herramienta
-/// ([settingKey]). Ver [ChannelAgentRole] por que el backend no las conoce.
+/// **They travel inside `SETTINGS`**, one boolean key per tool
+/// ([settingKey]). See [ChannelAgentRole] for why the backend does not know
+/// them.
 enum ChannelTool {
-  /// Escuchar notas de voz y contestar hablando.
+  /// Listen to voice notes and reply by speaking.
   voice("tool_voice"),
 
-  /// Mirar y generar imagenes.
+  /// Look at and generate images.
   images("tool_images"),
 
-  /// Mirar videos.
+  /// Look at videos.
   video("tool_video"),
 
-  /// Leer documentos adjuntos.
+  /// Read attached documents.
   documents("tool_documents");
 
   const ChannelTool(this.settingKey);
 
-  /// Clave booleana dentro de `SETTINGS`.
+  /// Boolean key inside `SETTINGS`.
   final String settingKey;
 
   String title(BuildContext context) => switch (this) {

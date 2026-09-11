@@ -2,43 +2,46 @@ import 'package:flutter/material.dart';
 
 import 'package:app/toolkit/toolkit.dart';
 
-/// Con que papel atiende el modelo de IA que contesta en un canal.
+/// With which role the AI model that answers on a channel handles it.
 ///
-/// No es una capacidad tecnica sino el encargo: el mismo canal de WhatsApp
-/// vende o da soporte segun lo que se elija aca, y de eso dependen el tono, que
-/// hace ante una duda que no sabe contestar y hacia donde empuja la
-/// conversacion.
+/// It is not a technical capability but the assignment: the same WhatsApp
+/// channel sells or gives support depending on what is chosen here, and on that
+/// depend the tone, what it does when faced with a question it cannot answer,
+/// and where it pushes the conversation.
 ///
-/// **Viaja dentro de `SETTINGS`**, bajo [settingKey]. El backend no conoce este
-/// concepto: guarda la configuracion de un canal como un objeto plano de
-/// claves libres (`Channels.config`), justamente para que el producto pueda
-/// agregar ajustes sin tocar la api. Por eso se lee de vuelta con el resto de
-/// los settings al reabrir el formulario.
+/// **It travels as `ROLE`, a real column on the channel** (`channels`.`role`)
+/// and not app-invented settings — the backend's own catalog is `sales`,
+/// `support`, `marketing`, `services`, `billing`, `general`
+/// (`Channels.roles()`, `model:/channels/channels.js`). This app only offers
+/// three of those six today: the rest have no picture of what this section
+/// would do with them yet (a marketing or billing persona needs its own data
+/// source story, not just a label). An unknown role — or one of the three not
+/// offered here — falls back to `general` on the backend, which is why
+/// [agent] carries that code.
 enum ChannelAgentRole {
-  /// Vende: presenta productos, arma el pedido y cierra.
-  seller("seller"),
+  /// Sells: presents products, builds the order and closes.
+  seller("sales"),
 
-  /// Da soporte: resuelve problemas de algo que el cliente ya compro.
+  /// Gives support: solves problems with something the client already bought.
   support("support"),
 
-  /// Atiende en general: responde lo que venga sin empujar hacia la venta.
-  agent("agent");
+  /// Handles in general: answers whatever comes without pushing toward the
+  /// sale.
+  agent("general");
 
   const ChannelAgentRole(this.value);
 
-  /// Codigo que se guarda. Es lo que queda escrito en el canal, asi que no se
-  /// cambia sin migrar lo ya guardado.
+  /// Code sent as `ROLE` and read back from it. It is what stays written on
+  /// the channel, so it is not changed without migrating what is already
+  /// stored.
   final String value;
 
-  /// Clave del ajuste dentro de `SETTINGS`.
-  static const String settingKey = "agent_role";
-
-  /// El que arranca elegido: vender es para lo que se conecta un canal la
-  /// primera vez.
+  /// The one that starts chosen: selling is what a channel is connected for
+  /// the first time.
   static const ChannelAgentRole initial = seller;
 
-  /// Lee el valor guardado. Lo desconocido (o lo que falta, en un canal creado
-  /// antes de que existiera este ajuste) cae en [initial].
+  /// Reads the stored value. The unknown (or the missing, in a channel created
+  /// before this setting existed) falls into [initial].
   static ChannelAgentRole from(String? raw) {
     final code = raw?.trim().toLowerCase();
 

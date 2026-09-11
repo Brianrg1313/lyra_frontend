@@ -2,30 +2,30 @@ import 'package:flutter/foundation.dart';
 
 import 'package:app/services/catalog/country_model.dart';
 
-/// Los paises en los que la plataforma opera.
+/// The countries where the platform operates.
 ///
-/// Es uno de los dos catalogos de plataforma que llegan en `/init` (el otro es
-/// [CurrencyCatalogService]) y se puebla desde ahi, en [ClientService.resolve],
-/// antes de levantar el arbol: para cuando la primera pantalla se pinta ya esta
-/// cargado y ningun formulario tiene que esperar a un future.
+/// It's one of the two platform catalogs that arrive in `/init` (the other is
+/// [CurrencyCatalogService]) and is populated from there, in [ClientService.resolve],
+/// before the tree is mounted: by the time the first screen is painted it's
+/// already loaded and no form has to wait on a future.
 ///
-/// Es singleton porque el catalogo es uno solo para toda la app y no es de
-/// nadie: no depende de la empresa activa —cambiar de empresa no cambia en que
-/// paises opera la plataforma— ni del ciclo de vida de ninguna pantalla. Ademas
-/// se registra en `initialBuilder` con `ChangeNotifierProvider.value` para poder
-/// observarlo con `context.watch`, y por eso mismo no debe destruirlo el
-/// provider.
+/// It's a singleton because the catalog is a single one for the whole app and
+/// isn't anyone's: it doesn't depend on the active business —changing business
+/// doesn't change what countries the platform operates in— nor on any screen's
+/// lifecycle. It's also registered in `initialBuilder` with
+/// `ChangeNotifierProvider.value` so it can be observed with `context.watch`,
+/// and for that same reason the provider must not destroy it.
 ///
-/// El punto de que esto sea un catalogo y no un enumerado: habilitar una region
-/// es una fila en `lyra_admin`.`countries`, y la app la ofrece en la proxima
-/// lectura de `/init` —sin publicar una version nueva—. Por eso nadie deberia
-/// escribir aca una lista de paises, ni dar por sentado que un codigo esta.
+/// The point of this being a catalog and not an enum: enabling a region is a
+/// row in `lyra_admin`.`countries`, and the app offers it on the next read of
+/// `/init` —without publishing a new version—. That's why no one should write a
+/// country list here, nor assume a code exists.
 ///
 /// ```dart
-/// // Para ofrecerlos en un formulario.
+/// // To offer them in a form.
 /// final countries = context.watch<CountryCatalogService>().countries;
 ///
-/// // Para leer un codigo guardado.
+/// // To read a saved code.
 /// final name = CountryCatalogService().nameOf(profile.country);
 /// ```
 class CountryCatalogService extends ChangeNotifier {
@@ -39,48 +39,48 @@ class CountryCatalogService extends ChangeNotifier {
 
   List<CountryModel> _countries = const [];
 
-  /// Por codigo, para no recorrer la lista en cada lectura: la ficha de una
-  /// empresa y cada fila de un listado preguntan por el suyo.
+  /// By code, to avoid walking the list on every read: a business card and each
+  /// row of a listing ask for their own.
   Map<String, CountryModel> _byCode = const {};
 
-  /// El catalogo entero, en el orden que lo manda el backend (alfabetico por el
-  /// nombre de cada pais en su propio idioma).
+  /// The whole catalog, in the order the backend sends it (alphabetical by the
+  /// name of each country in its own language).
   List<CountryModel> get countries => List.unmodifiable(_countries);
 
-  /// Si el catalogo llego. Es lo que mira un formulario para decidir si puede
-  /// ofrecer una lista o tiene que dejar escribir el codigo a mano: sin
-  /// catalogo, un desplegable vacio deja el dato sin manera de cargarse.
+  /// Whether the catalog has arrived. It's what a form looks at to decide
+  /// whether it can offer a list or has to let the code be written by hand:
+  /// without a catalog, an empty dropdown leaves the data with no way to be
+  /// loaded.
   bool get isReady => _countries.isNotEmpty;
 
   int get total => _countries.length;
 
-  /// El pais con ese codigo, o `null` si el catalogo no lo tiene (todavia no
-  /// llego, o la region dejo de estar habilitada).
+  /// The country with that code, or `null` if the catalog doesn't have it (it
+  /// hasn't arrived yet, or the region was disabled).
   CountryModel? byCode(String? code) {
     if (code == null || code.isEmpty) return null;
     return _byCode[code.trim().toUpperCase()];
   }
 
-  /// Como se lee un codigo guardado: el nombre del pais, o el codigo crudo si
-  /// el catalogo no lo tiene.
+  /// How a saved code is read: the country name, or the raw code if the
+  /// catalog doesn't have it.
   ///
-  /// Devolver el codigo y no un texto vacio es a proposito: el dato es de la
-  /// empresa, y esconderlo porque esta app no sabe nombrarlo seria mostrar la
-  /// ficha incompleta.
+  /// Returning the code and not an empty text is on purpose: the data belongs
+  /// to the business, and hiding it because this app doesn't know how to name
+  /// it would be showing an incomplete card.
   String nameOf(String? code) =>
     byCode(code)?.name ?? code?.trim().toUpperCase() ?? "";
 
-  /// La moneda nacional de un pais, para proponerla cuando se lo elige. Vacio
-  /// si no se conoce el pais.
+  /// The national currency of a country, to propose it when it's picked. Empty
+  /// if the country isn't known.
   String currencyOf(String? code) => byCode(code)?.currency ?? "";
 
-  /// El pais al que pertenece un telefono guardado (`+584121234567` es
-  /// Venezuela), o `null` si no empieza con `+` o si ningun codigo habilitado
-  /// coincide.
+  /// The country a saved phone belongs to (`+584121234567` is Venezuela), or
+  /// `null` if it doesn't start with `+` or no enabled code matches.
   ///
-  /// Gana el codigo mas largo que coincida y no el primero: `+1` es Estados
-  /// Unidos y Canada, pero `+1868` no es ninguno de los dos. Es la unica forma
-  /// de partir un telefono sin preguntarle a nadie de donde es.
+  /// The longest matching code wins and not the first: `+1` is the United
+  /// States and Canada, but `+1868` is neither. It's the only way to split a
+  /// phone without asking anyone where it's from.
   CountryModel? byPhone(String? phone) {
     final digits = phone?.trim() ?? "";
     if (!digits.startsWith("+")) return null;
@@ -99,12 +99,12 @@ class CountryCatalogService extends ChangeNotifier {
     return match;
   }
 
-  /// Un telefono guardado partido en las dos cosas que se cargan por separado:
-  /// el codigo del pais y el numero.
+  /// A saved phone split into the two things loaded separately: the country
+  /// code and the number.
   ///
-  /// Lo que no se reconoce queda entero en el numero —un telefono cargado sin
-  /// codigo, o el de una region que se deshabilito—: se muestra tal como esta
-  /// guardado en vez de atribuirselo a un pais que nadie eligio.
+  /// What isn't recognized stays whole in the number —a phone loaded without a
+  /// code, or one from a disabled region—: it's shown as it's saved instead of
+  /// being attributed to a country nobody picked.
   ({String dial, String number}) splitPhone(String? phone) {
     final value = phone?.trim() ?? "";
     final country = byPhone(value);
@@ -117,12 +117,12 @@ class CountryCatalogService extends ChangeNotifier {
     );
   }
 
-  /// Puebla el catalogo con lo que trajo `/init`.
+  /// Populates the catalog with what `/init` brought.
   ///
-  /// Notifica igual aunque lo llamen antes de montar el arbol —ahi no hay quien
-  /// escuche y no cuesta nada—, porque tambien lo llama la relectura del
-  /// catalogo con la app ya andando (ver [ClientService.refreshCatalogs]), y en
-  /// ese momento las pantallas abiertas tienen que enterarse.
+  /// It notifies even if called before the tree is mounted —there's no one
+  /// listening and it costs nothing— because it's also called by the catalog
+  /// re-read with the app already running (see [ClientService.refreshCatalogs]),
+  /// and at that moment the open screens have to find out.
   void seed(dynamic data) {
     _countries = CountryModel.fromResponse(data);
     _byCode = {for (final country in _countries) country.code: country};
@@ -130,8 +130,8 @@ class CountryCatalogService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vacia el catalogo. Para el cierre de sesion, junto al resto de los
-  /// servicios: la proxima sesion lo vuelve a traer, y puede traerlo distinto.
+  /// Empties the catalog. For sign out, along with the rest of the services:
+  /// the next session brings it back, and it may come back different.
   void clear() {
     _countries = const [];
     _byCode = const {};

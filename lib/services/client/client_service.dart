@@ -13,23 +13,23 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
-/// Estado del cliente autenticado.
+/// State of the authenticated client.
 ///
-/// La instancia se crea en `initialBuilder` y se registra ahi con
-/// `ChangeNotifierProvider.value`, en el scope mas alto de la app, porque su
-/// estado debe sobrevivir a la navegacion entre secciones.
+/// The instance is created in `initialBuilder` and registered there with
+/// `ChangeNotifierProvider.value`, in the highest scope of the app, because its
+/// state must survive navigation between sections.
 
-/// La sesion se resuelve en [resolve] antes de levantar el arbol, desde
-/// `initialValidator`. Para cuando el provider expone esta instancia el cliente
-/// ya esta cargado y ningun widget tiene que esperar a un future.
+/// The session is resolved in [resolve] before raising the tree, from
+/// `initialValidator`. By the time the provider exposes this instance the client
+/// is already loaded and no widget has to wait on a future.
 ///
-/// `/init` no trae solo al cliente: trae todo lo que la app necesita antes de
-/// dibujar nada —el perfil, las empresas a las que tiene acceso, los catalogos
-/// de plataforma (paises y monedas) y de donde se bajan las imagenes—. Este
-/// servicio es el unico que lee ese endpoint, asi que es el que reparte cada
-/// bloque a quien lo administra: [BusinessService] las empresas,
-/// [CountryCatalogService] y [CurrencyCatalogService] los catalogos, y
-/// [CdnService] las bases de las imagenes. Aca no se guarda ninguno.
+/// `/init` does not bring only the client: it brings everything the app needs
+/// before drawing anything —the profile, the companies it has access to, the
+/// platform catalogs (countries and currencies) and where the images are
+/// downloaded from—. This service is the only one that reads that endpoint, so
+/// it is the one that hands each block to whoever manages it: [BusinessService]
+/// the companies, [CountryCatalogService] and [CurrencyCatalogService] the
+/// catalogs, and [CdnService] the image bases. None is stored here.
 class ClientService extends ChangeNotifier {
   final DatabaseService _database = DatabaseService();
 
@@ -38,14 +38,14 @@ class ClientService extends ChangeNotifier {
   bool get isAuthenticated => _client != null;
 
   ClientModel get client {
-    assert(_client != null, "ClientService leido sin una sesion iniciada");
+    assert(_client != null, "ClientService read without a session started");
     return _client!;
   }
 
-  /// Carga el cliente si hay sesion vigente.
+  /// Loads the client if there is a valid session.
   ///
-  /// Devuelve la ruta a la que hay que redirigir, o `null` si la sesion es
-  /// valida y el cliente quedo cargado.
+  /// Returns the route to redirect to, or `null` if the session is valid and
+  /// the client ended up loaded.
   Future<String?> resolve() async {
     final hasSession = await _database.hasInSecure(api.current.tokenName);
 
@@ -58,22 +58,22 @@ class ClientService extends ChangeNotifier {
       if (kDebugMode) {
         print(E);
       }
-      // El backend manda `action` como identificador del destino (por ejemplo
-      // "login" cuando la sesion ya no vale), que coincide con la key de la
-      // ruta, no con su URL. Se traduce a la ruta real por su key; si no
-      // coincide con ninguna, el login es el destino seguro ante un fallo de
-      // sesion. Sin esta traduccion, devolver "login" a secas deja al parser
-      // con un path sin coincidencia y la app se queda clavada en el splash.
+      // The backend sends `action` as the destination identifier (for example
+      // "login" when the session is no longer valid), which matches the route's
+      // key, not its URL. It is translated to the real route by its key; if it
+      // does not match any, login is the safe destination on a session
+      // failure. Without this translation, returning "login" plain leaves the
+      // parser with a path with no match and the app stays stuck on the splash.
       final action = E is Map ? E["action"] as String? : null;
       page = (action != null ? Navis.byKey(action)?.url : null) ?? "/login";
       return null;
     });
 
     if (page != null) {
-      // La sesion guardada ya no sirve: se descarta el token para no arrastrar
-      // una credencial muerta en las proximas peticiones ni reintentar `/init`
-      // en el proximo arranque en frio (que volveria a fallar con 401), y se
-      // corta el socket, que se autentica con ese mismo token.
+      // The stored session is no longer useful: the token is discarded so as
+      // not to drag a dead credential into the next requests nor retry `/init`
+      // on the next cold start (which would fail again with 401), and the
+      // socket is cut, which authenticates with that same token.
       api.token = null;
       ConnectionService().close();
       await _database.deleteSecure(api.current.tokenName);
@@ -84,36 +84,37 @@ class ClientService extends ChangeNotifier {
       return "/login";
     }
 
-    // La configuracion de plataforma va primero: es con lo que se leen los
-    // datos que vienen despues (en que moneda factura cada empresa, en que pais
-    // opera, de donde se baja su logo), asi que para cuando alguien los mire ya
-    // tienen con que contestar.
+    // The platform configuration goes first: it is with it that the data that
+    // comes later is read (in which currency each company invoices, in which
+    // country it operates, where its logo is downloaded from), so by the time
+    // someone looks at them they already have what to answer with.
     _seedCatalogs(clientData);
 
-    // La coleccion de empresas la administra BusinessService; aqui solo se le
-    // entrega el bloque que trajo la sesion.
+    // The companies collection is managed by BusinessService; here only the
+    // block the session brought is handed to it.
     businessService.seed(clientData["businesses"]);
 
     update(ClientModel.fromJson(clientData));
 
-    // La sesion quedo confirmada por el backend: recien aca el socket tiene
-    // credenciales validas que presentar en el handshake. Sin esperarlo, porque
-    // esto corre antes de levantar el arbol y la app no tiene por que quedarse
-    // en el splash mientras se abre la conexion (ni fallar si no se abre: el
-    // cliente reintenta solo y `ConnectionService` no lanza).
+    // The session was confirmed by the backend: only here does the socket have
+    // valid credentials to present in the handshake. Without waiting for it,
+    // because this runs before raising the tree and the app has no reason to
+    // stay on the splash while the connection opens (nor to fail if it does not
+    // open: the client retries on its own and `ConnectionService` does not
+    // throw).
     unawaited(ConnectionService().open());
 
     return null;
   }
 
-  /// Reparte la configuracion de plataforma que vino en `/init`: los dos
-  /// catalogos y las bases con las que se arman las direcciones de las
-  /// imagenes.
+  /// Hands out the platform configuration that came in `/init`: the two
+  /// catalogs and the bases with which the image addresses are built.
   ///
-  /// Cada bloque se entrega solo si llego: una respuesta sin `countries` —un
-  /// backend viejo, un despliegue a medias— deja el catalogo como estaba en vez
-  /// de vaciarlo, que es lo que dejaria a los formularios sin nada que ofrecer,
-  /// y una sin `cdn` deja las imagenes bajandose de donde ya se bajaban.
+  /// Each block is handed only if it arrived: a response without `countries` —an
+  /// old backend, a half deployment— leaves the catalog as it was instead of
+  /// emptying it, which is what would leave the forms with nothing to offer,
+  /// and one without `cdn` leaves the images downloading from where they were
+  /// already downloading.
   void _seedCatalogs(Map clientData) {
     final countries = clientData["countries"];
     final currencies = clientData["currencies"];
@@ -124,25 +125,24 @@ class ClientService extends ChangeNotifier {
     if (cdn != null) CdnService().seed(cdn);
   }
 
-  /// Vuelve a leer la configuracion de plataforma con la app andando.
+  /// Rereads the platform configuration with the app running.
   ///
-  /// Nada de esto es de esta app ni de esta sesion: se habilita una region —o
-  /// se corrige el simbolo de una moneda, o se muda el CDN— del lado del
-  /// backend, y lo que ya
-  /// esta abierto tendria que enterarse sin que nadie publique una version nueva
-  /// ni cierre sesion. Esto es lo que hace falta para eso: los servicios de
-  /// catalogo notifican al recibir lo nuevo, asi que las pantallas montadas se
-  /// repintan solas.
+  /// None of this belongs to this app or this session: a region is enabled —or
+  /// a currency symbol is corrected, or the CDN moves— on the backend side, and
+  /// what is already
+  /// open would have to find out without anyone publishing a new version or
+  /// signing out. This is what is needed for that: the catalog services notify
+  /// on receiving the new data, so the mounted screens repaint on their own.
   ///
-  /// Se relee `/init` entero porque es el endpoint que lo sirve, pero **solo se
-  /// vuelve a sembrar esa parte**: el perfil y las empresas ya estan
-  /// cargados y tienen quien los mantenga al dia, y volver a sembrarlos aca
-  /// reiniciaria la empresa activa a la primera de la lista en medio de lo que
-  /// se este haciendo.
+  /// The whole `/init` is reread because it is the endpoint that serves it, but
+  /// **only that part is reseeded**: the profile and the companies are already
+  /// loaded and have someone keeping them up to date, and reseeding them here
+  /// would reset the active company to the first one in the list in the middle
+  /// of whatever is being done.
   ///
-  /// No lanza: que el catalogo no se pueda refrescar no es un error que le
-  /// importe a quien esta trabajando —lo que hay sigue sirviendo—, asi que el
-  /// fallo se ignora y se reintenta la proxima vez.
+  /// It does not throw: the catalog not being able to refresh is not an error
+  /// that matters to whoever is working —what there is still serves—, so the
+  /// failure is ignored and retried next time.
   Future<void> refreshCatalogs() async {
     if (!isAuthenticated) return;
 
@@ -165,8 +165,8 @@ class ClientService extends ChangeNotifier {
 
   void clear() {
     _client = null;
-    // Sin sesion no hay nada que escuchar. `close` no suelta los listeners, asi
-    // que el proximo inicio de sesion vuelve a recibir los mismos eventos.
+    // Without a session there is nothing to listen to. `close` does not release
+    // the listeners, so the next sign in receives the same events again.
     ConnectionService().close();
     notifyListeners();
   }

@@ -2,23 +2,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// Accion secundaria de la barra del listado: importar una tabla ya existente.
+/// Secondary action of the list bar: import an already existing table.
 ///
-/// Es un [FeedbackButton] y no un [Button] para que no compita visualmente con
-/// la accion principal, que es crear.
+/// It's a [FeedbackButton] and not a [Button] so it doesn't visually compete
+/// with the main action, which is create.
 ///
-/// Mientras [loading] este en `true` el icono se cambia por un spinner y el
-/// boton no responde: subir el archivo puede tardar, y sin este aviso el unico
-/// rastro de que algo esta pasando seria que la tabla aparece un rato despues.
-/// Escucha ese valor y no lo recibe como `bool` para que empezar y terminar la
-/// subida no vuelva a construir la barra entera, igual que el buscador de al
-/// lado.
+/// While [loading] is `true` the icon is swapped for a spinner and the button
+/// doesn't respond: uploading the file can take a while, and without this
+/// notice the only trace that something is happening would be the table
+/// appearing a while later. It listens to that value and doesn't receive it as
+/// a `bool` so starting and finishing the upload doesn't rebuild the whole bar,
+/// just like the search box next to it.
 ///
-/// Se apaga en cuanto la tabla existe, no cuando la importacion termina: lo que
-/// sigue (los tipos de las columnas y las filas) tarda medio minuto largo, pasa
-/// con la tabla ya en el listado y se muestra en su fila. Dejar el boton
-/// apagado todo ese rato impediria importar la segunda planilla mientras la
-/// primera se acomoda.
+/// It turns off as soon as the table exists, not when the import ends: what
+/// follows (the column types and the rows) takes a good half minute, happens
+/// with the table already in the list and shows in its row. Leaving the button
+/// off all that time would prevent importing the second spreadsheet while the
+/// first settles.
 class ImportButton extends StatelessWidget {
   const ImportButton({super.key, required this.action, required this.loading});
 
@@ -29,8 +29,8 @@ class ImportButton extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
     valueListenable: loading,
     builder: (context, busy, _) => FeedbackButton(
-      // Sin accion mientras sube: una segunda importacion en paralelo crearia
-      // otra tabla con el mismo archivo.
+      // No action while uploading: a second parallel import would create
+      // another table with the same file.
       action: busy ? null : action,
       mouseCursor: busy ? SystemMouseCursors.wait : null,
       height: AppSize.button,

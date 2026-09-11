@@ -1,54 +1,56 @@
-/// Cuerpos de las escrituras de una conexion: el alta (`POST /v1/connections/`),
-/// la edicion (`PUT /v1/connections/`), la baja (`DELETE /v1/connections/`) y el
-/// reordenamiento (`PUT /v1/connections/order/`).
+/// Bodies of the writes for a connection: creation (`POST /v1/connections/`),
+/// editing (`PUT /v1/connections/`), deletion (`DELETE /v1/connections/`) and
+/// reordering (`PUT /v1/connections/order/`).
 ///
-/// Viven aparte de la pantalla porque son el contrato con el backend, igual que
-/// los de las tablas de productos.
+/// They live apart from the screen because they are the contract with the
+/// backend, just like those of the product tables.
 ///
-/// La empresa dueña no va en el cuerpo: viaja en la cabecera `business_id` de
-/// todas las peticiones (ver `useBusiness` en `toolkit/api.dart`).
+/// The owning business does not go in the body: it travels in the
+/// `business_id` header of every request (see `useBusiness` in
+/// `toolkit/api.dart`).
 ///
-/// Una conexion es **la cuenta y nada mas**: de que servicio es, como la llamo
-/// la empresa y con que credenciales se entra. Lo que la cuenta contesta —los
-/// mensajes directos, los comentarios de una publicacion, los de un anuncio— es
-/// un bot por trabajo sobre esta misma conexion, y ninguno de esos necesita
-/// credenciales propias. Por eso aca no hay rol, ni tabla, ni herramientas.
+/// A connection is **the account and nothing more**: which service it is for,
+/// what the business named it, and which credentials it logs in with. What the
+/// account answers —direct messages, a post's comments, an ad's comments— is a
+/// bot working on top of this same connection, and none of those need
+/// credentials of their own. That is why there is no role, no table, and no
+/// tools here.
 ///
-/// La configuracion se parte en dos objetos y **esa division no es del
-/// formulario, es del backend**:
+/// The configuration is split into two objects and **that split is not the
+/// form's, it is the backend's**:
 ///
-/// - `SETTINGS` — lo que no es secreto: ids de cuenta, hosts, nombres. Se lee de
-///   vuelta.
-/// - `CREDENTIALS` — los tokens y secretos. Solo viajan de ida: ninguna lectura
-///   los devuelve.
+/// - `SETTINGS` — what is not secret: account ids, hosts, names. It is read
+///   back.
+/// - `CREDENTIALS` — tokens and secrets. They only travel one way in: no read
+///   ever returns them.
 ///
-/// Cual campo va en cual lo dice el catalogo del proveedor (`secret: true`), no
-/// esta app.
+/// Which field goes in which is decided by the provider's catalog
+/// (`secret: true`), not by this app.
 ///
-/// Forma del alta:
+/// Shape of the creation body:
 ///
 /// ```json
 /// {
 ///   "PROVIDER": "whatsapp",
-///   "NAME": "Cuenta principal",
-///   "DESCRIPTION": "El numero que atiende ventas",
+///   "NAME": "Main account",
+///   "DESCRIPTION": "The number that handles sales",
 ///   "SETTINGS": { "phone_number_id": "123", "waba_id": "456" },
 ///   "CREDENTIALS": { "access_token": "EAAG..." }
 /// }
 /// ```
 library;
 
-/// Arma el cuerpo del alta.
+/// Builds the creation body.
 ///
-/// Solo el proveedor y el nombre hacen falta de verdad: **una conexion se
-/// registra a proposito antes de tener sus credenciales**. La empresa da de alta
-/// "Instagram — Ventas" hoy y pega los tokens cuando Meta se los emita, asi que
-/// mandar `SETTINGS` y `CREDENTIALS` a medio llenar es el caso normal y no un
-/// error; la cuenta queda "no lista" hasta que se completen.
+/// Only the provider and the name are truly needed: **a connection is
+/// deliberately registered before it has its credentials**. The business
+/// creates "Instagram — Sales" today and pastes the tokens once Meta issues
+/// them, so sending `SETTINGS` and `CREDENTIALS` half filled is the normal case
+/// and not an error; the account stays "not ready" until they are completed.
 ///
-/// Los valores vacios se sacan en vez de mandarse en blanco: en el alta una
-/// clave con valor nulo es una clave que nunca se configuro, y dejarla haria
-/// parecer configurado lo que no lo esta.
+/// Empty values are stripped instead of being sent blank: on creation a key
+/// with a null value is a key that was never configured, and leaving it would
+/// make what isn't configured look like it is.
 Map<String, dynamic> createConnectionRequest({
   required String provider,
   required String name,
@@ -67,26 +69,27 @@ Map<String, dynamic> createConnectionRequest({
   };
 }
 
-/// Arma el cuerpo de la edicion.
+/// Builds the edit body.
 ///
-/// La descripcion **siempre viaja**, tambien vacia: en una conexion que ya
-/// existe, vaciarla es borrar la que tenia, y el backend lee el vacio como "no
-/// dejar ninguna". Es la misma regla que en la edicion de una tabla.
+/// The description **always travels**, even empty: in a connection that
+/// already exists, emptying it means deleting the one it had, and the backend
+/// reads the empty value as "leave none". It's the same rule as editing a
+/// table.
 ///
-/// `SETTINGS` se manda entero porque se parchea clave por clave del otro lado:
-/// lo que va vacio borra ese ajuste, y lo que no se menciona queda como estaba.
-/// Por eso los ajustes vacios **si** viajan aca y no en el alta: es lo que
-/// permite corregir un id de cuenta mal pegado.
+/// `SETTINGS` is sent whole because it is patched key by key on the other
+/// side: what goes empty erases that setting, and what isn't mentioned stays
+/// as it was. That's why empty settings **do** travel here and not on
+/// creation: it's what lets a mistyped account id be corrected.
 ///
-/// `CREDENTIALS` es al reves: solo se mandan los secretos que se escribieron.
-/// Un campo de secreto vacio significa "el que ya estaba", no "borralo" — el
-/// formulario nunca puede mostrar el token guardado, asi que dejarlo en blanco
-/// es lo que hace cualquiera que solo venia a cambiar el nombre. Mandarlo vacio
-/// borraria el token de una cuenta que estaba funcionando.
+/// `CREDENTIALS` is the opposite: only the secrets that were actually typed
+/// are sent. An empty secret field means "the one already saved", not "delete
+/// it" — the form can never show the stored token, so leaving it blank is what
+/// anyone who only came to change the name does. Sending it empty would erase
+/// the token of an account that was working.
 ///
-/// `PROVIDER` no se manda: no se puede cambiar. Los secretos guardados se
-/// juntaron para un servicio, y apuntarlos a otro dejaria valores que ahi no
-/// significan nada; el otro servicio es una conexion nueva.
+/// `PROVIDER` is not sent: it can't be changed. The saved secrets were
+/// gathered for one service, and pointing them at another would leave values
+/// that mean nothing there; a different service is a new connection.
 Map<String, dynamic> editConnectionRequest({
   required String id,
   required String name,
@@ -103,30 +106,30 @@ Map<String, dynamic> editConnectionRequest({
   "ENABLED": ?enabled
 };
 
-/// Arma el cuerpo de la baja. Es solo el id: la conexion ya sabe de que empresa
-/// es.
+/// Builds the deletion body. It's just the id: the connection already knows
+/// which business it belongs to.
 ///
-/// La baja es logica y libera la cuenta que la conexion ocupaba, asi que el
-/// mismo numero o pagina se puede volver a conectar despues. Lo que **no**
-/// vuelve son las credenciales: se van con ella, y reconectar es configurarla de
-/// nuevo. Los bots que contestaban a traves de la cuenta se van tambien, porque
-/// sin cuenta no tienen por donde hacerlo.
+/// The deletion is logical and frees the account the connection occupied, so
+/// the same number or page can be connected again later. What does **not**
+/// come back are the credentials: they go with it, and reconnecting means
+/// configuring it from scratch. The bots that answered through the account go
+/// too, since without an account they have no way to do it.
 Map<String, dynamic> deleteConnectionRequest({required String id}) =>
   {"ID": id};
 
-/// Arma el cuerpo del reordenamiento: los ids en el orden en que deben verse.
+/// Builds the reordering body: the ids in the order they should be shown in.
 ///
-/// Va en una sola llamada y no en una posicion por conexion porque mover una
-/// cambia donde quedan las demas: mandandolas de a una el listado quedaria a
-/// medio ordenar entre peticion y peticion.
+/// It travels in a single call rather than one position per connection because
+/// moving one changes where the rest land: sending them one at a time would
+/// leave the list half-ordered between requests.
 Map<String, dynamic> orderConnectionsRequest({required List<String> ids}) =>
   {"CONNECTIONS": ids};
 
-/// Saca las claves sin valor de un objeto de configuracion.
+/// Strips the valueless keys out of a configuration object.
 ///
-/// Se recortan los textos de paso: un token pegado desde la consola de Meta
-/// suele venir con un salto de linea detras, y ese espacio invisible es la
-/// diferencia entre una cuenta que conecta y una que devuelve 401.
+/// Text values are trimmed along the way: a token pasted from Meta's console
+/// often comes with a trailing line break, and that invisible space is the
+/// difference between an account that connects and one that returns 401.
 Map<String, dynamic> _clean(Map<String, dynamic> config) {
   final cleaned = <String, dynamic>{};
 

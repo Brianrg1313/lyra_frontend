@@ -7,24 +7,23 @@ import './employees/_employees.dart';
 import './settings/_settings.dart';
 import './statistics/_statistics.dart';
 
-/// Las partes de una empresa que se pueden mirar desde su pagina.
+/// The parts of a business that can be looked at from its page.
 ///
-/// Son cinco vistas de la **misma** empresa —como le va, quien trabaja en ella,
-/// donde opera, a quien le vende y como esta configurada—, no cinco pantallas
-/// distintas: por eso son pestanas de una pagina y no secciones del side bar.
-/// Se cambia de una a otra sin volver a pedir la empresa ni perder donde se
-/// estaba.
+/// They are five views of the **same** business —how it is doing, who works in
+/// it, where it operates, who it sells to and how it is configured—, not five
+/// different screens: that is why they are tabs of one page and not side bar
+/// sections. You switch from one to another without requesting the business
+/// again or losing where you were.
 ///
-/// Cada pestana **es una URL** (`/home/business/:id/statistics`): se puede
-/// copiar el link de lo que se esta mirando, abrirlo directo y volver con el
-/// boton de atras del navegador. Por eso cada una declara su [key] y su
-/// [routeKey]: de ahi salen tanto su ruta (ver `routes`) como la navegacion
-/// entre pestanas, sin que la tabla de rutas repita esta lista.
+/// Each tab **is a URL** (`/home/business/:id/statistics`): you can copy the
+/// link of what is being looked at, open it directly and come back with the
+/// browser's back button. That is why each one declares its [key] and its
+/// [routeKey]: from there come both its route (see `routes`) and the
+/// navigation between tabs, without the route table repeating this list.
 ///
-/// Esta escrito como enum y no como una lista de widgets por lo mismo que
-/// `HomeSection`: la barra de pestanas, el titulo, la ruta y el cuerpo salen
-/// todos de aca, asi que agregar una pestana es agregar un caso y no tocar
-/// cuatro lugares.
+/// It is written as an enum and not as a list of widgets for the same reason
+/// as `HomeSection`: the tab bar, the title, the route and the body all come
+/// from here, so adding a tab is adding a case and not touching four places.
 enum BusinessTab {
   statistics(key: "statistics", icon: CI.chart),
   employees(key: "employees", icon: CI.employee),
@@ -34,36 +33,36 @@ enum BusinessTab {
 
   const BusinessTab({required this.key, required this.icon});
 
-  /// Ultimo segmento de la URL de la pestana, y con el que se arma la key de su
-  /// ruta.
+  /// Last segment of the tab's URL, and the one with which the key of its route
+  /// is built.
   final String key;
 
   final IconData icon;
 
-  /// Pestana con la que se abre la pagina: las estadisticas son lo que contesta
-  /// "como le va a esta empresa", que es lo que se viene a ver al entrar. Los
-  /// ajustes se abren cuando hay algo que corregir, no todas las veces.
+  /// Tab with which the page opens: the statistics are what answer "how is this
+  /// business doing", which is what one comes to see upon entering. The
+  /// settings open when there is something to fix, not every time.
   static const BusinessTab initial = statistics;
 
-  /// Key de la [ScreenRoute] de esta pestana.
+  /// Key of the [ScreenRoute] of this tab.
   ///
-  /// Cada pestana tiene la suya —y no comparten una sola ruta con un `:tab`
-  /// como argumento— porque `Navis` avisa del cambio de pantalla por
-  /// `currentKey`: con una key para todas, pasar de una pestana a otra
-  /// cambiaria la URL sin que el shell se entere, y la pagina seguiria
-  /// mostrando la pestana anterior.
+  /// Each tab has its own —and they do not share a single route with a `:tab`
+  /// as argument— because `Navis` notifies the screen change by `currentKey`:
+  /// with one key for all, moving from one tab to another would change the URL
+  /// without the shell knowing, and the page would keep showing the previous
+  /// tab.
   String get routeKey => "business_$key";
 
-  /// URL de esta pestana para la empresa [businessId]. Es la unica fuente del
-  /// `url` de su ruta y del link que se copia de la barra del navegador.
+  /// URL of this tab for the business [businessId]. It is the only source of
+  /// the `url` of its route and of the link copied from the browser bar.
   String path(String businessId) => "/home/business/$businessId/$key";
 
   static final Map<String, BusinessTab> _byRouteKey = {
     for (final tab in values) tab.routeKey: tab
   };
 
-  /// Pestana que se muestra en la pantalla [currentKey], o `null` si esa
-  /// pantalla no es una pestana de una empresa.
+  /// Tab shown on the screen [currentKey], or `null` if that screen is not a
+  /// tab of a business.
   static BusinessTab? byRouteKey(String currentKey) => _byRouteKey[currentKey];
 
   String title(BuildContext context) => switch (this) {
@@ -74,8 +73,8 @@ enum BusinessTab {
     settings => S.of(context).business_tab_settings
   };
 
-  /// Cuerpo de la pestana. Va dentro de la superficie de la pagina, asi que
-  /// **ninguna trae la suya**: lo que dibuja cada una es su contenido pelado.
+  /// Body of the tab. It goes inside the page's surface, so **none brings its
+  /// own**: what each one draws is its bare content.
   Widget build() => switch (this) {
     statistics => const BusinessStatisticsTab(),
     employees => const BusinessEmployeesTab(),

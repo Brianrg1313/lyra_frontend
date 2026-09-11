@@ -12,21 +12,22 @@ import 'state/sheet_columns.dart';
 import 'state/sheet_drafts.dart';
 import 'state/sheet_hover.dart';
 
-/// Una fila del cuerpo de la planilla.
+/// A row of the sheet body.
 ///
-/// Es la que escucha **su** tramo de registros, y por eso la suscripcion vive
-/// aca y no en cada celda: cuando entra una pagina llega la fila entera, asi que
-/// reconstruirla entera es la granularidad correcta, y son unas pocas decenas de
-/// comparadores por pagina en vez de varios cientos.
+/// It is the one that listens to **its** chunk of records, and that is why the
+/// subscription lives here and not in each cell: when a page arrives the whole
+/// row arrives, so rebuilding it whole is the right granularity, and there are a
+/// few dozen comparators per page instead of several hundred.
 ///
-/// Un registro cuyo tramo todavia no llego es un registro igual —la fila existe,
-/// su lugar esta reservado— asi que se ve vacio y no editable hasta que entre.
-/// Por eso lo que manda es cuantos registros tiene la tabla y no que haya datos.
+/// A record whose chunk has not arrived yet is still a record —the row exists,
+/// its place is reserved— so it is seen empty and not editable until it
+/// arrives. That is why what matters is how many records the table has and not
+/// that there is data.
 ///
-/// De las columnas no sabe nada mas que su forma: cuantas son, con que clave se
-/// recuerda el ancho de cada una y de que lugar de la fila sale su valor. El
-/// tipo lo pregunta cada celda, asi que cambiarle el tipo a un campo no pasa por
-/// esta fila.
+/// Of the columns it knows nothing more than their shape: how many there are,
+/// with which key each one's width is remembered, and from which place of the
+/// row its value comes. The type is asked by each cell, so changing a field's
+/// type does not pass through this row.
 class RecordRow extends StatelessWidget {
   const RecordRow({
     super.key,
@@ -36,14 +37,14 @@ class RecordRow extends StatelessWidget {
 
   final int index;
 
-  /// La forma de la planilla: una columna por clave, en orden.
+  /// The shape of the sheet: one column per key, in order.
   final SheetShape shape;
 
   @override
   Widget build(BuildContext context) {
-    // Los registros y el largo de la tabla viajan juntos: si cambia cuantos hay,
-    // las filas que se escriben se corren de lugar y esta puede pasar de ser un
-    // borrador a ser un registro.
+    // The records and the table's length travel together: if how many there are
+    // changes, the rows being written shift place and this one can go from being
+    // a draft to being a record.
     final (records, saved) = context
       .select<TableViewService, (int, TableRowModel?)>(
         (service) => (service.records, service.rowAt(index))
@@ -51,19 +52,20 @@ class RecordRow extends StatelessWidget {
 
     final record = index < records;
 
-    // Se pregunta siempre, aunque la fila sea un registro y no vaya a haber
-    // borrador: las suscripciones tienen que ser las mismas en cada construccion
-    // para no depender de en que orden se registraron. Sobre un registro esto no
-    // cuesta nada, porque el indice cae en negativo y no hay nada que buscar.
+    // It is always asked, even if the row is a record and there will be no
+    // draft: the subscriptions must be the same on each build so as not to
+    // depend on the order in which they were registered. Over a record this
+    // costs nothing, because the index falls negative and there is nothing to
+    // look up.
     final draft = context.select<SheetDrafts, SheetDraft?>(
       (drafts) => record ? null : drafts.at(index - records)
     );
 
-    // Quien avisa por donde pasa el mouse es la fila y no cada celda: es un
-    // aviso por fila en vez de uno por celda, y ademas es lo unico que sabe que
-    // moverse **dentro** de la fila —de una columna a la de al lado— no es
-    // cambiar de fila. El resaltado lo pinta despues cada celda, que es la que
-    // sabe de que color es su fondo (ver [SheetStyle.cell]).
+    // Who announces where the mouse passes is the row and not each cell: one
+    // notice per row instead of one per cell, and it is also the only one that
+    // knows that moving **within** the row —from one column to the next— is not
+    // changing rows. The highlight is then painted by each cell, which is the
+    // one that knows what color its background is (see [SheetStyle.cell]).
     final hover = context.read<SheetHover>();
 
     return MouseRegion(

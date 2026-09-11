@@ -5,16 +5,16 @@ import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:app/services/database/database_service.dart';
 import 'package:app/services/sign_in/login_method.dart';
 
-/// Servicio del flujo de inicio de sesion.
+/// Service for the sign-in flow.
 ///
-/// No es global: lo proveen las pantallas `Login` y `SignInCode`. Cada una crea
-/// su propia instancia, lo cual es seguro porque el estado pendiente del flujo
-/// —el correo que espera el codigo— vive en el almacenamiento seguro y no en el
-/// servicio.
+/// It is not global: provided by the `Login` and `SignInCode` screens. Each one
+/// creates its own instance, which is safe because the flow's pending state
+/// —the email waiting for the code— lives in secure storage and not in the
+/// service.
 ///
-/// El flujo son dos pasos: [resolveMethod] manda el correo y el backend
-/// responde con que [LoginMethod] corresponde; recien despues se completa con
-/// [signInWithPassword] o [signInWithCode].
+/// The flow is two steps: [resolveMethod] sends the email and the backend
+/// responds with which [LoginMethod] applies; only afterwards is it completed
+/// with [signInWithPassword] or [signInWithCode].
 class SignInService {
   static const _pendingEmailKey = "SIGN_IN_EMAIL";
 
@@ -32,11 +32,12 @@ class SignInService {
         }
       });
 
-  /// Primer paso: manda solo el correo y devuelve el metodo con el que hay que
-  /// seguir, o `null` si el backend contesto uno que esta version no conoce.
+  /// First step: sends only the email and returns the method with which to
+  /// continue, or `null` if the backend answered with one this version does not
+  /// know.
   ///
-  /// Cuando es [LoginMethod.code] el mismo endpoint ya mando el codigo al
-  /// correo; aca solo se guarda a que cuenta pertenece.
+  /// When it is [LoginMethod.code] the same endpoint already sent the code to
+  /// the email; here it is only stored which account it belongs to.
   Future<LoginMethod?> resolveMethod(BuildContext context, String email) async {
     final method = await _post(context, "/authentication/sign_in/email/", {"EMAIL": email});
 
@@ -44,9 +45,9 @@ class SignInService {
 
     final resolved = LoginMethod.from(method);
 
-    // La pantalla del codigo es otra ruta, con su propia instancia de este
-    // servicio: sin dejar el correo guardado no sabria de que cuenta es el
-    // codigo que se escribe.
+    // The code screen is another route, with its own instance of this service:
+    // without leaving the email stored it would not know which account the
+    // written code belongs to.
     if (resolved == LoginMethod.code) {
       await _database.toSecure(_pendingEmailKey, email);
     }
@@ -81,9 +82,9 @@ class SignInService {
     await _database.deleteSecure(_pendingEmailKey);
   }
 
-  /// Reenvia el codigo repitiendo el primer paso con el correo pendiente: el
-  /// backend manda uno nuevo cada vez que resuelve el metodo `code`, asi que no
-  /// hace falta un endpoint propio.
+  /// Resends the code by repeating the first step with the pending email: the
+  /// backend sends a new one every time it resolves the `code` method, so a
+  /// dedicated endpoint is not needed.
   Future<void> resendCode(BuildContext context) async {
     final email = await _database.fromSecure<String>(_pendingEmailKey);
     if (email == null) throw "";

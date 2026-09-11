@@ -13,28 +13,29 @@ import 'package:core/form.dart';
 
 import 'profile_field.dart';
 
-/// Desde cuando existe la empresa, cargada en tres campos: el año se escribe,
-/// el mes se elige y el dia se escribe.
+/// Since when the company exists, loaded in three fields: the year is typed,
+/// the month is chosen and the day is typed.
 ///
-/// Antes era un solo campo de texto en el que habia que escribir `2019-05-03`,
-/// con el formato explicado en una ayuda debajo. Nadie escribe una fecha asi:
-/// se escribe como se dice, y lo que se cargaba —`3/5/2019`, `05-03-19`— el
-/// backend lo rechazaba por formato sin que la ficha pudiera decir cual era el
-/// formato bueno.
+/// Before it was a single text field in which you had to write `2019-05-03`,
+/// with the format explained in a help below. Nobody writes a date that way:
+/// it's written as it's said, and what was loaded —`3/5/2019`, `05-03-19`— the
+/// backend rejected for format without the sheet being able to say which one
+/// was the good format.
 ///
-/// El mes es el unico de los tres que **se elige**, y no por capricho: es el
-/// unico que no es un numero. Escrito como numero hay que saber si va antes o
-/// despues del dia —que es justamente lo que cambia de pais a pais— y elegido
-/// por su nombre esa pregunta no existe. Ademas es de donde sale cuantos dias
-/// tiene la fecha, que es lo que se valida.
+/// The month is the only one of the three that **is chosen**, and not on a
+/// whim: it's the only one that isn't a number. Written as a number you have
+/// to know if it goes before or after the day —which is exactly what changes
+/// from country to country— and chosen by its name that question doesn't
+/// exist. It's also where how many days the date has comes from, which is what
+/// gets validated.
 ///
-/// El orden es el de la fecha guardada (`YYYY-MM-DD`) y no el de ningun idioma:
-/// los tres campos estan a la vista y cada uno dice que es, asi que no hay nada
-/// que deducir del orden.
+/// The order is the saved date's (`YYYY-MM-DD`) and not any language's: the
+/// three fields are in view and each one says what it is, so there's nothing
+/// to deduce from the order.
 class BusinessProfileIncorporation extends StatefulWidget {
   const BusinessProfileIncorporation({super.key, required this.date});
 
-  /// La fecha guardada, o `null` si la empresa todavia no la cargo.
+  /// The saved date, or `null` if the company hasn't loaded it yet.
   final DateTime? date;
 
   @override
@@ -46,14 +47,16 @@ class _BusinessProfileIncorporationState
   extends State<BusinessProfileIncorporation> {
   final _form = FormController();
 
-  /// Lo ultimo que el backend acepto, como viaja (`2019-05-03`) o vacio.
+  /// The last thing the backend accepted, as it travels (`2019-05-03`) or
+  /// empty.
   late String _saved = _iso(widget.date);
 
-  /// El mes elegido (`01`..`12`), o vacio.
+  /// The chosen month (`01`..`12`), or empty.
   ///
-  /// Se lleva aparte y no se le pregunta al desplegable por lo mismo que en el
-  /// telefono: el desplegable resuelve que opcion le toca recien al montarse, y
-  /// para entonces esta fila ya decidio si hay algo que guardar.
+  /// It's kept apart and the dropdown isn't asked for the same reason as in
+  /// the phone: the dropdown resolves which option belongs to it only upon
+  /// mounting, and by then this row has already decided whether there's
+  /// something to save.
   late String _month = _pad(widget.date?.month);
 
   late final _year = InputController(
@@ -84,8 +87,9 @@ class _BusinessProfileIncorporationState
     customErrors: _errors
   );
 
-  /// Los errores nombran el dato como lo nombra la ficha: los tres campos son
-  /// una sola fecha, asi que hablan de la fecha y no de "el año" o "el dia".
+  /// The errors name the datum as the sheet names it: the three fields are
+  /// one single date, so they talk about the date and not about "the year" or
+  /// "the day".
   Map<InputError, String> get _errors => {
     InputError.empty: S.of(context).form_empty_ma(
       S.of(context).business_profile_incorporation
@@ -101,9 +105,9 @@ class _BusinessProfileIncorporationState
     )
   };
 
-  /// Si ya se escucha lo que se teclea. Una vez sola y no en `initState`: tocar
-  /// los controladores es armarlos, y sus errores se escriben con el idioma de
-  /// la app, que ahi todavia no se puede leer.
+  /// Whether what's typed is already being listened to. Once only and not in
+  /// `initState`: touching the controllers is building them, and their errors
+  /// are written in the app's language, which can't be read there yet.
   bool _listening = false;
 
   @override
@@ -113,8 +117,8 @@ class _BusinessProfileIncorporationState
     if (_listening) return;
     _listening = true;
 
-    // Escribir un digito puede hacer aparecer (o desaparecer) el boton de
-    // guardar, asi que la fila se redibuja con cada tecla.
+    // Typing a digit can make the save button appear (or disappear), so the
+    // row redraws with each key.
     _year.textController.addListener(_listener);
     _day.textController.addListener(_listener);
   }
@@ -123,8 +127,8 @@ class _BusinessProfileIncorporationState
   void didUpdateWidget(BusinessProfileIncorporation old) {
     super.didUpdateWidget(old);
 
-    // El perfil se releyo y la fecha quedo en otra cosa: no fue esta fila (ahi
-    // [_saved] ya estaria al dia), asi que se la alinea.
+    // The profile was re-read and the date ended up different: it wasn't this
+    // row (there [_saved] would already be up to date), so it's aligned.
     if (_iso(widget.date) != _saved) {
       _saved = _iso(widget.date);
       _reset();
@@ -166,8 +170,8 @@ class _BusinessProfileIncorporationState
             onSubmit: _save
           )),
           SizedBox(width: AppSize.gap),
-          // El mes se lleva el ancho que sobra: es el unico de los tres que
-          // lleva una palabra y no dos digitos.
+          // The month takes the width that's left over: it's the only one of
+          // the three that carries a word and not two digits.
           Expanded(child: SelectInput(
             key: ValueKey("incorporation_month_$_saved"),
             controller: _monthInput,
@@ -190,12 +194,12 @@ class _BusinessProfileIncorporationState
     )
   );
 
-  /// Los doce meses con su nombre, en el idioma de la app.
+  /// The twelve months with their name, in the app's language.
   ///
-  /// Los nombres no los escribe esta app: los trae `intl`, con los datos que
-  /// deja cargados `GlobalMaterialLocalizations` —el mismo lugar del que salen
-  /// los nombres de los meses del calendario de Flutter—, asi que traducir la
-  /// app no es escribir doce palabras mas.
+  /// The names aren't written by this app: they're brought by `intl`, with the
+  /// data loaded by `GlobalMaterialLocalizations` —the same place the Flutter
+  /// calendar's month names come from—, so translating the app isn't writing
+  /// twelve more words.
   List<SelectOption> _months(BuildContext context) {
     final locale = Localizations.localeOf(context).toString();
     final format = DateFormat.MMMM(locale);
@@ -208,8 +212,8 @@ class _BusinessProfileIncorporationState
     ];
   }
 
-  /// La fecha como viaja (`2019-05-03`), o vacio si los tres campos lo estan
-  /// —que es como se borra— o si todavia no forman una fecha.
+  /// The date as it travels (`2019-05-03`), or empty if the three fields all
+  /// are —which is how it's cleared— or if they don't yet form a date.
   String get _value {
     final year = _year.value.trim();
     final day = _day.value.trim();
@@ -239,27 +243,27 @@ class _BusinessProfileIncorporationState
 
     _form.loading.value = false;
 
-    // Si fallo, el error ya lo mostro el servicio y lo escrito se queda en la
-    // fila para corregirlo.
+    // If it failed, the error was already shown by the service and what was
+    // typed stays in the row to correct it.
     if (!saved) return;
 
     setState(() => _saved = value);
   }
 
-  /// Si los tres campos forman una fecha que existe.
+  /// Whether the three fields form a date that exists.
   ///
-  /// El largo y los digitos los mira el formulario; lo que no puede mirar es si
-  /// la fecha **es una fecha**: el 31 de febrero pasa cualquier validacion de
-  /// campo y no existe, y un año de cuatro digitos puede estar en el futuro.
-  /// Cada error se marca en el campo que hay que corregir.
+  /// The length and digits are looked at by the form; what it can't look at is
+  /// whether the date **is a date**: February 31 passes any field validation
+  /// and doesn't exist, and a four-digit year can be in the future.
+  /// Each error is marked in the field that has to be corrected.
   bool get _valid {
     if (!_form.validate()) return false;
 
     final year = int.tryParse(_year.value.trim());
     final day = int.tryParse(_day.value.trim());
 
-    // Una empresa no se constituyo el año que viene, y tampoco en el siglo XVI:
-    // ahi lo que hay es un año mal tecleado.
+    // A company wasn't incorporated next year, and not in the sixteenth
+    // century either: what there is there is a mistyped year.
     if (year == null || year < _minYear || year > DateTime.now().year) {
       _year.status.setStatus(InputStatus.error, InputError.invalid);
       return false;
@@ -267,9 +271,9 @@ class _BusinessProfileIncorporationState
 
     final month = int.tryParse(_month);
 
-    // El dia se valida contra **su** mes: `DateTime` no se queja de un 31 de
-    // febrero, lo corre al 2 de marzo, asi que lo que se comprueba es que la
-    // fecha que sale sea la que se escribio.
+    // The day is validated against **its** month: `DateTime` doesn't complain
+    // about a February 31, it moves it to March 2, so what's checked is that
+    // the date that comes out is the one that was written.
     final date = day == null || month == null
       ? null
       : DateTime(year, month, day);
@@ -282,11 +286,11 @@ class _BusinessProfileIncorporationState
     return true;
   }
 
-  /// El año mas viejo que se acepta. No hay empresas registradas aca de antes,
-  /// y un año de tres cifras tecleado de mas es lo unico que llega por debajo.
+  /// The oldest year accepted. No companies registered here from before, and
+  /// a three-digit year typed by mistake is all that arrives below it.
   static const int _minYear = 1800;
 
-  /// Deja los tres campos mostrando lo guardado.
+  /// Leaves the three fields showing what's saved.
   void _reset() {
     final date = widget.date;
 
@@ -297,11 +301,11 @@ class _BusinessProfileIncorporationState
     _monthInput.selectedValue = _month.isEmpty ? null : _month;
   }
 
-  /// La fecha como la espera el backend (`YYYY-MM-DD`), o vacio.
+  /// The date as the backend expects it (`YYYY-MM-DD`), or empty.
   static String _iso(DateTime? value) =>
     value == null ? "" : value.toIso8601String().split("T").first;
 
-  /// Un numero de dos digitos, que es como viajan el mes y el dia.
+  /// A two-digit number, which is how the month and day travel.
   static String _pad(int? value) =>
     value == null ? "" : "$value".padLeft(2, "0");
 }

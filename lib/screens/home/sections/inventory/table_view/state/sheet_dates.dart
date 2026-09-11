@@ -1,33 +1,33 @@
 import 'package:flutter/foundation.dart';
 
-/// Que columnas de fecha se estan mirando completas.
+/// Which date columns are being looked at in full.
 ///
-/// Una fecha se lee de dos maneras distintas y las dos hacen falta: escrita
-/// (`Feb 12, 2026`) es la que se entiende de un vistazo, y en cifras con su hora
-/// (`2026-02-12 12:30 PM`) es la que se compara, se copia y se controla. El
-/// boton de la celda pasa de una a la otra.
+/// A date is read in two different ways and both are needed: written
+/// (`Feb 12, 2026`) is the one understood at a glance, and in figures with its
+/// time (`2026-02-12 12:30 PM`) is the one that gets compared, copied, and
+/// audited. The cell's button switches from one to the other.
 ///
-/// **Es de la columna y no de la celda.** Una columna de fechas se lee como una
-/// tira: si cada fila pudiera estar en un formato distinto, dos fechas de la
-/// misma columna dejarian de compararse de un vistazo, que es justo lo que una
-/// planilla tiene que dar. Asi que el boton de cualquier fila cambia la columna
-/// entera, como el formato de una columna de Excel.
+/// **It belongs to the column, not the cell.** A date column is read as a
+/// strip: if each row could be in a different format, two dates of the same
+/// column would stop being comparable at a glance, which is exactly what a
+/// spreadsheet has to give. So the button of any row changes the whole
+/// column, like the format of an Excel column.
 ///
-/// Se recuerda por la clave de la columna —el FIELD_ID, la misma con la que
-/// [SheetWidths] recuerda su ancho— y no por su posicion: arrastrar la columna
-/// de lugar se lleva el formato con ella.
+/// It's remembered by the column's key —the FIELD_ID, the same one with which
+/// [SheetWidths] remembers its width— and not by its position: dragging the
+/// column out of place carries the format with it.
 ///
-/// Es un notificador propio, y minusculo, por lo mismo que el resto: cambiar el
-/// formato tiene que costar las celdas de esa columna y nada mas. Cada celda de
-/// fecha se suscribe a **su** clave, asi que el comparador de las demas devuelve
-/// lo de siempre y no se rehacen.
+/// It's its own notifier, and tiny, for the same reason as the rest: changing
+/// the format must cost the cells of that column and nothing else. Each date
+/// cell subscribes to **its** key, so the comparator of the others returns
+/// the usual thing and they don't rebuild.
 class SheetDates extends ChangeNotifier {
   final Set<String> _full = {};
 
-  /// Si esa columna se esta mirando en cifras y con hora.
+  /// Whether that column is being looked at in figures with time.
   bool isFull(String column) => _full.contains(column);
 
-  /// Pasa la columna de una lectura a la otra.
+  /// Switches the column from one reading to the other.
   void toggle(String column) {
     if (!_full.remove(column)) _full.add(column);
     notifyListeners();

@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
 
-/// La respuesta de `GET /tables/details/<UUID>` tal cual la define el
+/// La respuesta de `GET /inventory/products/builder/details/<UUID>` tal cual la define el
 /// contrato: la cabecera con sus dos fechas, las cuentas de columnas, lo que
 /// puede hacer la IA con la tabla, los bots que la leen y las columnas en
 /// forma columnar.
@@ -19,8 +19,9 @@ Map<String, dynamic> get _response => {
   "records": {"total": 1287, "last": "2026-08-20T14:05:00.000Z"},
   "columns": {
     "total": 4,
-    "types": {"vector": 2, "price": 1, "stock": 1},
+    "types": {"description": 2, "price": 1, "stock": 1},
     "visibility": {"visible": 2, "declared": 1, "hidden": 1},
+    "summary": 3,
     "untyped": 0
   },
   "agent": {
@@ -61,27 +62,27 @@ Map<String, dynamic> get _response => {
   "fields": {
     "keys": [
       "id", "name", "description", "position",
-      "type", "width", "options", "visibility", "date", "updated"
+      "type", "width", "options", "visibility", "summary", "date", "updated"
     ],
     "values": [
       [
         "f1", "Nombre", "Como se llama", 0,
-        "vector", 240, [], "visible",
+        "title", 240, [], "visible", 1,
         "2026-03-02T09:00:00.000Z", "2026-03-02T09:00:00.000Z"
       ],
       [
         "f2", "Descripción", null, 1,
-        "vector", null, null, "visible",
+        "description", null, null, "visible", 1,
         "2026-03-02T09:00:00.000Z", null
       ],
       [
         "f3", "Costo", null, 2,
-        "price", null, null, "declared",
+        "price", null, null, "declared", 1,
         "2026-03-02T09:00:00.000Z", "2026-07-14T10:32:11.000Z"
       ],
       [
         "f4", "Proveedor", null, 3,
-        "select", null, ["Acme", "Globex"], "hidden",
+        "options", null, ["Acme", "Globex"], "hidden", 0,
         "2026-03-02T09:00:00.000Z", null
       ]
     ]
@@ -141,7 +142,7 @@ void main() {
 
       expect(columns.total, 4);
       expect(columns.untyped, 0);
-      expect(columns.types[TableFieldType.vector], 2);
+      expect(columns.types[TableFieldType.description], 2);
       expect(columns.types[TableFieldType.price], 1);
       expect(columns.types[TableFieldType.stock], 1);
       expect(columns.of(TableFieldVisibility.visible), 2);
@@ -149,10 +150,20 @@ void main() {
       expect(columns.of(TableFieldVisibility.hidden), 1);
     });
 
+    test('lee cuantas columnas entran en el resumen del inventario', () {
+      // La cuenta la hace el backend sobre las filas que ya tiene: es la
+      // respuesta a "cuanto de esta tabla se ve de un vistazo", y no se cuenta
+      // de este lado.
+      final columns = TableDetailModel.fromResponse(_response).columns;
+
+      expect(columns.summary, 3);
+      expect(columns.total, 4);
+    });
+
     test('los tipos se ordenan del mas usado al menos', () {
       final columns = TableDetailModel.fromResponse(_response).columns;
 
-      expect(columns.sorted.first.key, TableFieldType.vector);
+      expect(columns.sorted.first.key, TableFieldType.description);
       expect(columns.sorted.first.value, 2);
     });
 
@@ -198,6 +209,42 @@ void main() {
       expect(fields[0].description, "Como se llama");
       // Una columna que nunca se toco no trae `updated`, y eso no es un error.
       expect(fields[1].updated, isNull);
+    });
+
+    test('lee que columnas entran en el resumen', () {
+      // Es otra pregunta que la visibilidad: el costo esta `declared` para la
+      // IA y sigue estando en el resumen que mira el dueño.
+      final fields = TableDetailModel.fromResponse(_response).fields;
+
+      expect(fields[2].visibility, TableFieldVisibility.declared);
+      expect(fields[2].summary, isTrue);
+      expect(fields[3].summary, isFalse);
+    });
+
+    test('una columna sin bandera de resumen sigue estando en el', () {
+      // El `null` de una fila escrita antes de que la columna existiera, o un
+      // valor que esta version no reconoce, no puede sacar en silencio una
+      // columna de la vista en la que siempre estuvo. Es el mismo criterio con
+      // el que una visibilidad desconocida se lee como visible.
+      TableDetailFieldModel read(dynamic raw) =>
+        TableDetailFieldModel.fromJson({"id": "f1", "name": "N", "summary": raw});
+
+      expect(read(null).summary, isTrue);
+      expect(read("quien sabe").summary, isTrue);
+      expect(read(1).summary, isTrue);
+      expect(read(true).summary, isTrue);
+
+      // Y lo unico que la apaga es un "no" reconocible.
+      expect(read(0).summary, isFalse);
+      expect(read("0").summary, isFalse);
+      expect(read(false).summary, isFalse);
+      expect(read("false").summary, isFalse);
+
+      // Sin la clave tampoco: una columna nace dentro del resumen.
+      expect(
+        TableDetailFieldModel.fromJson({"id": "f1", "name": "N"}).summary,
+        isTrue
+      );
     });
 
     test('una visibilidad desconocida se lee como visible', () {
@@ -330,11 +377,43 @@ void main() {
       expect(changed.fields.any((field) => field.id == "no-existe"), isFalse);
     });
 
+    test('sacar una columna del resumen no le toca nada mas', () {
+      // La casilla del resumen y el desplegable de visibilidad viven en la
+      // misma fila y no se arrastran: son dos preguntas distintas.
+      final detail = TableDetailModel.fromResponse(_response);
+      final field = detail.fields[2];
+
+      expect(field.summary, isTrue);
+
+      final changed = detail.withField(field.withEdits(summary: false));
+
+      expect(changed.fields[2].summary, isFalse);
+      expect(changed.fields[2].visibility, field.visibility);
+      expect(changed.fields[2].type, field.type);
+      expect(changed.fields[2].name, field.name);
+
+      // Y la cuenta de arriba la sigue haciendo el backend.
+      expect(changed.columns.summary, detail.columns.summary);
+    });
+
+    test('el resumen no se toca si no se lo cambia', () {
+      // `null` es "no se toco", igual que en el cuerpo que viaja al backend.
+      const field = TableDetailFieldModel(
+        id: "f1",
+        name: "Costo",
+        summary: false
+      );
+
+      expect(field.withEdits().summary, isFalse);
+      expect(field.withEdits(type: TableFieldType.price).summary, isFalse);
+      expect(field.withEdits(summary: true).summary, isTrue);
+    });
+
     test('las opciones se vacian con una lista vacia, no con null', () {
       final field = const TableDetailFieldModel(
         id: "f1",
         name: "Color",
-        type: TableFieldType.select,
+        type: TableFieldType.options,
         options: ["Rojo"]
       );
 

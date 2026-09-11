@@ -17,29 +17,33 @@ import 'state/sheet_hover.dart';
 import 'state/sheet_drafts.dart';
 import 'state/sheet_widths.dart';
 
-/// Una celda del cuerpo de la planilla.
+/// A cell of the sheet body.
 ///
-/// Escucha exactamente cuatro cosas, y ninguna de las cuatro es la pantalla:
+/// It listens to exactly four things, and none of the four is the screen:
 ///
-/// - **El cursor**: como esta ella (su borde) y si el cursor esta en su fila (el
-///   fondo, que es de la fila entera). Mover el cursor dispara el comparador de
-///   todas las celdas visibles y vuelve a construir las dos filas que cambiaron.
-/// - **Si el mouse esta sobre su fila**, que es lo mismo pero para el resaltado
-///   del puntero: un booleano por celda y dos filas repintadas por movimiento.
-/// - **El ancho de su columna**, que tiene un notificador propio: arrastrar el
-///   borde de una columna no toca a las demas, y dentro de esta el ancho es lo
-///   unico que se rehace —el contenido se pasa como `child` y sobrevive intacto
-///   a todo el arrastre.
-/// - **El tipo de su columna**, que es lo que decide con que editor se escribe y
-///   hacia que lado se alinea. Se pregunta aca y no se recibe de la fila para que
-///   cambiarle el tipo a un campo repinte esa columna y no la grilla: el resto de
-///   las celdas corre un comparador que da lo mismo de siempre y no se rehace.
+/// - **The cursor**: how it is (its border) and whether the cursor is on its row
+///   (the background, which belongs to the whole row). Moving the cursor
+///   triggers the comparator of all visible cells and rebuilds the two rows that
+///   changed.
+/// - **Whether the mouse is over its row**, which is the same but for the
+///   pointer highlight: one boolean per cell and two rows repainted per
+///   movement.
+/// - **The width of its column**, which has its own notifier: dragging the edge
+///   of a column does not touch the others, and within this one the width is the
+///   only thing that is redone —the content is passed as `child` and survives
+///   the whole drag intact.
+/// - **The type of its column** (and with it, the symbol with which its numbers
+///   are written), which is what decides which editor is used to write and which
+///   way it aligns. It is asked here and not received from the row so that
+///   changing a field's type repaints that column and not the grid: the rest of
+///   the cells run a comparator that comes out the same as always and is not
+///   redone.
 ///
-/// Su valor no lo escucha: se lo dan hecho ([saved] para un registro, [draft]
-/// para una fila que se esta escribiendo). El del borrador se lee del objeto en
-/// cada construccion a proposito: mientras se escribe lo muestra el editor, y
-/// cuando el editor se cierra esta celda ya se esta reconstruyendo por el
-/// cursor, asi que ahi lee el texto que quedo.
+/// Its value it does not listen to: it is handed to it already made ([saved] for
+/// a record, [draft] for a row being written). The draft one is read from the
+/// object on each build on purpose: while writing, the editor shows it, and when
+/// the editor closes this cell is already rebuilding because of the cursor, so
+/// that is where it reads the text that was left.
 class SheetCellView extends StatelessWidget {
   const SheetCellView({
     super.key,
@@ -52,30 +56,30 @@ class SheetCellView extends StatelessWidget {
     required this.draft
   });
 
-  /// Fila del cuerpo (0 es el primer registro).
+  /// Body row (0 is the first record).
   final int row;
 
-  /// Posicion de la columna dentro de la planilla: donde se la ve.
+  /// Position of the column within the sheet: where it is seen.
   final int position;
 
-  /// De que lugar de la fila sale su valor.
+  /// Which place of the row its value comes from.
   ///
-  /// No es lo mismo que [position] desde que las columnas se arrastran: los
-  /// registros llegan alineados a los campos tal como los da la estructura y ahi
-  /// se quedan, asi que mover una columna de lugar no toca ni un dato leido,
-  /// solo cambia por donde lo busca su celda.
+  /// It is not the same as [position] since columns are dragged: the records
+  /// arrive aligned to the fields just as the structure gives them and stay
+  /// there, so moving a column into place does not touch a single read datum,
+  /// it only changes where its cell looks for it.
   final int slot;
 
-  /// Clave con la que se recuerda el ancho de la columna.
+  /// Key with which the column's width is remembered.
   final String widthKey;
 
-  /// Si la fila es un registro de la tabla o una de las que se escriben.
+  /// Whether the row is a table record or one of the ones being written.
   final bool record;
 
-  /// El registro de esta fila, o `null` si su tramo todavia no llego.
+  /// This row's record, or `null` if its chunk has not arrived yet.
   final TableRowModel? saved;
 
-  /// El borrador de esta fila, o `null` si todavia no se escribio nada en ella.
+  /// This row's draft, or `null` if nothing has been written in it yet.
   final SheetDraft? draft;
 
   @override
@@ -83,39 +87,49 @@ class SheetCellView extends StatelessWidget {
     final style = SheetTheme.of(context);
     final controller = context.read<SheetController>();
 
-    // Las dos cosas que el cursor le dice a una celda, en una sola suscripcion:
-    // como esta ella (que decide su borde) y si el cursor esta en su fila (que
-    // decide el fondo de la fila entera). Van juntas porque las dos se contestan
-    // del mismo dato y en el mismo momento: preguntarlas por separado seria
-    // correr dos comparadores por celda en cada movimiento del cursor.
+    // The two things the cursor tells a cell, in a single subscription: how it
+    // is (which decides its border) and whether the cursor is on its row (which
+    // decides the background of the whole row). They go together because both
+    // are answered from the same datum and at the same moment: asking them
+    // separately would run two comparators per cell on each cursor move.
     final (state, inCursorRow) = context
       .select<SheetCursor, (SheetCellState, bool)>(
         (cursor) => (cursor.stateAt(row, position), cursor.isRow(row))
       );
 
-    // Y si el mouse esta encima de su fila. Es un booleano, asi que pasar el
-    // puntero de una fila a otra corre el comparador de las celdas que se ven y
-    // reconstruye las dos filas que cambiaron.
+    // And whether the mouse is over its row. It is a boolean, so moving the
+    // pointer from one row to another runs the comparator of the visible cells
+    // and rebuilds the two rows that changed.
     final hovered = context.select<SheetHover, bool>(
       (hover) => hover.at(row)
     );
 
-    final (code, isField) = context.select<SheetColumns, (String, bool)>(
-      (columns) => (columns.typeOf(position), columns.isFieldAt(position))
-    );
+    // The type, if the column is already a field, and the symbol with which its
+    // numbers are written: all three come from the same column and at the same
+    // moment, so they go in a single subscription. The unit is empty in almost
+    // all of them —only a price, an amount, and a measure carry one— and there
+    // it costs nothing.
+    final (code, isField, unit) = context
+      .select<SheetColumns, (String, bool, String)>(
+        (columns) => (
+          columns.typeOf(position),
+          columns.isFieldAt(position),
+          columns.unitOf(position)
+        )
+      );
 
     final type = TableFieldType.from(code);
 
-    // Una columna libre todavia no tiene donde guardar (no hay FIELD_ID), asi
-    // que sus celdas se ven pero no se escriben hasta que la columna se cree. Y
-    // un registro se escribe cuando ya llego con su id: sin el no hay a que fila
-    // de la tabla mandarle el cambio.
+    // A free column has nowhere to store yet (there is no FIELD_ID), so its
+    // cells are seen but not written until the column is created. And a record
+    // is written once it has arrived with its id: without it there is no row of
+    // the table to send the change to.
     final editable = isField
       && type.editable
       && (!record || (saved?.id.isNotEmpty ?? false));
 
-    // Como se ve el dato lo decide su tipo, no esta celda: cada tipo que se
-    // muestra distinto tiene su widget en `cells/` (ver [SheetCells.value]).
+    // How the datum looks is decided by its type, not by this cell: each type
+    // that displays differently has its widget in `cells/` (see [SheetCells.value]).
     final Widget content = state == SheetCellState.editing
       ? CellEditor(type: type, alignment: type.alignment)
       : SheetCells.value(
@@ -123,22 +137,29 @@ class SheetCellView extends StatelessWidget {
           value: record
             ? saved?.at(slot)?.toString() ?? ""
             : draft?.values[slot] ?? "",
-          // El valor sin convertir a texto, para el unico tipo que no guarda
-          // uno: una imagen guarda la lista de ids de su galeria (ver
+          // The value without converting to text, for the only type that does
+          // not store one: an image stores the list of ids of its gallery (see
           // [ImageCell]).
           raw: record ? saved?.at(slot) : draft?.values[slot],
           alignment: type.alignment,
-          // Los campos que lleva el backend (contador, stock) no se escriben a
-          // mano: se ven como un dato mas, pero apagados.
-          style: editable || record ? style.value : style.readOnlyValue,
+          // The column's symbol, for the types whose number does not bring its
+          // own (see [TableFieldType.united]).
+          unit: unit,
+          // The text the AI indexes by meaning always goes with the brand color,
+          // whether writable or not: it is what distinguishes it from a datum
+          // entered by hand. The fields the backend carries (counter, stock)
+          // look like one more datum, but dimmed.
+          style: type.semantic
+            ? style.semanticValue
+            : editable || record ? style.value : style.readOnlyValue,
           row: row,
           column: position,
-          // La clave de la columna, no su posicion: es con lo que una fecha
-          // recuerda en que formato se la esta leyendo (ver [DateCell]), igual
-          // que el ancho.
+          // The column key, not its position: it is with it that a date
+          // remembers in which format it is being read (see [DateCell]), just
+          // like the width.
           columnKey: widthKey,
           editable: editable,
-          // Solo un SKU vacio y que se puede escribir ofrece armarse solo: ver
+          // Only an empty, writable SKU offers to build itself: see
           // [SkuCell].
           onGenerateSku: editable && type == TableFieldType.sku
             ? () => controller.generateSku(SheetCell(row, position))
@@ -149,35 +170,36 @@ class SheetCellView extends StatelessWidget {
       valueListenable: context.read<SheetWidths>().of(widthKey),
       builder: (context, width, child) => SizedBox(width: width, child: child),
       child: MouseRegion(
-        // El puntero dice que se puede hacer ahi antes de tocar: el de escribir
-        // donde se escribe y el de un boton donde se despliega algo (una lista,
-        // una imagen). Lo decide el tipo, como la alineacion. Donde no se
-        // escribe —lo que lleva el backend, una fila que todavia no llego— no va
-        // ninguno de los dos: ofrecerlos seria prometer algo que no pasa.
+        // The pointer says what can be done there before touching: the one for
+        // writing where it is written and the one for a button where something
+        // unfolds (a list, an image). The type decides it, like the alignment.
+        // Where nothing is written —what the backend carries, a row that has not
+        // arrived— neither of the two appears: offering them would be promising
+        // something that does not happen.
         cursor: editable ? type.cursor : SystemMouseCursors.basic,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          // El contexto de la celda va con el toque porque hay un tipo que abre
-          // algo anclado a ella: una lista despliega sus opciones donde esta la
-          // celda, y eso necesita saber que lugar de la pantalla ocupa. Es este
-          // contexto y no el del `GestureDetector` a proposito: el primer render
-          // que cuelga de el es la caja de la columna entera, que es de donde
-          // tiene que colgar el desplegable.
+          // The cell's context goes with the touch because there is a type that
+          // opens something anchored to it: a list unfolds its options where the
+          // cell is, and that needs to know what place of the screen it
+          // occupies. It is this context and not the `GestureDetector`'s on
+          // purpose: the first render that hangs from it is the whole column's
+          // box, which is where the dropdown has to hang from.
           onTap: () => controller.tap(row, position, anchor: context),
           child: Container(
             alignment: type.alignment == TextAlign.right
               ? Alignment.centerRight
               : Alignment.centerLeft,
-            // Los tipos que se eligen dibujan su propio marco adentro (ver
-            // [SelectCell]), asi que en vez del aire de un texto les toca el de
-            // un marco: parejo por los cuatro lados, o arriba y abajo se apoya
-            // contra la cuadricula y se confunde con ella.
+            // The types that are chosen draw their own frame inside (see
+            // [SelectCell]), so instead of a text's air they get a frame's:
+            // even on all four sides, or top and bottom would press against the
+            // grid and blend in with it.
             padding: type.picker ? style.framePadding : style.cellPadding,
             decoration: style.cell(
               row: row,
               selected: state != SheetCellState.idle,
-              // El cursor le gana al mouse: la fila donde se esta parado se ve
-              // como tal aunque el puntero este pasando por encima de ella.
+              // The cursor beats the mouse: the row where you are standing shows
+              // as such even if the pointer is passing over it.
               fill: inCursorRow
                 ? SheetRowFill.selected
                 : hovered

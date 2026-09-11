@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:app/toolkit/toolkit.dart';
+
+// WIDGETS
+import 'package:app/screens/home/sections/section_tabs.dart';
 
 import 'business_tab.dart';
 
-/// Barra de pestanas de la pagina de una empresa.
+/// Tab bar of a business's page.
 ///
-/// No lleva titulo. Cual empresa es lo dice la pestana que se abre —con su
-/// nombre en grande— y el selector de la barra del home, que esta siempre a la
-/// vista: repetirlo aca era escribir el mismo nombre dos veces en la misma
-/// pantalla y robarle el ancho a las pestanas.
+/// It carries no title. Which business it is is told by the tab that opens
+/// —with its name big— and the home bar selector, which is always in view:
+/// repeating it here was writing the same name twice on the same screen and
+/// stealing width from the tabs.
 ///
-/// Tampoco lleva un boton de volver: no hay a donde. La seccion de empresas es
-/// esta pagina, la de la empresa con la que se esta trabajando; para pasar a
-/// otra esta el selector del header.
+/// It also carries no back button: there is nowhere to go. The business
+/// section is this page, the one of the business being worked with; to move to
+/// another there is the header selector.
 ///
-/// **No lleva superficie.** La unica de la pagina es la del cuerpo, y la
-/// pestana activa se dibuja justamente con ese color: apoyada sobre el fondo,
-/// se lee como la lengueta de lo que hay abajo. Envolver la barra en su propia
-/// superficie partiria la pagina en dos tarjetas sueltas y la pestana dejaria
-/// de senalar nada.
-///
-/// No guarda cual pestana esta abierta ni sabe que hay en ella: recibe [tab] y
-/// avisa por [onTab]. Quien manda es la pagina, que es la que navega.
+/// The bar itself is [SectionTabs], which is the same one the money page draws:
+/// what belongs to a business is which tabs there are and what each is called,
+/// and that is exactly what this widget hands over.
 class BusinessDetailHeader extends StatelessWidget {
   const BusinessDetailHeader({
     super.key,
@@ -29,79 +26,19 @@ class BusinessDetailHeader extends StatelessWidget {
     required this.onTab
   });
 
-  /// Pestana abierta, la que se dibuja marcada.
+  /// Open tab, the one drawn marked.
   final BusinessTab tab;
 
-  /// Se pidio abrir otra pestana. Es una navegacion: cada pestana es una URL
-  /// (ver `BusinessDetailSection`).
+  /// Another tab was asked to open. It is a navigation: each tab is a URL (see
+  /// `BusinessDetailSection`).
   final void Function(BusinessTab tab) onTab;
 
-  /// Las pestanas se corren en vez de encogerse: son cinco con icono y texto, y
-  /// en una ventana angosta entrarian recortadas o apretadas hasta no poder
-  /// leerse. Corriendolas, la que se este mirando se ve entera.
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    child: Row(children: [
-      for (final value in BusinessTab.values) Padding(
-        padding: EdgeInsets.only(right: AppSize.gap),
-        child: _Tab(
-          tab: value,
-          isActive: value == tab,
-          action: () => onTab(value)
-        )
-      )
-    ])
+  Widget build(BuildContext context) => SectionTabs<BusinessTab>(
+    tabs: BusinessTab.values,
+    active: tab,
+    icon: (value) => value.icon,
+    title: (context, value) => value.title(context),
+    onTab: onTab
   );
-}
-
-/// Una pestana de la barra.
-///
-/// La activa toma el color de la superficie del cuerpo y la inactiva el del
-/// fondo. Los dos son opacos a proposito: [FeedbackButton] anima el color al
-/// pasar el raton, y partir de un color translucido hace que la transicion pase
-/// por valores a medio alpha —el destello que ya se evito en las opciones del
-/// side bar—.
-class _Tab extends StatelessWidget {
-  const _Tab({
-    required this.tab,
-    required this.isActive,
-    required this.action
-  });
-
-  final BusinessTab tab;
-  final bool isActive;
-  final void Function() action;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return FeedbackButton(
-      action: action,
-      height: AppSize.button,
-      message: tab.title(context),
-      padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS),
-      radius: AppSize.cornerInset(AppSize.gap),
-      color: isActive ? scheme.surface : scheme.background,
-      feedbackColor: scheme.line,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            tab.icon,
-            size: AppSize.text * 1.2,
-            color: isActive ? scheme.primary : scheme.text.secondary
-          ),
-          SizedBox(width: AppSize.gap),
-          TextMedium(
-            tab.title(context),
-            bold: isActive,
-            multiplier: 0.95,
-            color: isActive ? scheme.text.primary : scheme.text.secondary
-          )
-        ]
-      )
-    );
-  }
 }

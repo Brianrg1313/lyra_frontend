@@ -1,36 +1,35 @@
 import 'package:app/services/files/cdn_service.dart';
 
-/// De donde cuelga un archivo: de la empresa que lo subio o de la plataforma.
+/// Where a file hangs from: the company that uploaded it or the platform.
 ///
-/// No es una clasificacion nuestra: son dos espacios distintos del backend
-/// (`/rigel/media` y `/rigel/assets`) con dos direcciones base distintas, y un
-/// id de uno pedido en el otro es un 404. Por eso el archivo llega diciendo cual
-/// es el suyo y no hay que deducirlo de en que parte de la respuesta aparecio.
+/// It is not our classification: they are two distinct backend spaces
+/// (`/rigel/media` and `/rigel/assets`) with two distinct base addresses, and an
+/// id from one requested in the other is a 404. That is why the file arrives saying which
+/// is its own and there is no need to deduce it from which part of the response it appeared in.
 enum FileScope {
-  /// Lo que subio una empresa: su logo, la foto de un producto, un documento.
+  /// What a company uploaded: its logo, a product photo, a document.
   media,
 
-  /// Lo que es de la app y es igual para todos: banderas, iconos.
+  /// What belongs to the app and is the same for everyone: flags, icons.
   assets;
 
   static FileScope from(dynamic raw) =>
     raw?.toString().toLowerCase() == "assets" ? assets : media;
 }
 
-/// Un archivo del backend, tal como lo describe cualquier respuesta que
-/// devuelva uno.
+/// A backend file, as any response that returns one describes it.
 ///
-/// **No trae direccion.** Un archivo es un id, y la direccion se arma poniendo
-/// ese id detras de la base que `/init` entrego ([CdnService]). Es la misma
-/// decision que ya toma el backend al guardar un id en `companies`.`profile` y
-/// no una URL: una direccion guardada envejece el dia que cambia el dominio, el
-/// CDN o el proveedor, y la copia que ya esta en pantalla envejece con ella. El
-/// id no envejece nunca.
+/// **It does not carry an address.** A file is an id, and the address is built by putting
+/// that id behind the base `/init` delivered ([CdnService]). It is the same
+/// decision the backend already makes when storing an id in `companies`.`profile` and
+/// not a URL: a stored address ages the day the domain, the
+/// CDN or the provider changes, and the copy already on screen ages with it. The
+/// id never ages.
 ///
-/// Lo que si trae es con que tamanos existe ([variants]): las miniaturas se
-/// renderizaron al subir el archivo y son las que hay. Pedir una que no se
-/// renderizo no falla —el backend devuelve la grande—, pero pedir la que existe
-/// es la diferencia entre bajar 8 KB y bajar 2 MB para dibujar 44 pixeles.
+/// What it does carry is which sizes it exists in ([variants]): the thumbnails were
+/// rendered when the file was uploaded and they are the ones there are. Asking for one that was not
+/// rendered does not fail —the backend returns the full one—, but asking for the one that exists
+/// is the difference between downloading 8 KB and downloading 2 MB to draw 44 pixels.
 class FileModel {
   const FileModel({
     required this.id,
@@ -41,30 +40,30 @@ class FileModel {
     this.variants = const []
   });
 
-  /// Id publico (uuid). Es lo unico que las demas tablas guardan, y lo que se
-  /// le pone detras a la base para llegar a los bytes.
+  /// Public id (uuid). It is the only thing the other tables store, and what is
+  /// put behind the base to reach the bytes.
   final String id;
 
   final FileScope scope;
 
-  /// Tipo real del contenido, leido de los bytes y no del nombre. Es con lo que
-  /// se decide si esto se dibuja como imagen o se ofrece como documento.
+  /// Real content type, read from the bytes and not from the name. It is what decides
+  /// whether this is drawn as an image or offered as a document.
   final String mime;
 
-  /// Medidas del original, en pixeles. Solo en imagenes.
+  /// Dimensions of the original, in pixels. Only in images.
   final int? width;
   final int? height;
 
-  /// Anchos de las miniaturas que este archivo **tiene**, de menor a mayor.
+  /// Widths of the thumbnails this file **has**, from smallest to largest.
   ///
-  /// Es por archivo y no por tipo de archivo: una imagen mas chica que el ancho
-  /// de la miniatura se guarda sin ella, y esta lista es como se sabe.
+  /// It is per file and not per file type: an image smaller than the thumbnail's width
+  /// is stored without it, and this list is how that is known.
   final List<int> variants;
 
-  /// Lee el archivo de una respuesta, o `null` si no hay ninguno.
+  /// Reads the file from a response, or `null` if there is none.
   ///
-  /// Sin id no hay archivo aunque venga el resto: no habria de donde bajarlo, y
-  /// quien lo esperaba dibuja lo que dibuja cuando no hay imagen.
+  /// Without an id there is no file even if the rest comes: there would be nothing to download it from, and
+  /// whoever expected it draws what is drawn when there is no image.
   static FileModel? from(dynamic json) {
     if (json is! Map) return null;
 
@@ -86,8 +85,8 @@ class FileModel {
     return int.tryParse("$raw");
   }
 
-  /// Los anchos disponibles, ordenados de menor a mayor. Se ordenan aca y no se
-  /// confia en como vinieron porque [sized] elige recorriendo.
+  /// The available widths, sorted from smallest to largest. They are sorted here and not
+  /// trusted to how they came because [sized] picks by iterating.
   static List<int> _variants(dynamic raw) {
     if (raw is! List) return const [];
 
@@ -101,20 +100,20 @@ class FileModel {
     return widths;
   }
 
-  /// La direccion del archivo entero, o `""` si todavia no hay base con que
-  /// armarla. Vacia se lee igual que "no hay imagen", que es lo que hace falta.
+  /// The address of the whole file, or `""` if there is still no base to
+  /// build it with. Empty reads the same as "no image", which is what is needed.
   String get url => CdnService().url(scope, id);
 
-  /// La miniatura mas chica que exista, o el archivo entero si no se renderizo
-  /// ninguna. Es para donde el tamano lo pone el diseno y no el dato: una fila
-  /// de un listado, un avatar.
+  /// The smallest thumbnail that exists, or the whole file if none was rendered.
+  /// It is for where the size is set by the design and not by the datum: a row
+  /// of a listing, an avatar.
   String get thumbnail => sized(1);
 
-  /// La direccion de la version mas chica que **cubra** [width] pixeles, o la
-  /// del archivo entero si ninguna llega.
+  /// The address of the smallest version that **covers** [width] pixels, or the
+  /// whole file's if none reaches.
   ///
-  /// Se elige la mas chica que alcance y no la mas parecida: una imagen mas
-  /// chica que el hueco se ve borrosa, que es peor que tardar un poco mas.
+  /// The smallest that reaches is chosen and not the closest one: an image smaller
+  /// than the gap looks blurry, which is worse than taking a little longer.
   String sized(int width) {
     for (final variant in variants) {
       if (variant >= width) return CdnService().url(scope, id, width: variant);
@@ -123,8 +122,8 @@ class FileModel {
     return url;
   }
 
-  /// Igualdad por valor: el logo viaja como parte del perfil y de la fila de un
-  /// listado, que se comparan para decidir si hace falta repintar.
+  /// Equality by value: the logo travels as part of the profile and of the row of a
+  /// listing, which are compared to decide whether it needs repainting.
   @override
   bool operator ==(Object other) =>
     other is FileModel && other.id == id && other.scope == scope;

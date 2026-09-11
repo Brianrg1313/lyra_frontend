@@ -1,30 +1,31 @@
-/// Que hacer con un campo al salir de su celda, segun lo que quedo escrito.
+/// What to do with a field when leaving its cell, according to what was
+/// written.
 ///
-/// La planilla no tiene botones de agregar, renombrar ni eliminar una columna:
-/// las tres cosas son lo mismo —escribir en la celda del campo— y lo unico que
-/// las distingue es que habia antes y que quedo despues. Esa regla vive aparte
-/// de la pantalla porque es la que hay que poder leer de un vistazo (y probar
-/// sin montar la planilla).
+/// The spreadsheet has no buttons to add, rename, or delete a column: the
+/// three things are the same —writing in the field's cell— and the only thing
+/// that distinguishes them is what was there before and what was left after.
+/// That rule lives apart from the screen because it has to be readable at a
+/// glance (and testable without mounting the spreadsheet).
 enum FieldEdit {
-  /// El titulo quedo como estaba: entrar y salir de la celda no manda nada.
+  /// The title stayed as it was: entering and leaving the cell sends nothing.
   none,
 
-  /// Una columna libre a la que se le escribio un titulo: alta del campo.
+  /// A free column that got a title written: creation of the field.
   create,
 
-  /// Un campo con otro titulo: renombre.
+  /// A field with a different title: rename.
   rename,
 
-  /// Un campo al que se le borro el titulo: baja. Es la unica que se pregunta
-  /// antes, porque se lleva la columna y todo lo cargado en ella.
+  /// A field whose title was erased: deletion. It's the only one that asks
+  /// first, because it takes the column and everything loaded in it.
   delete;
 
-  /// Decide el caso de la celda de la fila de campos que se acaba de dejar.
+  /// Decides the case of the field-row cell that was just left.
   ///
-  /// [isField] dice si la columna ya es un campo de la tabla o todavia es una
-  /// de las libres del final, [current] es el titulo que tenia y [text] lo que
-  /// quedo escrito. Los espacios no cuentan: un titulo con solo espacios es un
-  /// titulo vacio.
+  /// [isField] says whether the column is already a field of the table or is
+  /// still one of the free ones at the end, [current] is the title it had and
+  /// [text] what was left written. Spaces don't count: a title with only
+  /// spaces is an empty title.
   static FieldEdit of({
     required bool isField,
     required String current,
@@ -32,8 +33,8 @@ enum FieldEdit {
   }) {
     final name = text.trim();
 
-    // Una columna libre que se deja en blanco sigue siendo libre: no hay nada
-    // que crear ni que borrar.
+    // A free column left blank stays free: there's nothing to create nor
+    // delete.
     if (!isField) return name.isEmpty ? FieldEdit.none : FieldEdit.create;
 
     if (name == current.trim()) return FieldEdit.none;

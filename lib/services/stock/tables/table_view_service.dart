@@ -9,85 +9,85 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_record_request.dart';
+import 'package:app/services/stock/tables/table_normalize_model.dart';
 import 'package:app/services/stock/tables/table_ready_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 import 'package:app/toolkit/api.dart';
 
-/// Estado de la carga de la estructura de una tabla
-/// (`GET /tables/structure/<table_id>`).
+/// Loading state of a table's structure
+/// (`GET /inventory/products/builder/structure/<table_id>`).
 enum TableStructureStatus { idle, loading, ready, error }
 
-/// Estado de la ultima lectura de registros (`POST /tables/records/`).
+/// State of the latest records read (`POST /inventory/products/records/list/`).
 enum TableViewStatus { idle, loading, ready, empty, error }
 
-/// Nombre del campo del formulario con el que viaja una foto de producto. Lo
-/// decide el backend: es el que lee su multipart, y con cualquier otro la
-/// peticion llega sin archivo.
+/// Name of the form field that carries a product photo. It is decided by the
+/// backend: it is what its multipart reads, and with any other name the
+/// request arrives without a file.
 const String _kImageField = "FILE";
 
-/// Estado de una tabla abierta: su estructura y sus registros, leidos de a
-/// tramos a medida que se los mira.
+/// State of an open table: its structure and its records, read in chunks as
+/// they are looked at.
 ///
-/// Abrir una tabla son **dos fases**, y en ese orden:
+/// Opening a table is **two phases**, in this order:
 ///
-/// 1. **La estructura** (`GET /tables/structure/<table_id>`): la cabecera de la
-///    tabla, sus campos y **cuantos registros tiene**. Se pide **una sola vez**
-///    por tabla abierta y es lo que permite dibujar la planilla entera —la fila
-///    de campos, las columnas y el largo de la tabla— antes de que llegue el
-///    primer registro. Lo unico que la vuelve a pedir es algo que la cambie:
-///    agregar una columna ([addField]), renombrarla o cambiarle el tipo
-///    ([editField]), eliminarla ([deleteField]) o agregar un registro ([add]).
-///    Esas relecturas pasan con la planilla ya dibujada, asi que **no vuelven a
-///    [TableStructureStatus.loading]**: se avisan en [isReloading] y la pantalla
-///    no se desmonta ni pierde donde estaba parada.
-/// 2. **Los registros** (`POST /tables/records/`): se leen de a paginas, pero
-///    no como paginas: la planilla es una sola lista tan larga como diga
-///    [records], y cada tramo se pide cuando esta por entrar en pantalla
-///    ([ensureRange]). No hay botones de paginado ni un final que corte la
-///    tabla; bajando se sigue de largo.
+/// 1. **The structure** (`GET /inventory/products/builder/structure/<table_id>`): the table's
+///    header, its fields and **how many records it has**. It is requested **only
+///    once** per open table and is what lets the whole sheet be drawn —the
+///    fields row, the columns and the table length— before the first record
+///    arrives. The only thing that requests it again is something that changes
+///    it: adding a column ([addField]), renaming it or changing its type
+///    ([editField]), deleting it ([deleteField]) or adding a record ([add]).
+///    Those re-reads happen with the sheet already drawn, so they **do not go
+///    back through [TableStructureStatus.loading]**: they are flagged in
+///    [isReloading] and the screen is neither unmounted nor loses its place.
+/// 2. **The records** (`POST /inventory/products/records/list/`): they are read in pages, but
+///    not like pages: the sheet is a single list as long as [records] says, and
+///    each chunk is requested when it is about to come on screen
+///    ([ensureRange]). There are no paging buttons nor an end that cuts the
+///    table; scrolling down keeps going.
 ///
-///    La lectura es un POST y no un GET porque es una busqueda: las
-///    condiciones, el orden y la paginacion viajan en el cuerpo (aca se manda la
-///    tabla, la pagina y, si se esta buscando, el texto del buscador).
+///    The read is a POST and not a GET because it is a search: the conditions,
+///    the order and the paging travel in the body (here the table, the page
+///    and, if searching, the search text are sent).
 ///
-/// **La busqueda del header es parte de esa segunda fase** ([search]). Lo que se
-/// escribe viaja en cada lectura de registros (`MATCH`) y vuelven las filas que
-/// lo mencionan en cualquiera de sus columnas, contadas y paginadas igual que la
-/// tabla entera: la planilla no esconde nada de lo que tiene, mide y pide sobre
-/// el resultado. Esconderlo seria buscar en los tramos que se miraron y no en la
-/// tabla, que es una respuesta distinta —y casi siempre incompleta— en cuanto la
-/// tabla pasa de unas pocas paginas.
+/// **Header search is part of that second phase** ([search]). What is written
+/// travels in every records read (`MATCH`) and the rows that mention it in any
+/// of their columns come back, counted and paged just like the whole table: the
+/// sheet hides nothing it has, measures and asks over the result. Hiding would
+/// mean searching the chunks that were looked at and not the table, which is a
+/// different —and almost always incomplete— answer once the table goes past a
+/// few pages.
 ///
-/// Sin estructura no hay segunda fase: si falla, no se piden registros, porque
-/// no habria columnas contra las cuales leerlos ni un largo que darle a la
-/// planilla.
+/// Without a structure there is no second phase: if it fails, records are not
+/// requested, because there would be no columns to read them against nor a
+/// length to give the sheet.
 ///
-/// Los registros se guardan por **indice absoluto** dentro de la tabla, no por
-/// pagina: asi la fila 900 esta siempre en el lugar 900 aunque se haya llegado
-/// hasta ella saltando con la barra de desplazamiento, y las filas en blanco del
-/// final —las que se escriben— quedan ancladas detras del ultimo registro sin
-/// correrse cada vez que entra un tramo nuevo.
+/// Records are stored by **absolute index** within the table, not by page: so
+/// row 900 is always in place 900 even if you reached it by jumping with the
+/// scrollbar, and the blank rows at the end —the ones being written— stay
+/// anchored after the last record without shifting every time a new chunk
+/// arrives.
 ///
-/// Lo leido **no se guarda para siempre**: una tabla puede tener cientos de
-/// miles de registros y recorrerla entera la dejaria entera en memoria. Se
-/// mantiene un presupuesto de paginas ([_maxCachedPages]) y, al pasarse, se
-/// olvida la mas lejana a la que se acaba de leer; si se vuelve a ella, se pide
-/// de nuevo. El presupuesto es holgado a proposito: cubre de sobra cualquier
-/// ida y vuelta razonable, y solo se activa recorriendo la tabla de punta a
-/// punta.
+/// What is read is **not kept forever**: a table can have hundreds of thousands
+/// of records and walking it entirely would leave it entirely in memory. A page
+/// budget is kept ([_maxCachedPages]) and, once exceeded, the page farthest
+/// from the one just read is forgotten; if you go back to it, it is requested
+/// again. The budget is deliberately generous: it easily covers any reasonable
+/// round trip, and only activates when scrolling the table end to end.
 ///
-/// La tabla tambien puede cambiar **sin que nadie de esta pantalla la toque**:
-/// al terminar una importacion el backend le pone el tipo a sus columnas, le
-/// agrega la de imagen y reescribe los valores que ya estaban guardados, todo
-/// eso mucho despues de haber contestado. Cuando cae, avisa por socket
-/// (`table/ready`, ver [TableReadyModel]) y este servicio vuelve a leer la
-/// tabla donde este: es la misma relectura que un cambio de columna hecho a
-/// mano, asi que no desmonta la planilla ni pierde donde estaba parada.
+/// The table can also change **without anyone on this screen touching it**: when
+/// an import finishes the backend types its columns, adds the image one and
+/// rewrites the values already stored in them, all of that long after having
+/// answered. When it lands, it notifies over the socket (`table/ready`, see
+/// [TableReadyModel]) and this service re-reads the table wherever it is: it is
+/// the same re-read as a hand-made column change, so it neither unmounts the
+/// sheet nor loses where it was.
 ///
-/// A diferencia de `TablesService` —que cachea el listado de tablas de la
-/// empresa y vive en el scope de la app—, este servicio es efimero: lo posee la
-/// propia pantalla de la tabla y se descarta al salir.
+/// Unlike `TablesService` —which caches the company's table list and lives in
+/// the app scope—, this service is ephemeral: the table screen itself owns it
+/// and it is discarded on exit.
 class TableViewService extends ChangeNotifier {
   TableViewService() {
     _unlisten = ConnectionService().on(TableReadyModel.event, _onReady);
@@ -98,140 +98,152 @@ class TableViewService extends ChangeNotifier {
 
   TableViewStatus _status = TableViewStatus.idle;
 
-  /// `true` mientras se este releyendo la estructura de una tabla que **ya esta
-  /// dibujada** (se agrego una columna, se le cambio el tipo, se guardo una
-  /// fila). No es lo mismo que cargarla: eso se ve en [structureStatus] y tapa
-  /// la pantalla; esto se avisa en la barra de arriba y no toca la planilla.
+  /// `true` while the structure of a table that is **already drawn** is being
+  /// re-read (a column was added, its type was changed, a row was saved). It is
+  /// not the same as loading it: that shows in [structureStatus] and covers the
+  /// screen; this is flagged in the top bar and does not touch the sheet.
   bool _reloading = false;
 
-  /// `true` mientras haya una lectura de estructura en el aire. Evita que dos se
-  /// pisen; se lleva aparte de [structureStatus] porque una relectura no cambia
-  /// ese estado.
+  /// `true` while a structure read is in flight. It prevents two of them from
+  /// stepping on each other; it is kept apart from [structureStatus] because a
+  /// re-read does not change that state.
   bool _reading = false;
 
-  /// `true` cuando una relectura de estructura no llego. La planilla sigue
-  /// mostrando la de antes —es la unica que hay— pero puede estar vieja: el
-  /// cambio de columna que la disparo si salio. Es lo que hace que el reintento
-  /// de la barra vuelva a pedirla en vez de limitarse a los tramos.
+  /// `true` when a structure re-read did not arrive. The sheet keeps showing
+  /// the previous one —it is the only one there is— but it may be stale: the
+  /// column change that triggered it did go through. This is what makes the top
+  /// bar retry request it again instead of just reloading the chunks.
   bool _staleStructure = false;
 
-  /// Registros leidos, por indice absoluto dentro de la tabla. Es ralo a
-  /// proposito: de una tabla de miles de filas solo estan las que se miraron.
+  /// Records read, by absolute index within the table. It is sparse on
+  /// purpose: from a table of thousands of rows only the ones that were looked
+  /// at are present.
   final Map<int, TableRowModel> _rows = {};
 
-  /// La contabilidad de la lectura por tramos: que se leyo, que esta en camino y
-  /// donde termina la tabla.
+  /// The bookkeeping of the chunk-by-chunk read: what was read, what is on its
+  /// way and where the table ends.
   TablePaging _paging = TablePaging();
 
-  /// Las paginas que estan guardadas en [_rows], en el orden en que llegaron.
+  /// The pages stored in [_rows], in the order they arrived.
   final List<int> _cached = [];
 
-  /// Tabla que se esta viendo. Se fija al abrir y no cambia mientras la
-  /// pantalla siga viva.
+  /// The table being viewed. It is set on open and does not change while the
+  /// screen stays alive.
   String? _tableId;
 
-  /// Baja del oyente de `table/ready`. El servicio muere con la pantalla, asi
-  /// que sin esto quedaria escuchando una tabla que ya nadie mira.
+  /// Unsubscribes the `table/ready` listener. The service dies with the
+  /// screen, so without this it would keep listening to a table nobody watches
+  /// anymore.
   void Function()? _unlisten;
 
-  /// `true` mientras se esta guardando un item nuevo. Evita reentrar en [add] si
-  /// se dispara dos veces; la pantalla maneja su propio estado de carga del
-  /// boton.
+  /// `true` while a new item is being saved. Prevents re-entering [add] if it
+  /// fires twice; the screen manages its own load state for the button.
   bool _saving = false;
 
-  /// Lo que se escribio en el buscador del header, o vacio si no se esta
-  /// buscando. Viaja en cada lectura de registros (`MATCH`) y por lo tanto **la
-  /// planilla filtrada la filtra el backend**: no es que se escondan las filas
-  /// que se tienen, es que las que se piden ya vienen filtradas. Es la unica
-  /// forma que funciona igual en una tabla de diez filas que en una de
-  /// quinientas mil, donde lo que hay en memoria es un puñado de tramos.
+  /// What was written in the header search box, or empty if not searching. It
+  /// travels in every records read (`MATCH`) and therefore **the backend does
+  /// the filtering of the sheet**: it is not that the rows you have get hidden,
+  /// it is that the ones requested already come filtered. It is the only way
+  /// that works the same in a table of ten rows as in one of five hundred
+  /// thousand, where what is in memory is a handful of chunks.
   String _query = "";
 
-  /// Cuantas filas coinciden con [query]. Lo dice cada pagina filtrada (`total`)
-  /// y es lo que mide la planilla mientras se busca, en lugar de los registros
-  /// que tiene la tabla.
+  /// How many rows match [query]. Each filtered page says it (`total`) and it
+  /// is what measures the sheet while searching, instead of the records the
+  /// table has.
   int _matches = 0;
 
-  /// Que lectura es la de ahora. Cambiar la busqueda tira lo leido y vuelve a
-  /// empezar, asi que un tramo que ya estaba viajando llegaria con las filas de
-  /// la busqueda anterior y se guardaria en el lugar de las de esta: lo que se
-  /// escribio se compara al volver y el tramo viejo se descarta.
+  /// Which read is the current one. Changing the search throws away what was
+  /// read and starts over, so a chunk already in transit would arrive with the
+  /// rows of the previous search and be stored in the place of this one's: what
+  /// was written is compared on return and the old chunk is discarded.
   int _generation = 0;
 
-  /// De a cuantos registros se lee cada tramo. Se manda en la peticion en vez
-  /// de dejar el que el backend pone por defecto, para que las dos puntas
-  /// cuenten las filas igual: [TablePaging] traduce una fila a su pagina
-  /// suponiendo que todas las paginas miden lo mismo.
+  /// How many records each chunk is read by. It is sent in the request instead
+  /// of leaving the backend's default, so both ends count the rows the same:
+  /// [TablePaging] translates a row to its page assuming every page is the same
+  /// size.
   static const int _pageSize = 50;
 
-  /// Cuantas paginas se guardan a la vez. Con [_pageSize] son diez mil filas en
-  /// memoria: mucho mas de lo que se puede mirar, y un techo fijo aunque la
-  /// tabla tenga cientos de miles de registros.
+  /// How many pages are kept at once. With [_pageSize] that is ten thousand
+  /// rows in memory: far more than can be looked at, and a fixed ceiling even
+  /// if the table has hundreds of thousands of records.
   static const int _maxCachedPages = 200;
+
+  /// How long a normalization ([normalize]) is waited for.
+  ///
+  /// It is the only request of this screen that does not measure how long a
+  /// query takes but how long a model takes reading the whole table: on one
+  /// with many columns that is tens of seconds, and the deadline of any regular
+  /// write —ten seconds— would count it as failed right when it is working.
+  /// Cutting it off also does not cancel it: on the other side it keeps going
+  /// and ends up writing, so giving up early only leaves the screen lying.
+  static const Duration _normalizeTimeout = Duration(minutes: 3);
 
   TableStructureStatus get structureStatus => _structureStatus;
   TableStructureModel get structure => _structure;
 
-  /// Las columnas de la tabla. Salen de la estructura, no de los registros: son
-  /// las mismas se este mirando el tramo que se este mirando.
+  /// The table's columns. They come from the structure, not from the records:
+  /// they are the same no matter which chunk is being looked at.
   List<TableFieldModel> get fields => _structure.fields;
 
   TableViewStatus get status => _status;
 
-  /// `true` mientras se este trayendo algun tramo.
+  /// `true` while some chunk is being fetched.
   bool get isLoadingRows => _paging.isReading;
 
-  /// `true` mientras se este releyendo la estructura de una tabla ya dibujada.
-  /// Lo muestra la barra de arriba: es la unica señal de que el cambio de
-  /// columna todavia esta viajando, porque la planilla no se mueve.
+  /// `true` while the structure of an already drawn table is being re-read.
+  /// The top bar shows it: it is the only sign that the column change is still
+  /// traveling, because the sheet does not move.
   bool get isReloading => _reloading;
 
-  /// Lo que se esta buscando, o vacio si no se esta buscando nada.
+  /// What is being searched, or empty if nothing is being searched.
   String get query => _query;
 
-  /// `true` mientras la planilla este filtrada por una busqueda.
+  /// `true` while the sheet is filtered by a search.
   bool get isSearching => _query.isNotEmpty;
 
-  /// Cuantas filas de registros tiene la planilla.
+  /// How many record rows the sheet has.
   ///
-  /// Lo dice la estructura, asi que se sabe antes de leer un solo registro: la
-  /// planilla nace con su largo definitivo y las filas que todavia no llegaron
-  /// se ven vacias hasta que entran en pantalla. Si la estructura no lo trae, se
-  /// cae en lo unico que se puede saber —hasta donde se leyo— y la tabla crece a
-  /// medida que se baja.
+  /// The structure says it, so it is known before reading a single record: the
+  /// sheet is born with its final length and the rows that have not arrived
+  /// yet look empty until they come on screen. If the structure does not bring
+  /// it, it falls back to the only thing that can be known —how far it was
+  /// read— and the table grows as you scroll down.
   ///
-  /// Buscando son las que coinciden y no las que tiene la tabla: la planilla
-  /// mide lo que devolvio la busqueda, que es lo que la hace desplazarse y pedir
-  /// tramos sobre el resultado igual que sobre la tabla entera. Hasta que llegue
-  /// la primera pagina filtrada son cero, que es lo unico honesto que se puede
-  /// decir: cuantas coinciden lo sabe el backend, no la estructura.
+  /// While searching it is the matching ones and not the ones the table has:
+  /// the sheet measures what the search returned, which is what makes it
+  /// scroll and request chunks over the result just like over the whole table.
+  /// Until the first filtered page arrives it is zero, which is the only honest
+  /// thing that can be said: how many match is known by the backend, not by the
+  /// structure.
   int get records => isSearching
     ? _matches
     : _structure.records > 0 ? _structure.records : _paging.known;
 
-  /// El registro de la fila [index], o `null` si esa fila todavia no se leyo.
+  /// The record of row [index], or `null` if that row has not been read yet.
   TableRowModel? rowAt(int index) => _rows[index];
 
-  /// Se asegura de que esten pedidos los tramos que cubren las filas de [first]
-  /// a [last].
+  /// Makes sure the chunks covering the rows from [first] to [last] are
+  /// requested.
   ///
-  /// La llama la planilla cuando se desplaza, con el rango que se ve mas unas
-  /// cuantas filas de mas abajo: asi el tramo siguiente se pide antes de que se
-  /// lo necesite y las filas entran ya cargadas en vez de aparecer en blanco.
+  /// The sheet calls it when it scrolls, with the visible range plus a few more
+  /// rows down: so the next chunk is requested before it is needed and the rows
+  /// arrive already loaded instead of appearing blank.
   ///
-  /// Se recorre de pagina en pagina y no de fila en fila: el rango visible puede
-  /// ser de cientos de filas y todas caen en dos o tres paginas.
+  /// It walks page by page and not row by row: the visible range can be
+  /// hundreds of rows and they all fall in two or three pages.
   ///
-  /// Las paginas se piden fuera del frame: esto corre mientras se dibuja o se
-  /// desplaza, y avisar de la carga ahi mismo repintaria en medio del build.
+  /// The pages are requested outside the frame: this runs while drawing or
+  /// scrolling, and notifying the load right there would repaint mid-build.
   void ensureRange(int first, int last) {
     if (_structureStatus != TableStructureStatus.ready) return;
 
     final from = math.max(0, first);
     if (last < from) return;
 
-    // Todavia no se sabe de a cuantos registros se lee: la primera pagina es la
-    // que lo revela, y hasta que llegue no se puede traducir ninguna otra fila.
+    // It is not known yet how many records are read at a time: the first page
+    // is what reveals it, and until it arrives no other row can be translated.
     if (_paging.size <= 0) {
       _requestRow(0);
       return;
@@ -241,8 +253,8 @@ class TableViewService extends ChangeNotifier {
       _requestRow(index);
     }
 
-    // La ultima fila del rango puede caer en una pagina que el salto anterior
-    // se paso de largo.
+    // The last row of the range may fall on a page that the previous step
+    // jumped over.
     _requestRow(last);
   }
 
@@ -255,14 +267,14 @@ class TableViewService extends ChangeNotifier {
     scheduleMicrotask(() => _loadPage(page));
   }
 
-  /// Abre una tabla: primero su estructura y, con ella, el primer tramo de
-  /// registros. Reinicia el estado, porque este servicio no cachea entre tablas:
-  /// vive y muere con la pantalla.
+  /// Opens a table: first its structure and, with it, the first chunk of
+  /// records. It resets the state, because this service does not cache between
+  /// tables: it lives and dies with the screen.
   ///
-  /// [query] es lo que hubiera en el buscador del header al abrirla. Normalmente
-  /// esta vacio —el header se vacia al cambiar de pantalla— pero una tabla que
-  /// se monta con algo escrito tiene que abrirse ya filtrada: si no, el buscador
-  /// diria una cosa y la planilla mostraria otra.
+  /// [query] is whatever was in the header search box when opening it.
+  /// Normally it is empty —the header is cleared when changing screens— but a
+  /// table that mounts with something written has to open already filtered:
+  /// otherwise the search box would say one thing and the sheet another.
   Future<void> open(String tableId, {String query = ""}) {
     _tableId = tableId;
     _structure = const TableStructureModel();
@@ -270,8 +282,8 @@ class TableViewService extends ChangeNotifier {
     _reloading = false;
     _staleStructure = false;
     _rows.clear();
-    // Otra tabla, otro tamaño de pagina: la contabilidad arranca de cero y no se
-    // reusa la de la anterior.
+    // Another table, another page size: the bookkeeping starts from zero and
+    // does not reuse the previous one.
     _paging = TablePaging();
     _status = TableViewStatus.idle;
     _query = query.trim();
@@ -281,24 +293,25 @@ class TableViewService extends ChangeNotifier {
     return _load();
   }
 
-  /// Busca [query] en la tabla: la planilla pasa a mostrar solo las filas que lo
-  /// mencionan, en cualquiera de sus columnas.
+  /// Searches [query] in the table: the sheet goes on to show only the rows
+  /// that mention it, in any of their columns.
   ///
-  /// La llama la pantalla con lo que se escribio en el buscador del header, que
-  /// es uno solo para todo el home y busca sobre la seccion que se este mirando
-  /// (ver `HomeService.searchQuery`). Vaciar el buscador vuelve a la tabla
-  /// entera, que es la busqueda vacia.
+  /// The screen calls it with what was written in the header search box, which
+  /// is a single one for the whole home and searches over the section being
+  /// looked at (see `HomeService.searchQuery`). Clearing the search box goes
+  /// back to the whole table, which is the empty search.
   ///
-  /// **Filtra el backend, no la planilla.** De una tabla de cientos de miles de
-  /// filas en memoria hay unos tramos, asi que esconder las que no coinciden
-  /// buscaria en lo que se miro y no en la tabla: lo que se manda es el texto
-  /// (`MATCH`) y lo que vuelve son las filas que coinciden, contadas y paginadas
-  /// como cualquier otra lectura. Por eso buscar tira lo leido y vuelve a
-  /// empezar por la primera fila: las de antes eran de otra planilla.
+  /// **The backend filters, not the sheet.** From a table of hundreds of
+  /// thousands of rows there are only a few chunks in memory, so hiding the
+  /// ones that do not match would search in what was looked at and not in the
+  /// table: what is sent is the text (`MATCH`) and what comes back is the
+  /// matching rows, counted and paged like any other read. That is why
+  /// searching throws away what was read and starts over from the first row:
+  /// the previous ones were from another sheet.
   ///
-  /// Con la tabla todavia sin dibujar no se pide nada: la lectura que ya esta en
-  /// curso pide su primer tramo al terminar la estructura, y para entonces esto
-  /// ya dejo escrito con que texto pedirlo.
+  /// With the table still not drawn nothing is requested: the read already in
+  /// progress requests its first chunk when the structure finishes, and by then
+  /// this has already written down with what text to request it.
   Future<void> search(String query) {
     final next = query.trim();
     if (next == _query) return Future.value();
@@ -315,13 +328,14 @@ class TableViewService extends ChangeNotifier {
     return page > 0 ? _loadPage(page) : Future.value();
   }
 
-  /// Reintenta lo que fallo. Si falto la estructura, se vuelve a pedir entera;
-  /// si fallo un tramo de registros, alcanza con volver a pintar: la planilla
-  /// pide sola las filas que se ven y la que no llego se vuelve a pedir ahi.
+  /// Retries what failed. If the structure failed to arrive, it is requested
+  /// whole again; if a chunk of records failed, repainting is enough: the sheet
+  /// requests the visible rows by itself and the one that did not arrive is
+  /// requested again there.
   ///
-  /// Una estructura vieja ([_staleStructure]) cuenta como estructura que falto,
-  /// aunque haya una dibujada: el cambio de columna que la dejo asi si salio, y
-  /// sin volver a pedirla la planilla no lo muestra nunca.
+  /// A stale structure ([_staleStructure]) counts as a structure that failed to
+  /// arrive, even if one is drawn: the column change that left it that way did
+  /// go through, and without re-requesting it the sheet never shows it.
   Future<void> retry() {
     if (_structureStatus != TableStructureStatus.ready || _staleStructure) {
       return _load();
@@ -334,22 +348,22 @@ class TableViewService extends ChangeNotifier {
     return Future.value();
   }
 
-  /// Alta de un item (una fila) contra `POST /products/manage/`.
+  /// Creates an item (a row) against `POST /inventory/products/records/manage/`.
   ///
-  /// [values] son los datos capturados, indexados por FIELD_ID: es lo que va en
-  /// el campo `DATA` del cuerpo, junto al `TABLE_ID` de la tabla abierta (que la
-  /// pantalla no tiene que pasar, lo pone el servicio). La empresa dueña viaja
-  /// en la cabecera `business_id`, como en el resto de las apis.
+  /// [values] are the captured data, indexed by FIELD_ID: they go in the `DATA`
+  /// field of the body, next to the `TABLE_ID` of the open table (which the
+  /// screen does not have to pass, the service puts it). The owner company
+  /// travels in the `business_id` header, like in the rest of the APIs.
   ///
-  /// Devuelve `true` si el alta salio bien. En ese caso los registros leidos
-  /// quedan viejos —hay uno mas, y donde caiga lo decide el backend— asi que se
-  /// descartan y se vuelve a leer la estructura, que es la que dice cuantos hay.
-  /// Con [refresh] en `false` eso no se hace: lo usa el guardado en lote, que
-  /// prefiere refrescar una sola vez al final ([refresh]) y no despues de cada
-  /// fila.
+  /// Returns `true` if the creation went well. In that case the records read
+  /// become stale —there is one more, and where it lands is decided by the
+  /// backend— so they are discarded and the structure is re-read, since it is
+  /// the one that says how many there are. With [refresh] set to `false` that
+  /// is not done: the batch save uses it, which prefers to refresh a single
+  /// time at the end ([refresh]) and not after each row.
   ///
-  /// Ante un error muestra la bandera flotante y devuelve `false`, dejando el
-  /// borrador intacto para reintentar.
+  /// On error it shows the floating flag and returns `false`, leaving the draft
+  /// intact to retry.
   Future<bool> add(
     BuildContext context,
     Map<String, dynamic> values, {
@@ -365,7 +379,7 @@ class TableViewService extends ChangeNotifier {
 
     try {
       await api.post(
-        path: "/products/manage/",
+        path: "/inventory/products/records/manage/",
         version: "v1",
         data: createRecordRequest(tableId: tableId, values: values)
       );
@@ -387,8 +401,8 @@ class TableViewService extends ChangeNotifier {
 
       if (!context.mounted) return false;
 
-      // Un `action` es una instruccion de navegacion (sesion vencida, etc.): se
-      // relanza tal cual para que la maneje quien corresponda.
+      // An `action` is a navigation instruction (expired session, etc.): it is
+      // rethrown as is so whoever is responsible handles it.
       if (error is Map && error["action"] != null) throw error["action"];
 
       FloatFlag.of(context).fromError(
@@ -398,22 +412,24 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Edicion de una celda de un registro contra `PUT /products/manage/`.
+  /// Edits a cell of a record against `PUT /inventory/products/records/manage/`.
   ///
-  /// Es lo que hace que la planilla se escriba entera y no solo en las filas de
-  /// abajo: se toca una celda de una fila ya guardada, se escribe y al salir el
-  /// cambio viaja. Va de a una celda ([slot] es el campo dentro de la fila y
-  /// [fieldId] su FIELD_ID, la clave con la que se guarda) porque es lo que se
-  /// edito: mandar la fila entera reescribiria campos que nadie miro.
+  /// This is what makes the sheet writable in full and not only in the bottom
+  /// rows: you touch a cell of an already saved row, write and on exit the
+  /// change travels. It goes cell by cell ([slot] is the field within the row
+  /// and [fieldId] its FIELD_ID, the key it is stored under) because that is
+  /// what was edited: sending the whole row would rewrite fields nobody looked
+  /// at.
   ///
-  /// **El cambio se ve al instante y viaja detras**, como el orden de las
-  /// columnas: la celda muestra lo que se acaba de escribir sin esperar al
-  /// backend y sin volver a leer la tabla, que a esta escala es la diferencia
-  /// entre corregir un precio y bajar la tabla de nuevo. Si no sale, la fila
-  /// vuelve al valor que tenia y el error se muestra en la bandera flotante.
+  /// **The change is seen instantly and travels behind**, like the column
+  /// order: the cell shows what was just written without waiting for the
+  /// backend and without re-reading the table, which at this scale is the
+  /// difference between fixing a price and reloading the table. If it does not
+  /// go through, the row goes back to the value it had and the error is shown
+  /// in the floating flag.
   ///
-  /// Devuelve `false` si no habia a que registro escribirle: la fila todavia no
-  /// se leyo, no vino con id o el campo no tiene FIELD_ID.
+  /// Returns `false` if there was no record to write to: the row has not been
+  /// read yet, came without an id, or the field has no FIELD_ID.
   Future<bool> editRecord(
     BuildContext context, {
     required int row,
@@ -434,7 +450,7 @@ class TableViewService extends ChangeNotifier {
 
     try {
       await api.put(
-        path: "/products/manage/",
+        path: "/inventory/products/records/manage/",
         version: "v1",
         data: editRecordRequest(
           tableId: tableId,
@@ -451,8 +467,8 @@ class TableViewService extends ChangeNotifier {
 
       if (!context.mounted) return false;
 
-      // Un `action` es una instruccion de navegacion (sesion vencida, etc.): se
-      // relanza tal cual para que la maneje quien corresponda.
+      // An `action` is a navigation instruction (expired session, etc.): it is
+      // rethrown as is so whoever is responsible handles it.
       if (error is Map && error["action"] != null) throw error["action"];
 
       FloatFlag.of(context).fromError(
@@ -462,12 +478,12 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Devuelve una celda al valor que tenia, despues de una edicion que no salio.
+  /// Returns a cell to the value it had, after an edit that did not go through.
   ///
-  /// Mientras el cambio viajaba la tabla se pudo releer, o ese tramo se pudo
-  /// olvidar y volver a pedir: se comprueba que en esa fila siga estando el
-  /// mismo registro antes de tocarla, porque escribirle a la de ahora seria
-  /// pisar un dato bueno con uno viejo.
+  /// While the change was traveling the table could have been re-read, or that
+  /// chunk forgotten and re-requested: it is checked that the same record is
+  /// still in that row before touching it, because writing to the current one
+  /// would overwrite good data with old data.
   void _restore(int row, String id, int slot, dynamic value) {
     final current = _rows[row];
     if (current == null || current.id != id) return;
@@ -476,26 +492,25 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Agrega una foto a un producto contra `POST /inventory/images/`.
+  /// Adds a photo to a product against `POST /inventory/products/records/images/`.
   ///
-  /// La foto viaja como multipart en el campo `FILE`, con la tabla y el registro
-  /// al lado, y el backend hace todo lo demas: la reencoda a WebP, la acota,
-  /// renderiza la miniatura con la que se dibuja una celda y le saca los
-  /// metadatos. Lo que se sube nunca son los bytes que se eligieron.
+  /// The photo travels as multipart in the `FILE` field, with the table and the
+  /// record next to it, and the backend does everything else: it re-encodes it
+  /// to WebP, resizes it, renders the thumbnail that draws a cell and strips
+  /// the metadata. What is uploaded is never the bytes that were picked.
   ///
-  /// **No es optimista**, al reves que [editRecord]: hasta que el backend no
-  /// contesta no hay id que poner en la celda, asi que no hay nada que mostrar
-  /// antes de tiempo. Lo que se ve mientras tanto es el cargando de la celda,
-  /// que lo lleva la planilla ([SheetController.uploading]).
+  /// **It is not optimistic**, the opposite of [editRecord]: until the backend
+  /// answers there is no id to put in the cell, so there is nothing to show
+  /// ahead of time. What is seen meanwhile is the cell's loading, which the
+  /// sheet carries ([SheetController.uploading]).
   ///
-  /// La celda se queda con la galeria que devuelve la respuesta y no con el id
-  /// que acaba de entrar: un producto puede tener varias fotos y la primera es
-  /// la portada, asi que quien decide el orden —y cual es la portada— es el
-  /// backend.
+  /// The cell keeps the gallery the response returns and not the id that just
+  /// came in: a product can have several photos and the first one is the cover,
+  /// so who decides the order —and which is the cover— is the backend.
   ///
-  /// Devuelve `false` si no habia a que registro subirsela (la fila todavia no
-  /// se leyo o no vino con id) o si la subida no salio, y en ese caso el error
-  /// se muestra en la bandera flotante.
+  /// Returns `false` if there was no record to upload it to (the row has not
+  /// been read yet or came without an id) or if the upload did not go through,
+  /// and in that case the error is shown in the floating flag.
   Future<bool> addImage(
     BuildContext context, {
     required int row,
@@ -510,7 +525,7 @@ class TableViewService extends ChangeNotifier {
 
     try {
       final data = await api.file(
-        path: "/inventory/images/",
+        path: "/inventory/products/records/images/",
         version: "v1",
         file: file,
         field: _kImageField,
@@ -534,20 +549,20 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Quita una foto de un producto contra
-  /// `DELETE /inventory/images/<tabla>/<producto>/<archivo>`.
+  /// Removes a photo from a product against
+  /// `DELETE /inventory/products/records/images/<table>/<product>/<file>`.
   ///
-  /// **La celda se vacia al instante y la baja viaja detras**, como una edicion
-  /// cualquiera: la foto se saca de la galeria que ya esta en pantalla y, si la
-  /// baja no sale, la fila vuelve a la que tenia.
+  /// **The cell empties instantly and the delete travels behind**, like any
+  /// edit: the photo is taken out of the gallery already on screen and, if the
+  /// delete does not go through, the row goes back to the one it had.
   ///
-  /// Solo se baja asi lo que guarda esta plataforma. Una direccion que llego en
-  /// una importacion es un dato de la empresa y no un archivo nuestro: esa se
-  /// borra como se borra cualquier valor de una celda ([editRecord]).
+  /// Only what this platform stores is deleted this way. An address that came
+  /// in an import is company data and not one of our files: that one is deleted
+  /// the way any cell value is deleted ([editRecord]).
   ///
-  /// El backend borra los bytes solo cuando ningun otro producto los muestra, y
-  /// quitar una foto que el producto no tiene le da lo mismo: es lo que se
-  /// pidio, y ya es asi.
+  /// The backend deletes the bytes only when no other product shows them, and
+  /// removing a photo the product does not have is the same to it: it is what
+  /// was asked, and it already is that way.
   Future<bool> removeImage(
     BuildContext context, {
     required int row,
@@ -571,7 +586,7 @@ class TableViewService extends ChangeNotifier {
 
     try {
       await api.delete(
-        path: "/inventory/images/$tableId/${record.id}/$fileId",
+        path: "/inventory/products/records/images/$tableId/${record.id}/$fileId",
         version: "v1"
       );
 
@@ -592,11 +607,11 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Deja en la celda la galeria que devolvio el backend.
+  /// Leaves in the cell the gallery the backend returned.
   ///
-  /// Se comprueba que en esa fila siga estando el mismo registro, por lo mismo
-  /// que en [_restore]: una subida tarda, y mientras tanto la tabla se pudo
-  /// releer o ese tramo se pudo volver a pedir.
+  /// It is checked that the same record is still in that row, for the same
+  /// reason as in [_restore]: an upload takes time, and meanwhile the table
+  /// could have been re-read or that chunk re-requested.
   void _writeImages(int row, String id, int slot, dynamic data) {
     final current = _rows[row];
     if (current == null || current.id != id) return;
@@ -608,37 +623,37 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vuelve a leer la tabla despues de **agregar un registro**: la estructura
-  /// (que es la que sabe cuantos hay) y, con ella, los tramos que se esten
-  /// viendo. Lo que ya se habia leido se descarta de entrada, porque un registro
-  /// nuevo corre de lugar a todos los que van detras.
+  /// Re-reads the table after **adding a record**: the structure (the one that
+  /// knows how many there are) and, with it, the chunks being viewed. What had
+  /// already been read is discarded from the start, because a new record moves
+  /// every one that goes behind it.
   Future<void> refresh() {
     _reset();
     return _load();
   }
 
-  /// Vuelve a leer la tabla despues de **un cambio de columnas**.
+  /// Re-reads the table after **a column change**.
   ///
-  /// A diferencia de [refresh] no descarta nada por adelantado: los registros
-  /// son los mismos y siguen en el mismo lugar, asi que quien decide que hacer
-  /// con lo leido es la estructura que llega. Agregar una columna o renombrarla
-  /// no lo toca ([fieldsGrewAtEnd]); eliminarla, o que los campos vuelvan en
-  /// otro orden, solo lo corre de lugar ([fieldsRemap]). Volver a pedir las
-  /// paginas es el ultimo recurso.
+  /// Unlike [refresh] it discards nothing in advance: the records are the same
+  /// and stay in the same place, so what decides what to do with what was read
+  /// is the structure that arrives. Adding a column or renaming it does not
+  /// touch it ([fieldsGrewAtEnd]); deleting one, or the fields coming back in
+  /// another order, only moves it ([fieldsRemap]). Re-requesting the pages is
+  /// the last resort.
   Future<void> _reloadFields() => _load();
 
-  /// El backend termino de preparar una tabla. Si es la que esta abierta, se la
-  /// vuelve a leer.
+  /// The backend finished preparing a table. If it is the open one, it is
+  /// re-read.
   ///
-  /// Cuanto se tira depende de si cambiaron los **valores** y no las columnas:
-  /// al retipar una columna el backend reescribe lo que ya estaba guardado
-  /// (`Products.recast`), asi que los registros en memoria quedaron viejos
-  /// aunque los campos sean los mismos y haya que pedirlos de nuevo. Si no
-  /// retipo nada —la tabla solo gano su columna de imagen— alcanza con la
-  /// relectura barata, que conserva las paginas leidas.
+  /// How much is thrown away depends on whether the **values** changed and not
+  /// the columns: when retyping a column the backend rewrites what was already
+  /// stored in it (`Products.recast`), so the records in memory became stale
+  /// even if the fields are the same and have to be requested again. If it
+  /// retyped nothing —the table only gained its image column— the cheap
+  /// re-read is enough, which keeps the pages already read.
   ///
-  /// Con la tabla todavia sin dibujar no se hace nada: hay una lectura en curso
-  /// o a punto de salir, y esa ya va a traer la estructura nueva.
+  /// With the table still not drawn nothing is done: there is a read in
+  /// progress or about to go out, and that one will bring the new structure.
   void _onReady(dynamic data) {
     if (_structureStatus != TableStructureStatus.ready) return;
 
@@ -659,16 +674,16 @@ class TableViewService extends ChangeNotifier {
     super.dispose();
   }
 
-  /// Alta de una columna (campo) contra `POST /tables/fields/`.
+  /// Creates a column (field) against `POST /inventory/products/builder/fields/`.
   ///
-  /// Es una modificacion de la estructura de la tabla abierta, no de sus datos:
-  /// el campo se agrega al final ([fields] da la [POSITION]) y la tabla no la
-  /// tiene que pasar, la pone el servicio junto al `TABLE_ID`. El resto (nombre,
-  /// descripcion, tipo) llega de la planilla.
+  /// It is a modification of the open table's structure, not of its data: the
+  /// field is added at the end ([fields] gives the [POSITION]) and the table
+  /// does not have to pass it, the service puts it next to the `TABLE_ID`. The
+  /// rest (name, description, type) comes from the sheet.
   ///
-  /// Devuelve `true` si el alta salio bien; en ese caso vuelve a leer la
-  /// estructura —es la que acaba de cambiar— y con ella los registros, que ahora
-  /// tienen una celda mas. Ante un error muestra la bandera flotante y devuelve
+  /// Returns `true` if the creation went well; in that case it re-reads the
+  /// structure —the one that just changed— and with it the records, which now
+  /// have one more cell. On error it shows the floating flag and returns
   /// `false`.
   Future<bool> addField(
     BuildContext context, {
@@ -681,14 +696,14 @@ class TableViewService extends ChangeNotifier {
 
     try {
       await api.post(
-        path: "/tables/fields/",
+        path: "/inventory/products/builder/fields/",
         version: "v1",
         data: createFieldRequest(
           tableId: tableId,
           name: name,
           description: description,
           type: type,
-          // La nueva columna va al final: su posicion es la cantidad actual.
+          // The new column goes at the end: its position is the current count.
           position: _structure.fields.length
         )
       );
@@ -700,8 +715,8 @@ class TableViewService extends ChangeNotifier {
 
       if (!context.mounted) return false;
 
-      // Un `action` es una instruccion de navegacion (sesion vencida, etc.): se
-      // relanza tal cual para que la maneje quien corresponda.
+      // An `action` is a navigation instruction (expired session, etc.): it is
+      // rethrown as is so whoever is responsible handles it.
       if (error is Map && error["action"] != null) throw error["action"];
 
       FloatFlag.of(context).fromError(
@@ -711,22 +726,22 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Edicion de una columna contra `PUT /tables/fields/`: su nombre, su tipo,
-  /// las opciones de su lista, o los tres.
+  /// Edits a column against `PUT /inventory/products/builder/fields/`: its name, its type,
+  /// the options of its list, or all three.
   ///
-  /// Es lo que hacen la celda del campo y su flecha: la columna nace como
-  /// `TEXT` con el titulo que se le escribio —eso es todo lo que hace falta
-  /// para crearla— y despues se corrige ahi mismo, sin formularios de por
-  /// medio. Crear una opcion en el desplegable de una celda de lista pasa por
-  /// el mismo camino: una opcion es una propiedad del campo, asi que se guarda
-  /// mandando la lista que tiene que quedar ([options]).
+  /// This is what the field cell and its arrow do: the column is born as
+  /// `TEXT` with the title that was written to it —that is all that is needed
+  /// to create it— and afterwards it is corrected right there, with no forms in
+  /// between. Creating an option in a list cell's dropdown goes the same way:
+  /// an option is a property of the field, so it is saved by sending the list
+  /// that must remain ([options]).
   ///
-  /// Solo viaja lo que se cambia; el nombre va siempre porque el backend lo
-  /// pide, asi que cambiar solo el tipo manda el que el campo ya tenia. Lo que
-  /// no se manda (descripcion, posicion) queda como estaba. Devuelve `true` si
-  /// el cambio salio bien, y en ese caso vuelve a leer la estructura —que es la
-  /// que acaba de cambiar— y con ella los registros, que ahora se leen y se
-  /// alinean contra el tipo nuevo.
+  /// Only what changes travels; the name always goes because the backend asks
+  /// for it, so changing only the type sends the one the field already had.
+  /// What is not sent (description, position) stays as it was. Returns `true`
+  /// if the change went well, and in that case it re-reads the structure —the
+  /// one that just changed— and with it the records, which now are read and
+  /// aligned against the new type.
   Future<bool> editField(
     BuildContext context,
     TableFieldModel field, {
@@ -734,13 +749,13 @@ class TableViewService extends ChangeNotifier {
     String? type,
     List<String>? options
   }) async {
-    // Sin FIELD_ID no hay campo que editar: es una columna que se vio pero que
-    // el backend no identifico.
+    // Without a FIELD_ID there is no field to edit: it is a column that was
+    // seen but that the backend did not identify.
     if (field.id.isEmpty) return false;
 
     try {
       await api.put(
-        path: "/tables/fields/",
+        path: "/inventory/products/builder/fields/",
         version: "v1",
         data: editFieldRequest(
           id: field.id,
@@ -757,8 +772,8 @@ class TableViewService extends ChangeNotifier {
 
       if (!context.mounted) return false;
 
-      // Un `action` es una instruccion de navegacion (sesion vencida, etc.): se
-      // relanza tal cual para que la maneje quien corresponda.
+      // An `action` is a navigation instruction (expired session, etc.): it is
+      // rethrown as is so whoever is responsible handles it.
       if (error is Map && error["action"] != null) throw error["action"];
 
       FloatFlag.of(context).fromError(
@@ -768,29 +783,30 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Guarda el orden de las columnas contra `PUT /tables/fields/`.
+  /// Saves the order of the columns against `PUT /inventory/products/builder/fields/`.
   ///
-  /// [ordered] son los campos tal como tienen que quedar, y la posicion de cada
-  /// uno es su lugar en esa lista.
+  /// [ordered] are the fields as they must remain, and each one's position is
+  /// its place in that list.
   ///
-  /// Se manda la de **todos** y no solo la de los que se movieron porque el
-  /// backend no reacomoda a los vecinos: guarda la posicion que se le da y
-  /// despues ordena por ella, asi que renumerar solo un tramo dejaria posiciones
-  /// repetidas y el orden pasaria a depender de como las devuelva la base. Son
-  /// tantas peticiones como columnas —unas pocas decenas como mucho—, van todas
-  /// juntas y solo al soltar una columna, que no es algo que se haga seguido.
+  /// The one for **all** of them is sent and not only for the ones that moved,
+  /// because the backend does not rearrange the neighbors: it stores the
+  /// position it is given and then sorts by it, so renumbering only a stretch
+  /// would leave repeated positions and the order would end up depending on how
+  /// the database returns them. It is as many requests as columns —a few dozen
+  /// at most—, they all go together and only on releasing a column, which is
+  /// not something done often.
   ///
-  /// **No vuelve a leer la estructura**, y ahi esta lo que hace que arrastrar una
-  /// columna sea gratis: la planilla ya muestra el orden nuevo (lo aplico al
-  /// soltar, sin esperar a nadie) y releerla solo traeria los mismos campos en
-  /// el mismo orden, tirando de paso las paginas que se estan mirando. Lo que se
-  /// acaba de guardar se nota recien la proxima vez que se abra la tabla, que es
-  /// justamente cuando importa.
+  /// **It does not re-read the structure**, and that is what makes dragging a
+  /// column free: the sheet already shows the new order (it applied it on
+  /// release, waiting for nobody) and re-reading it would only bring the same
+  /// fields in the same order, discarding along the way the pages being looked
+  /// at. What was just saved is only noticed the next time the table is opened,
+  /// which is exactly when it matters.
   ///
-  /// Devuelve `true` si salieron todas. Si alguna falla, la planilla vuelve al
-  /// orden de antes ([SheetColumns.restoreOrder]) y puede quedar alguna posicion
-  /// a medio escribir del otro lado: el proximo arrastre que salga bien las
-  /// renumera todas de nuevo y las empareja.
+  /// Returns `true` if all of them went through. If one fails, the sheet goes
+  /// back to the previous order ([SheetColumns.restoreOrder]) and some position
+  /// may be half-written on the other side: the next drag that goes well
+  /// renumbers them all again and evens them out.
   Future<bool> reorderFields(
     BuildContext context,
     List<TableFieldModel> ordered
@@ -802,7 +818,7 @@ class TableViewService extends ChangeNotifier {
         for (final (position, field) in ordered.indexed)
           if (field.id.isNotEmpty)
             api.put(
-              path: "/tables/fields/",
+              path: "/inventory/products/builder/fields/",
               version: "v1",
               data: editFieldRequest(
                 id: field.id,
@@ -827,22 +843,23 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Guarda el ancho de una columna contra `PUT /tables/fields/`.
+  /// Saves a column's width against `PUT /inventory/products/builder/fields/`.
   ///
-  /// El ancho es una propiedad **de la tabla**, no de quien la mira: se guarda
-  /// con el campo y la estructura lo trae, asi que la tabla se abre igual para
-  /// todos los de la empresa. Viaja al soltar el borde y no mientras se arrastra
-  /// —un arrastre son decenas de eventos por segundo— y se manda entero, en
-  /// pixeles logicos: la fraccion que deja un arrastre no significa nada del
-  /// otro lado.
+  /// The width is a property **of the table**, not of whoever looks at it: it
+  /// is stored with the field and the structure brings it, so the table opens
+  /// the same for everyone in the company. It travels on releasing the edge and
+  /// not while dragging —a drag is dozens of events per second— and it is sent
+  /// whole, in logical pixels: the fraction a drag leaves means nothing on the
+  /// other side.
   ///
-  /// **No vuelve a leer la estructura**, por el mismo motivo que el orden de las
-  /// columnas ([reorderFields]): la planilla ya muestra el ancho nuevo y releer
-  /// solo traeria los mismos campos, tirando de paso las paginas que se estan
-  /// mirando.
+  /// **It does not re-read the structure**, for the same reason as the column
+  /// order ([reorderFields]): the sheet already shows the new width and
+  /// re-reading would only bring the same fields, discarding along the way the
+  /// pages being looked at.
   ///
-  /// Devuelve `true` si salio. Si no, quien lo llamo devuelve la columna al
-  /// ancho que tenia; el error ya lo mostro la bandera flotante.
+  /// Returns `true` if it went through. If not, whoever called it returns the
+  /// column to the width it had; the error was already shown by the floating
+  /// flag.
   Future<bool> resizeField(
     BuildContext context,
     TableFieldModel field, {
@@ -852,7 +869,7 @@ class TableViewService extends ChangeNotifier {
 
     try {
       await api.put(
-        path: "/tables/fields/",
+        path: "/inventory/products/builder/fields/",
         version: "v1",
         data: editFieldRequest(
           id: field.id,
@@ -867,8 +884,8 @@ class TableViewService extends ChangeNotifier {
 
       if (!context.mounted) return false;
 
-      // Un `action` es una instruccion de navegacion (sesion vencida, etc.): se
-      // relanza tal cual para que la maneje quien corresponda.
+      // An `action` is a navigation instruction (expired session, etc.): it is
+      // rethrown as is so whoever is responsible handles it.
       if (error is Map && error["action"] != null) throw error["action"];
 
       FloatFlag.of(context).fromError(
@@ -878,20 +895,20 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Baja de una columna contra `DELETE /tables/fields/`.
+  /// Deletes a column against `DELETE /inventory/products/builder/fields/`.
   ///
-  /// Se lleva la columna y todo lo que se haya cargado en ella, asi que quien
-  /// la llama tiene que haberlo confirmado antes: el servicio no pregunta.
+  /// It takes the column and everything loaded in it, so whoever calls it must
+  /// have confirmed it before: the service does not ask.
   ///
-  /// Devuelve `true` si la baja salio bien, y en ese caso vuelve a leer la
-  /// estructura —hay una columna menos— y con ella los registros, que ahora
-  /// tienen una celda menos.
+  /// Returns `true` if the delete went well, and in that case it re-reads the
+  /// structure —there is one column less— and with it the records, which now
+  /// have one cell less.
   Future<bool> deleteField(BuildContext context, TableFieldModel field) async {
     if (field.id.isEmpty) return false;
 
     try {
       await api.delete(
-        path: "/tables/fields/",
+        path: "/inventory/products/builder/fields/",
         version: "v1",
         data: deleteFieldRequest(id: field.id)
       );
@@ -912,8 +929,73 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Olvida los registros leidos, sin tocar la estructura ni el tamaño de
-  /// pagina, que no cambian.
+  /// Normalizes the table against `POST /inventory/products/builder/normalize/`: it gives each column
+  /// the type that fits what it has stored and seeds how much of it the agent
+  /// sees.
+  ///
+  /// It is the same pass that runs by itself at the end of an import, requested
+  /// by hand. It serves the tables that did not have it —the ones built by
+  /// hand, column by column, or the ones imported with normalization off— and
+  /// to look again at one whose data changed since then.
+  ///
+  /// **It only reviews the columns nobody touched**, so repeating it does not
+  /// undo a type or a visibility chosen by hand. That is why the service asks
+  /// nothing: there is nothing to lose that the user wrote.
+  ///
+  /// It has its own deadline and not the one of a regular write: on the other
+  /// side a sample of each column is read and a model is asked what it means,
+  /// and that takes what a model takes, not what an `UPDATE` takes.
+  ///
+  /// When it returns the table must be re-read, and how much is thrown away
+  /// depends on whether the **values** were rewritten: retyping a column
+  /// rewrites what was already stored in it (`Products.recast`), so the records
+  /// in memory became stale even if the columns are the same. It is the same
+  /// split the `table/ready` notice does ([_onReady]) —and for the same
+  /// reason—: this route does not emit it, because it answers when it already
+  /// finished.
+  ///
+  /// Returns what changed, or `null` if it did not go through; in that case the
+  /// error was already shown in the floating flag and the table stays as it
+  /// was.
+  Future<TableNormalizeModel?> normalize(BuildContext context) async {
+    final tableId = _tableId;
+    if (tableId == null) return null;
+
+    try {
+      final data = await api.post(
+        path: "/inventory/products/builder/normalize/",
+        version: "v1",
+        data: {"TABLE_ID": tableId},
+        timeout: _normalizeTimeout
+      );
+
+      final report = TableNormalizeModel.fromResponse(data);
+
+      if (report.changedValues) {
+        await refresh();
+      } else {
+        await _reloadFields();
+      }
+
+      return report;
+    } catch (error) {
+      if (kDebugMode) print("normalize failed: $error");
+
+      if (!context.mounted) return null;
+
+      // An `action` is a navigation instruction (expired session, etc.): it is
+      // rethrown as is so whoever is responsible handles it.
+      if (error is Map && error["action"] != null) throw error["action"];
+
+      FloatFlag.of(context).fromError(
+        error is Map && error.isNotEmpty ? error : {"message": error.toString()}
+      );
+      return null;
+    }
+  }
+
+  /// Forgets the records read, without touching the structure or the page size,
+  /// which do not change.
   void _reset() {
     _rows.clear();
     _cached.clear();
@@ -921,7 +1003,7 @@ class TableViewService extends ChangeNotifier {
     _status = TableViewStatus.idle;
   }
 
-  /// Deja el cache dentro del presupuesto.
+  /// Keeps the cache within budget.
   void _trimCache(int around) {
     while (true) {
       final page = pageToForget(
@@ -936,8 +1018,8 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
-  /// Olvida una pagina: sus filas y la marca de leida, para que se pueda volver
-  /// a pedir si se vuelve a ella.
+  /// Forgets a page: its rows and the read mark, so it can be requested again if
+  /// you go back to it.
   void _forget(int page) {
     final start = _paging.startOf(page);
 
@@ -948,40 +1030,40 @@ class TableViewService extends ChangeNotifier {
     _paging.forget(page);
   }
 
-  /// Las dos fases, en orden: la estructura y, si vino, el primer tramo de
-  /// registros. Es lo que corre al abrir la tabla, al reintentar y despues de
-  /// cada cosa que la cambie.
+  /// The two phases, in order: the structure and, if it came, the first chunk
+  /// of records. This is what runs on opening the table, on retry and after
+  /// everything that changes it.
   Future<void> _load() async {
     if (!await _loadStructure()) return;
 
-    // El primer tramo se pide por el mismo camino que los demas: la fila 0
-    // siempre esta en la pagina 1, que es ademas la que revela de a cuantos
-    // registros se lee.
+    // The first chunk is requested the same way as the rest: row 0 is always
+    // on page 1, which is also the one that reveals how many records are read
+    // at a time.
     final page = _paging.request(0);
     if (page > 0) await _loadPage(page);
   }
 
-  /// Primera fase: la estructura de la tabla.
+  /// First phase: the table's structure.
   ///
-  /// Devuelve `true` si quedo cargada y se puede seguir con los registros. Una
-  /// estructura que no llega deja la pantalla en error: sin columnas no hay nada
-  /// que dibujar, ni siquiera la fila de campos.
+  /// Returns `true` if it ended up loaded and the records can be continued
+  /// with. A structure that fails to arrive leaves the screen in error: without
+  /// columns there is nothing to draw, not even the fields row.
   ///
-  /// **Una tabla ya dibujada no vuelve nunca a la pantalla en blanco.** Releer la
-  /// estructura —agregar una columna, cambiarle el tipo, eliminarla, guardar una
-  /// fila— pasa con la planilla montada y el usuario mirando la fila que sea:
-  /// pasar por [TableStructureStatus.loading] desmontaria la grilla, y con ella
-  /// se irian el desplazamiento (habria que volver a bajar hasta donde se
-  /// estaba) y la celda que se estaba escribiendo. Por eso una relectura se
-  /// avisa aparte ([isReloading]), en la barra de arriba, y el estado se queda
-  /// en `ready` de punta a punta.
+  /// **An already drawn table never goes back to a blank screen.** Re-reading
+  /// the structure —adding a column, changing its type, deleting it, saving a
+  /// row— happens with the sheet mounted and the user looking at whatever row:
+  /// going through [TableStructureStatus.loading] would unmount the grid, and
+  /// with it the scroll position (you would have to scroll back down to where
+  /// you were) and the cell that was being written. That is why a re-read is
+  /// flagged separately ([isReloading]), in the top bar, and the state stays at
+  /// `ready` the whole way through.
   Future<bool> _loadStructure() async {
     if (_reading) return false;
 
     final tableId = _tableId;
     if (tableId == null) return false;
 
-    // La tabla ya esta dibujada: esto es una relectura, no una carga.
+    // The table is already drawn: this is a re-read, not a load.
     final reload = _structureStatus == TableStructureStatus.ready;
 
     _reading = true;
@@ -990,7 +1072,7 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
 
     final data = await api
-        .get(path: "/tables/structure/$tableId", version: "v1")
+        .get(path: "/inventory/products/builder/structure/$tableId", version: "v1")
         .catchError((error) {
       if (kDebugMode) print("loadTableStructure failed: $error");
       return null;
@@ -1000,10 +1082,10 @@ class TableViewService extends ChangeNotifier {
     _reloading = false;
 
     if (data == null) {
-      // Una relectura que falla deja lo que ya habia: la estructura vieja sigue
-      // siendo la de la tabla y tirarla dejaria la pantalla en error por un
-      // cambio de columna que no salio. El aviso va arriba, como el de un tramo
-      // que no llego.
+      // A re-read that fails keeps what was there: the old structure is still the
+      // table's and throwing it away would leave the screen in error over a
+      // column change that never went through. The notice goes up top, like the
+      // one for a chunk that did not arrive.
       if (reload) {
         _staleStructure = true;
         _status = TableViewStatus.error;
@@ -1020,23 +1102,24 @@ class TableViewService extends ChangeNotifier {
     _structure = TableStructureModel.fromResponse(data);
     _structureStatus = TableStructureStatus.ready;
 
-    // Se levanta el error que puso una relectura anterior que no habia llegado:
-    // esta si llego, asi que la estructura ya no esta vieja.
+    // The error a previous re-read that had not arrived set is lifted: this one
+    // did arrive, so the structure is no longer stale.
     if (_staleStructure) {
       _staleStructure = false;
       _status = _rows.isEmpty ? TableViewStatus.idle : TableViewStatus.ready;
     }
 
-    // Lo leido sirve tal cual si los campos de antes siguen donde estaban, que
-    // es lo que pasa al renombrar una columna o al agregar una: no se toca nada
-    // y se conservan las paginas que se tengan, que a esta escala es la
-    // diferencia entre agregar una columna y volver a bajar la tabla entera.
+    // What was read still works as is if the previous fields are where they were,
+    // which is what happens on renaming a column or adding one: nothing is
+    // touched and whatever pages you have are kept, which at this scale is the
+    // difference between adding a column and scrolling down the whole table
+    // again.
     //
-    // Si se movieron —el orden que se acaba de guardar, una columna que ya no
-    // esta— las filas siguen teniendo los mismos valores, solo que en otro
-    // lugar: se las reacomoda de una pasada y las paginas se salvan igual.
-    // Volver a pedirlas es el ultimo recurso, para cuando no hay FIELD_ID con
-    // que emparejar las dos listas.
+    // If they moved —the order just saved, a column that is no longer there—
+    // the rows still have the same values, only in another place: they are
+    // rearranged in a single pass and the pages are saved all the same.
+    // Re-requesting them is the last resort, for when there is no FIELD_ID to
+    // pair the two lists with.
     final after = [for (final field in _structure.fields) field.id];
 
     if (!fieldsGrewAtEnd(before, after)) {
@@ -1054,43 +1137,44 @@ class TableViewService extends ChangeNotifier {
     return true;
   }
 
-  /// Reacomoda los registros leidos a los campos de ahora, con el mapa que
-  /// devuelve [fieldsRemap].
+  /// Rearranges the records read to the current fields, with the map that
+  /// [fieldsRemap] returns.
   ///
-  /// Es una pasada sobre lo que hay en memoria, no sobre la tabla: a lo sumo son
-  /// las [_maxCachedPages] paginas del presupuesto, y solo corre cuando los
-  /// campos cambiaron de lugar.
+  /// It is a pass over what is in memory, not over the table: at most it is the
+  /// [_maxCachedPages] pages of the budget, and it only runs when the fields
+  /// changed place.
   void _remapRows(List<int> remap) {
     for (final index in _rows.keys.toList(growable: false)) {
       final row = _rows[index]!;
 
       _rows[index] = TableRowModel(
         [for (final position in remap) position < 0 ? null : row.at(position)],
-        // El registro sigue siendo el mismo: lo que se movio son sus columnas.
+        // The record is still the same one: what moved are its columns.
         id: row.id
       );
     }
   }
 
-  /// Segunda fase: un tramo de registros (`POST /tables/records/`).
+  /// Second phase: a chunk of records (`POST /inventory/products/records/list/`).
   ///
-  /// Del cuerpo que admite esa busqueda aca se manda lo minimo: la tabla, que
-  /// pagina, de a cuantas filas y —si se esta buscando— el texto que se escribio
-  /// (`MATCH`). Sin `WHERE` ni `SORT`, que son condiciones por columna: la
-  /// planilla no las tiene, muestra la tabla en el orden en que el backend la
-  /// devuelve.
+  /// From the body that search accepts, the minimum is sent here: the table,
+  /// which page, how many rows each and —if searching— the text that was
+  /// written (`MATCH`). No `WHERE` or `SORT`, which are per-column conditions:
+  /// the sheet does not have them, it shows the table in the order the backend
+  /// returns it.
   ///
-  /// `MATCH` no cambia en nada la forma de leer: la busqueda se pagina y se
-  /// cuenta como la tabla entera, solo que sobre las filas que coinciden. Por eso
-  /// buscar en una tabla de quinientas mil filas cuesta lo mismo que abrirla, y
-  /// no hay un momento en el que la planilla tenga que tener todo.
+  /// `MATCH` changes nothing about how it reads: the search is paged and
+  /// counted like the whole table, only over the matching rows. That is why
+  /// searching a table of five hundred thousand rows costs the same as opening
+  /// it, and there is never a moment when the sheet has to hold everything.
   ///
-  /// Cada pagina se guarda en su lugar dentro de la tabla, no al final de lo que
-  /// haya: la fila que ocupa el indice 900 es la misma se haya llegado hasta ella
-  /// bajando o de un salto.
+  /// Each page is stored in its place within the table, not at the end of
+  /// whatever is there: the row at index 900 is the same whether it was reached
+  /// by scrolling or in one jump.
   ///
-  /// Las filas se reordenan contra la estructura ([TableViewModel.alignedTo]):
-  /// las columnas ya las fijo la primera fase, y de aca solo salen los valores.
+  /// The rows are reordered against the structure ([TableViewModel.alignedTo]):
+  /// the columns were already fixed by the first phase, and from here only the
+  /// values come out.
   Future<void> _loadPage(int page) async {
     final tableId = _tableId;
 
@@ -1099,8 +1183,8 @@ class TableViewService extends ChangeNotifier {
       return;
     }
 
-    // Con que busqueda sale este tramo. Si cambia mientras viaja, lo que vuelva
-    // ya no es de esta planilla.
+    // Which search this chunk goes out with. If it changes while in transit,
+    // what comes back is no longer of this sheet.
     final generation = _generation;
 
     _status = TableViewStatus.loading;
@@ -1108,7 +1192,7 @@ class TableViewService extends ChangeNotifier {
 
     final data = await api
         .post(
-          path: "/tables/records/",
+          path: "/inventory/products/records/list/",
           version: "v1",
           data: {
             "TABLE_ID": tableId,
@@ -1122,9 +1206,9 @@ class TableViewService extends ChangeNotifier {
       return null;
     });
 
-    // Se busco otra cosa mientras esto viajaba: estas filas son las de la
-    // busqueda anterior y sus indices, los de una planilla que ya no existe. No
-    // se anota ni el fallo: esa contabilidad tambien se tiro.
+    // Something else was searched while this was in transit: these rows are from
+    // the previous search and their indexes from a sheet that no longer exists.
+    // Even the failure is not recorded: that bookkeeping was thrown away too.
     if (generation != _generation) return;
 
     if (data == null) {
@@ -1139,17 +1223,18 @@ class TableViewService extends ChangeNotifier {
       .alignedTo(_structure.fields)
       .rows;
 
-    // El tramo se guarda en su lugar dentro de la tabla, no al final de lo que
-    // haya: la pagina dice donde empieza.
+    // The chunk is stored in its place within the table, not at the end of
+    // whatever is there: the page says where it starts.
     final start = _paging.read(page, rows.length);
     for (final (offset, row) in rows.indexed) {
       _rows[start + offset] = row;
     }
 
-    // Cuantas coinciden lo dice la respuesta, y es lo que mide la planilla
-    // mientras se busca. Si no viene, queda lo unico que se sabe —hasta donde se
-    // leyo— y la busqueda crece a medida que se baja, igual que una tabla cuya
-    // estructura no dice cuantos registros tiene.
+    // How many match is said by the response, and it is what measures the
+    // sheet while searching. If it does not come, what remains is the only
+    // thing that can be known —how far it was read— and the search grows as
+    // you scroll down, like a table whose structure does not say how many
+    // records it has.
     if (isSearching) {
       _matches = _totalOf(data) ?? _paging.known;
     }
@@ -1162,8 +1247,8 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cuantas filas coinciden, segun la respuesta de una pagina de registros, o
-  /// `null` si no lo dice.
+  /// How many rows match, according to a records page's response, or `null` if
+  /// it does not say it.
   static int? _totalOf(dynamic data) {
     if (data is! Map) return null;
 
@@ -1174,24 +1259,24 @@ class TableViewService extends ChangeNotifier {
   }
 }
 
-/// Si la estructura que acaba de llegar es la de antes con, a lo sumo, campos
-/// nuevos **al final**.
+/// Whether the structure that just arrived is the previous one with, at most,
+/// new fields **at the end**.
 ///
-/// Es lo que decide si los registros que ya se leyeron siguen sirviendo. Una
-/// fila guardada es una lista de valores alineada a los campos de la estructura
-/// (ver `TableViewModel.alignedTo`), asi que:
+/// This is what decides if the records already read are still useful. A saved
+/// row is a list of values aligned to the structure's fields (see
+/// `TableViewModel.alignedTo`), so:
 ///
-/// - Renombrar una columna o cambiarle el tipo no mueve ningun valor: los
-///   FIELD_ID son los mismos y en el mismo orden.
-/// - Agregar una columna al final solo deja las filas cortas, y esa celda se ve
-///   vacia, que es exactamente lo que corresponde para un campo recien creado.
-/// - Eliminar una columna, o que el backend devuelva los campos en otro orden,
-///   corre todos los valores de lugar: ahi lo leido ya no se puede mostrar y hay
-///   que volver a pedirlo.
+/// - Renaming a column or changing its type moves no value: the FIELD_IDs are
+///   the same and in the same order.
+/// - Adding a column at the end only leaves the rows short, and that cell shows
+///   empty, which is exactly what fits a newly created field.
+/// - Deleting a column, or the backend returning the fields in another order,
+///   moves every value: then what was read can no longer be shown and has to be
+///   requested again.
 ///
-/// Importa a partir de unos cuantos miles de registros: sin esto, tocar el
-/// titulo de una columna tira las paginas que se estaban mirando y obliga a
-/// bajar la tabla de nuevo.
+/// It matters from a few thousand records on: without this, touching a column
+/// title throws away the pages being looked at and forces scrolling down the
+/// table again.
 bool fieldsGrewAtEnd(List<String> before, List<String> after) {
   if (after.length < before.length) return false;
 
@@ -1202,28 +1287,29 @@ bool fieldsGrewAtEnd(List<String> before, List<String> after) {
   return true;
 }
 
-/// De que posicion vieja sale cada columna nueva, para reacomodar los registros
-/// que ya se leyeron en vez de volver a pedirlos.
+/// Which old position each new column comes from, to rearrange the records
+/// already read instead of requesting them again.
 ///
-/// Es el rescate de lo que [fieldsGrewAtEnd] descarta. Una fila guardada es una
-/// lista de valores alineada a los campos de entonces (ver
-/// [TableViewModel.alignedTo]), asi que mover una columna de lugar —o
-/// eliminarla— **no invalida lo leido**: los valores siguen ahi y lo unico que
-/// cambio es por donde se los busca. Devolver ese mapa alcanza para dejar las
-/// filas como si se las hubiera pedido con la estructura nueva.
+/// It's the rescue of what [fieldsGrewAtEnd] discards. A saved row is a list
+/// of values aligned to the fields as they were then (see
+/// [TableViewModel.alignedTo]), so moving a column —or deleting it— **does
+/// not invalidate what was read**: the values are still there and the only
+/// thing that changed is where they're looked up. Returning that map is
+/// enough to leave the rows as if they'd been requested with the new
+/// structure.
 ///
-/// Una columna que antes no estaba queda en `-1`, que se lee como celda vacia:
-/// es lo que corresponde para un campo recien creado, donde todavia no hay nada
-/// cargado.
+/// A column that wasn't there before stays at `-1`, read as an empty cell:
+/// that's the right behavior for a just-created field, where nothing is
+/// loaded yet.
 ///
-/// Devuelve `null` cuando no se puede emparejar las dos listas y hay que volver
-/// a leer: sin FIELD_ID no hay con que hacerlo, y con ids repetidos no se sabria
-/// cual es cual. Tambien cuando no habia campos, porque ahi las filas leidas no
-/// estan alineadas a ninguno.
+/// Returns `null` when the two lists can't be matched and it has to be
+/// re-read: without a FIELD_ID there's nothing to match with, and with
+/// repeated ids there'd be no telling which is which. Also when there were no
+/// fields, because then the rows already read aren't aligned to any.
 ///
-/// Importa a partir de unos cuantos miles de registros: sin esto, arrastrar una
-/// columna de lugar (o borrarla) tira las paginas que se estaban mirando y
-/// obliga a bajar la tabla de nuevo.
+/// Matters starting at a few thousand records: without this, dragging a
+/// column to a new place (or deleting it) would throw away the pages that
+/// were being looked at and force the table to be fetched again.
 List<int>? fieldsRemap(List<String> before, List<String> after) {
   if (before.isEmpty) return null;
 
@@ -1241,17 +1327,17 @@ List<int>? fieldsRemap(List<String> before, List<String> after) {
   ];
 }
 
-/// Cual de las paginas guardadas hay que descartar, o `null` si todavia entran
-/// en el presupuesto.
+/// Which of the saved pages has to be dropped, or `null` if they still fit
+/// the budget.
 ///
-/// Se descarta **la mas lejana** a [around], que es la que se acaba de leer, y
-/// no la mas vieja: asi se mira una tabla —se baja, se sube un poco, se vuelve a
-/// bajar— y lo que hay alrededor de donde se esta parado es lo que mas chances
-/// tiene de volver a hacer falta. Descartar por antiguedad tiraria justo la
-/// pagina de arriba cada vez que se baja una.
+/// **The one farthest** from [around], the one just read, is dropped, and not
+/// the oldest one: that's how a table is scrolled through —down, a bit back
+/// up, down again— and what's around where you're standing is what's most
+/// likely to be needed again. Dropping by age would throw away the page right
+/// above every time one scrolls down.
 ///
-/// Vive aparte del servicio porque es la regla del cache y no tiene nada de red:
-/// se prueba sola.
+/// It lives apart from the service because it's the cache's rule and has
+/// nothing to do with the network: it's tested on its own.
 int? pageToForget(
   Iterable<int> cached, {
   required int around,
@@ -1273,47 +1359,50 @@ int? pageToForget(
   return farthest;
 }
 
-/// La contabilidad de la lectura por tramos de una tabla: de a cuantos registros
-/// se lee, que paginas se leyeron, cuales estan en camino, cuales fallaron y
-/// donde termina la tabla.
+/// The bookkeeping of a table's chunked reading: how many records a page
+/// holds, which pages were read, which are in flight, which failed, and
+/// where the table ends.
 ///
-/// Vive aparte del servicio porque es la regla del desplazamiento infinito y no
-/// tiene nada de red: se prueba sola.
+/// It lives apart from the service because it's the rule of infinite scroll
+/// and has nothing to do with the network: it's tested on its own.
 class TablePaging {
-  /// Cuantos registros trae una pagina. No se sabe de antemano: lo dice la
-  /// primera que llega, y con eso se traduce cualquier fila a su pagina.
+  /// How many records a page holds. Not known ahead of time: the first one
+  /// to arrive says so, and that's how any row is translated to its page.
   int _size = 0;
 
-  /// Paginas leidas, en camino y fallidas.
+  /// Pages read, in flight, and failed.
   final Set<int> _read = {};
   final Set<int> _flight = {};
   final Set<int> _failed = {};
 
-  /// Hasta que fila se leyo. Solo importa cuando la estructura no dice cuantos
-  /// registros hay: ahi la tabla crece a medida que se la lee.
+  /// Up to which row was read. Only matters when the structure doesn't say
+  /// how many records there are: there the table grows as it's read.
   int _known = 0;
 
-  /// `true` cuando una pagina volvio corta o vacia: no hay mas registros debajo.
+  /// `true` when a page came back short or empty: there are no more records
+  /// below it.
   bool _end = false;
 
   int get size => _size;
   int get known => _known;
   bool get atEnd => _end;
 
-  /// `true` mientras haya algun tramo en camino.
+  /// `true` while any chunk is in flight.
   bool get isReading => _flight.isNotEmpty;
 
-  /// Que pagina hay que pedir para tener la fila [index], o `0` si no hay nada
-  /// que pedir: porque ya se leyo, porque ya esta en camino, porque fallo y no
-  /// se reintenta sola, o porque esa fila esta pasado el final de la tabla.
+  /// Which page has to be requested to have row [index], or `0` if there's
+  /// nothing to request: because it was already read, because it's already
+  /// in flight, because it failed and doesn't retry on its own, or because
+  /// that row is past the end of the table.
   ///
-  /// Pedirla la marca como en camino, asi la misma pagina no sale dos veces
-  /// aunque se la pidan las cincuenta filas que se estan pintando. Quien la pide
-  /// se compromete a cerrarla con [read] o con [failed].
+  /// Requesting it marks it as in flight, so the same page doesn't go out
+  /// twice even if it's requested by all fifty rows being painted. Whoever
+  /// requests it commits to closing it with [read] or with [failed].
   int request(int index) {
     if (index < 0) return 0;
 
-    // Pasado el final no hay nada que pedir: esas filas son las que se escriben.
+    // Past the end there's nothing to request: those rows are the ones being
+    // written.
     if (_end && index >= _known) return 0;
 
     final page = pageOf(index);
@@ -1325,22 +1414,22 @@ class TablePaging {
     return page;
   }
 
-  /// En que pagina cae la fila [index]. Devuelve `0` mientras no se sepa de a
-  /// cuantos registros se lee, salvo para la primera fila, que siempre esta en
-  /// la pagina 1: es la que lo revela.
+  /// Which page row [index] falls on. Returns `0` while it isn't known how
+  /// many records a page holds, except for the first row, which is always on
+  /// page 1: it's the one that reveals it.
   int pageOf(int index) {
     if (_size > 0) return index ~/ _size + 1;
     return index == 0 ? 1 : 0;
   }
 
-  /// Primera fila de la pagina [page].
+  /// First row of page [page].
   int startOf(int page) => _size > 0 ? (page - 1) * _size : 0;
 
-  /// Anota que la pagina [page] llego con [rows] registros y devuelve el indice
-  /// de la primera de sus filas.
+  /// Records that page [page] arrived with [rows] records, and returns the
+  /// index of its first row.
   ///
-  /// Una pagina corta —o vacia— es el final de la tabla: no hay mas que pedir
-  /// por debajo de ella.
+  /// A short —or empty— page is the end of the table: there's nothing more
+  /// to request below it.
   int read(int page, int rows) {
     _flight.remove(page);
     _failed.remove(page);
@@ -1355,33 +1444,34 @@ class TablePaging {
     return start;
   }
 
-  /// Anota que la pagina [page] no se pudo traer.
+  /// Records that page [page] couldn't be fetched.
   ///
-  /// No se reintenta sola: la planilla pide las filas que se ven en cada
-  /// repintado y el error provoca uno, asi que sin esto una pagina que falla se
-  /// pediria en un bucle. Se vuelve a intentar cuando el usuario lo pide
+  /// It doesn't retry on its own: the sheet requests the rows visible on
+  /// every repaint and the error triggers one, so without this a failing page
+  /// would be requested in a loop. It's retried when the user asks for it
   /// ([retry]).
   void failed(int page) {
     _flight.remove(page);
     _failed.add(page);
   }
 
-  /// Olvida los fallos para que las paginas que faltan se vuelvan a pedir.
+  /// Forgets the failures so the missing pages get requested again.
   void retry() => _failed.clear();
 
-  /// Olvida que la pagina [page] se leyo, para que se pueda volver a pedir.
+  /// Forgets that page [page] was read, so it can be requested again.
   ///
-  /// Lo usa el cache acotado al descartar una pagina lejana: sin esto la pagina
-  /// quedaria marcada como leida y sus filas, ya borradas, no volverian nunca.
-  /// No toca [_size] ni [_end]: de a cuantos se lee y donde termina la tabla no
-  /// cambian porque se olvide un tramo.
+  /// Used by the bounded cache when dropping a distant page: without this the
+  /// page would stay marked as read and its rows, already deleted, would
+  /// never come back. Doesn't touch [_size] or [_end]: how many records a
+  /// page holds and where the table ends don't change because a chunk was
+  /// forgotten.
   void forget(int page) {
     _read.remove(page);
     _failed.remove(page);
   }
 
-  /// Olvida lo leido, no de a cuantos se lee: releer la tabla no cambia el
-  /// tamaño de la pagina.
+  /// Forgets what was read, not how many records a page holds: rereading the
+  /// table doesn't change the page size.
   void reset() {
     _read.clear();
     _flight.clear();

@@ -3,31 +3,35 @@ import 'package:core/socket.dart';
 // SERVICES
 import 'package:app/services/database/database_service.dart';
 
-/// Conexion por socket de la app.
+/// The app's socket connection.
 ///
-/// Es el equivalente en tiempo real de `api`: mismo host y mismo `tokenName`,
-/// asi que hereda del registro compartido el token que dejo el login sin que
-/// nadie tenga que copiarselo. Quien la maneja es `ConnectionService`, que
-/// resuelve el ciclo de vida y expone el estado a la app; esta instancia solo
-/// declara contra que se conecta.
+/// It's the real-time equivalent of `api`: same host and same `tokenName`,
+/// so it inherits from the shared storage the token that login left behind
+/// without anyone having to copy it over. `ConnectionService` is the one that
+/// manages it, resolving the lifecycle and exposing the state to the app;
+/// this instance only declares what it connects to.
 final sockets = _Sockets();
 
 class _Sockets extends SocketAPI {
   final _database = DatabaseService();
 
-  /// Empresa a la que pertenece lo que se escucha, con el mismo criterio que en
-  /// la api REST: no es un dato del handshake sino el contexto de la sesion. Lo
-  /// deja `useBusiness` cada vez que cambia la empresa activa.
+  /// Business that what's being listened to belongs to, on the same criteria
+  /// as in the REST api: it isn't handshake data but session context.
+  /// `useBusiness` sets it every time the active business changes.
   ///
-  /// Viaja en [extraAuth] ademas de en la cabecera porque el navegador no deja
-  /// mandar cabeceras propias en web, y porque el `auth` se vuelve a leer en
-  /// cada reconexion mientras que las cabeceras quedan congeladas.
+  /// It travels in [extraAuth] as well as in the header because the browser
+  /// won't let you send custom headers on web, and because `auth` gets
+  /// re-read on every reconnection while the headers stay frozen.
   String? business;
 
+  /// `name` is the socket.io namespace, not a path prefix as it is in the REST
+  /// api: the backend mounts every handler on the default namespace
+  /// (`io.on("connection")`, no `io.of(...)` anywhere), so anything else here
+  /// gets the handshake rejected with "Invalid namespace".
   @override
   ApiModel get dev => ApiModel(
     host: "192.168.1.103",
-    name: "lyra",
+    name: "/",
     port: 80,
     scheme: "http",
     type: ApiMode.socket,
@@ -43,9 +47,9 @@ class _Sockets extends SocketAPI {
   @override
   Map<String, dynamic> get extraAuth => {"business_id": ?business};
 
-  /// Mismo papel que `preRequest` en la api REST: si el token todavia no esta
-  /// en memoria (arranque en frio, la sesion se abrio en una corrida anterior)
-  /// se recupera del almacenamiento seguro antes del primer handshake.
+  /// Same role as `preRequest` in the REST api: if the token isn't in memory
+  /// yet (cold start, the session was opened in an earlier run) it's
+  /// recovered from secure storage before the first handshake.
   @override
   Future<void> preConnect() async {
     token ??= await _database.fromSecure<String>(current.tokenName);

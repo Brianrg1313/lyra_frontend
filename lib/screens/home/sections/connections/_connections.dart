@@ -18,32 +18,31 @@ import 'package:app/screens/home/sections/section_message.dart';
 
 import 'connection_row.dart';
 
-/// Conexiones: es el contenido de la seccion `connections` del home.
+/// Connections: this is the content of the `connections` section of the home.
 ///
-/// Una conexion es **una cuenta de un servicio de afuera** —un numero de
-/// WhatsApp, una pagina de Facebook, un perfil de Instagram— autenticada contra
-/// la plataforma. Aca se registra esa cuenta y se cargan sus credenciales, y eso
-/// es todo lo que se decide: la cuenta no atiende nada por si sola.
+/// A connection is **an account from an outside service** —a WhatsApp number, a
+/// Facebook page, an Instagram profile— authenticated against the platform. The
+/// account is registered here and its credentials are loaded, and that's all
+/// that is decided: the account doesn't attend to anything on its own.
 ///
-/// Lo que la cuenta contesta —los mensajes directos, los comentarios de una
-/// publicacion, los de un anuncio— es un bot por trabajo sobre esta misma
-/// conexion, y se arma en otra parte. Es la razon de que las dos cosas esten
-/// separadas: un login de Instagram alcanza para cuatro trabajos sin necesitar
-/// tres tokens mas, y cada uno de esos puede querer otra persona, otros datos y
-/// otras herramientas.
+/// What the account answers —direct messages, comments on a post, comments on an
+/// ad— is a bot per job running on this same connection, and it's built
+/// elsewhere. That's why the two things are separate: one Instagram login is
+/// enough for four jobs without needing three more tokens, and each of those can
+/// want a different person, other data, and other tools.
 ///
-/// La pantalla es un listado a lo ancho, con la misma forma que las tablas de
-/// productos: la barra con el titulo y la accion arriba, y las filas debajo. No
-/// es un panel angosto como el de los canales porque no hay nada al lado: de una
-/// cuenta se lee de que servicio es, como se llama, si esta lista y cuanto esta
-/// corriendo encima, y todo eso entra en un renglon.
+/// The screen is a wide list, shaped like the product tables: the bar with the
+/// title and the action on top, and the rows below. It's not a narrow panel like
+/// the channels one because there's nothing beside it: of an account you read
+/// which service it belongs to, what it's called, whether it's ready and how
+/// much is running on it, and all of that fits in a single row.
 ///
-/// Esta cortada en tres para que cada parte se repinte por su cuenta: la barra de
-/// arriba no escucha nada y se dibuja una sola vez, el cuerpo escucha al servicio
-/// (que es lo que cambia al cargar) y el listado escucha solo lo que se escribio
-/// en el buscador. Por eso el texto de busqueda llega como [ValueListenable] y no
-/// como estado de la pantalla: con `setState` cada letra volveria a construir
-/// tambien la barra y su boton.
+/// It's split into three so each part repaints on its own: the bar on top
+/// listens to nothing and is drawn once, the body listens to the service (which
+/// is what changes on load) and the list listens only to what was typed into the
+/// search box. That's why the search text arrives as a [ValueListenable] and not
+/// as screen state: with `setState` every keystroke would rebuild the bar and
+/// its button too.
 class ConnectionsSection extends StatefulWidget {
   const ConnectionsSection({super.key});
 
@@ -52,9 +51,9 @@ class ConnectionsSection extends StatefulWidget {
 }
 
 class _ConnectionsSectionState extends State<ConnectionsSection> {
-  /// Lo que se escribio en el buscador del header, ya normalizado. La seccion no
-  /// tiene el suyo: la barra de arriba es la misma para todas y busca sobre la
-  /// que se este mirando. Solo lo escucha el listado.
+  /// What was typed into the header's search box, already normalized. The
+  /// section doesn't have its own: the bar on top is the same for all sections
+  /// and searches the one being viewed. Only the list listens to it.
   late final ValueListenable<String> _query;
 
   @override
@@ -62,22 +61,23 @@ class _ConnectionsSectionState extends State<ConnectionsSection> {
     super.initState();
     _query = context.read<HomeService>().searchQuery;
 
-    // Las cargas notifican a sus oyentes; se difieren al primer frame para no
-    // disparar un rebuild mientras el arbol todavia se esta montando.
+    // The loads notify their listeners; they're deferred to the first frame so
+    // a rebuild isn't triggered while the tree is still mounting.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
       _load();
 
-      // El catalogo se pide desde aca aunque quien lo dibuja sea el formulario:
-      // el listado necesita el nombre y el icono de cada servicio para pintar sus
-      // filas, y ademas asi ya esta cuando se toque "conectar cuenta".
+      // The catalog is requested from here even though the form is what draws it:
+      // the list needs each service's name and icon to paint its rows, and
+      // besides, it's already there by the time "connect account" is tapped.
       context.read<ConnectionCatalogService>().load();
     });
   }
 
-  /// Pide las conexiones de la empresa activa. El servicio cachea por empresa,
-  /// asi que esta llamada no vuelve a pegarle al backend si ya estan cargadas.
+  /// Fetches the connections of the active company. The service caches per
+  /// company, so this call doesn't hit the backend again if they're already
+  /// loaded.
   void _load({bool force = false}) => context.read<ConnectionsService>().load(
     context.read<BusinessService>().active.id,
     force: force
@@ -112,14 +112,16 @@ class _ConnectionsSectionState extends State<ConnectionsSection> {
     ])
   );
 
-  /// Abre la pagina de alta. Es una sub-pagina y no un modal: el formulario es un
-  /// puñado de credenciales que se copian y pegan desde la consola del servicio,
-  /// en otra ventana, y un modal se cierra de un clic afuera.
+  /// Opens the creation page. It's a sub-page and not a modal: the form is a
+  /// handful of credentials that get copied and pasted from the service's
+  /// console, in another window, and a modal closes with a single click
+  /// outside.
   void _create() => Navis.push(context, "/home/connections/new");
 }
 
-/// El cuerpo del listado: lo unico que escucha a [ConnectionsService], asi que
-/// cargar, fallar o traer las cuentas no vuelve a construir la barra de arriba.
+/// The body of the list: the only thing that listens to [ConnectionsService],
+/// so loading, failing, or bringing the accounts doesn't rebuild the bar on
+/// top.
 class _Body extends StatelessWidget {
   const _Body({
     required this.query,
@@ -161,12 +163,12 @@ class _Body extends StatelessWidget {
   }
 }
 
-/// El listado filtrado. Escucha solo el buscador: escribir en el no toca ni la
-/// barra ni el servicio, solo vuelve a filtrar estas filas.
+/// The filtered list. It listens only to the search box: typing into it
+/// touches neither the bar nor the service, it only re-filters these rows.
 ///
-/// El filtro mira el nombre y la descripcion: una cuenta se busca por como la
-/// llamo la empresa ("Cuenta principal"), que es lo que se recuerda, y no por el
-/// codigo del servicio.
+/// The filter looks at the name and the description: an account is searched by
+/// what the company called it ("Main account"), which is what's remembered, and
+/// not by the service's code.
 class _List extends StatelessWidget {
   const _List({required this.connections, required this.query});
 

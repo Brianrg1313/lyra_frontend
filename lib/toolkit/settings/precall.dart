@@ -11,8 +11,8 @@ Future<void> preCall() async {
 
   await database.initialize();
 
-  // Deja el box del home abierto para que HomeService pueda leer el estado
-  // persistido del side bar de forma sincrona al construirse.
+  // Leaves the home box open so HomeService can read the side bar's persisted
+  // state synchronously as it is constructed.
   await HomeService.preload();
 
   if (controller.isWindows) {

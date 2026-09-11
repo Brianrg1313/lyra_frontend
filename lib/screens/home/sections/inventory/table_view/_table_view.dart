@@ -25,161 +25,168 @@ import 'state/sheet_hover.dart';
 import 'state/sheet_metrics.dart';
 import 'state/sheet_widths.dart';
 
-/// Vista de una tabla y sus datos como una planilla de calculo. Es una
-/// sub-pagina de la seccion `inventory` (`parents: ["inventory"]`): se abre al
-/// tocar una fila del listado de tablas y comparte el shell del home, por lo que
-/// la opcion del side bar sigue marcada.
+/// View of a table and its data as a spreadsheet. It is a
+/// sub-page of the `inventory` section (`parents: ["inventory"]`): it opens when
+/// tapping a row in the table listing and shares the home shell, so the sidebar
+/// option stays highlighted.
 ///
-/// La grilla imita a un Excel y no a una tabla de datos: **las celdas ya estan**.
-/// No hay que pedir una fila nueva para cargar algo; debajo de los registros
-/// siempre sobran filas en blanco (las que entren en pantalla, y nunca menos de
-/// unas pocas), asi que cargar es tocar una celda y escribir.
+/// The grid imitates Excel, not a data table: **the cells already exist**.
+/// There is no need to request a new row to load something; below the records
+/// there are always extra blank rows (as many as fit on screen, and never fewer
+/// than a handful), so loading is just tapping a cell and typing.
 ///
-/// La primera fila **siempre son los campos**: es la fila 1 de la planilla, con
-/// el nombre y el icono del tipo de cada columna. No es un encabezado decorativo
-/// sino la fila 1 real, por eso el primer registro es la fila 2, igual que en una
-/// planilla donde la primera fila lleva los titulos. Queda congelada arriba, y a
-/// la izquierda queda congelada la columna de numeros de fila.
+/// The first row is **always the fields**: it is row 1 of the sheet, with the
+/// name and type icon of each column. It is not a decorative header but the real
+/// row 1, which is why the first record is row 2, just like a sheet where the
+/// first row holds the titles. It stays frozen on top, and the column of row
+/// numbers stays frozen on the left.
 ///
-/// El resto de las filas son los registros:
-/// - Las de arriba son los datos que ya vinieron del backend, y **se corrigen
-///   donde se los ve**: se toca la celda, se escribe y al salir el cambio viaja
-///   (`PUT /products/manage/`) sin volver a leer la tabla ni moverse de donde se
-///   estaba. Viaja solo la celda que se toco, no la fila entera. Lo unico que no
-///   se escribe es lo que todavia no llego: una fila cuyo tramo no entro se
-///   recorre, pero no se sabe que tiene ni cual es. Son tantas como registros
-///   tenga la tabla, se hayan leido o no: la planilla nace con su largo
-///   definitivo y cada tramo se pide cuando esta por entrar en pantalla, asi que
-///   bajando se sigue de largo sin botones de paginado ni cortes.
-/// - Las de abajo estan vacias y son editables. En cuanto se escribe en una, esa
-///   fila pasa a ser un borrador, y **al salir de la fila se guarda sola**
-///   (`POST /products/manage/`): no hay tilde, ni boton, ni nada que confirmar.
-///   Se guarda al dejar la fila y no al dejar cada celda porque una fila se
-///   escribe de a varias columnas: recorrerla con Tab no manda nada y al salir
-///   viaja entera, que es un alta y no una por columna. Mientras el alta viaja,
-///   el numero de esa fila deja lugar a un spinner y la fila no se escribe; si
-///   no sale, se queda escrita tal cual y se reintenta con solo volver a salir
-///   de ella.
+/// The rest of the rows are the records:
+/// - The top ones are the data that already came from the backend, and they are
+///   **edited where you see them**: you tap the cell, type, and on exit the
+///   change travels (`PUT /inventory/products/records/manage/`) without re-reading the table or moving from
+///   where you were. Only the tapped cell travels, not the whole row. The only
+///   thing not written is what has not arrived yet: a row whose chunk did not
+///   load is passed over, but you do not know what it holds or which one it is.
+///   There are as many as the table has records, read or not: the sheet is born
+///   at its final length and each chunk is requested as it is about to enter the
+///   screen, so scrolling down keeps going without paging buttons or breaks.
+/// - The bottom ones are empty and editable. As soon as you type in one, that
+///   row becomes a draft, and **on leaving the row it saves itself**
+///   (`POST /inventory/products/records/manage/`): there is no check mark, button, or anything to confirm.
+///   It saves when leaving the row and not each cell because a row is written
+///   across several columns: tabbing through it sends nothing and on exit it
+///   travels whole, as one create and not one per column. While the create
+///   travels, that row's number gives way to a spinner and the row cannot be
+///   written; if it does not go through, it stays written as-is and is retried
+///   just by leaving it again.
 ///
-/// La navegacion tambien es la de una planilla: Tab / Shift+Tab se mueven de
-/// celda, Enter y las flechas arriba/abajo bajan y suben, Escape cancela lo que
-/// se estaba escribiendo. Llegar al final con Tab salta al principio de la fila
-/// siguiente, y pasarse de la ultima fila agrega otra en blanco.
+/// Navigation is also that of a sheet: Tab / Shift+Tab move between cells, Enter
+/// and the up/down arrows move down and up, Escape cancels what was being
+/// written. Reaching the end with Tab jumps to the start of the next row, and
+/// going past the last row adds another blank one.
 ///
-/// La tabla crece sola en los dos ejes, sin botones de "agregar":
-/// - **Horizontal**: al final siempre sobran columnas libres. Poner un titulo en
-///   una la crea (`POST /tables/fields/`) y aparece otra libre detras.
-/// - **Vertical**: escribiendo en las filas en blanco del final.
+/// The table grows on its own on both axes, without "add" buttons:
+/// - **Horizontal**: there are always free columns left over at the end. Putting
+///   a title in one creates it (`POST /inventory/products/builder/fields/`) and another free one
+///   appears behind it.
+/// - **Vertical**: by typing in the blank rows at the end.
 ///
-/// El **ancho de cada columna** se arrastra desde el borde derecho de su celda
-/// de campo, y al soltar se guarda con el campo (`PUT /tables/fields/`, sin
-/// volver a pedir la tabla). No es una preferencia de quien lo arrastro: es como
-/// queda la tabla, asi que la proxima vez que se la abra —la abra quien la
-/// abra— las columnas miden eso. Lo trae la estructura con los campos, de modo
-/// que la planilla se dibuja ya acomodada en el primer frame en vez de saltar
-/// despues.
+/// The **width of each column** is dragged from the right edge of its field
+/// cell, and on release it saves with the field (`PUT /inventory/products/builder/fields/`, without
+/// re-requesting the table). It is not the preference of whoever dragged it: it
+/// is how the table stays, so the next time it is opened —by whoever opens
+/// it— the columns measure that. The structure brings it with the fields, so
+/// the sheet is drawn already laid out in the first frame instead of jumping
+/// later.
 ///
-/// Las columnas tambien se **arrastran de lugar** desde su celda de campo, como
-/// en una planilla: se agarra el titulo, una linea marca donde va a caer y al
-/// soltar la columna se muda ahi con su ancho puesto. El orden nuevo se ve al
-/// instante y las posiciones viajan detras (`PUT /tables/fields/`), sin volver a
-/// pedir la tabla: los registros leidos **no se mueven de donde estan** —lo
-/// unico que cambia es de que lugar de la fila lee cada columna—, asi que
-/// arrastrar una columna cuesta lo mismo en una tabla de diez registros que en
-/// una de cientos de miles.
+/// Columns are also **dragged into place** from their field cell, like in a
+/// sheet: you grab the title, a line marks where it will land, and on release
+/// the column moves there with its width set. The new order is seen
+/// instantly and the positions travel behind (`PUT /inventory/products/builder/fields/`), without re-
+/// requesting the table: the read records **do not move from where they are**
+/// —the only thing that changes is which place of the row each column reads—, so
+/// dragging a column costs the same in a ten-record table as in one with
+/// hundreds of thousands.
 ///
-/// La celda de un campo se sigue comportando como una celda despues de creado,
-/// asi que **el campo se edita donde se lo ve** y no en un formulario aparte:
-/// escribirle otro titulo lo renombra al salir de la celda, la flecha le cambia
-/// el tipo y **vaciarle el titulo lo elimina**, que es lo unico que no se hace
-/// solo: antes se pide confirmacion, porque se lleva la columna y todo lo
-/// cargado en ella.
+/// A field's cell keeps behaving like a cell after it is created, so **the field
+/// is edited where you see it** and not in a separate form:
+/// typing another title renames it on leaving the cell, the arrow changes its
+/// type, and **emptying its title deletes it**, which is the only thing not done
+/// on its own: confirmation is requested first, because it takes the column and
+/// everything loaded in it.
 ///
-/// Cual tabla se resuelve del id en la URL (`/home/inventory/:id`), no por
-/// constructor: la sub-pagina reusa la unica pagina del shell y el `Navigator`
-/// no reconstruye el arbol al navegar, asi que el id se lee de
+/// Which table is resolved from the id in the URL (`/home/inventory/:id`), not
+/// by constructor: the sub-page reuses the shell's single page and the
+/// `Navigator` does not rebuild the tree when navigating, so the id is read from
 /// [Navis.currentArgs].
 ///
-/// La tabla se abre en dos fases (ver [TableViewService]) y la planilla las
-/// muestra como lo que son:
-/// - **La estructura** (`GET /tables/structure/<id>`) es lo que se espera con la
-///   pantalla en blanco: sin columnas no hay planilla que dibujar, asi que si
-///   falla lo que se ve es el error a pantalla completa.
-/// - **Los datos** (`POST /tables/records/`) llegan despues y sobre una planilla
-///   ya dibujada: se piden de a tramos a medida que se baja, sin tapar nada, y
-///   tanto su espera como su error se avisan en la barra de arriba.
+/// The table opens in two phases (see [TableViewService]) and the sheet shows
+/// them for what they are:
+/// - **The structure** (`GET /inventory/products/builder/structure/<id>`) is what is awaited with a
+///   blank screen: without columns there is no sheet to draw, so if it fails
+///   what you see is the full-screen error.
+/// - **The data** (`POST /inventory/products/records/list/`) arrives later and over an already drawn
+///   sheet: it is requested in chunks as you scroll down, without covering
+///   anything, and both its wait and its error are announced in the top bar.
 ///
-/// **El buscador del header busca en la tabla.** Es uno solo para todo el home y
-/// busca sobre la seccion que se este mirando ([HomeService.searchQuery]); en
-/// esta, la planilla pasa a mostrar las filas que mencionan lo que se escribio,
-/// en cualquiera de sus columnas ([_onSearch]).
+/// **The header search searches the table.** It is a single one for the whole
+/// home and searches the section being viewed ([HomeService.searchQuery]); in
+/// this one, the sheet switches to showing the rows that mention what was typed,
+/// in any of their columns ([_onSearch]).
 ///
-/// Filtra el backend y no la planilla (`MATCH`, ver [TableViewService.search]):
-/// de una tabla de cientos de miles de filas en memoria hay unos tramos, asi que
-/// esconder las que no coinciden buscaria en lo que se miro y no en la tabla. Lo
-/// que se pide ya viene filtrado, contado y paginado, y por eso buscar se
-/// recorre como cualquier tabla: bajando entran los tramos siguientes del
-/// resultado.
+/// The backend filters, not the sheet (`MATCH`, see [TableViewService.search]):
+/// from a table with hundreds of thousands of rows in memory there are only some
+/// chunks, so hiding the ones that do not match would search what was viewed and
+/// not the table. What is requested already comes filtered, counted, and paged,
+/// which is why searching is scrolled like any table: scrolling down loads the
+/// following chunks of the result.
 ///
-/// Una planilla filtrada **no tiene filas en blanco al final**: no es donde se
-/// carga. Lo que se escribiera ahi nace sin lo que se busco, asi que se iria de
-/// la pantalla en la que se lo escribio, y el lugar donde se lo escribio tampoco
-/// es un lugar de la tabla —las filas de una busqueda estan salteadas—. Para
-/// cargar se vacia el buscador, que devuelve la tabla entera. Lo que si se puede
-/// es **corregir lo que se encontro**: una celda de un resultado se escribe como
-/// cualquier otra, que es media razon para buscar.
+/// A filtered sheet **has no blank rows at the end**: it is not where you load.
+/// What would be written there is born without what was searched, so it would
+/// leave the screen where it was written, and the place where it was written is
+/// not a table location either —the rows of a search are spread out—. To load,
+/// the search box is cleared, which returns the whole table. What you can do
+/// instead is **fix what was found**: a cell in a result is written like any
+/// other, which is half a reason to search.
 ///
-/// Una tabla recien importada se sigue armando **con la pantalla abierta**, y de
-/// eso se entera por dos caminos distintos, porque son dos cosas distintas: que
-/// sus columnas ya tengan tipo lo avisa el backend por socket y lo escucha
-/// [TableViewService], que vuelve a leer la tabla donde este; que sus filas ya
-/// hayan entrado lo sabe [TablesService], que es quien las sube, y por eso esta
-/// pantalla lo escucha a el ([_onImport]). Hasta que las dos cosas pasen, la
-/// barra de arriba dice en que anda.
+/// A freshly imported table keeps being built up **with the screen open**, and
+/// you learn of it through two different paths, because they are two different
+/// things: that its columns already have a type is announced by the backend over
+/// a socket and listened to by [TableViewService], which re-reads the table
+/// wherever it is; that its rows have already arrived is known by [TablesService],
+/// which is the one uploading them, which is why this screen listens to it
+/// ([_onImport]). Until both things happen, the top bar says what is going on.
+///
+/// What does **not** happen anymore is getting here in the middle of that. A
+/// table that is still being imported is not opened: the listing does not let
+/// the click through ([TableCard]) and this screen turns around on the way in,
+/// because a sheet with untyped columns and no rows is read as an import that
+/// failed and answered by importing the file again.
 ///
 /// ---
 ///
-/// **Como se reparte el repintado.** La pantalla esta pensada para tablas de
-/// cientos de miles de registros, asi que ningun cambio puede costar la grilla
-/// entera. Este widget no escucha nada: crea el servicio y el [SheetController],
-/// los publica y no se vuelve a construir. De ahi para abajo cada parte se
-/// suscribe a lo suyo y nada mas:
+/// **How repainting is distributed.** The screen is designed for tables with
+/// hundreds of thousands of records, so no change may cost the whole grid. This
+/// widget does not listen to anything: it creates the service and the
+/// [SheetController], publishes them, and is never rebuilt. From there down,
+/// each part subscribes to its own thing and nothing more:
 ///
-/// | Se toca | Se vuelve a construir |
+/// | What happens | What rebuilds |
 /// |---|---|
-/// | Se mueve el cursor | 2 filas (la que se deja y la que se toma) |
-/// | Se pasa el mouse a otra fila | 2 filas |
-/// | Se cambia el formato de una columna de fechas | las celdas de esa columna |
-/// | Se arrastra un ancho | las celdas de esa columna |
-/// | Se arrastra una columna de lugar | nada, hasta soltarla |
-/// | Entra un tramo de registros | las filas de ese tramo |
-/// | Se escribe en una celda | esa celda y, si la fila cambio de estado, su fila |
-/// | Se guarda sola una fila | esa fila y su numero |
-/// | Se corrige una celda de un registro | esa fila |
-/// | Se renombra una columna | la celda de ese campo |
-/// | Se le cambia el tipo a una columna | la celda de ese campo y las de su columna |
-/// | Se agrega, se borra o se suelta una columna | la grilla |
-/// | Se busca algo en el header | la grilla (son otras filas) |
+/// | The cursor moves | 2 rows (the one left and the one taken) |
+/// | The mouse moves to another row | 2 rows |
+/// | The format of a date column changes | the cells of that column |
+/// | A width is dragged | the cells of that column |
+/// | A column is dragged into place | nothing, until released |
+/// | A chunk of records arrives | the rows of that chunk |
+/// | A cell is typed in | that cell and, if the row changed state, its row |
+/// | A row saves itself | that row and its number |
+/// | A cell of a record is fixed | that row |
+/// | A column is renamed | that field's cell |
+/// | A column's type changes | that field's cell and the ones in its column |
+/// | A column is added, deleted, or released | the grid |
+/// | Something is searched in the header | the grid (they are other rows) |
 ///
-/// Los tres ultimos releen la estructura entera de la tabla, y aun asi solo el
-/// ultimo cuesta la grilla: lo que la planilla escucha es **la forma** de las
-/// columnas ([SheetColumns.shape]), que no cambia por un titulo ni por un tipo.
+/// The last three re-read the whole table structure, and even so only the last
+/// one costs the grid: what the sheet listens to is **the shape** of the columns
+/// ([SheetColumns.shape]), which does not change from a title or a type.
 ///
-/// Y ninguno de los tres desmonta la pantalla. Una relectura de estructura sobre
-/// una tabla ya dibujada no vuelve a [TableStructureStatus.loading]: se avisa en
-/// la barra de arriba y la planilla se queda donde esta, con su desplazamiento y
-/// con lo que se estuviera escribiendo. Sin eso, agregar una columna en la fila
-/// cincuenta mil obligaba a volver a bajar hasta ahi.
+/// And none of the three unmounts the screen. A structure re-read over an
+/// already drawn table does not go back to [TableStructureStatus.loading]: it is
+/// announced in the top bar and the sheet stays where it is, with its scroll
+/// position and whatever was being written. Without that, adding a column on row
+/// fifty thousand would force scrolling all the way back down.
 ///
-/// El servicio ([TableViewService]) lo posee esta pantalla y no el scope de la
-/// app: es estado efimero de una tabla abierta (su estructura y los tramos que
-/// se estan mirando), que debe reiniciarse cada vez que se entra y descartarse
-/// al salir.
+/// The service ([TableViewService]) is owned by this screen and not by the app
+/// scope: it is ephemeral state of an open table (its structure and the chunks
+/// being viewed), which must restart every time you enter and be discarded on
+/// exit.
 class TableViewSection extends StatefulWidget {
   const TableViewSection({super.key});
 
-  /// Key de la ruta de esta sub-pagina. Es la unica fuente: la usan tanto la
-  /// tabla de rutas como el shell para decidir cuando mostrarla.
+  /// Route key of this sub-page. It is the single source: both the route
+  /// table and the shell use it to decide when to show it.
   static const String routeKey = "inventory_table_view";
 
   @override
@@ -188,37 +195,37 @@ class TableViewSection extends StatefulWidget {
 
 class _TableViewSectionState extends State<TableViewSection>
     with BusinessListener<TableViewSection> {
-  // Propio de la pantalla: se crea al entrar y se libera al salir, sin pasar por
-  // un provider de la app, porque su estado (los tramos abiertos) no debe
-  // sobrevivir a la navegacion.
+  // Owned by the screen: it is created on entry and released on exit, without
+  // going through an app provider, because its state (the open chunks) must not
+  // survive navigation.
   final _service = TableViewService();
 
   late final SheetController _controller;
   late final String _tableId;
 
-  /// El listado de tablas, que es quien lleva las importaciones en curso. Se
-  /// guarda la instancia porque hay que darse de baja de ella en [dispose], y
-  /// para entonces el contexto ya no sirve para buscarla.
+  /// The table listing, which is the one tracking in-progress imports. The
+  /// instance is kept because it must be unsubscribed from in [dispose], and by
+  /// then the context is no longer useful for looking it up.
   late final TablesService _tables;
 
-  /// En que andaba la importacion de esta tabla la ultima vez que se miro. Es
-  /// para reaccionar a que **cambie**, y no a cada aviso del listado.
+  /// What this table's import was doing the last time it was looked at. It is
+  /// to react to it **changing**, not to every notice from the listing.
   TableImportStage? _stage;
 
-  /// Lo que se escribio en el buscador del header. Es el mismo buscador para
-  /// todo el home y busca sobre la seccion que se este mirando: en esta, sobre
-  /// las filas de la tabla abierta.
+  /// What was typed in the header search box. It is the same search box for
+  /// the whole home and searches the section being viewed: in this one, over
+  /// the rows of the open table.
   ///
-  /// Se guarda la referencia por lo mismo que el listado de tablas: hay que
-  /// darse de baja en [dispose], y para entonces el contexto ya no sirve para
-  /// buscar el servicio.
+  /// The reference is kept for the same reason as the table listing: it must be
+  /// unsubscribed from in [dispose], and by then the context is no longer useful
+  /// for looking up the service.
   late final ValueListenable<String> _query;
 
   @override
   void initState() {
     super.initState();
 
-    // El id vive en la URL.
+    // The id lives in the URL.
     _tableId = Navis.currentArgs?["id"] ?? "";
 
     _tables = context.read<TablesService>();
@@ -239,43 +246,58 @@ class _TableViewSectionState extends State<TableViewSection>
         minWidth: AppSize.action * 1.5,
         maxWidth: AppSize.action * 16
       ),
-      // El controlador vive mas que cualquier `build`, asi que el contexto se le
-      // pasa como funcion y no como valor.
+      // The controller outlives any `build`, so the context is passed to it as
+      // a function and not as a value.
       context: () => context
     );
 
-    // La carga se difiere al primer frame para no notificar mientras el arbol se
-    // monta, igual que el resto de las secciones.
+    // The load is deferred to the first frame so as not to notify while the
+    // tree mounts, like the rest of the sections.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _service.open(_tableId, query: _query.value);
+      if (!mounted) return;
+
+      // A table that is still being imported is not opened: its columns are
+      // untyped and its rows are not up yet, so the sheet would show an
+      // import that looks failed instead of one that is halfway. The listing
+      // stops the click that gets here ([TableCard]), and this stops the
+      // link that skips it — a URL typed by hand, a table left open in
+      // another tab.
+      if (_stage != null) {
+        FloatFlag.of(context).message(S.of(context).import_table_busy);
+
+        Navis.push(context, "/home/inventory");
+        return;
+      }
+
+      _service.open(_tableId, query: _query.value);
     });
   }
 
-  /// La tabla abierta es de la empresa que estaba activa: su id no significa
-  /// nada en la que se acaba de elegir, asi que quedarse seria pedir una tabla
-  /// que esta empresa no tiene. Se vuelve al listado, que es lo unico que se
-  /// puede mostrar de la empresa nueva.
+  /// The open table belongs to the previously active business: its id means
+  /// nothing in the one just chosen, so staying would be requesting a table
+  /// this business does not have. We go back to the listing, which is the only
+  /// thing that can be shown for the new business.
   ///
-  /// Se navega en el acto —sin esperar al proximo frame— para que la pantalla se
-  /// vaya antes de que el shell la vuelva a montar: si no, se pediria la
-  /// estructura de esa tabla contra la empresa nueva solo para mostrar un error.
+  /// Navigation happens on the spot —without waiting for the next frame— so the
+  /// screen leaves before the shell remounts it: otherwise, it would request
+  /// that table's structure against the new business just to show an error.
   @override
   void onBusinessChanged(String businessId) =>
     Navis.push(context, "/home/inventory");
 
-  /// La importacion de esta tabla termino de subir sus filas: hay que volver a
-  /// leerla entera.
+  /// This table's import finished uploading its rows: it must be re-read in
+  /// full.
   ///
-  /// Es lo unico que el servicio de la tabla no puede escuchar por su cuenta.
-  /// El aviso del backend (`table/ready`) llega **antes** que las filas —dice
-  /// que las columnas ya tienen tipo, que es justo lo que hay que saber para
-  /// empezar a subirlas— asi que la relectura que dispara encuentra la tabla
-  /// todavia vacia. Quien sabe cuando entraron las filas es el listado, que es
-  /// el que las sube.
+  /// It is the only thing the table service cannot listen to on its own. The
+  /// backend notice (`table/ready`) arrives **before** the rows —it says the
+  /// columns already have a type, which is exactly what must be known to start
+  /// uploading them— so the re-read it triggers finds the table still empty. Who
+  /// knows when the rows arrived is the listing, which is the one uploading
+  /// them.
   ///
-  /// Se mira el paso anterior y no solo el de ahora porque `null` tambien es lo
-  /// que hay cuando esta tabla nunca se importo desde aca, que es el caso
-  /// normal y no tiene nada que releer.
+  /// The previous step is checked and not just the current one because `null`
+  /// is also what is there when this table was never imported from here, which
+  /// is the normal case and has nothing to re-read.
   void _onImport() {
     final stage = _tables.importStage(_tableId);
     if (stage == _stage) return;
@@ -286,22 +308,23 @@ class _TableViewSectionState extends State<TableViewSection>
     if (before == TableImportStage.loading && stage == null) _service.refresh();
   }
 
-  /// Se escribio (o se borro) algo en el buscador del header: la planilla pasa a
-  /// mostrar las filas que lo mencionan, o la tabla entera al vaciarlo.
+  /// Something was typed (or cleared) in the header search box: the sheet
+  /// switches to showing the rows that mention it, or the whole table when
+  /// cleared.
   ///
-  /// El header ya espera a que se deje de escribir antes de avisar, asi que esto
-  /// corre por busqueda y no por tecla, y el servicio ademas ignora un texto
-  /// igual al que ya tenia: volver a la pantalla o cambiar de empresa no vuelve
-  /// a pedir la tabla por una busqueda que no cambio.
+  /// The header already waits until typing stops before announcing, so this runs
+  /// per search and not per key, and the service also ignores text equal to what
+  /// it already had: returning to the screen or switching business does not
+  /// re-request the table for a search that did not change.
   ///
-  /// El cursor se lleva a la primera celda porque las filas de abajo son otras:
-  /// dejarlo donde estaba lo dejaria sobre la fila que ahora ocupa ese lugar, que
-  /// no es la que se estaba mirando.
+  /// The cursor is taken to the first cell because the rows below are others:
+  /// leaving it where it was would leave it over the row that now occupies that
+  /// place, which is not the one being viewed.
   void _onSearch() {
-    // Irse de la pantalla vacia el buscador (lo hace el header, ver
-    // [HomeHeader]), y ese aviso llega con esta todavia montada: sin la guarda,
-    // salir de una tabla buscando la volveria a pedir entera para desmontarla
-    // acto seguido.
+    // Leaving the screen clears the search box (the header does it, see
+    // [HomeHeader]), and that notice arrives while this is still mounted:
+    // without the guard, leaving a table while searching would re-request it in
+    // full only to unmount it right after.
     if (Navis.currentKey.value != TableViewSection.routeKey) return;
 
     _controller.reset();
@@ -317,9 +340,9 @@ class _TableViewSectionState extends State<TableViewSection>
     super.dispose();
   }
 
-  // Se usa `.value` en todos: los notificadores no son de los providers sino del
-  // controlador, que es quien los crea y los libera. Un provider que los
-  // liberara por su cuenta los mataria en el primer rebuild de la pantalla.
+  // `.value` is used on all of them: the notifiers belong not to the providers
+  // but to the controller, which creates and releases them. A provider that
+  // released them on its own would kill them on the first rebuild of the screen.
   @override
   Widget build(BuildContext context) => MultiProvider(
     providers: [
@@ -340,14 +363,14 @@ class _TableViewSectionState extends State<TableViewSection>
   );
 }
 
-/// Lo que se ve depende solo de la **primera** fase: la estructura es la que
-/// dice cuales son las columnas, y sin ellas no hay planilla que dibujar.
+/// What is shown depends only on the **first** phase: the structure is what
+/// says which the columns are, and without them there is no sheet to draw.
 ///
-/// Una vez que llego, la grilla se queda quieta: la lectura de los registros y
-/// todo lo que venga despues (guardar una fila, agregar una columna) se avisa en
-/// la barra de arriba, sin tapar lo que se estaba escribiendo. Una tabla sin
-/// ningun campo tampoco es un callejon sin salida: se muestra la planilla vacia,
-/// que ya trae sus columnas libres para escribir el primer titulo encima.
+/// Once it arrives, the grid stays still: reading the records and everything
+/// that comes after (saving a row, adding a column) is announced in the top
+/// bar, without covering what was being written. A table with no fields is not
+/// a dead end either: the empty sheet is shown, which already brings its free
+/// columns to write the first title over.
 class _Body extends StatelessWidget {
   const _Body();
 

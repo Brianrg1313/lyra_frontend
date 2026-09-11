@@ -4,20 +4,22 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/business/business_profile_model.dart';
 
-/// Eliminar la empresa: lo ultimo de la ficha, y lo unico que no se deshace.
+/// Deleting the company: the last thing on the sheet, and the only one that
+/// can't be undone.
 ///
-/// Va al final y no arriba con el resto de las acciones por lo mismo que se
-/// escribe al final de una carta lo que no se quiere leer primero: no es un
-/// dato que se corrige, es el final de todo lo demas. Quien entra a cambiar el
-/// telefono no se lo cruza.
+/// It goes at the end and not up top with the rest of the actions for the same
+/// reason something you don't want to read first is written at the end of a
+/// letter: it isn't a datum to correct, it's the end of everything else.
+/// Whoever goes in to change the phone number doesn't run into it.
 ///
-/// El aviso va **arriba** del boton, no en el modal que confirma: lo que se
-/// pierde y cuanto tarda en perderse es lo que hace decidir, y en el modal
-/// llegaria cuando ya se decidio. El modal solo vuelve a preguntar.
+/// The warning goes **above** the button, not in the confirming modal: what's
+/// lost and how long it takes to be lost is what makes the decision, and in
+/// the modal it would arrive once the decision was already made. The modal only
+/// asks again.
 ///
-/// Solo lo ve el dueño. Es lo unico de la ficha que se muestra segun quien
-/// mira: el resto se lee igual desde cualquier rango, pero una empresa la borra
-/// quien la creo.
+/// Only the owner sees it. It's the only thing on the sheet shown based on who
+/// is looking: the rest reads the same from any role, but a company is deleted
+/// by whoever created it.
 class BusinessProfileDanger extends StatelessWidget {
   const BusinessProfileDanger({super.key, required this.profile});
 
@@ -49,8 +51,8 @@ class BusinessProfileDanger extends StatelessWidget {
               Expanded(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Que se lleva puesto y cuando: son las dos preguntas que se
-                  // hace quien esta por tocar el boton, y en ese orden.
+                  // What it takes and when: those are the two questions that
+                  // whoever is about to tap the button asks, and in that order.
                   TextMedium(S.of(context).business_delete_warning, lines: 4),
                   SizedBox(height: AppSize.gap),
                   TextSmall(
@@ -69,10 +71,9 @@ class BusinessProfileDanger extends StatelessWidget {
     );
   }
 
-  /// El boton no se pinta entero de rojo: en una ficha que es para leer, un
-  /// bloque de color se lleva la vista antes que cualquier dato. El rojo esta
-  /// donde tiene que estar —el texto y el icono— y el fondo se enciende recien
-  /// al apuntarlo.
+  /// The button isn't painted all red: on a sheet meant for reading, a block of
+  /// color draws the eye before any datum. The red is where it needs to be —the
+  /// text and the icon— and the background only lights up when you point at it.
   Widget _button(BuildContext context, SchemeColor scheme, Color danger) =>
     Align(alignment: Alignment.centerLeft, child: FeedbackButton(
       action: () => _confirm(context),
@@ -92,9 +93,9 @@ class BusinessProfileDanger extends StatelessWidget {
       )
     ));
 
-  /// Vuelve a preguntar, con el nombre de la empresa adentro: es lo unico que
-  /// distingue a esta de las otras del cliente, y lo que hay que reconocer
-  /// antes de aceptar.
+  /// Asks again, with the company's name inside: it's the only thing that tells
+  /// this one apart from the client's others, and what has to be recognized
+  /// before accepting.
   Future<void> _confirm(BuildContext context) async {
     final confirmed = await showAlertModal(
       context: context,
@@ -106,11 +107,12 @@ class BusinessProfileDanger extends StatelessWidget {
 
     if (!confirmed || !context.mounted) return;
 
-    // El backend todavia no tiene con que: no hay endpoint de baja de empresas
-    // ni, por lo tanto, los dos plazos que promete el aviso —los pone el
-    // proceso de baja, no esta pantalla—. Se avisa en vez de dejar el boton
-    // mudo, como los paneles que faltan en la barra de arriba, y cuando exista
-    // lo unico que cambia aca es esta linea por la llamada al servicio.
+    // The backend still has nothing for it: there's no company deletion
+    // endpoint nor, therefore, the two deadlines the warning promises —those
+    // are set by the deletion process, not this screen—. It warns instead of
+    // leaving the button mute, like the panels missing from the top bar, and
+    // when it exists the only thing that changes here is this line for the
+    // service call.
     FloatFlag.of(context).message(S.of(context).coming_soon);
   }
 }

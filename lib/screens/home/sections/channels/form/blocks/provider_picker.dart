@@ -13,18 +13,31 @@ import '../widgets/option_card.dart';
 import '../widgets/option_grid.dart';
 import '../state/channel_form_controller.dart';
 
-/// Que red se conecta: el primer bloque del formulario, y el que decide todo lo
-/// que viene despues —los campos de credenciales salen del proveedor elegido.
+/// What network is connected: the form's first block, and the one that
+/// decides everything that comes after —the credential fields come from the
+/// chosen provider.
 ///
-/// El listado sale del catalogo del backend, no de esta app. Las redes que ya
-/// se pueden configurar van arriba y el resto se muestra apagado, con su
-/// leyenda: los canales se habilitan de a poco (los de Meta primero) y esconder
-/// los que faltan haria parecer que nunca van a estar.
+/// The list comes from the backend catalog, not from this app, but it is
+/// filtered down to what can actually be created today: a provider needs both
+/// its credential fields built here ([ChannelProviderModel.isSupported]) *and*
+/// a single job ([ChannelProviderModel.hasSingleScope]) — `SCOPE` is required
+/// on creation and a provider with several (Facebook, Instagram) has no picker
+/// for it yet, so offering it would connect a channel for whichever job
+/// happens to come first. The rest simply is not shown: unlike the data
+/// source or the tools, there is no "coming soon" card for a network, because
+/// the list is the backend's and grows on its own as networks are wired up.
 ///
-/// **En una edicion no se puede cambiar.** Los secretos guardados se juntaron
-/// para una red, y apuntarlos a otra dejaria valores que ahi no significan
-/// nada; el backend lo rechaza y aca directamente no se ofrece. En su lugar se
-/// muestra cual es, apagada.
+/// [_WhatsAppPersonal] is the one exception — linking a personal number (no
+/// Meta business account) through the local `baileys_server` sidecar
+/// instead of the backend catalog. Shown first, always selectable on create:
+/// unlike a catalog network it does not depend on `GET /channels/providers`
+/// having loaded, since [ChannelProviderModel.whatsappPersonal] is built
+/// locally.
+///
+/// **In an edit it cannot be changed.** The stored secrets were gathered for
+/// one network, and pointing them at another would leave values that mean
+/// nothing there; the backend rejects it and here it is simply not offered. In
+/// its place it shows which one it is, disabled.
 class ProviderPicker extends StatelessWidget {
   const ProviderPicker({super.key, required this.controller});
 
@@ -48,17 +61,19 @@ class ProviderPicker extends StatelessWidget {
         ChannelCatalogStatus.ready => ValueListenableBuilder<String>(
           valueListenable: controller.provider,
           builder: (context, selected, _) => OptionGrid(children: [
+            if (!controller.isEditing) _WhatsAppPersonal(
+              selected: selected == ChannelProviderModel.whatsappPersonalCode,
+              action: () => controller.provider.value =
+                ChannelProviderModel.whatsappPersonalCode
+            ),
             for (final provider in _visible(catalog, selected)) OptionCard(
               icon: provider.icon,
               title: provider.name,
               subtitle: _capabilities(context, provider),
               selected: provider.provider == selected,
-              // Editando, la red esta decidida: la tarjeta se muestra para
-              // saber cual es, pero no responde.
-              enabled: provider.isSupported && !controller.isEditing,
-              badge: provider.isSupported
-                ? null
-                : S.of(context).channel_type_soon,
+              // While editing, the network is decided: the card is shown so it is known
+              // which one it is, but it does not respond.
+              enabled: !controller.isEditing,
               action: () => controller.provider.value = provider.provider
             )
           ])
@@ -67,27 +82,40 @@ class ProviderPicker extends StatelessWidget {
     );
   }
 
-  /// Que redes mostrar. Editando, solo la del canal: el resto no es una opcion
-  /// y ocuparia media pantalla de tarjetas que no se pueden tocar.
+  /// What networks to show.
+  ///
+  /// While editing, only the channel's: the rest is not an option and would
+  /// take half a screen of cards that cannot be tapped. That one is shown
+  /// whatever it is, even a provider that would no longer qualify today (say
+  /// it lost its single scope in a later catalog): a channel already
+  /// connected under it does not stop being editable.
+  ///
+  /// Creating, only what is actually connectable right now — see the class
+  /// note for why the rest is left out instead of shown disabled.
   List<ChannelProviderModel> _visible(
     ChannelCatalogService catalog,
     String selected
   ) {
-    if (!controller.isEditing) return catalog.sorted;
+    if (controller.isEditing) {
+      final current = catalog.byCode(selected);
+      return current == null ? const [] : [current];
+    }
 
-    final current = catalog.byCode(selected);
-
-    return current == null ? const [] : [current];
+    return [
+      for (final provider in catalog.providers)
+        if (provider.isSupported && provider.hasSingleScope) provider
+    ];
   }
 
-  /// Que puede hacer esa red, en una linea: mensajes, comentarios, publicaciones.
+  /// What that network can do, in one line: messages, comments, posts.
   ///
-  /// Sale de `capabilities` y no de un texto fijo por red porque es lo que
-  /// diferencia dos entradas parecidas: la pagina de Facebook y Messenger son
-  /// la misma pagina, pero una responde comentarios y la otra mensajes.
+  /// It comes from `capabilities` and not from a fixed text per network
+  /// because it is what differentiates two similar entries: the Facebook page
+  /// and Messenger are the same page, but one answers comments and the other
+  /// messages.
   ///
-  /// Devuelve `null` si la red no declaro ninguna, para que la tarjeta no
-  /// guarde el lugar de un subtitulo que no existe.
+  /// Returns `null` if the network declared none, so the card does not keep
+  /// the place of a subtitle that does not exist.
   String? _capabilities(BuildContext context, ChannelProviderModel provider) {
     final labels = [
       for (final capability in provider.capabilities)
@@ -105,8 +133,33 @@ class ProviderPicker extends StatelessWidget {
   }
 }
 
-/// El catalogo no cargo. Sin el no hay formulario que dibujar —los campos de
-/// credenciales salen de ahi— asi que se ofrece reintentar en el lugar.
+/// Linking a personal WhatsApp number, without a Meta business account behind
+/// it — the way most small businesses actually run WhatsApp today.
+///
+/// Picking it does not draw the usual [CredentialsBlock]: there are no
+/// tokens to paste, so that block shows a QR-pairing notice for this
+/// provider instead (see its own doc). The actual pairing happens after the
+/// channel is created, by turning on its switch in the list
+/// (`BaileysChannelSwitch`), which is what starts `baileys_server` and
+/// brings up the QR to scan.
+class _WhatsAppPersonal extends StatelessWidget {
+  const _WhatsAppPersonal({required this.selected, required this.action});
+
+  final bool selected;
+  final void Function() action;
+
+  @override
+  Widget build(BuildContext context) => OptionCard(
+    icon: CI.whatsapp,
+    title: S.of(context).channel_type_whatsapp_personal,
+    subtitle: S.of(context).channel_type_whatsapp_personal_hint,
+    selected: selected,
+    action: action
+  );
+}
+
+/// The catalog did not load. Without it there is no form to draw —the
+/// credential fields come from there— so retrying is offered in place.
 class _Error extends StatelessWidget {
   const _Error({required this.onRetry});
 

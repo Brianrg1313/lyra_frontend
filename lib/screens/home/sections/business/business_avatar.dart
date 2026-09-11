@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-/// La imagen de una empresa: su logo si lo tiene, y si no el avatar en
-/// gradiente con la inicial de su nombre.
+/// The image of a business: its logo if it has one, and otherwise the
+/// gradient avatar with the initial of its name.
 ///
-/// Vive aca arriba y no dentro del selector o de la ficha porque una empresa se
-/// dibuja igual en los dos, solo que mas grande en uno que en otro. Cuando el
-/// avatar de una empresa cambie —otra forma, otro degradado— tiene que cambiar
-/// en todos lados a la vez, y eso solo pasa si es el mismo widget.
+/// It lives up here and not inside the selector or the card because a business
+/// is drawn the same in both, only bigger in one than in the other. When a
+/// business's avatar changes —another shape, another gradient— it has to
+/// change everywhere at once, and that only happens if it is the same widget.
 ///
-/// [url] es la direccion ya armada del logo: la arma quien tiene el archivo,
-/// poniendo su id detras de la base que entrego `/init` (ver `FileModel`). Sin
-/// ella —vacia porque la empresa no subio ninguno, o porque la base todavia no
-/// llego— y tambien si no se puede bajar, se dibuja el avatar.
+/// [url] is the already built address of the logo: the one that has the file
+/// builds it, putting its id after the base that `/init` delivered (see
+/// `FileModel`). Without it —empty because the business did not upload any, or
+/// because the base has not arrived yet— and also if it cannot be downloaded,
+/// the avatar is drawn.
 class BusinessAvatar extends StatelessWidget {
   const BusinessAvatar({
     super.key,
@@ -38,15 +39,15 @@ class BusinessAvatar extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        // Un logo que no baja no es un error que valga un cartel: la empresa se
-        // sigue reconociendo por su inicial, igual que antes de subirlo.
+        // A logo that does not download is not an error worth a banner: the business
+        // is still recognized by its initial, just like before uploading it.
         errorBuilder: (context, error, stack) => _fallback(context)
       )
     );
   }
 
-  /// El avatar en gradiente con la inicial. Sin nombre —una empresa recien
-  /// creada que todavia no se leyo— va el icono de tienda.
+  /// The gradient avatar with the initial. Without a name —a newly created
+  /// business that has not been read yet— the store icon goes.
   Widget _fallback(BuildContext context) => Container(
     width: size,
     height: size,
@@ -64,9 +65,9 @@ class BusinessAvatar extends StatelessWidget {
     ),
     child: Center(child: name.isEmpty
       ? Icon(CI.store, size: size * 0.4, color: ThemeColor.of(context).icon)
-      // La inicial se mide contra el avatar y no contra el texto de la app: el
-      // mismo widget se dibuja de 44 en una fila y de 72 en el perfil, y con un
-      // cuerpo fijo se veria diminuta en el grande.
+      // The initial is measured against the avatar and not against the app text:
+      // the same widget is drawn at 44 in a row and 72 in the profile, and with
+      // a fixed body it would look tiny in the big one.
       : TextLarge(
         name.characters.first.toUpperCase(),
         multiplier: (size * 0.4) / AppSize.text

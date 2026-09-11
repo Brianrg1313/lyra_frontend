@@ -3,37 +3,36 @@ import 'package:app/toolkit/toolkit.dart';
 
 import '../sheet_style.dart';
 
-/// La celda de un campo de tipo SKU, fuera de edicion.
+/// The cell of an SKU-type field, out of editing.
 ///
-/// Se distingue de una celda de texto en dos cosas.
+/// It's set apart from a text cell in two things.
 ///
-/// La primera es el color: el codigo va en gris ([SheetStyle.code]) y no con el
-/// del dato. Un SKU no es algo que se lea ni que se compare de un vistazo con el
-/// de la fila de al lado —es la etiqueta con la que se encuentra el producto— y
-/// en una planilla llena, en negro, es la columna que mas ruido hace: son las
-/// cadenas mas largas y las menos legibles de todas.
+/// The first is the color: the code goes in gray ([SheetStyle.code]) and not in
+/// the datum's. An SKU isn't something to read or compare at a glance with the
+/// one in the row next to it —it's the label you find the product with— and in a
+/// full sheet, in black, it's the noisiest column: they're the longest strings
+/// and the least legible of all.
 ///
-/// La segunda es que, mientras esta vacia y se puede escribir, lleva a la
-/// derecha un boton que arma un codigo al azar ([SheetController.generateSku])
-/// sin pasar por el editor. Una vez que la celda tiene algo cargado el boton se
-/// va: es solo para no dejar la primera carga en blanco, no una forma de
-/// reemplazar lo que ya se escribio.
+/// The second is that, while it's empty and can be written, it carries on the
+/// right a button that builds a random code ([SheetController.generateSku])
+/// without going through the editor. Once the cell has something loaded the
+/// button goes away: it's only so the first load doesn't stay blank, not a way
+/// to replace what had already been written.
 ///
-/// Es un boton y no un icono suelto —marco relleno, redondeado, con respuesta
-/// al pasarle el mouse—, y eso es lo que lo hace tocable a la vista. Pero sin
-/// etiqueta: una celda de planilla es angosta y un texto adentro se come la
-/// columna. Lo que hace lo dice el icono de destello, que es el de "generar" y
-/// no el de recargar que estaba antes, y el globo de ayuda al pasar por encima,
-/// como la fila de campos.
+/// It's a button and not a loose icon —filled frame, rounded, responding to the
+/// mouse hover— and that's what makes it look tappable. But with no label: a
+/// sheet cell is narrow and text inside eats the column. What it does is said by
+/// the sparkle icon, which is the "generate" one and not the reload one that was
+/// there before, and by the help balloon on hover, like the field row.
 ///
-/// Va contra el borde derecho por lo mismo que la flecha de una lista: es un
-/// control, no el dato, y de ese lado no le pisa el lugar al codigo cuando
-/// aparezca.
+/// It sits against the right border for the same reason as a list's arrow: it's
+/// a control, not the datum, and from that side it doesn't step on the code's
+/// spot when it appears.
 ///
-/// El relleno sale de [SheetStyle.frameFill] y depende de que fila sea, por lo
-/// mismo que en [SelectCell]: con la cebra la planilla usa sus dos superficies
-/// fila por medio, asi que el boton se lleva la que su fila no esta usando y se
-/// ve en las dos bandas.
+/// The fill comes from [SheetStyle.frameFill] and depends on which row it is,
+/// for the same reason as in [SelectCell]: with the zebra the sheet uses its two
+/// surfaces every other row, so the button takes the one its row isn't using and
+/// shows on both bands.
 class SkuCell extends StatelessWidget {
   const SkuCell({
     super.key,
@@ -45,24 +44,24 @@ class SkuCell extends StatelessWidget {
     required this.onGenerate
   });
 
-  /// El SKU tal como esta guardado (o tal como se acaba de escribir en el
-  /// borrador de la fila).
+  /// The SKU as stored (or as just typed in the
+  /// row's draft).
   final String value;
 
   final TextStyle style;
 
   final TextAlign alignment;
 
-  /// En que fila de la planilla esta. Decide de que banda de la cebra es su
-  /// fondo, y con eso el relleno del boton (ver [SheetStyle.frameFill]).
+  /// Which row of the sheet it's in. It decides which zebra band its
+  /// background belongs to, and with that the button's fill (see [SheetStyle.frameFill]).
   final int row;
 
-  /// Si la celda se puede escribir. Sin esto el boton apareceria tambien en un
-  /// campo que lleva el backend o en una fila cuyo registro todavia no llego.
+  /// Whether the cell can be written. Without this the button would also show on
+  /// a field the backend carries or on a row whose record hasn't arrived yet.
   final bool editable;
 
-  /// Arma un SKU nuevo y lo guarda en esta celda. `null` cuando no aplica (ver
-  /// [editable]), que es lo mismo que no mostrar el boton.
+  /// Builds a new SKU and stores it in this cell. `null` when it doesn't apply
+  /// (see [editable]), which is the same as not showing the button.
   final VoidCallback? onGenerate;
 
   @override
@@ -74,25 +73,25 @@ class SkuCell extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       textAlign: alignment,
-      // El codigo va en gris y no con el color del dato: no es algo que se lea,
-      // es la etiqueta con la que se encuentra el producto (ver
-      // [SheetStyle.code]). Es asi siempre, se pueda escribir la celda o no: el
-      // gris no dice que este apagada, dice que eso es un codigo.
+      // The code goes in gray and not in the datum's color: it isn't something to
+      // read, it's the label you find the product with (see
+      // [SheetStyle.code]). It's always like this, whether the cell can be
+      // written or not: the gray doesn't say it's off, it says that's a code.
       style: sheet.code
     );
 
     if (value.isNotEmpty || !editable || onGenerate == null) return text;
 
-    // Poco mas alto que una letra: tiene que leerse como un boton sin pesar
-    // como uno de barra, que en una fila de planilla no entra.
+    // A bit taller than a letter: it has to read as a button without weighing
+    // like a toolbar one, which in a sheet row doesn't fit.
     final size = AppSize.text * 1.8;
 
     return Row(children: [
       Expanded(child: text),
       Tooltip(
-        // El icono dice que hay algo para generar; esto, que el codigo sale de
-        // la nada y que se puede pedir otro. No es el titulo del boton: es lo
-        // que un icono solo no alcanza a contar.
+        // The icon says there's something to generate; this, that the code comes out of
+        // nowhere and that another can be asked for. It isn't the button's title: it's
+        // what an icon alone can't tell.
         message: S.of(context).product_table_view_sku_generate_hint,
         child: FeedbackButton(
           message: S.of(context).product_table_view_sku_generate,

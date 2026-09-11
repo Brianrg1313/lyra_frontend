@@ -1,17 +1,17 @@
 import 'package:app/services/connections/connection_provider_model.dart';
 
-/// Una conexion con todo lo necesario para reabrir su formulario, tal como la
-/// devuelve `GET /connections/detail/:CONNECTION_ID`.
+/// A connection with everything needed to reopen its form, exactly as
+/// `GET /connections/detail/:CONNECTION_ID` returns it.
 ///
-/// **Los secretos no vienen.** [credentials] es la lista de *nombres de clave*
-/// bajo los que hay un secreto guardado —lo justo para que el formulario diga
-/// "token de acceso: configurado" y ofrezca reemplazarlo—; los valores no salen
-/// de la base de datos, y no hay endpoint que los devuelva. Un token que se
-/// perdio se pide de nuevo a quien lo emitio, no a esta api.
+/// **The secrets don't come back.** [credentials] is the list of *key names*
+/// under which a secret is saved — just enough for the form to say "access
+/// token: configured" and offer to replace it —; the values never leave the
+/// database, and no endpoint returns them. A token that got lost is
+/// requested again from whoever issued it, not from this api.
 ///
-/// [schema] viene pegado en la misma lectura: es la descripcion del proveedor
-/// (que campos pide ese servicio), asi que el formulario se dibuja sin tener que
-/// cruzar esto con el catalogo.
+/// [schema] comes attached to this same read: it's the provider's
+/// description (what fields that service asks for), so the form can be
+/// drawn without having to cross-reference this against the catalog.
 class ConnectionDetailModel {
   const ConnectionDetailModel({
     required this.id,
@@ -36,37 +36,37 @@ class ConnectionDetailModel {
   final int position;
   final bool enabled;
 
-  /// Id de la cuenta del lado del proveedor. Lo calcula el backend a partir de
-  /// los settings, no se edita a mano.
+  /// Account id on the provider's side. The backend computes it from the
+  /// settings, it isn't edited by hand.
   final String? externalId;
 
-  /// Configuracion plana: ids de cuenta, hosts, usuarios. Es lo que **si** se
-  /// lee de vuelta.
+  /// Flat configuration: account ids, hosts, usernames. This is what **does**
+  /// get read back.
   final Map<String, dynamic> settings;
 
-  /// Nombres de clave de los secretos ya guardados. Nunca sus valores.
+  /// Key names of the secrets already saved. Never their values.
   final List<String> credentials;
 
-  /// Claves obligatorias todavia vacias, en orden de formulario.
+  /// Required keys still empty, in form order.
   final List<String> missing;
 
-  /// Trabajos de la cuenta que ya tienen un bot (`messages`, `comments`, ...).
+  /// Account jobs that already have a bot (`messages`, `comments`, ...).
   ///
-  /// Es de los bots y no de la conexion, asi que este formulario no lo edita: se
-  /// lee para saber que queda libre cuando se vaya a crear uno, que es una
-  /// decision de otra pantalla.
+  /// This belongs to the bots and not to the connection, so this form
+  /// doesn't edit it: it's read to know what's left free for when one gets
+  /// created, which is a decision made on another screen.
   final List<String> taken;
 
-  /// `true` cuando [missing] esta vacio.
+  /// `true` when [missing] is empty.
   final bool ready;
 
-  /// Descripcion del proveedor de esta conexion, para dibujar su formulario.
+  /// This connection's provider description, to draw its form.
   final ConnectionProviderModel? schema;
 
-  /// `true` si ese secreto ya esta guardado del otro lado.
+  /// `true` if that secret is already saved on the other side.
   bool hasCredential(String key) => credentials.contains(key);
 
-  /// Valor de un ajuste plano como texto, o vacio si no esta cargado.
+  /// Value of a flat setting as text, or empty if it isn't loaded.
   String setting(String key) {
     final value = settings[key];
     return value == null ? "" : value.toString();

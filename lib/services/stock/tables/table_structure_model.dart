@@ -1,60 +1,78 @@
 import 'dart:convert';
 
-/// Un campo (una columna) de una tabla, tal como lo describe
-/// `GET /tables/structure/<table_id>`.
+/// A field (a column) of a table, as described by
+/// `GET /inventory/products/builder/structure/<table_id>`.
 ///
-/// Trae cinco cosas que se usan en momentos distintos: el [id] (el FIELD_ID, el
-/// UUID publico del campo) es la clave con la que se guardan los datos en
-/// `POST /products/manage/`; el [name] es el titulo que ve el usuario en la fila
-/// de campos; el [type] (el codigo del tipo: `VECTOR`, `PRICE`, `STOCK`...)
-/// decide con que editor se carga la celda y como se alinea; el [width] es lo
-/// que mide la columna en pantalla; y las [options] son la lista de un campo
-/// `SELECT`.
+/// It carries six things used at different moments: the [id] (the FIELD_ID,
+/// the field's public UUID) is the key data is saved under in
+/// `POST /inventory/products/records/manage/`; the [name] is the header the
+/// user sees in the field row; the [type] (the type code: `TITLE`, `PRICE`,
+/// `STOCK`...) decides which editor the cell loads with and how it's
+/// aligned; the [width] is how wide the column measures on screen; the
+/// [options] are the list of an `OPTIONS` or `CATEGORIES` field; and the
+/// [unit] is the symbol its numbers are written with when the type doesn't
+/// carry one.
 class TableFieldModel {
   const TableFieldModel({
     required this.id,
     required this.name,
     this.type = "",
     this.width = 0,
-    this.options = const []
+    this.options = const [],
+    this.unit = ""
   });
 
-  /// FIELD_ID: UUID publico del campo. Vacio solo si la respuesta no lo trae,
-  /// en cuyo caso la columna se ve pero no se puede guardar.
+  /// FIELD_ID: the field's public UUID. Empty only if the response doesn't
+  /// bring it, in which case the column shows but nothing can be saved to
+  /// it.
   final String id;
 
-  /// Titulo visible de la columna.
+  /// Visible header of the column.
   final String name;
 
-  /// Codigo del tipo del campo (`VECTOR`, `PRICE`, ...), o vacio si no vino.
+  /// The field's type code (`TITLE`, `PRICE`, ...), or empty if none came.
   final String type;
 
-  /// Ancho de la columna en pantalla, tal como lo dejo el ultimo que la
-  /// arrastro, o `0` si nunca se la redimensiono (ahi manda el ancho por defecto
-  /// de la planilla).
+  /// The column's width on screen, as left by whoever last dragged it, or
+  /// `0` if it was never resized (there the sheet's default width takes
+  /// over).
   ///
-  /// Es una propiedad **de la tabla** y no de quien la mira: la estructura la
-  /// trae con los campos, asi que todos los de la empresa abren la tabla con las
-  /// columnas de la misma medida.
+  /// It's a property **of the table** and not of whoever's looking at it:
+  /// the structure brings it along with the fields, so everyone in the
+  /// business opens the table with the columns at the same size.
   final double width;
 
-  /// Las opciones entre las que elige un campo `SELECT`, en el orden en que se
-  /// ofrecen. Vacia en todos los demas tipos.
+  /// The options an `OPTIONS` or `CATEGORIES` field chooses among, in the
+  /// order they're offered. Empty in every other type.
   ///
-  /// **Le pertenecen al campo, no a la empresa**: dos columnas de lista nunca
-  /// comparten opciones, y agregarle una a esta no le agrega nada a la otra.
-  /// Vienen con la estructura y no por separado porque son parte de la columna,
-  /// como su tipo o su ancho: con la misma lectura que dibuja la tabla ya se
-  /// puede desplegar cualquiera de sus listas.
+  /// **They belong to the field, not to the business**: two list columns
+  /// never share options, and adding one to this one adds nothing to the
+  /// other. They come with the structure and not separately because they're
+  /// part of the column, like its type or its width: with the same read
+  /// that draws the table, any of its lists can already be opened.
   ///
-  /// Lo que se guarda en la celda es la opcion misma (un `SELECT` se guarda como
-  /// texto), asi que un valor cargado sobrevive a que su opcion se saque de esta
-  /// lista: se sigue leyendo tal como se capturo.
+  /// What's saved in the cell is the label itself (one in an `OPTIONS`,
+  /// several in a `CATEGORIES`) and not an index into it, so a loaded value
+  /// survives its option being removed from this list: it keeps reading
+  /// exactly as it was captured.
   final List<String> options;
 
-  /// Lee un campo. Las claves se contemplan en minusculas (como las manda la
-  /// estructura) y en mayusculas (la convencion del contrato de alta), asi el
-  /// parseo no se ata a una sola forma.
+  /// The symbol the column's numbers are written with: the currency code of
+  /// a `PRICE` or a `CURRENCY`, the unit of a `MEASURE` (`USD`, `Bs.`,
+  /// `kg`). Empty in every other type.
+  ///
+  /// **It belongs to the column and not to the value**: a saved amount is a
+  /// bare number, and this is what says what currency it's in. That's why
+  /// it travels with the structure and not with each record —it would be
+  /// the same text repeated in every row— and that's why a column with no
+  /// unit isn't an error: a price without one is written in the currency
+  /// the business bills in, which is where it came from before columns
+  /// could have their own.
+  final String unit;
+
+  /// Reads a field. Keys are checked in lowercase (as the structure sends
+  /// them) and in uppercase (the creation contract's convention), so
+  /// parsing doesn't lock to a single shape.
   factory TableFieldModel.fromJson(Map json) {
     final id = (json["id"] ?? json["ID"] ?? json["field_id"] ?? json["FIELD_ID"])
       ?.toString() ?? "";
@@ -63,21 +81,22 @@ class TableFieldModel {
 
     return TableFieldModel(
       id: id,
-      // Sin nombre, el id sirve de titulo antes que dejar la columna en blanco.
+      // Without a name, the id works as a title before leaving the column blank.
       name: name.isNotEmpty ? name : id,
       type: (json["type"] ?? json["TYPE"] ?? "").toString(),
       width: _width(json["width"] ?? json["WIDTH"]),
-      options: _options(json["options"] ?? json["OPTIONS"])
+      options: _options(json["options"] ?? json["OPTIONS"]),
+      unit: (json["unit"] ?? json["UNIT"] ?? "").toString().trim()
     );
   }
 
-  /// Las opciones de un campo de lista. Se aceptan como lista (la forma en que
-  /// las manda la estructura) y como el texto JSON de esa lista, por si el
-  /// backend devuelve la columna sin decodificar.
+  /// The options of a list field. Accepted as a list (the shape the
+  /// structure sends them in) and as the JSON text of that list, in case the
+  /// backend returns the column undecoded.
   ///
-  /// Lo que no se pueda leer se descarta y el campo queda sin opciones: una
-  /// lista rara deja la columna como un `SELECT` vacio —al que igual se le
-  /// pueden crear opciones— en vez de romper la carga de la tabla.
+  /// Anything that can't be read is discarded and the field is left with no
+  /// options: an odd list leaves the column as an empty list —to which
+  /// options can still be added— instead of breaking the table's load.
   static List<String> _options(dynamic raw) {
     if (raw == null) return const [];
 
@@ -100,11 +119,11 @@ class TableFieldModel {
     ];
   }
 
-  /// El ancho guardado de la columna. Una columna que nunca se arrastro viene en
-  /// `null`, y cualquier cosa que no se pueda leer como un ancho valido —un
-  /// texto, un cero, un negativo— se trata igual: `0`, que la planilla lee como
-  /// "el de siempre". Asi un dato raro deja la columna con el ancho por defecto
-  /// en vez de romper la carga de la tabla.
+  /// The column's saved width. A column that was never dragged arrives as
+  /// `null`, and anything that can't be read as a valid width —a text, a
+  /// zero, a negative— is treated the same way: `0`, which the sheet reads
+  /// as "the usual one". That way an odd value leaves the column at its
+  /// default width instead of breaking the table's load.
   static double _width(dynamic raw) {
     if (raw == null) return 0;
 
@@ -116,19 +135,19 @@ class TableFieldModel {
   }
 }
 
-/// Estructura de una tabla: su cabecera (nombre, descripcion, color, fecha,
-/// cuantos registros tiene) y sus campos, tal como los devuelve
-/// `GET /tables/structure/<table_id>`.
+/// A table's structure: its header (name, description, color, date, how
+/// many records it has) and its fields, as returned by
+/// `GET /inventory/products/builder/structure/<table_id>`.
 ///
-/// Es la primera de las dos fases con las que se abre una tabla. La estructura
-/// se pide una sola vez —no cambia mientras se navega por los datos— y es lo que
-/// permite dibujar la planilla entera (la fila de campos y las columnas) antes
-/// de que llegue el primer dato. La segunda fase, los registros, se lee aparte y
-/// paginada.
+/// It's the first of the two phases a table opens with. The structure is
+/// requested only once —it doesn't change while navigating through the
+/// data— and it's what lets the whole sheet be drawn (the field row and the
+/// columns) before the first piece of data arrives. The second phase, the
+/// records, is read separately and paginated.
 ///
-/// Los campos vienen en la forma columnar (`{"keys": [...], "values": [...]}`)
-/// que ya usan `/init` y `/business/list/`: [keys] nombra las propiedades y cada
-/// fila de [values] es un campo, alineado por posicion.
+/// The fields arrive in the columnar shape (`{"keys": [...], "values":
+/// [...]}`) already used by `/init` and `/business/list/`: [keys] names the
+/// properties and each row of [values] is a field, aligned by position.
 class TableStructureModel {
   const TableStructureModel({
     this.id = "",
@@ -140,40 +159,41 @@ class TableStructureModel {
     this.fields = const []
   });
 
-  /// UUID de la tabla.
+  /// The table's UUID.
   final String id;
 
-  /// Nombre visible de la tabla. Es el titulo de la pantalla.
+  /// The table's visible name. It's the screen's title.
   final String name;
 
-  /// Vacia cuando la tabla se creo sin descripcion (es opcional en el alta).
+  /// Empty when the table was created without a description (it's optional
+  /// at creation).
   final String description;
 
-  /// Literal ARGB con el que se identifica visualmente la tabla
-  /// (`0xFF2196F3`), tal como viaja al backend. Vacio si no vino.
+  /// ARGB literal the table is visually identified with (`0xFF2196F3`),
+  /// exactly as it travels to the backend. Empty if none came.
   final String color;
 
-  /// Fecha de creacion, o `null` si no vino o no se pudo leer.
+  /// Creation date, or `null` if none came or it couldn't be read.
   final DateTime? date;
 
-  /// Cuantos registros tiene la tabla en total, no en la pagina que se este
-  /// viendo.
+  /// How many records the table has in total, not in the page currently
+  /// being viewed.
   final int records;
 
-  /// Las columnas de la tabla, en el orden en que se muestran.
+  /// The table's columns, in the order they're shown.
   final List<TableFieldModel> fields;
 
-  /// `true` mientras la estructura este sin cargar: una tabla siempre tiene id.
+  /// `true` while the structure is still unloaded: a table always has an id.
   bool get isEmpty => id.isEmpty;
 
-  /// Decodifica la estructura sin atarse a un unico formato: los campos se
-  /// aceptan en la forma columnar del contrato y tambien como una lista de
-  /// objetos, por si el backend cambia de forma.
+  /// Decodes the structure without locking to a single format: fields are
+  /// accepted in the contract's columnar shape and also as a list of
+  /// objects, in case the backend changes shape.
   factory TableStructureModel.fromResponse(dynamic data) {
     if (data is! Map) return const TableStructureModel();
 
-    // Algunos endpoints envuelven la respuesta en una clave: se baja un nivel
-    // antes de rendirse.
+    // Some endpoints wrap the response in a key: go down one level before
+    // giving up.
     if (data["id"] == null && data["ID"] == null) {
       final inner = data["data"] ?? data["table"] ?? data["structure"];
       if (inner is Map) return TableStructureModel.fromResponse(inner);
@@ -195,8 +215,8 @@ class TableStructureModel {
     );
   }
 
-  /// Lee los campos en cualquiera de sus dos formas: la tabla columnar del
-  /// contrato o una lista de objetos.
+  /// Reads the fields in either of their two shapes: the contract's
+  /// columnar table or a list of objects.
   static List<TableFieldModel> _fields(dynamic raw) {
     if (raw is Map) {
       final keys = raw["keys"] ?? raw["KEYS"];
@@ -210,7 +230,7 @@ class TableStructureModel {
                 for (int i = 0; i < keys.length && i < row.length; i++)
                   keys[i].toString(): row[i]
               })
-            // Por las dudas la fila venga ya como objeto.
+            // Just in case the row already comes as an object.
             else if (row is Map)
               TableFieldModel.fromJson(row)
         ];
@@ -224,8 +244,8 @@ class TableStructureModel {
         for (final field in raw)
           if (field is Map)
             TableFieldModel.fromJson(field)
-          // Un campo pelado solo da el nombre: se muestra igual, aunque sin id
-          // no se pueda guardar nada en el.
+          // A bare field only gives the name: it's still shown, though
+          // without an id nothing can be saved to it.
           else if (field != null)
             TableFieldModel(id: "", name: field.toString())
       ];
@@ -234,8 +254,9 @@ class TableStructureModel {
     return const [];
   }
 
-  /// La fecha llega en ISO 8601 (`2026-07-14T10:32:11.000Z`). Una fecha ilegible
-  /// no rompe la carga de la tabla: se descarta y la estructura se usa igual.
+  /// The date arrives in ISO 8601 (`2026-07-14T10:32:11.000Z`). An
+  /// unreadable date doesn't break the table's load: it's discarded and the
+  /// structure is used all the same.
   static DateTime? _date(dynamic raw) {
     if (raw == null) return null;
     return DateTime.tryParse(raw.toString());

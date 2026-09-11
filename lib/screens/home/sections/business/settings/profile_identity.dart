@@ -6,70 +6,70 @@ import 'package:app/services/business/business_profile_model.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/modals/edit_business_field/business_field.dart';
+import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
 import 'profile_block.dart';
 import 'profile_field.dart';
 import 'profile_incorporation.dart';
 import 'profile_select.dart';
 
-/// Quien es la empresa en papel: su razon social, su handle, a que se dedica,
-/// con que identificador fiscal responde y desde cuando existe.
+/// Who the company is on paper: its legal name, its handle, what it does,
+/// which fiscal identifier it answers with and since when it exists.
 ///
-/// Es un bloque como los demas y no la cabecera del perfil: el nombre en
-/// grande con la situacion legal va arriba de todo ([BusinessProfileHeader]) y
-/// el logo en la columna de al lado, y esto son datos que se leen y se editan
-/// uno por uno, como los de operacion o los de contacto.
+/// It's a block like the others and not the profile's header: the name up
+/// large with the legal status goes at the very top ([BusinessProfileHeader])
+/// and the logo in the column beside it, and these are data read and edited
+/// one by one, like the operation or contact ones.
 ///
-/// El nombre esta en los dos lados y no es una repeticion: arriba se lee de
-/// quien es la ficha, y aca se corrige. Lo mismo con el handle y el lema, que
-/// se muestran donde se cargan.
+/// The name is on both sides and it isn't a repetition: up top it's read whose
+/// the sheet is, and here it's corrected. Same with the handle and the caption,
+/// which are shown where they're loaded.
 ///
-/// Una empresa recien creada tiene el nombre, el sector y poco mas: el resto de
-/// las filas se dibujan vacias, porque desde que existe `PUT /business/profile/`
-/// son el unico lugar desde donde se completan (ver [ProfileField]).
+/// A newly created company has the name, the sector and little else: the rest
+/// of the rows are drawn empty, because since `PUT /business/profile/` exists
+/// they're the only place from which they're completed (see [ProfileField]).
 ///
-/// Los juegos de caracteres y los largos de cada dato son **los del backend**
-/// (`lib/extras/rules.json`), no una version parecida: lo que la ficha acepte y
-/// el servidor no vuelve como un error que no se puede corregir sin adivinar, y
-/// lo que la ficha rechace y el servidor acepte es un dato que no se puede
-/// cargar.
+/// The character sets and lengths of each datum are **the backend's**
+/// (`lib/extras/rules.json`), not a similar version: what the sheet accepts
+/// and the server doesn't comes back as an error that can't be corrected
+/// without guessing, and what the sheet rejects and the server accepts is a
+/// datum that can't be loaded.
 class BusinessProfileIdentity extends StatelessWidget {
   const BusinessProfileIdentity({super.key, required this.profile});
 
   final BusinessProfileModel profile;
 
-  /// El nombre corto es el que va en listas y menus, asi que no lleva
-  /// puntuacion: letras (con tildes y eñe), digitos, espacios y guiones.
+  /// The short name is the one that goes in lists and menus, so it carries no
+  /// punctuation: letters (with accents and ñ), digits, spaces and dashes.
   static const _namePattern = "[A-Za-z0-9 _ñáéíóúÑÁÉÍÓÚ-]";
 
-  /// El lema es una frase, asi que lleva la puntuacion de una: signos de
-  /// apertura y cierre, comillas, parentesis y los simbolos que aparecen en un
-  /// eslogan (`&`, `%`, `+`).
+  /// The caption is a sentence, so it carries a sentence's punctuation: opening
+  /// and closing marks, quotes, parentheses and the symbols that appear in a
+  /// slogan (`&`, `%`, `+`).
   static const _captionPattern =
     "[A-Za-z0-9 .,;:!¡?¿'\"()/&%@#+=*_üÜñáéíóúÑÁÉÍÓÚ-]";
 
-  /// Letras (con tildes y dieresis), eñe, digitos y la puntuacion habitual de
-  /// una razon social: `Acme S.A.`, `Foo & Bar, Ltd.` Es el mismo juego que
-  /// acepta el alta: es el mismo nombre, escrito en otro momento.
+  /// Letters (with accents and diaeresis), ñ, digits and the habitual
+  /// punctuation of a legal name: `Acme S.A.`, `Foo & Bar, Ltd.` It's the same
+  /// set the onboarding accepts: it's the same name, written at another time.
   static const _legalNamePattern = "[A-Za-z0-9 .,&'()üÜñáéíóúÑÁÉÍÓÚ-]";
 
-  /// El handle es para enlaces y busqueda, asi que no lleva espacios ni
-  /// puntuacion suelta. El backend lo guarda en minusculas: escribirlo con
-  /// mayusculas no es un error, se lo pasa a minusculas al guardarlo.
+  /// The handle is for links and search, so it carries no spaces or loose
+  /// punctuation. The backend stores it in lowercase: writing it in uppercase
+  /// isn't an error, it's lowercased on save.
   static const _nicknamePattern = "[A-Za-z0-9._-]";
 
-  /// Identificadores fiscales de cualquier pais: letras, digitos, puntos y
-  /// guiones (`J-12345678-9`, `B12345678`).
+  /// Fiscal identifiers of any country: letters, digits, dots and dashes
+  /// (`J-12345678-9`, `B12345678`).
   static const _taxIdPattern = "[A-Za-z0-9.-]";
 
   @override
   Widget build(BuildContext context) => ProfileBlock(
     title: S.of(context).business_profile_section_identity,
     fields: [
-      // El nombre corto es lo unico de la identidad que no se puede vaciar: es
-      // con lo que la empresa aparece nombrada en todas partes, y una fila del
-      // selector sin texto no es una empresa sin nombre, es una fila rota.
+      // The short name is the only thing of the identity that can't be emptied:
+      // it's what the company appears named by everywhere, and a selector row
+      // without text isn't a company without a name, it's a broken row.
       ProfileField(
         icon: CI.bookmark,
         label: S.of(context).business_profile_name,
@@ -114,9 +114,9 @@ class BusinessProfileIdentity extends StatelessWidget {
         icon: CI.user_circle,
         label: S.of(context).business_profile_nickname,
         description: S.of(context).business_profile_nickname_note,
-        // Se lee con arroba y se edita sin ella: el arroba es como se escribe
-        // un handle, no parte del que se guarda. Sin handle no se escribe
-        // ninguna: el arroba solo no es un dato.
+        // Read with the at-sign and edited without it: the at-sign is how a
+        // handle is written, not part of what's saved. Without a handle none
+        // is written: the bare at-sign isn't a datum.
         value: profile.nickname.isEmpty ? "" : "@${profile.nickname}",
         field: BusinessField.text(
           key: "NICKNAME",
@@ -126,8 +126,8 @@ class BusinessProfileIdentity extends StatelessWidget {
           max: 32
         )
       ),
-      // El sector se elige de la misma lista con la que se crea la empresa, asi
-      // que lo que se elige aca se lee igual en las dos pantallas.
+      // The sector is chosen from the same list the company is created with, so
+      // what's chosen here reads the same on both screens.
       ProfileSelectField(
         icon: CI.store,
         label: S.of(context).business_profile_activity,
@@ -157,14 +157,14 @@ class BusinessProfileIdentity extends StatelessWidget {
           max: 32
         )
       ),
-      // La fecha no se escribe de corrido: se carga en tres campos, uno por
-      // parte (ver [BusinessProfileIncorporation]). Escrita entera habia que
-      // acertarle al formato del backend, que no es el formato en el que nadie
-      // escribe una fecha.
+      // The date isn't typed straight through: it's loaded in three fields, one
+      // per part (see [BusinessProfileIncorporation]). Written in full you'd
+      // have to hit the backend's format, which isn't the format anyone writes
+      // a date in.
       BusinessProfileIncorporation(date: profile.incorporationDate),
-      // La situacion legal ya se ve como etiqueta bajo el nombre; lo que no
-      // cabe ahi es desde cuando esta verificada, que es un dato y no un
-      // estado. No se edita: la otorga el proceso de verificacion.
+      // The legal status is already seen as a tag under the name; what doesn't
+      // fit there is since when it's been verified, which is a datum and not a
+      // state. It isn't edited: the verification process grants it.
       if (profile.verifiedDate != null) ProfileField(
         icon: CI.chack_circle,
         label: S.of(context).business_profile_verified_date,
@@ -174,10 +174,10 @@ class BusinessProfileIdentity extends StatelessWidget {
     ]
   );
 
-  /// La fecha con el formato del idioma de la app. Lo resuelve
-  /// [MaterialLocalizations] y no un formateador propio: es el mismo que ya usa
-  /// todo lo demas de Flutter, y viene inicializado con los idiomas que la app
-  /// declara.
+  /// The date in the format of the app's language. It's resolved by
+  /// [MaterialLocalizations] and not a custom formatter: it's the same one
+  /// everything else in Flutter already uses, and it comes initialized with the
+  /// languages the app declares.
   String _date(BuildContext context, DateTime value) =>
     MaterialLocalizations.of(context).formatShortDate(value);
 

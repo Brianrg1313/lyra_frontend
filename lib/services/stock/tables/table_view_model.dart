@@ -1,13 +1,13 @@
 import 'package:app/services/stock/tables/table_structure_model.dart';
 
-/// Una columna de una tabla, tal como la describe una pagina de
-/// `POST /tables/records/`.
+/// A column of a table, as described by a page of
+/// `POST /inventory/products/records/list/`.
 ///
-/// Trae tres cosas que se usan en distintos momentos: el [id] (el FIELD_ID, el
-/// UUID publico del campo) es la clave con la que se guardan los datos en
-/// `POST /products/manage/`; el [name] es el encabezado que ve el usuario; y el
-/// [type] (el codigo del tipo: `TEXT`, `PRICE`, `NUMBER`...) decide con que
-/// editor se carga la celda.
+/// It carries three things used at different moments: the [id] (the
+/// FIELD_ID, the field's public UUID) is the key data is saved under in
+/// `POST /inventory/products/records/manage/`; the [name] is the header the
+/// user sees; and the [type] (the type code: `TEXT`, `PRICE`, `NUMBER`...)
+/// decides which editor the cell loads with.
 class TableColumnModel {
   const TableColumnModel({
     required this.id,
@@ -15,42 +15,43 @@ class TableColumnModel {
     this.type = ""
   });
 
-  /// FIELD_ID: UUID publico del campo. Vacio solo si la respuesta no lo trae,
-  /// en cuyo caso la columna no se puede guardar.
+  /// FIELD_ID: the field's public UUID. Empty only if the response doesn't
+  /// bring it, in which case the column can't be saved.
   final String id;
 
-  /// Encabezado visible.
+  /// Visible header.
   final String name;
 
-  /// Codigo del tipo del campo (`TEXT`, `PRICE`, ...), o vacio si no vino.
+  /// The field's type code (`TEXT`, `PRICE`, ...), or empty if none came.
   final String type;
 }
 
-/// Una fila de datos. Los valores van en el mismo orden que
-/// [TableViewModel.columns], asi que se leen por posicion.
+/// A row of data. Values go in the same order as
+/// [TableViewModel.columns], so they're read by position.
 class TableRowModel {
   const TableRowModel(this.values, {this.id = ""});
 
   final List<dynamic> values;
 
-  /// Identificador del registro, que viaja fuera de los campos: es la primera
-  /// columna de la pagina (`keys: ["id", <field_id>, ...]`) y no se muestra.
+  /// The record's identifier, which travels outside the fields: it's the
+  /// first column of the page (`keys: ["id", <field_id>, ...]`) and isn't
+  /// shown.
   ///
-  /// Es lo que hace editable una fila ya guardada: sin el se la puede leer,
-  /// pero no hay a que registro mandarle el cambio. Vacio en las filas de una
-  /// respuesta que no lo trae.
+  /// It's what makes an already-saved row editable: without it it can be
+  /// read, but there's no record to send the change to. Empty in the rows of
+  /// a response that doesn't bring it.
   final String id;
 
-  /// Valor de la celda en la columna [index], o `null` si la fila es mas corta.
+  /// The cell's value at column [index], or `null` if the row is shorter.
   dynamic at(int index) =>
     index >= 0 && index < values.length ? values[index] : null;
 
-  /// La misma fila con otro valor en [index].
+  /// The same row with a different value at [index].
   ///
-  /// Se copia en vez de escribirse encima porque las filas se comparan por
-  /// identidad para decidir que se repinta: una fila nueva es la señal de que
-  /// esa celda cambio. Una fila mas corta que [index] se completa con vacios,
-  /// que es el caso de una columna recien creada en la que todavia no hay nada.
+  /// It's copied instead of overwritten because rows are compared by
+  /// identity to decide what gets repainted: a new row is the signal that
+  /// that cell changed. A row shorter than [index] is padded with empties,
+  /// which is the case for a just-created column that has nothing in it yet.
   TableRowModel withValue(int index, dynamic value) {
     if (index < 0) return this;
 
@@ -64,13 +65,12 @@ class TableRowModel {
   }
 }
 
-/// Una pagina de datos de una tabla: los encabezados (las columnas, con su
-/// FIELD_ID) y las filas de esa pagina. Es lo que se pinta con `DataTableView`
-/// de `core/tables`.
+/// A page of a table's data: the headers (the columns, with their FIELD_ID)
+/// and that page's rows. It's what `DataTableView` from `core/tables` paints.
 ///
-/// La lectura es paginada (`POST /tables/records/`), asi que cada
-/// [TableViewModel] es solo un tramo de la tabla, no la tabla entera; quien
-/// pagina es [TableViewService].
+/// The read is paginated (`POST /inventory/products/records/list/`), so each
+/// [TableViewModel] is only a stretch of the table, not the whole thing;
+/// [TableViewService] is what paginates.
 class TableViewModel {
   const TableViewModel({
     this.columns = const [],
@@ -82,22 +82,22 @@ class TableViewModel {
 
   bool get isEmpty => rows.isEmpty;
 
-  /// Devuelve esta pagina reordenada contra las columnas de la estructura.
+  /// Returns this page reordered against the structure's columns.
   ///
-  /// Quien manda sobre las columnas es la estructura, que se cargo antes y una
-  /// sola vez; la pagina solo aporta los valores. Como cada pagina trae sus
-  /// propios encabezados, sus valores se reacomodan al orden de la estructura
-  /// buscando cada campo por FIELD_ID (y, si la pagina no lo trae, por nombre),
-  /// asi la celda de una columna siempre muestra el dato de esa columna aunque
-  /// las dos respuestas no coincidan en el orden.
+  /// The structure, loaded earlier and only once, is what decides the
+  /// columns; the page only contributes the values. Since each page brings
+  /// its own headers, its values are rearranged to the structure's order by
+  /// looking up each field by FIELD_ID (and, if the page doesn't bring it, by
+  /// name), so a column's cell always shows that column's data even when the
+  /// two responses don't agree on order.
   ///
-  /// Un campo que la pagina no trae queda en `null`, que se ve como celda vacia.
-  /// Si la pagina no trae encabezados, se respeta el orden posicional: es lo
-  /// unico que se puede suponer.
+  /// A field the page doesn't bring stays `null`, which shows as an empty
+  /// cell. If the page brings no headers, positional order is kept: it's the
+  /// only thing that can be assumed.
   ///
-  /// De esa misma pasada sale el id de cada registro ([_idPosition]), que es la
-  /// columna que **no** es de ningun campo: no se muestra, pero es lo que
-  /// despues permite editar la fila.
+  /// The same pass produces each record's id ([_idPosition]), which is the
+  /// column that **isn't** any field's: it isn't shown, but it's what later
+  /// lets the row be edited.
   TableViewModel alignedTo(List<TableFieldModel> fields) {
     if (fields.isEmpty) return this;
 
@@ -126,14 +126,14 @@ class TableViewModel {
     );
   }
 
-  /// Cual de los encabezados de la pagina es el id del registro, o `-1` si no
-  /// se lo puede distinguir.
+  /// Which of the page's headers is the record's id, or `-1` if it can't be
+  /// told apart.
   ///
-  /// Solo se busca entre las columnas que no quedaron emparejadas con ningun
-  /// campo ([used]): el id viaja al lado de los datos pero no es uno de ellos,
-  /// y un campo llamado "id" es un campo como cualquier otro. De esas, se toma
-  /// la que se llame como un identificador y, si ninguna lo hace, la primera de
-  /// la pagina, que es donde la pone el contrato.
+  /// Only searched among the columns that didn't end up matched to any field
+  /// ([used]): the id travels alongside the data but isn't one of the
+  /// fields, and a field named "id" is a field like any other. Of those, the
+  /// one named like an identifier is picked, and if none is, the page's
+  /// first one, which is where the contract puts it.
   int _idPosition(List<int> used) {
     int? first;
 
@@ -149,39 +149,40 @@ class TableViewModel {
     return first == 0 ? 0 : -1;
   }
 
-  /// Posicion que ocupa [field] en los encabezados de esta pagina, o `-1` si la
-  /// pagina no lo trae.
+  /// The position [field] occupies in this page's headers, or `-1` if the
+  /// page doesn't bring it.
   int _positionOf(TableFieldModel field) {
     if (field.id.isNotEmpty) {
       final byId = columns.indexWhere((column) => column.id == field.id);
       if (byId >= 0) return byId;
 
-      // El contrato manda los encabezados pelados y son los FIELD_ID
-      // (`keys: ["id", <field_id>, ...]`), asi que ahi el "nombre" de la
-      // columna es su id: la primera columna, la del id del registro, no
-      // empareja con ningun campo y por eso no se muestra.
+      // The contract sends bare headers as the FIELD_IDs themselves
+      // (`keys: ["id", <field_id>, ...]`), so there the column's "name" is
+      // its id: the first column, the record's id, doesn't match any field
+      // and so isn't shown.
       final byKey = columns.indexWhere(
         (column) => column.id.isEmpty && column.name == field.id
       );
       if (byKey >= 0) return byKey;
     }
 
-    // Sin FIELD_ID en la pagina, el nombre es lo unico que queda para
-    // emparejarlos.
+    // Without a FIELD_ID on the page, the name is the only thing left to
+    // match them by.
     return columns.indexWhere(
       (column) => column.id.isEmpty && column.name == field.name
     );
   }
 
-  /// Decodifica una pagina sin atarse a un unico formato: acepta la tabla
-  /// columnar (`{"keys": [...], "values": [...]}`) que ya usan `/init` y
-  /// `/business/list/`, una lista de objetos, o cualquiera de esas dos envuelta
-  /// en una clave. Asi el parseo no se rompe si el backend cambia de forma.
+  /// Decodes a page without locking to a single format: it accepts the
+  /// columnar table (`{"keys": [...], "values": [...]}`) already used by
+  /// `/init` and `/business/list/`, a list of objects, or either of those two
+  /// wrapped in a key. That way parsing doesn't break if the backend changes
+  /// shape.
   ///
-  /// En el formato columnar cada encabezado (`keys[i]`) puede venir como un
-  /// objeto con el FIELD_ID, el nombre y el tipo, o como un texto pelado (y ahi
-  /// solo se tiene el nombre). Las filas (`values`) van alineadas por posicion
-  /// con los encabezados.
+  /// In the columnar format each header (`keys[i]`) can come as an object
+  /// with the FIELD_ID, the name and the type, or as bare text (in which case
+  /// only the name is known). Rows (`values`) are aligned by position with the
+  /// headers.
   factory TableViewModel.fromResponse(dynamic data) {
     if (data is Map) {
       final keys = data["keys"] ?? data["columns"] ?? data["fields"];
@@ -196,8 +197,9 @@ class TableViewModel {
             for (final row in values)
               if (row is List)
                 TableRowModel(List<dynamic>.of(row))
-              // Por las dudas la fila venga como objeto: se ordena contra las
-              // columnas, buscando el valor por FIELD_ID y, si no, por nombre.
+              // Just in case the row comes as an object: it's ordered
+              // against the columns, looking up the value by FIELD_ID and,
+              // failing that, by name.
               else if (row is Map)
                 TableRowModel([
                   for (final column in columns)
@@ -207,14 +209,15 @@ class TableViewModel {
         );
       }
 
-      // Algunos endpoints envuelven la pagina (y su metadata de paginacion) en
-      // una clave: se baja un nivel a buscar los datos.
+      // Some endpoints wrap the page (and its pagination metadata) in a key:
+      // go down one level to find the data.
       final inner = data["data"] ?? data["results"] ?? data["table"] ?? data["page"];
       if (inner is List || inner is Map) return TableViewModel.fromResponse(inner);
     }
 
-    // Lista de objetos: cada fila es un mapa. Las columnas salen de la primera
-    // fila (sin FIELD_ID, que ese formato no lo trae) y el orden es el del JSON.
+    // List of objects: each row is a map. Columns come from the first row
+    // (with no FIELD_ID, since that format doesn't bring one) and the order
+    // is the JSON's.
     if (data is List) {
       final maps = [for (final row in data) if (row is Map) row];
       if (maps.isEmpty) return const TableViewModel();
@@ -236,10 +239,10 @@ class TableViewModel {
     return const TableViewModel();
   }
 
-  /// Lee un encabezado en cualquiera de sus dos formas: un objeto con el
-  /// FIELD_ID, el nombre y el tipo, o un texto pelado que solo da el nombre. Las
-  /// claves se contemplan en mayusculas (el contrato) y minusculas (una lectura
-  /// habitual) por las dudas.
+  /// Reads a header in either of its two forms: an object with the FIELD_ID,
+  /// the name and the type, or bare text that only gives the name. Keys are
+  /// checked in uppercase (the contract) and lowercase (a common reading) just
+  /// in case.
   static TableColumnModel _column(dynamic key) {
     if (key is Map) {
       final id = (key["ID"] ?? key["id"] ?? key["FIELD_ID"] ?? key["field_id"] ?? key["uuid"])?.toString() ?? "";
@@ -247,8 +250,8 @@ class TableViewModel {
 
       return TableColumnModel(
         id: id,
-        // Sin nombre, el id sirve de encabezado antes que dejar la columna en
-        // blanco.
+        // Without a name, the id works as a header before leaving the
+        // column blank.
         name: name.isNotEmpty ? name : id,
         type: (key["TYPE"] ?? key["type"] ?? "").toString()
       );

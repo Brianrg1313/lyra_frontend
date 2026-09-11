@@ -6,16 +6,17 @@ import 'package:app/services/channels/channel_provider_model.dart';
 
 import '../state/channel_form_controller.dart';
 
-/// Que le falta a un canal para poder funcionar, arriba de su formulario.
+/// What a channel is missing to be able to work, above its form.
 ///
-/// Solo aparece editando uno incompleto, que es el caso normal y no una
-/// anomalia: un canal se registra antes de que Meta emita sus tokens y se
-/// vuelve despues a terminarlo. Cuando se vuelve, esto es lo que dice **a que**
-/// se volvio, sin tener que recorrer quince campos buscando cual quedo vacio.
+/// It only appears when editing an incomplete one, which is the normal case
+/// and not an anomaly: a channel is registered before Meta issues its tokens
+/// and is returned to later to finish it. When it is returned to, this is
+/// what says **what for**, without having to go through fifteen fields
+/// looking for which one was left empty.
 ///
-/// Los nombres salen del esquema del proveedor y no de las claves crudas: el
-/// backend responde `missing: ["access_token", "app_secret"]` y lo que hay que
-/// leer es "Access token" y "App secret".
+/// The names come from the provider's schema and not from the raw keys: the
+/// backend responds `missing: ["access_token", "app_secret"]` and what has to
+/// be read is "Access token" and "App secret".
 class MissingBanner extends StatelessWidget {
   const MissingBanner({super.key, required this.controller});
 
@@ -32,8 +33,8 @@ class MissingBanner extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final schema = detail.schema;
 
-    // La clave cruda es el ultimo recurso: si el esquema no vino, "access_token"
-    // dice menos que "Access token" pero sigue siendo la pista correcta.
+    // The raw key is the last resort: if the schema did not come, "access_token"
+    // says less than "Access token" but is still the right clue.
     final labels = [
       for (final key in detail.missing) _labelOf(schema, key)
     ];
@@ -68,7 +69,7 @@ class MissingBanner extends StatelessWidget {
     );
   }
 
-  /// Etiqueta de una clave segun el esquema del proveedor.
+  /// Label of a key according to the provider's schema.
   static String _labelOf(ChannelProviderModel? schema, String key) {
     for (final field in schema?.fields ?? const <ChannelProviderField>[]) {
       if (field.key == key) return field.label;

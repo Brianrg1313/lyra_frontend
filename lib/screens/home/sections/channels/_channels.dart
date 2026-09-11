@@ -1,38 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-import './conversations/_conversations.dart';
-import './channel_list/_channel_list.dart';
+// PACKAGES
+import 'package:provider/provider.dart';
+import 'package:core/button.dart';
 
-/// Canales: es el contenido de la seccion `channels` del home.
+// SERVICES
+import 'package:app/services/business/business_service.dart';
+import 'package:app/services/channels/channel_catalog_service.dart';
+import 'package:app/services/channels/channels_service.dart';
+
+// WIDGETS
+import 'package:app/screens/modals/channels/create_channel/_create_channel.dart';
+
+import 'channel_list/_channel_list.dart';
+
+/// Channels: the content of the home's `channels` section.
 ///
-/// Un canal es una cuenta de una red (un numero de WhatsApp, una pagina de
-/// Facebook, un perfil de Instagram) conectada a la empresa, con un modelo de
-/// IA atendiendo del otro lado. El canal **es** el bot: no hay uno sin el otro,
-/// asi que el listado de canales es el listado de bots de la empresa.
+/// A channel is an account on a network (a WhatsApp number, a Facebook page,
+/// an Instagram profile) connected to the business, with an AI model answering
+/// on the other side. The channel **is** the bot: there is no one without the
+/// other.
 ///
-/// La pantalla son dos paneles al lado. A la derecha, los canales: son pocos
-/// —una empresa tiene tres o cuatro cuentas, no cien— y se miran para elegir,
-/// no para leerlos. A la izquierda, las conversaciones del que se este mirando,
-/// que es donde de verdad se pasa el tiempo: son mensajes, crecen sin techo y
-/// se leen renglon por renglon.
-///
-/// El panel de la izquierda es todavia un placeholder ([ConversationsPanel]) y
-/// por eso el de la derecha no tiene canal seleccionado: la seleccion recien
-/// tiene sentido cuando haya conversaciones que mostrar de el.
-class ChannelsSection extends StatelessWidget {
+/// A channel no longer carries a name or a description the company has to
+/// type in: what identifies it is what it already has for free —its network
+/// and the table it answers from— which is why the screen is a single panel
+/// and not two: there is nothing left that needs a wide list of its own next
+/// to a conversations panel that does not exist yet. The grid shows every
+/// channel at a glance, with a switch on each one to pause it without opening
+/// its form.
+class ChannelsSection extends StatefulWidget {
   const ChannelsSection({super.key});
 
-  /// Ancho del panel de canales. Es fijo y no una fraccion del ancho de la
-  /// pantalla porque una fila de canal mide siempre lo mismo —un icono, el
-  /// nombre y su estado— y ensancharla no muestra nada mas. Todo lo que sobra
-  /// se lo quedan las conversaciones, que si aprovechan el espacio.
-  static double get _listWidth => AppSize.action * 7;
+  @override
+  State<ChannelsSection> createState() => _ChannelsSectionState();
+}
+
+class _ChannelsSectionState extends State<ChannelsSection> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Loads notify their listeners; they are deferred to the first frame so a
+    // rebuild is not triggered while the tree is still mounting.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      _load();
+
+      // The catalog gives each card the name and icon of its network. It does
+      // not belong to this screen: it is the same cache the create form uses,
+      // so this only primes it if nobody did yet.
+      context.read<ChannelCatalogService>().load();
+    });
+  }
+
+  /// Requests the channels of the active business. The service caches per
+  /// business, so this call does not hit the backend again if they are
+  /// already loaded.
+  void _load({bool force = false}) => context.read<ChannelsService>().load(
+    context.read<BusinessService>().active.id,
+    force: force
+  );
 
   @override
-  Widget build(BuildContext context) => Row(children: [
-    SizedBox(width: _listWidth, child: const ChannelListPanel()),
-    SizedBox(width: AppSize.gap),
-    const Expanded(child: ConversationsPanel()),
-  ]);
+  Widget build(BuildContext context) => Surface(
+    padding: EdgeInsets.all(AppSize.padding),
+    child: Column(children: [
+      SizedBox(
+        height: AppSize.button,
+        child: Row(children: [
+          Expanded(child: TextMedium(
+            S.of(context).channels,
+            bold: true,
+            ellipsis: true
+          )),
+          SizedBox(width: AppSize.gap),
+          Button(
+            width: null,
+            title: S.of(context).create_channel,
+            leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
+            action: _create
+          )
+        ])
+      ),
+      Separator.horizontal(
+        margin: EdgeInsets.symmetric(vertical: AppSize.padding)
+      ),
+      Expanded(child: ChannelGrid(onRetry: () => _load(force: true)))
+    ])
+  );
+
+  /// Opens the creation panel. Unlike editing, a create starts from nothing —
+  /// no name, no description to type, no existing configuration to wait
+  /// for — so it fits a side panel instead of a whole sub-page.
+  Future<void> _create() async {
+    final created = await showCreateChannel(context);
+    if (created) _load(force: true);
+  }
 }

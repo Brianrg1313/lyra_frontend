@@ -2,21 +2,21 @@ import 'package:flutter/services.dart';
 
 import 'sheet_cursor.dart';
 
-/// Lo que una tecla le pide a la planilla.
+/// What a key asks of the spreadsheet.
 ///
-/// La navegacion es la de un Excel: Tab y Shift+Tab se mueven de celda, Enter y
-/// las flechas arriba/abajo bajan y suben, Escape cancela lo que se estaba
-/// escribiendo. Mientras se escribe, las flechas izquierda y derecha se dejan
-/// pasar —mueven el cursor dentro del texto, que es lo que se espera de una
-/// celda abierta— y sin editor, en cambio, cambian de columna.
+/// Navigation is that of an Excel: Tab and Shift+Tab move between cells, Enter
+/// and the up/down arrows go down and up, Escape cancels what was being
+/// written. While writing, the left and right arrows are let through —they
+/// move the cursor within the text, which is what's expected of an open
+/// cell— and without an editor, on the other hand, they change column.
 ///
-/// Vive aparte del manejador de foco para poder leerse (y probarse) sin montar
-/// la planilla.
+/// It lives apart from the focus handler so it can be read (and tested)
+/// without mounting the spreadsheet.
 enum SheetKeyIntent {
-  /// Tab: la celda siguiente, dando la vuelta de linea al pasarse.
+  /// Tab: the next cell, wrapping around the line when going past the end.
   nextCell,
 
-  /// Shift+Tab: la celda anterior, con la misma vuelta.
+  /// Shift+Tab: the previous cell, with the same wrap.
   previousCell,
 
   rowDown,
@@ -24,10 +24,10 @@ enum SheetKeyIntent {
   columnRight,
   columnLeft,
 
-  /// Escape: deshacer lo escrito en la celda.
+  /// Escape: undo what was written in the cell.
   cancel;
 
-  /// Cuanto mueve el cursor, o `null` si no es un movimiento.
+  /// How much it moves the cursor, or `null` if it isn't a movement.
   ({int rows, int columns, bool wrap})? get move => switch (this) {
     nextCell => (rows: 0, columns: 1, wrap: true),
     previousCell => (rows: 0, columns: -1, wrap: true),
@@ -38,8 +38,8 @@ enum SheetKeyIntent {
     cancel => null
   };
 
-  /// Que pide esa tecla, o `null` si la planilla no la usa y tiene que seguir su
-  /// camino.
+  /// What that key asks, or `null` if the spreadsheet doesn't use it and it has
+  /// to continue its way.
   static SheetKeyIntent? of(
     LogicalKeyboardKey key, {
     required bool shift,
@@ -57,7 +57,7 @@ enum SheetKeyIntent {
     if (key == LogicalKeyboardKey.arrowDown) return rowDown;
     if (key == LogicalKeyboardKey.arrowUp) return rowUp;
 
-    // Con el editor abierto estas dos son del texto, no de la grilla.
+    // With the editor open these two belong to the text, not the grid.
     if (!editing && key == LogicalKeyboardKey.arrowRight) return columnRight;
     if (!editing && key == LogicalKeyboardKey.arrowLeft) return columnLeft;
 
@@ -67,17 +67,18 @@ enum SheetKeyIntent {
   }
 }
 
-/// Adonde cae el cursor al moverlo [rows] filas y [columns] columnas desde
-/// [from].
+/// Where the cursor lands when moving it [rows] rows and [columns] columns
+/// from [from].
 ///
-/// Con [wrap] (lo que hace Tab) pasarse de la ultima columna sigue en la primera
-/// de la fila siguiente; sin el, el cursor se queda pegado al borde. Hacia
-/// arriba se llega a la fila de los campos, que es una fila mas de la planilla y
-/// se recorre igual.
+/// With [wrap] (what Tab does) going past the last column continues in the
+/// first of the next row; without it, the cursor stays stuck to the edge.
+/// Going upward reaches the field row, which is one more row of the
+/// spreadsheet and is traversed the same.
 ///
-/// La fila que devuelve puede caer **debajo** del final de la planilla: pasarse
-/// de la ultima fila agrega otra en blanco, y eso no lo decide esta cuenta sino
-/// quien la llama, que es el que sabe cuantas filas hay.
+/// The row it returns can land **below** the end of the spreadsheet: going
+/// past the last row adds another blank one, and that's not decided by this
+/// account but by whoever calls it, who is the one that knows how many rows
+/// there are.
 SheetCell sheetDestination({
   required SheetCell from,
   required int rows,

@@ -14,56 +14,57 @@ import 'package:app/screens/home/desktop/_body.dart';
 import 'package:app/screens/home/header/_header.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 
-/// Shell del home. Cada seccion entra por su propia URL (`/home/...`) pero
-/// todas comparten esta unica pagina: al cambiar de seccion el arbol se
-/// actualiza en vez de recrearse, por lo que el side bar conserva su estado
-/// (scroll incluido) y no se apila un shell por seccion visitada.
+/// Home shell. Each section loads via its own URL (`/home/...`) but
+/// they all share this single page: when switching sections the tree is
+/// updated instead of recreated, so the side bar keeps its state
+/// (including scroll) and no shell is stacked per visited section.
 ///
-/// Por eso la seccion no llega por constructor: el `Navigator` cachea el widget
-/// de la pagina y no lo reconstruye al actualizarla. La fuente es
+/// That's why the section doesn't come through the constructor: the `Navigator`
+/// caches the page widget and doesn't rebuild it on update. The source is
 /// [Navis.currentKey].
 class Home extends PageBuilder {
   const Home({super.key});
 
-  /// Identificador del shell compartido por las rutas de las secciones.
+  /// Identifier of the shell shared across the section routes.
   static const String shell = "home";
 
-  /// Este shell contiene a todas las secciones autenticadas, asi que llegar
-  /// hasta aca ya implica una sesion valida: es el punto donde tiene sentido
-  /// asegurar la conexion.
+  /// This shell holds every authenticated section, so reaching it already
+  /// implies a valid session: that's the point where it makes sense to ensure
+  /// the connection.
   ///
-  /// Normalmente no hace nada, porque `ClientService.resolve` ya la abrio al
-  /// levantar la sesion y [ConnectionService.open] es idempotente. Cubre el
-  /// caso contrario: entrar al home por un camino que no paso por `resolve`
-  /// (un inicio de sesion dentro de la misma corrida), y volver a levantarla si
-  /// se habia cerrado.
+  /// Normally it does nothing, because `ClientService.resolve` already opened
+  /// it when the session was started and [ConnectionService.open] is
+  /// idempotent. It covers the opposite case: entering home through a path
+  /// that didn't go through `resolve` (a sign-in within the same run), and
+  /// bringing the connection back up if it had been closed.
   ///
-  /// Corre una sola vez por montaje del shell, no en cada cambio de seccion:
-  /// todas comparten esta pagina del `Navigator`.
+  /// It runs once per shell mount, not on every section change: they all share
+  /// this page of the `Navigator`.
   ///
-  /// Se mira el cliente y no la ruta porque lo que autoriza el handshake es la
-  /// credencial, no estar parado en `/home`: sin sesion cargada el servidor
-  /// rechazaria la conexion y el cliente se quedaria reintentando.
+  /// It looks at the client and not the route because what authorizes the
+  /// handshake is the credential, not being on `/home`: without a loaded
+  /// session the server would reject the connection and the client would keep
+  /// retrying.
   @override
   void initialized(BuildContext context) {
     if (!context.read<ClientService>().isAuthenticated) return;
     unawaited(ConnectionService().open());
   }
 
-  /// Se escucha la **empresa activa** ademas de la pantalla abierta: todo lo que
-  /// vive dentro del home es de una empresa, asi que cambiarla deja vieja a la
-  /// seccion que se este mirando. El contenido se identifica con ella
-  /// ([homeContent]) y se monta de nuevo, que es lo que hace que cada seccion
-  /// vuelva a pedir sus datos de la empresa que se acaba de elegir.
+  /// It listens to the **active business** in addition to the open screen:
+  /// everything that lives inside home belongs to a business, so switching it
+  /// leaves the section being viewed stale. The content is identified by it
+  /// ([homeContent]) and remounted, which is what makes each section request
+  /// its data again for the newly chosen business.
   ///
-  /// Se mira solo el identificador y no el servicio entero: el resto de sus
-  /// notificaciones (un alta, la carga del detalle de la seccion de empresas) no
-  /// tienen por que reconstruir el shell.
+  /// It looks only at the identifier and not the whole service: the rest of its
+  /// notifications (a creation, loading the business section detail) don't need
+  /// to rebuild the shell.
   ///
-  /// El [HomeHeader] entra por el `child` del builder y no dentro de el: es fijo
-  /// como el side bar, asi que se construye una sola vez y cambiar de seccion no
-  /// lo vuelve a armar. Es lo que le permite conservar lo que se escribio en el
-  /// buscador mientras se navega.
+  /// The [HomeHeader] goes through the builder's `child` and not inside it: it's
+  /// fixed like the side bar, so it's built only once and switching sections
+  /// doesn't build it again. That's what lets it keep whatever was typed in the
+  /// search box while navigating.
   @override
   Widget build(BuildContext context) {
     final businessId = context.select<BusinessService, String?>(
@@ -74,15 +75,15 @@ class Home extends PageBuilder {
       valueListenable: Navis.currentKey,
       child: const HomeHeader(),
       builder: (context, currentKey, header) {
-        // Una sub-pagina no es una seccion, pero vive dentro de una: se muestra
-        // la seccion que la contiene para que el shell siga siendo coherente.
+        // A sub-page isn't a section, but it lives inside one: the section that
+        // contains it is shown so the shell stays coherent.
         final section = HomeSection.byKey(currentKey)
           ?? HomeSection.containing(currentKey)
           ?? HomeSection.dashboard;
 
-        // La seccion resuelta marca la opcion del side bar; el contenido puede
-        // ser el de la seccion o el de una sub-pagina suya (p. ej. una pestana
-        // de la empresa dentro de `business`).
+        // The resolved section marks the side bar option; the content can be
+        // the section's own or one of its sub-pages (e.g. a business tab inside
+        // `business`).
         final content = homeContent(currentKey, section, businessId);
 
         return DeviceSelector(
@@ -101,15 +102,15 @@ class Home extends PageBuilder {
 class _HomeBody extends StatelessWidget {
   const _HomeBody({required this.header, required this.content});
 
-  /// Barra superior, la misma para todas las secciones.
+  /// Top bar, the same for every section.
   final Widget header;
 
   final Widget content;
 
-  /// La barra va dentro del cuerpo y no en el `header` del skeleton: ese slot
-  /// flota por encima del contenido, y aca tiene que ocupar su lugar para que la
-  /// seccion empiece debajo. El [SafeArea] es por el mismo motivo de siempre en
-  /// telefono: sin el, la barra queda tapada por la del estado.
+  /// The bar goes inside the body and not in the skeleton's `header`: that slot
+  /// floats above the content, and here it has to take its place so the section
+  /// starts below it. The [SafeArea] is for the usual phone reason: without it
+  /// the bar ends up hidden behind the status bar.
   @override
   Widget build(BuildContext context) => Skeleton.simple(
     padding: EdgeInsets.all(AppSize.spaceM),

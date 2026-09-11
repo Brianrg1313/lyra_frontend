@@ -9,18 +9,18 @@ import '../widgets/option_card.dart';
 import '../widgets/option_grid.dart';
 import '../state/channel_form_controller.dart';
 
-/// Que puede procesar y producir el modelo, ademas de texto: voz, imagenes,
-/// video y documentos.
+/// What the model can process and produce, besides text: voice, images, video
+/// and documents.
 ///
-/// Con voz, un audio de WhatsApp se transcribe y se contesta hablando; con
-/// imagenes o video, el modelo mira la foto del producto o el video de la falla
-/// y responde sobre eso.
+/// With voice, a WhatsApp audio is transcribed and it answers speaking; with
+/// images or video, the model looks at the product's photo or the video of the
+/// failure and responds about it.
 ///
-/// Se pueden elegir varias, y **cada una encarece el procesamiento del canal**.
-/// El aviso esta arriba de las opciones y no en la letra chica de abajo a
-/// proposito: es informacion para decidir, no un descargo. Se paga por
-/// conversacion atendida, asi que encender voz en un canal con mucho trafico se
-/// nota en la factura.
+/// Several can be chosen, and **each one makes the channel's processing more
+/// expensive**. The warning is above the options and not in the small print at
+/// the bottom on purpose: it is information to decide with, not a disclaimer.
+/// Payment is per handled conversation, so enabling voice on a channel with a
+/// lot of traffic shows up on the bill.
 class ToolsPicker extends StatelessWidget {
   const ToolsPicker({super.key, required this.controller});
 
@@ -53,7 +53,7 @@ class ToolsPicker extends StatelessWidget {
   );
 }
 
-/// El aviso de que estas opciones cuestan mas.
+/// The warning that these options cost more.
 class _CostWarning extends StatelessWidget {
   const _CostWarning();
 

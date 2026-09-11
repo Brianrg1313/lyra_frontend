@@ -4,30 +4,30 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/files/file_model.dart';
 import 'package:app/toolkit/api.dart';
 
-/// De donde se bajan las imagenes.
+/// Where images are downloaded from.
 ///
-/// Ninguna respuesta de esta api trae una direccion de imagen: trae **ids** (ver
-/// [FileModel]). Las direcciones se arman con las dos bases que `/init` entrega
-/// una sola vez, en `cdn`: [media] para lo que subio una empresa y [assets] para
-/// lo que es de la plataforma. Una direccion es `<base>/<id>`, y una miniatura
-/// `<base>/<id>@<ancho>`.
+/// No response of this api carries an image address: it carries **ids** (see
+/// [FileModel]). The addresses are built with the two bases `/init` delivers
+/// a single time, in `cdn`: [media] for what a company uploaded and [assets] for
+/// what belongs to the platform. An address is `<base>/<id>`, and a thumbnail
+/// `<base>/<id>@<width>`.
 ///
-/// Que la direccion sea configuracion y no un valor guardado es lo que deja
-/// mudar los archivos —a un CDN, a otro dominio, a otro proveedor— sin tocar la
-/// app ni las filas que los referencian: cambia una variable del backend y el
-/// proximo `/init` ya reparte la base nueva. Por eso esto es un servicio y no
-/// una constante de esta app.
+/// That the address is configuration and not a stored value is what allows
+/// moving the files —to a CDN, to another domain, to another provider— without touching the
+/// app or the rows that reference them: a backend variable changes and the
+/// next `/init` already hands out the new base. That is why this is a service and not
+/// a constant of this app.
 ///
-/// Es singleton y se registra en `initialBuilder` con
-/// `ChangeNotifierProvider.value`, como los catalogos: lo puebla
-/// [ClientService.resolve] antes de levantar el arbol, asi que para cuando el
-/// primer logo se dibuja la base ya esta.
+/// It is a singleton and it is registered in `initialBuilder` with
+/// `ChangeNotifierProvider.value`, like the catalogs: it is populated by
+/// [ClientService.resolve] before raising the tree, so by the time the
+/// first logo is drawn the base is already there.
 ///
 /// ```dart
-/// // Desde el archivo, que es lo normal.
+/// // From the file, which is the normal case.
 /// Image.network(business.logo!.thumbnail);
 ///
-/// // Con un id suelto (una bandera del catalogo de paises).
+/// // With a loose id (a flag from the countries catalog).
 /// CdnService().url(FileScope.assets, country.flag);
 /// ```
 class CdnService extends ChangeNotifier {
@@ -41,25 +41,25 @@ class CdnService extends ChangeNotifier {
   String _media = "";
   String _assets = "";
 
-  /// Base de los archivos de una empresa (`.../rigel/media`).
+  /// Base of the files of a company (`.../rigel/media`).
   String get media => _media;
 
-  /// Base de los archivos de la plataforma (`.../rigel/assets`).
+  /// Base of the platform files (`.../rigel/assets`).
   String get assets => _assets;
 
-  /// Si ya hay con que armar direcciones. Sin esto ninguna imagen se puede
-  /// bajar, pero tampoco es un error: se dibuja lo que se dibuja cuando una
-  /// empresa no subio logo.
+  /// Whether there is already something to build addresses with. Without this no image can
+  /// be downloaded, but it is not an error either: what is drawn is what is drawn when a
+  /// company did not upload a logo.
   bool get isReady => _media.isNotEmpty && _assets.isNotEmpty;
 
-  /// La base de un espacio, o `""` si todavia no llego.
+  /// The base of a scope, or `""` if it has not arrived yet.
   String base(FileScope scope) => scope == FileScope.assets ? _assets : _media;
 
-  /// La direccion de un archivo, o `""` si no hay base o no hay id.
+  /// The address of a file, or `""` if there is no base or no id.
   ///
-  /// [width] pide una miniatura. Un ancho que ese archivo no tenga no falla —el
-  /// backend devuelve la grande—, pero se pide el que existe: el archivo dice
-  /// cuales tiene ([FileModel.variants]).
+  /// [width] asks for a thumbnail. A width that file does not have does not fail —the
+  /// backend returns the full one—, but the one that exists is asked: the file says
+  /// which ones it has ([FileModel.variants]).
   String url(FileScope scope, String? id, {int? width}) {
     final file = id?.trim() ?? "";
     final root = base(scope);
@@ -69,13 +69,13 @@ class CdnService extends ChangeNotifier {
     return width == null ? "$root/$file" : "$root/$file@$width";
   }
 
-  /// Guarda las bases que trajo `/init`.
+  /// Stores the bases `/init` brought.
   ///
-  /// El backend puede mandarlas relativas (`/rigel/media`), que es lo correcto
-  /// para un frontend servido desde su mismo host y lo que devuelve cuando no
-  /// hay CDN configurado. Aca eso no alcanza —esto no corre en una pagina, no
-  /// hay contra que resolverlas—, asi que se completan con el origen de la api,
-  /// que es de donde salieron.
+  /// The backend can send them relative (`/rigel/media`), which is correct
+  /// for a frontend served from its own host and what it returns when there is
+  /// no CDN configured. Here that is not enough —this does not run in a page, there
+  /// is nothing to resolve them against—, so they are completed with the api origin,
+  /// which is where they came from.
   void seed(dynamic data) {
     if (data is! Map) return;
 
@@ -85,7 +85,7 @@ class CdnService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Una base como se la puede usar: absoluta y sin barra final.
+  /// A base as it can be used: absolute and without a trailing slash.
   static String _absolute(dynamic value) {
     final base = (value?.toString().trim() ?? "").replaceAll(RegExp(r"/+$"), "");
 
@@ -95,9 +95,9 @@ class CdnService extends ChangeNotifier {
     return "$apiOrigin${base.startsWith("/") ? "" : "/"}$base";
   }
 
-  /// Olvida las bases. Para el cierre de sesion, junto al resto de los
-  /// servicios: la proxima sesion las vuelve a traer, y puede traerlas
-  /// distintas.
+  /// Forgets the bases. For session logout, along with the rest of the
+  /// services: the next session brings them again, and it may bring them
+  /// different.
   void clear() {
     _media = "";
     _assets = "";

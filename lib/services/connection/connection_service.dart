@@ -3,28 +3,29 @@ import 'package:core/socket.dart' show SocketStatus, SocketHandler;
 
 import 'package:app/toolkit/sockets.dart';
 
-// El estado y la firma de los handlers son parte de la api de este servicio:
-// quien lo consuma no deberia tener que importar el paquete para nombrarlos.
+// The status and the handler signature are part of this service's API:
+// whoever consumes it shouldn't have to import the package just to name them.
 export 'package:core/socket.dart' show SocketStatus, SocketHandler;
 
-/// Estado general de la conexion en tiempo real.
+/// Overall status of the real-time connection.
 ///
-/// Es el unico dueno del ciclo de vida del socket: nadie mas deberia llamar a
-/// `sockets.connect()` ni a `sockets.disconnect()` directamente, porque este
-/// servicio es el que sabe si hay un intento en curso y el que traduce el
-/// resultado a algo que la app pueda mostrar.
+/// It's the sole owner of the socket's lifecycle: no one else should call
+/// `sockets.connect()` or `sockets.disconnect()` directly, because this
+/// service is the one that knows whether an attempt is in progress and the
+/// one that translates the result into something the app can show.
 ///
-/// Es singleton porque la conexion es una sola y de larga vida: la abre la
-/// sesion (`ClientService`) y la consumen pantallas que van y vienen, asi que
-/// no puede depender del ciclo de vida de ningun widget. Ademas se registra en
-/// `initialBuilder` con `ChangeNotifierProvider.value` para poder observarlo
-/// con `context.watch`, y por eso mismo no debe destruirlo el provider.
+/// It's a singleton because there is only one connection and it's long-lived:
+/// the session (`ClientService`) opens it and screens that come and go
+/// consume it, so it can't depend on any widget's lifecycle. It's also
+/// registered in `initialBuilder` with `ChangeNotifierProvider.value` so it
+/// can be observed with `context.watch`, and for that same reason the
+/// provider must not dispose it.
 ///
 /// ```dart
-/// // Estado, para pintar un indicador de conexion.
+/// // Status, to paint a connection indicator.
 /// final online = context.watch<ConnectionService>().isConnected;
 ///
-/// // Eventos del servidor. `on` devuelve la baja del listener.
+/// // Server events. `on` returns the listener's removal function.
 /// final remove = ConnectionService().on("stock:update", (data) => ...);
 /// ```
 class ConnectionService extends ChangeNotifier {
@@ -36,50 +37,61 @@ class ConnectionService extends ChangeNotifier {
     sockets.status.addListener(_onStatus);
   }
 
-  /// Intento de apertura en curso, para que varias llamadas a [open] se cuelguen
-  /// del mismo handshake en vez de encadenar reintentos.
+  /// Opening attempt in progress, so multiple calls to [open] hang off the
+  /// same handshake instead of chaining retries.
   Future<void>? _opening;
 
-  /// Verdadero desde que se cierra a proposito hasta la proxima apertura. Sirve
-  /// para no reportar como fallo el corte que provoca el propio [close].
+  /// True from the moment it's closed on purpose until the next opening. It's
+  /// there so the disconnect that [close] itself causes isn't reported as a
+  /// failure.
   bool _closed = false;
+
+  /// Whether there has already been a live connection in this run, and whether
+  /// there is one now. The pair is what tells a **reconnection** from the first
+  /// connection of the app: only the first can have missed anything.
+  bool _everLive = false;
+  bool _live = false;
+
+  /// Who wants to know when the connection comes back — see [onRestored].
+  final List<void Function()> _restored = [];
 
   Map<String, dynamic>? _error;
 
-  // ─── Estado ─────────────────────────────────────────────────────────────────
+  // ─── Status ─────────────────────────────────────────────────────────────────
 
   SocketStatus get status => sockets.status.value;
 
-  /// El estado crudo, por si conviene pintarlo con un `ValueListenableBuilder`
-  /// en vez de reconstruir con el provider.
+  /// The raw status, in case it's more convenient to paint it with a
+  /// `ValueListenableBuilder` instead of rebuilding with the provider.
   ValueListenable<SocketStatus> get listenable => sockets.status;
 
   bool get isConnected => status == SocketStatus.connected;
 
-  /// Hay un intento en curso (primero o reintento). No es un fallo: la UI que
-  /// avisa de la caida deberia esperar a [isDisconnected].
+  /// An attempt is in progress (first try or a retry). It's not a failure: UI
+  /// that warns about a drop should wait for [isDisconnected].
   bool get isConnecting =>
     status == SocketStatus.connecting || status == SocketStatus.reconnecting;
 
-  /// La conexion no esta disponible y nadie la esta reintentando.
+  /// The connection is unavailable and nothing is retrying it.
   bool get isDisconnected =>
     status == SocketStatus.disconnected || status == SocketStatus.idle;
 
-  /// Ultimo fallo, ya normalizado a `{message, action}` para poder pasarselo a
-  /// `FloatFlag.fromError`. Se limpia al conectar.
+  /// Last failure, already normalized to `{message, action}` so it can be
+  /// passed to `FloatFlag.fromError`. Cleared on connect.
   Map<String, dynamic>? get error => _error;
 
-  /// Id que el servidor le dio a esta conexion. Cambia en cada reconexion.
+  /// Id the server gave this connection. Changes on every reconnection.
   String? get id => sockets.id;
 
-  // ─── Ciclo de vida ──────────────────────────────────────────────────────────
+  // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
-  /// Abre la conexion. Es lo que hay que llamar cuando la sesion ya es valida.
+  /// Opens the connection. This is what to call once the session is already
+  /// valid.
   ///
-  /// No lanza: un fallo de conexion no deberia romper el flujo que la abrio (el
-  /// arranque de la app, entrar al home), asi que el error queda en [error] y
-  /// el cliente sigue reintentando solo. Es idempotente, se puede llamar cada
-  /// vez que se entra a una seccion autenticada.
+  /// Doesn't throw: a connection failure shouldn't break the flow that opened
+  /// it (app startup, entering the home screen), so the error is left in
+  /// [error] and the client keeps retrying on its own. It's idempotent, it
+  /// can be called every time an authenticated section is entered.
   Future<void> open() async {
     if (isConnected) return;
 
@@ -103,26 +115,27 @@ class ConnectionService extends ChangeNotifier {
     try {
       await sockets.connect();
     } catch (e) {
-      // El corte lo provoco un `close` que llego mientras se abria: no es un
-      // fallo que haya que mostrar.
+      // The disconnect was caused by a `close` that arrived while it was
+      // opening: it's not a failure that needs to be shown.
       if (_closed) return;
       _fail(e is Map ? Map<String, dynamic>.from(e) : sockets.exception(e));
     }
   }
 
-  /// Cierra la conexion sin soltar los listeners: un [open] posterior vuelve a
-  /// recibir los mismos eventos. Es lo que hay que llamar al cerrar sesion.
+  /// Closes the connection without releasing the listeners: a later [open]
+  /// goes back to receiving the same events. This is what to call when
+  /// signing out.
   void close() {
     _closed = true;
     _fail(null);
     sockets.disconnect();
   }
 
-  /// Reconecta rehaciendo el handshake.
+  /// Reconnects by redoing the handshake.
   ///
-  /// Hace falta cuando cambio algo que viaja en el (token nuevo, otra empresa
-  /// activa): esos datos se leen al abrir la conexion, reconectar sin mas los
-  /// mantendria viejos.
+  /// Needed when something that travels in it changes (a new token, a
+  /// different active business): that data is read when the connection
+  /// opens, so simply reconnecting without this would keep it stale.
   Future<void> refresh() async {
     _closed = false;
     _fail(null);
@@ -135,40 +148,87 @@ class ConnectionService extends ChangeNotifier {
     }
   }
 
-  // ─── Eventos ────────────────────────────────────────────────────────────────
+  // ─── Events ─────────────────────────────────────────────────────────────────
   //
-  // Pasan derecho al socket. Se pueden registrar antes de que la conexion este
-  // abierta: quedan anotados y se enganchan al conectar, y sobreviven a un
-  // [refresh].
+  // These pass straight through to the socket. They can be registered before
+  // the connection is open: they're noted down and hooked up on connect, and
+  // they survive a [refresh].
 
-  /// Escucha un evento del servidor. Devuelve la funcion que lo da de baja.
+  /// Listens for a server event. Returns the function that removes it.
   void Function() on(String event, SocketHandler handler) =>
     sockets.on(event, handler);
 
-  /// Escucha un evento una sola vez.
+  /// **Called when the connection comes back after having been down.** Returns
+  /// the function that removes the handler.
+  ///
+  /// A live screen is only as live as the connection under it. Events are fire
+  /// and forget on the server —the room is emitted to and whoever is in it is
+  /// told— so what is emitted while this app is not in it is not queued
+  /// anywhere: it is gone. A phone that slept, a wifi that changed, a server
+  /// that restarted are all the same thing from here, and the screen that comes
+  /// out the other side is a board still drawing what was true before the drop,
+  /// with nothing to say it is stale.
+  ///
+  /// Nothing can be replayed —the server does not keep what it emitted— so the
+  /// only honest answer is to read again, which is what every listener here
+  /// does. It is deliberately **not** fired by the first connection of the run:
+  /// nothing had been missed yet, and every screen reads when it opens.
+  void Function() onRestored(void Function() handler) {
+    _restored.add(handler);
+
+    return () => _restored.remove(handler);
+  }
+
+  /// Listens for an event once.
   void once(String event, SocketHandler handler) => sockets.once(event, handler);
 
-  /// Da de baja un handler, o todos los del evento si no se pasa ninguno.
+  /// Removes a handler, or all of the event's handlers if none is passed.
   void off(String event, [SocketHandler? handler]) => sockets.off(event, handler);
 
-  /// El evento como `Stream`, para consumirlo con un `StreamBuilder`.
+  /// The event as a `Stream`, to consume it with a `StreamBuilder`.
   Stream<dynamic> stream(String event) => sockets.stream(event);
 
-  /// Manda un evento sin esperar respuesta.
+  /// Sends an event without waiting for a response.
   void emit(String event, [dynamic data]) => sockets.emit(event, data);
 
-  /// Manda un evento y espera la respuesta del servidor, como una peticion REST
-  /// (lanza el error normalizado si falla).
+  /// Sends an event and waits for the server's response, like a REST request
+  /// (throws the normalized error if it fails).
   Future<dynamic> request(String event, {dynamic data, Duration? timeout}) =>
     sockets.request(event, data: data, timeout: timeout);
 
-  // ─── Interno ────────────────────────────────────────────────────────────────
+  // ─── Internal ───────────────────────────────────────────────────────────────
 
   void _onStatus() {
-    // Conectar deja sin vigencia el fallo anterior; si no, un indicador que
-    // muestre `error` seguiria en rojo con la conexion ya restablecida.
+    // Connecting invalidates the previous failure; otherwise an indicator
+    // showing `error` would stay red even after the connection was already
+    // restored.
     if (isConnected) _error = null;
+
+    _watch();
+
     notifyListeners();
+  }
+
+  /// Turns the status into the one question a live screen has to ask: did the
+  /// connection just come back? Only the transition counts — the status is
+  /// notified for reasons of its own (a retry, an error cleared) and a screen
+  /// that reread on each of them would be rereading while nothing moved.
+  void _watch() {
+    final live = isConnected;
+
+    if (live == _live) return;
+
+    _live = live;
+
+    if (!live || !_everLive) {
+      _everLive = _everLive || live;
+      return;
+    }
+
+    // A copy: a handler is free to take itself off the list as it runs.
+    for (final handler in List<void Function()>.from(_restored)) {
+      handler();
+    }
   }
 
   void _fail(Map<String, dynamic>? value) {

@@ -7,6 +7,7 @@ import 'package:app/services/home/home_service.dart';
 import 'package:app/services/business/business_service.dart';
 
 import 'package:app/screens/home/sections/_sections.dart';
+import 'package:app/screens/pos/_pos.dart';
 
 import './option.dart';
 
@@ -37,12 +38,34 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
 
   return [
     ...HomeSection.home.map(option),
+    Sp(isExpanded, title: S.of(context).section_transactions),
+    ...HomeSection.transactions.map(option),
+    // The POS closes the transactions group and is **not** one of its
+    // sections: it leaves the home and opens its own page (see [Pos]), so it
+    // has no [HomeSection] to be mapped from and is built by hand. It is still
+    // listed because for whoever uses it it is another place to go, and this is
+    // the only index the app has — and it goes last because it is the option
+    // that walks out of this shell.
+    //
+    // It is never marked active: while in the POS this side bar is not on
+    // screen.
+    //
+    // It is locked without a business for the same reason as the sections that
+    // depend on one: what is sold at the counter is the catalog of a business.
+    Option(
+      key: const ValueKey(Pos.routeKey),
+      icon: CI.cashbox,
+      title: S.of(context).pos,
+      isExpanded: isExpanded,
+      isLocked: !hasBusiness,
+      action: () => context.read<HomeService>().goToPos(context)
+    ),
     Sp(isExpanded, title: S.of(context).section_products),
-    ...HomeSection.productos.map(option),
+    ...HomeSection.products.map(option),
     Sp(isExpanded, title: S.of(context).section_reports),
-    ...HomeSection.reportes.map(option),
+    ...HomeSection.reports.map(option),
     Sp(isExpanded, title: S.of(context).section_connections),
-    ...HomeSection.conexiones.map(option)
+    ...HomeSection.connectionGroups.map(option)
   ];
 }
 

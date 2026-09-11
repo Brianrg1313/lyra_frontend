@@ -144,9 +144,9 @@ class _DesktopBodyState extends State<DesktopBody> {
     final client = context.read<ClientService>();
 
     context.read<SignInService>().signInWithCode(context, _form.data["CODE"] as String)
-      // El token ya quedo guardado, pero `resolve` solo corre al arrancar la
-      // app: sin esto la instancia global entraria al home sin cliente cargado
-      // y los widgets del side bar leerian una sesion vacia.
+      // The token is already saved, but `resolve` only runs when the app
+      // starts: without this, the global instance would enter the home with no
+      // client loaded and the sidebar widgets would read an empty session.
       .then((_) => client.resolve())
       .then((redirect) {
         if (!mounted) return;
