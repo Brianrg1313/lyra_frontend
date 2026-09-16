@@ -225,17 +225,18 @@ void main() {
     await tester.pumpAndSettle();
 
     // Los datos que se escriben de la ficha llena: nombre, lema, razon social,
-    // handle, identificador fiscal, direccion y sitio, mas uno por cada correo.
+    // handle, identificador fiscal y sitio, mas uno por cada correo.
     //
-    // El sector, el idioma, el pais y la moneda no estan: se eligen de una
-    // lista y se cambian en su propia fila, sin modal y sin lapiz (ver
+    // El sector, el idioma y la moneda no estan: se eligen de una lista y se
+    // cambian en su propia fila, sin modal y sin lapiz (ver
     // `ProfileSelectField`). El telefono y la fecha de constitucion tampoco: se
-    // cargan en la fila, repartidos en los campos que los componen.
+    // cargan en la fila, repartidos en los campos que los componen. La
+    // direccion y el pais tampoco: se editan enteros en Ubicacion.
     expect(
       find.byWidgetPredicate(
         (widget) => widget is ProfileAction && widget.icon == CI.edit
       ),
-      findsNWidgets(9)
+      findsNWidgets(8)
     );
   });
 
@@ -248,17 +249,26 @@ void main() {
     // empresa.
     expect(find.text("Retail"), findsOneWidget);
     expect(find.text("RETAIL"), findsNothing);
-
-    // El pais es igual, solo que su etiqueta no la escribe esta app: la trae el
-    // catalogo de plataforma, que es lo que deja habilitar una region sin
-    // publicar una version nueva.
-    expect(find.text("Venezuela"), findsOneWidget);
   });
 
-  testWidgets('sin catalogo el pais se sigue pudiendo cargar', (tester) async {
+  testWidgets('donde esta la empresa no es un dato de esta ficha', (tester) async {
+    await tester.pumpWidget(_app(1000));
+    await tester.pumpAndSettle();
+
+    // La direccion y el pais se leen y se editan en Ubicacion, junto con la
+    // ciudad, el codigo postal y el punto del mapa: una empresa que se mudo lo
+    // dice una sola vez y en un solo formulario. Esta ficha es quien *es* la
+    // empresa, no donde esta.
+    expect(find.text("Country"), findsNothing);
+    expect(find.text("Venezuela"), findsNothing);
+    expect(find.text("Address"), findsNothing);
+    expect(_written("Av. Principal 1"), findsNothing);
+  });
+
+  testWidgets('sin catalogo la moneda se sigue pudiendo cargar', (tester) async {
     // Un desplegable vacio no seria un dato que no se puede leer: seria un dato
     // que no se puede cargar, y esta fila es el unico lugar desde donde se
-    // carga. Sin catalogo se vuelve al campo de texto de dos letras.
+    // carga. Sin catalogo se vuelve al campo de texto de tres letras.
     CountryCatalogService().clear();
     CurrencyCatalogService().clear();
 
@@ -266,14 +276,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(_written("VE"), findsOneWidget);
+    expect(_written("VES"), findsOneWidget);
 
-    // El pais y la moneda vuelven a ser dos datos que se escriben.
+    // La moneda vuelve a ser un dato que se escribe.
     expect(
       find.byWidgetPredicate(
         (widget) => widget is ProfileAction && widget.icon == CI.edit
       ),
-      findsNWidgets(11)
+      findsNWidgets(9)
     );
   });
 

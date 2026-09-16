@@ -2,117 +2,72 @@
 
 **Path** `lib/screens/home/sections/inventory`
 **Role** Product tables. Two screens: the section (`/home/inventory` — table list + stock
-summary) and the spreadsheet view of one table (`/home/inventory/:id`, sub-page with
-`parents: ["inventory"]`).
-**Services** `TablesService`, `TableViewService`, `TableDetailService`,
-`StockSummaryService` (`lib/services/stock`), plus `lib/services/inventory` for field
-types, imports, SKUs, dates and images.
-
----
+summary) and one table's spreadsheet (`/home/inventory/:id`, `parents: ["inventory"]`).
+**Services** `TablesService`, `TableViewService`, `TableDetailService`, `StockSummaryService`
+(`lib/services/stock`) + `lib/services/inventory` (field types, imports, SKUs, dates, images).
+**Modals** `lib/screens/modals/inventory` (`create_table create_field import_table rename_table
+edit_table_details table_settings stock_movement`) + `modals/shared` (`image_viewer crop_image`).
 
 ## table_list/ — the section
 
-- `_table_list.dart` — `InventorySection`: the list of tables on top, the stock summary
-  below. Uses `BusinessListener`.
-- `table_row.dart` — `TableListRow`: phone/narrow form of a table entry. Refuses to open a
-  table that is still being imported (`TablesService.importStage`).
+- `_table_list.dart` — `InventorySection`: tables on top, stock summary below. `BusinessListener`.
+- `table_row.dart` — `TableListRow`: narrow form. Refuses to open an importing table (`TablesService.importStage`).
 - `table_card.dart` — `TableCard`: desktop form, same rule.
-- `table_options.dart` — `TableOptionsButton`: per-table menu (rename, settings, delete),
-  shared by both forms.
-- `primary_mark.dart` — `PrimaryTableMark`: marks the business's primary table.
+- `table_options.dart` — `TableOptionsButton`: rename / settings / delete, both forms.
+- `primary_mark.dart` — `PrimaryTableMark`: the business's primary table.
 - `import_button.dart` — `ImportButton`: opens the import modal.
-- `sticky_bar.dart` — `StickyBar`: a bar that scrolls differently from the rest.
-
-### table_list/stock_summary/ — bottom half of the section
-
-- `_stock_summary.dart` — `StockSummarySection`.
-- `summary_layout.dart` — `SummaryLayout`: how a row's width is split. Single source of
-  the column geometry; header and rows both read it.
-- `summary_row.dart` — `SummaryHeader`, `SummaryProductRow`, `SummaryLine`.
-- `summary_stepper.dart` — `SummaryStepper`: a number with take/add on each side; opens
-  `showStockMovement`.
-- `summary_value.dart` — `SummaryValue`, `SummaryNumber`, `SummaryPicture`: the cells.
-
----
+- `sticky_bar.dart` — `StickyBar`: bar with its own scroll behaviour.
+- `stock_summary/_stock_summary.dart` — `StockSummarySection`.
+- `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows).
+- `stock_summary/summary_row.dart` — `SummaryHeader`, `SummaryProductRow`, `SummaryLine`.
+- `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`.
+- `stock_summary/summary_value.dart` — `SummaryValue`, `SummaryNumber`, `SummaryPicture`.
 
 ## table_view/ — the spreadsheet
 
-`TableViewSection` (`_table_view.dart`) owns a `SheetController`, which owns every piece
-of state below. Rendering is split so a cell rebuild never rebuilds the sheet.
+`TableViewSection` owns a `SheetController`, which owns all state below. Rendering is split so a
+cell rebuild never rebuilds the sheet. Row 1 is the *fields* row (cursor index `-1`); body rows
+from 0. The last column is a *free column*: typing a title creates a field.
 
-**Sheet model**: row 1 is the *fields* row (index `-1` in the cursor); the body is
-numbered from 0. The last column is a *free column*: typing a title there creates a
-field. Editing is driven by `FieldEdit.of(...)` — the only rule for add/rename/delete.
-
-### Frame
-- `_table_view.dart` — `TableViewSection` (`routeKey`, resolves `:id`), `BusinessListener`.
-  Turns around on entry when the table is still being imported.
-- `table_header.dart` — `TableHeader`: back, table color, name, read/save state.
-- `header_actions.dart` — `HeaderActions`: record-load state and search.
+- `_table_view.dart` — `TableViewSection` (`routeKey`, resolves `:id`), `BusinessListener`; turns back if the table is still importing.
+- `table_header.dart` — `TableHeader`: back, colour, name, read/save state.
+- `header_actions.dart` — `HeaderActions`: record-load state, search.
 - `normalize_button.dart` — `NormalizeButton`: `POST .../builder/normalize/`.
 - `sheet.dart` — `Sheet`: frozen gutter band + data band.
-- `sheet_style.dart` — `SheetStyle`, `SheetTheme` (`InheritedWidget`), `SheetRowFill`:
-  everything cells need to paint, resolved **once** per sheet. Cells read this, never
-  `ThemeColor` directly.
-- `gutter.dart` — `SheetGutter`, `GutterCell`: frozen left column of row numbers.
-- `body.dart` — `SheetBody`: records plus the blank rows being written.
+- `sheet_style.dart` — `SheetStyle`, `SheetTheme` (`InheritedWidget`), `SheetRowFill`: paint data resolved once per sheet.
+- `gutter.dart` — `SheetGutter`, `GutterCell`: row numbers.
+- `body.dart` — `SheetBody`: records + blank rows being written.
 - `fields_row.dart` / `field_cell.dart` — row 1 and its cells.
-- `type_arrow.dart` — `TypeArrow`: unfolds the field types and changes a column's type.
+- `type_arrow.dart` — `TypeArrow`: field-type menu, changes a column's type.
 - `record_row.dart` — `RecordRow`; `cell.dart` — `SheetCellView`.
-- `cell_editor.dart` — `CellEditor`: the active cell's editor (raw `TextField` on purpose,
-  it is an inline grid editor, not a form field).
-- `column_drag.dart` — `ColumnDrag`: the carried column, its ghost and the drop line.
-
-### cells/ — read-only renderings by field type
-- `_cells.dart` — dispatch by `TableFieldType`.
-- `date_cell.dart` `image_cell.dart` `listed_cell.dart` (`OPTIONS`/`CATEGORIES`)
-  `price_cell.dart` `sku_cell.dart` `unit_cell.dart` (number + unit/percent).
-
-### state/ — all `ChangeNotifier`s or plain value holders
-- `sheet_controller.dart` — `SheetController`: the hub. Holds `cursor drafts hover dates
-  drag columns`, the three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`),
-  the grid `FocusNode`, `usedRows`, `uploading`, the editor, and the serialized write
-  queues for columns and rows.
-- `sheet_columns.dart` — `SheetColumns`, `SheetColumn`, `SheetShape`: how many columns,
-  which one is where, where its content comes from.
-- `sheet_cursor.dart` — `SheetCursor`, `SheetCell`, `SheetCellState`: the active cell.
-- `sheet_drafts.dart` — `SheetDrafts`, `SheetDraft`: written but unsaved rows.
-- `sheet_widths.dart` — `SheetWidths`; `sheet_metrics.dart` — `SheetMetrics` (row height,
-  visible range, scroll-to-cell).
-- `sheet_order.dart` — column order arithmetic: `fieldsInOrder`, `slotsOf`, `movedOrder`,
-  `dropEdgeAt`.
-- `sheet_drag.dart` — `SheetDrag`; `sheet_hover.dart` — `SheetHover`;
-  `sheet_dates.dart` — `SheetDates` (which date columns are expanded).
-- `sheet_keys.dart` — `SheetKeyIntent`: what a keystroke asks of the sheet.
-- `free_column.dart` — `FreeColumn`: the trailing empty column being named.
-- `field_edit.dart` — `FieldEdit.of({isField, current, text})` → `create | rename |
-  delete | none`. **The whole column-editing rule.** Covered by `test/field_edit_test.dart`.
-
----
-
-## Related modals (`lib/screens/modals/inventory`)
-
-`create_table`, `create_field`, `import_table`, `rename_table`, `edit_table_details`,
-`table_settings`, `stock_movement`, plus `modals/shared`: `image_viewer`, `crop_image`.
+- `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).
+- `column_drag.dart` — `ColumnDrag`: carried column, ghost, drop line.
+- `cells/_cells.dart` — dispatch by `TableFieldType`; `date_cell` `image_cell` `listed_cell`
+  (`OPTIONS`/`CATEGORIES`) `price_cell` `sku_cell` `unit_cell` (number + unit/percent).
+- `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
+  three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
+  `uploading`, editor, serialized write queues (columns, rows).
+- `state/sheet_columns.dart` — `SheetColumns`, `SheetColumn`, `SheetShape`.
+- `state/sheet_cursor.dart` — `SheetCursor`, `SheetCell`, `SheetCellState`.
+- `state/sheet_drafts.dart` — `SheetDrafts`, `SheetDraft`: unsaved rows.
+- `state/sheet_widths.dart` — `SheetWidths`; `state/sheet_metrics.dart` — `SheetMetrics` (row height, visible range, scroll-to-cell).
+- `state/sheet_order.dart` — `fieldsInOrder`, `slotsOf`, `movedOrder`, `dropEdgeAt`.
+- `state/sheet_drag.dart` — `SheetDrag`; `state/sheet_hover.dart` — `SheetHover`; `state/sheet_dates.dart` — `SheetDates`.
+- `state/sheet_keys.dart` — `SheetKeyIntent`.
+- `state/free_column.dart` — `FreeColumn`: trailing column being named.
+- `state/field_edit.dart` — `FieldEdit.of({isField, current, text})` → `create | rename | delete | none`: **the whole column-editing rule**.
 
 ## Import
 
-An imported table exists long before it is finished. `POST /import/structure/<format>/`
-returns its id at once (every column `text`, no rows) and the backend prepares it behind
-the response, bracketed by two socket events — `table/normalizing` then `table/ready`
-(~30 s). `TablesService` listens to both, so a table imported from **any** device is in
-the list, marked, from the moment it exists. Only after `table/ready` are the rows
-uploaded (`POST /import/records/<format>/`).
-
-**A table with an `importStage` does not open.** Its columns are untyped and its rows are
-not in, and a sheet in that state reads as a failed import — which people answer by
-importing the file again. The list says what is missing instead; the sub-page turns
-around on entry for the links that skip the list.
+`POST /import/structure/<format>/` returns the id at once (all columns `text`, no rows); the
+backend prepares it between `table/normalizing` and `table/ready` (~30 s), which
+`TablesService` listens to (imports from any device show up). Rows upload after `table/ready`
+(`POST /import/records/<format>/`). **A table with an `importStage` does not open** (it would
+look like a failed import and get re-imported).
 
 ## Conventions
 
-- Never paint a sheet cell from `ThemeColor` — go through `SheetTheme.of(context)`.
-- Writes go through `SheetController`'s queues, never straight from a widget, so
-  concurrent edits stay ordered.
-- New field type: add to `TableFieldType`, add a cell in `cells/`, register it in
-  `_cells.dart`, and extend `table_field_request.dart` if it needs a distinct payload.
+- Never paint a sheet cell from `ThemeColor` — use `SheetTheme.of(context)`.
+- Writes go through `SheetController`'s queues, never from a widget, so edits stay ordered.
+- New field type: `TableFieldType` → cell in `cells/` → register in `_cells.dart` → extend
+  `table_field_request.dart` if its payload differs.

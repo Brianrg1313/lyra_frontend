@@ -38,9 +38,10 @@ String get apiOrigin {
 /// the right business, without each endpoint having to remember to send it.
 ///
 /// The socket is the exception to that "ends up pointing at": its handshake
-/// already happened, so the new business only travels on the next
-/// reconnection. If the events being listened to belong to the active
-/// business, it has to be forced with `ConnectionService().refresh()`.
+/// already happened, so the new business only travels on the next one. That
+/// is why `BusinessService` follows every change with
+/// `ConnectionService().rebind()` — which is not done here because the same
+/// call runs on sign out, where there is nothing to reconnect to.
 void useBusiness(String? id) {
   api.business = id;
   assets.business = id;

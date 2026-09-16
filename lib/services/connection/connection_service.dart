@@ -148,6 +148,31 @@ class ConnectionService extends ChangeNotifier {
     }
   }
 
+  /// **Moves the connection to the business that just became the active
+  /// one.** `BusinessService` calls it on every change.
+  ///
+  /// The server binds a socket to one business for its whole life: the rooms
+  /// are joined once, in the handshake (`validate_business`), off the
+  /// `business_id` it carried. `useBusiness` only changes what the *next*
+  /// handshake sends, so without this a switch leaves the socket in the room
+  /// of the business the app started with — the `sale/progress`,
+  /// `stock/changed` and `invoice/*` of the one on screen go to a room this app
+  /// is not in. A first business created after signing up is the same case
+  /// from the other side: that handshake went out with no business, was
+  /// refused, and socket.io does not retry a refusal on its own.
+  ///
+  /// Coming back up in the new room fires [onRestored], which is wanted: the
+  /// sections remounted for the new business read before the socket joined
+  /// it, and whatever moved in between was emitted to nobody.
+  ///
+  /// Does nothing while nobody asked for a connection —never opened, or closed
+  /// on sign out—: the next [open] already carries the new business.
+  Future<void> rebind() async {
+    if (_closed || status == SocketStatus.idle) return;
+
+    await refresh();
+  }
+
   // ─── Events ─────────────────────────────────────────────────────────────────
   //
   // These pass straight through to the socket. They can be registered before

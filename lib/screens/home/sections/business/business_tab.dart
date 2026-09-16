@@ -3,15 +3,18 @@ import 'package:app/toolkit/toolkit.dart';
 
 import './branches/_branches.dart';
 import './clients/_clients.dart';
+import './delivery/_delivery.dart';
 import './employees/_employees.dart';
+import './location/_location.dart';
 import './settings/_settings.dart';
 import './statistics/_statistics.dart';
 
 /// The parts of a business that can be looked at from its page.
 ///
-/// They are five views of the **same** business —how it is doing, who works in
-/// it, where it operates, who it sells to and how it is configured—, not five
-/// different screens: that is why they are tabs of one page and not side bar
+/// They are views of the **same** business —how it is doing, who works in it,
+/// where it operates, where it is, how it delivers, who it sells to and how it
+/// is configured—, not different screens: that is why they are tabs of one page
+/// and not side bar
 /// sections. You switch from one to another without requesting the business
 /// again or losing where you were.
 ///
@@ -28,6 +31,8 @@ enum BusinessTab {
   statistics(key: "statistics", icon: CI.chart),
   employees(key: "employees", icon: CI.employee),
   branches(key: "branches", icon: CI.shop),
+  location(key: "location", icon: CI.globe_shopping),
+  delivery(key: "delivery", icon: CI.delivery),
   clients(key: "clients", icon: CI.user),
   settings(key: "settings", icon: CI.setting);
 
@@ -69,6 +74,8 @@ enum BusinessTab {
     statistics => S.of(context).business_tab_statistics,
     employees => S.of(context).business_tab_employees,
     branches => S.of(context).business_tab_branches,
+    location => S.of(context).business_tab_location,
+    delivery => S.of(context).business_tab_delivery,
     clients => S.of(context).business_tab_clients,
     settings => S.of(context).business_tab_settings
   };
@@ -79,6 +86,8 @@ enum BusinessTab {
     statistics => const BusinessStatisticsTab(),
     employees => const BusinessEmployeesTab(),
     branches => const BusinessBranchesTab(),
+    location => const BusinessLocationTab(),
+    delivery => const BusinessDeliveryTab(),
     clients => const BusinessClientsTab(),
     settings => const BusinessSettingsTab()
   };

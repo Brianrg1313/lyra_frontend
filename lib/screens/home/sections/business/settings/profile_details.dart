@@ -7,14 +7,12 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/business/business_language.dart';
 import 'package:app/services/business/business_profile_model.dart';
-import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
 import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
-import 'country_flag.dart';
 import 'profile_block.dart';
 import 'profile_danger.dart';
 import 'profile_header.dart';
@@ -96,28 +94,19 @@ class BusinessProfileDetails extends StatelessWidget {
       ]);
   }
 
-  /// How it operates: where it is, in what language and with which currencies
-  /// it works.
+  /// How it operates: in what language and with which currencies it works.
   ///
-  /// The country and currency don't come from a list written here but from the
-  /// catalogs that `/init` brings ([CountryCatalogService],
-  /// [CurrencyCatalogService]): the platform enables a region or a currency on
-  /// the backend side and this sheet offers it without shipping a version of
-  /// the app. That's why they're watched and not read once: if the catalog is
-  /// re-read with the sheet open, the lists rebuild by themselves.
+  /// The currency doesn't come from a list written here but from the catalog
+  /// that `/init` brings ([CurrencyCatalogService]): the platform enables a
+  /// currency on the backend side and this sheet offers it without shipping a
+  /// version of the app. That's why it's watched and not read once: if the
+  /// catalog is re-read with the sheet open, the list rebuilds by itself.
+  ///
+  /// **Where the business is isn't here.** The street address and the country
+  /// are read and edited in the location tab, with the city, the postal code
+  /// and the map point, because they are one fact and not five: a business that
+  /// moved says so once, in one form. This sheet is who the business *is*.
   List<Widget> _operation(BuildContext context) => [
-    _country(context),
-    ProfileField(
-      icon: CI.shop,
-      label: S.of(context).business_profile_address,
-      value: profile.address,
-      field: BusinessField.text(
-        key: "ADDRESS",
-        value: profile.address,
-        min: 5,
-        max: 160
-      )
-    ),
     ProfileSelectField(
       icon: CI.chat,
       label: S.of(context).business_profile_language,
@@ -154,65 +143,6 @@ class BusinessProfileDetails extends StatelessWidget {
       value: profile.currencies.join(" · ")
     )
   ];
-
-  /// The country where it operates, chosen among the ones the platform has
-  /// enabled.
-  ///
-  /// The option carries the flag and the country's name, which is how it's
-  /// recognized. The code isn't shown: it's the data that travels, not
-  /// something someone has to read to choose their country.
-  ///
-  /// Without a catalog it falls back exactly to that two-letter field. It's the
-  /// only honest way out: an empty dropdown can't load the country, and this
-  /// row is the only place in the app from which it's loaded.
-  Widget _country(BuildContext context) {
-    final catalog = context.watch<CountryCatalogService>();
-
-    if (!catalog.isReady) {
-      return ProfileField(
-        icon: CI.home,
-        label: S.of(context).business_profile_country,
-        description: S.of(context).business_profile_country_note,
-        value: profile.country,
-        field: BusinessField.text(
-          key: "COUNTRY",
-          value: profile.country,
-          pattern: "[A-Za-z]",
-          hint: S.of(context).business_profile_country_hint,
-          min: 2,
-          max: 2
-        )
-      );
-    }
-
-    return ProfileSelectField(
-      icon: CI.home,
-      label: S.of(context).business_profile_country,
-      description: S.of(context).business_profile_country_note,
-      field: BusinessField.select(
-        key: "COUNTRY",
-        value: profile.country,
-        options: [
-          for (final country in catalog.countries) SelectOption(
-            value: country.code,
-            placeholder: country.name,
-            leading: CountryFlag(country: country)
-          ),
-          // The saved country may not be in the catalog: the region was
-          // disabled after the company registered. It's added as one more
-          // option —with the code as the name, which is the only thing known
-          // about it— so the sheet shows what the company has and not a list
-          // where its own isn't there.
-          if (profile.country.isNotEmpty &&
-              catalog.byCode(profile.country) == null)
-            SelectOption(
-              value: profile.country,
-              placeholder: profile.country
-            )
-        ]
-      )
-    );
-  }
 
   /// The currency it invoices in, chosen among the ones the platform has
   /// enabled.

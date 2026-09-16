@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,7 @@ import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/client/client_service.dart';
+import 'package:app/services/connection/connection_service.dart';
 import 'package:app/toolkit/api.dart';
 
 /// Status of loading the active business's profile (`/business/profile/`).
@@ -121,6 +123,10 @@ class BusinessService extends ChangeNotifier {
     _active = _businesses[index];
     useBusiness(_active!.id);
 
+    // The socket's rooms were joined in its handshake, for the business that
+    // was active then; the new one only travels in a new handshake.
+    unawaited(ConnectionService().rebind());
+
     // What's loaded belongs to the business that was just left: the
     // endpoints answer for the active one, so it no longer describes
     // anyone.
@@ -160,6 +166,10 @@ class BusinessService extends ChangeNotifier {
 
     _businesses = [..._businesses, _active!];
     useBusiness(_active!.id);
+
+    // Same as a switch — and for a first business the socket may not be up at
+    // all: a handshake with no business is refused, and never retried.
+    unawaited(ConnectionService().rebind());
 
     // The active business is a different one now, so the loaded profile
     // isn't valid either.
@@ -510,6 +520,14 @@ class BusinessService extends ChangeNotifier {
 
     return true;
   }
+
+  /// Rereads the profile in place, after a write made **elsewhere** that
+  /// changes it.
+  ///
+  /// The location tab writes the same `address` column this profile shows:
+  /// without this, the settings tab keeps the old address until the business
+  /// is opened again.
+  Future<void> refreshProfile() => _reloadProfile();
 
   /// Rereads the profile without going through `loading`.
   ///

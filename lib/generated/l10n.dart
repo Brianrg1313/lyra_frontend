@@ -18,8 +18,10 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(_current != null,
-        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
+    assert(
+      _current != null,
+      'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
+    );
     return _current!;
   }
 
@@ -41,8 +43,10 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(instance != null,
-        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
+    assert(
+      instance != null,
+      'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?',
+    );
     return instance!;
   }
 
@@ -52,12 +56,7 @@ class S {
 
   /// `Search`
   String get search {
-    return Intl.message(
-      'Search',
-      name: 'search',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Search', name: 'search', desc: '', args: []);
   }
 
   /// `Hide keyboard`
@@ -72,42 +71,22 @@ class S {
 
   /// `Email`
   String get email_input {
-    return Intl.message(
-      'Email',
-      name: 'email_input',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Email', name: 'email_input', desc: '', args: []);
   }
 
   /// `Password`
   String get password_input {
-    return Intl.message(
-      'Password',
-      name: 'password_input',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Password', name: 'password_input', desc: '', args: []);
   }
 
   /// `Version`
   String get version {
-    return Intl.message(
-      'Version',
-      name: 'version',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Version', name: 'version', desc: '', args: []);
   }
 
   /// `Login`
   String get login {
-    return Intl.message(
-      'Login',
-      name: 'login',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Login', name: 'login', desc: '', args: []);
   }
 
   /// `The {email} is very long`
@@ -152,42 +131,22 @@ class S {
 
   /// `Sign in`
   String get sign_in {
-    return Intl.message(
-      'Sign in',
-      name: 'sign_in',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sign in', name: 'sign_in', desc: '', args: []);
   }
 
   /// `Edit`
   String get edit {
-    return Intl.message(
-      'Edit',
-      name: 'edit',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Edit', name: 'edit', desc: '', args: []);
   }
 
   /// `Cancel`
   String get cancel {
-    return Intl.message(
-      'Cancel',
-      name: 'cancel',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Cancel', name: 'cancel', desc: '', args: []);
   }
 
   /// `Save`
   String get save {
-    return Intl.message(
-      'Save',
-      name: 'save',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Save', name: 'save', desc: '', args: []);
   }
 
   /// `Title and description`
@@ -282,12 +241,7 @@ class S {
 
   /// `Sign up`
   String get sign_up {
-    return Intl.message(
-      'Sign up',
-      name: 'sign_up',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sign up', name: 'sign_up', desc: '', args: []);
   }
 
   /// `Create an account with your email address`
@@ -432,12 +386,7 @@ class S {
 
   /// `Code`
   String get code_input {
-    return Intl.message(
-      'Code',
-      name: 'code_input',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Code', name: 'code_input', desc: '', args: []);
   }
 
   /// `Resend code in {time}`
@@ -452,42 +401,22 @@ class S {
 
   /// `Resend code`
   String get resend_code {
-    return Intl.message(
-      'Resend code',
-      name: 'resend_code',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Resend code', name: 'resend_code', desc: '', args: []);
   }
 
   /// `Title`
   String get title {
-    return Intl.message(
-      'Title',
-      name: 'title',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Title', name: 'title', desc: '', args: []);
   }
 
   /// `Wallet`
   String get wallet {
-    return Intl.message(
-      'Wallet',
-      name: 'wallet',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Wallet', name: 'wallet', desc: '', args: []);
   }
 
   /// `Add`
   String get add {
-    return Intl.message(
-      'Add',
-      name: 'add',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Add', name: 'add', desc: '', args: []);
   }
 
   /// `Add subscription`
@@ -592,52 +521,27 @@ class S {
 
   /// `Day`
   String get billing_day {
-    return Intl.message(
-      'Day',
-      name: 'billing_day',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Day', name: 'billing_day', desc: '', args: []);
   }
 
   /// `Amount`
   String get amount {
-    return Intl.message(
-      'Amount',
-      name: 'amount',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Amount', name: 'amount', desc: '', args: []);
   }
 
   /// `Home`
   String get home {
-    return Intl.message(
-      'Home',
-      name: 'home',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Home', name: 'home', desc: '', args: []);
   }
 
   /// `Shop`
   String get shop {
-    return Intl.message(
-      'Shop',
-      name: 'shop',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Shop', name: 'shop', desc: '', args: []);
   }
 
   /// `Account`
   String get account {
-    return Intl.message(
-      'Account',
-      name: 'account',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Account', name: 'account', desc: '', args: []);
   }
 
   /// `Billing period`
@@ -652,62 +556,32 @@ class S {
 
   /// `Weekly`
   String get weekly {
-    return Intl.message(
-      'Weekly',
-      name: 'weekly',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Weekly', name: 'weekly', desc: '', args: []);
   }
 
   /// `Monthly`
   String get monthly {
-    return Intl.message(
-      'Monthly',
-      name: 'monthly',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Monthly', name: 'monthly', desc: '', args: []);
   }
 
   /// `Annual`
   String get annual {
-    return Intl.message(
-      'Annual',
-      name: 'annual',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Annual', name: 'annual', desc: '', args: []);
   }
 
   /// `Custom`
   String get custom {
-    return Intl.message(
-      'Custom',
-      name: 'custom',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Custom', name: 'custom', desc: '', args: []);
   }
 
   /// `Days`
   String get custom_days {
-    return Intl.message(
-      'Days',
-      name: 'custom_days',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Days', name: 'custom_days', desc: '', args: []);
   }
 
   /// `New service`
   String get new_service {
-    return Intl.message(
-      'New service',
-      name: 'new_service',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('New service', name: 'new_service', desc: '', args: []);
   }
 
   /// `Trial period`
@@ -722,92 +596,47 @@ class S {
 
   /// `Duration`
   String get trial_duration {
-    return Intl.message(
-      'Duration',
-      name: 'trial_duration',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Duration', name: 'trial_duration', desc: '', args: []);
   }
 
   /// `Trial price`
   String get trial_price {
-    return Intl.message(
-      'Trial price',
-      name: 'trial_price',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Trial price', name: 'trial_price', desc: '', args: []);
   }
 
   /// `Back`
   String get back {
-    return Intl.message(
-      'Back',
-      name: 'back',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Back', name: 'back', desc: '', args: []);
   }
 
   /// `a`
   String get a {
-    return Intl.message(
-      'a',
-      name: 'a',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('a', name: 'a', desc: '', args: []);
   }
 
   /// `Next`
   String get next {
-    return Intl.message(
-      'Next',
-      name: 'next',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Next', name: 'next', desc: '', args: []);
   }
 
   /// `Currency`
   String get currency {
-    return Intl.message(
-      'Currency',
-      name: 'currency',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Currency', name: 'currency', desc: '', args: []);
   }
 
   /// `USD`
   String get currency_usd {
-    return Intl.message(
-      'USD',
-      name: 'currency_usd',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('USD', name: 'currency_usd', desc: '', args: []);
   }
 
   /// `EUR`
   String get currency_eur {
-    return Intl.message(
-      'EUR',
-      name: 'currency_eur',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('EUR', name: 'currency_eur', desc: '', args: []);
   }
 
   /// `Local`
   String get currency_local {
-    return Intl.message(
-      'Local',
-      name: 'currency_local',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Local', name: 'currency_local', desc: '', args: []);
   }
 
   /// `How often do you pay?`
@@ -822,22 +651,12 @@ class S {
 
   /// `Once a year`
   String get once_a_year {
-    return Intl.message(
-      'Once a year',
-      name: 'once_a_year',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Once a year', name: 'once_a_year', desc: '', args: []);
   }
 
   /// `You decide`
   String get you_decide {
-    return Intl.message(
-      'You decide',
-      name: 'you_decide',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('You decide', name: 'you_decide', desc: '', args: []);
   }
 
   /// `Number of days`
@@ -932,42 +751,22 @@ class S {
 
   /// `Confirm`
   String get confirm {
-    return Intl.message(
-      'Confirm',
-      name: 'confirm',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Confirm', name: 'confirm', desc: '', args: []);
   }
 
   /// `All set!`
   String get summary_title {
-    return Intl.message(
-      'All set!',
-      name: 'summary_title',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('All set!', name: 'summary_title', desc: '', args: []);
   }
 
   /// `Service`
   String get summary_service {
-    return Intl.message(
-      'Service',
-      name: 'summary_service',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Service', name: 'summary_service', desc: '', args: []);
   }
 
   /// `Period`
   String get summary_period {
-    return Intl.message(
-      'Period',
-      name: 'summary_period',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Period', name: 'summary_period', desc: '', args: []);
   }
 
   /// `Billing date`
@@ -982,22 +781,12 @@ class S {
 
   /// `Price`
   String get summary_price {
-    return Intl.message(
-      'Price',
-      name: 'summary_price',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Price', name: 'summary_price', desc: '', args: []);
   }
 
   /// `Description`
   String get description {
-    return Intl.message(
-      'Description',
-      name: 'description',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Description', name: 'description', desc: '', args: []);
   }
 
   /// `Optional description...`
@@ -1012,32 +801,17 @@ class S {
 
   /// `Upcoming`
   String get upcoming {
-    return Intl.message(
-      'Upcoming',
-      name: 'upcoming',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Upcoming', name: 'upcoming', desc: '', args: []);
   }
 
   /// `Past`
   String get past_due {
-    return Intl.message(
-      'Past',
-      name: 'past_due',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Past', name: 'past_due', desc: '', args: []);
   }
 
   /// `Today`
   String get billing_today {
-    return Intl.message(
-      'Today',
-      name: 'billing_today',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Today', name: 'billing_today', desc: '', args: []);
   }
 
   /// `in {days} days`
@@ -1062,82 +836,42 @@ class S {
 
   /// `Simple`
   String get plan_simple {
-    return Intl.message(
-      'Simple',
-      name: 'plan_simple',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Simple', name: 'plan_simple', desc: '', args: []);
   }
 
   /// `Normal`
   String get plan_normal {
-    return Intl.message(
-      'Normal',
-      name: 'plan_normal',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Normal', name: 'plan_normal', desc: '', args: []);
   }
 
   /// `Freemium`
   String get plan_freemium {
-    return Intl.message(
-      'Freemium',
-      name: 'plan_freemium',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Freemium', name: 'plan_freemium', desc: '', args: []);
   }
 
   /// `Basic`
   String get plan_basic {
-    return Intl.message(
-      'Basic',
-      name: 'plan_basic',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Basic', name: 'plan_basic', desc: '', args: []);
   }
 
   /// `Plus`
   String get plan_plus {
-    return Intl.message(
-      'Plus',
-      name: 'plan_plus',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Plus', name: 'plan_plus', desc: '', args: []);
   }
 
   /// `Pro`
   String get plan_pro {
-    return Intl.message(
-      'Pro',
-      name: 'plan_pro',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Pro', name: 'plan_pro', desc: '', args: []);
   }
 
   /// `Duo`
   String get plan_duo {
-    return Intl.message(
-      'Duo',
-      name: 'plan_duo',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Duo', name: 'plan_duo', desc: '', args: []);
   }
 
   /// `Family`
   String get plan_family {
-    return Intl.message(
-      'Family',
-      name: 'plan_family',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Family', name: 'plan_family', desc: '', args: []);
   }
 
   /// `Next billing`
@@ -1252,82 +986,42 @@ class S {
 
   /// `Business`
   String get business {
-    return Intl.message(
-      'Business',
-      name: 'business',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Business', name: 'business', desc: '', args: []);
   }
 
   /// `Products`
   String get products {
-    return Intl.message(
-      'Products',
-      name: 'products',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Products', name: 'products', desc: '', args: []);
   }
 
   /// `Inventory`
   String get inventory {
-    return Intl.message(
-      'Inventory',
-      name: 'inventory',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Inventory', name: 'inventory', desc: '', args: []);
   }
 
   /// `Services`
   String get services {
-    return Intl.message(
-      'Services',
-      name: 'services',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Services', name: 'services', desc: '', args: []);
   }
 
   /// `Channels`
   String get channels {
-    return Intl.message(
-      'Channels',
-      name: 'channels',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Channels', name: 'channels', desc: '', args: []);
   }
 
   /// `Finance`
   String get finance {
-    return Intl.message(
-      'Finance',
-      name: 'finance',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Finance', name: 'finance', desc: '', args: []);
   }
 
   /// `Marketing`
   String get marketing {
-    return Intl.message(
-      'Marketing',
-      name: 'marketing',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Marketing', name: 'marketing', desc: '', args: []);
   }
 
   /// `Report`
   String get report {
-    return Intl.message(
-      'Report',
-      name: 'report',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Report', name: 'report', desc: '', args: []);
   }
 
   /// `External Services`
@@ -1342,32 +1036,17 @@ class S {
 
   /// `Sign out`
   String get sign_out {
-    return Intl.message(
-      'Sign out',
-      name: 'sign_out',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sign out', name: 'sign_out', desc: '', args: []);
   }
 
   /// `Expand`
   String get expand {
-    return Intl.message(
-      'Expand',
-      name: 'expand',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Expand', name: 'expand', desc: '', args: []);
   }
 
   /// `Collapse`
   String get collapse {
-    return Intl.message(
-      'Collapse',
-      name: 'collapse',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Collapse', name: 'collapse', desc: '', args: []);
   }
 
   /// `Tell us about the business you want to manage`
@@ -2190,36 +1869,6 @@ class S {
     );
   }
 
-  /// `Country`
-  String get business_profile_country {
-    return Intl.message(
-      'Country',
-      name: 'business_profile_country',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Where the business is registered, as its two-letter code. It sets which rules and taxes apply.`
-  String get business_profile_country_note {
-    return Intl.message(
-      'Where the business is registered, as its two-letter code. It sets which rules and taxes apply.',
-      name: 'business_profile_country_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Address`
-  String get business_profile_address {
-    return Intl.message(
-      'Address',
-      name: 'business_profile_address',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Language`
   String get business_profile_language {
     return Intl.message(
@@ -2800,16 +2449,6 @@ class S {
     );
   }
 
-  /// `ISO code (US, ES, VE)`
-  String get business_profile_country_hint {
-    return Intl.message(
-      'ISO code (US, ES, VE)',
-      name: 'business_profile_country_hint',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Digits, with the country code (+584121234567)`
   String get business_profile_phone_hint {
     return Intl.message(
@@ -3332,12 +2971,7 @@ class S {
 
   /// `Soon`
   String get import_source_soon {
-    return Intl.message(
-      'Soon',
-      name: 'import_source_soon',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Soon', name: 'import_source_soon', desc: '', args: []);
   }
 
   /// `Upload spreadsheet`
@@ -3382,12 +3016,7 @@ class S {
 
   /// `JSON`
   String get import_source_json {
-    return Intl.message(
-      'JSON',
-      name: 'import_source_json',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('JSON', name: 'import_source_json', desc: '', args: []);
   }
 
   /// `A products file exported as JSON`
@@ -3402,12 +3031,7 @@ class S {
 
   /// `XML`
   String get import_source_xml {
-    return Intl.message(
-      'XML',
-      name: 'import_source_xml',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('XML', name: 'import_source_xml', desc: '', args: []);
   }
 
   /// `A products feed in XML`
@@ -3668,12 +3292,7 @@ class S {
 
   /// `Primary`
   String get table_primary {
-    return Intl.message(
-      'Primary',
-      name: 'table_primary',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Primary', name: 'table_primary', desc: '', args: []);
   }
 
   /// `Your main table. The stock summary always reads this one, so it's the table whose columns show up below.`
@@ -3961,12 +3580,7 @@ class S {
 
   /// `Title`
   String get table_title_input {
-    return Intl.message(
-      'Title',
-      name: 'table_title_input',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Title', name: 'table_title_input', desc: '', args: []);
   }
 
   /// `Name of the table`
@@ -4001,12 +3615,7 @@ class S {
 
   /// `Color`
   String get table_color_title {
-    return Intl.message(
-      'Color',
-      name: 'table_color_title',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Color', name: 'table_color_title', desc: '', args: []);
   }
 
   /// `Template`
@@ -4331,12 +3940,7 @@ class S {
 
   /// `Add field`
   String get add_field {
-    return Intl.message(
-      'Add field',
-      name: 'add_field',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Add field', name: 'add_field', desc: '', args: []);
   }
 
   /// `Add a column and choose the kind of information it holds`
@@ -4351,12 +3955,7 @@ class S {
 
   /// `Field added`
   String get field_added {
-    return Intl.message(
-      'Field added',
-      name: 'field_added',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field added', name: 'field_added', desc: '', args: []);
   }
 
   /// `Table created`
@@ -4451,12 +4050,7 @@ class S {
 
   /// `Text`
   String get field_type_text {
-    return Intl.message(
-      'Text',
-      name: 'field_type_text',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Text', name: 'field_type_text', desc: '', args: []);
   }
 
   /// `Short one-line text: names, brands, references`
@@ -4531,12 +4125,7 @@ class S {
 
   /// `SKU`
   String get field_type_sku {
-    return Intl.message(
-      'SKU',
-      name: 'field_type_sku',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('SKU', name: 'field_type_sku', desc: '', args: []);
   }
 
   /// `Your own reference or part number`
@@ -4611,12 +4200,7 @@ class S {
 
   /// `Price`
   String get field_type_price {
-    return Intl.message(
-      'Price',
-      name: 'field_type_price',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Price', name: 'field_type_price', desc: '', args: []);
   }
 
   /// `The selling price: what a customer pays`
@@ -4731,12 +4315,7 @@ class S {
 
   /// `Date`
   String get field_type_date {
-    return Intl.message(
-      'Date',
-      name: 'field_type_date',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Date', name: 'field_type_date', desc: '', args: []);
   }
 
   /// `A day: expiry, arrival or release`
@@ -4771,12 +4350,7 @@ class S {
 
   /// `Email`
   String get field_type_email {
-    return Intl.message(
-      'Email',
-      name: 'field_type_email',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Email', name: 'field_type_email', desc: '', args: []);
   }
 
   /// `An email address`
@@ -4791,12 +4365,7 @@ class S {
 
   /// `Phone`
   String get field_type_phone {
-    return Intl.message(
-      'Phone',
-      name: 'field_type_phone',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Phone', name: 'field_type_phone', desc: '', args: []);
   }
 
   /// `A phone number`
@@ -4811,12 +4380,7 @@ class S {
 
   /// `Link`
   String get field_type_url {
-    return Intl.message(
-      'Link',
-      name: 'field_type_url',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Link', name: 'field_type_url', desc: '', args: []);
   }
 
   /// `A web address`
@@ -4871,12 +4435,7 @@ class S {
 
   /// `Image`
   String get field_type_image {
-    return Intl.message(
-      'Image',
-      name: 'field_type_image',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Image', name: 'field_type_image', desc: '', args: []);
   }
 
   /// `Photos of the product`
@@ -4891,12 +4450,7 @@ class S {
 
   /// `Stock`
   String get field_type_stock {
-    return Intl.message(
-      'Stock',
-      name: 'field_type_stock',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Stock', name: 'field_type_stock', desc: '', args: []);
   }
 
   /// `Units on hand, kept by the inventory engine`
@@ -4921,12 +4475,7 @@ class S {
 
   /// `Reports`
   String get section_reports {
-    return Intl.message(
-      'Reports',
-      name: 'section_reports',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Reports', name: 'section_reports', desc: '', args: []);
   }
 
   /// `Connections`
@@ -5181,12 +4730,7 @@ class S {
 
   /// `Soon`
   String get channel_type_soon {
-    return Intl.message(
-      'Soon',
-      name: 'channel_type_soon',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Soon', name: 'channel_type_soon', desc: '', args: []);
   }
 
   /// `WhatsApp Personal`
@@ -6011,12 +5555,7 @@ class S {
 
   /// `Connections`
   String get connections {
-    return Intl.message(
-      'Connections',
-      name: 'connections',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Connections', name: 'connections', desc: '', args: []);
   }
 
   /// `Connect account`
@@ -6518,22 +6057,12 @@ class S {
 
   /// `Inbox`
   String get inbox {
-    return Intl.message(
-      'Inbox',
-      name: 'inbox',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Inbox', name: 'inbox', desc: '', args: []);
   }
 
   /// `Coming soon`
   String get coming_soon {
-    return Intl.message(
-      'Coming soon',
-      name: 'coming_soon',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Coming soon', name: 'coming_soon', desc: '', args: []);
   }
 
   /// `Visible`
@@ -7553,32 +7082,17 @@ class S {
 
   /// `POS`
   String get pos {
-    return Intl.message(
-      'POS',
-      name: 'pos',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('POS', name: 'pos', desc: '', args: []);
   }
 
   /// `Close POS`
   String get pos_close {
-    return Intl.message(
-      'Close POS',
-      name: 'pos_close',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Close POS', name: 'pos_close', desc: '', args: []);
   }
 
   /// `POS mode`
   String get pos_mode {
-    return Intl.message(
-      'POS mode',
-      name: 'pos_mode',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('POS mode', name: 'pos_mode', desc: '', args: []);
   }
 
   /// `{count, plural, =0{No sales today} =1{1 sale today} other{{count} sales today}}`
@@ -7596,12 +7110,7 @@ class S {
 
   /// `All`
   String get pos_category_all {
-    return Intl.message(
-      'All',
-      name: 'pos_category_all',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('All', name: 'pos_category_all', desc: '', args: []);
   }
 
   /// `Search products`
@@ -7862,12 +7371,7 @@ class S {
 
   /// `Total`
   String get pos_ticket_total {
-    return Intl.message(
-      'Total',
-      name: 'pos_ticket_total',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Total', name: 'pos_ticket_total', desc: '', args: []);
   }
 
   /// `Delete ticket`
@@ -8122,12 +7626,7 @@ class S {
 
   /// `Price`
   String get pos_amount_price {
-    return Intl.message(
-      'Price',
-      name: 'pos_amount_price',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Price', name: 'pos_amount_price', desc: '', args: []);
   }
 
   /// `0`
@@ -8162,12 +7661,7 @@ class S {
 
   /// `VAT rate`
   String get pos_tax_title {
-    return Intl.message(
-      'VAT rate',
-      name: 'pos_tax_title',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('VAT rate', name: 'pos_tax_title', desc: '', args: []);
   }
 
   /// `The percentage charged on this ticket. Written as 16, not as 0.16.`
@@ -8192,12 +7686,7 @@ class S {
 
   /// `0`
   String get pos_tax_placeholder {
-    return Intl.message(
-      '0',
-      name: 'pos_tax_placeholder',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('0', name: 'pos_tax_placeholder', desc: '', args: []);
   }
 
   /// `A rate between 0 and 100`
@@ -8471,12 +7960,7 @@ class S {
 
   /// `Note`
   String get stock_move_note {
-    return Intl.message(
-      'Note',
-      name: 'stock_move_note',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Note', name: 'stock_move_note', desc: '', args: []);
   }
 
   /// `Explain the movement for whoever audits it later`
@@ -8665,12 +8149,7 @@ class S {
 
   /// `Sale`
   String get stock_reason_sale {
-    return Intl.message(
-      'Sale',
-      name: 'stock_reason_sale',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sale', name: 'stock_reason_sale', desc: '', args: []);
   }
 
   /// `Damaged`
@@ -8685,12 +8164,7 @@ class S {
 
   /// `Lost`
   String get stock_reason_loss {
-    return Intl.message(
-      'Lost',
-      name: 'stock_reason_loss',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Lost', name: 'stock_reason_loss', desc: '', args: []);
   }
 
   /// `Expired`
@@ -8825,12 +8299,7 @@ class S {
 
   /// `Try again`
   String get finance_retry {
-    return Intl.message(
-      'Try again',
-      name: 'finance_retry',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Try again', name: 'finance_retry', desc: '', args: []);
   }
 
   /// `No option matches your search`
@@ -8905,12 +8374,7 @@ class S {
 
   /// `Received`
   String get finance_income {
-    return Intl.message(
-      'Received',
-      name: 'finance_income',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Received', name: 'finance_income', desc: '', args: []);
   }
 
   /// `Sales`
@@ -8935,22 +8399,12 @@ class S {
 
   /// `Paid`
   String get finance_expenses {
-    return Intl.message(
-      'Paid',
-      name: 'finance_expenses',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Paid', name: 'finance_expenses', desc: '', args: []);
   }
 
   /// `Net`
   String get finance_net {
-    return Intl.message(
-      'Net',
-      name: 'finance_net',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Net', name: 'finance_net', desc: '', args: []);
   }
 
   /// `Received minus paid`
@@ -10075,12 +9529,7 @@ class S {
 
   /// `Sales`
   String get sales {
-    return Intl.message(
-      'Sales',
-      name: 'sales',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sales', name: 'sales', desc: '', args: []);
   }
 
   /// `Transactions`
@@ -10135,22 +9584,12 @@ class S {
 
   /// `Load more`
   String get sales_more {
-    return Intl.message(
-      'Load more',
-      name: 'sales_more',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Load more', name: 'sales_more', desc: '', args: []);
   }
 
   /// `Try again`
   String get sales_retry {
-    return Intl.message(
-      'Try again',
-      name: 'sales_retry',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Try again', name: 'sales_retry', desc: '', args: []);
   }
 
   /// `Every state`
@@ -10165,12 +9604,7 @@ class S {
 
   /// `Channel`
   String get sales_channel {
-    return Intl.message(
-      'Channel',
-      name: 'sales_channel',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Channel', name: 'sales_channel', desc: '', args: []);
   }
 
   /// `Every channel`
@@ -10185,12 +9619,7 @@ class S {
 
   /// `Sold by me`
   String get sales_mine {
-    return Intl.message(
-      'Sold by me',
-      name: 'sales_mine',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sold by me', name: 'sales_mine', desc: '', args: []);
   }
 
   /// `Clear filters`
@@ -10325,12 +9754,7 @@ class S {
 
   /// `just now`
   String get sales_wait_now {
-    return Intl.message(
-      'just now',
-      name: 'sales_wait_now',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('just now', name: 'sales_wait_now', desc: '', args: []);
   }
 
   /// `{count} min`
@@ -10605,12 +10029,7 @@ class S {
 
   /// `Sale`
   String get sales_detail_title {
-    return Intl.message(
-      'Sale',
-      name: 'sales_detail_title',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sale', name: 'sales_detail_title', desc: '', args: []);
   }
 
   /// `Open the sale`
@@ -10795,12 +10214,7 @@ class S {
 
   /// `Tax`
   String get sales_detail_tax {
-    return Intl.message(
-      'Tax',
-      name: 'sales_detail_tax',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Tax', name: 'sales_detail_tax', desc: '', args: []);
   }
 
   /// `Total`
@@ -11305,12 +10719,7 @@ class S {
 
   /// `Sale id`
   String get sales_detail_id {
-    return Intl.message(
-      'Sale id',
-      name: 'sales_detail_id',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sale id', name: 'sales_detail_id', desc: '', args: []);
   }
 
   /// `Conversation`
@@ -11582,15 +10991,1360 @@ class S {
       args: [],
     );
   }
+
+  /// `Location`
+  String get business_tab_location {
+    return Intl.message(
+      'Location',
+      name: 'business_tab_location',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery`
+  String get business_tab_delivery {
+    return Intl.message(
+      'Delivery',
+      name: 'business_tab_delivery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't load the location`
+  String get business_location_error_title {
+    return Intl.message(
+      'Couldn\'t load the location',
+      name: 'business_location_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something went wrong. Please try again.`
+  String get business_location_error_subtitle {
+    return Intl.message(
+      'Something went wrong. Please try again.',
+      name: 'business_location_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Address`
+  String get business_location_section_address {
+    return Intl.message(
+      'Address',
+      name: 'business_location_section_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On the map`
+  String get business_location_section_map {
+    return Intl.message(
+      'On the map',
+      name: 'business_location_section_map',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit location`
+  String get business_location_edit {
+    return Intl.message(
+      'Edit location',
+      name: 'business_location_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where your business is. A customer asking where to find you is given this address and this point. Every field is optional.`
+  String get business_location_subtitle {
+    return Intl.message(
+      'Where your business is. A customer asking where to find you is given this address and this point. Every field is optional.',
+      name: 'business_location_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Street address`
+  String get business_location_address {
+    return Intl.message(
+      'Street address',
+      name: 'business_location_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One line, as a courier would write it on a label. It's the same address the profile shows.`
+  String get business_location_address_note {
+    return Intl.message(
+      'One line, as a courier would write it on a label. It\'s the same address the profile shows.',
+      name: 'business_location_address_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Av. Francisco de Miranda, Torre Sol, floor 3`
+  String get business_location_address_hint {
+    return Intl.message(
+      'Av. Francisco de Miranda, Torre Sol, floor 3',
+      name: 'business_location_address_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Landmark`
+  String get business_location_landmark {
+    return Intl.message(
+      'Landmark',
+      name: 'business_location_landmark',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How a customer finds the door once they're there.`
+  String get business_location_landmark_note {
+    return Intl.message(
+      'How a customer finds the door once they\'re there.',
+      name: 'business_location_landmark_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Across from Altamira square`
+  String get business_location_landmark_hint {
+    return Intl.message(
+      'Across from Altamira square',
+      name: 'business_location_landmark_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `City`
+  String get business_location_city {
+    return Intl.message(
+      'City',
+      name: 'business_location_city',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Caracas`
+  String get business_location_city_hint {
+    return Intl.message(
+      'Caracas',
+      name: 'business_location_city_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `State or region`
+  String get business_location_region {
+    return Intl.message(
+      'State or region',
+      name: 'business_location_region',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Miranda`
+  String get business_location_region_hint {
+    return Intl.message(
+      'Miranda',
+      name: 'business_location_region_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Postal code`
+  String get business_location_postal_code {
+    return Intl.message(
+      'Postal code',
+      name: 'business_location_postal_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1060`
+  String get business_location_postal_code_hint {
+    return Intl.message(
+      '1060',
+      name: 'business_location_postal_code_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Country`
+  String get business_location_country {
+    return Intl.message(
+      'Country',
+      name: 'business_location_country',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where the business is registered. It also sets its clock, the payment methods it's offered and the carriers it can deliver with.`
+  String get business_location_country_note {
+    return Intl.message(
+      'Where the business is registered. It also sets its clock, the payment methods it\'s offered and the carriers it can deliver with.',
+      name: 'business_location_country_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ISO code (US, ES, VE)`
+  String get business_location_country_hint {
+    return Intl.message(
+      'ISO code (US, ES, VE)',
+      name: 'business_location_country_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a country`
+  String get business_location_country_select {
+    return Intl.message(
+      'Pick a country',
+      name: 'business_location_country_select',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No country matches that search`
+  String get business_location_country_empty {
+    return Intl.message(
+      'No country matches that search',
+      name: 'business_location_country_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Map point`
+  String get business_location_point {
+    return Intl.message(
+      'Map point',
+      name: 'business_location_point',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The exact spot a customer's map opens. It's set apart from the written address, which no map places reliably.`
+  String get business_location_point_note {
+    return Intl.message(
+      'The exact spot a customer\'s map opens. It\'s set apart from the written address, which no map places reliably.',
+      name: 'business_location_point_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `10.496112, -66.848503`
+  String get business_location_point_hint {
+    return Intl.message(
+      '10.496112, -66.848503',
+      name: 'business_location_point_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In Google Maps, right-click the place and click its coordinates to copy them, or paste the link of the place. Leave it empty to remove the point.`
+  String get business_location_point_help {
+    return Intl.message(
+      'In Google Maps, right-click the place and click its coordinates to copy them, or paste the link of the place. Leave it empty to remove the point.',
+      name: 'business_location_point_help',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That isn't a place on the map. Paste it as latitude, longitude (10.496112, -66.848503) or a map link that contains them.`
+  String get business_location_point_invalid {
+    return Intl.message(
+      'That isn\'t a place on the map. Paste it as latitude, longitude (10.496112, -66.848503) or a map link that contains them.',
+      name: 'business_location_point_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open in maps`
+  String get business_location_open_map {
+    return Intl.message(
+      'Open in maps',
+      name: 'business_location_open_map',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The map couldn't be opened.`
+  String get business_location_map_failed {
+    return Intl.message(
+      'The map couldn\'t be opened.',
+      name: 'business_location_map_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Find the address`
+  String get business_location_search {
+    return Intl.message(
+      'Find the address',
+      name: 'business_location_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Street, building or the name of your business`
+  String get business_location_search_hint {
+    return Intl.message(
+      'Street, building or the name of your business',
+      name: 'business_location_search_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a place and its address, city, state, postal code and map point are filled in below. You can correct every one of them before saving.`
+  String get business_location_search_note {
+    return Intl.message(
+      'Pick a place and its address, city, state, postal code and map point are filled in below. You can correct every one of them before saving.',
+      name: 'business_location_search_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No place matches that search. Write the address below.`
+  String get business_location_search_empty {
+    return Intl.message(
+      'No place matches that search. Write the address below.',
+      name: 'business_location_search_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The address search isn't answering right now. Write the address below.`
+  String get business_location_search_failed {
+    return Intl.message(
+      'The address search isn\'t answering right now. Write the address below.',
+      name: 'business_location_search_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That place is in {country}, so that's the country now. It also sets the business's clock, its payment methods and the carriers it can deliver with.`
+  String business_location_search_country(Object country) {
+    return Intl.message(
+      'That place is in $country, so that\'s the country now. It also sets the business\'s clock, its payment methods and the carriers it can deliver with.',
+      name: 'business_location_search_country',
+      desc: '',
+      args: [country],
+    );
+  }
+
+  /// `The address, as a customer reads it`
+  String get business_location_search_manual {
+    return Intl.message(
+      'The address, as a customer reads it',
+      name: 'business_location_search_manual',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filled in from the map. Correct anything that isn't how you'd write it.`
+  String get business_location_search_filled {
+    return Intl.message(
+      'Filled in from the map. Correct anything that isn\'t how you\'d write it.',
+      name: 'business_location_search_filled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't load delivery`
+  String get business_delivery_error_title {
+    return Intl.message(
+      'Couldn\'t load delivery',
+      name: 'business_delivery_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something went wrong. Please try again.`
+  String get business_delivery_error_subtitle {
+    return Intl.message(
+      'Something went wrong. Please try again.',
+      name: 'business_delivery_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery`
+  String get business_delivery_section_general {
+    return Intl.message(
+      'Delivery',
+      name: 'business_delivery_section_general',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ways you deliver`
+  String get business_delivery_section_options {
+    return Intl.message(
+      'Ways you deliver',
+      name: 'business_delivery_section_options',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivers to customers`
+  String get business_delivery_delivers {
+    return Intl.message(
+      'Delivers to customers',
+      name: 'business_delivery_delivers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What your assistant answers when someone asks if you deliver. While it isn't set, it never tells a customer no.`
+  String get business_delivery_delivers_note {
+    return Intl.message(
+      'What your assistant answers when someone asks if you deliver. While it isn\'t set, it never tells a customer no.',
+      name: 'business_delivery_delivers_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pickup at the business`
+  String get business_delivery_pickup {
+    return Intl.message(
+      'Pickup at the business',
+      name: 'business_delivery_pickup',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whether a customer can collect the order at your location.`
+  String get business_delivery_pickup_note {
+    return Intl.message(
+      'Whether a customer can collect the order at your location.',
+      name: 'business_delivery_pickup_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Yes`
+  String get business_delivery_yes {
+    return Intl.message(
+      'Yes',
+      name: 'business_delivery_yes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No`
+  String get business_delivery_no {
+    return Intl.message('No', name: 'business_delivery_no', desc: '', args: []);
+  }
+
+  /// `Not set yet`
+  String get business_delivery_unset {
+    return Intl.message(
+      'Not set yet',
+      name: 'business_delivery_unset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Listing a way to deliver already counts as yes`
+  String get business_delivery_unset_note {
+    return Intl.message(
+      'Listing a way to deliver already counts as yes',
+      name: 'business_delivery_unset_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change the answer`
+  String get business_delivery_choose {
+    return Intl.message(
+      'Change the answer',
+      name: 'business_delivery_choose',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No option matches your search`
+  String get business_delivery_select_empty {
+    return Intl.message(
+      'No option matches your search',
+      name: 'business_delivery_select_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery note`
+  String get business_delivery_notes {
+    return Intl.message(
+      'Delivery note',
+      name: 'business_delivery_notes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One sentence about delivery in general, in your own words.`
+  String get business_delivery_notes_note {
+    return Intl.message(
+      'One sentence about delivery in general, in your own words.',
+      name: 'business_delivery_notes_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Orders placed before 2 pm leave the same day`
+  String get business_delivery_notes_hint {
+    return Intl.message(
+      'Orders placed before 2 pm leave the same day',
+      name: 'business_delivery_notes_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a way to deliver`
+  String get business_delivery_add {
+    return Intl.message(
+      'Add a way to deliver',
+      name: 'business_delivery_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Way to deliver`
+  String get business_delivery_empty {
+    return Intl.message(
+      'Way to deliver',
+      name: 'business_delivery_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing yet. Add your own riders, a delivery app or a parcel carrier.`
+  String get business_delivery_empty_note {
+    return Intl.message(
+      'Nothing yet. Add your own riders, a delivery app or a parcel carrier.',
+      name: 'business_delivery_empty_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery is turned off, so none of these is offered. They stay saved for when you turn it back on.`
+  String get business_delivery_off_note {
+    return Intl.message(
+      'Delivery is turned off, so none of these is offered. They stay saved for when you turn it back on.',
+      name: 'business_delivery_off_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Own riders`
+  String get business_delivery_own_default {
+    return Intl.message(
+      'Own riders',
+      name: 'business_delivery_own_default',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Own riders`
+  String get business_delivery_mode_own {
+    return Intl.message(
+      'Own riders',
+      name: 'business_delivery_mode_own',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your business's own couriers carry the order`
+  String get business_delivery_mode_own_note {
+    return Intl.message(
+      'Your business\'s own couriers carry the order',
+      name: 'business_delivery_mode_own_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery app`
+  String get business_delivery_mode_platform {
+    return Intl.message(
+      'Delivery app',
+      name: 'business_delivery_mode_platform',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An app like PedidosYa, Yummy or Rappi carries it`
+  String get business_delivery_mode_platform_note {
+    return Intl.message(
+      'An app like PedidosYa, Yummy or Rappi carries it',
+      name: 'business_delivery_mode_platform_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Parcel carrier`
+  String get business_delivery_mode_courier {
+    return Intl.message(
+      'Parcel carrier',
+      name: 'business_delivery_mode_courier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A shipping company like Zoom, MRW or DHL sends it`
+  String get business_delivery_mode_courier_note {
+    return Intl.message(
+      'A shipping company like Zoom, MRW or DHL sends it',
+      name: 'business_delivery_mode_courier_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Local`
+  String get business_delivery_coverage_local {
+    return Intl.message(
+      'Local',
+      name: 'business_delivery_coverage_local',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Some areas, or a radius around your location`
+  String get business_delivery_coverage_local_note {
+    return Intl.message(
+      'Some areas, or a radius around your location',
+      name: 'business_delivery_coverage_local_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `National`
+  String get business_delivery_coverage_national {
+    return Intl.message(
+      'National',
+      name: 'business_delivery_coverage_national',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Anywhere in the country`
+  String get business_delivery_coverage_national_note {
+    return Intl.message(
+      'Anywhere in the country',
+      name: 'business_delivery_coverage_national_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `International`
+  String get business_delivery_coverage_international {
+    return Intl.message(
+      'International',
+      name: 'business_delivery_coverage_international',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To other countries too`
+  String get business_delivery_coverage_international_note {
+    return Intl.message(
+      'To other countries too',
+      name: 'business_delivery_coverage_international_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Free`
+  String get business_delivery_fee_free {
+    return Intl.message(
+      'Free',
+      name: 'business_delivery_fee_free',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price varies`
+  String get business_delivery_fee_varies {
+    return Intl.message(
+      'Price varies',
+      name: 'business_delivery_fee_varies',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Free from {amount}`
+  String business_delivery_free_from(Object amount) {
+    return Intl.message(
+      'Free from $amount',
+      name: 'business_delivery_free_from',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Within {km} km`
+  String business_delivery_radius(Object km) {
+    return Intl.message(
+      'Within $km km',
+      name: 'business_delivery_radius',
+      desc: '',
+      args: [km],
+    );
+  }
+
+  /// `+{count} more`
+  String business_delivery_zones_more(Object count) {
+    return Intl.message(
+      '+$count more',
+      name: 'business_delivery_zones_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} min`
+  String business_delivery_eta_minutes(Object count) {
+    return Intl.message(
+      '$count min',
+      name: 'business_delivery_eta_minutes',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} h`
+  String business_delivery_eta_hours(Object count) {
+    return Intl.message(
+      '$count h',
+      name: 'business_delivery_eta_hours',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 day} other{{count} days}}`
+  String business_delivery_eta_days(num count) {
+    return Intl.plural(
+      count,
+      one: '1 day',
+      other: '$count days',
+      name: 'business_delivery_eta_days',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{from}–{to} min`
+  String business_delivery_eta_range_minutes(Object from, Object to) {
+    return Intl.message(
+      '$from–$to min',
+      name: 'business_delivery_eta_range_minutes',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `{from}–{to} h`
+  String business_delivery_eta_range_hours(Object from, Object to) {
+    return Intl.message(
+      '$from–$to h',
+      name: 'business_delivery_eta_range_hours',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `{from}–{to} days`
+  String business_delivery_eta_range_days(Object from, Object to) {
+    return Intl.message(
+      '$from–$to days',
+      name: 'business_delivery_eta_range_days',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `From {time}`
+  String business_delivery_eta_from(Object time) {
+    return Intl.message(
+      'From $time',
+      name: 'business_delivery_eta_from',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Up to {time}`
+  String business_delivery_eta_up_to(Object time) {
+    return Intl.message(
+      'Up to $time',
+      name: 'business_delivery_eta_up_to',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Minutes`
+  String get business_delivery_unit_minutes {
+    return Intl.message(
+      'Minutes',
+      name: 'business_delivery_unit_minutes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hours`
+  String get business_delivery_unit_hours {
+    return Intl.message(
+      'Hours',
+      name: 'business_delivery_unit_hours',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Days`
+  String get business_delivery_unit_days {
+    return Intl.message(
+      'Days',
+      name: 'business_delivery_unit_days',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove`
+  String get business_delivery_remove {
+    return Intl.message(
+      'Remove',
+      name: 'business_delivery_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove this way to deliver?`
+  String get business_delivery_remove_title {
+    return Intl.message(
+      'Remove this way to deliver?',
+      name: 'business_delivery_remove_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} stops being offered to your customers. Removing the last one doesn't change whether your business says it delivers.`
+  String business_delivery_remove_message(Object name) {
+    return Intl.message(
+      '$name stops being offered to your customers. Removing the last one doesn\'t change whether your business says it delivers.',
+      name: 'business_delivery_remove_message',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `New way to deliver`
+  String get business_delivery_create_title {
+    return Intl.message(
+      'New way to deliver',
+      name: 'business_delivery_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit way to deliver`
+  String get business_delivery_edit_title {
+    return Intl.message(
+      'Edit way to deliver',
+      name: 'business_delivery_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who carries the order, how far it goes, what it costs and how long it takes. It's what your customers are told when they ask.`
+  String get business_delivery_form_subtitle {
+    return Intl.message(
+      'Who carries the order, how far it goes, what it costs and how long it takes. It\'s what your customers are told when they ask.',
+      name: 'business_delivery_form_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The list of apps and carriers couldn't be loaded. You can still write the name of yours.`
+  String get business_delivery_no_catalog {
+    return Intl.message(
+      'The list of apps and carriers couldn\'t be loaded. You can still write the name of yours.',
+      name: 'business_delivery_no_catalog',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your business has no country set, so only carriers that work everywhere are listed. Set it in Settings.`
+  String get business_delivery_no_country {
+    return Intl.message(
+      'Your business has no country set, so only carriers that work everywhere are listed. Set it in Settings.',
+      name: 'business_delivery_no_country',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `optional`
+  String get business_delivery_optional {
+    return Intl.message(
+      'optional',
+      name: 'business_delivery_optional',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who carries it`
+  String get business_delivery_mode {
+    return Intl.message(
+      'Who carries it',
+      name: 'business_delivery_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick who carries the order`
+  String get business_delivery_mode_placeholder {
+    return Intl.message(
+      'Pick who carries the order',
+      name: 'business_delivery_mode_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Company`
+  String get business_delivery_provider {
+    return Intl.message(
+      'Company',
+      name: 'business_delivery_provider',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick the app or the carrier`
+  String get business_delivery_provider_placeholder {
+    return Intl.message(
+      'Pick the app or the carrier',
+      name: 'business_delivery_provider_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Another one`
+  String get business_delivery_provider_other {
+    return Intl.message(
+      'Another one',
+      name: 'business_delivery_provider_other',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not in the list: write its name below`
+  String get business_delivery_provider_other_note {
+    return Intl.message(
+      'Not in the list: write its name below',
+      name: 'business_delivery_provider_other_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Works everywhere`
+  String get business_delivery_provider_global {
+    return Intl.message(
+      'Works everywhere',
+      name: 'business_delivery_provider_global',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name`
+  String get business_delivery_label {
+    return Intl.message(
+      'Name',
+      name: 'business_delivery_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Company name`
+  String get business_delivery_label_carrier {
+    return Intl.message(
+      'Company name',
+      name: 'business_delivery_label_carrier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Downtown riders`
+  String get business_delivery_label_hint {
+    return Intl.message(
+      'Downtown riders',
+      name: 'business_delivery_label_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick the company that carries it, or write its name.`
+  String get business_delivery_carrier_required {
+    return Intl.message(
+      'Pick the company that carries it, or write its name.',
+      name: 'business_delivery_carrier_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How far it reaches`
+  String get business_delivery_coverage {
+    return Intl.message(
+      'How far it reaches',
+      name: 'business_delivery_coverage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick how far it reaches`
+  String get business_delivery_coverage_placeholder {
+    return Intl.message(
+      'Pick how far it reaches',
+      name: 'business_delivery_coverage_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{coverage}, unless you pick another`
+  String business_delivery_coverage_default(Object coverage) {
+    return Intl.message(
+      '$coverage, unless you pick another',
+      name: 'business_delivery_coverage_default',
+      desc: '',
+      args: [coverage],
+    );
+  }
+
+  /// `Radius in km`
+  String get business_delivery_radius_title {
+    return Intl.message(
+      'Radius in km',
+      name: 'business_delivery_radius_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `5`
+  String get business_delivery_radius_hint {
+    return Intl.message(
+      '5',
+      name: 'business_delivery_radius_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The radius goes in kilometres, above 0 and up to 1000.`
+  String get business_delivery_radius_invalid {
+    return Intl.message(
+      'The radius goes in kilometres, above 0 and up to 1000.',
+      name: 'business_delivery_radius_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Zones`
+  String get business_delivery_zones {
+    return Intl.message(
+      'Zones',
+      name: 'business_delivery_zones',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The areas it reaches, as your customers call them. A zone can have a price of its own.`
+  String get business_delivery_zones_note {
+    return Intl.message(
+      'The areas it reaches, as your customers call them. A zone can have a price of its own.',
+      name: 'business_delivery_zones_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Zone`
+  String get business_delivery_zone_name {
+    return Intl.message(
+      'Zone',
+      name: 'business_delivery_zone_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Own price`
+  String get business_delivery_zone_fee {
+    return Intl.message(
+      'Own price',
+      name: 'business_delivery_zone_fee',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add zone`
+  String get business_delivery_zone_add {
+    return Intl.message(
+      'Add zone',
+      name: 'business_delivery_zone_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove zone`
+  String get business_delivery_zone_remove {
+    return Intl.message(
+      'Remove zone',
+      name: 'business_delivery_zone_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every zone needs a name of up to 80 characters, and its own price has to be an amount.`
+  String get business_delivery_zone_invalid {
+    return Intl.message(
+      'Every zone needs a name of up to 80 characters, and its own price has to be an amount.',
+      name: 'business_delivery_zone_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price`
+  String get business_delivery_fee {
+    return Intl.message(
+      'Price',
+      name: 'business_delivery_fee',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In {currency}. Empty if it varies, 0 if it's free`
+  String business_delivery_fee_hint(Object currency) {
+    return Intl.message(
+      'In $currency. Empty if it varies, 0 if it\'s free',
+      name: 'business_delivery_fee_hint',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `Free from`
+  String get business_delivery_free_from_title {
+    return Intl.message(
+      'Free from',
+      name: 'business_delivery_free_from_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Order total from which it's free`
+  String get business_delivery_free_from_hint {
+    return Intl.message(
+      'Order total from which it\'s free',
+      name: 'business_delivery_free_from_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write amounts with digits and up to two decimals, without thousands separators.`
+  String get business_delivery_amount_invalid {
+    return Intl.message(
+      'Write amounts with digits and up to two decimals, without thousands separators.',
+      name: 'business_delivery_amount_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery time`
+  String get business_delivery_eta {
+    return Intl.message(
+      'Delivery time',
+      name: 'business_delivery_eta',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From`
+  String get business_delivery_eta_min {
+    return Intl.message(
+      'From',
+      name: 'business_delivery_eta_min',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To`
+  String get business_delivery_eta_max {
+    return Intl.message(
+      'To',
+      name: 'business_delivery_eta_max',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unit`
+  String get business_delivery_eta_unit {
+    return Intl.message(
+      'Unit',
+      name: 'business_delivery_eta_unit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The delivery time goes from 1 minute to 30 days, and the first figure can't be larger than the second.`
+  String get business_delivery_eta_invalid {
+    return Intl.message(
+      'The delivery time goes from 1 minute to 30 days, and the first figure can\'t be larger than the second.',
+      name: 'business_delivery_eta_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notes`
+  String get business_delivery_option_notes {
+    return Intl.message(
+      'Notes',
+      name: 'business_delivery_option_notes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cash on delivery`
+  String get business_delivery_option_notes_hint {
+    return Intl.message(
+      'Cash on delivery',
+      name: 'business_delivery_option_notes_hint',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[
-      Locale.fromSubtags(languageCode: 'en'),
-    ];
+    return const <Locale>[Locale.fromSubtags(languageCode: 'en')];
   }
 
   @override

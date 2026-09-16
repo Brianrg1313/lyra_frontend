@@ -5,6 +5,8 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/business/business_delivery_service.dart';
+import 'package:app/services/business/business_location_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/business/business_model.dart';
 
@@ -31,8 +33,8 @@ import 'detail_header.dart';
 /// the previous tab.
 ///
 /// The page is split in two: the tab bar resting on the background, and the
-/// body, which is **the only surface**. The tabs are not five cards side by
-/// side: they are five faces of the same sheet, and that sheet is the body.
+/// body, which is **the only surface**. The tabs are not cards side by side:
+/// they are faces of the same sheet, and that sheet is the body.
 /// That is why none brings its own surface and the active tab is drawn with
 /// the body's color, like a tongue.
 ///
@@ -148,16 +150,27 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     // profile.
     final business = service.byId(id);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        BusinessDetailHeader(tab: _tab, onTab: _openTab),
-        SizedBox(height: AppSize.gap),
-        Expanded(child: Surface(
-          padding: EdgeInsets.all(AppSize.padding),
-          child: _body(context, service, id, business)
-        ))
-      ]);
+    // The location and the delivery are read by their tabs but belong to the
+    // page: switching tabs does not ask for them again, and a business switch
+    // remounts the page, which is what drops them (every one of their
+    // endpoints answers for the active business). Lazy, so a visit that never
+    // opens those tabs never builds them.
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => BusinessLocationService()),
+        ChangeNotifierProvider(create: (_) => BusinessDeliveryService())
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BusinessDetailHeader(tab: _tab, onTab: _openTab),
+          SizedBox(height: AppSize.gap),
+          Expanded(child: Surface(
+            padding: EdgeInsets.all(AppSize.padding),
+            child: _body(context, service, id, business)
+          ))
+        ])
+    );
   }
 
   /// Opens another tab of the same business.
