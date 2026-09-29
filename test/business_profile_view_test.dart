@@ -227,11 +227,12 @@ void main() {
     // Los datos que se escriben de la ficha llena: nombre, lema, razon social,
     // handle, identificador fiscal y sitio, mas uno por cada correo.
     //
-    // El sector, el idioma y la moneda no estan: se eligen de una lista y se
+    // El sector y el idioma no estan: se eligen de una lista y se
     // cambian en su propia fila, sin modal y sin lapiz (ver
     // `ProfileSelectField`). El telefono y la fecha de constitucion tampoco: se
     // cargan en la fila, repartidos en los campos que los componen. La
-    // direccion y el pais tampoco: se editan enteros en Ubicacion.
+    // direccion y el pais tampoco: se editan enteros en Ubicacion. La moneda
+    // ya no es de esta ficha: vive en Finanzas.
     expect(
       find.byWidgetPredicate(
         (widget) => widget is ProfileAction && widget.icon == CI.edit
@@ -251,24 +252,23 @@ void main() {
     expect(find.text("RETAIL"), findsNothing);
   });
 
-  testWidgets('donde esta la empresa no es un dato de esta ficha', (tester) async {
+  testWidgets('the country is on this sheet, the address is not', (tester) async {
     await tester.pumpWidget(_app(1000));
     await tester.pumpAndSettle();
 
-    // La direccion y el pais se leen y se editan en Ubicacion, junto con la
-    // ciudad, el codigo postal y el punto del mapa: una empresa que se mudo lo
-    // dice una sola vez y en un solo formulario. Esta ficha es quien *es* la
-    // empresa, no donde esta.
-    expect(find.text("Country"), findsNothing);
-    expect(find.text("Venezuela"), findsNothing);
+    // The country is the company's and every branch shares it, so it is read
+    // and changed here. The address belongs to each branch and is edited in
+    // the branches tab.
+    expect(find.text("Country"), findsOneWidget);
     expect(find.text("Address"), findsNothing);
     expect(_written("Av. Principal 1"), findsNothing);
   });
 
-  testWidgets('sin catalogo la moneda se sigue pudiendo cargar', (tester) async {
-    // Un desplegable vacio no seria un dato que no se puede leer: seria un dato
-    // que no se puede cargar, y esta fila es el unico lugar desde donde se
-    // carga. Sin catalogo se vuelve al campo de texto de tres letras.
+  testWidgets('the currencies are not part of this sheet', (tester) async {
+    // The main currency and the exchange currencies are read and set up in the
+    // finance section (payment methods tab). Not even without a catalog does
+    // the main one come back as a text field: changing it relabels every
+    // stored price instead of converting it, and the backend refuses it here.
     CountryCatalogService().clear();
     CurrencyCatalogService().clear();
 
@@ -276,14 +276,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(_written("VES"), findsOneWidget);
+    expect(_written("VES"), findsNothing);
+    expect(_written("USD"), findsNothing);
 
-    // La moneda vuelve a ser un dato que se escribe.
     expect(
       find.byWidgetPredicate(
         (widget) => widget is ProfileAction && widget.icon == CI.edit
       ),
-      findsNWidgets(9)
+      findsNWidgets(8)
     );
   });
 

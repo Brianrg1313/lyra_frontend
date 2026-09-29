@@ -7,12 +7,13 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/business/business_language.dart';
 import 'package:app/services/business/business_profile_model.dart';
-import 'package:app/services/catalog/currency_catalog_service.dart';
+import 'package:app/services/catalog/country_catalog_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
 import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
+import 'country_flag.dart';
 import 'profile_block.dart';
 import 'profile_danger.dart';
 import 'profile_header.dart';
@@ -94,19 +95,38 @@ class BusinessProfileDetails extends StatelessWidget {
       ]);
   }
 
-  /// How it operates: in what language and with which currencies it works.
+  /// How it operates: in which country and in what language it works.
   ///
-  /// The currency doesn't come from a list written here but from the catalog
-  /// that `/init` brings ([CurrencyCatalogService]): the platform enables a
-  /// currency on the backend side and this sheet offers it without shipping a
-  /// version of the app. That's why it's watched and not read once: if the
-  /// catalog is re-read with the sheet open, the list rebuilds by itself.
+  /// **The currencies aren't here.** The main one and the exchange currencies
+  /// are read and set up in the finance section (payment methods tab), beside
+  /// the accounts that take them: they are one subject, and the main one
+  /// cannot be changed from a settings form anyway — changing it relabels
+  /// every stored price instead of converting it.
   ///
-  /// **Where the business is isn't here.** The street address and the country
-  /// are read and edited in the location tab, with the city, the postal code
-  /// and the map point, because they are one fact and not five: a business that
-  /// moved says so once, in one form. This sheet is who the business *is*.
+  /// **Where the business is isn't here either**, except its country. The
+  /// address and the map point belong to each branch and are edited in the
+  /// branches tab (the main branch's is the company's). The country is the
+  /// company's and every branch shares it; changing it also moves the clock,
+  /// the payment rails and the delivery carriers.
   List<Widget> _operation(BuildContext context) => [
+    ProfileSelectField(
+      icon: CI.globe_shopping,
+      label: S.of(context).business_location_country,
+      description: S.of(context).business_location_country_note,
+      field: BusinessField.select(
+        key: "COUNTRY",
+        value: profile.country,
+        // Watched: the catalog may answer after the sheet is drawn.
+        options: [
+          for (final country in context.watch<CountryCatalogService>().countries)
+            SelectOption(
+              value: country.code,
+              placeholder: country.name,
+              leading: CountryFlag(country: country)
+            )
+        ]
+      )
+    ),
     ProfileSelectField(
       icon: CI.chat,
       label: S.of(context).business_profile_language,
@@ -131,77 +151,8 @@ class BusinessProfileDetails extends StatelessWidget {
             )
         ]
       )
-    ),
-    _currency(context),
-    // The secondaries are a list and not a single datum: choosing several isn't
-    // what this form does, so for now they're read and changed where the
-    // company's currencies are configured.
-    if (profile.currencies.isNotEmpty) ProfileField(
-      icon: CI.list,
-      label: S.of(context).business_profile_currencies,
-      description: S.of(context).business_profile_currencies_note,
-      value: profile.currencies.join(" · ")
     )
   ];
-
-  /// The currency it invoices in, chosen among the ones the platform has
-  /// enabled.
-  ///
-  /// The option carries the code and, below it, the symbol and the name: the
-  /// code is the data and the symbol is what this company's prices are
-  /// recognized by elsewhere in the app.
-  ///
-  /// Without a catalog it falls to a three-letter text field, for the same
-  /// reason as the country: it's better to type the code by hand than to not
-  /// be able to change the currency.
-  Widget _currency(BuildContext context) {
-    final catalog = context.watch<CurrencyCatalogService>();
-
-    if (!catalog.isReady) {
-      return ProfileField(
-        icon: CI.wallet,
-        label: S.of(context).business_profile_currency,
-        description: S.of(context).business_profile_currency_note,
-        value: profile.currency,
-        field: BusinessField.text(
-          key: "CURRENCY",
-          value: profile.currency,
-          pattern: "[A-Za-z]",
-          min: 3,
-          max: 3
-        )
-      );
-    }
-
-    return ProfileSelectField(
-      icon: CI.wallet,
-      label: S.of(context).business_profile_currency,
-      description: S.of(context).business_profile_currency_note,
-      field: BusinessField.select(
-        key: "CURRENCY",
-        value: profile.currency,
-        options: [
-          for (final currency in catalog.currencies) SelectOption(
-            value: currency.code,
-            placeholder: currency.code,
-            subtitle: currency.name.isEmpty
-              ? currency.symbol
-              : "${currency.symbol} · ${currency.name}"
-          ),
-          // Same as with the country: the saved currency may have been
-          // disabled, and hiding it would leave the list without what the
-          // company has today.
-          if (profile.currency.isNotEmpty &&
-              catalog.byCode(profile.currency) == null)
-            SelectOption(
-              value: profile.currency,
-              placeholder: profile.currency,
-              subtitle: profile.currency
-            )
-        ]
-      )
-    );
-  }
 
   /// How it's contacted, without the emails: those are a list and have their
   /// own block.

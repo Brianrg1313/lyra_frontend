@@ -129,11 +129,6 @@ class S {
     );
   }
 
-  /// `Sign in`
-  String get sign_in {
-    return Intl.message('Sign in', name: 'sign_in', desc: '', args: []);
-  }
-
   /// `Edit`
   String get edit {
     return Intl.message('Edit', name: 'edit', desc: '', args: []);
@@ -189,26 +184,6 @@ class S {
     );
   }
 
-  /// `Log in with your email address`
-  String get sign_in_subtitle {
-    return Intl.message(
-      'Log in with your email address',
-      name: 'sign_in_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `or log in with:`
-  String get or_login_with {
-    return Intl.message(
-      'or log in with:',
-      name: 'or_login_with',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Pending Payments`
   String get pending_funds {
     return Intl.message(
@@ -219,36 +194,11 @@ class S {
     );
   }
 
-  /// `Don't have an account yet?`
-  String get dont_have_account {
-    return Intl.message(
-      'Don\'t have an account yet?',
-      name: 'dont_have_account',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Sorry, there was a connection error, please try again later`
   String get connectionError {
     return Intl.message(
       'Sorry, there was a connection error, please try again later',
       name: 'connectionError',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sign up`
-  String get sign_up {
-    return Intl.message('Sign up', name: 'sign_up', desc: '', args: []);
-  }
-
-  /// `Create an account with your email address`
-  String get sign_up_subtitle {
-    return Intl.message(
-      'Create an account with your email address',
-      name: 'sign_up_subtitle',
       desc: '',
       args: [],
     );
@@ -269,16 +219,6 @@ class S {
     return Intl.message(
       'Passwords don\'t match',
       name: 'password_mismatch',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Already have an account?`
-  String get already_have_account {
-    return Intl.message(
-      'Already have an account?',
-      name: 'already_have_account',
       desc: '',
       args: [],
     );
@@ -344,11 +284,51 @@ class S {
     );
   }
 
-  /// `By signing up, you agree to our `
-  String get sign_up_terms_prefix {
+  /// `Lyra`
+  String get auth_brand {
+    return Intl.message('Lyra', name: 'auth_brand', desc: '', args: []);
+  }
+
+  /// `Sign in or create your account`
+  String get auth_title {
     return Intl.message(
-      'By signing up, you agree to our ',
-      name: 'sign_up_terms_prefix',
+      'Sign in or create your account',
+      name: 'auth_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter your email. If it's new to Lyra, we'll create your account with it.`
+  String get auth_subtitle {
+    return Intl.message(
+      'Enter your email. If it\'s new to Lyra, we\'ll create your account with it.',
+      name: 'auth_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue`
+  String get auth_continue {
+    return Intl.message('Continue', name: 'auth_continue', desc: '', args: []);
+  }
+
+  /// `or continue with`
+  String get auth_or_with {
+    return Intl.message(
+      'or continue with',
+      name: 'auth_or_with',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By continuing, you agree to our `
+  String get auth_terms_prefix {
+    return Intl.message(
+      'By continuing, you agree to our ',
+      name: 'auth_terms_prefix',
       desc: '',
       args: [],
     );
@@ -364,11 +344,41 @@ class S {
     );
   }
 
-  /// `Verify your email`
-  String get verify_code_title {
+  /// `© {year} Lyra. All rights reserved.`
+  String auth_footer_copyright(Object year) {
     return Intl.message(
-      'Verify your email',
-      name: 'verify_code_title',
+      '© $year Lyra. All rights reserved.',
+      name: 'auth_footer_copyright',
+      desc: '',
+      args: [year],
+    );
+  }
+
+  /// `Privacy policy`
+  String get auth_footer_privacy {
+    return Intl.message(
+      'Privacy policy',
+      name: 'auth_footer_privacy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Terms and conditions`
+  String get auth_footer_terms {
+    return Intl.message(
+      'Terms and conditions',
+      name: 'auth_footer_terms',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Language`
+  String get auth_footer_language {
+    return Intl.message(
+      'Language',
+      name: 'auth_footer_language',
       desc: '',
       args: [],
     );
@@ -389,6 +399,66 @@ class S {
     return Intl.message('Code', name: 'code_input', desc: '', args: []);
   }
 
+  /// `Check your inbox`
+  String get verify_code_inbox_title {
+    return Intl.message(
+      'Check your inbox',
+      name: 'verify_code_inbox_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the {length}-digit code we sent to`
+  String verify_code_inbox_subtitle(Object length) {
+    return Intl.message(
+      'Enter the $length-digit code we sent to',
+      name: 'verify_code_inbox_subtitle',
+      desc: '',
+      args: [length],
+    );
+  }
+
+  /// `Change`
+  String get verify_code_change_email {
+    return Intl.message(
+      'Change',
+      name: 'verify_code_change_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Didn't get it?`
+  String get verify_code_not_received {
+    return Intl.message(
+      'Didn\'t get it?',
+      name: 'verify_code_not_received',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Resend in {time}`
+  String verify_code_resend_in(Object time) {
+    return Intl.message(
+      'Resend in $time',
+      name: 'verify_code_resend_in',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Signing you in…`
+  String get verify_code_signing_in {
+    return Intl.message(
+      'Signing you in…',
+      name: 'verify_code_signing_in',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Resend code in {time}`
   String resend_code_timer(Object time) {
     return Intl.message(
@@ -402,6 +472,96 @@ class S {
   /// `Resend code`
   String get resend_code {
     return Intl.message('Resend code', name: 'resend_code', desc: '', args: []);
+  }
+
+  /// `A password isn't required, but we recommend creating one. Your account will be as secure as you want it to be: we offer several ways to protect it, and you decide how far to go.`
+  String get verify_code_password_notice {
+    return Intl.message(
+      'A password isn\'t required, but we recommend creating one. Your account will be as secure as you want it to be: we offer several ways to protect it, and you decide how far to go.',
+      name: 'verify_code_password_notice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue`
+  String get verify_code_continue {
+    return Intl.message(
+      'Continue',
+      name: 'verify_code_continue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue and create a password`
+  String get verify_code_continue_with_password {
+    return Intl.message(
+      'Continue and create a password',
+      name: 'verify_code_continue_with_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create your account`
+  String get sign_up_code_title {
+    return Intl.message(
+      'Create your account',
+      name: 'sign_up_code_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We sent a code to {email}. Enter it with your name and your account is ready.`
+  String sign_up_code_subtitle(Object email) {
+    return Intl.message(
+      'We sent a code to $email. Enter it with your name and your account is ready.',
+      name: 'sign_up_code_subtitle',
+      desc: '',
+      args: [email],
+    );
+  }
+
+  /// `Code from your email`
+  String get sign_up_step_code {
+    return Intl.message(
+      'Code from your email',
+      name: 'sign_up_step_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not there? Check your spam folder.`
+  String get sign_up_step_code_hint {
+    return Intl.message(
+      'Not there? Check your spam folder.',
+      name: 'sign_up_step_code_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your name`
+  String get sign_up_step_name {
+    return Intl.message(
+      'Your name',
+      name: 'sign_up_step_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your team sees it next to everything you do.`
+  String get sign_up_step_name_hint {
+    return Intl.message(
+      'Your team sees it next to everything you do.',
+      name: 'sign_up_step_name_hint',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Title`
@@ -1039,6 +1199,26 @@ class S {
     return Intl.message('Sign out', name: 'sign_out', desc: '', args: []);
   }
 
+  /// `Your session ended. Sign in again to continue.`
+  String get session_expired {
+    return Intl.message(
+      'Your session ended. Sign in again to continue.',
+      name: 'session_expired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not sign out. Check your connection and try again.`
+  String get sign_out_failed {
+    return Intl.message(
+      'Could not sign out. Check your connection and try again.',
+      name: 'sign_out_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Expand`
   String get expand {
     return Intl.message('Expand', name: 'expand', desc: '', args: []);
@@ -1416,6 +1596,126 @@ class S {
       name: 'section_no_business_subtitle',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `You don't have access to this section in this business.`
+  String get section_no_permission {
+    return Intl.message(
+      'You don\'t have access to this section in this business.',
+      name: 'section_no_permission',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You don't have access to {section}`
+  String permission_denied_title(Object section) {
+    return Intl.message(
+      'You don\'t have access to $section',
+      name: 'permission_denied_title',
+      desc: '',
+      args: [section],
+    );
+  }
+
+  /// `Your role in {business} doesn't include this section. Request access and whoever manages the business will review it.`
+  String permission_denied_subtitle(Object business) {
+    return Intl.message(
+      'Your role in $business doesn\'t include this section. Request access and whoever manages the business will review it.',
+      name: 'permission_denied_subtitle',
+      desc: '',
+      args: [business],
+    );
+  }
+
+  /// `You already requested access to this section in {business}. You'll be able to open it as soon as it's granted.`
+  String permission_denied_pending(Object business) {
+    return Intl.message(
+      'You already requested access to this section in $business. You\'ll be able to open it as soon as it\'s granted.',
+      name: 'permission_denied_pending',
+      desc: '',
+      args: [business],
+    );
+  }
+
+  /// `Request access`
+  String get permission_request_action {
+    return Intl.message(
+      'Request access',
+      name: 'permission_request_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Request access`
+  String get permission_request_title {
+    return Intl.message(
+      'Request access',
+      name: 'permission_request_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You're asking for access to {section} in {business}. You can add a note to explain why you need it.`
+  String permission_request_subtitle(Object section, Object business) {
+    return Intl.message(
+      'You\'re asking for access to $section in $business. You can add a note to explain why you need it.',
+      name: 'permission_request_subtitle',
+      desc: '',
+      args: [section, business],
+    );
+  }
+
+  /// `Note (optional)`
+  String get permission_request_reason {
+    return Intl.message(
+      'Note (optional)',
+      name: 'permission_request_reason',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `E.g. I handle the night shift's sales`
+  String get permission_request_reason_hint {
+    return Intl.message(
+      'E.g. I handle the night shift\'s sales',
+      name: 'permission_request_reason_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The note can't be longer than {max} characters.`
+  String permission_request_reason_long(Object max) {
+    return Intl.message(
+      'The note can\'t be longer than $max characters.',
+      name: 'permission_request_reason_long',
+      desc: '',
+      args: [max],
+    );
+  }
+
+  /// `Send request`
+  String get permission_request_send {
+    return Intl.message(
+      'Send request',
+      name: 'permission_request_send',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Request sent. You'll be able to open {section} once it's granted.`
+  String permission_request_sent(Object section) {
+    return Intl.message(
+      'Request sent. You\'ll be able to open $section once it\'s granted.',
+      name: 'permission_request_sent',
+      desc: '',
+      args: [section],
     );
   }
 
@@ -1884,46 +2184,6 @@ class S {
     return Intl.message(
       'The language this business writes in: the one used in what it sends to its customers.',
       name: 'business_profile_language_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Currency`
-  String get business_profile_currency {
-    return Intl.message(
-      'Currency',
-      name: 'business_profile_currency',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The currency this business writes its prices in. Changing it wouldn't convert a single price, it would relabel every one of them, so it isn't changed from here.`
-  String get business_profile_currency_note {
-    return Intl.message(
-      'The currency this business writes its prices in. Changing it wouldn\'t convert a single price, it would relabel every one of them, so it isn\'t changed from here.',
-      name: 'business_profile_currency_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Also quotes in`
-  String get business_profile_currencies {
-    return Intl.message(
-      'Also quotes in',
-      name: 'business_profile_currencies',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Other currencies this business also quotes prices in. They're changed where its currencies are set up.`
-  String get business_profile_currencies_note {
-    return Intl.message(
-      'Other currencies this business also quotes prices in. They\'re changed where its currencies are set up.',
-      name: 'business_profile_currencies_note',
       desc: '',
       args: [],
     );
@@ -2739,16 +2999,6 @@ class S {
     );
   }
 
-  /// `People with access`
-  String get business_employees_total {
-    return Intl.message(
-      'People with access',
-      name: 'business_employees_total',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Couldn't load the people`
   String get business_employees_error_title {
     return Intl.message(
@@ -2769,21 +3019,1889 @@ class S {
     );
   }
 
-  /// `The people who work in this business, with their role and what each one can do, will be listed here.`
-  String get business_employees_soon {
+  /// `People`
+  String get employees_title {
+    return Intl.message('People', name: 'employees_title', desc: '', args: []);
+  }
+
+  /// `{count, plural, =0{Nobody active} =1{1 active} other{{count} active}}`
+  String employees_active_count(num count) {
+    return Intl.plural(
+      count,
+      zero: 'Nobody active',
+      one: '1 active',
+      other: '$count active',
+      name: 'employees_active_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 invitation pending} other{{count} invitations pending}}`
+  String employees_invited_count(num count) {
+    return Intl.plural(
+      count,
+      one: '1 invitation pending',
+      other: '$count invitations pending',
+      name: 'employees_invited_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `You`
+  String get employees_you {
+    return Intl.message('You', name: 'employees_you', desc: '', args: []);
+  }
+
+  /// `Former employees`
+  String get employees_former_title {
     return Intl.message(
-      'The people who work in this business, with their role and what each one can do, will be listed here.',
-      name: 'business_employees_soon',
+      'Former employees',
+      name: 'employees_former_title',
       desc: '',
       args: [],
     );
   }
 
-  /// `The locations of this business, each with its address and what it handles, will be listed here.`
-  String get business_branches_soon {
+  /// `Working today`
+  String get employees_group_working {
     return Intl.message(
-      'The locations of this business, each with its address and what it handles, will be listed here.',
-      name: 'business_branches_soon',
+      'Working today',
+      name: 'employees_group_working',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Away today`
+  String get employees_group_away {
+    return Intl.message(
+      'Away today',
+      name: 'employees_group_away',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Starting later`
+  String get employees_group_not_started {
+    return Intl.message(
+      'Starting later',
+      name: 'employees_group_not_started',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting to accept`
+  String get employees_group_invited {
+    return Intl.message(
+      'Waiting to accept',
+      name: 'employees_group_invited',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Person`
+  String get employees_column_person {
+    return Intl.message(
+      'Person',
+      name: 'employees_column_person',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contract`
+  String get employees_column_contract {
+    return Intl.message(
+      'Contract',
+      name: 'employees_column_contract',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Since`
+  String get employees_column_since {
+    return Intl.message(
+      'Since',
+      name: 'employees_column_since',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Status`
+  String get employees_column_status {
+    return Intl.message(
+      'Status',
+      name: 'employees_column_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick someone`
+  String get employees_select_title {
+    return Intl.message(
+      'Pick someone',
+      name: 'employees_select_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select a person on the list to see everything about them here.`
+  String get employees_select_subtitle {
+    return Intl.message(
+      'Select a person on the list to see everything about them here.',
+      name: 'employees_select_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invite`
+  String get employees_invite {
+    return Intl.message('Invite', name: 'employees_invite', desc: '', args: []);
+  }
+
+  /// `Invite someone`
+  String get employees_invite_title {
+    return Intl.message(
+      'Invite someone',
+      name: 'employees_invite_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `They don't need an account: when they sign up with this email, the invitation will be waiting for them.`
+  String get employees_invite_subtitle {
+    return Intl.message(
+      'They don\'t need an account: when they sign up with this email, the invitation will be waiting for them.',
+      name: 'employees_invite_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email`
+  String get employees_invite_email {
+    return Intl.message(
+      'Email',
+      name: 'employees_invite_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `name@example.com`
+  String get employees_invite_email_hint {
+    return Intl.message(
+      'name@example.com',
+      name: 'employees_invite_email_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Job title`
+  String get employees_invite_job {
+    return Intl.message(
+      'Job title',
+      name: 'employees_invite_job',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cashier, accountant, driver…`
+  String get employees_invite_job_hint {
+    return Intl.message(
+      'Cashier, accountant, driver…',
+      name: 'employees_invite_job_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send invitation`
+  String get employees_invite_send {
+    return Intl.message(
+      'Send invitation',
+      name: 'employees_invite_send',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No job filed`
+  String get employee_state_unfiled {
+    return Intl.message(
+      'No job filed',
+      name: 'employee_state_unfiled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invitation pending`
+  String get employee_state_invited {
+    return Intl.message(
+      'Invitation pending',
+      name: 'employee_state_invited',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Former`
+  String get employee_state_ended {
+    return Intl.message(
+      'Former',
+      name: 'employee_state_ended',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Declined`
+  String get employee_state_declined {
+    return Intl.message(
+      'Declined',
+      name: 'employee_state_declined',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invitation withdrawn`
+  String get employee_state_cancelled {
+    return Intl.message(
+      'Invitation withdrawn',
+      name: 'employee_state_cancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Working`
+  String get employee_work_working {
+    return Intl.message(
+      'Working',
+      name: 'employee_work_working',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not started yet`
+  String get employee_work_not_started {
+    return Intl.message(
+      'Not started yet',
+      name: 'employee_work_not_started',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On vacation`
+  String get employee_leave_vacation {
+    return Intl.message(
+      'On vacation',
+      name: 'employee_leave_vacation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sick leave`
+  String get employee_leave_sick {
+    return Intl.message(
+      'Sick leave',
+      name: 'employee_leave_sick',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maternity leave`
+  String get employee_leave_maternity {
+    return Intl.message(
+      'Maternity leave',
+      name: 'employee_leave_maternity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paternity leave`
+  String get employee_leave_paternity {
+    return Intl.message(
+      'Paternity leave',
+      name: 'employee_leave_paternity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Personal leave`
+  String get employee_leave_personal {
+    return Intl.message(
+      'Personal leave',
+      name: 'employee_leave_personal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unpaid leave`
+  String get employee_leave_unpaid {
+    return Intl.message(
+      'Unpaid leave',
+      name: 'employee_leave_unpaid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Suspended`
+  String get employee_leave_suspension {
+    return Intl.message(
+      'Suspended',
+      name: 'employee_leave_suspension',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Away`
+  String get employee_leave_other {
+    return Intl.message(
+      'Away',
+      name: 'employee_leave_other',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{1 day} other{{count} days}}`
+  String employee_leave_days(num count) {
+    return Intl.plural(
+      count,
+      one: '1 day',
+      other: '$count days',
+      name: 'employee_leave_days',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Away today`
+  String get employee_leave_now_title {
+    return Intl.message(
+      'Away today',
+      name: 'employee_leave_now_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Permanent`
+  String get employee_contract_permanent {
+    return Intl.message(
+      'Permanent',
+      name: 'employee_contract_permanent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fixed term`
+  String get employee_contract_fixed_term {
+    return Intl.message(
+      'Fixed term',
+      name: 'employee_contract_fixed_term',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Probation`
+  String get employee_contract_probation {
+    return Intl.message(
+      'Probation',
+      name: 'employee_contract_probation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Internship`
+  String get employee_contract_internship {
+    return Intl.message(
+      'Internship',
+      name: 'employee_contract_internship',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Freelance`
+  String get employee_contract_freelance {
+    return Intl.message(
+      'Freelance',
+      name: 'employee_contract_freelance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Temporary`
+  String get employee_contract_temporary {
+    return Intl.message(
+      'Temporary',
+      name: 'employee_contract_temporary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contract ending soon`
+  String get employee_contract_expiring {
+    return Intl.message(
+      'Contract ending soon',
+      name: 'employee_contract_expiring',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contract expired`
+  String get employee_contract_expired {
+    return Intl.message(
+      'Contract expired',
+      name: 'employee_contract_expired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Full time`
+  String get employee_workday_full_time {
+    return Intl.message(
+      'Full time',
+      name: 'employee_workday_full_time',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Part time`
+  String get employee_workday_part_time {
+    return Intl.message(
+      'Part time',
+      name: 'employee_workday_part_time',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By the hour`
+  String get employee_workday_hourly {
+    return Intl.message(
+      'By the hour',
+      name: 'employee_workday_hourly',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Shifts`
+  String get employee_workday_shifts {
+    return Intl.message(
+      'Shifts',
+      name: 'employee_workday_shifts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `hour`
+  String get employee_period_hour {
+    return Intl.message(
+      'hour',
+      name: 'employee_period_hour',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `day`
+  String get employee_period_day {
+    return Intl.message('day', name: 'employee_period_day', desc: '', args: []);
+  }
+
+  /// `week`
+  String get employee_period_week {
+    return Intl.message(
+      'week',
+      name: 'employee_period_week',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `fortnight`
+  String get employee_period_fortnight {
+    return Intl.message(
+      'fortnight',
+      name: 'employee_period_fortnight',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `month`
+  String get employee_period_month {
+    return Intl.message(
+      'month',
+      name: 'employee_period_month',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `year`
+  String get employee_period_year {
+    return Intl.message(
+      'year',
+      name: 'employee_period_year',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Resignation`
+  String get employee_end_resignation {
+    return Intl.message(
+      'Resignation',
+      name: 'employee_end_resignation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dismissal`
+  String get employee_end_dismissal {
+    return Intl.message(
+      'Dismissal',
+      name: 'employee_end_dismissal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `End of contract`
+  String get employee_end_contract_end {
+    return Intl.message(
+      'End of contract',
+      name: 'employee_end_contract_end',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mutual agreement`
+  String get employee_end_mutual {
+    return Intl.message(
+      'Mutual agreement',
+      name: 'employee_end_mutual',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other`
+  String get employee_end_other {
+    return Intl.message(
+      'Other',
+      name: 'employee_end_other',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `National ID`
+  String get employee_document_national_id {
+    return Intl.message(
+      'National ID',
+      name: 'employee_document_national_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passport`
+  String get employee_document_passport {
+    return Intl.message(
+      'Passport',
+      name: 'employee_document_passport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Foreigner ID`
+  String get employee_document_foreign_id {
+    return Intl.message(
+      'Foreigner ID',
+      name: 'employee_document_foreign_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tax ID`
+  String get employee_document_tax_id {
+    return Intl.message(
+      'Tax ID',
+      name: 'employee_document_tax_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Female`
+  String get employee_sex_female {
+    return Intl.message(
+      'Female',
+      name: 'employee_sex_female',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Male`
+  String get employee_sex_male {
+    return Intl.message('Male', name: 'employee_sex_male', desc: '', args: []);
+  }
+
+  /// `Other`
+  String get employee_sex_other {
+    return Intl.message(
+      'Other',
+      name: 'employee_sex_other',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{1 year} other{{count} years}}`
+  String employee_years(num count) {
+    return Intl.plural(
+      count,
+      one: '1 year',
+      other: '$count years',
+      name: 'employee_years',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 month} other{{count} months}}`
+  String employee_months(num count) {
+    return Intl.plural(
+      count,
+      one: '1 month',
+      other: '$count months',
+      name: 'employee_months',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 day} other{{count} days}}`
+  String employee_days(num count) {
+    return Intl.plural(
+      count,
+      one: '1 day',
+      other: '$count days',
+      name: 'employee_days',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Less than a day`
+  String get employee_span_none {
+    return Intl.message(
+      'Less than a day',
+      name: 'employee_span_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not set`
+  String get employee_value_none {
+    return Intl.message(
+      'Not set',
+      name: 'employee_value_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not filed`
+  String get employee_value_not_filed {
+    return Intl.message(
+      'Not filed',
+      name: 'employee_value_not_filed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No answer yet`
+  String get employee_value_waiting {
+    return Intl.message(
+      'No answer yet',
+      name: 'employee_value_waiting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Job`
+  String get employee_job_title {
+    return Intl.message('Job', name: 'employee_job_title', desc: '', args: []);
+  }
+
+  /// `Job title`
+  String get employee_field_job_title {
+    return Intl.message(
+      'Job title',
+      name: 'employee_field_job_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Department`
+  String get employee_field_department {
+    return Intl.message(
+      'Department',
+      name: 'employee_field_department',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Employee code`
+  String get employee_field_code {
+    return Intl.message(
+      'Employee code',
+      name: 'employee_field_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Branch`
+  String get employee_field_branch {
+    return Intl.message(
+      'Branch',
+      name: 'employee_field_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reports to`
+  String get employee_field_manager {
+    return Intl.message(
+      'Reports to',
+      name: 'employee_field_manager',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contract`
+  String get employee_field_contract {
+    return Intl.message(
+      'Contract',
+      name: 'employee_field_contract',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Workday`
+  String get employee_field_workday {
+    return Intl.message(
+      'Workday',
+      name: 'employee_field_workday',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start date`
+  String get employee_field_start {
+    return Intl.message(
+      'Start date',
+      name: 'employee_field_start',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contract ends`
+  String get employee_field_contract_end {
+    return Intl.message(
+      'Contract ends',
+      name: 'employee_field_contract_end',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Salary`
+  String get employee_field_salary {
+    return Intl.message(
+      'Salary',
+      name: 'employee_field_salary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time here`
+  String get employee_tenure_title {
+    return Intl.message(
+      'Time here',
+      name: 'employee_tenure_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In this job`
+  String get employee_tenure_job {
+    return Intl.message(
+      'In this job',
+      name: 'employee_tenure_job',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In the company`
+  String get employee_tenure_company {
+    return Intl.message(
+      'In the company',
+      name: 'employee_tenure_company',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In the company, since {date}`
+  String employee_tenure_company_since(Object date) {
+    return Intl.message(
+      'In the company, since $date',
+      name: 'employee_tenure_company_since',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Work contact`
+  String get employee_work_contact_title {
+    return Intl.message(
+      'Work contact',
+      name: 'employee_work_contact_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email`
+  String get employee_field_email {
+    return Intl.message(
+      'Email',
+      name: 'employee_field_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone`
+  String get employee_field_phone {
+    return Intl.message(
+      'Phone',
+      name: 'employee_field_phone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Personal data`
+  String get employee_person_title {
+    return Intl.message(
+      'Personal data',
+      name: 'employee_person_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A person's own profile is visible to the company only while they work here.`
+  String get employee_person_hidden {
+    return Intl.message(
+      'A person\'s own profile is visible to the company only while they work here.',
+      name: 'employee_person_hidden',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `These are the person's own details: what you change here changes in their account too.`
+  String get employee_person_editable {
+    return Intl.message(
+      'These are the person\'s own details: what you change here changes in their account too.',
+      name: 'employee_person_editable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The person's own profile: only they can change it.`
+  String get employee_person_owned {
+    return Intl.message(
+      'The person\'s own profile: only they can change it.',
+      name: 'employee_person_owned',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Birthday`
+  String get employee_field_birthday {
+    return Intl.message(
+      'Birthday',
+      name: 'employee_field_birthday',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sex`
+  String get employee_field_sex {
+    return Intl.message('Sex', name: 'employee_field_sex', desc: '', args: []);
+  }
+
+  /// `Identity document`
+  String get employee_field_document {
+    return Intl.message(
+      'Identity document',
+      name: 'employee_field_document',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nationality`
+  String get employee_field_nationality {
+    return Intl.message(
+      'Nationality',
+      name: 'employee_field_nationality',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Address`
+  String get employee_field_address {
+    return Intl.message(
+      'Address',
+      name: 'employee_field_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `About`
+  String get employee_field_about {
+    return Intl.message(
+      'About',
+      name: 'employee_field_about',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First name`
+  String get employee_field_first_name {
+    return Intl.message(
+      'First name',
+      name: 'employee_field_first_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last name`
+  String get employee_field_last_name {
+    return Intl.message(
+      'Last name',
+      name: 'employee_field_last_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `City`
+  String get employee_field_city {
+    return Intl.message(
+      'City',
+      name: 'employee_field_city',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `State or region`
+  String get employee_field_region {
+    return Intl.message(
+      'State or region',
+      name: 'employee_field_region',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Postal code`
+  String get employee_field_postal_code {
+    return Intl.message(
+      'Postal code',
+      name: 'employee_field_postal_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Country`
+  String get employee_field_country {
+    return Intl.message(
+      'Country',
+      name: 'employee_field_country',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Document type`
+  String get employee_field_document_type {
+    return Intl.message(
+      'Document type',
+      name: 'employee_field_document_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Document number`
+  String get employee_field_document_number {
+    return Intl.message(
+      'Document number',
+      name: 'employee_field_document_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Relation`
+  String get employee_field_emergency_relation {
+    return Intl.message(
+      'Relation',
+      name: 'employee_field_emergency_relation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid per`
+  String get employee_field_pay_period {
+    return Intl.message(
+      'Paid per',
+      name: 'employee_field_pay_period',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Salary currency`
+  String get employee_field_currency {
+    return Intl.message(
+      'Salary currency',
+      name: 'employee_field_currency',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Click to edit {label}`
+  String employee_edit_hint(Object label) {
+    return Intl.message(
+      'Click to edit $label',
+      name: 'employee_edit_hint',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `{label} can't be empty`
+  String employee_edit_required(Object label) {
+    return Intl.message(
+      '$label can\'t be empty',
+      name: 'employee_edit_required',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `No matches`
+  String get employee_edit_no_match {
+    return Intl.message(
+      'No matches',
+      name: 'employee_edit_no_match',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a new one`
+  String get employee_edit_create {
+    return Intl.message(
+      'Add a new one',
+      name: 'employee_edit_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New {label}, then Enter`
+  String employee_edit_create_hint(Object label) {
+    return Intl.message(
+      'New $label, then Enter',
+      name: 'employee_edit_create_hint',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `Save`
+  String get employee_edit_confirm {
+    return Intl.message(
+      'Save',
+      name: 'employee_edit_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search a detail: phone, address, salary...`
+  String get employee_search_hint {
+    return Intl.message(
+      'Search a detail: phone, address, salary...',
+      name: 'employee_search_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Day`
+  String get employee_edit_day {
+    return Intl.message('Day', name: 'employee_edit_day', desc: '', args: []);
+  }
+
+  /// `Month`
+  String get employee_edit_month {
+    return Intl.message(
+      'Month',
+      name: 'employee_edit_month',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Year`
+  String get employee_edit_year {
+    return Intl.message('Year', name: 'employee_edit_year', desc: '', args: []);
+  }
+
+  /// `That date doesn't exist: check the day, month and year`
+  String get employee_edit_invalid_day {
+    return Intl.message(
+      'That date doesn\'t exist: check the day, month and year',
+      name: 'employee_edit_invalid_day',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Code`
+  String get employee_edit_phone_code {
+    return Intl.message(
+      'Code',
+      name: 'employee_edit_phone_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Number`
+  String get employee_edit_phone_number {
+    return Intl.message(
+      'Number',
+      name: 'employee_edit_phone_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose the country code first`
+  String get employee_edit_phone_no_code {
+    return Intl.message(
+      'Choose the country code first',
+      name: 'employee_edit_phone_no_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A phone number has 4 to 12 digits after the code`
+  String get employee_edit_invalid_phone {
+    return Intl.message(
+      'A phone number has 4 to 12 digits after the code',
+      name: 'employee_edit_invalid_phone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search the address or type it`
+  String get employee_edit_address_hint {
+    return Intl.message(
+      'Search the address or type it',
+      name: 'employee_edit_address_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't read that place. Type the address instead.`
+  String get employee_edit_place_failed {
+    return Intl.message(
+      'Couldn\'t read that place. Type the address instead.',
+      name: 'employee_edit_place_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write an amount, like 1200.50`
+  String get employee_edit_invalid_amount {
+    return Intl.message(
+      'Write an amount, like 1200.50',
+      name: 'employee_edit_invalid_amount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Emergency contact`
+  String get employee_emergency_title {
+    return Intl.message(
+      'Emergency contact',
+      name: 'employee_emergency_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name`
+  String get employee_field_emergency_name {
+    return Intl.message(
+      'Name',
+      name: 'employee_field_emergency_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upcoming absences`
+  String get employee_upcoming_title {
+    return Intl.message(
+      'Upcoming absences',
+      name: 'employee_upcoming_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How it ended`
+  String get employee_ending_title {
+    return Intl.message(
+      'How it ended',
+      name: 'employee_ending_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last day`
+  String get employee_field_ended {
+    return Intl.message(
+      'Last day',
+      name: 'employee_field_ended',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reason`
+  String get employee_field_end_reason {
+    return Intl.message(
+      'Reason',
+      name: 'employee_field_end_reason',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note`
+  String get employee_field_note {
+    return Intl.message(
+      'Note',
+      name: 'employee_field_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Record`
+  String get employee_record_title {
+    return Intl.message(
+      'Record',
+      name: 'employee_record_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filed`
+  String get employee_field_invited {
+    return Intl.message(
+      'Filed',
+      name: 'employee_field_invited',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Answered`
+  String get employee_field_responded {
+    return Intl.message(
+      'Answered',
+      name: 'employee_field_responded',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notes`
+  String get employee_notes_title {
+    return Intl.message(
+      'Notes',
+      name: 'employee_notes_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The business's own notes. The person does not see them.`
+  String get employee_notes_subtitle {
+    return Intl.message(
+      'The business\'s own notes. The person does not see them.',
+      name: 'employee_notes_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You have no job filed here`
+  String get employee_unfiled_title {
+    return Intl.message(
+      'You have no job filed here',
+      name: 'employee_unfiled_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your card is listed so the team shows complete, but this business has no job on record for you yet.`
+  String get employee_unfiled_subtitle {
+    return Intl.message(
+      'Your card is listed so the team shows complete, but this business has no job on record for you yet.',
+      name: 'employee_unfiled_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't load this person`
+  String get employee_detail_error_title {
+    return Intl.message(
+      'Couldn\'t load this person',
+      name: 'employee_detail_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something went wrong. Please try again.`
+  String get employee_detail_error_subtitle {
+    return Intl.message(
+      'Something went wrong. Please try again.',
+      name: 'employee_detail_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Click to copy`
+  String get employee_copy {
+    return Intl.message(
+      'Click to copy',
+      name: 'employee_copy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{label} copied`
+  String employee_copied(Object label) {
+    return Intl.message(
+      '$label copied',
+      name: 'employee_copied',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `Branches`
+  String get business_branches_title {
+    return Intl.message(
+      'Branches',
+      name: 'business_branches_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The places this business works from: stores, offices and warehouses.`
+  String get business_branches_subtitle {
+    return Intl.message(
+      'The places this business works from: stores, offices and warehouses.',
+      name: 'business_branches_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add branch`
+  String get business_branches_add {
+    return Intl.message(
+      'Add branch',
+      name: 'business_branches_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't load the branches`
+  String get business_branches_error_title {
+    return Intl.message(
+      'Couldn\'t load the branches',
+      name: 'business_branches_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something went wrong. Please try again.`
+  String get business_branches_error_subtitle {
+    return Intl.message(
+      'Something went wrong. Please try again.',
+      name: 'business_branches_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No branches yet`
+  String get business_branches_empty_title {
+    return Intl.message(
+      'No branches yet',
+      name: 'business_branches_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add the places this business works from.`
+  String get business_branches_empty_subtitle {
+    return Intl.message(
+      'Add the places this business works from.',
+      name: 'business_branches_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Main`
+  String get business_branch_main {
+    return Intl.message(
+      'Main',
+      name: 'business_branch_main',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bot orders`
+  String get business_branch_online {
+    return Intl.message(
+      'Bot orders',
+      name: 'business_branch_online',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No address yet`
+  String get business_branch_no_address {
+    return Intl.message(
+      'No address yet',
+      name: 'business_branch_no_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New branch`
+  String get business_branch_create_title {
+    return Intl.message(
+      'New branch',
+      name: 'business_branch_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every branch is in the country of the business: its phone code and the address search come from it.`
+  String get business_branch_create_subtitle {
+    return Intl.message(
+      'Every branch is in the country of the business: its phone code and the address search come from it.',
+      name: 'business_branch_create_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name`
+  String get business_branch_name {
+    return Intl.message(
+      'Name',
+      name: 'business_branch_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Downtown store`
+  String get business_branch_name_hint {
+    return Intl.message(
+      'Downtown store',
+      name: 'business_branch_name_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone`
+  String get business_branch_phone {
+    return Intl.message(
+      'Phone',
+      name: 'business_branch_phone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `4121234567`
+  String get business_branch_phone_hint {
+    return Intl.message(
+      '4121234567',
+      name: 'business_branch_phone_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Point on the map`
+  String get business_branch_point {
+    return Intl.message(
+      'Point on the map',
+      name: 'business_branch_point',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search the address over the map, or tap the map where the branch is. It's optional.`
+  String get business_branch_point_help {
+    return Intl.message(
+      'Search the address over the map, or tap the map where the branch is. It\'s optional.',
+      name: 'business_branch_point_help',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove point`
+  String get business_branch_point_clear {
+    return Intl.message(
+      'Remove point',
+      name: 'business_branch_point_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit branch`
+  String get business_branch_edit_title {
+    return Intl.message(
+      'Edit branch',
+      name: 'business_branch_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save changes`
+  String get business_branch_save {
+    return Intl.message(
+      'Save changes',
+      name: 'business_branch_save',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type`
+  String get business_branch_kind {
+    return Intl.message(
+      'Type',
+      name: 'business_branch_kind',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Store`
+  String get business_branch_kind_store {
+    return Intl.message(
+      'Store',
+      name: 'business_branch_kind_store',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customers can come to it`
+  String get business_branch_kind_store_note {
+    return Intl.message(
+      'Customers can come to it',
+      name: 'business_branch_kind_store_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Warehouse`
+  String get business_branch_kind_warehouse {
+    return Intl.message(
+      'Warehouse',
+      name: 'business_branch_kind_warehouse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stock only, customers don't visit it`
+  String get business_branch_kind_warehouse_note {
+    return Intl.message(
+      'Stock only, customers don\'t visit it',
+      name: 'business_branch_kind_warehouse_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Takes orders from the bot`
+  String get business_branch_online_on {
+    return Intl.message(
+      'Takes orders from the bot',
+      name: 'business_branch_online_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Doesn't take orders from the bot`
+  String get business_branch_online_off {
+    return Intl.message(
+      'Doesn\'t take orders from the bot',
+      name: 'business_branch_online_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Orders that arrive through your channels can be fulfilled from this branch`
+  String get business_branch_online_note {
+    return Intl.message(
+      'Orders that arrive through your channels can be fulfilled from this branch',
+      name: 'business_branch_online_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Main branch`
+  String get business_branch_main_toggle {
+    return Intl.message(
+      'Main branch',
+      name: 'business_branch_main_toggle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The branch a customer is given when they don't ask for one. Only one branch is the main one.`
+  String get business_branch_main_note {
+    return Intl.message(
+      'The branch a customer is given when they don\'t ask for one. Only one branch is the main one.',
+      name: 'business_branch_main_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contact`
+  String get business_branch_section_contact {
+    return Intl.message(
+      'Contact',
+      name: 'business_branch_section_contact',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `+584121234567`
+  String get business_branch_phone_full_hint {
+    return Intl.message(
+      '+584121234567',
+      name: 'business_branch_phone_full_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invoicing`
+  String get business_branch_section_invoicing {
+    return Intl.message(
+      'Invoicing',
+      name: 'business_branch_section_invoicing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Leave them empty if this branch invoices as the business itself.`
+  String get business_branch_invoicing_note {
+    return Intl.message(
+      'Leave them empty if this branch invoices as the business itself.',
+      name: 'business_branch_invoicing_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Legal name`
+  String get business_branch_legal_name {
+    return Intl.message(
+      'Legal name',
+      name: 'business_branch_legal_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Inversiones Sol C.A.`
+  String get business_branch_legal_name_hint {
+    return Intl.message(
+      'Inversiones Sol C.A.',
+      name: 'business_branch_legal_name_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tax ID`
+  String get business_branch_tax_id {
+    return Intl.message(
+      'Tax ID',
+      name: 'business_branch_tax_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `J-12345678-9`
+  String get business_branch_tax_id_hint {
+    return Intl.message(
+      'J-12345678-9',
+      name: 'business_branch_tax_id_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Address`
+  String get business_branch_section_address {
+    return Intl.message(
+      'Address',
+      name: 'business_branch_section_address',
       desc: '',
       args: [],
     );
@@ -9527,6 +11645,1171 @@ class S {
     );
   }
 
+  /// `Payment methods`
+  String get finance_methods_title {
+    return Intl.message(
+      'Payment methods',
+      name: 'finance_methods_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Each method takes money in one currency and can add its own commission to the charge.`
+  String get finance_methods_subtitle {
+    return Intl.message(
+      'Each method takes money in one currency and can add its own commission to the charge.',
+      name: 'finance_methods_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Currency`
+  String get finance_method_currency {
+    return Intl.message(
+      'Currency',
+      name: 'finance_method_currency',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Which currency does it receive?`
+  String get finance_method_currency_placeholder {
+    return Intl.message(
+      'Which currency does it receive?',
+      name: 'finance_method_currency_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This method only moves {currency}.`
+  String finance_method_currency_fixed(Object currency) {
+    return Intl.message(
+      'This method only moves $currency.',
+      name: 'finance_method_currency_fixed',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `{currency} has no exchange rate. Add it under Currencies so the charge can be converted into it.`
+  String finance_method_currency_missing(Object currency) {
+    return Intl.message(
+      '$currency has no exchange rate. Add it under Currencies so the charge can be converted into it.',
+      name: 'finance_method_currency_missing',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `Commission`
+  String get finance_method_fee {
+    return Intl.message(
+      'Commission',
+      name: 'finance_method_fee',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No commission`
+  String get finance_method_fee_none {
+    return Intl.message(
+      'No commission',
+      name: 'finance_method_fee_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Percentage`
+  String get finance_method_fee_percent {
+    return Intl.message(
+      'Percentage',
+      name: 'finance_method_fee_percent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fixed amount`
+  String get finance_method_fee_fixed {
+    return Intl.message(
+      'Fixed amount',
+      name: 'finance_method_fee_fixed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fixed amount in {currency}`
+  String finance_method_fee_fixed_in(Object currency) {
+    return Intl.message(
+      'Fixed amount in $currency',
+      name: 'finance_method_fee_fixed_in',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `{value}%`
+  String finance_method_fee_percent_value(Object value) {
+    return Intl.message(
+      '$value%',
+      name: 'finance_method_fee_percent_value',
+      desc: '',
+      args: [value],
+    );
+  }
+
+  /// `Write a commission above zero (a percentage below 100)`
+  String get finance_method_fee_error {
+    return Intl.message(
+      'Write a commission above zero (a percentage below 100)',
+      name: 'finance_method_fee_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Currencies`
+  String get finance_currencies_title {
+    return Intl.message(
+      'Currencies',
+      name: 'finance_currencies_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The main currency your catalog is priced in, and the exchange currencies you also take.`
+  String get finance_currencies_subtitle {
+    return Intl.message(
+      'The main currency your catalog is priced in, and the exchange currencies you also take.',
+      name: 'finance_currencies_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add currency`
+  String get finance_currencies_add {
+    return Intl.message(
+      'Add currency',
+      name: 'finance_currencies_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You only take your main currency. Add an exchange currency to charge in another one.`
+  String get finance_currencies_empty {
+    return Intl.message(
+      'You only take your main currency. Add an exchange currency to charge in another one.',
+      name: 'finance_currencies_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The currencies could not be loaded`
+  String get finance_currencies_error_title {
+    return Intl.message(
+      'The currencies could not be loaded',
+      name: 'finance_currencies_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The currencies of this company could not be read. Try again in a moment.`
+  String get finance_currencies_error_subtitle {
+    return Intl.message(
+      'The currencies of this company could not be read. Try again in a moment.',
+      name: 'finance_currencies_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Currency`
+  String get finance_currency {
+    return Intl.message(
+      'Currency',
+      name: 'finance_currency',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Which currency do you also take?`
+  String get finance_currency_placeholder {
+    return Intl.message(
+      'Which currency do you also take?',
+      name: 'finance_currency_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Main currency`
+  String get finance_currency_main {
+    return Intl.message(
+      'Main currency',
+      name: 'finance_currency_main',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your stock, services and prices are in this currency. It cannot be changed here: changing it would relabel your prices without converting them.`
+  String get finance_currency_main_hint {
+    return Intl.message(
+      'Your stock, services and prices are in this currency. It cannot be changed here: changing it would relabel your prices without converting them.',
+      name: 'finance_currency_main_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add an exchange currency`
+  String get finance_currency_create_title {
+    return Intl.message(
+      'Add an exchange currency',
+      name: 'finance_currency_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit exchange rate`
+  String get finance_currency_edit_title {
+    return Intl.message(
+      'Edit exchange rate',
+      name: 'finance_currency_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A currency you also charge in. Its rate says how much of it one {main} is worth.`
+  String finance_currency_form_subtitle(Object main) {
+    return Intl.message(
+      'A currency you also charge in. Its rate says how much of it one $main is worth.',
+      name: 'finance_currency_form_subtitle',
+      desc: '',
+      args: [main],
+    );
+  }
+
+  /// `Exchange rate`
+  String get finance_currency_mode {
+    return Intl.message(
+      'Exchange rate',
+      name: 'finance_currency_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Official rate`
+  String get finance_currency_mode_official {
+    return Intl.message(
+      'Official rate',
+      name: 'finance_currency_mode_official',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Updated on its own from the published rate`
+  String get finance_currency_mode_official_hint {
+    return Intl.message(
+      'Updated on its own from the published rate',
+      name: 'finance_currency_mode_official_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Custom rate`
+  String get finance_currency_mode_custom {
+    return Intl.message(
+      'Custom rate',
+      name: 'finance_currency_mode_custom',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A rate you set, until you change it`
+  String get finance_currency_mode_custom_hint {
+    return Intl.message(
+      'A rate you set, until you change it',
+      name: 'finance_currency_mode_custom_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1 {main} in {currency}`
+  String finance_currency_rate(Object main, Object currency) {
+    return Intl.message(
+      '1 $main in $currency',
+      name: 'finance_currency_rate',
+      desc: '',
+      args: [main, currency],
+    );
+  }
+
+  /// `Write a rate above zero`
+  String get finance_currency_rate_error {
+    return Intl.message(
+      'Write a rate above zero',
+      name: 'finance_currency_rate_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A custom rate is set by your business alone. You are solely responsible for the rate you assign and for the prices and charges that come from it.`
+  String get finance_currency_custom_disclaimer {
+    return Intl.message(
+      'A custom rate is set by your business alone. You are solely responsible for the rate you assign and for the prices and charges that come from it.',
+      name: 'finance_currency_custom_disclaimer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Official rate: {rate}`
+  String finance_currency_official_today(Object rate) {
+    return Intl.message(
+      'Official rate: $rate',
+      name: 'finance_currency_official_today',
+      desc: '',
+      args: [rate],
+    );
+  }
+
+  /// `The official rate appears once the currency is saved.`
+  String get finance_currency_official_pending {
+    return Intl.message(
+      'The official rate appears once the currency is saved.',
+      name: 'finance_currency_official_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No rate available right now`
+  String get finance_currency_no_rate {
+    return Intl.message(
+      'No rate available right now',
+      name: 'finance_currency_no_rate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Updated {date}`
+  String finance_currency_updated(Object date) {
+    return Intl.message(
+      'Updated $date',
+      name: 'finance_currency_updated',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Remove`
+  String get finance_currency_remove {
+    return Intl.message(
+      'Remove',
+      name: 'finance_currency_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove this currency?`
+  String get finance_currency_remove_title {
+    return Intl.message(
+      'Remove this currency?',
+      name: 'finance_currency_remove_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{currency} stops being offered. Payment methods in {currency} stay, with no rate to convert their charge.`
+  String finance_currency_remove_message(Object currency) {
+    return Intl.message(
+      '$currency stops being offered. Payment methods in $currency stay, with no rate to convert their charge.',
+      name: 'finance_currency_remove_message',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `Deliveries`
+  String get deliveries {
+    return Intl.message('Deliveries', name: 'deliveries', desc: '', args: []);
+  }
+
+  /// `Here you will see every order still on its way to the customer.`
+  String get deliveries_pending_soon {
+    return Intl.message(
+      'Here you will see every order still on its way to the customer.',
+      name: 'deliveries_pending_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `© OpenStreetMap contributors`
+  String get deliveries_map_attribution {
+    return Intl.message(
+      '© OpenStreetMap contributors',
+      name: 'deliveries_map_attribution',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Here you will see your deliveries on the map.`
+  String get deliveries_map_soon {
+    return Intl.message(
+      'Here you will see your deliveries on the map.',
+      name: 'deliveries_map_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The map did not load`
+  String get deliveries_map_error_title {
+    return Intl.message(
+      'The map did not load',
+      name: 'deliveries_map_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check your connection and try again.`
+  String get deliveries_map_error_subtitle {
+    return Intl.message(
+      'Check your connection and try again.',
+      name: 'deliveries_map_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get deliveries_map_retry {
+    return Intl.message(
+      'Try again',
+      name: 'deliveries_map_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Zoom in`
+  String get deliveries_map_zoom_in {
+    return Intl.message(
+      'Zoom in',
+      name: 'deliveries_map_zoom_in',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Zoom out`
+  String get deliveries_map_zoom_out {
+    return Intl.message(
+      'Zoom out',
+      name: 'deliveries_map_zoom_out',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Center`
+  String get deliveries_center {
+    return Intl.message(
+      'Center',
+      name: 'deliveries_center',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh`
+  String get deliveries_refresh {
+    return Intl.message(
+      'Refresh',
+      name: 'deliveries_refresh',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New delivery`
+  String get deliveries_create {
+    return Intl.message(
+      'New delivery',
+      name: 'deliveries_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get deliveries_settings {
+    return Intl.message(
+      'Settings',
+      name: 'deliveries_settings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery settings`
+  String get deliveries_settings_title {
+    return Intl.message(
+      'Delivery settings',
+      name: 'deliveries_settings_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select delivery area`
+  String get deliveries_area {
+    return Intl.message(
+      'Select delivery area',
+      name: 'deliveries_area',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery area`
+  String get deliveries_area_title {
+    return Intl.message(
+      'Delivery area',
+      name: 'deliveries_area_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add area`
+  String get deliveries_area_add {
+    return Intl.message(
+      'Add area',
+      name: 'deliveries_area_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Radius around your business`
+  String get deliveries_area_method_radius {
+    return Intl.message(
+      'Radius around your business',
+      name: 'deliveries_area_method_radius',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Everything within some kilometres of your location`
+  String get deliveries_area_method_radius_note {
+    return Intl.message(
+      'Everything within some kilometres of your location',
+      name: 'deliveries_area_method_radius_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draw on the map`
+  String get deliveries_area_method_draw {
+    return Intl.message(
+      'Draw on the map',
+      name: 'deliveries_area_method_draw',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Any shape: a whole city, or only some neighbourhoods`
+  String get deliveries_area_method_draw_note {
+    return Intl.message(
+      'Any shape: a whole city, or only some neighbourhoods',
+      name: 'deliveries_area_method_draw_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By travel time`
+  String get deliveries_area_method_travel {
+    return Intl.message(
+      'By travel time',
+      name: 'deliveries_area_method_travel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `As far as a courier gets in some minutes, then adjust it`
+  String get deliveries_area_method_travel_note {
+    return Intl.message(
+      'As far as a courier gets in some minutes, then adjust it',
+      name: 'deliveries_area_method_travel_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Wait for your areas to load before adding one.`
+  String get deliveries_area_not_ready {
+    return Intl.message(
+      'Wait for your areas to load before adding one.',
+      name: 'deliveries_area_not_ready',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You can have up to {count} areas.`
+  String deliveries_area_limit(Object count) {
+    return Intl.message(
+      'You can have up to $count areas.',
+      name: 'deliveries_area_limit',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Couldn't load your delivery areas`
+  String get deliveries_area_error_title {
+    return Intl.message(
+      'Couldn\'t load your delivery areas',
+      name: 'deliveries_area_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something went wrong. Please try again.`
+  String get deliveries_area_error_subtitle {
+    return Intl.message(
+      'Something went wrong. Please try again.',
+      name: 'deliveries_area_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tap the map to check whether a point is inside your areas.`
+  String get deliveries_area_probe_hint {
+    return Intl.message(
+      'Tap the map to check whether a point is inside your areas.',
+      name: 'deliveries_area_probe_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Inside your areas`
+  String get deliveries_area_probe_in {
+    return Intl.message(
+      'Inside your areas',
+      name: 'deliveries_area_probe_in',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outside your areas`
+  String get deliveries_area_probe_out {
+    return Intl.message(
+      'Outside your areas',
+      name: 'deliveries_area_probe_out',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No active area reaches this point.`
+  String get deliveries_area_probe_out_note {
+    return Intl.message(
+      'No active area reaches this point.',
+      name: 'deliveries_area_probe_out_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Several areas reach it. The cheapest is listed first, which is the one a customer pays.`
+  String get deliveries_area_probe_overlap {
+    return Intl.message(
+      'Several areas reach it. The cheapest is listed first, which is the one a customer pays.',
+      name: 'deliveries_area_probe_overlap',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear the point`
+  String get deliveries_area_probe_clear {
+    return Intl.message(
+      'Clear the point',
+      name: 'deliveries_area_probe_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No areas yet`
+  String get deliveries_area_empty_title {
+    return Intl.message(
+      'No areas yet',
+      name: 'deliveries_area_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add one from the top: a radius around your business, a shape drawn on the map, or how far a courier gets in some minutes.`
+  String get deliveries_area_empty_subtitle {
+    return Intl.message(
+      'Add one from the top: a radius around your business, a shape drawn on the map, or how far a courier gets in some minutes.',
+      name: 'deliveries_area_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show on the map`
+  String get deliveries_area_focus {
+    return Intl.message(
+      'Show on the map',
+      name: 'deliveries_area_focus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit area`
+  String get deliveries_area_edit {
+    return Intl.message(
+      'Edit area',
+      name: 'deliveries_area_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pause area`
+  String get deliveries_area_pause {
+    return Intl.message(
+      'Pause area',
+      name: 'deliveries_area_pause',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Resume area`
+  String get deliveries_area_resume {
+    return Intl.message(
+      'Resume area',
+      name: 'deliveries_area_resume',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove`
+  String get deliveries_area_remove {
+    return Intl.message(
+      'Remove',
+      name: 'deliveries_area_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove this area?`
+  String get deliveries_area_remove_title {
+    return Intl.message(
+      'Remove this area?',
+      name: 'deliveries_area_remove_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} stops being part of where you deliver. To stop delivering there for a while, pause it instead.`
+  String deliveries_area_remove_message(Object name) {
+    return Intl.message(
+      '$name stops being part of where you deliver. To stop delivering there for a while, pause it instead.',
+      name: 'deliveries_area_remove_message',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Paused`
+  String get deliveries_area_paused {
+    return Intl.message(
+      'Paused',
+      name: 'deliveries_area_paused',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price of the delivery option`
+  String get deliveries_area_fee_option {
+    return Intl.message(
+      'Price of the delivery option',
+      name: 'deliveries_area_fee_option',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Min. order {amount}`
+  String deliveries_area_minimum_tag(Object amount) {
+    return Intl.message(
+      'Min. order $amount',
+      name: 'deliveries_area_minimum_tag',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `{km} km²`
+  String deliveries_area_size(Object km) {
+    return Intl.message(
+      '$km km²',
+      name: 'deliveries_area_size',
+      desc: '',
+      args: [km],
+    );
+  }
+
+  /// `Drawn on the map`
+  String get deliveries_area_drawn {
+    return Intl.message(
+      'Drawn on the map',
+      name: 'deliveries_area_drawn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New area`
+  String get deliveries_area_new_title {
+    return Intl.message(
+      'New area',
+      name: 'deliveries_area_new_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit area`
+  String get deliveries_area_edit_title {
+    return Intl.message(
+      'Edit area',
+      name: 'deliveries_area_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Area {number}`
+  String deliveries_area_default_name(Object number) {
+    return Intl.message(
+      'Area $number',
+      name: 'deliveries_area_default_name',
+      desc: '',
+      args: [number],
+    );
+  }
+
+  /// `Name`
+  String get deliveries_area_name {
+    return Intl.message(
+      'Name',
+      name: 'deliveries_area_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All of Caracas`
+  String get deliveries_area_name_hint {
+    return Intl.message(
+      'All of Caracas',
+      name: 'deliveries_area_name_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery price here`
+  String get deliveries_area_fee {
+    return Intl.message(
+      'Delivery price here',
+      name: 'deliveries_area_fee',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In {currency}. Empty to use the delivery option's, 0 if it's free`
+  String deliveries_area_fee_hint(Object currency) {
+    return Intl.message(
+      'In $currency. Empty to use the delivery option\'s, 0 if it\'s free',
+      name: 'deliveries_area_fee_hint',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `Minimum order`
+  String get deliveries_area_minimum {
+    return Intl.message(
+      'Minimum order',
+      name: 'deliveries_area_minimum',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Order total below which you don't deliver here`
+  String get deliveries_area_minimum_hint {
+    return Intl.message(
+      'Order total below which you don\'t deliver here',
+      name: 'deliveries_area_minimum_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{km} km`
+  String deliveries_area_km(Object km) {
+    return Intl.message(
+      '$km km',
+      name: 'deliveries_area_km',
+      desc: '',
+      args: [km],
+    );
+  }
+
+  /// `{count, plural, =1{1 point} other{{count} points}} · 3 at least`
+  String deliveries_area_points(num count) {
+    return Intl.message(
+      '${Intl.plural(count, one: '1 point', other: '$count points')} · 3 at least',
+      name: 'deliveries_area_points',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Undo`
+  String get deliveries_area_undo {
+    return Intl.message(
+      'Undo',
+      name: 'deliveries_area_undo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove point`
+  String get deliveries_area_remove_point {
+    return Intl.message(
+      'Remove point',
+      name: 'deliveries_area_remove_point',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear`
+  String get deliveries_area_clear {
+    return Intl.message(
+      'Clear',
+      name: 'deliveries_area_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Travel time`
+  String get deliveries_area_travel {
+    return Intl.message(
+      'Travel time',
+      name: 'deliveries_area_travel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How`
+  String get deliveries_area_travel_mode {
+    return Intl.message(
+      'How',
+      name: 'deliveries_area_travel_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Minutes`
+  String get deliveries_area_travel_minutes {
+    return Intl.message(
+      'Minutes',
+      name: 'deliveries_area_travel_minutes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculate area`
+  String get deliveries_area_travel_compute {
+    return Intl.message(
+      'Calculate area',
+      name: 'deliveries_area_travel_compute',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculate again`
+  String get deliveries_area_travel_again {
+    return Intl.message(
+      'Calculate again',
+      name: 'deliveries_area_travel_again',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write the minutes, from 1 to 120.`
+  String get deliveries_area_travel_invalid {
+    return Intl.message(
+      'Write the minutes, from 1 to 120.',
+      name: 'deliveries_area_travel_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The area couldn't be calculated: the route service may be down, or no road leaves that point. You can still draw it by hand.`
+  String get deliveries_area_travel_failed {
+    return Intl.message(
+      'The area couldn\'t be calculated: the route service may be down, or no road leaves that point. You can still draw it by hand.',
+      name: 'deliveries_area_travel_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Put at least 3 points on the map.`
+  String get deliveries_area_shape_missing {
+    return Intl.message(
+      'Put at least 3 points on the map.',
+      name: 'deliveries_area_shape_missing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tap the map or drag the center to move it, and type the kilometres or pick them.`
+  String get deliveries_area_radius_note {
+    return Intl.message(
+      'Tap the map or drag the center to move it, and type the kilometres or pick them.',
+      name: 'deliveries_area_radius_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tap the map to add points. Drag a point to move it, tap the ring in the middle of a side to add one there, or tap a point and remove it.`
+  String get deliveries_area_draw_note {
+    return Intl.message(
+      'Tap the map to add points. Drag a point to move it, tap the ring in the middle of a side to add one there, or tap a point and remove it.',
+      name: 'deliveries_area_draw_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tap the map or drag the center to choose where the courier leaves from, then pick how they travel and for how many minutes.`
+  String get deliveries_area_travel_note {
+    return Intl.message(
+      'Tap the map or drag the center to choose where the courier leaves from, then pick how they travel and for how many minutes.',
+      name: 'deliveries_area_travel_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Motorcycle`
+  String get deliveries_area_mode_motorcycle {
+    return Intl.message(
+      'Motorcycle',
+      name: 'deliveries_area_mode_motorcycle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Car`
+  String get deliveries_area_mode_car {
+    return Intl.message(
+      'Car',
+      name: 'deliveries_area_mode_car',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bicycle`
+  String get deliveries_area_mode_bicycle {
+    return Intl.message(
+      'Bicycle',
+      name: 'deliveries_area_mode_bicycle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On foot`
+  String get deliveries_area_mode_foot {
+    return Intl.message(
+      'On foot',
+      name: 'deliveries_area_mode_foot',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Sales`
   String get sales {
     return Intl.message('Sales', name: 'sales', desc: '', args: []);
@@ -10992,101 +14275,11 @@ class S {
     );
   }
 
-  /// `Location`
-  String get business_tab_location {
-    return Intl.message(
-      'Location',
-      name: 'business_tab_location',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Delivery`
-  String get business_tab_delivery {
-    return Intl.message(
-      'Delivery',
-      name: 'business_tab_delivery',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Couldn't load the location`
-  String get business_location_error_title {
-    return Intl.message(
-      'Couldn\'t load the location',
-      name: 'business_location_error_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Something went wrong. Please try again.`
-  String get business_location_error_subtitle {
-    return Intl.message(
-      'Something went wrong. Please try again.',
-      name: 'business_location_error_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Address`
-  String get business_location_section_address {
-    return Intl.message(
-      'Address',
-      name: 'business_location_section_address',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `On the map`
-  String get business_location_section_map {
-    return Intl.message(
-      'On the map',
-      name: 'business_location_section_map',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit location`
-  String get business_location_edit {
-    return Intl.message(
-      'Edit location',
-      name: 'business_location_edit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Where your business is. A customer asking where to find you is given this address and this point. Every field is optional.`
-  String get business_location_subtitle {
-    return Intl.message(
-      'Where your business is. A customer asking where to find you is given this address and this point. Every field is optional.',
-      name: 'business_location_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Street address`
   String get business_location_address {
     return Intl.message(
       'Street address',
       name: 'business_location_address',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `One line, as a courier would write it on a label. It's the same address the profile shows.`
-  String get business_location_address_note {
-    return Intl.message(
-      'One line, as a courier would write it on a label. It\'s the same address the profile shows.',
-      name: 'business_location_address_note',
       desc: '',
       args: [],
     );
@@ -11107,16 +14300,6 @@ class S {
     return Intl.message(
       'Landmark',
       name: 'business_location_landmark',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `How a customer finds the door once they're there.`
-  String get business_location_landmark_note {
-    return Intl.message(
-      'How a customer finds the door once they\'re there.',
-      name: 'business_location_landmark_note',
       desc: '',
       args: [],
     );
@@ -11212,116 +14395,6 @@ class S {
     );
   }
 
-  /// `ISO code (US, ES, VE)`
-  String get business_location_country_hint {
-    return Intl.message(
-      'ISO code (US, ES, VE)',
-      name: 'business_location_country_hint',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Pick a country`
-  String get business_location_country_select {
-    return Intl.message(
-      'Pick a country',
-      name: 'business_location_country_select',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No country matches that search`
-  String get business_location_country_empty {
-    return Intl.message(
-      'No country matches that search',
-      name: 'business_location_country_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Map point`
-  String get business_location_point {
-    return Intl.message(
-      'Map point',
-      name: 'business_location_point',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The exact spot a customer's map opens. It's set apart from the written address, which no map places reliably.`
-  String get business_location_point_note {
-    return Intl.message(
-      'The exact spot a customer\'s map opens. It\'s set apart from the written address, which no map places reliably.',
-      name: 'business_location_point_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `10.496112, -66.848503`
-  String get business_location_point_hint {
-    return Intl.message(
-      '10.496112, -66.848503',
-      name: 'business_location_point_hint',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `In Google Maps, right-click the place and click its coordinates to copy them, or paste the link of the place. Leave it empty to remove the point.`
-  String get business_location_point_help {
-    return Intl.message(
-      'In Google Maps, right-click the place and click its coordinates to copy them, or paste the link of the place. Leave it empty to remove the point.',
-      name: 'business_location_point_help',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `That isn't a place on the map. Paste it as latitude, longitude (10.496112, -66.848503) or a map link that contains them.`
-  String get business_location_point_invalid {
-    return Intl.message(
-      'That isn\'t a place on the map. Paste it as latitude, longitude (10.496112, -66.848503) or a map link that contains them.',
-      name: 'business_location_point_invalid',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Open in maps`
-  String get business_location_open_map {
-    return Intl.message(
-      'Open in maps',
-      name: 'business_location_open_map',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The map couldn't be opened.`
-  String get business_location_map_failed {
-    return Intl.message(
-      'The map couldn\'t be opened.',
-      name: 'business_location_map_failed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Find the address`
-  String get business_location_search {
-    return Intl.message(
-      'Find the address',
-      name: 'business_location_search',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Street, building or the name of your business`
   String get business_location_search_hint {
     return Intl.message(
@@ -11332,61 +14405,21 @@ class S {
     );
   }
 
-  /// `Pick a place and its address, city, state, postal code and map point are filled in below. You can correct every one of them before saving.`
-  String get business_location_search_note {
-    return Intl.message(
-      'Pick a place and its address, city, state, postal code and map point are filled in below. You can correct every one of them before saving.',
-      name: 'business_location_search_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No place matches that search. Write the address below.`
+  /// `No place matches that search. Write the address in the form.`
   String get business_location_search_empty {
     return Intl.message(
-      'No place matches that search. Write the address below.',
+      'No place matches that search. Write the address in the form.',
       name: 'business_location_search_empty',
       desc: '',
       args: [],
     );
   }
 
-  /// `The address search isn't answering right now. Write the address below.`
+  /// `The address search isn't answering right now. Write the address in the form.`
   String get business_location_search_failed {
     return Intl.message(
-      'The address search isn\'t answering right now. Write the address below.',
+      'The address search isn\'t answering right now. Write the address in the form.',
       name: 'business_location_search_failed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `That place is in {country}, so that's the country now. It also sets the business's clock, its payment methods and the carriers it can deliver with.`
-  String business_location_search_country(Object country) {
-    return Intl.message(
-      'That place is in $country, so that\'s the country now. It also sets the business\'s clock, its payment methods and the carriers it can deliver with.',
-      name: 'business_location_search_country',
-      desc: '',
-      args: [country],
-    );
-  }
-
-  /// `The address, as a customer reads it`
-  String get business_location_search_manual {
-    return Intl.message(
-      'The address, as a customer reads it',
-      name: 'business_location_search_manual',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Filled in from the map. Correct anything that isn't how you'd write it.`
-  String get business_location_search_filled {
-    return Intl.message(
-      'Filled in from the map. Correct anything that isn\'t how you\'d write it.',
-      name: 'business_location_search_filled',
       desc: '',
       args: [],
     );
@@ -11522,6 +14555,66 @@ class S {
     return Intl.message(
       'No option matches your search',
       name: 'business_delivery_select_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery areas`
+  String get business_delivery_meeting {
+    return Intl.message(
+      'Delivery areas',
+      name: 'business_delivery_meeting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What your assistant does when a customer is outside every area you drew.`
+  String get business_delivery_meeting_note {
+    return Intl.message(
+      'What your assistant does when a customer is outside every area you drew.',
+      name: 'business_delivery_meeting_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fixed`
+  String get business_delivery_meeting_fixed {
+    return Intl.message(
+      'Fixed',
+      name: 'business_delivery_meeting_fixed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only delivers inside your areas`
+  String get business_delivery_meeting_fixed_note {
+    return Intl.message(
+      'Only delivers inside your areas',
+      name: 'business_delivery_meeting_fixed_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Flexible`
+  String get business_delivery_meeting_flexible {
+    return Intl.message(
+      'Flexible',
+      name: 'business_delivery_meeting_flexible',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Agrees with the customer on a meeting spot, the nearest one your areas reach`
+  String get business_delivery_meeting_flexible_note {
+    return Intl.message(
+      'Agrees with the customer on a meeting spot, the nearest one your areas reach',
+      name: 'business_delivery_meeting_flexible_note',
       desc: '',
       args: [],
     );
@@ -12334,6 +15427,1245 @@ class S {
     return Intl.message(
       'Cash on delivery',
       name: 'business_delivery_option_notes_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Messages`
+  String get messages {
+    return Intl.message('Messages', name: 'messages', desc: '', args: []);
+  }
+
+  /// `All`
+  String get messages_filter_all {
+    return Intl.message('All', name: 'messages_filter_all', desc: '', args: []);
+  }
+
+  /// `Unanswered`
+  String get messages_filter_unanswered {
+    return Intl.message(
+      'Unanswered',
+      name: 'messages_filter_unanswered',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Attention`
+  String get messages_filter_attention {
+    return Intl.message(
+      'Attention',
+      name: 'messages_filter_attention',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mine`
+  String get messages_filter_mine {
+    return Intl.message(
+      'Mine',
+      name: 'messages_filter_mine',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With a person`
+  String get messages_filter_paused {
+    return Intl.message(
+      'With a person',
+      name: 'messages_filter_paused',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} conversations`
+  String messages_count(Object count) {
+    return Intl.message(
+      '$count conversations',
+      name: 'messages_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} new movements, refresh`
+  String messages_pending(Object count) {
+    return Intl.message(
+      '$count new movements, refresh',
+      name: 'messages_pending',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `More conversations could not be read. Try again`
+  String get messages_more_failed {
+    return Intl.message(
+      'More conversations could not be read. Try again',
+      name: 'messages_more_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get messages_retry {
+    return Intl.message(
+      'Try again',
+      name: 'messages_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The conversations could not be read`
+  String get messages_error_title {
+    return Intl.message(
+      'The conversations could not be read',
+      name: 'messages_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the connection and try again.`
+  String get messages_error_subtitle {
+    return Intl.message(
+      'Check the connection and try again.',
+      name: 'messages_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No conversations yet`
+  String get messages_empty_title {
+    return Intl.message(
+      'No conversations yet',
+      name: 'messages_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When a customer writes to one of your numbers, the conversation shows up here.`
+  String get messages_empty_subtitle {
+    return Intl.message(
+      'When a customer writes to one of your numbers, the conversation shows up here.',
+      name: 'messages_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing here`
+  String get messages_empty_filter_title {
+    return Intl.message(
+      'Nothing here',
+      name: 'messages_empty_filter_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No conversation matches this tab or the search.`
+  String get messages_empty_filter_subtitle {
+    return Intl.message(
+      'No conversation matches this tab or the search.',
+      name: 'messages_empty_filter_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose a conversation`
+  String get messages_select_title {
+    return Intl.message(
+      'Choose a conversation',
+      name: 'messages_select_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Its messages open on this side.`
+  String get messages_select_subtitle {
+    return Intl.message(
+      'Its messages open on this side.',
+      name: 'messages_select_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The conversation could not be read`
+  String get messages_thread_error_title {
+    return Intl.message(
+      'The conversation could not be read',
+      name: 'messages_thread_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No messages in this conversation yet`
+  String get messages_thread_empty {
+    return Intl.message(
+      'No messages in this conversation yet',
+      name: 'messages_thread_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Load older messages`
+  String get messages_older {
+    return Intl.message(
+      'Load older messages',
+      name: 'messages_older',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show earlier conversations`
+  String get messages_all_sessions {
+    return Intl.message(
+      'Show earlier conversations',
+      name: 'messages_all_sessions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show only this conversation`
+  String get messages_this_session {
+    return Intl.message(
+      'Show only this conversation',
+      name: 'messages_this_session',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `just now`
+  String get messages_wait_now {
+    return Intl.message(
+      'just now',
+      name: 'messages_wait_now',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} min`
+  String messages_wait_minutes(Object count) {
+    return Intl.message(
+      '$count min',
+      name: 'messages_wait_minutes',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} h`
+  String messages_wait_hours(Object count) {
+    return Intl.message(
+      '$count h',
+      name: 'messages_wait_hours',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} d`
+  String messages_wait_days(Object count) {
+    return Intl.message(
+      '$count d',
+      name: 'messages_wait_days',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Waiting {time}`
+  String messages_waiting(Object time) {
+    return Intl.message(
+      'Waiting $time',
+      name: 'messages_waiting',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Assistant`
+  String get messages_author_bot {
+    return Intl.message(
+      'Assistant',
+      name: 'messages_author_bot',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatic message`
+  String get messages_author_system {
+    return Intl.message(
+      'Automatic message',
+      name: 'messages_author_system',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Team`
+  String get messages_author_team {
+    return Intl.message(
+      'Team',
+      name: 'messages_author_team',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not sent`
+  String get messages_status_failed {
+    return Intl.message(
+      'Not sent',
+      name: 'messages_status_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Queued`
+  String get messages_status_queued {
+    return Intl.message(
+      'Queued',
+      name: 'messages_status_queued',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image`
+  String get messages_image {
+    return Intl.message('Image', name: 'messages_image', desc: '', args: []);
+  }
+
+  /// `Audio`
+  String get messages_audio {
+    return Intl.message('Audio', name: 'messages_audio', desc: '', args: []);
+  }
+
+  /// `Write a reply`
+  String get messages_composer_placeholder {
+    return Intl.message(
+      'Write a reply',
+      name: 'messages_composer_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Replying takes the conversation from the assistant for 24 hours.`
+  String get messages_composer_hint {
+    return Intl.message(
+      'Replying takes the conversation from the assistant for 24 hours.',
+      name: 'messages_composer_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send`
+  String get messages_send {
+    return Intl.message('Send', name: 'messages_send', desc: '', args: []);
+  }
+
+  /// `Message queued`
+  String get messages_queued_title {
+    return Intl.message(
+      'Message queued',
+      name: 'messages_queued_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The phone of this number is offline: the message leaves when it reconnects.`
+  String get messages_queued_subtitle {
+    return Intl.message(
+      'The phone of this number is offline: the message leaves when it reconnects.',
+      name: 'messages_queued_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The assistant is answering`
+  String get messages_bot_active {
+    return Intl.message(
+      'The assistant is answering',
+      name: 'messages_bot_active',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The assistant is off on this number. Turn it on in the channel settings.`
+  String get messages_bot_disabled {
+    return Intl.message(
+      'The assistant is off on this number. Turn it on in the channel settings.',
+      name: 'messages_bot_disabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Attended by {name}`
+  String messages_bot_paused_by(Object name) {
+    return Intl.message(
+      'Attended by $name',
+      name: 'messages_bot_paused_by',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Attended by a person`
+  String get messages_bot_paused {
+    return Intl.message(
+      'Attended by a person',
+      name: 'messages_bot_paused',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `until {date}`
+  String messages_bot_until(Object date) {
+    return Intl.message(
+      'until $date',
+      name: 'messages_bot_until',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Take over`
+  String get messages_take {
+    return Intl.message('Take over', name: 'messages_take', desc: '', args: []);
+  }
+
+  /// `Return to the assistant`
+  String get messages_return {
+    return Intl.message(
+      'Return to the assistant',
+      name: 'messages_return',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For 30 minutes`
+  String get messages_take_30m {
+    return Intl.message(
+      'For 30 minutes',
+      name: 'messages_take_30m',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For 2 hours`
+  String get messages_take_2h {
+    return Intl.message(
+      'For 2 hours',
+      name: 'messages_take_2h',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For 24 hours`
+  String get messages_take_24h {
+    return Intl.message(
+      'For 24 hours',
+      name: 'messages_take_24h',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Until I return it`
+  String get messages_take_manual {
+    return Intl.message(
+      'Until I return it',
+      name: 'messages_take_manual',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Assign`
+  String get messages_assign {
+    return Intl.message('Assign', name: 'messages_assign', desc: '', args: []);
+  }
+
+  /// `Assigned to {name}`
+  String messages_assigned_to(Object name) {
+    return Intl.message(
+      'Assigned to $name',
+      name: 'messages_assigned_to',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Nobody assigned`
+  String get messages_unassigned {
+    return Intl.message(
+      'Nobody assigned',
+      name: 'messages_unassigned',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove the assignment`
+  String get messages_unassign {
+    return Intl.message(
+      'Remove the assignment',
+      name: 'messages_unassign',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `More options`
+  String get messages_options {
+    return Intl.message(
+      'More options',
+      name: 'messages_options',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark as sold`
+  String get messages_mark_sold {
+    return Intl.message(
+      'Mark as sold',
+      name: 'messages_mark_sold',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark as ended`
+  String get messages_mark_ended {
+    return Intl.message(
+      'Mark as ended',
+      name: 'messages_mark_ended',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Undo the manual state`
+  String get messages_undo_stage {
+    return Intl.message(
+      'Undo the manual state',
+      name: 'messages_undo_stage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark as read`
+  String get messages_mark_read {
+    return Intl.message(
+      'Mark as read',
+      name: 'messages_mark_read',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Marked as read`
+  String get messages_marked_read {
+    return Intl.message(
+      'Marked as read',
+      name: 'messages_marked_read',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark this conversation as sold?`
+  String get messages_sold_confirm_title {
+    return Intl.message(
+      'Mark this conversation as sold?',
+      name: 'messages_sold_confirm_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It confirms the payment and sends the customer the confirmation of their purchase.`
+  String get messages_sold_confirm_message {
+    return Intl.message(
+      'It confirms the payment and sends the customer the confirmation of their purchase.',
+      name: 'messages_sold_confirm_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm`
+  String get messages_confirm {
+    return Intl.message(
+      'Confirm',
+      name: 'messages_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancel`
+  String get messages_cancel {
+    return Intl.message('Cancel', name: 'messages_cancel', desc: '', args: []);
+  }
+
+  /// `The assistant failed to answer`
+  String get messages_attention_failure {
+    return Intl.message(
+      'The assistant failed to answer',
+      name: 'messages_attention_failure',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The customer received a cut-off message`
+  String get messages_attention_partial {
+    return Intl.message(
+      'The customer received a cut-off message',
+      name: 'messages_attention_partial',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The assistant promised to confirm something`
+  String get messages_attention_question {
+    return Intl.message(
+      'The assistant promised to confirm something',
+      name: 'messages_attention_question',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The customer wants to pay and the channel has no account set up`
+  String get messages_attention_payment {
+    return Intl.message(
+      'The customer wants to pay and the channel has no account set up',
+      name: 'messages_attention_payment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The customer could not be told their sale was approved`
+  String get messages_attention_confirmation {
+    return Intl.message(
+      'The customer could not be told their sale was approved',
+      name: 'messages_attention_confirmation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Work for a person`
+  String get messages_attention_pending {
+    return Intl.message(
+      'Work for a person',
+      name: 'messages_attention_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `+{count} more`
+  String messages_attention_more(Object count) {
+    return Intl.message(
+      '+$count more',
+      name: 'messages_attention_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Mark as resolved`
+  String get messages_resolve {
+    return Intl.message(
+      'Mark as resolved',
+      name: 'messages_resolve',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The assistant could not answer a customer`
+  String get messages_notice_failure_title {
+    return Intl.message(
+      'The assistant could not answer a customer',
+      name: 'messages_notice_failure_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A conversation needs a person`
+  String get messages_notice_pending_title {
+    return Intl.message(
+      'A conversation needs a person',
+      name: 'messages_notice_pending_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} is waiting for an answer`
+  String messages_notice_waiting_title(Object name) {
+    return Intl.message(
+      '$name is waiting for an answer',
+      name: 'messages_notice_waiting_title',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `{name} was assigned to you`
+  String messages_notice_assigned(Object name) {
+    return Intl.message(
+      '$name was assigned to you',
+      name: 'messages_notice_assigned',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Since {date}`
+  String messages_tag_since(Object date) {
+    return Intl.message(
+      'Since $date',
+      name: 'messages_tag_since',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Tickets: {codes}`
+  String messages_tag_tickets(Object codes) {
+    return Intl.message(
+      'Tickets: $codes',
+      name: 'messages_tag_tickets',
+      desc: '',
+      args: [codes],
+    );
+  }
+
+  /// `AI cost`
+  String get messages_usage {
+    return Intl.message('AI cost', name: 'messages_usage', desc: '', args: []);
+  }
+
+  /// `AI cost of this session`
+  String get messages_usage_title {
+    return Intl.message(
+      'AI cost of this session',
+      name: 'messages_usage_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In USD, as the providers billed every model that ran for this session. The safety check before each burst is billed to the company's day, not here.`
+  String get messages_usage_note {
+    return Intl.message(
+      'In USD, as the providers billed every model that ran for this session. The safety check before each burst is billed to the company\'s day, not here.',
+      name: 'messages_usage_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Spent`
+  String get messages_usage_cost {
+    return Intl.message(
+      'Spent',
+      name: 'messages_usage_cost',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tokens`
+  String get messages_usage_tokens {
+    return Intl.message(
+      'Tokens',
+      name: 'messages_usage_tokens',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Model calls`
+  String get messages_usage_requests {
+    return Intl.message(
+      'Model calls',
+      name: 'messages_usage_requests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tokens`
+  String get messages_usage_tokens_title {
+    return Intl.message(
+      'Tokens',
+      name: 'messages_usage_tokens_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Input`
+  String get messages_usage_input {
+    return Intl.message(
+      'Input',
+      name: 'messages_usage_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Includes the instructions, tools and history resent on every round`
+  String get messages_usage_input_hint {
+    return Intl.message(
+      'Includes the instructions, tools and history resent on every round',
+      name: 'messages_usage_input_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From the provider's cache`
+  String get messages_usage_cached {
+    return Intl.message(
+      'From the provider\'s cache',
+      name: 'messages_usage_cached',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Part of the input, charged at the full rate`
+  String get messages_usage_cached_hint {
+    return Intl.message(
+      'Part of the input, charged at the full rate',
+      name: 'messages_usage_cached_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Output`
+  String get messages_usage_output {
+    return Intl.message(
+      'Output',
+      name: 'messages_usage_output',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Includes the reasoning the model spent`
+  String get messages_usage_output_hint {
+    return Intl.message(
+      'Includes the reasoning the model spent',
+      name: 'messages_usage_output_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where it went`
+  String get messages_usage_areas_title {
+    return Intl.message(
+      'Where it went',
+      name: 'messages_usage_areas_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Replies`
+  String get messages_usage_area_replies {
+    return Intl.message(
+      'Replies',
+      name: 'messages_usage_area_replies',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Routing and summaries`
+  String get messages_usage_area_routing {
+    return Intl.message(
+      'Routing and summaries',
+      name: 'messages_usage_area_routing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Images and voice notes`
+  String get messages_usage_area_media {
+    return Intl.message(
+      'Images and voice notes',
+      name: 'messages_usage_area_media',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Web research`
+  String get messages_usage_area_research {
+    return Intl.message(
+      'Web research',
+      name: 'messages_usage_area_research',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Catalog searches`
+  String get messages_usage_area_embeddings {
+    return Intl.message(
+      'Catalog searches',
+      name: 'messages_usage_area_embeddings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{requests} calls · {input} in · {output} out`
+  String messages_usage_area_line(
+    Object requests,
+    Object input,
+    Object output,
+  ) {
+    return Intl.message(
+      '$requests calls · $input in · $output out',
+      name: 'messages_usage_area_line',
+      desc: '',
+      args: [requests, input, output],
+    );
+  }
+
+  /// `No model ran in this session: people answered it.`
+  String get messages_usage_none {
+    return Intl.message(
+      'No model ran in this session: people answered it.',
+      name: 'messages_usage_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The cost of this session could not be read.`
+  String get messages_usage_unavailable {
+    return Intl.message(
+      'The cost of this session could not be read.',
+      name: 'messages_usage_unavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Welcome, {name}`
+  String welcome_title(Object name) {
+    return Intl.message(
+      'Welcome, $name',
+      name: 'welcome_title',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Lyra works around a company. Tell us how you want to start: you can change your mind later.`
+  String get welcome_subtitle {
+    return Intl.message(
+      'Lyra works around a company. Tell us how you want to start: you can change your mind later.',
+      name: 'welcome_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{company} invited you`
+  String welcome_invitation_title(Object company) {
+    return Intl.message(
+      '$company invited you',
+      name: 'welcome_invitation_title',
+      desc: '',
+      args: [company],
+    );
+  }
+
+  /// `Review the invitation to join their team.`
+  String get welcome_invitation_subtitle {
+    return Intl.message(
+      'Review the invitation to join their team.',
+      name: 'welcome_invitation_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{job} at {company}`
+  String welcome_invitation_job(Object job, Object company) {
+    return Intl.message(
+      '$job at $company',
+      name: 'welcome_invitation_job',
+      desc: '',
+      args: [job, company],
+    );
+  }
+
+  /// `Review`
+  String get welcome_invitation_action {
+    return Intl.message(
+      'Review',
+      name: 'welcome_invitation_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Or start another way`
+  String get welcome_other_ways {
+    return Intl.message(
+      'Or start another way',
+      name: 'welcome_other_ways',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create a company`
+  String get welcome_create_title {
+    return Intl.message(
+      'Create a company',
+      name: 'welcome_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Register your first company and manage it from here.`
+  String get welcome_create_subtitle {
+    return Intl.message(
+      'Register your first company and manage it from here.',
+      name: 'welcome_create_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create company`
+  String get welcome_create_action {
+    return Intl.message(
+      'Create company',
+      name: 'welcome_create_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Join my company's team`
+  String get welcome_awaiting_title {
+    return Intl.message(
+      'Join my company\'s team',
+      name: 'welcome_awaiting_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your company already uses Lyra. See how to ask them to add you.`
+  String get welcome_awaiting_subtitle {
+    return Intl.message(
+      'Your company already uses Lyra. See how to ask them to add you.',
+      name: 'welcome_awaiting_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Browse open jobs`
+  String get welcome_jobs_title {
+    return Intl.message(
+      'Browse open jobs',
+      name: 'welcome_jobs_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `See the positions companies have open and apply to one.`
+  String get welcome_jobs_subtitle {
+    return Intl.message(
+      'See the positions companies have open and apply to one.',
+      name: 'welcome_jobs_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coming soon`
+  String get welcome_jobs_soon {
+    return Intl.message(
+      'Coming soon',
+      name: 'welcome_jobs_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invitation`
+  String get welcome_invitation_modal_title {
+    return Intl.message(
+      'Invitation',
+      name: 'welcome_invitation_modal_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Company`
+  String get welcome_invitation_company {
+    return Intl.message(
+      'Company',
+      name: 'welcome_invitation_company',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Position`
+  String get welcome_invitation_role {
+    return Intl.message(
+      'Position',
+      name: 'welcome_invitation_role',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Department`
+  String get welcome_invitation_department {
+    return Intl.message(
+      'Department',
+      name: 'welcome_invitation_department',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Branch`
+  String get welcome_invitation_branch {
+    return Intl.message(
+      'Branch',
+      name: 'welcome_invitation_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invited on`
+  String get welcome_invitation_date {
+    return Intl.message(
+      'Invited on',
+      name: 'welcome_invitation_date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Accept invitation`
+  String get welcome_invitation_accept {
+    return Intl.message(
+      'Accept invitation',
+      name: 'welcome_invitation_accept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Once you accept, you join {company}'s team and they can see your profile.`
+  String welcome_invitation_accept_notice(Object company) {
+    return Intl.message(
+      'Once you accept, you join $company\'s team and they can see your profile.',
+      name: 'welcome_invitation_accept_notice',
+      desc: '',
+      args: [company],
+    );
+  }
+
+  /// `Waiting for an invitation`
+  String get welcome_awaiting_modal_title {
+    return Intl.message(
+      'Waiting for an invitation',
+      name: 'welcome_awaiting_modal_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ask the company to invite you with this email. The invitation will show up on this page as soon as they send it.`
+  String get welcome_awaiting_body {
+    return Intl.message(
+      'Ask the company to invite you with this email. The invitation will show up on this page as soon as they send it.',
+      name: 'welcome_awaiting_body',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open jobs`
+  String get welcome_jobs_modal_title {
+    return Intl.message(
+      'Open jobs',
+      name: 'welcome_jobs_modal_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Job openings are coming soon. You will be able to browse them and apply from here.`
+  String get welcome_jobs_body {
+    return Intl.message(
+      'Job openings are coming soon. You will be able to browse them and apply from here.',
+      name: 'welcome_jobs_body',
       desc: '',
       args: [],
     );

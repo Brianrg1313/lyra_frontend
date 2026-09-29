@@ -8,7 +8,8 @@ class Option extends StatelessWidget {
     required this.action,
     required this.isExpanded,
     this.isActive = false,
-    this.isLocked = false,
+    this.lockedMessage,
+    this.opensLocked = false,
     this.badge = 0,
     super.key
   });
@@ -19,14 +20,25 @@ class Option extends StatelessWidget {
   final bool isExpanded;
   final bool isActive;
 
-  /// The option is shown but cannot be opened: the section needs an active
-  /// business and there is none yet (see `HomeSection.needsBusiness`).
+  /// Why the option cannot be opened, shown as its tooltip; `null` = it can.
+  /// Either the section needs an active business and there is none yet (see
+  /// `HomeSection.needsBusiness`), or the person is not granted its `view` in
+  /// the active one (`PermissionsService`).
   ///
   /// It is still displayed, dimmed and with a lock, instead of being removed
   /// from the list: that way everything the platform offers is visible from
   /// day one, and the side bar keeps its shape when the first business is
-  /// created.
-  final bool isLocked;
+  /// created or the grant arrives.
+  final String? lockedMessage;
+
+  bool get isLocked => lockedMessage != null;
+
+  /// A locked option that still opens: a missing permission leads to the
+  /// section's `NoPermissionSection`, where access is requested. Without a
+  /// business there is nothing to open, so that lock stays closed.
+  final bool opensLocked;
+
+  bool get _isDisabled => isLocked && !opensLocked;
 
   final int badge;
 
@@ -80,10 +92,10 @@ class Option extends StatelessWidget {
       // it to respond to the mouse either: the cursor warns that it cannot be
       // opened before the click, and the feedback color is flattened against
       // the background so hovering does not light it up like the others.
-      action: isLocked ? null : action,
-      mouseCursor: isLocked ? SystemMouseCursors.basic : null,
-      message: isLocked ? S.of(context).section_no_business_subtitle : title,
-      feedbackColor: isLocked
+      action: _isDisabled ? null : action,
+      mouseCursor: _isDisabled ? SystemMouseCursors.basic : null,
+      message: lockedMessage ?? title,
+      feedbackColor: _isDisabled
         ? Colors.transparent
         : ThemeColor.of(context).line,
       // Both ends of the animation must be opaque. `line` is translucent and

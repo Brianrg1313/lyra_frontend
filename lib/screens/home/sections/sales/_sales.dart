@@ -5,10 +5,13 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/sales/sales_catalog_service.dart';
 import 'package:app/services/sales/sales_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/no_permission.dart';
+import 'package:app/screens/home/sections/page_switcher.dart';
 import 'package:app/screens/home/sections/section_tabs.dart';
 
 import './sales_board.dart';
@@ -78,9 +81,9 @@ class _SalesSectionState extends State<SalesSection> {
   SalesTab get _tab => _tabOf(Navis.currentKey.value);
 
   /// Tab that the screen [currentKey] shows. The bare section (`/home/sales`,
-  /// which is where the side bar goes) opens the initial one.
+  /// which is where the side bar goes) opens [SalesTab.opening].
   SalesTab _tabOf(String currentKey) =>
-    SalesTab.byRouteKey(currentKey) ?? SalesTab.initial;
+    SalesTab.byRouteKey(currentKey) ?? SalesTab.opening;
 
   /// Opens the other tab.
   ///
@@ -93,6 +96,25 @@ class _SalesSectionState extends State<SalesSection> {
     if (tab == _tab) return;
 
     Navis.push(context, tab.path);
+  }
+
+  /// The board of the open tab, or the "no access" message when it is not granted: the
+  /// URL still opens it (a link, the back button), so the check is here and not only in
+  /// the bar. The board draws edge to edge, the message keeps the sheet's padding.
+  Widget _body(BuildContext context, SalesTab tab) {
+    if (!PermissionsService().canOpen(tab.area)) {
+      return Padding(
+        key: ValueKey(tab.area),
+        padding: EdgeInsets.all(AppSize.padding),
+        child: NoPermissionSection(
+          permission: "${tab.area}.view",
+          title: tab.title(context),
+          surface: false
+        )
+      );
+    }
+
+    return SalesBoard(key: ValueKey(tab.routeKey), section: tab.section);
   }
 
   /// The body is rebuilt from [Navis.currentKey] and not from the rebuild of
@@ -117,10 +139,11 @@ class _SalesSectionState extends State<SalesSection> {
       ChangeNotifierProvider<SalesService>.value(value: _sales),
       ChangeNotifierProvider<SalesCatalogService>.value(value: _catalog)
     ],
-    child: ValueListenableBuilder<String>(
-      valueListenable: Navis.currentKey,
-      builder: (context, currentKey, _) {
-        final tab = _tabOf(currentKey);
+    // Permissions too: a reread of `/init` may open or close the tab being looked at.
+    child: ListenableBuilder(
+      listenable: Listenable.merge([Navis.currentKey, PermissionsService()]),
+      builder: (context, _) {
+        final tab = _tabOf(Navis.currentKey.value);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,12 +153,13 @@ class _SalesSectionState extends State<SalesSection> {
               active: tab,
               icon: (value) => value.icon,
               title: (context, value) => value.title(context),
-              onTab: _openTab
+              onTab: _openTab,
+              isLocked: (value) => !PermissionsService().canOpen(value.area)
             ),
             SizedBox(height: AppSize.gap),
-            Expanded(child: Surface(child: SalesBoard(
-              key: ValueKey(tab.routeKey),
-              section: tab.section
+            Expanded(child: Surface(child: PageSwitcher(
+              id: tab,
+              child: _body(context, tab)
             )))
           ]
         );

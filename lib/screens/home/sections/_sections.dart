@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// SERVICES
+import 'package:app/services/permissions/permissions_service.dart';
+
 import './business_listener.dart';
 import './no_business.dart';
+import './no_permission.dart';
+import './page_switcher.dart';
 import './placeholder.dart';
 import 'business/_business_detail.dart';
 import './channels/_channels.dart';
 import './channels/form/_channel_form.dart';
 import './connections/_connections.dart';
 import './connections/form/_connection_form.dart';
+import './deliveries/_deliveries.dart';
+import './deliveries/area/_area.dart';
+import './deliveries/settings/_settings.dart';
 import './finance/_finance.dart';
 import './inventory/table_list/_table_list.dart';
 import './inventory/table_view/_table_view.dart';
+import './messages/_messages.dart';
 import './sales/_sales.dart';
 
 /// Sections that live inside the home shell.
@@ -28,6 +37,8 @@ enum HomeSection {
   services(key: "services", path: "/home/services", icon: CI.task_list),
   channels(key: "channels", path: "/home/channels", icon: CI.ia),
   connections(key: "connections", path: "/home/connections", icon: CI.cloud_connected),
+  messages(key: "messages", path: "/home/messages", icon: CI.chat),
+  deliveries(key: "deliveries", path: "/home/deliveries", icon: CI.delivery),
   sales(key: "sales", path: "/home/sales", icon: CI.sale),
   finance(key: "finance", path: "/home/finance", icon: CI.wallet),
   marketing(key: "marketing", path: "/home/marketing", icon: Icons.campaign_outlined),
@@ -49,34 +60,20 @@ enum HomeSection {
   final String path;
   final IconData icon;
 
-  /// First group of the side bar: what the company **is**.
+  /// First group of the side bar, with no title: what the company **is** and
+  /// what it has going right now.
   ///
-  /// The money used to be here, right after the business, on the grounds that
-  /// it is the same subject seen from the other side. It moved out when there
-  /// was somewhere better for it to be: a group of its own with the two screens
-  /// it is really used next to (see [transactions]).
+  /// [messages], [deliveries] and [sales] follow the business, in the order a
+  /// sale happens: the conversation where it starts, getting the goods to the
+  /// customer, and the board of everything still in progress. They used to
+  /// sit under a "transactions" title of their own; they are the screens
+  /// opened all day, so they went up to the untitled top of the bar.
   static const List<HomeSection> home = [
     dashboard,
-    business
-  ];
-
-  /// Transactions group of the side bar: **the sale, end to end**.
-  ///
-  /// [sales] is what the company has going right now —every sale, whatever
-  /// channel it came in through, and what each one is still waiting for— and
-  /// [finance] is the money those sales brought in, plus the accounts they can
-  /// arrive into. They are grouped because they are two views of one thing and
-  /// somebody working a shift moves between them all day: a sale that reads
-  /// "verificando el pago" is answered in the money screen, and one settled
-  /// there stops waiting in the board a second later.
-  ///
-  /// The POS closes the same group in the bar and is **not** in this list: it
-  /// is not a section but a page of its own, without the home's shell (see
-  /// `Pos`), so the side bar builds that option by hand — see
-  /// `desktop/side_bar/options.dart`.
-  static const List<HomeSection> transactions = [
-    sales,
-    finance
+    business,
+    messages,
+    deliveries,
+    sales
   ];
 
   /// Product group of the side bar.
@@ -88,11 +85,9 @@ enum HomeSection {
 
   /// Report group of the side bar.
   ///
-  /// The money used to be listed here, back when it was a placeholder: as a
-  /// screen it is not a report but the place where the company's accounts are
-  /// configured and its movements are recorded, so it moved up to
-  /// [transactions].
+  /// [finance] opens it: the company's money is what gets looked back at.
   static const List<HomeSection> reports = [
+    finance,
     marketing,
     report
   ];
@@ -136,6 +131,8 @@ enum HomeSection {
     services => S.of(context).services,
     channels => S.of(context).channels,
     connections => S.of(context).connections,
+    messages => S.of(context).messages,
+    deliveries => S.of(context).deliveries,
     sales => S.of(context).sales,
     finance => S.of(context).finance,
     marketing => S.of(context).marketing,
@@ -182,6 +179,8 @@ enum HomeSection {
     // company— so the bare section and each of its tabs are the same widget,
     // and the section resolves which tab from `Navis.currentKey`.
     sales => const SalesSection(),
+    messages => const MessagesSection(),
+    deliveries => const DeliveriesSection(),
     finance => const FinanceSection(),
     _ => SectionPlaceholder(section: this)
   };
@@ -225,16 +224,48 @@ enum HomeSection {
 /// It is checked here in addition to the side bar because a section is a URL:
 /// with the options blocked it can still be reached by deep link, reloading
 /// the page or with the browser's back button.
+///
+/// With a business, a section the person is not granted (`<key>.view` in
+/// [PermissionsService]) is not mounted either, for the same reason and by the
+/// same door: its reads would only meet a 403. [NoPermissionSection] goes in
+/// its place, with the way to ask for it. The caller watches the permissions.
+///
+/// Moving between the pages of one section (the inventory list and a table,
+/// the channels and one channel's form) goes through a [PageSwitcher]; moving
+/// to another section does not animate. The switcher is keyed by [section], so
+/// a new section mounts a new one and shows its page as is. Its page identity
+/// is the screen's key, or its type when unkeyed: a tabbed section is one
+/// widget for all its tabs and animates its body itself.
 Widget homeContent(
   String currentKey,
   HomeSection section,
   String? businessId
-) => KeyedSubtree(
-  key: ValueKey(businessId),
-  child: businessId == null && section.needsBusiness
-    ? const NoBusinessSection()
-    : _screen(currentKey, section, businessId)
-);
+) {
+  final Widget screen;
+
+  if (businessId == null && section.needsBusiness) {
+    screen = const NoBusinessSection();
+  } else if (businessId != null && !PermissionsService().canOpen(section.key, business: businessId)) {
+    screen = Builder(
+      key: ValueKey("no_permission_${section.key}"),
+      builder: (context) => NoPermissionSection(
+        permission: "${section.key}.view",
+        title: section.title(context)
+      )
+    );
+  } else {
+    screen = _screen(currentKey, section, businessId);
+  }
+
+  return KeyedSubtree(
+    key: ValueKey(businessId),
+    child: PageSwitcher(
+      key: ValueKey(section),
+      id: screen.key ?? screen.runtimeType,
+      child: screen
+    )
+  );
+}
 
 /// The screen that goes inside the shell: the open [section], or its sub-page
 /// indicated by [currentKey].
@@ -285,6 +316,8 @@ Widget _screen(String currentKey, HomeSection section, String? businessId) {
     ConnectionFormSection.editRouteKey => ConnectionFormSection(
       key: ValueKey("connection_${Navis.currentArgs?["id"]}")
     ),
+    DeliverySettingsSection.routeKey => const DeliverySettingsSection(),
+    DeliveryAreaSection.routeKey => const DeliveryAreaSection(),
     _ => section.build()
   };
 }

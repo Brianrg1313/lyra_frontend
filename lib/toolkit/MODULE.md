@@ -9,21 +9,27 @@ backend, routes and theme. No UI.
 - `toolkit.dart` — app barrel: re-exports `package:core/core.dart` + `S`. **Screens import this.**
 - `api.dart` — REST clients and the business header:
   - `api` — main backend (`lyra`, port 80). `assets` — media backend (`cetus`, port 81, `ApiMode.assets`).
+    `aries` — conversation desk (`aries`, port 80). `scorpius` — maps (`scorpius`, port 80; tile routes public).
+  - `mapTilesUrl(tileset, style)` — absolute `{z}/{x}/{y}{r}.png` template of a tileset's server-drawn tiles (`/scorpius/v1/raster`).
   - `apiOrigin` — scheme+host+port, to absolutize relative media paths.
-  - `useBusiness(String? id)` — sets the active business on `api`, `assets`, `sockets` (`business_id`
+  - `useBusiness(String? id)` — sets the active business on `api`, `assets`, `aries`, `scorpius`, `sockets` (`business_id`
     header). Called only by `BusinessService`, which then calls `ConnectionService().rebind()`:
     the socket picks it up only in a new handshake.
   - Both extend private `_SessionApi` (token from `DatabaseService.fromSecure` in `preRequest`).
+  - `useCookieSession` — web-only `HttpOnly` cookie session, off unless `--dart-define=LYRA_COOKIE_SESSION=true`
+    (backend contract: `docs/task-cookie-session-backend.md`). `openSession(token)` — stores the token a sign in answered (no-op in cookie mode).
+  - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
 - `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` in headers **and**
   `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
 - `settings/routes.dart` — the route table. Home sections, business/finance/sales tabs are generated
   from their enums; all `/home/...` share `shell: Home.shell`. Fixed segments
   (`/home/connections/new`) go **before** their `:id` sibling. `/pos` is standalone.
-- `settings/precall.dart` — `preCall()`: Hive (`DatabaseService.initialize`), `HomeService.preload`,
+  Every route uses `RouteAnimation.fadeThrough` (`_animation`); a new one must too.
+- `settings/precall.dart` — `preCall()`: Hive (`DatabaseService.initialize`), `HomeService.preload`, `PreferencesService.preload`,
   Windows window (1024x720, hidden title bar, `window_manager`).
 - `settings/initial_builder.dart` — `initialBuilder(app)`: root `MultiProvider` + the two
   pre-tree instances `clientService`, `businessService`. App-wide services only.
-- `settings/initial_validator.dart` — `initialValidator()`: `clientService.resolve()`, then a pending deep link, else `/home`.
+- `settings/initial_validator.dart` — `initialValidator()`: `clientService.resolve()` (session failure or pending task), then a pending deep link, else `PreferencesService().homePath` (last home page, or `/home`).
 - `settings/translations.dart` — bridges core's strings (`hide_keyboard`, `connectionError`) to `S`.
 - `theme/dark.dart` / `theme/light.dart` — `darkScheme` / `lightScheme` (`SchemeColor`), accent `0xfffb8e00`.
 

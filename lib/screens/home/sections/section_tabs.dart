@@ -27,7 +27,8 @@ class SectionTabs<T> extends StatelessWidget {
     required this.active,
     required this.icon,
     required this.title,
-    required this.onTab
+    required this.onTab,
+    this.isLocked
   });
 
   /// Every tab of the section, in the order they are drawn.
@@ -42,6 +43,10 @@ class SectionTabs<T> extends StatelessWidget {
   /// Another tab was asked to open. It is a navigation: each tab is a URL.
   final void Function(T tab) onTab;
 
+  /// Tabs the person is not granted: drawn with a lock instead of their icon. They still
+  /// open, onto the "no access" message that offers to ask for them.
+  final bool Function(T tab)? isLocked;
+
   /// The tabs scroll instead of shrinking: there are four or five with icon and
   /// text, and in a narrow window they would come in cut off or squeezed until
   /// unreadable. By scrolling them, the one being looked at is seen whole.
@@ -50,7 +55,7 @@ class SectionTabs<T> extends StatelessWidget {
     scrollDirection: Axis.horizontal,
     child: Row(children: [
       for (final tab in tabs) _Tab(
-        icon: icon(tab),
+        icon: isLocked?.call(tab) == true ? Icons.lock_outline : icon(tab),
         title: title(context, tab),
         isActive: tab == active,
         action: () => onTab(tab)

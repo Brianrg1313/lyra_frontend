@@ -5,7 +5,10 @@ import 'package:flutter/services.dart' show TextInputFormatter;
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/catalog/currency_catalog_service.dart';
+import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/money/account_mask.dart';
+import 'package:app/services/money/money_currency_model.dart';
 import 'package:app/services/money/money_method_model.dart';
 import 'package:app/services/money/money_method_request.dart';
 
@@ -40,6 +43,13 @@ import 'package:core/form.dart';
 /// rail's own answer, so a rail that changes what it needs changes this form
 /// without an app release.
 ///
+/// **Every account is in one currency and may charge a commission.** The
+/// currency is picked out of what the company can price ([currencies]: the
+/// main one and its exchange currencies), except on a rail that only moves one
+/// ([MoneyRail.currency]) — a Pago Movil is bolivars whatever is picked. The
+/// commission is a fixed amount in that currency or a percentage, and the
+/// backend adds it to the charge.
+///
 /// It **returns the request body and writes nothing**, like every modal here:
 /// `MoneyMethodsService` is provided by the finance section, which lives under
 /// the navigator this panel is opened on. The caller knows whether it handed in
@@ -51,6 +61,7 @@ Future<Map<String, dynamic>?> showPaymentMethodForm(
   required List<MoneyRail> rails,
   required Map<String, List<MoneyMethodField>> sheets,
   required Map<String, List<MoneyPaymentOption>> options,
+  MoneyCurrencies currencies = const MoneyCurrencies(main: ""),
   MoneyMethod? method
 }) => showSideModal(
   context: context,
@@ -61,6 +72,7 @@ Future<Map<String, dynamic>?> showPaymentMethodForm(
     rails: rails,
     sheets: sheets,
     options: options,
+    currencies: currencies,
     method: method
   )
 ).then((value) => value is Map<String, dynamic> ? value : null);
@@ -72,6 +84,7 @@ class PaymentMethodFormModal extends StatefulWidget {
     required this.rails,
     required this.sheets,
     required this.options,
+    this.currencies = const MoneyCurrencies(main: ""),
     this.method
   });
 
@@ -86,6 +99,11 @@ class PaymentMethodFormModal extends StatefulWidget {
   /// The lists the closed fields are filled from (`banks`, `documents`,
   /// `networks`), already narrowed to the company's country.
   final Map<String, List<MoneyPaymentOption>> options;
+
+  /// What the company can price: an account in any other currency would take
+  /// money nothing converts. Empty when the setup did not arrive, and then the
+  /// currency is not asked (the backend reads a missing one as the main).
+  final MoneyCurrencies currencies;
 
   /// The account being edited, or null when one is being added.
   final MoneyMethod? method;
@@ -173,6 +191,38 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
     initial: widget.method?.instructions
   );
 
+  /// The currency the account takes, when the rail leaves it to the company.
+  late final _currency = InputController.select(
+    key: "CURRENCY",
+    form: _form,
+    initial: _initialCurrency()
+  );
+
+  /// How the commission is charged. Its own form, like the value beside it:
+  /// neither is required, and both are checked by hand in [_readFee].
+  final _feeForm = FormController();
+
+  late MoneyFeeType _feeType = widget.method?.fee.type ?? MoneyFeeType.none;
+
+  late final _feeTypeInput = InputController.select(
+    key: "FEE_TYPE",
+    form: _feeForm,
+    initial: _feeType.value
+  );
+
+  late final _feeValue = InputController(
+    key: "FEE",
+    form: _feeForm,
+    pattern: "[0-9.,]",
+    initial: widget.method == null || widget.method!.fee.isNone
+      ? null
+      : _plain(widget.method!.fee.value),
+    customErrors: {
+      InputError.empty: S.of(context).finance_method_fee_error,
+      InputError.invalid: S.of(context).finance_method_fee_error
+    }
+  );
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -189,6 +239,7 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
   @override
   void dispose() {
     _account.dispose();
+    _feeForm.dispose();
     _form.dispose();
     super.dispose();
   }
@@ -258,6 +309,8 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
             leftIcon: Icon(CI.bookmark, color: scheme.icon)
           ),
           ..._accountInputs(context),
+          ..._currencyInputs(context),
+          _feeInputs(context),
           Input(
             title: _title(
               context,
@@ -280,6 +333,177 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
       )
     );
   }
+
+  /// The rail being added or edited, when the catalog has it.
+  MoneyRail? get _railOf {
+    for (final rail in widget.rails) {
+      if (rail.code == _code) return rail;
+    }
+
+    return null;
+  }
+
+  /// The currency the rail moves, when it only moves one.
+  String get _railCurrency => _railOf?.currency ?? "";
+
+  /// What the currency starts as: what the row holds, else the main one —
+  /// which is what an account with none is read as.
+  String? _initialCurrency() {
+    final stored = widget.method?.currency ?? "";
+    if (stored.isNotEmpty) return stored;
+
+    final main = widget.currencies.main;
+    return main.isEmpty ? null : main;
+  }
+
+  /// The currency the account ends up in: the rail's when it has one, the
+  /// picked one otherwise.
+  String get _chosenCurrency =>
+    _railCurrency.isNotEmpty ? _railCurrency : _currency.value.trim();
+
+  /// The currency field, or the rail's fixed one, plus a warning when it is one
+  /// the company cannot price: a Pago Movil in bolivars with no bolivar rate
+  /// configured takes money the charge cannot be converted into.
+  List<Widget> _currencyInputs(BuildContext context) {
+    final codes = widget.currencies.codes;
+    if (_code.isEmpty || codes.isEmpty) return const [];
+
+    final scheme = ThemeColor.of(context);
+    final catalog = CurrencyCatalogService();
+    final chosen = _chosenCurrency;
+
+    return [
+      if (_railCurrency.isNotEmpty)
+        _Note(
+          icon: CI.wallet,
+          text: S.of(context).finance_method_currency_fixed(
+            _currencyTitle(catalog.resolve(_railCurrency))
+          )
+        )
+      else
+        SelectInput(
+          title: S.of(context).finance_method_currency,
+          placeholder: S.of(context).finance_method_currency_placeholder,
+          controller: _currency,
+          options: [
+            for (final code in codes) SelectOption(
+              value: code,
+              placeholder: _currencyTitle(catalog.resolve(code)),
+              subtitle: code == widget.currencies.main
+                ? S.of(context).finance_currency_main
+                : null,
+              chosen: code
+            )
+          ],
+          emptyText: S.of(context).finance_select_empty,
+          searchable: false,
+          leftIcon: Icon(CI.wallet, color: scheme.icon),
+          // Redrawn: the commission's amount is in this currency.
+          onSelected: (_) => setState(() {})
+        ),
+      if (chosen.isNotEmpty && !codes.contains(chosen))
+        _Note(
+          icon: CI.info,
+          alert: true,
+          text: S.of(context).finance_method_currency_missing(chosen)
+        )
+    ];
+  }
+
+  String _currencyTitle(CurrencyModel currency) =>
+    "${currency.code} - ${currency.name}";
+
+  /// The commission: how it is charged and how much. The amount box is only
+  /// drawn once there is a commission, and the option says what it is
+  /// measured in — the account's currency, or a percentage.
+  Widget _feeInputs(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final currency = _chosenCurrency.isNotEmpty
+      ? _chosenCurrency
+      : widget.currencies.main;
+
+    final type = SelectInput(
+      flex: 3,
+      placeholder: S.of(context).finance_method_fee_none,
+      controller: _feeTypeInput,
+      options: [
+        SelectOption(
+          value: MoneyFeeType.none.value,
+          placeholder: S.of(context).finance_method_fee_none
+        ),
+        SelectOption(
+          value: MoneyFeeType.percent.value,
+          placeholder: S.of(context).finance_method_fee_percent
+        ),
+        SelectOption(
+          value: MoneyFeeType.fixed.value,
+          placeholder: currency.isEmpty
+            ? S.of(context).finance_method_fee_fixed
+            : S.of(context).finance_method_fee_fixed_in(currency)
+        )
+      ],
+      emptyText: S.of(context).finance_select_empty,
+      searchable: false,
+      onSelected: (option) => setState(
+        () => _feeType = MoneyFeeType.from(option.value)
+      )
+    );
+
+    final title = _title(
+      context,
+      S.of(context).finance_method_fee,
+      required: false
+    );
+
+    if (_feeType == MoneyFeeType.none) {
+      return InputRow(title: title, children: [type]);
+    }
+
+    return InputRow(
+      title: title,
+      spacing: AppSize.gap,
+      children: [
+        type,
+        Input(
+          flex: 2,
+          placeholder: _feeType == MoneyFeeType.percent ? "3" : "0.00",
+          controller: _feeValue,
+          leftIcon: Icon(CI.discount, color: scheme.icon)
+        )
+      ]
+    );
+  }
+
+  /// The commission as it was typed, or null when what was typed is not one
+  /// (the box is flagged and focused). A percentage is under a hundred: a
+  /// commission of the whole sale is a typo, not a rail.
+  MoneyFee? _readFee() {
+    if (_feeType == MoneyFeeType.none) return const MoneyFee();
+
+    final value = CurrencyModel.parse(_feeValue.text.trim());
+    final valid = value != null &&
+      value > 0 &&
+      (_feeType != MoneyFeeType.percent || value < 100);
+
+    if (!valid) {
+      _feeValue.status.setStatus(
+        InputStatus.error,
+        _feeValue.text.trim().isEmpty ? InputError.empty : InputError.invalid
+      );
+      _feeValue.focus.requestFocus();
+
+      return null;
+    }
+
+    _feeValue.status.setStatus(InputStatus.valid, null);
+
+    return MoneyFee(type: _feeType, value: value);
+  }
+
+  /// A figure as it is typed back: no grouping, no trailing zeros.
+  static String _plain(double value) => value
+    .toStringAsFixed(4)
+    .replaceFirst(RegExp(r"\.?0+$"), "");
 
   /// The middle of the form: what this rail asks for, in the order it asks.
   ///
@@ -487,6 +711,13 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
     if (!_isEdit && !_rail.validate(_rail)) return;
     if (!_account.validate()) return;
 
+    final fee = _readFee();
+    if (fee == null) return;
+
+    // Only when the form asked: with no setup to pick from, nothing is sent and
+    // the backend keeps (or assumes) the main currency.
+    final currency = widget.currencies.codes.isEmpty ? null : _chosenCurrency;
+
     final fields = {
       for (final field in _fields) field.field: _value(field)
     };
@@ -501,13 +732,17 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
           // it does not name ends up empty on the row anyway.
           label: _label.text,
           instructions: _instructions.text,
-          fields: fields
+          fields: fields,
+          currency: currency,
+          fee: fee
         )
       : createMoneyMethodRequest(
           code: _rail.value,
           label: _label.text,
           instructions: _instructions.text,
-          fields: fields
+          fields: fields,
+          currency: currency ?? "",
+          fee: fee
         ));
   }
 
@@ -695,6 +930,41 @@ class _NoFields extends StatelessWidget {
           Expanded(child: TextSmall(
             S.of(context).finance_method_nothing,
             lines: 2,
+            color: scheme.text.secondary
+          ))
+        ])
+      )
+    );
+  }
+}
+
+/// A line of the form that is read, not filled in: the currency a rail is
+/// fixed to, or the warning that the one picked has no rate.
+class _Note extends StatelessWidget {
+  const _Note({required this.icon, required this.text, this.alert = false});
+
+  final IconData icon;
+  final String text;
+  final bool alert;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppSize.spaceXS),
+      child: Surface.over(
+        padding: EdgeInsets.all(AppSize.spaceXS),
+        child: Row(children: [
+          Icon(
+            icon,
+            size: AppSize.text,
+            color: alert ? scheme.snackBar.alert : scheme.icon
+          ),
+          SizedBox(width: AppSize.gap),
+          Expanded(child: TextSmall(
+            text,
+            lines: 3,
             color: scheme.text.secondary
           ))
         ])

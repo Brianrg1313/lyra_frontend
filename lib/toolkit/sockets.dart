@@ -1,6 +1,7 @@
 import 'package:core/socket.dart';
 
 // SERVICES
+import 'package:app/toolkit/api.dart' show devHost, useCookieSession;
 import 'package:app/services/database/database_service.dart';
 
 /// The app's socket connection.
@@ -30,7 +31,7 @@ class _Sockets extends SocketAPI {
   /// gets the handshake rejected with "Invalid namespace".
   @override
   ApiModel get dev => ApiModel(
-    host: "192.168.1.103",
+    host: devHost,
     name: "/",
     port: 80,
     scheme: "http",
@@ -51,7 +52,11 @@ class _Sockets extends SocketAPI {
   /// yet (cold start, the session was opened in an earlier run) it's
   /// recovered from secure storage before the first handshake.
   @override
+  bool get cookieSession => useCookieSession;
+
+  @override
   Future<void> preConnect() async {
+    if (useCookieSession) return;
     token ??= await _database.fromSecure<String>(current.tokenName);
   }
 }

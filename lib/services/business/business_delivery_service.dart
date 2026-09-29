@@ -12,8 +12,8 @@ enum BusinessDeliveryStatus { idle, loading, ready, error }
 /// (`/business/delivery/`, `/business/delivery/options/`) and the carriers it
 /// may pick from (`/business/delivery/providers/`).
 ///
-/// Provided by the business page, like `BusinessLocationService` and for the
-/// same reasons: every endpoint answers for the business in the `business_id`
+/// Provided by the delivery settings page (`DeliverySettingsSection`), not
+/// app-wide: every endpoint answers for the business in the `business_id`
 /// header, and a business switch remounts the page.
 ///
 /// Every write rereads the whole answer instead of patching it: `delivers` is
@@ -94,6 +94,15 @@ class BusinessDeliveryService extends ChangeNotifier {
       path: "/business/delivery/",
       version: "v1",
       data: deliveryFlagRequest(flag, value)
+    ));
+
+  /// Sets whether its delivery areas are fixed or flexible (meet a customer
+  /// outside them at the nearest spot it reaches).
+  Future<bool> setMeeting(BuildContext context, bool value) =>
+    _write(context, () => api.put(
+      path: "/business/delivery/",
+      version: "v1",
+      data: deliveryMeetingRequest(value)
     ));
 
   /// Sets the company's sentence about delivery; empty erases it.

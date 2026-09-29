@@ -2,6 +2,7 @@ import 'package:core/navis/navis.dart';
 
 // SERVICES
 import 'package:app/toolkit/settings/initial_builder.dart';
+import 'package:app/services/preferences/preferences_service.dart';
 
 Future<String?> initialValidator() async {
   final page = await clientService.resolve();
@@ -15,7 +16,5 @@ Future<String?> initialValidator() async {
     return deepLink;
   }
 
-  // TODO: once the business concept exists, split off the destination for a
-  // client that does not have one yet.
-  return "/home";
+  return PreferencesService().homePath;
 }

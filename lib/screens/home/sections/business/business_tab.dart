@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// SERVICES
+import 'package:app/services/permissions/permissions_service.dart';
+
 import './branches/_branches.dart';
 import './clients/_clients.dart';
-import './delivery/_delivery.dart';
 import './employees/_employees.dart';
-import './location/_location.dart';
 import './settings/_settings.dart';
 import './statistics/_statistics.dart';
 
 /// The parts of a business that can be looked at from its page.
 ///
 /// They are views of the **same** business —how it is doing, who works in it,
-/// where it operates, where it is, how it delivers, who it sells to and how it
+/// where it operates and from which branches, who it sells to and how it
 /// is configured—, not different screens: that is why they are tabs of one page
 /// and not side bar
 /// sections. You switch from one to another without requesting the business
@@ -31,8 +32,6 @@ enum BusinessTab {
   statistics(key: "statistics", icon: CI.chart),
   employees(key: "employees", icon: CI.employee),
   branches(key: "branches", icon: CI.shop),
-  location(key: "location", icon: CI.globe_shopping),
-  delivery(key: "delivery", icon: CI.delivery),
   clients(key: "clients", icon: CI.user),
   settings(key: "settings", icon: CI.setting);
 
@@ -58,6 +57,18 @@ enum BusinessTab {
   /// tab.
   String get routeKey => "business_$key";
 
+  /// Permission area of this tab (`docs/app-areas.json`): `business.<key>`. Its `view` opens it.
+  String get area => "business.$key";
+
+  /// Tab the bare section opens: [initial], unless it is not granted in the active company,
+  /// then the first one that is. With none granted it is [initial], which shows it is locked.
+  static BusinessTab get opening {
+    final permissions = PermissionsService();
+    if (permissions.canOpen(initial.area)) return initial;
+
+    return values.firstWhere((tab) => permissions.canOpen(tab.area), orElse: () => initial);
+  }
+
   /// URL of this tab for the business [businessId]. It is the only source of
   /// the `url` of its route and of the link copied from the browser bar.
   String path(String businessId) => "/home/business/$businessId/$key";
@@ -74,20 +85,20 @@ enum BusinessTab {
     statistics => S.of(context).business_tab_statistics,
     employees => S.of(context).business_tab_employees,
     branches => S.of(context).business_tab_branches,
-    location => S.of(context).business_tab_location,
-    delivery => S.of(context).business_tab_delivery,
     clients => S.of(context).business_tab_clients,
     settings => S.of(context).business_tab_settings
   };
 
-  /// Body of the tab. It goes inside the page's surface, so **none brings its
-  /// own**: what each one draws is its bare content.
+  /// Whether the tab draws its own surface. Split-panel tabs do, so they can
+  /// inset a panel inside it; the page skips its single surface for them.
+  bool get ownsSurface => this == employees;
+
+  /// Body of the tab. It goes inside the page's surface, unless it
+  /// [ownsSurface]: then what it draws is already its sheet.
   Widget build() => switch (this) {
     statistics => const BusinessStatisticsTab(),
     employees => const BusinessEmployeesTab(),
     branches => const BusinessBranchesTab(),
-    location => const BusinessLocationTab(),
-    delivery => const BusinessDeliveryTab(),
     clients => const BusinessClientsTab(),
     settings => const BusinessSettingsTab()
   };

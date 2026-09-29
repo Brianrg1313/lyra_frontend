@@ -5,22 +5,26 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/business/business_service.dart';
+import 'package:app/services/business/business_employees_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/section_message.dart';
 
-/// Employees tab: the people who enter the company, with which rank and what
-/// each one can do.
+import './employee_detail.dart';
+import './employee_list.dart';
+
+/// Employees tab: one sheet split in two panels (the tab draws that sheet
+/// itself, see `BusinessTab.ownsSurface`). On the left, the main one,
+/// everyone who works here — the viewer's own card first — with where
+/// each one stands; on the right, everything about the person selected there.
 ///
-/// For now the only thing there is is how many they are. That number lived in
-/// the profile and moved here, which is its section: the company's identity
-/// card should not have to carry a count that nobody is looking at.
+/// Who is open is state of the tab and not a URL, like the open chat of the
+/// messages desk: people are switched constantly while working, and a route
+/// per person would stack history nobody walks back through. The first read
+/// opens the viewer's own card.
 ///
-/// Who they are is still not modeled on the other side, so below the number
-/// the notice stays. The tab shows anyway, and it does not hide, for the same
-/// reason the side bar leaves blocked sections in view: so that it is seen
-/// from day one what parts a business is made of.
+/// The lists are `BusinessEmployeesService`, provided by the business page:
+/// switching tabs keeps what was read.
 class BusinessEmployeesTab extends StatefulWidget {
   const BusinessEmployeesTab({super.key});
 
@@ -33,69 +37,74 @@ class _BusinessEmployeesTabState extends State<BusinessEmployeesTab> {
   void initState() {
     super.initState();
 
-    // It is deferred to the first frame because the load notifies the service,
-    // and notifying while the tree is mounting is a rebuild in the middle of a
+    // Deferred to the first frame: the load notifies the service, and
+    // notifying while the tree is mounting is a rebuild in the middle of a
     // build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<BusinessService>().loadEmployees();
+      if (mounted) context.read<BusinessEmployeesService>().load();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final service = context.watch<BusinessService>();
+    final service = context.watch<BusinessEmployeesService>();
 
-    return switch (service.employeesStatus) {
-      BusinessEmployeesStatus.error => SectionMessage(
+    return switch (service.status) {
+      BusinessEmployeesStatus.ready => Surface(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(flex: 3, child: Padding(
+              padding: EdgeInsets.all(AppSize.padding),
+              child: const EmployeeList()
+            )),
+            // Inset by the gap and lined like the side bar, so the detail
+            // reads as a panel over the sheet instead of a second sheet.
+            Expanded(flex: 2, child: Padding(
+              padding: EdgeInsets.all(AppSize.padding),
+              child: Surface.line(
+                color: ThemeColor.of(context).surfaceOver,
+                radius: AppSize.cornerInset(AppSize.gap),
+                child: _Selected(service: service)
+              )
+            ))
+          ]
+        )),
+      // Same sheet while there are no panels to split it into.
+      BusinessEmployeesStatus.error => Surface(child: SectionMessage(
         icon: CI.info,
         title: S.of(context).business_employees_error_title,
         subtitle: S.of(context).business_employees_error_subtitle,
-        action: () => service.loadEmployees(force: true),
+        action: () => service.load(force: true),
         actionLabel: S.of(context).business_list_retry
-      ),
-      BusinessEmployeesStatus.ready => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _Count(total: service.employees),
-          SizedBox(height: AppSize.padding),
-          // The notice takes what is left: the tab remains, above all, the list that
-          // is still missing.
-          Expanded(child: SectionMessage(
-            icon: CI.employee,
-            title: S.of(context).coming_soon,
-            subtitle: S.of(context).business_employees_soon
-          ))
-        ]
-      ),
-      _ => const Center(child: Loading())
+      )),
+      _ => const Surface(child: Center(child: Loading()))
     };
   }
 }
 
-/// How many people enter the company, as a card.
-///
-/// It is data and not a title: it goes on its own surface —a block on the
-/// body's sheet, like the profile's— and not loose over the notice.
-class _Count extends StatelessWidget {
-  const _Count({required this.total});
+/// The right panel, keyed by the person so each one mounts its own and asks
+/// for their own detail.
+class _Selected extends StatelessWidget {
+  const _Selected({required this.service});
 
-  final int total;
+  final BusinessEmployeesService service;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
+    final employee = service.selected;
 
-    return Surface.over(
-      padding: EdgeInsets.all(AppSize.padding),
-      child: Row(children: [
-        Icon(CI.employee, size: AppSize.text, color: scheme.text.secondary),
-        SizedBox(width: AppSize.spaceXS),
-        Expanded(child: TextSmall(
-          S.of(context).business_employees_total,
-          color: scheme.text.secondary
-        )),
-        TextLarge("$total")
-      ])
+    if (employee == null) {
+      return SectionMessage(
+        icon: CI.employee,
+        title: S.of(context).employees_select_title,
+        subtitle: S.of(context).employees_select_subtitle
+      );
+    }
+
+    return EmployeeDetailPanel(
+      key: ValueKey("employee_${employee.key}"),
+      employee: employee
     );
   }
 }

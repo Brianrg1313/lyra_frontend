@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
+
+// SERVICES
+import 'package:app/services/client/client_service.dart';
 
 class SignOut extends StatelessWidget {
   const SignOut({
@@ -30,7 +34,7 @@ class SignOut extends StatelessWidget {
     height: AppSize.action,
     child: Row(children: [
       Expanded(child: FeedbackButton(
-        action: _signOut,
+        action: () => _signOut(context),
         height: AppSize.action,
         message: S.of(context).sign_out,
         color: _co,
@@ -71,7 +75,7 @@ class SignOut extends StatelessWidget {
         Separator.horizontal(size: AppSize.action),
         FeedbackButton(
           color: _co,
-          action: _signOut,
+          action: () => _signOut(context),
           feedbackColor: _co,
           width: AppSize.action,
           height: AppSize.action,
@@ -89,7 +93,6 @@ class SignOut extends StatelessWidget {
     child: const Icon(CI.arrow_right)
   );
 
-  void _signOut() {
-    // TODO: sign out
-  }
+  void _signOut(BuildContext context) =>
+    context.read<ClientService>().signOut(context);
 }

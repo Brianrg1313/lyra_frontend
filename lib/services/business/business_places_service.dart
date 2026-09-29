@@ -29,6 +29,12 @@ enum BusinessPlacesStatus { idle, searching, ready, empty, error, unavailable }
 /// Principal con calle 3, edificio Sol" worst exactly where this platform
 /// sells.
 class BusinessPlacesService extends ChangeNotifier {
+  BusinessPlacesService({this.restrictTo = ""});
+
+  /// ISO country the answers are restricted to in place of the company's (an
+  /// employee's home is searched where they live). Empty: the company's.
+  final String restrictTo;
+
   BusinessPlacesStatus _status = BusinessPlacesStatus.idle;
   List<PlaceSuggestion> _suggestions = const [];
 
@@ -103,7 +109,11 @@ class BusinessPlacesService extends ChangeNotifier {
       data = await api.get(
         path: "/business/location/search/",
         version: "v1",
-        query: {"Q": text, "SESSION": _session}
+        query: {
+          "Q": text,
+          "SESSION": _session,
+          if (restrictTo.isNotEmpty) "COUNTRY": restrictTo
+        }
       );
     } catch (error) {
       if (kDebugMode) print("searchPlaces failed: $error");

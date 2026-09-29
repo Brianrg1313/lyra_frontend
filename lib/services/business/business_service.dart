@@ -11,14 +11,12 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/toolkit/api.dart';
 
 /// Status of loading the active business's profile (`/business/profile/`).
 enum BusinessProfileStatus { idle, loading, ready, error }
-
-/// Status of loading the active business's people
-/// (`/business/employees/`).
-enum BusinessEmployeesStatus { idle, loading, ready, error }
 
 /// Name of the form field the logo travels under. The backend decides it:
 /// it's the one its multipart reads, and with any other name the request
@@ -111,8 +109,14 @@ class BusinessService extends ChangeNotifier {
   /// listening yet.
   void seed(dynamic table) {
     _businesses = BusinessModel.fromTable(table);
-    _active = _businesses.isEmpty ? null : _businesses.first;
+
+    // The one this account last worked in, while it still has access to it.
+    final last = PreferencesService().lastBusiness;
+    _active = (last != null ? byId(last) : null)
+      ?? (_businesses.isEmpty ? null : _businesses.first);
+
     useBusiness(_active?.id);
+    PreferencesService().useBusiness(_active?.id);
   }
 
   /// Changes the active business. Ignores unknown identifiers.
@@ -122,6 +126,7 @@ class BusinessService extends ChangeNotifier {
 
     _active = _businesses[index];
     useBusiness(_active!.id);
+    PreferencesService().useBusiness(_active!.id);
 
     // The socket's rooms were joined in its handshake, for the business that
     // was active then; the new one only travels in a new handshake.
@@ -165,7 +170,10 @@ class BusinessService extends ChangeNotifier {
     );
 
     _businesses = [..._businesses, _active!];
+    // Its creator owns it; `/init` would say so, but it is not reread here.
+    PermissionsService().own(_active!.id);
     useBusiness(_active!.id);
+    PreferencesService().useBusiness(_active!.id);
 
     // Same as a switch — and for a first business the socket may not be up at
     // all: a handshake with no business is refused, and never retried.
@@ -242,72 +250,6 @@ class BusinessService extends ChangeNotifier {
 
     _profile = BusinessProfileModel.fromJson(data);
     _profileStatus = BusinessProfileStatus.ready;
-
-    notifyListeners();
-  }
-
-  // ─── People (comes from /business/employees/) ───────────────────────────────
-
-  BusinessEmployeesStatus _employeesStatus = BusinessEmployeesStatus.idle;
-  int _employees = 0;
-
-  /// Business that what's loaded in [_employees] belongs to, for the same
-  /// reason as [_profileOwner]: the endpoint answers for the active one.
-  String? _employeesOwner;
-
-  BusinessEmployeesStatus get employeesStatus => _employeesStatus;
-
-  /// How many people belong to the active business.
-  int get employees => _employees;
-
-  /// Loads the active business's people.
-  ///
-  /// Today it only brings the count: who they are, with what rank, and
-  /// what each one can do isn't modeled on the other side yet, so the list
-  /// arrives empty and isn't stored here. Once they exist, they'll be read
-  /// from the same response.
-  ///
-  /// This number used to live in the profile and was moved out: it belongs
-  /// to the business's people, not to its ID card, and whoever opens the
-  /// card to fix the phone number shouldn't have to pay for a count nobody
-  /// is looking at.
-  ///
-  /// It's cached like the rest: as long as the active business doesn't
-  /// change it isn't requested again unless [force] is requested.
-  Future<void> loadEmployees({bool force = false}) async {
-    final id = activeId;
-
-    if (id == null) return;
-
-    if (_employeesStatus == BusinessEmployeesStatus.loading) return;
-    if (!force && _employeesStatus == BusinessEmployeesStatus.ready) return;
-
-    _employeesOwner = id;
-    _employeesStatus = BusinessEmployeesStatus.loading;
-    notifyListeners();
-
-    final data = await api.get(
-      path: "/business/employees/",
-      version: "v1"
-    ).catchError((E) {
-      if (kDebugMode) {
-        print(E);
-      }
-      return null;
-    });
-
-    // The active business may have changed while this was being requested:
-    // what arrived belongs to the previous one.
-    if (activeId != id || _employeesOwner != id) return;
-
-    if (data is! Map) {
-      _employeesStatus = BusinessEmployeesStatus.error;
-      notifyListeners();
-      return;
-    }
-
-    _employees = int.tryParse("${data["total"]}") ?? 0;
-    _employeesStatus = BusinessEmployeesStatus.ready;
 
     notifyListeners();
   }
@@ -524,9 +466,9 @@ class BusinessService extends ChangeNotifier {
   /// Rereads the profile in place, after a write made **elsewhere** that
   /// changes it.
   ///
-  /// The location tab writes the same `address` column this profile shows:
-  /// without this, the settings tab keeps the old address until the business
-  /// is opened again.
+  /// Another endpoint can write columns this profile shows (`address`,
+  /// `country`): without this, the settings tab keeps the old value until the
+  /// business is opened again.
   Future<void> refreshProfile() => _reloadProfile();
 
   /// Rereads the profile without going through `loading`.
@@ -615,23 +557,20 @@ class BusinessService extends ChangeNotifier {
     );
   }
 
-  /// Discards whatever is loaded for a business: its profile and its
-  /// people. Doesn't notify: it's called by whoever is already going to
+  /// Discards whatever is loaded for a business: its profile.
+  /// Doesn't notify: it's called by whoever is already going to
   /// notify on their own (a business change, a signup, logging out).
   void _forgetLoaded() {
     _profile = null;
     _profileOwner = null;
     _profileStatus = BusinessProfileStatus.idle;
-
-    _employees = 0;
-    _employeesOwner = null;
-    _employeesStatus = BusinessEmployeesStatus.idle;
   }
 
   void clear() {
     _businesses = const [];
     _active = null;
     useBusiness(null);
+    PreferencesService().useBusiness(null);
     _forgetLoaded();
     notifyListeners();
   }

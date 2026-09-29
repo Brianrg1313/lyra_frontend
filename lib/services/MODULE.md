@@ -15,18 +15,27 @@ explicit `context.read` helpers). Screens read services through `provider`.
 - App-wide services: `lib/toolkit/settings/initial_builder.dart`. Scoped ones are created by
   their screen: `SignInService`/`SignUpService` (auth pages), `money/` (finance section),
   `sales/` (sales section), `pos/` (POS page). Their state belongs to the active company and
-  is dropped on leaving.
+  is dropped on leaving. `chats/` (messages section) and `maps/` (deliveries section) too.
 - Socket seams for tests: `seed(...)` / `receive(...)`, `@visibleForTesting`.
 
 ## business/
 
-- `business_service.dart` — `BusinessService` (+ `BusinessProfileStatus`,
-  `BusinessEmployeesStatus`): companies from `/init/`, the **active** one (every change goes
-  through `useBusiness`, then `ConnectionService().rebind()`), create, profile, employees,
+- `business_service.dart` — `BusinessService` (+ `BusinessProfileStatus`): companies from `/init/`,
+  the **active** one (every change goes through `useBusiness`, then `ConnectionService().rebind()`), create, profile,
   logo (`/business/logo/`, multipart `FILE`), emails. `currency`/`currencyCode` via
   `CurrencyCatalogService`.
 - `business_model.dart` — `BusinessModel`: the light business from `/init/`.
 - `business_profile_model.dart` — `BusinessProfileModel`, `BusinessActivity`, `BusinessVerification`.
+- `business_employee_model.dart` — `BusinessEmployeeModel` (a row of `GET /business/employees/` or `.../former/`,
+  compressed; the viewer's card forced first, kept without an id; `email` only on an invitation to an email with no account), `EmployeeState`, `EmployeeContract`, `EmployeeLeaveType`,
+  `EmployeeWorkStatus` (`working` / `notStarted` / away + leave type), `employeeDay` (calendar day, no time zone).
+- `business_employee_detail_model.dart` — `BusinessEmployeeDetail` (`GET /business/employees/detail/:ID`): `EmployeePerson`
+  (private fields empty unless `fullProfile`), `EmployeeJob` (`salary` null ≠ 0), `EmployeeManager`, `EmployeeLeave`,
+  `EmployeeSpan`, `EmployeeEnding`, and the workday/period/contract-status/end-reason/document/sex enums.
+- `business_employees_service.dart` — `BusinessEmployeesService` (+ `BusinessEmployeesStatus`, `EmployeeDetailStatus`):
+  current + former lists (a failed former read leaves it empty), `total` = active count, selection (first read opens the
+  viewer), details cached per id, `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
+  and opens it). Provided by the business page. Seam `seed`.
 - `business_email_model.dart` — `BusinessEmailModel`, `BusinessEmailPurpose`.
 - `business_language.dart` — `BusinessLanguage`.
 - `business_location_model.dart` — `BusinessLocationModel`: written address **and** map point, two facts
@@ -34,20 +43,31 @@ explicit `context.read` helpers). Screens read services through `provider`.
 - `business_location_request.dart` — `updateLocationRequest` (**only what changed**; empty travels as `null`
   = erase), `parseLocationPoint` (the pair, a decimal comma, or a map link), `LocationPoint`. `COUNTRY` travels
   in this body: the backend hands that one key to the company's own write (clock, payment rails, carriers).
-- `business_location_service.dart` — `BusinessLocationService` (+ status): `GET`/`PUT /business/location/`.
+- `business_location_service.dart` — `BusinessLocationService` (+ status): `GET`/`PUT /business/location/` (the main
+  branch's). Owned by the deliveries section and the branch form, not app-wide; no screen writes it (branches are edited
+  through `BusinessBranchesService`).
+- `business_branch_model.dart` — `BusinessBranchModel`: one row of `GET /business/branches/` (compressed); no country (the company's).
+- `business_branch_request.dart` — `BranchDraft` (what the form collects), `createBranchRequest` (empty texts not sent, flags always), `editBranchRequest` (`ID` + **only what changed**; an emptied text travels as `""` = erase, `MAIN` only as `true`, a removed point as both `""`). Points at 6 decimals, as a pair.
+- `business_branches_service.dart` — `BusinessBranchesService` (+ status): `GET`/`POST`/`PUT /business/branches/`, rereads after a write.
   Provided by the business page, not app-wide.
 - `business_places_model.dart` — `PlaceSuggestion`, `PlaceModel`: the address search's answers, a picked place
   already in the shape of the form. A suggestion with no id is dropped; half a point is no point.
 - `business_places_service.dart` — `BusinessPlacesService` (+ status): `/business/location/search/` and
   `/business/location/place/`. **Owned by the panel that searches**, not provided: it holds one editing session
   (the Places token). `unavailable` is a server with no key, not a failure — the form's fields are the answer
-  on their own.
+  on their own. `restrictTo` searches another country than the company's (`COUNTRY`).
 - `business_delivery_model.dart` — `BusinessDeliveryModel`, `DeliveryOption`, `DeliveryZone`, `DeliveryMode`,
-  `DeliveryCoverage`, `DeliveryProvider`, `DeliveryCatalog`, `DeliveryEtaUnit`. `delivers`/`pickup` three-state.
-- `business_delivery_request.dart` — `DeliveryFlag`, `deliveryFlagRequest`, `deliveryNotesRequest`,
+  `DeliveryCoverage`, `DeliveryProvider`, `DeliveryCatalog`, `DeliveryEtaUnit`. `delivers`/`pickup` three-state, `meeting` two-state.
+- `business_delivery_request.dart` — `DeliveryFlag`, `deliveryFlagRequest`, `deliveryMeetingRequest`, `deliveryNotesRequest`,
   create/update/remove option bodies, `readDeliveryAmount` (refuses `1,500`, like the backend).
 - `business_delivery_service.dart` — `BusinessDeliveryService` (+ status): the answer, its options and the
-  carrier catalog (`/delivery/providers/`, read by the form only). Provided by the business page.
+  carrier catalog (`/delivery/providers/`, read by the form only). Provided by the delivery settings page (deliveries section).
+- `delivery_area_model.dart` — `DeliveryAreasModel` (`holding(point)`: active, cheapest first), `DeliveryArea` (`radius` | `polygon`,
+  fee, minimum, active), `DeliveryAreaKind`, `DeliveryTravelMode`; `readRing`, `ringContains` (same ray casting as the backend),
+  `ringSquareKm`, `simplifyRing` (`limit:` raises the tolerance until it fits), `maxRingPoints` (the backend's 250).
+- `delivery_area_request.dart` — create/update/active/remove bodies; only the kind's shape travels, coordinates `{LATITUDE, LONGITUDE}` at 6 decimals.
+- `delivery_areas_service.dart` — `DeliveryAreasService` (+ status, `limit = 20`): `/business/delivery/areas/`,
+  `travelShape` (`POST /scorpius/v1/isochrone` → largest outline, simplified). Provided by the delivery area page.
 
 ## catalog/ — platform configuration from `/init/`
 
@@ -59,8 +79,15 @@ explicit `context.read` helpers). Screens read services through `provider`.
 ## client/
 
 - `client_service.dart` — `ClientService.resolve()`: reads `/init/` before the tree exists
-  (for `initialValidator`), fills `businessService` and the catalogs, returns the landing route or `null`.
+  (for `initialValidator`), fills `businessService` and the catalogs, returns the landing route or `null` (the first pending task's `route` wins over the home; `employment.invitation` is skipped when the person already has a company).
+  `signOut(context)`: `POST /authentication/logout/` (best effort, 5 s), drops the token, clears the sidecar's
+  credentials, goes to `/login`, then `clear()`s every session service. A new session service with a cache → add it there.
+  The same teardown runs when the backend rejects the session mid-use (`onSessionRejected`), without the logout call, plus a `session_expired` flag.
+  With `useCookieSession` a failed logout aborts the sign out (only the backend can clear the cookie).
+  `acceptInvitation(id)`: `PUT /profile/employments/` with `ACTION: accept`; throws the api error.
 - `client_model.dart` — `ClientModel`.
+- `employment_invitation_model.dart` — `EmploymentInvitation`: one invitation of the `employment.invitation` task.
+- `client_task.dart` — `ClientTask` (`invitations`), `ClientTaskKey` (backend key → pre-start route; `null` = no screen yet): `/init`'s `tasks`.
 
 ## connection/ — the realtime link (singular)
 
@@ -103,7 +130,7 @@ See `baileys_server/MODULE.md` for the server side.
 - `baileys_service.dart` — `BaileysService` (app-wide, idle until a WhatsApp Personal channel asks):
   `activate(id)` (launch if needed + start), `deactivate(id)` (soft stop), `refresh(ids)` (silent
   read on grid load), `watch(id, until:)` (pairing poll), `unlink(id)` (hard stop, auth wiped,
-  new QR needed; falls back to `remove`). Subscribes to `/events` → `statusOf`, logs inbound
+  new QR needed; falls back to `remove`), `signOut()` (sessions keep running, sidecar credentials cleared). Subscribes to `/events` → `statusOf`, logs inbound
   messages in debug. Owns the control API key (generated once, secure storage, passed as
   `CONTROL_API_KEY` on spawn). `_identify(client)` pushes this app's session to the sidecar before
   every activation/refresh — the only credential the backend accepts from it.
@@ -127,9 +154,26 @@ See `baileys_server/MODULE.md` for the server side.
 - `file_model.dart` — `FileModel`, `FileScope`.
 - `image_file.dart` — `pickImageBytes()`, `writeTempImage(bytes)`, `discardTempImage(file)`.
 
+## permissions/
+
+- `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree, ids of
+  `docs/app-areas.json`). `can(id)`, `canOpen(area)` on the active company by default; absent on the path = denied, account
+  areas (`dashboard`) always open, not loaded (older backend) = nothing hidden. `own(id)` after `createBusiness`. Cleared on sign out.
+- `permission_requests_service.dart` — `PermissionRequestsService` (+ status): `GET`/`POST /permissions/requests/` (active company), `isPending(id)`.
+  Owned by `NoPermissionSection`. A `409` rereads the list and `/init` (`refreshCatalogs`) before rethrowing. Seam `seed`.
+- `permission_request_model.dart` — `PermissionRequestModel`, `PermissionRequestState` (`granted` = held now, measured on read).
+- `permission_request.dart` — `requestPermissionRequest` (`REASON` only when not blank), `kPermissionReasonMax`.
+
 ## home/
 
 - `home_service.dart` — `HomeService`: side bar state (Hive) and `searchQuery`; `preload()` in `preCall`.
+
+## preferences/
+
+- `preferences_service.dart` — `PreferencesService` singleton (Hive box `preferences`, `preload()` in `preCall`):
+  device-wide theme/language (applied to and persisted from `AppController`); per account (`bindUser` from
+  `ClientService`) the last `/home...` path (`homePath`), the last active business (`useBusiness` from
+  `BusinessService`) and per-business selections (`RememberedSelection`: `chat`, `employee`; `recall`/`remember`).
 
 ## inventory/ — table authoring
 
@@ -184,13 +228,18 @@ Nothing here adds figures up: every total is the backend's answer.
 - `money_methods_service.dart` — `MoneyMethodsService`: accounts (`GET/POST/PUT/DELETE /money/methods`,
   delete is soft) and rails (`GET /business/payments`). `fields(code)` = a rail's requirement sheet;
   `options` = `banks`, `documents`, `networks`.
-- `money_method_model.dart` — `MoneyMethod` (account), `MoneyRail` (available rail),
-  `MoneyMethodField` (one requirement), `MoneyPaymentOption`. Rail ≠ account ≠ settlement kind.
+- `money_method_model.dart` — `MoneyMethod` (account; `currency`, `fee`), `MoneyRail` (available rail; `currency`
+  it is fixed to, if any), `MoneyMethodField` (one requirement), `MoneyPaymentOption`, `MoneyFee` + `MoneyFeeType`
+  (`none`/`fixed`/`percent`). Rail ≠ account ≠ settlement kind.
 - `account_mask.dart` — `AccountMask`, `AccountMaskFormatter`: spaces a number as typed; never
   touches what it cannot describe (email, alias, `+…`), never drops a digit. Backend re-applies it.
 - `money_method_request.dart` — create/update/remove. Account travels as `fields:` keyed by column;
-  blanks stripped on create, sent as `null` on update (= clear).
+  blanks stripped on create, sent as `null` on update (= clear). `CURRENCY`, `FEE_TYPE`, `FEE` (edit: `none` + `null` = remove).
 - `money_catalog_service.dart` — `MoneyCatalogService`: `GET /money/catalog`; settlement kinds read as `PosPaymentMethod`.
+- `money_currencies_service.dart` — `MoneyCurrenciesService` (+ status): `GET/PUT/DELETE /money/currencies` — main currency + exchange currencies. Every write rereads.
+- `money_currency_model.dart` — `MoneyCurrencies` (`main`, `exchanges`, `codes`), `MoneyExchange`, `MoneyRateMode` (`official`/`custom`). Non-positive rate = `null`.
+- `money_currency_request.dart` — `saveMoneyExchangeRequest` (upsert; `RATE` only when custom), `removeMoneyExchangeRequest`.
+- `currencies_contract.md` — **proposed backend contract** for currencies and for an account's `currency`/`fee` (not built yet).
 - `money_concept_model.dart` — `MoneyConcept`, `MoneyDirection` (`incoming`/`outgoing`; `value` travels).
 
 ## pos/ — owned by the POS page
@@ -244,15 +293,49 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 - `sale_approval_request.dart` — `approveSaleRequest(id:)`, `kSaleClosedStage = "sold"`:
   `PUT /chats/stage` body; `id` is the conversation.
 
+## chats/ — owned by the messages section
+
+`/aries/v1` via the `aries` client. Contract: `E:/andromeda/backend/projects/lyra/docs/aries-chat-desk.md`.
+
+- `chats_service.dart` — `ChatsService` (+ `ChatsStatus`, `ChatsFilter`): inbox `GET /chats` (filters, `SEARCH`,
+  paging), `summary`, `stages`, `tags` (catalog → `tagOf(code)`), `team`, `selected`. Applies
+  `chat/message|handover|stage|tags|attention|attended` to held rows; unknown/new chat → debounced page-1 reread (only on page 1, else `pending`). Notifies
+  (`FloatFlag`) on `chat/attention|alert|assigned`. `moved(from, to)` after a send opened a new session.
+  Seams `seed`/`seedTags`/`receive`.
+- `chat_thread_service.dart` — `ChatThreadService` (+ `ChatThreadStatus`): one open chat, **created per
+  panel**. `detail/:ID` + `messages/:ID` (`BEFORE`, `ALL`), `send` (returns the landing chat id),
+  `pause` `resume` `assign` `setStage` `resolve` `markRead`, `refreshDetail` (the AI spend has no event); patches the inbox row after its writes and
+  its tags after each detail read; `chat/tags` replaces the detail's tags.
+  Messages deduped by id; ticks never go backwards; `rekeyed` renames. Seams `seed`/`receive`.
+- `chat_model.dart` — `ChatModel` (row, tag codes), `ChatsPage`, `ChatStage`, `ChatTag` (catalog, detail, event), `ChatLevel`, `ChatWaiting`, `ChatBot`
+  (`isPausedAt`), `ChatPerson`, `ChatLine`, `ChatSummary` (`awaiting` null ≠ 0), `ChatStageOption`,
+  `chatText`/`chatInt`/`chatDouble`/`chatDate`/`chatCodes`/`chatEvent`.
+- `chat_message_model.dart` — `ChatMessage` (`queued` local), `ChatMessagesPage`, `ChatAuthorKind`, `ChatMessageStatus`.
+- `chat_detail_model.dart` — `ChatDetailModel` (full `tags`), `ChatAttention` (`also`), `ChatPayment`, `ChatCartItem`, `ChatUsage` (`usage`: null = unreadable ≠ zero), `ChatUsageArea`.
+- `chat_request.dart` — send, pause, id-only (resume/read), assign (`USERNAME` always travels),
+  stage (`null` undoes), resolve bodies; `kChatStageSold`, `kChatStageEnded`.
+- `chat_event.dart` — `ChatEvent`: socket event names.
+
+## maps/ — the base map (deliveries section)
+
+`/scorpius/v1` via the `scorpius` client. Server side: `E:/andromeda/backend/projects/lyra/lib/models/maps/MODULE.md`.
+
+- `map_tiles_service.dart` — `MapTilesService` (+ `MapTilesStatus`): `GET /tilesets` (vector ones only), `tilesetFor(lat, lng)`
+  (the box holding the point, else the first).
+- `map_tileset_model.dart` — `MapTilesetModel`: name, type, zoom range, bounds, center (TileJSON order: lon first).
+- No client yet for routes, travel times and coverage (`POST /scorpius/v1/{route,matrix,isochrone,coverage}`).
+  Before writing one, read "Provider independence" in the server doc: the app calls only `/scorpius`, never a map provider, and keeps only lat/lng.
+
 ## sign_in/ and sign_up/
 
-- `sign_in/sign_in_service.dart` — `SignInService`: resolves the login method and signs in.
-- `sign_in/login_method.dart` — `LoginMethod` (password vs emailed code).
-- `sign_up/sign_up_service.dart` — `SignUpService`: `/authentication/sign_up/email/` then `/create/`.
+- `sign_in/sign_in_service.dart` — `SignInService`: `email/verify` (account + method), `email/sign_in/password`, code sign in, resend, pending email + account flag (`pending`, `clearPending`).
+- `sign_in/login_method.dart` — `LoginMethod`: `method` text of `email/verify` (code, password, reserved OAuths).
+- `sign_up/sign_up_service.dart` — `SignUpService`: `email/sign_up/code` (ticket, kept in memory) then `email/sign_up/names` (token).
 
 ## Backend endpoint index
 
-`/init/` · `/authentication/sign_up/{email,create}/` · `/business/{create,profile,employees,logo,emails,emails/verify,payments}/`
+`/init/` · `/permissions/requests/` · `/authentication/email/{verify,sign_in/password,sign_in/code,sign_up/code,sign_up/names}/` · `/authentication/logout/` · `/business/{create,profile,logo,emails,emails/verify,payments}/`
+`/business/employees/{,former/,detail/$id}`
 `/business/location/{,search,place}/` · `/business/delivery/{,options,providers}/`
 `/channels/{,providers/,detail/$id}` · `/connections/{,providers/,detail/$id}`
 `/inventory/products/builder/{list,structure,details,fields,normalize}/` ·
@@ -260,5 +343,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/inventory/stock/summary/`
 `/sales/` · `/sales/stages/` · `/sales/detail/$id` · `/sales/fulfillment/` · `/chats/stage/`
 `/pos/` · `/pos/catalog/` · `/pos/methods/` · `/pos/invoices/{,items,close,cancel}`
+`/aries/v1/chats{,/stages,/tags,/summary,/detail/$id,/messages/$id,/messages,/read,/bot/pause,/bot/resume,/assign,/stage,/alerts/resolve}` · `/aries/v1/team`
+`/scorpius/v1/tilesets` · `/scorpius/v1/raster/$name/$style/{z}/{x}/{y}{r}.png` · (no client yet) `/scorpius/v1/{route,matrix,isochrone,coverage}`
 `/money/` · `/money/summary/` · `/money/ai/` · `/money/catalog/` · `/money/methods/` ·
 `/money/payments/{,search,void}/` · `/money/receivables/`

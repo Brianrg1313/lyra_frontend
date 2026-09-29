@@ -1,0 +1,297 @@
+{
+  "$comment": "Map of Lyra's areas for the backend to grant per-company permissions. Keys are stable ids shared with the app: never rename one, deprecate it and add a new one.",
+  "version": 1,
+  "contract": {
+    "permission_id": "<area key>.<action>, e.g. 'finance.payments.record'. The area key is dotted from the root area down.",
+    "view_rule": "'<area>.view' opens the area (side bar option, tab or route). Without it the app hides the option and refuses the route (deep links too). A child's view requires its parent's view.",
+    "wildcards": "'*' grants everything (company owner). '<area>.*' grants every action of that area and its children.",
+    "scope": "Permissions are per company: a person can work for several with different roles. Areas with scope 'account' do not depend on a company and are never filtered by it.",
+    "init_shape": {
+      "$comment": "Suggested addition to GET /init/: one entry per company in the businesses list.",
+      "businesses": [
+        {
+          "ID": "<business id>",
+          "PERMISSIONS": ["*"]
+        },
+        {
+          "ID": "<business id>",
+          "PERMISSIONS": ["messages.*", "sales.view", "sales.process.view", "sales.fulfil", "pos.*"]
+        }
+      ]
+    },
+    "backend_must_enforce": "The app only hides what is not granted; every endpoint must check the same permission ids."
+  },
+  "areas": [
+    {
+      "key": "dashboard",
+      "title": "Home",
+      "scope": "account",
+      "routes": ["dashboard"],
+      "paths": ["/home"],
+      "actions": ["view"],
+      "status": "placeholder"
+    },
+    {
+      "key": "business",
+      "title": "Business",
+      "scope": "company",
+      "routes": ["business", "business_detail"],
+      "paths": ["/home/business", "/home/business/:id"],
+      "actions": ["view", "delete"],
+      "action_notes": {
+        "delete": "Delete the company (settings danger zone)."
+      },
+      "children": [
+        {
+          "key": "business.statistics",
+          "title": "Statistics",
+          "routes": ["business_statistics"],
+          "paths": ["/home/business/:id/statistics"],
+          "actions": ["view"]
+        },
+        {
+          "key": "business.employees",
+          "title": "Employees",
+          "routes": ["business_employees"],
+          "paths": ["/home/business/:id/employees"],
+          "actions": ["view", "view_personal", "invite"],
+          "action_notes": {
+            "view_personal": "Full profile: personal data, emergency contact, pay, notes.",
+            "invite": "Invite a person by email with a job title."
+          }
+        },
+        {
+          "key": "business.branches",
+          "title": "Branches",
+          "routes": ["business_branches"],
+          "paths": ["/home/business/:id/branches"],
+          "actions": ["view", "create", "edit"]
+        },
+        {
+          "key": "business.clients",
+          "title": "Clients",
+          "routes": ["business_clients"],
+          "paths": ["/home/business/:id/clients"],
+          "actions": ["view"]
+        },
+        {
+          "key": "business.settings",
+          "title": "Settings",
+          "routes": ["business_settings"],
+          "paths": ["/home/business/:id/settings"],
+          "actions": ["view", "edit", "edit_logo", "manage_emails"],
+          "action_notes": {
+            "edit": "Profile data: legal name, handle, activity, fiscal id, phone, website, sector, language, country.",
+            "manage_emails": "Add, edit and verify company emails."
+          }
+        }
+      ]
+    },
+    {
+      "key": "messages",
+      "title": "Messages",
+      "scope": "company",
+      "routes": ["messages"],
+      "paths": ["/home/messages"],
+      "actions": ["view", "reply", "take_over", "assign", "edit_tags", "set_stage", "resolve_attention", "view_usage"],
+      "action_notes": {
+        "reply": "Send a message (pauses the assistant).",
+        "take_over": "Pause the assistant / return the chat to it.",
+        "assign": "Assign the chat to a team member.",
+        "set_stage": "Mark read, sold, ended, undo.",
+        "view_usage": "AI cost of the open session."
+      }
+    },
+    {
+      "key": "deliveries",
+      "title": "Deliveries",
+      "scope": "company",
+      "routes": ["deliveries"],
+      "paths": ["/home/deliveries"],
+      "actions": ["view", "create"],
+      "action_notes": {
+        "create": "New delivery (coming soon, no endpoint yet)."
+      },
+      "children": [
+        {
+          "key": "deliveries.settings",
+          "title": "Delivery settings",
+          "routes": ["deliveries_settings"],
+          "paths": ["/home/deliveries/settings"],
+          "actions": ["view", "edit"],
+          "action_notes": {
+            "edit": "Delivers/pickup flags, delivery note, flexible areas, delivery options."
+          }
+        },
+        {
+          "key": "deliveries.areas",
+          "title": "Delivery area",
+          "routes": ["deliveries_area"],
+          "paths": ["/home/deliveries/area"],
+          "actions": ["view", "create", "edit", "delete"]
+        }
+      ]
+    },
+    {
+      "key": "sales",
+      "title": "Sales",
+      "scope": "company",
+      "routes": ["sales"],
+      "paths": ["/home/sales"],
+      "actions": ["view", "view_all", "fulfil", "approve"],
+      "action_notes": {
+        "view_all": "Without it only the person's own sales are listed ('sold by me').",
+        "fulfil": "PUT /sales/fulfillment: handover mode and state.",
+        "approve": "PUT /chats/stage STAGE=sold: confirm a payment at 'verifying'."
+      },
+      "children": [
+        {
+          "key": "sales.process",
+          "title": "In process",
+          "routes": ["sales_process"],
+          "paths": ["/home/sales/process"],
+          "actions": ["view"]
+        },
+        {
+          "key": "sales.done",
+          "title": "Done",
+          "routes": ["sales_done"],
+          "paths": ["/home/sales/done"],
+          "actions": ["view"]
+        }
+      ]
+    },
+    {
+      "key": "inventory",
+      "title": "Inventory",
+      "scope": "company",
+      "routes": ["inventory", "inventory_table_view"],
+      "paths": ["/home/inventory", "/home/inventory/:id"],
+      "actions": ["view", "create_table", "import", "edit_table", "delete_table", "edit_columns", "edit_records", "move_stock"],
+      "action_notes": {
+        "edit_table": "Rename, colour, header data and agent settings of a table.",
+        "edit_columns": "Create, rename, retype, reorder and delete fields.",
+        "edit_records": "Write cells and rows in the spreadsheet.",
+        "move_stock": "Take/add stock from the stock summary."
+      }
+    },
+    {
+      "key": "services",
+      "title": "Services",
+      "scope": "company",
+      "routes": ["services"],
+      "paths": ["/home/services"],
+      "actions": ["view"],
+      "status": "placeholder"
+    },
+    {
+      "key": "channels",
+      "title": "Channels",
+      "scope": "company",
+      "routes": ["channels", "channel_detail"],
+      "paths": ["/home/channels", "/home/channels/:id"],
+      "actions": ["view", "create", "edit", "toggle", "delete"],
+      "action_notes": {
+        "edit": "Role, data source, payment accounts, tools, credentials.",
+        "toggle": "Enable/disable; start/stop the WhatsApp Personal session.",
+        "delete": "Disconnect, and unlink WhatsApp Personal."
+      }
+    },
+    {
+      "key": "finance",
+      "title": "Finance",
+      "scope": "company",
+      "routes": ["finance"],
+      "paths": ["/home/finance"],
+      "actions": ["view"],
+      "children": [
+        {
+          "key": "finance.overview",
+          "title": "Overview",
+          "routes": ["finance_overview"],
+          "paths": ["/home/finance/overview"],
+          "actions": ["view", "view_bot_cost"]
+        },
+        {
+          "key": "finance.payments",
+          "title": "Payments",
+          "routes": ["finance_payments"],
+          "paths": ["/home/finance/payments"],
+          "actions": ["view", "record", "void"]
+        },
+        {
+          "key": "finance.receivables",
+          "title": "Receivables",
+          "routes": ["finance_receivables"],
+          "paths": ["/home/finance/receivables"],
+          "actions": ["view", "collect"]
+        },
+        {
+          "key": "finance.methods",
+          "title": "Payment methods",
+          "routes": ["finance_methods"],
+          "paths": ["/home/finance/methods"],
+          "actions": ["view", "create", "edit", "delete", "manage_currencies"],
+          "action_notes": {
+            "manage_currencies": "Add/edit exchange currencies and custom rates. The main currency is never written from the app."
+          }
+        }
+      ]
+    },
+    {
+      "key": "marketing",
+      "title": "Marketing",
+      "scope": "company",
+      "routes": ["marketing"],
+      "paths": ["/home/marketing"],
+      "actions": ["view"],
+      "status": "placeholder"
+    },
+    {
+      "key": "report",
+      "title": "Report",
+      "scope": "company",
+      "routes": ["report"],
+      "paths": ["/home/report"],
+      "actions": ["view"],
+      "status": "placeholder"
+    },
+    {
+      "key": "connections",
+      "title": "Connections",
+      "scope": "company",
+      "routes": ["connections", "connection_new", "connection_detail"],
+      "paths": ["/home/connections", "/home/connections/new", "/home/connections/:id"],
+      "actions": ["view", "create", "edit", "delete"]
+    },
+    {
+      "key": "external_services",
+      "title": "External services",
+      "scope": "company",
+      "routes": ["external_services"],
+      "paths": ["/home/external_services"],
+      "actions": ["view"],
+      "status": "placeholder"
+    },
+    {
+      "key": "pos",
+      "title": "Point of sale",
+      "scope": "company",
+      "routes": ["pos"],
+      "paths": ["/pos"],
+      "actions": ["view", "sell", "custom_amount", "set_tax", "checkout", "cancel_ticket"],
+      "action_notes": {
+        "sell": "Add catalog products to the ticket (holds stock).",
+        "custom_amount": "Line with a typed concept and price, outside the catalog.",
+        "set_tax": "Change the ticket's VAT rate.",
+        "checkout": "Close the invoice (charge).",
+        "cancel_ticket": "Discard the ticket, releasing its holds."
+      }
+    }
+  ],
+  "always_open": {
+    "$comment": "Never gated: they come before a company exists or are the person's own.",
+    "routes": ["splash", "login", "auth_code", "welcome"],
+    "actions": ["business.create", "invitation.accept"]
+  }
+}

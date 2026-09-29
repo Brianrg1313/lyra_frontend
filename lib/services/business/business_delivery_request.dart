@@ -26,6 +26,12 @@ enum DeliveryFlag {
 Map<String, dynamic> deliveryFlagRequest(DeliveryFlag flag, bool? value) =>
   {flag.key: value};
 
+/// Sets whether a customer the company does not reach is offered a spot
+/// halfway (flexible areas) or turned away (fixed areas). Two states: the
+/// backend refuses an empty value, so it never travels as `null`.
+Map<String, dynamic> deliveryMeetingRequest(bool value) =>
+  {"MEETING_POINT": value};
+
 /// Sets the company's sentence about delivery in general; empty erases it.
 Map<String, dynamic> deliveryNotesRequest(String notes) =>
   {"NOTES": _orNull(notes)};

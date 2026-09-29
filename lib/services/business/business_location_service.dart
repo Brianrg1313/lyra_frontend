@@ -9,10 +9,10 @@ enum BusinessLocationStatus { idle, loading, ready, error }
 
 /// Where the active company is: `GET` / `PUT /business/location/`.
 ///
-/// It is provided by the business page and not app-wide: the endpoint answers
-/// for the business in the `business_id` header, and a business switch remounts
-/// the page, which is what drops what was read here. It lives on the page and
-/// not in its tab so switching tabs does not ask for it again.
+/// It is the main branch's location, which is the company's. Owned by whoever
+/// draws the map on it (the deliveries section, the branch form), not
+/// app-wide: the endpoint answers for the business in the `business_id`
+/// header. It is edited as a branch (`BusinessBranchesService`).
 ///
 /// A write rereads instead of patching what is in memory: the backend trims,
 /// uppercases the postal code, rounds the point and builds the map link, so

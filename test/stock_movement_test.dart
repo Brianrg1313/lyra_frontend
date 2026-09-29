@@ -742,10 +742,8 @@ void main() {
     });
 
     testWidgets('en la hoja de un telefono se desplaza igual', (tester) async {
-      // La otra forma del modal. Aca la altura ya viene acotada contra la
-      // pantalla, asi que el formulario **no** se envuelve en un [Flexible]:
-      // arriba suyo no hay una columna que lo reparta, y envolverlo igual seria
-      // un error de arbol y no un formulario mas corto.
+      // The modal's other shape: the sheet bounds the height against the
+      // screen itself, with no column above the form to share it out.
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(390, 780);
       addTearDown(tester.view.reset);

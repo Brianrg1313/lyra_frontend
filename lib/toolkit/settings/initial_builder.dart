@@ -9,6 +9,7 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channels_service.dart';
@@ -60,6 +61,9 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // it carries ids, and the address is backend configuration. Moving them
     // to a CDN isn't a new app version.
     ChangeNotifierProvider.value(value: CdnService()),
+    // What the person may open in each company, from the same response:
+    // the side bar and the buttons watch it to hide what would be a 403.
+    ChangeNotifierProvider.value(value: PermissionsService()),
     // The state (the list's cache) must survive navigation between the table
     // list and the creation screen, so it lives at the app's scope and not
     // the section's.

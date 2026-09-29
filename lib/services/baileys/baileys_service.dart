@@ -340,6 +340,36 @@ class BaileysService extends ChangeNotifier {
     }
   }
 
+  /// Forgets this session's view of the sidecar and takes its credentials
+  /// back.
+  ///
+  /// The WhatsApp sessions themselves are left running: they belong to the
+  /// company's number, not to whoever signed in, and stopping them would mean
+  /// a new QR the next time. What must not survive is the relay acting on a
+  /// token the backend just closed, so the sidecar is told to forget it — the
+  /// next sign in hands a fresh one over on its first [refresh]/[activate].
+  ///
+  /// Only when a client was ever built: a session that never touched a
+  /// WhatsApp Personal channel has nothing on the sidecar to take back, and
+  /// building one here would read secure storage for nothing.
+  Future<void> signOut() async {
+    _watchingEvents = false;
+    _events?.cancel();
+    _events = null;
+
+    _statuses.clear();
+    notifyListeners();
+
+    final client = _client;
+    if (client == null) return;
+
+    try {
+      await client.clearBackend();
+    } catch (_) {
+      // The server not running is the usual case, and then it holds nothing.
+    }
+  }
+
   @override
   void dispose() {
     _watchingEvents = false;

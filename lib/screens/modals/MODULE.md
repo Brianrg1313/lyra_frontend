@@ -2,7 +2,7 @@
 
 **Path** `lib/screens/modals`
 **Role** Every dialog and side panel. Modals are **not routes**: not in `routes.dart`, no URL change.
-**Layout** One folder per opening section (`business/ channels/ inventory/ sales/ finance/ pos/`),
+**Layout** One folder per opening section (`business/ channels/ inventory/ sales/ finance/ messages/ pos/ pre_start/ permissions/`),
 `shared/` for modals opened by more than one. One folder per modal, entry `_<name>.dart`,
 parts beside it. A modal moves to `shared/` only once a second section opens it.
 
@@ -50,29 +50,28 @@ through `Navigator.pop(context, value)`.
   Decide nothing (colour/empty wording passed in). **Build new panel rows from these.**
 
 ### `business/`
-- `create_business/_create_business.dart` — `CreateBusinessModal` (from `BusinessSelector`, `NoBusinessSection`).
+- `create_business/_create_business.dart` — `CreateBusinessModal` (from `BusinessSelector`, `NoBusinessSection`, `Welcome`); pops `true` on success.
 - `create_business/notice.dart` — `CreateBusinessNotice`: legal notice.
 - `edit_business_field/_edit_business_field.dart` — `EditBusinessFieldModal`: edits **one** profile datum.
 - `edit_business_field/business_field.dart` — `BusinessField`: registry of editable data (key, value, input). **Add a datum here.**
 - `edit_business_email/_edit_business_email.dart` — `EditBusinessEmailModal`: create/edit an address.
 - `verify_business_email/_verify_business_email.dart` — `VerifyBusinessEmailModal`.
-- `edit_location/_edit_location.dart` — `showLocationForm(context, location:)`, `EditLocationModal`: the whole
-  address —country included— plus the map point as **one** field (the pair a map copies, or a link that carries
-  it). **Returns `updateLocationRequest`'s body**; empty means nothing changed. A pick replaces the address **as
-  a unit** (street, city, region, postal code, country, point); the landmark is not part of a place and is left
-  alone. The country is a `SelectInput` over `CountryCatalogService`, built **once** (a new options list makes
-  the field re-read its value) and remounted by a revision key when a pick moves it; with no catalog it falls
-  back to the two-letter code. A pick to a country the catalog does not list leaves the field alone.
-- `edit_location/place_search.dart` — `PlaceSearch`: the address search over the form (Google Places through
-  the backend). Answers drop from the box as a select (core `SelectOptionTile` in an `OverlayPortal`), never as
-  rows in the column. Draws **nothing** when the server has no key, and hands the pick up — it writes no field itself.
-- `delivery_option/_delivery_option.dart` — `showDeliveryOptionForm(context, catalog:, currency:, option?)`,
-  `DeliveryOptionFormModal`: mode → carrier → reach → figures. Carrier pickers are one per mode (their lists
-  differ); radius/zones only for a local reach. Checks what the backend refuses. **Returns the create/update body.**
-- `delivery_option/zone_rows.dart` — `ZoneDraft`, `ZoneRows`: a row per zone (area + its own price). Their
-  controllers belong to **no** form: rows come and go, and a registered one would stay and be validated.
-- `edit_delivery_notes/_edit_delivery_notes.dart` — `showDeliveryNotes(context, notes:)`,
-  `EditDeliveryNotesModal`: one field. **Returns the text** (empty erases).
+- `invite_employee/_invite_employee.dart` — `showInviteEmployee(context, employees:)`, `InviteEmployeeModal`: email + job title
+  (the backend files the job with the invitation); **writes** through the `BusinessEmployeesService` passed in. Returns `true` if sent.
+- `branch_form/_branch_form.dart` — `showBranchForm(context, branches:, country:, branch?)`, `BranchFormModal`:
+  create (no `branch`) or edit one branch whole — name, store/warehouse (`STOREFRONT`, two cards), bot orders (`ONLINE`),
+  main (not drawn on the main branch), phone, legal name + tax id (empty = the company's), address, landmark, city,
+  region, postal code and the point on `DeliveriesMap` (beside the form; in one column, before the address; opens on the
+  branch's point). No country: `country` (the company's) fixes the phone code. Owns its own
+  `BusinessLocationService` + `MapTilesService` + `BusinessPlacesService`; **writes** through the branches service
+  passed by constructor (edit sends only what changed). Returns `true` if something was written.
+- `branch_form/phone_field.dart` — `BranchPhoneField`: one box, the company's flag + dial fixed in front of
+  the typed number; without a country (or a saved phone with another code) the whole phone, flag of the typed code.
+- `branch_form/place_search.dart` — `PlaceSearch`: the address search floating over the map's top edge (Google
+  Places through the backend, answers restricted to the company's country). Asks 350 ms after typing stops (the
+  core field's own wait is too long; the service drops repeats). Answers drop from the box as a select (core
+  `SelectOptionTile` in an `OverlayPortal`). Draws **nothing** when the server has no key, and hands the pick up —
+  it writes no field itself. With `child` the dropdown hangs from that field instead (the employee address tile).
 
 ### `channels/`
 - `create_channel/_create_channel.dart` — `showCreateChannel(context)`, `CreateChannelModal`: network,
@@ -134,6 +133,18 @@ through `Navigator.pop(context, value)`.
   `SaleFulfillmentModal`: handover mode/state. **Returns `fulfilSaleRequest`**. State picker only
   after a mode; sends only what changed (no-diff submit refused).
 
+### `deliveries/` (from the delivery settings page)
+- `delivery_option/_delivery_option.dart` — `showDeliveryOptionForm(context, catalog:, currency:, option?)`,
+  `DeliveryOptionFormModal`: mode → carrier → reach → figures. Carrier pickers are one per mode (their lists
+  differ); radius/zones only for a local reach. Checks what the backend refuses. **Returns the create/update body.**
+- `delivery_option/zone_rows.dart` — `ZoneDraft`, `ZoneRows`: a row per zone (area + its own price). Their
+  controllers belong to **no** form: rows come and go, and a registered one would stay and be validated.
+- `edit_delivery_notes/_edit_delivery_notes.dart` — `showDeliveryNotes(context, notes:)`,
+  `EditDeliveryNotesModal`: one field. **Returns the text** (empty erases).
+
+### `messages/`
+- `chat_usage/_chat_usage.dart` — `showChatUsage(context, thread:)`, `ChatUsageModal`: AI spend of the open session (total, tokens, areas that ran). Re-provides the `ChatThreadService` and rereads the detail on open. `usageCost` `usageNumber` `usageCompact`.
+
 ### `finance/`
 - `record_payment/_record_payment.dart` — `showRecordPayment(context, concepts:, settlements:,
   accounts:, currency:, ticket?, amount?)`, `RecordPaymentModal`. **Returns
@@ -142,10 +153,24 @@ through `Navigator.pop(context, value)`.
   sheets:, options:, method?)`, `PaymentMethodFormModal`: add/edit an account. Rail read-only on
   edit. Fields drawn from the rail's sheet (`MoneyMethodField`): `select` searchable by code or
   name, `document` stores the code (`SelectOption.chosen`), `format` → `AccountMask`. New rail =
-  new `FormController` (`obligatory` is fixed at creation). Returns `create/updateMoneyMethodRequest`.
+  new `FormController` (`obligatory` is fixed at creation). Currency picked from `currencies:` (fixed when the
+  rail has one; warns if it has no rate; not asked without a setup). Commission: none / percent (< 100) / fixed
+  in the account's currency. Returns `create/updateMoneyMethodRequest`.
+- `exchange_currency_form/_exchange_currency_form.dart` — `showExchangeCurrencyForm(context, main:, taken:,
+  exchange?)`, `ExchangeCurrencyFormModal`: currency (fixed on edit; fiat minus main and taken), mode, custom
+  rate. Returns `saveMoneyExchangeRequest` (no `RATE` when official).
 
 ### `pos/`
 All three **return a value and write nothing** (POS services live below this navigator).
 - `pos_amount/_pos_amount.dart` — `PosAmountModal({currency})`, `PosAmountEntry`: concept + price not in the catalog.
 - `pos_tax/_pos_tax.dart` — `PosTaxModal({rate})`: percentage (`16`, never `0.16`); empty = 0.
 - `pos_checkout/_pos_checkout.dart` — `PosCheckoutModal({methods, currency, total})`, `PosCheckoutEntry`: payment method, required reference where the method has one.
+
+### `permissions/`
+- `request_permission/_request_permission.dart` — `showRequestPermission(context, requests:, permission:, section:, business:)`, `RequestPermissionModal`:
+  optional note (≤ 200); **writes** through the `PermissionRequestsService` passed in. A `409` (already pending/granted) closes it. Returns `true` if sent.
+
+### `pre_start/` (welcome page)
+- `invitation/_invitation.dart` — `InvitationModal({invitation})`: invitation details + "Accept invitation" `Button` (`ClientService.acceptInvitation`), pops `true` once accepted; decline not offered yet.
+- `awaiting_invitation/_awaiting_invitation.dart` — `AwaitingInvitationModal`: tells the person to be invited by their account email.
+- `job_openings/_job_openings.dart` — `JobOpeningsModal`: placeholder (no endpoint yet).

@@ -8,6 +8,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/desktop/_body.dart';
@@ -70,6 +71,8 @@ class Home extends PageBuilder {
     final businessId = context.select<BusinessService, String?>(
       (service) => service.activeId
     );
+    // A reread `/init` can grant or revoke the open section.
+    context.watch<PermissionsService>();
 
     return ValueListenableBuilder<String>(
       valueListenable: Navis.currentKey,

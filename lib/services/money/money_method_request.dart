@@ -26,10 +26,20 @@
 ///   "INSTITUTION": "0134",
 ///   "DOCUMENT": "J-12345678",
 ///   "ACCOUNT": "0414 1234567",
-///   "INSTRUCTIONS": "Pon el numero del pedido en el concepto"
+///   "INSTRUCTIONS": "Pon el numero del pedido en el concepto",
+///   "CURRENCY": "VES",
+///   "FEE_TYPE": "percent",
+///   "FEE": 3
 /// }
 /// ```
+///
+/// **Currency and commission** (`CURRENCY`, `FEE_TYPE`, `FEE`) are the
+/// company's and not the rail's, with one exception: a rail that moves a single
+/// currency (`MoneyRail.currency`) is saved in it whatever is sent. Contract:
+/// `currencies_contract.md`.
 library;
+
+import 'package:app/services/money/money_method_model.dart';
 
 /// Builds the creation body.
 ///
@@ -43,6 +53,8 @@ Map<String, dynamic> createMoneyMethodRequest({
   String label = "",
   String instructions = "",
   Map<String, String> fields = const {},
+  String currency = "",
+  MoneyFee fee = const MoneyFee(),
   int? position
 }) => {
   "CODE": code,
@@ -50,6 +62,10 @@ Map<String, dynamic> createMoneyMethodRequest({
   for (final entry in fields.entries)
     if (entry.value.trim().isNotEmpty) entry.key.toUpperCase(): entry.value.trim(),
   if (instructions.trim().isNotEmpty) "INSTRUCTIONS": instructions.trim(),
+  if (currency.trim().isNotEmpty) "CURRENCY": currency.trim().toUpperCase(),
+  // Only a commission that exists: a new account with none is the default on
+  // the other side, and sending `none` would be one more key to agree on.
+  if (!fee.isNone) ..._fee(fee),
   "POSITION": ?position
 };
 
@@ -67,18 +83,31 @@ Map<String, dynamic> createMoneyMethodRequest({
 /// side, and a column that sheet does not name ends up empty whoever sent it —
 /// the row is what the rail says it is, and a holder left over on a Pago Movil
 /// from before the sheet existed is cleaned by the first edit.
+///
+/// [fee] travels whole when given, `none` included: on an edit that is how a
+/// commission is taken off (`FEE_TYPE: "none"`, `FEE: null`).
 Map<String, dynamic> updateMoneyMethodRequest({
   required String id,
   String? label,
   String? instructions,
   Map<String, String> fields = const {},
+  String? currency,
+  MoneyFee? fee,
   int? position
 }) => {
   "ID": id,
   if (label != null) "LABEL": _orNull(label),
   for (final entry in fields.entries) entry.key.toUpperCase(): _orNull(entry.value),
   if (instructions != null) "INSTRUCTIONS": _orNull(instructions),
+  if (currency != null) "CURRENCY": _orNull(currency.toUpperCase()),
+  if (fee != null) ..._fee(fee),
   "POSITION": ?position
+};
+
+/// A commission as it travels: its type, and its value only when there is one.
+Map<String, dynamic> _fee(MoneyFee fee) => {
+  "FEE_TYPE": fee.type.value,
+  "FEE": fee.isNone ? null : fee.value
 };
 
 /// Builds the body that turns an account off. The row is soft-deleted on the

@@ -23,6 +23,7 @@ class BusinessDeliveryModel {
     this.delivers,
     this.pickup,
     this.notes = "",
+    this.meeting = false,
     this.currency = "",
     this.options = const []
   });
@@ -35,6 +36,14 @@ class BusinessDeliveryModel {
   /// The company's own sentence about delivery in general.
   final String notes;
 
+  /// Whether a customer outside every drawn delivery area is offered the
+  /// nearest spot the company does reach, to meet the courier there
+  /// (`MEETING_POINT`). **Two states, off by default**: unlike [delivers], a
+  /// blank here can only mean off — the assistant must never promise to meet
+  /// a customer halfway on a guess. The spot is chosen by the backend on the
+  /// company's own areas, so without areas it offers nothing.
+  final bool meeting;
+
   /// ISO 4217 code every fee is written in.
   final String currency;
 
@@ -45,6 +54,7 @@ class BusinessDeliveryModel {
     delivers: _flag(json["delivers"]),
     pickup: _flag(json["pickup"]),
     notes: _text(json["notes"]),
+    meeting: _flag(json["meeting"]) ?? false,
     currency: _text(json["currency"]).toUpperCase(),
     options: [
       for (final row in catalogRows(json["options"])) ?DeliveryOption.from(row)

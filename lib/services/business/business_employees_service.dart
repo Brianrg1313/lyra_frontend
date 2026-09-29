@@ -1,0 +1,297 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show BuildContext;
+
+// SERVICES
+import 'package:app/services/business/business_employee_detail_model.dart';
+import 'package:app/services/business/business_employee_model.dart';
+import 'package:app/services/preferences/preferences_service.dart';
+import 'package:app/toolkit/api.dart';
+
+enum BusinessEmployeesStatus { idle, loading, ready, error }
+
+enum EmployeeDetailStatus { idle, loading, ready, error }
+
+/// The people of the active company (`/business/employees/`) and the one open
+/// in the detail panel.
+///
+/// Provided by the business page (`BusinessDetailSection`), not app-wide, like
+/// the branches: every endpoint answers for the business in the `business_id`
+/// header, and a business switch remounts the page, which drops what was read.
+///
+/// The list is two reads: the current people (active, then invited — the
+/// viewer always first) and the former ones. The former are a second list the
+/// backend keeps apart; if only that read fails the current list still shows,
+/// because it is the one that is worked with.
+///
+/// A detail is read once per person per page and kept: switching back and
+/// forth between two employees in the list does not reread either.
+class BusinessEmployeesService extends ChangeNotifier {
+  BusinessEmployeesStatus _status = BusinessEmployeesStatus.idle;
+  List<BusinessEmployeeModel> _current = const [];
+  List<BusinessEmployeeModel> _former = const [];
+  int _total = 0;
+
+  String? _selected;
+
+  final Map<String, BusinessEmployeeDetail> _details = {};
+  final Map<String, EmployeeDetailStatus> _detailStatus = {};
+
+  bool _disposed = false;
+
+  BusinessEmployeesStatus get status => _status;
+
+  /// Active and invited, the viewer's card first.
+  List<BusinessEmployeeModel> get current => _current;
+
+  /// Who used to work here, with the job record the company keeps.
+  List<BusinessEmployeeModel> get former => _former;
+
+  /// How many are active — the backend's count, not the length of [current],
+  /// which also holds the invitations and possibly the viewer's unfiled card.
+  int get total => _total;
+
+  /// Key ([BusinessEmployeeModel.key]) of the person open in the detail panel.
+  String? get selectedKey => _selected;
+
+  BusinessEmployeeModel? get selected {
+    for (final employee in [..._current, ..._former]) {
+      if (employee.key == _selected) return employee;
+    }
+
+    return null;
+  }
+
+  BusinessEmployeeDetail? detailOf(String id) => _details[id];
+
+  EmployeeDetailStatus detailStatusOf(String id) =>
+    _detailStatus[id] ?? EmployeeDetailStatus.idle;
+
+  /// Reads both lists. Without [force] they are read once per page. The first
+  /// read opens the viewer's own card; a reread keeps the selection while that
+  /// person is still listed.
+  Future<void> load({bool force = false}) async {
+    if (_status == BusinessEmployeesStatus.loading) return;
+    if (!force && _status == BusinessEmployeesStatus.ready) return;
+
+    _status = BusinessEmployeesStatus.loading;
+    notifyListeners();
+
+    final (current, former) = await (_fetch(), _fetch(former: true)).wait;
+
+    if (current == null) {
+      _status = BusinessEmployeesStatus.error;
+      notifyListeners();
+      return;
+    }
+
+    _apply(current.$1, current.$2, former?.$1 ?? const []);
+
+    if (force) {
+      _details.clear();
+      _detailStatus.clear();
+    }
+
+    notifyListeners();
+  }
+
+  /// Opens a person in the detail panel.
+  void select(String key) {
+    if (_selected == key) return;
+
+    _selected = key;
+    PreferencesService().remember(RememberedSelection.employee, key);
+    notifyListeners();
+  }
+
+  /// Invites a person by email (`POST /business/employees/invite`), whether or
+  /// not they have an account: for an email with none the backend opens one
+  /// and the invitation waits there until they sign up with it.
+  ///
+  /// Rereads the list and opens the new invitation. A refusal (already invited
+  /// or working here, a title it does not take) is shown in the floating flag
+  /// and answers `false`.
+  Future<bool> invite(
+    BuildContext context, {
+    required String email,
+    required String jobTitle
+  }) async {
+    String? id;
+
+    try {
+      final data = await api.post(
+        path: "/business/employees/invite/",
+        version: "v1",
+        data: {"EMAIL": email, "JOB_TITLE": jobTitle}
+      );
+
+      id = data is Map ? employeeText(data["id"]) : null;
+    } catch (error) {
+      if (kDebugMode) print("inviteEmployee failed: $error");
+
+      if (context.mounted) {
+        FloatFlag.of(context).fromError(
+          error is Map && error.isNotEmpty ? error : {"message": error.toString()}
+        );
+      }
+
+      return false;
+    }
+
+    await load(force: true);
+
+    if (id != null && id.isNotEmpty) select(id);
+
+    return true;
+  }
+
+  /// Edits one employment (`PUT /business/employees/`): [changes] are the
+  /// backend keys (`JOB_TITLE`, `MANAGER_ID`, `FIRST_NAME`...), and a key sent
+  /// empty erases it. The person's keys are refused unless the detail says
+  /// [BusinessEmployeeDetail.profileEditable].
+  ///
+  /// Answers once the detail and the rows are read again, so the field that
+  /// saved shows what the backend kept, not what was typed. A refusal is shown
+  /// in the floating flag and answers `false`.
+  Future<bool> edit(BuildContext context, String id, Map<String, dynamic> changes) async {
+    try {
+      await api.put(
+        path: "/business/employees/",
+        version: "v1",
+        data: {"ID": id, ...changes}
+      );
+    } catch (error) {
+      if (kDebugMode) print("editEmployee failed: $error");
+
+      if (context.mounted) {
+        FloatFlag.of(context).fromError(
+          error is Map && error.isNotEmpty ? error : {"message": error.toString()}
+        );
+      }
+
+      return false;
+    }
+
+    // The rows too: the list shows the name and the job title.
+    await (loadDetail(id, force: true), _refreshRows()).wait;
+
+    return true;
+  }
+
+  /// Rereads both lists without passing through `loading`, which would blank
+  /// the list under a panel that is only saving one field.
+  Future<void> _refreshRows() async {
+    final (current, former) = await (_fetch(), _fetch(former: true)).wait;
+
+    if (current == null) return;
+
+    _apply(current.$1, current.$2, former?.$1 ?? _former);
+    notifyListeners();
+  }
+
+  /// Reads the detail of an employment. Without [force], once per page.
+  Future<void> loadDetail(String id, {bool force = false}) async {
+    final status = detailStatusOf(id);
+
+    if (status == EmployeeDetailStatus.loading) return;
+    if (!force && status == EmployeeDetailStatus.ready) return;
+
+    _detailStatus[id] = EmployeeDetailStatus.loading;
+    notifyListeners();
+
+    BusinessEmployeeDetail? detail;
+
+    try {
+      // No trailing slash: the id is a route segment (`params: ["ID"]`).
+      final data = await api.get(path: "/business/employees/detail/$id", version: "v1");
+
+      detail = BusinessEmployeeDetail.from(data);
+    } catch (error) {
+      if (kDebugMode) print("loadEmployeeDetail failed: $error");
+    }
+
+    if (detail != null) _details[id] = detail;
+    _detailStatus[id] = detail == null
+      ? EmployeeDetailStatus.error
+      : EmployeeDetailStatus.ready;
+
+    notifyListeners();
+  }
+
+  void _apply(
+    List<BusinessEmployeeModel> current,
+    int total,
+    List<BusinessEmployeeModel> former
+  ) {
+    _current = current;
+    _former = former;
+    _total = total;
+    _status = BusinessEmployeesStatus.ready;
+
+    final keys = {for (final employee in [...current, ...former]) employee.key};
+
+    if (!keys.contains(_selected)) {
+      // First read: whoever was open when the tab was last left, while they
+      // are still listed; otherwise the viewer's own card.
+      final last = PreferencesService().recall(RememberedSelection.employee);
+
+      _selected = keys.contains(last)
+        ? last
+        : current.isNotEmpty ? current.first.key : former.firstOrNull?.key;
+    }
+  }
+
+  /// One list, with the active count when it is the current one. `null` when
+  /// the read failed.
+  Future<(List<BusinessEmployeeModel>, int)?> _fetch({bool former = false}) async {
+    try {
+      final data = await api.get(
+        path: former ? "/business/employees/former/" : "/business/employees/",
+        version: "v1"
+      );
+
+      if (former) return (BusinessEmployeeModel.listFrom(data, former: true), 0);
+
+      if (data is! Map) return null;
+
+      final rows = BusinessEmployeeModel.listFrom(data["employees"]);
+
+      return (rows, int.tryParse("${data["total"]}") ?? 0);
+    } catch (error) {
+      if (kDebugMode) print("loadEmployees${former ? "Former" : ""} failed: $error");
+
+      return null;
+    }
+  }
+
+  /// Leaves both lists and some details as if they had been read, without
+  /// touching the network.
+  @visibleForTesting
+  void seed({
+    List<BusinessEmployeeModel> current = const [],
+    List<BusinessEmployeeModel> former = const [],
+    int total = 0,
+    List<BusinessEmployeeDetail> details = const []
+  }) {
+    _apply(current, total, former);
+
+    for (final detail in details) {
+      _details[detail.id] = detail;
+      _detailStatus[detail.id] = EmployeeDetailStatus.ready;
+    }
+
+    notifyListeners();
+  }
+
+  /// A read can answer after the page that asked for it is gone (a business
+  /// switch remounts it), and notifying a disposed notifier throws.
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+}

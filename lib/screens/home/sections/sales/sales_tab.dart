@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/sales/sale_model.dart';
 
 /// The two halves of the sales page.
@@ -63,6 +64,18 @@ enum SalesTab {
   /// without the shell knowing, and the page would keep showing the previous
   /// list.
   String get routeKey => "sales_$key";
+
+  /// Permission area of this tab (`docs/app-areas.json`): `sales.<key>`. Its `view` opens it.
+  String get area => "sales.$key";
+
+  /// Tab the bare section opens: [initial], unless it is not granted in the active company,
+  /// then the first one that is. With none granted it is [initial], which shows it is locked.
+  static SalesTab get opening {
+    final permissions = PermissionsService();
+    if (permissions.canOpen(initial.area)) return initial;
+
+    return values.firstWhere((tab) => permissions.canOpen(tab.area), orElse: () => initial);
+  }
 
   /// URL of this tab, and the only source of its route's `url`.
   String get path => "/home/sales/$key";

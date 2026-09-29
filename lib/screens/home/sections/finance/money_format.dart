@@ -84,3 +84,31 @@ String moneyFineLabel(double value, String currency) {
     .resolve(currency)
     .write(NumberFormat.decimalPatternDigits(decimalDigits: 4).format(value));
 }
+
+/// An exchange rate, as a shop says it: `1 USD = Bs. 36,5234`.
+///
+/// It keeps up to four decimals whatever the currency writes: a rate is not an
+/// amount anybody pays, and the bolivar's official one is published with four —
+/// rounded to two, a thousand-dollar sale is charged a few bolivars off the
+/// figure the company can point at. Grouped the way the quoted currency is,
+/// like every figure of the section.
+String moneyRateLabel(String main, double rate, String currency) {
+  final quoted = CurrencyCatalogService().resolve(currency);
+
+  return "1 $main = ${quoted.write(_rateAmount(rate, quoted.locale))}";
+}
+
+/// The rate's digits. A catalog tag `intl` does not know throws on
+/// construction, and then it is grouped in the app's language: a badly grouped
+/// rate is still readable.
+String _rateAmount(double rate, String locale) {
+  try {
+    return (NumberFormat.decimalPatternDigits(
+      locale: locale.isEmpty ? null : locale,
+      decimalDigits: 2
+    )..maximumFractionDigits = 4).format(rate);
+  } catch (_) {
+    return (NumberFormat.decimalPatternDigits(decimalDigits: 2)
+      ..maximumFractionDigits = 4).format(rate);
+  }
+}

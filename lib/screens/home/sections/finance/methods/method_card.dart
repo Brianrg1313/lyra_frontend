@@ -4,6 +4,10 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/money/money_method_model.dart';
 
+// WIDGETS
+import '../money_format.dart';
+import 'methods_heading.dart';
+
 /// One of the company's accounts, as a block over the body's sheet.
 ///
 /// What is written on it is what a customer is actually told —who the account
@@ -27,6 +31,7 @@ class MoneyMethodCard extends StatelessWidget {
     super.key,
     required this.method,
     required this.fields,
+    this.main = "",
     required this.onEdit,
     required this.onRemove
   });
@@ -40,19 +45,18 @@ class MoneyMethodCard extends StatelessWidget {
   /// before any sheet existed.
   final List<MoneyMethodField> fields;
 
+  /// The company's main currency: what an account saved with none is in.
+  final String main;
+
   final void Function() onEdit;
   final void Function() onRemove;
-
-  /// Wide enough for a bank account number without wrapping it, which is the
-  /// one string on this card that must be readable in one piece.
-  static const double _width = 320;
 
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
 
     return SizedBox(
-      width: _width,
+      width: kMoneyCardWidth,
       child: Surface.over(
         padding: EdgeInsets.all(AppSize.padding),
         child: Column(
@@ -91,6 +95,7 @@ class MoneyMethodCard extends StatelessWidget {
             SizedBox(height: AppSize.gap),
             TextMedium(method.title, bold: true, ellipsis: true),
             ..._lines(context),
+            ..._charge(context),
             if (method.instructions.isNotEmpty) ...[
               SizedBox(height: AppSize.gap),
               TextSmall(
@@ -125,6 +130,35 @@ class MoneyMethodCard extends StatelessWidget {
 
     return lines.isEmpty ? const [] : [SizedBox(height: AppSize.gap), ...lines];
   }
+
+  /// What money comes in as and what it costs: the account's currency, and its
+  /// commission when it has one. Apart from the account lines because they are
+  /// not read out to a customer — they are what the charge is built from.
+  List<Widget> _charge(BuildContext context) {
+    final currency = method.currency.isNotEmpty ? method.currency : main;
+
+    final lines = [
+      if (currency.isNotEmpty) _Field(
+        label: S.of(context).finance_method_currency,
+        value: currency
+      ),
+      if (!method.fee.isNone) _Field(
+        label: S.of(context).finance_method_fee,
+        value: method.fee.type == MoneyFeeType.percent
+          ? S.of(context).finance_method_fee_percent_value(
+              _percent(method.fee.value)
+            )
+          : moneyLabel(method.fee.value, currency)
+      )
+    ];
+
+    return lines.isEmpty ? const [] : [SizedBox(height: AppSize.gap), ...lines];
+  }
+
+  /// A percentage as a person writes it: `3` and not `3.0`, `2.5` as is.
+  static String _percent(double value) => value
+    .toStringAsFixed(2)
+    .replaceFirst(RegExp(r"\.?0+$"), "");
 
   /// What the four columns are called when no sheet says otherwise. It is the
   /// generic reading and the honest one: a rail nobody can ask about is one

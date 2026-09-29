@@ -18,6 +18,11 @@ class ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = context.watch<ClientService>();
+
+    // Signing out empties the client once home is left, but a route leaving
+    // with a transition can still be painted then.
+    if (!client.isAuthenticated) return const SizedBox.shrink();
+
     final picture = client.picture;
 
     return Padding(

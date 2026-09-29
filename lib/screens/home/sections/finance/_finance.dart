@@ -5,14 +5,18 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/money/money_bot_service.dart';
 import 'package:app/services/money/money_catalog_service.dart';
+import 'package:app/services/money/money_currencies_service.dart';
 import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/services/money/money_payments_service.dart';
 import 'package:app/services/money/money_receivables_service.dart';
 import 'package:app/services/money/money_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/no_permission.dart';
+import 'package:app/screens/home/sections/page_switcher.dart';
 import 'package:app/screens/home/sections/section_tabs.dart';
 
 import 'finance_tab.dart';
@@ -34,7 +38,7 @@ import 'finance_tab.dart';
 ///
 /// **The services live here and not in the app's scope.** Everything they
 /// hold —a summary of a window, what the bot cost over another, a page of
-/// history, a page of debts, the company's accounts— belongs to the company
+/// history, a page of debts, the company's accounts and currencies— belongs to the company
 /// being looked at and to nothing else, so leaving the section is exactly when
 /// it should be dropped. The
 /// concepts catalog is the one that does not depend on the company, but it is
@@ -55,6 +59,7 @@ class _FinanceSectionState extends State<FinanceSection> {
   final MoneyPaymentsService _payments = MoneyPaymentsService();
   final MoneyReceivablesService _receivables = MoneyReceivablesService();
   final MoneyMethodsService _methods = MoneyMethodsService();
+  final MoneyCurrenciesService _currencies = MoneyCurrenciesService();
   final MoneyCatalogService _catalog = MoneyCatalogService();
   final MoneyBotService _bot = MoneyBotService();
 
@@ -64,6 +69,7 @@ class _FinanceSectionState extends State<FinanceSection> {
     _payments.dispose();
     _receivables.dispose();
     _methods.dispose();
+    _currencies.dispose();
     _catalog.dispose();
     _bot.dispose();
 
@@ -74,9 +80,9 @@ class _FinanceSectionState extends State<FinanceSection> {
   FinanceTab get _tab => _tabOf(Navis.currentKey.value);
 
   /// Tab that the screen [currentKey] shows. The bare section
-  /// (`/home/finance`, which is where the side bar goes) opens the initial one.
+  /// (`/home/finance`, which is where the side bar goes) opens [FinanceTab.opening].
   FinanceTab _tabOf(String currentKey) =>
-    FinanceTab.byRouteKey(currentKey) ?? FinanceTab.initial;
+    FinanceTab.byRouteKey(currentKey) ?? FinanceTab.opening;
 
   /// Opens another tab.
   ///
@@ -89,6 +95,19 @@ class _FinanceSectionState extends State<FinanceSection> {
     if (tab == _tab) return;
 
     Navis.push(context, tab.path);
+  }
+
+  /// The open tab, or the "no access" message when it is not granted: the URL still
+  /// opens it (a link, the back button), so the check is here and not only in the bar.
+  Widget _body(BuildContext context, FinanceTab tab) {
+    if (PermissionsService().canOpen(tab.area)) return tab.build();
+
+    return NoPermissionSection(
+      key: ValueKey(tab.area),
+      permission: "${tab.area}.view",
+      title: tab.title(context),
+      surface: false
+    );
   }
 
   /// The body is rebuilt from [Navis.currentKey] and not from the rebuild of
@@ -106,7 +125,7 @@ class _FinanceSectionState extends State<FinanceSection> {
   /// must not happen.
   @override
   Widget build(BuildContext context) => MultiProvider(
-    // `.value` on all six: their lifecycle is this `State`'s —it created them
+    // `.value` on all seven: their lifecycle is this `State`'s —it created them
     // and disposes them— and not the provider's, which would destroy them on
     // any remount of the tree above.
     providers: [
@@ -114,13 +133,15 @@ class _FinanceSectionState extends State<FinanceSection> {
       ChangeNotifierProvider<MoneyPaymentsService>.value(value: _payments),
       ChangeNotifierProvider<MoneyReceivablesService>.value(value: _receivables),
       ChangeNotifierProvider<MoneyMethodsService>.value(value: _methods),
+      ChangeNotifierProvider<MoneyCurrenciesService>.value(value: _currencies),
       ChangeNotifierProvider<MoneyCatalogService>.value(value: _catalog),
       ChangeNotifierProvider<MoneyBotService>.value(value: _bot)
     ],
-    child: ValueListenableBuilder<String>(
-      valueListenable: Navis.currentKey,
-      builder: (context, currentKey, _) {
-        final tab = _tabOf(currentKey);
+    // Permissions too: a reread of `/init` may open or close the tab being looked at.
+    child: ListenableBuilder(
+      listenable: Listenable.merge([Navis.currentKey, PermissionsService()]),
+      builder: (context, _) {
+        final tab = _tabOf(Navis.currentKey.value);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,12 +151,13 @@ class _FinanceSectionState extends State<FinanceSection> {
               active: tab,
               icon: (value) => value.icon,
               title: (context, value) => value.title(context),
-              onTab: _openTab
+              onTab: _openTab,
+              isLocked: (value) => !PermissionsService().canOpen(value.area)
             ),
             SizedBox(height: AppSize.gap),
             Expanded(child: Surface(
               padding: EdgeInsets.all(AppSize.padding),
-              child: tab.build()
+              child: PageSwitcher(id: tab, child: _body(context, tab))
             ))
           ]
         );

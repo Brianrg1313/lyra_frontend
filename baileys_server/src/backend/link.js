@@ -551,7 +551,7 @@ class BackendLink {
     const ack = { TICKET: ticket, TO: to };
 
     try {
-      const messageId = await this._sessions.sendMessage(entry.sessionId, this._address(entry, to), { text });
+      const messageId = await this._sessions.sendMessage(entry.sessionId, this._address(entry, to), this._content(payload, text));
 
       ack.MESSAGE_ID = messageId ?? undefined;
 
@@ -580,6 +580,26 @@ class BackendLink {
       // what the backend's own note about an un-acked answer describes.
       this._logger.warn({ err: error.message, ticket }, "Could not acknowledge the answer");
     }
+  }
+
+  /// What Baileys is handed for one action. `kind` is "text" or "location"
+  /// (the company's pin, sent after an answer about where it is); a payload
+  /// with no `kind` predates the field and is text.
+  _content(payload, text) {
+    const location = payload?.location;
+
+    if (payload?.kind === "location" && Number.isFinite(location?.latitude) && Number.isFinite(location?.longitude)) {
+      return {
+        location: {
+          degreesLatitude: location.latitude,
+          degreesLongitude: location.longitude,
+          ...(location.name ? { name: location.name } : {}),
+          ...(location.address ? { address: location.address } : {})
+        }
+      };
+    }
+
+    return { text };
   }
 
   /// Blue ticks, "escribiendo…", the account showing as online. Emitted and
@@ -836,7 +856,13 @@ class BackendLink {
       TEXT: message.text ?? undefined,
       TIMESTAMP: message.timestamp,
       MEDIA: fits ? base64 : undefined,
-      MIME: fits && media?.mimetype ? media.mimetype : undefined
+      MIME: fits && media?.mimetype ? media.mimetype : undefined,
+      // The flat shape the backend's `messages/post.js` reads first. Without
+      // these a pin arrives as text and no delivery area can be asked about it.
+      LATITUDE: message.location?.latitude ?? undefined,
+      LONGITUDE: message.location?.longitude ?? undefined,
+      LABEL: message.location?.name ?? undefined,
+      ADDRESS: message.location?.address ?? undefined
     };
   }
 

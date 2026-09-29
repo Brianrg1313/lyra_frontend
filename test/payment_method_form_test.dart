@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/screens/modals/finance/payment_method_form/_payment_method_form.dart';
+import 'package:app/services/money/money_currency_model.dart';
 import 'package:app/services/money/money_method_model.dart';
 
 /// The account form asks what the **rail** asks and nothing else.
@@ -303,5 +304,130 @@ void main() {
     expect(body["LABEL"], "Caja");
     // Nothing else: cash has no account, so there is no column to write.
     expect(body.containsKey("ACCOUNT"), isFalse);
+  });
+
+  group('currency and commission', () {
+    const setup = MoneyCurrencies(
+      main: "USD",
+      exchanges: [MoneyExchange(currency: "VES", rate: 36.52)]
+    );
+
+    MoneyMethod zelle({Map<String, dynamic> extra = const {}}) =>
+      MoneyMethod.fromJson({
+        "id": "m3",
+        "code": "zelle",
+        "name": "Zelle",
+        ...extra
+      });
+
+    const rails = [MoneyRail(code: "zelle", name: "Zelle", method: "transfer")];
+
+    testWidgets('an edit hands back the currency and the commission', (
+      tester
+    ) async {
+      dynamic body;
+
+      await _open(tester, _host(
+        PaymentMethodFormModal(
+          rails: rails,
+          sheets: const {"zelle": []},
+          options: const {},
+          currencies: setup,
+          method: zelle(extra: const {
+            "currency": "VES",
+            "fee": {"type": "percent", "value": 3.5}
+          })
+        ),
+        (value) => body = value
+      ));
+
+      expect(tester.takeException(), isNull);
+      expect(find.widgetWithText(TextField, "3.5"), findsOneWidget);
+
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(body["CURRENCY"], "VES");
+      expect(body["FEE_TYPE"], "percent");
+      expect(body["FEE"], 3.5);
+    });
+
+    testWidgets('a percentage of a hundred or more is refused', (tester) async {
+      dynamic body = "untouched";
+
+      await _open(tester, _host(
+        PaymentMethodFormModal(
+          rails: rails,
+          sheets: const {"zelle": []},
+          options: const {},
+          currencies: setup,
+          method: zelle(extra: const {
+            "fee": {"type": "percent", "value": 3.5}
+          })
+        ),
+        (value) => body = value
+      ));
+
+      await tester.enterText(find.widgetWithText(TextField, "3.5"), "150");
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(body, "untouched");
+      expect(find.text(S.current.finance_method_fee_error), findsOneWidget);
+    });
+
+    testWidgets('a rail that moves one currency is saved in it, and warned of '
+      'when nothing can price it', (tester) async {
+      dynamic body;
+
+      await _open(tester, _host(
+        PaymentMethodFormModal(
+          rails: const [
+            MoneyRail(code: "pago_movil", name: "Pago movil", currency: "VES")
+          ],
+          sheets: {"pago_movil": _pagoMovil},
+          options: _options,
+          // The company takes nothing but dollars yet.
+          currencies: const MoneyCurrencies(main: "USD"),
+          method: _method()
+        ),
+        (value) => body = value
+      ));
+
+      expect(
+        find.text(S.current.finance_method_currency_missing("VES")),
+        findsOneWidget
+      );
+
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(body["CURRENCY"], "VES");
+    });
+
+    testWidgets('without a setup the currency is not asked nor sent', (
+      tester
+    ) async {
+      dynamic body;
+
+      await _open(tester, _host(
+        PaymentMethodFormModal(
+          rails: rails,
+          sheets: const {"zelle": []},
+          options: const {},
+          method: zelle()
+        ),
+        (value) => body = value
+      ));
+
+      expect(find.text(S.current.finance_method_currency), findsNothing);
+
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(body.containsKey("CURRENCY"), isFalse);
+      // No commission on an edit is still said: it is how one is taken off.
+      expect(body["FEE_TYPE"], "none");
+    });
   });
 }

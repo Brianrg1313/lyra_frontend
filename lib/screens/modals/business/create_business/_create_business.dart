@@ -115,7 +115,7 @@ class _CreateBusinessModalState extends State<CreateBusinessModal> {
       .then((_) {
         if (!mounted) return;
         _form.loading.value = false;
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       })
       .catchError((E) {
         if (!mounted) return;

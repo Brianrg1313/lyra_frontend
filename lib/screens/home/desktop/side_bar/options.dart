@@ -5,9 +5,9 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
 import 'package:app/screens/home/sections/_sections.dart';
-import 'package:app/screens/pos/_pos.dart';
 
 import './option.dart';
 
@@ -25,41 +25,37 @@ import './option.dart';
 /// latter is how the first gets created —the same path the header selector
 /// offers—.
 ///
-/// Only whether an active business **exists** is watched, not the whole
-/// service: switching businesses changes nothing in this list, and neither do
-/// the rest of its notifications (a creation, loading the detail).
+/// With one, a section the person is not granted (`<section>.view` in
+/// [PermissionsService], section keys being area keys) is locked the same way,
+/// so the side bar keeps its shape across companies, but it still opens: the
+/// section is drawn as `NoPermissionSection`, which is where access is asked.
+/// The businesses option is always granted to a member, and the dashboard is
+/// not a company's.
+///
+/// Only the active business **id** is watched, not the whole service: the
+/// grants are per company, so a switch relocks the list, but the rest of its
+/// notifications (a creation, loading the detail) change nothing here.
 List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) {
-  final hasBusiness = context.select<BusinessService, bool>(
-    (service) => service.activeId != null
+  final businessId = context.select<BusinessService, String?>(
+    (service) => service.activeId
   );
+  final permissions = context.watch<PermissionsService>();
+
+  String? lock(HomeSection section) {
+    if (businessId == null) {
+      return section.needsBusiness ? S.of(context).section_no_business_subtitle : null;
+    }
+
+    return permissions.canOpen(section.key, business: businessId)
+      ? null
+      : S.of(context).section_no_permission;
+  }
 
   Widget option(HomeSection section) =>
-    _option(context, section, active, isExpanded, hasBusiness);
+    _option(context, section, active, isExpanded, lock(section), businessId != null);
 
   return [
     ...HomeSection.home.map(option),
-    Sp(isExpanded, title: S.of(context).section_transactions),
-    ...HomeSection.transactions.map(option),
-    // The POS closes the transactions group and is **not** one of its
-    // sections: it leaves the home and opens its own page (see [Pos]), so it
-    // has no [HomeSection] to be mapped from and is built by hand. It is still
-    // listed because for whoever uses it it is another place to go, and this is
-    // the only index the app has — and it goes last because it is the option
-    // that walks out of this shell.
-    //
-    // It is never marked active: while in the POS this side bar is not on
-    // screen.
-    //
-    // It is locked without a business for the same reason as the sections that
-    // depend on one: what is sold at the counter is the catalog of a business.
-    Option(
-      key: const ValueKey(Pos.routeKey),
-      icon: CI.cashbox,
-      title: S.of(context).pos,
-      isExpanded: isExpanded,
-      isLocked: !hasBusiness,
-      action: () => context.read<HomeService>().goToPos(context)
-    ),
     Sp(isExpanded, title: S.of(context).section_products),
     ...HomeSection.products.map(option),
     Sp(isExpanded, title: S.of(context).section_reports),
@@ -74,14 +70,16 @@ Widget _option(
   HomeSection section,
   HomeSection active,
   bool isExpanded,
-  bool hasBusiness
+  String? lockedMessage,
+  bool opensLocked
 ) => Option(
   key: ValueKey(section.key),
   icon: section.icon,
   title: section.title(context),
   isExpanded: isExpanded,
   isActive: section == active,
-  isLocked: !hasBusiness && section.needsBusiness,
+  lockedMessage: lockedMessage,
+  opensLocked: opensLocked,
   action: () => context.read<HomeService>().goTo(context, section)
 );
 

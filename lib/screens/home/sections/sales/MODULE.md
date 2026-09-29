@@ -14,7 +14,7 @@ by `_sales.dart`, not app-wide. Contracts and model rules: `lib/services/MODULE.
 - `/home/sales` opens `SalesTab.initial` (`process`). One route per tab from `SalesTab.values`:
   `/home/sales/<key>`, `routeKey = "sales_<key>"`, `parents: ["sales"]`, `shell: Home.shell`.
 - `SalesTab.key` **is** the backend's `SECTION` (`process`/`done`) — do not translate between them.
-- `_sales.dart` reads the tab inside a `ValueListenableBuilder` on `Navis.currentKey` (the const-section trap, see home module).
+- `_sales.dart` reads the tab inside a `ListenableBuilder` on `Navis.currentKey` + `PermissionsService` (the const-section trap, see home module).
 - No `:id`: endpoints answer for the `business_id` header; a business switch remounts the section.
 
 ## Invariants
@@ -45,8 +45,8 @@ by `_sales.dart`, not app-wide. Contracts and model rules: `lib/services/MODULE.
 ## Files
 
 - `_sales.dart` — `SalesSection`: creates/provides both services, `SectionTabs` + the active
-  board, keyed by tab (fresh `State` per tab).
-- `sales_tab.dart` — `enum SalesTab { process, done }`: `key icon section routeKey path`, `initial = process`. Route table reads it.
+  board, keyed by tab (fresh `State` per tab), or `NoPermissionSection` when not granted (see home module).
+- `sales_tab.dart` — `enum SalesTab { process, done }`: `key icon section routeKey path area`, `initial = process`, `opening`. Route table reads it.
 - `sales_board.dart` — `SalesBoard({section})`: bar, table, "load more". Loads on first frame,
   applies header search (code · customer · seller), opens `showSaleDetail` and acts on its
   `SaleDetailRequest` (handover form, or approval via `showAlertModal` + `SalesService.approve`).

@@ -107,6 +107,62 @@ class MoneyPaymentOption {
   bool get isValid => code.isNotEmpty && name.isNotEmpty;
 }
 
+/// How a payment method's commission is charged.
+///
+/// `none` is a value and not a missing one: most rails charge nothing, and a
+/// method that says so is different from one whose commission was never read.
+enum MoneyFeeType {
+  none,
+  fixed,
+  percent;
+
+  static MoneyFeeType from(dynamic raw) => switch (raw?.toString().toLowerCase()) {
+    "fixed" => fixed,
+    "percent" => percent,
+    _ => none
+  };
+
+  String get value => name;
+}
+
+/// What a payment method charges on top of the sale, from `fee` of
+/// `GET /money/methods` (`{type, value}`).
+///
+/// It is **added to what the customer is charged**, and the backend does the
+/// adding: a card terminal that keeps 3% or a Zelle that costs a dollar per
+/// transfer is the company's cost unless the charge carries it. Nothing here
+/// computes it, as nothing in this app adds money up.
+///
+/// A [MoneyFeeType.fixed] [value] is an amount **in the method's own
+/// currency** (a Pago Movil's commission is in bolivars); a
+/// [MoneyFeeType.percent] one is written 3 and never 0.03, the way the POS tax
+/// is.
+class MoneyFee {
+  const MoneyFee({this.type = MoneyFeeType.none, this.value = 0});
+
+  final MoneyFeeType type;
+  final double value;
+
+  factory MoneyFee.fromJson(dynamic data) {
+    if (data is! Map) return const MoneyFee();
+
+    final type = MoneyFeeType.from(data["type"]);
+    final value = switch (data["value"]) {
+      final num number => number.toDouble(),
+      final String text => double.tryParse(text.trim()) ?? 0,
+      _ => 0.0
+    };
+
+    // A commission of nothing is no commission, whatever the type says: it is
+    // what a row edited by hand looks like, and a `0%` on a card is noise.
+    return type == MoneyFeeType.none || value <= 0
+      ? const MoneyFee()
+      : MoneyFee(type: type, value: value);
+  }
+
+  bool get isNone => type == MoneyFeeType.none;
+}
+
 /// A rail the company **may** turn on, from `GET /business/payments`.
 ///
 /// It is the catalog the account form picks from, and it is not the same list
@@ -126,6 +182,7 @@ class MoneyRail {
     this.methodName = "",
     this.scope = "",
     this.icon = "",
+    this.currency = "",
     this.reference = false,
     this.change = false
   });
@@ -152,6 +209,13 @@ class MoneyRail {
   /// `/init` hands over, exactly as a country's flag is.
   final String icon;
 
+  /// The one currency the rail moves, when it only moves one: a Pago Movil is
+  /// bolivars whatever the shop's catalog is priced in, a Zelle is dollars.
+  /// Empty when it takes any (cash, a bank transfer), and then the company
+  /// picks. It is the rail's answer and not the app's, like the templates the
+  /// backend renders with it (`model:/money/templates.js`).
+  final String currency;
+
   /// Whether a payment through it carries a number the company writes down
   /// (a transfer's, a terminal's authorization code).
   final bool reference;
@@ -167,6 +231,7 @@ class MoneyRail {
     methodName: (data["methodName"] ?? "").toString(),
     scope: (data["scope"] ?? "").toString(),
     icon: (data["icon"] ?? "").toString(),
+    currency: (data["currency"] ?? "").toString().trim().toUpperCase(),
     reference: data["reference"] == true || data["reference"] == 1,
     change: data["change"] == true || data["change"] == 1
   );
@@ -204,6 +269,8 @@ class MoneyMethod {
     this.account = "",
     this.instructions = "",
     this.icon = "",
+    this.currency = "",
+    this.fee = const MoneyFee(),
     this.reference = false,
     this.change = false,
     this.position = 0
@@ -256,6 +323,15 @@ class MoneyMethod {
   /// Asset id of the rail's logo. See [MoneyRail.icon].
   final String icon;
 
+  /// The currency money comes into this account in: the company's main one or
+  /// one of its exchange currencies (`MoneyCurrencies.codes`). Empty on a row
+  /// saved before accounts had one, and then it reads as the main currency,
+  /// which is what the backend assumes too.
+  final String currency;
+
+  /// What it charges on top of the sale. See [MoneyFee].
+  final MoneyFee fee;
+
   /// Whether a payment into this account carries a reference number.
   final bool reference;
 
@@ -279,6 +355,8 @@ class MoneyMethod {
     account: (data["account"] ?? "").toString(),
     instructions: (data["instructions"] ?? "").toString(),
     icon: (data["icon"] ?? "").toString(),
+    currency: (data["currency"] ?? "").toString().trim().toUpperCase(),
+    fee: MoneyFee.fromJson(data["fee"]),
     reference: data["reference"] == true || data["reference"] == 1,
     change: data["change"] == true || data["change"] == 1,
     position: _int(data["position"])

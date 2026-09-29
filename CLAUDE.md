@@ -43,7 +43,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 
 - **toolkit.dart** (= core.dart + S): `PageBuilder` `Skeleton` `Header` `FloatHeader`
   `Surface` (`.over/.line/.glass/.gradient`) `Separator` (`.horizontal/.vertical`)
-  `TextSmall` `TextMedium` `TextLarge` `TextFont` `Loading` `AnimatedNumber`
+  `TextSmall` `TextMedium` `TextLarge` `TextInter` `TextFont` `Loading` `AnimatedNumber`
   `FeedbackButton` `FocusableWidget` `ScrollableWidget` `HideKeyboard` `IsKeyboardVisible`
   `ColorPicker` `ColorPickerField` `ColorPickerController` `DataTableView` `TableColumn`
   `TableController` `TableStyle` `ChartView` `ChartSeries` `ChartFormat` `StatTile`
@@ -63,6 +63,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 ### App-level shared widgets — check before building a new one
 
 - `SectionTabs<T>` (`lib/screens/home/sections/section_tabs.dart`) — tab bar of any tabbed section.
+- `PageSwitcher` (`lib/screens/home/sections/page_switcher.dart`) — animated swap of a section's sub-pages/tab bodies.
 - `SectionMessage` (`lib/screens/home/sections/section_message.dart`) — full-section empty/error/loading.
 - `SettingsBlock` `SettingsRow` `SettingsTag`… (`lib/screens/modals/shared/settings/settings_block.dart`) — read-only panel rows.
 - `BusinessListener` (`lib/screens/home/sections/business_listener.dart`) — sub-page reacting to a business switch.
@@ -79,14 +80,17 @@ the single import for screens; never import `package:core/core.dart` directly.
 | toolkit | `lib/toolkit` | App wiring: api/socket instances, routes, themes, bootstrap hooks, barrel export. | `lib/toolkit/MODULE.md` |
 | services | `lib/services` | State and backend access: `ChangeNotifier` services, models, request bodies. No widgets. | `lib/services/MODULE.md` |
 | home | `lib/screens/home` | Main shell: side bar, header, section router. Every `/home/...` route renders this one page. | `lib/screens/home/MODULE.md` |
-| business section | `lib/screens/home/sections/business` | Business page and its tabs (statistics, employees, branches, location, delivery, clients, settings/profile). | `.../business/MODULE.md` |
+| business section | `lib/screens/home/sections/business` | Business page and its tabs (statistics, employees, branches, clients, settings/profile). | `.../business/MODULE.md` |
 | inventory section | `lib/screens/home/sections/inventory` | Product tables: list + stock summary, and the spreadsheet view of one table. | `.../inventory/MODULE.md` |
 | channels section | `lib/screens/home/sections/channels` | AI channels: grid, edit page, form blocks shared with the create/detail panels. | `.../channels/MODULE.md` |
 | connections section | `lib/screens/home/sections/connections` | Third-party accounts: list and create/edit form. | `.../connections/MODULE.md` |
+| messages section | `lib/screens/home/sections/messages` | Conversation desk (`/aries/v1`): inbox (1/3) and open chat (2/3), live via sockets. | `.../messages/MODULE.md` |
+| deliveries section | `lib/screens/home/sections/deliveries` | Deliveries desk, below messages in the side bar: pending list (placeholder, no endpoint yet) and a map drawn by the self-hosted tile server (`/scorpius`); settings and delivery-area sub-pages. | `.../deliveries/MODULE.md` |
 | sales section | `lib/screens/home/sections/sales` | Live sales board (sockets), two tabs: in process / done. | `.../sales/MODULE.md` |
 | finance section | `lib/screens/home/sections/finance` | Company money: overview, payments, receivables, payment methods. | `.../finance/MODULE.md` |
 | modals | `lib/screens/modals` | Every dialog and side panel, grouped by the section that opens it. | `lib/screens/modals/MODULE.md` |
-| auth | `lib/screens/login`, `lib/screens/sign_up` | Sign in (+ email code step) and sign up (+ verification step). | `lib/screens/login/MODULE.md` |
+| auth | `lib/screens/authentication` | One email-only entry (`/login`) that branches to sign in (password, code) or sign up (code). | `lib/screens/authentication/MODULE.md` |
+| pre_start | `lib/screens/pre_start` | Pages before the home, one per pending `/init` task (`welcome`: no company or a pending invitation). | `lib/screens/pre_start/MODULE.md` |
 | pos | `lib/screens/pos` | Standalone point-of-sale mode (`/pos`), three panels, no home shell. | `lib/screens/pos/MODULE.md` |
 | i18n | `lib/l10n`, `lib/generated` | `intl_en.arb` and generated `S`. All user-facing strings. | `lib/l10n/MODULE.md` |
 | tests | `test` | Widget and unit tests, flat, one file per behaviour. | `test/MODULE.md` |

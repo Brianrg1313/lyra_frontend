@@ -5,13 +5,16 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/business/business_delivery_service.dart';
-import 'package:app/services/business/business_location_service.dart';
+import 'package:app/services/business/business_branches_service.dart';
+import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/business/business_model.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/business_listener.dart';
+import 'package:app/screens/home/sections/no_permission.dart';
+import 'package:app/screens/home/sections/page_switcher.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 
 import 'business_tab.dart';
@@ -80,6 +83,20 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _sync();
     });
+
+    PermissionsService().addListener(_onPermissions);
+  }
+
+  @override
+  void dispose() {
+    PermissionsService().removeListener(_onPermissions);
+    super.dispose();
+  }
+
+  /// A reread of `/init` may open or close the tab being looked at. The shell hands this
+  /// section back as a `const`, so its own rebuild does not reach here.
+  void _onPermissions() {
+    if (mounted) setState(() {});
   }
 
   /// Leaves the business of the URL as the active one and requests its profile.
@@ -136,9 +153,11 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     _urlId ?? service.activeId ?? "";
 
   /// Open tab, which is the active screen: every tab is a route. The link of a
-  /// business without a tab opens the initial one.
+  /// business without a tab opens [BusinessTab.opening].
   BusinessTab get _tab =>
-    BusinessTab.byRouteKey(Navis.currentKey.value) ?? BusinessTab.initial;
+    BusinessTab.byRouteKey(Navis.currentKey.value) ?? BusinessTab.opening;
+
+  bool _granted(BusinessTab tab) => PermissionsService().canOpen(tab.area);
 
   @override
   Widget build(BuildContext context) {
@@ -149,25 +168,40 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     // is enough to know if the id is one of theirs without waiting for the
     // profile.
     final business = service.byId(id);
+    final ownsSurface = business != null
+      && service.activeId == id
+      && _tab.ownsSurface
+      && _granted(_tab);
 
-    // The location and the delivery are read by their tabs but belong to the
+    // The branches and the people are read by their tabs but belong to the
     // page: switching tabs does not ask for them again, and a business switch
     // remounts the page, which is what drops them (every one of their
     // endpoints answers for the active business). Lazy, so a visit that never
-    // opens those tabs never builds them.
+    // opens a tab never builds its service.
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => BusinessLocationService()),
-        ChangeNotifierProvider(create: (_) => BusinessDeliveryService())
+        ChangeNotifierProvider(create: (_) => BusinessBranchesService()),
+        ChangeNotifierProvider(create: (_) => BusinessEmployeesService())
       ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           BusinessDetailHeader(tab: _tab, onTab: _openTab),
           SizedBox(height: AppSize.gap),
-          Expanded(child: Surface(
-            padding: EdgeInsets.all(AppSize.padding),
-            child: _body(context, service, id, business)
+          // Two switchers so the shared sheet does not blink between the tabs
+          // drawn on it: those animate inside it, and the sheet itself only
+          // swaps against a tab that brings its own.
+          Expanded(child: PageSwitcher(
+            id: ownsSurface ? _tab : #sheet,
+            child: ownsSurface
+              ? _tab.build()
+              : Surface(
+                  padding: EdgeInsets.all(AppSize.padding),
+                  child: PageSwitcher(
+                    id: _tab,
+                    child: _body(context, service, id, business)
+                  )
+                )
           ))
         ])
     );
@@ -212,6 +246,17 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     // previous business, so nothing is shown until the shell remounts this
     // screen with the new business.
     if (service.activeId != id) return const Center(child: Loading());
+
+    // Not granted: the URL still opens it (a link, the back button), so the check is here
+    // and not only in the tab bar.
+    if (!_granted(_tab)) {
+      return NoPermissionSection(
+        key: ValueKey(_tab.area),
+        permission: "${_tab.area}.view",
+        title: _tab.title(context),
+        surface: false
+      );
+    }
 
     return _tab.build();
   }

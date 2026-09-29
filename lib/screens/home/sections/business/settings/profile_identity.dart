@@ -39,9 +39,9 @@ class BusinessProfileIdentity extends StatelessWidget {
 
   final BusinessProfileModel profile;
 
-  /// The short name is the one that goes in lists and menus, so it carries no
-  /// punctuation: letters (with accents and ñ), digits, spaces and dashes.
-  static const _namePattern = "[A-Za-z0-9 _ñáéíóúÑÁÉÍÓÚ-]";
+  /// Any character, like the backend's `NAME` rule: names are written in
+  /// every language, with its letters and its punctuation.
+  static const _namePattern = "IGNORE";
 
   /// The caption is a sentence, so it carries a sentence's punctuation: opening
   /// and closing marks, quotes, parentheses and the symbols that appear in a
@@ -49,10 +49,9 @@ class BusinessProfileIdentity extends StatelessWidget {
   static const _captionPattern =
     "[A-Za-z0-9 .,;:!¡?¿'\"()/&%@#+=*_üÜñáéíóúÑÁÉÍÓÚ-]";
 
-  /// Letters (with accents and diaeresis), ñ, digits and the habitual
-  /// punctuation of a legal name: `Acme S.A.`, `Foo & Bar, Ltd.` It's the same
-  /// set the onboarding accepts: it's the same name, written at another time.
-  static const _legalNamePattern = "[A-Za-z0-9 .,&'()üÜñáéíóúÑÁÉÍÓÚ-]";
+  /// Any character, like the backend's `LEGAL_NAME` rule: `Acme S.A.`,
+  /// `Müller & Söhne GmbH`, `株式会社` are all legal names.
+  static const _legalNamePattern = "IGNORE";
 
   /// The handle is for links and search, so it carries no spaces or loose
   /// punctuation. The backend stores it in lowercase: writing it in uppercase

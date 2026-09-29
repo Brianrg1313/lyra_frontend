@@ -31,12 +31,33 @@ function extractText(content) {
   );
 }
 
+/// The pin of a location message: coordinates plus the two lines the phone
+/// labels it with, or null. It has to travel as numbers — the backend measures
+/// a pin against the company's drawn delivery areas, and without them every
+/// shared location reached it as the bare text `[ubicación compartida]`, which
+/// the assistant then answered "sí, llegamos" to with nothing measured
+/// (22/09/2026). A live location is read as its first fix.
+function extractLocation(content) {
+  const pin = content?.locationMessage ?? content?.liveLocationMessage ?? null;
+  const latitude = Number(pin?.degreesLatitude);
+  const longitude = Number(pin?.degreesLongitude);
+
+  if (!pin || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+  return {
+    latitude,
+    longitude,
+    name: pin.name || null,
+    address: pin.address || null
+  };
+}
+
 function detectType(content) {
   if (!content) return "unknown";
   const [key] = Object.keys(content);
   if (MEDIA_TYPES[key]) return MEDIA_TYPES[key];
   if (key === "conversation" || key === "extendedTextMessage") return "text";
-  if (key === "locationMessage") return "location";
+  if (key === "locationMessage" || key === "liveLocationMessage") return "location";
   if (key === "contactMessage" || key === "contactsArrayMessage") return "contact";
   if (key === "buttonsResponseMessage" || key === "listResponseMessage") return "reply";
   return key || "unknown";
@@ -81,7 +102,8 @@ async function mapMessage(sock, waMessage, logger) {
     timestamp: Number(waMessage.messageTimestamp) || Math.floor(Date.now() / 1000),
     type,
     text: extractText(content),
-    media: null
+    media: null,
+    location: extractLocation(content)
   };
 
   const mediaField = MEDIA_TYPES[Object.keys(content ?? {})[0]];

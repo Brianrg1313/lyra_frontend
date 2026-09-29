@@ -1,16 +1,29 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:core/navis/navis.dart';
+import 'package:flutter/widgets.dart' show BuildContext, WidgetsBinding;
+import 'package:provider/provider.dart';
+import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/client/client_model.dart';
+import 'package:app/services/client/client_task.dart';
+import 'package:app/services/client/employment_invitation_model.dart';
 import 'package:app/toolkit/api.dart';
 
 // SERVICES
 import 'package:app/services/database/database_service.dart';
+import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/home/home_service.dart';
+import 'package:app/services/baileys/baileys_service.dart';
+import 'package:app/services/channels/channels_service.dart';
+import 'package:app/services/channels/channel_catalog_service.dart';
+import 'package:app/services/connections/connections_service.dart';
+import 'package:app/services/connections/connection_catalog_service.dart';
+import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// State of the authenticated client.
@@ -29,11 +42,27 @@ import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 /// downloaded from—. This service is the only one that reads that endpoint, so
 /// it is the one that hands each block to whoever manages it: [BusinessService]
 /// the companies, [CountryCatalogService] and [CurrencyCatalogService] the
-/// catalogs, and [CdnService] the image bases. None is stored here.
+/// catalogs, [CdnService] the image bases and [PermissionsService] what the
+/// person may do in each company. None is stored here.
 class ClientService extends ChangeNotifier {
+  ClientService() {
+    onSessionRejected = _expire;
+  }
+
   final DatabaseService _database = DatabaseService();
 
   ClientModel? _client;
+
+  List<ClientTask> _tasks = const [];
+
+  /// What the person must do before the dashboard, in order (`/init`'s `tasks`).
+  List<ClientTask> get tasks => _tasks;
+
+  /// The invitations of the pending `employment.invitation` task, if any.
+  List<EmploymentInvitation> get invitations => [
+    for (final task in _tasks)
+      if (task.key == ClientTaskKey.invitation) ...task.invitations
+  ];
 
   bool get isAuthenticated => _client != null;
 
@@ -44,10 +73,15 @@ class ClientService extends ChangeNotifier {
 
   /// Loads the client if there is a valid session.
   ///
-  /// Returns the route to redirect to, or `null` if the session is valid and
-  /// the client ended up loaded.
+  /// Returns the route to redirect to, or `null` if the session is valid, the
+  /// client ended up loaded and nothing is pending. A pending task with a
+  /// screen wins over the dashboard and over a deep link: the backend lists
+  /// what must be done before either.
   Future<String?> resolve() async {
-    final hasSession = await _database.hasInSecure(api.current.tokenName);
+    // A cookie session cannot be seen from here (it is `HttpOnly`): only
+    // `/init` can tell, and a missing cookie answers 401 → `/login` below.
+    final hasSession = useCookieSession ||
+      await _database.hasInSecure(api.current.tokenName);
 
     if (!hasSession) {
       return "/login";
@@ -70,13 +104,9 @@ class ClientService extends ChangeNotifier {
     });
 
     if (page != null) {
-      // The stored session is no longer useful: the token is discarded so as
-      // not to drag a dead credential into the next requests nor retry `/init`
-      // on the next cold start (which would fail again with 401), and the
-      // socket is cut, which authenticates with that same token.
-      api.token = null;
-      ConnectionService().close();
-      await _database.deleteSecure(api.current.tokenName);
+      // The stored session is no longer useful: without discarding it, the
+      // next cold start would retry `/init` with it and fail again with 401.
+      await _dropSession();
       return page;
     }
 
@@ -90,11 +120,19 @@ class ClientService extends ChangeNotifier {
     // someone looks at them they already have what to answer with.
     _seedCatalogs(clientData);
 
+    final client = ClientModel.fromJson(clientData);
+
+    // Before the businesses: seeding them activates the one this account last
+    // worked in, which is a per-account preference.
+    PreferencesService().bindUser(client.username);
+
     // The companies collection is managed by BusinessService; here only the
     // block the session brought is handed to it.
     businessService.seed(clientData["businesses"]);
+    _seedPermissions(clientData);
 
-    update(ClientModel.fromJson(clientData));
+    _tasks = ClientTask.listFromJson(clientData["tasks"]);
+    update(client);
 
     // The session was confirmed by the backend: only here does the socket have
     // valid credentials to present in the handshake. Without waiting for it,
@@ -103,6 +141,15 @@ class ClientService extends ChangeNotifier {
     // open: the client retries on its own and `ConnectionService` does not
     // throw).
     unawaited(ConnectionService().open());
+
+    for (final task in _tasks) {
+      // Someone who already works at a company does not owe an answer before
+      // the dashboard: the invitation waits, and they go in.
+      if (task.key == ClientTaskKey.invitation && businessService.hasBusiness) continue;
+
+      final route = task.key.route;
+      if (route != null) return route;
+    }
 
     return null;
   }
@@ -123,6 +170,14 @@ class ClientService extends ChangeNotifier {
     if (countries != null) CountryCatalogService().seed(countries);
     if (currencies != null) CurrencyCatalogService().seed(currencies);
     if (cdn != null) CdnService().seed(cdn);
+  }
+
+  /// Hands `/init`'s `permissions` to [PermissionsService]. Absent (an older
+  /// backend) leaves it unloaded, which hides nothing.
+  void _seedPermissions(Map clientData) {
+    final permissions = clientData["permissions"];
+
+    if (permissions != null) PermissionsService().seed(permissions);
   }
 
   /// Rereads the platform configuration with the app running.
@@ -156,6 +211,127 @@ class ClientService extends ChangeNotifier {
     if (data is! Map) return;
 
     _seedCatalogs(data);
+    // Grants change mid-session (a role edited by an admin); seeding them
+    // does not touch the active company.
+    _seedPermissions(data);
+  }
+
+  /// Accepts an invitation (`PUT /profile/employments/`, `ACTION: accept`):
+  /// the job becomes active and the company can read the person's profile.
+  /// Throws the api error; whoever calls it shows it. The pending task is not
+  /// touched here: the caller re-`resolve()`s so `/init` says what is left.
+  Future<void> acceptInvitation(String id) => api.put(
+    path: "/profile/employments/",
+    version: "v1",
+    data: {"ID": id, "ACTION": "accept"}
+  );
+
+  bool _signingOut = false;
+
+  /// Closes the session: on the backend first, then everything this app holds
+  /// from it, and lands on `/login`.
+  ///
+  /// The backend is told while the token still exists (the logout route reads
+  /// it from the Authorization header) and it closes the session in MySQL,
+  /// evicts it from the Redis cache and disconnects its sockets. Its failure
+  /// does not keep anyone signed in: whoever presses "sign out" expects to
+  /// leave, and a token this app forgets is one nobody sends again — the
+  /// backend expires it on its own. Hence the timeout too: an unreachable
+  /// server must not leave the button hanging.
+  ///
+  /// It takes a [BuildContext] only to reach the services provided with
+  /// `create:` in `initialBuilder`, which have no global instance. They are
+  /// read **before** anything awaits, because the context is home's and home
+  /// goes away with the navigation.
+  ///
+  /// The services are emptied only after leaving home, never before: the
+  /// shell reads the client (profile card) and the active business while it
+  /// is mounted, and emptying them under it would draw a shell without a
+  /// session for a frame — or trip [client]'s assert.
+  Future<void> signOut(BuildContext context) => _end(context, expired: false);
+
+  /// The backend refused the session mid-use ([onSessionRejected]): the same
+  /// teardown as [signOut], without telling the backend what it already
+  /// knows, and with a flag so landing on `/login` is not a mystery.
+  ///
+  /// Only for a loaded session: a `401` while signing in or inside [resolve]
+  /// is already handled by whoever made that call. The navigator's context is
+  /// below the providers (`initialBuilder` wraps the app), so it reaches the
+  /// same services the home's context does.
+  void _expire() {
+    final context = Navis.delegate.navigatorKey.currentContext;
+    if (context == null || !isAuthenticated) return;
+
+    unawaited(_end(context, expired: true));
+  }
+
+  Future<void> _end(BuildContext context, {required bool expired}) async {
+    if (_signingOut || !isAuthenticated) return;
+    _signingOut = true;
+
+    final home = context.read<HomeService>();
+    final baileys = context.read<BaileysService>();
+    final tables = context.read<TablesService>();
+    final channels = context.read<ChannelsService>();
+    final channelCatalog = context.read<ChannelCatalogService>();
+    final connections = context.read<ConnectionsService>();
+    final connectionCatalog = context.read<ConnectionCatalogService>();
+
+    try {
+      if (!expired) {
+        var closed = true;
+
+        await api
+          .post(path: "/authentication/logout/", version: "v1")
+          .timeout(const Duration(seconds: 5))
+          .catchError((E) {
+            if (kDebugMode) print("signOut: backend logout failed: $E");
+            // A session the backend already refuses is as closed as it gets.
+            if (!(E is Map && E["action"] == "login")) closed = false;
+            return null;
+          });
+
+        // With a cookie session only the backend can forget the credential
+        // (the cookie is `HttpOnly`): leaving for `/login` anyway would look
+        // signed out while the next reload walks straight back in.
+        if (!closed && useCookieSession) {
+          FloatFlag.of().error(message: S.current.sign_out_failed);
+          return;
+        }
+      }
+
+      await baileys.signOut();
+      await _dropSession();
+
+      if (context.mounted) Navis.pushAndClearStack(context, "/login");
+      await WidgetsBinding.instance.endOfFrame;
+
+      if (expired) FloatFlag.of().alert(message: S.current.session_expired);
+
+      home.clearSearch();
+      tables.clear();
+      channels.clear();
+      channelCatalog.clear();
+      connections.clear();
+      connectionCatalog.clear();
+      businessService.clear();
+      CountryCatalogService().clear();
+      CurrencyCatalogService().clear();
+      CdnService().clear();
+      PermissionsService().clear();
+      clear();
+    } finally {
+      _signingOut = false;
+    }
+  }
+
+  /// Forgets the credential: from memory (shared by every api through the
+  /// token registry, socket included), from secure storage, and the socket
+  /// that authenticated with it.
+  Future<void> _dropSession() async {
+    api.token = null;
+    ConnectionService().close();
+    await _database.deleteSecure(api.current.tokenName);
   }
 
   void update(ClientModel value) {
@@ -165,6 +341,8 @@ class ClientService extends ChangeNotifier {
 
   void clear() {
     _client = null;
+    PreferencesService().bindUser(null);
+    _tasks = const [];
     // Without a session there is nothing to listen to. `close` does not release
     // the listeners, so the next sign in receives the same events again.
     ConnectionService().close();

@@ -59,18 +59,11 @@ void main() {
       }
     });
 
-    test('the money option sits in the transactions group', () {
-      // It used to sit right after the business one, as the same subject seen
-      // from the other side. It moved when there was somewhere better: the
-      // group of the sale end to end — what the company has going, and the
-      // money those sales brought in — where it is opened next to the board
-      // and the counter rather than on its own. It is still not a report.
-      expect(
-        HomeSection.transactions,
-        [HomeSection.sales, HomeSection.finance]
-      );
-      expect(HomeSection.home, [HomeSection.dashboard, HomeSection.business]);
-      expect(HomeSection.reports.contains(HomeSection.finance), isFalse);
+    test('the money option opens the reports group', () {
+      // The money is what gets looked back at, so it leads the reports; the
+      // screens used all day moved up to the untitled top group.
+      expect(HomeSection.reports.first, HomeSection.finance);
+      expect(HomeSection.home.contains(HomeSection.finance), isFalse);
     });
 
     test('the money section needs a business', () {

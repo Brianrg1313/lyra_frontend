@@ -268,7 +268,10 @@ class _StockMovementModalState extends State<StockMovementModal> {
       ]
     );
 
-    final form = ConstrainedBox(
+    // The scroll's end comes from the modal: the desktop panel hands its
+    // content only the room under its header, and the phone sheet bounds it
+    // against the screen.
+    return ConstrainedBox(
       // The width goes **fixed** and not as a cap: the modal box measures
       // what its content measures, so a width with only a ceiling leaves it
       // at the width of the longest row inside —the explanation of an option,
@@ -285,25 +288,6 @@ class _StockMovementModalState extends State<StockMovementModal> {
       // fit. It scrolls inside instead of overflowing.
       child: SingleChildScrollView(child: content)
     );
-
-    // And so that scroll is useful, the form needs to know how far it can
-    // grow.
-    //
-    // On a phone sheet it already knows: the modal passes it bounded against
-    // the screen. On the desktop panel it does not —it is passed the height
-    // **unbounded**, stacks its header and what it is given, and if the sum
-    // does not fit it overflows— and there it has to be asked for. [Flexible]
-    // is how it is asked: it stops being "whatever the form measures" and
-    // becomes "whatever is left after the header", which is exactly the slot
-    // there is.
-    //
-    // The panel is asked about and not the screen size because it is a
-    // question about **the shape of the tree**: `Flexible` needs a column
-    // above, and the phone sheet does not have it. Guessing with a width
-    // —which is what the `Responsive` breaks do— is answering something else.
-    return context.findAncestorWidgetOfExactType<ModalDesktop>() == null
-      ? form
-      : Flexible(child: form);
   }
 
   /// The options of what happens to the units, when there is more than one.

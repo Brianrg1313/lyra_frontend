@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// SERVICES
+import 'package:app/services/permissions/permissions_service.dart';
+
 import './methods/_methods.dart';
 import './overview/_overview.dart';
 import './payments/_payments.dart';
@@ -52,6 +55,18 @@ enum FinanceTab {
   /// without the shell knowing, and the page would keep showing the previous
   /// tab.
   String get routeKey => "finance_$key";
+
+  /// Permission area of this tab (`docs/app-areas.json`): `finance.<key>`. Its `view` opens it.
+  String get area => "finance.$key";
+
+  /// Tab the bare section opens: [initial], unless it is not granted in the active company,
+  /// then the first one that is. With none granted it is [initial], which shows it is locked.
+  static FinanceTab get opening {
+    final permissions = PermissionsService();
+    if (permissions.canOpen(initial.area)) return initial;
+
+    return values.firstWhere((tab) => permissions.canOpen(tab.area), orElse: () => initial);
+  }
 
   /// URL of this tab. It is the only source of the `url` of its route and of
   /// the link copied from the browser bar.

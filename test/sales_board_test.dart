@@ -78,13 +78,19 @@ void main() {
       expect(HomeSection.sales.needsBusiness, isTrue);
     });
 
-    test('the sales option opens the transactions group', () {
-      // The sale end to end, in the order it happens: what is going on, then
-      // the money it brought in. The counter closes the group in the bar and
-      // is not a section, so it is not in this list.
+    test('the sales option sits in the top group', () {
+      // The sale end to end, in the order it happens, right after the
+      // business: the conversation where it starts, the delivery, then the
+      // board of what is going on.
       expect(
-        HomeSection.transactions,
-        [HomeSection.sales, HomeSection.finance]
+        HomeSection.home,
+        [
+          HomeSection.dashboard,
+          HomeSection.business,
+          HomeSection.messages,
+          HomeSection.deliveries,
+          HomeSection.sales
+        ]
       );
     });
   });
