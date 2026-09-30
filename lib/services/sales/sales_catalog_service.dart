@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/sales/sale_channel_model.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sale_stage_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/sales/sources/sales_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum SalesCatalogStatus { idle, loading, ready, error }
 
@@ -36,6 +37,12 @@ enum SalesCatalogStatus { idle, loading, ready, error }
 /// draws —every row carries its own label and colour— and what is lost is the
 /// filter, which is what [status] says.
 class SalesCatalogService extends ChangeNotifier {
+  SalesCatalogService({SalesSource? source}) : _injected = source;
+
+  final SalesSource? _injected;
+
+  SalesSource get _source => _injected ?? Sources.sales;
+
   SalesCatalogStatus _status = SalesCatalogStatus.idle;
 
   SaleStagesCatalog _catalog = const SaleStagesCatalog();
@@ -115,17 +122,15 @@ class SalesCatalogService extends ChangeNotifier {
 
     // Together, because the screen needs both before its filter bar means
     // anything and neither depends on the other.
-    final results = await Future.wait([
-      _read("/sales/stages/"),
-      _read("/pos/methods/")
-    ]);
-
-    final catalog = SaleStagesCatalog.fromResponse(results.first);
+    final (catalog, channels) = await (
+      _read("stages", _source.stages),
+      _read("channels", _source.channels)
+    ).wait;
 
     // The stages are what the screen is built from; the channels are one filter
     // of it. So a missing channel list is not a failed catalog — the strip
     // simply has nothing to offer — while missing stages are.
-    if (!catalog.isLoaded || catalog.stages.isEmpty) {
+    if (catalog == null || !catalog.isLoaded || catalog.stages.isEmpty) {
       _status = SalesCatalogStatus.error;
       notifyListeners();
 
@@ -133,7 +138,7 @@ class SalesCatalogService extends ChangeNotifier {
     }
 
     _catalog = catalog;
-    _channels = _channelsOf(results.last);
+    _channels = channels ?? const [];
     _status = SalesCatalogStatus.ready;
 
     notifyListeners();
@@ -143,27 +148,13 @@ class SalesCatalogService extends ChangeNotifier {
 
   /// One of the two reads. It answers `null` instead of throwing so that the
   /// pair can be awaited together and each half judged on its own.
-  Future<dynamic> _read(String path) async {
+  Future<T?> _read<T>(String label, Future<T> Function() read) async {
     try {
-      return await api.get(path: path, version: "v1");
+      return await read();
     } catch (error) {
-      if (kDebugMode) print("loadSalesCatalog($path) failed: $error");
+      if (kDebugMode) print("loadSalesCatalog($label) failed: $error");
 
       return null;
     }
-  }
-
-  /// The channels half of `GET /pos/methods`, ignoring everything else it
-  /// answers: the payment methods are the counter's business, not this list's.
-  List<SaleChannel> _channelsOf(dynamic data) {
-    if (data is! Map) return const [];
-
-    return [
-      for (final row in data["channels"] ?? const [])
-        if (row is Map)
-          SaleChannel.fromJson(
-            row.map((key, value) => MapEntry(key.toString(), value))
-          )
-    ];
   }
 }

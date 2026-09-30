@@ -5,10 +5,11 @@ import 'package:flutter/widgets.dart';
 
 // SERVICES
 import 'package:app/services/connection/connection_service.dart';
-import 'package:app/services/sales/sale_approval_request.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sale_progress_model.dart';
+import 'package:app/services/sales/sources/sales_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum SalesStatus { idle, loading, ready, empty, error }
 
@@ -47,7 +48,7 @@ enum SalesStatus { idle, loading, ready, empty, error }
 /// It is ephemeral: the sales section owns it and it is discarded on the way
 /// out, like the money services one section over.
 class SalesService extends ChangeNotifier {
-  SalesService() {
+  SalesService({SalesSource? source}) : _injected = source {
     // Registered before the connection is even open: the socket notes its
     // listeners down and hooks them up when it connects, and they survive a
     // reconnection.
@@ -61,6 +62,10 @@ class SalesService extends ChangeNotifier {
     // reread and not a redraw.
     _reconnected = ConnectionService().onRestored(_onRestored);
   }
+
+  final SalesSource? _injected;
+
+  SalesSource get _source => _injected ?? Sources.sales;
 
   /// How many sales are read at a time. The backend caps the page at 100; a
   /// board is read down and not scrolled forever, so fifty is a screenful and a
@@ -293,14 +298,10 @@ class SalesService extends ChangeNotifier {
     BuildContext context, {
     required Map<String, dynamic> request
   }) async {
-    dynamic data;
+    final SaleModel? sale;
 
     try {
-      data = await api.put(
-        path: "/sales/fulfillment/",
-        version: "v1",
-        data: request
-      );
+      sale = await _source.fulfil(request);
     } catch (error) {
       if (kDebugMode) print("fulfilSale failed: $error");
 
@@ -309,11 +310,7 @@ class SalesService extends ChangeNotifier {
       return false;
     }
 
-    if (data is Map) {
-      _receive(SaleModel.fromJson(
-        data.map((key, value) => MapEntry(key.toString(), value))
-      ));
-    }
+    if (sale != null) _receive(sale);
 
     return true;
   }
@@ -358,11 +355,7 @@ class SalesService extends ChangeNotifier {
     if (chat.isEmpty) return false;
 
     try {
-      await api.put(
-        path: "/chats/stage/",
-        version: "v1",
-        data: approveSaleRequest(id: chat)
-      );
+      await _source.approve(chat);
     } catch (error) {
       if (kDebugMode) print("approveSale failed: $error");
 
@@ -587,20 +580,16 @@ class SalesService extends ChangeNotifier {
 
     final generation = _generation;
 
-    dynamic data;
+    final SalesPage result;
 
     try {
-      data = await api.get(
-        path: "/sales/",
-        version: "v1",
-        query: {
-          "SECTION": _section.value,
-          if (_stage.isNotEmpty) "STAGE": _stage,
-          if (_channel.isNotEmpty) "CHANNEL": _channel,
-          if (_mine) "MINE": 1,
-          "PAGE": page,
-          "SIZE": _pageSize
-        }
+      result = await _source.page(
+        section: _section,
+        stage: _stage,
+        channel: _channel,
+        mine: _mine,
+        page: page,
+        size: _pageSize
       );
     } catch (error) {
       if (kDebugMode) print("loadSales failed: $error");
@@ -626,8 +615,6 @@ class SalesService extends ChangeNotifier {
     if (generation != _generation) return;
 
     _reading = false;
-
-    final result = SalesPage.fromResponse(data);
 
     if (!result.isLoaded) {
       if (silent) {

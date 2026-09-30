@@ -293,6 +293,8 @@ Nothing here adds figures up: every total is the backend's answer.
 
 ## sales/ — owned by the sales section
 
+- `sources/sales_source.dart` — `SalesSource`: board page, fulfil (answers the sale), approve (cloud only), detail,
+  stages, channels. Used by `SalesService`, `SaleDetailService`, `SalesCatalogService`. `sales_cloud_source.dart` — REST.
 Rows are measured on read from their owning collection (invoice, conversation, ticket); nothing is a stored list.
 
 - `sales_service.dart` — `SalesService`: `GET /sales` per section (`open(section)`),

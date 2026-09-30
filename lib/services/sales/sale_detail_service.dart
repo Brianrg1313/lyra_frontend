@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/sales/sale_detail_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/sales/sources/sales_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum SaleDetailStatus {
   idle,
@@ -37,6 +38,12 @@ enum SaleDetailStatus {
 /// moving —the invoice's status, the conversation's cart, the ledger's holds—
 /// so a detail kept between two openings is a drawing of a sale as it was.
 class SaleDetailService extends ChangeNotifier {
+  SaleDetailService({SalesSource? source}) : _injected = source;
+
+  final SalesSource? _injected;
+
+  SalesSource get _source => _injected ?? Sources.sales;
+
   SaleDetailStatus _status = SaleDetailStatus.idle;
 
   SaleDetailModel _sale = const SaleDetailModel();
@@ -94,12 +101,10 @@ class SaleDetailService extends ChangeNotifier {
 
     _notify();
 
-    dynamic data;
+    final SaleDetailModel sale;
 
     try {
-      // No trailing slash: the reference is a path segment (`params: ["ID"]`),
-      // and an extra one would leave it empty on the other side.
-      data = await api.get(path: "/sales/detail/$reference", version: "v1");
+      sale = await _source.detail(reference);
     } catch (error) {
       if (kDebugMode) print("loadSaleDetail failed: $error");
 
@@ -118,10 +123,6 @@ class SaleDetailService extends ChangeNotifier {
     }
 
     if (_reference != reference) return;
-
-    final sale = data is Map
-      ? SaleDetailModel.fromJson(saleFields(data))
-      : const SaleDetailModel();
 
     // A response that does not even name the sale is a failed read, not a panel
     // full of gaps.
