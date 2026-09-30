@@ -213,6 +213,11 @@ See `baileys_server/MODULE.md` for the server side.
 
 ## stock/ — reading and moving inventory
 
+- `sources/inventory_source.dart` — `InventorySource`: tables, structure, detail, fields, records (+ match total), images,
+  import (structure, then records), normalisation (cloud only). Used by `TablesService`, `TableDetailService`, `TableViewService`.
+  `inventory_cloud_source.dart` — REST (reads the created table's id in either shape).
+- `sources/stock_source.dart` — `StockSource`: summary page, a movement (answers the balance). Used by `StockSummaryService`.
+  `stock_cloud_source.dart` — REST.
 - `tables/tables_service.dart` — `TablesService` (+ `TablesStatus`, `TableImportResult`,
   `TableImportStage`): list, create, rename, delete, import; listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.

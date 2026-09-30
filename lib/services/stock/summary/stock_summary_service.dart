@@ -4,7 +4,9 @@ import 'package:flutter/widgets.dart';
 // SERVICES
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
+import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 /// Status of the stock summary read (`POST /inventory/stock/summary/`).
 ///
@@ -47,6 +49,12 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// it. The shell remounts the section when changing company, so there is
 /// nothing to invalidate on its own account.
 class StockSummaryService extends ChangeNotifier {
+  StockSummaryService({StockSource? source}) : _injected = source;
+
+  final StockSource? _injected;
+
+  StockSource get _source => _injected ?? Sources.stock;
+
   /// How many rows are read at a time. The backend accepts up to 200, but this
   /// is a summary that starts below a grid: what matters is that the first page
   /// arrives fast, and scrolling down requests the following ones.
@@ -225,14 +233,10 @@ class StockSummaryService extends ChangeNotifier {
   }) async {
     if (_table.isEmpty || productId.isEmpty) return false;
 
-    dynamic data;
+    final StockBalance balance;
 
     try {
-      data = await api.post(
-        path: movement.operation.path,
-        version: "v1",
-        data: movement.request(tableId: _table, productId: productId)
-      );
+      balance = await _source.move(movement, tableId: _table, productId: productId);
     } catch (error) {
       if (kDebugMode) print("stockMovement failed: $error");
 
@@ -247,7 +251,7 @@ class StockSummaryService extends ChangeNotifier {
       return false;
     }
 
-    _applyBalance(productId, StockBalance.fromResponse(data));
+    _applyBalance(productId, balance);
 
     return true;
   }
@@ -321,18 +325,10 @@ class StockSummaryService extends ChangeNotifier {
 
     final generation = _generation;
 
-    dynamic data;
+    final StockSummaryPage result;
 
     try {
-      data = await api.post(
-        path: "/inventory/stock/summary/",
-        version: "v1",
-        data: {
-          "PAGE": page,
-          "SIZE": size,
-          if (_query.isNotEmpty) "MATCH": _query
-        }
-      );
+      result = await _source.summary(page: page, size: size, match: _query);
     } catch (error) {
       if (kDebugMode) print("loadStockSummary failed: $error");
 
@@ -361,8 +357,6 @@ class StockSummaryService extends ChangeNotifier {
     if (generation != _generation) return;
 
     _reading = false;
-
-    final result = StockSummaryPage.fromResponse(data);
 
     // A response without columns is not an empty summary but a read that was
     // not understood: drawing it would be a list of holes.

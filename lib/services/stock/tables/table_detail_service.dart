@@ -7,7 +7,9 @@ import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
+import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 /// State of the read of a table's detail
 /// (`GET /inventory/products/builder/details/<table_id>`).
@@ -31,7 +33,11 @@ enum TableDetailStatus { idle, loading, ready, error }
 /// where it is. It's what lets it refresh without the page jumping, which is
 /// the only thing done from here.
 class TableDetailService extends ChangeNotifier {
-  TableDetailService({this.onSummaryChanged});
+  TableDetailService({this.onSummaryChanged, InventorySource? source}) : _injected = source;
+
+  final InventorySource? _injected;
+
+  InventorySource get _source => _injected ?? Sources.inventory;
 
   /// Notice that a column changed in something the **inventory summary**
   /// draws: whether it's in it or what type it is.
@@ -92,12 +98,10 @@ class TableDetailService extends ChangeNotifier {
     // No trailing slash: the id is a path segment (`params:
     // ["TABLE_ID"]`), and an extra slash would leave it empty on the other
     // side.
-    final data = await api
-      .get(path: "/inventory/products/builder/details/$tableId", version: "v1")
-      .catchError((error) {
-        if (kDebugMode) print("loadTableDetail failed: $error");
-        return null;
-      });
+    final detail = await _source.detail(tableId).then<TableDetailModel?>((detail) => detail).catchError((error) {
+      if (kDebugMode) print("loadTableDetail failed: $error");
+      return null;
+    });
 
     // The flag is lowered before checking whether the table changed:
     // releasing it later would leave a discarded reread blocking the next
@@ -109,7 +113,7 @@ class TableDetailService extends ChangeNotifier {
     // arrived belongs to the previous one and has nowhere to go.
     if (_tableId != tableId) return;
 
-    if (data == null) {
+    if (detail == null) {
       // A reread that fails leaves what was already there: the old detail is
       // still the table's, and discarding it would leave the screen in
       // error over a refresh that didn't go well.
@@ -118,8 +122,6 @@ class TableDetailService extends ChangeNotifier {
       notifyListeners();
       return;
     }
-
-    final detail = TableDetailModel.fromResponse(data);
 
     // A response that doesn't even bring the table's id isn't a detail: it's
     // treated as a failed read instead of drawing a screen full of gaps.
@@ -182,15 +184,11 @@ class TableDetailService extends ChangeNotifier {
     if (name == null && description == null) return false;
 
     try {
-      await api.put(
-        path: "/inventory/products/builder/details/",
-        version: "v1",
-        data: editTableDetailsRequest(
-          id: _tableId,
-          name: name,
-          description: description
-        )
-      );
+      await _source.editDetail(editTableDetailsRequest(
+        id: _tableId,
+        name: name,
+        description: description
+      ));
     } catch (error) {
       if (kDebugMode) print("editTableDetail failed: $error");
 
@@ -274,19 +272,15 @@ class TableDetailService extends ChangeNotifier {
     final symbol = unit?.trim();
 
     try {
-      await api.put(
-        path: "/inventory/products/builder/fields/",
-        version: "v1",
-        data: editFieldRequest(
-          id: field.id,
-          name: field.name,
-          type: type?.value,
-          visibility: visibility?.value,
-          summary: summary,
-          options: saved,
-          unit: symbol
-        )
-      );
+      await _source.editField(editFieldRequest(
+        id: field.id,
+        name: field.name,
+        type: type?.value,
+        visibility: visibility?.value,
+        summary: summary,
+        options: saved,
+        unit: symbol
+      ));
     } catch (error) {
       if (kDebugMode) print("editTableField failed: $error");
 

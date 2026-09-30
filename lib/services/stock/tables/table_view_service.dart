@@ -13,7 +13,9 @@ import 'package:app/services/stock/tables/table_normalize_model.dart';
 import 'package:app/services/stock/tables/table_ready_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
+import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 /// Loading state of a table's structure
 /// (`GET /inventory/products/builder/structure/<table_id>`).
@@ -21,11 +23,6 @@ enum TableStructureStatus { idle, loading, ready, error }
 
 /// State of the latest records read (`POST /inventory/products/records/list/`).
 enum TableViewStatus { idle, loading, ready, empty, error }
-
-/// Name of the form field that carries a product photo. It is decided by the
-/// backend: it is what its multipart reads, and with any other name the
-/// request arrives without a file.
-const String _kImageField = "FILE";
 
 /// State of an open table: its structure and its records, read in chunks as
 /// they are looked at.
@@ -89,9 +86,13 @@ const String _kImageField = "FILE";
 /// the app scope—, this service is ephemeral: the table screen itself owns it
 /// and it is discarded on exit.
 class TableViewService extends ChangeNotifier {
-  TableViewService() {
+  TableViewService({InventorySource? source}) : _injected = source {
     _unlisten = ConnectionService().on(TableReadyModel.event, _onReady);
   }
+
+  final InventorySource? _injected;
+
+  InventorySource get _source => _injected ?? Sources.inventory;
 
   TableStructureStatus _structureStatus = TableStructureStatus.idle;
   TableStructureModel _structure = const TableStructureModel();
@@ -378,11 +379,7 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await api.post(
-        path: "/inventory/products/records/manage/",
-        version: "v1",
-        data: createRecordRequest(tableId: tableId, values: values)
-      );
+      await _source.createRecord(createRecordRequest(tableId: tableId, values: values));
 
       _saving = false;
 
@@ -449,15 +446,11 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await api.put(
-        path: "/inventory/products/records/manage/",
-        version: "v1",
-        data: editRecordRequest(
-          tableId: tableId,
-          id: record.id,
-          values: {fieldId: value}
-        )
-      );
+      await _source.editRecord(editRecordRequest(
+        tableId: tableId,
+        id: record.id,
+        values: {fieldId: value}
+      ));
 
       return true;
     } catch (error) {
@@ -524,15 +517,7 @@ class TableViewService extends ChangeNotifier {
     if (record.id.isEmpty || slot < 0) return false;
 
     try {
-      final data = await api.file(
-        path: "/inventory/products/records/images/",
-        version: "v1",
-        file: file,
-        field: _kImageField,
-        data: {"TABLE_ID": tableId, "PRODUCT_ID": record.id}
-      );
-
-      _writeImages(row, record.id, slot, data);
+      _writeImages(row, record.id, slot, await _source.addImage(tableId, record.id, file));
 
       return true;
     } catch (error) {
@@ -585,10 +570,7 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await api.delete(
-        path: "/inventory/products/records/images/$tableId/${record.id}/$fileId",
-        version: "v1"
-      );
+      await _source.removeImage(tableId, record.id, fileId);
 
       return true;
     } catch (error) {
@@ -612,13 +594,13 @@ class TableViewService extends ChangeNotifier {
   /// It is checked that the same record is still in that row, for the same
   /// reason as in [_restore]: an upload takes time, and meanwhile the table
   /// could have been re-read or that chunk re-requested.
-  void _writeImages(int row, String id, int slot, dynamic data) {
+  void _writeImages(int row, String id, int slot, List<ProductImage> images) {
     final current = _rows[row];
     if (current == null || current.id != id) return;
 
     _rows[row] = current.withValue(
       slot,
-      ProductImage.valuesOf(ProductImage.fromResponse(data))
+      ProductImage.valuesOf(images)
     );
     notifyListeners();
   }
@@ -695,18 +677,14 @@ class TableViewService extends ChangeNotifier {
     if (tableId == null) return false;
 
     try {
-      await api.post(
-        path: "/inventory/products/builder/fields/",
-        version: "v1",
-        data: createFieldRequest(
-          tableId: tableId,
-          name: name,
-          description: description,
-          type: type,
-          // The new column goes at the end: its position is the current count.
-          position: _structure.fields.length
-        )
-      );
+      await _source.createField(createFieldRequest(
+        tableId: tableId,
+        name: name,
+        description: description,
+        type: type,
+        // The new column goes at the end: its position is the current count.
+        position: _structure.fields.length
+      ));
 
       await _reloadFields();
       return true;
@@ -754,16 +732,12 @@ class TableViewService extends ChangeNotifier {
     if (field.id.isEmpty) return false;
 
     try {
-      await api.put(
-        path: "/inventory/products/builder/fields/",
-        version: "v1",
-        data: editFieldRequest(
-          id: field.id,
-          name: name ?? field.name,
-          type: type,
-          options: options
-        )
-      );
+      await _source.editField(editFieldRequest(
+        id: field.id,
+        name: name ?? field.name,
+        type: type,
+        options: options
+      ));
 
       await _reloadFields();
       return true;
@@ -817,15 +791,11 @@ class TableViewService extends ChangeNotifier {
       await Future.wait([
         for (final (position, field) in ordered.indexed)
           if (field.id.isNotEmpty)
-            api.put(
-              path: "/inventory/products/builder/fields/",
-              version: "v1",
-              data: editFieldRequest(
-                id: field.id,
-                name: field.name,
-                position: position
-              )
-            )
+            _source.editField(editFieldRequest(
+              id: field.id,
+              name: field.name,
+              position: position
+            ))
       ]);
 
       return true;
@@ -868,15 +838,11 @@ class TableViewService extends ChangeNotifier {
     if (field.id.isEmpty || width <= 0) return false;
 
     try {
-      await api.put(
-        path: "/inventory/products/builder/fields/",
-        version: "v1",
-        data: editFieldRequest(
-          id: field.id,
-          name: field.name,
-          width: width.round()
-        )
-      );
+      await _source.editField(editFieldRequest(
+        id: field.id,
+        name: field.name,
+        width: width.round()
+      ));
 
       return true;
     } catch (error) {
@@ -907,11 +873,7 @@ class TableViewService extends ChangeNotifier {
     if (field.id.isEmpty) return false;
 
     try {
-      await api.delete(
-        path: "/inventory/products/builder/fields/",
-        version: "v1",
-        data: deleteFieldRequest(id: field.id)
-      );
+      await _source.deleteField(field.id);
 
       await _reloadFields();
       return true;
@@ -962,14 +924,7 @@ class TableViewService extends ChangeNotifier {
     if (tableId == null) return null;
 
     try {
-      final data = await api.post(
-        path: "/inventory/products/builder/normalize/",
-        version: "v1",
-        data: {"TABLE_ID": tableId},
-        timeout: _normalizeTimeout
-      );
-
-      final report = TableNormalizeModel.fromResponse(data);
+      final report = await _source.normalize(tableId, timeout: _normalizeTimeout);
 
       if (report.changedValues) {
         await refresh();
@@ -1071,9 +1026,7 @@ class TableViewService extends ChangeNotifier {
     if (!reload) _structureStatus = TableStructureStatus.loading;
     notifyListeners();
 
-    final data = await api
-        .get(path: "/inventory/products/builder/structure/$tableId", version: "v1")
-        .catchError((error) {
+    final structure = await _source.structure(tableId).then<TableStructureModel?>((structure) => structure).catchError((error) {
       if (kDebugMode) print("loadTableStructure failed: $error");
       return null;
     });
@@ -1081,7 +1034,7 @@ class TableViewService extends ChangeNotifier {
     _reading = false;
     _reloading = false;
 
-    if (data == null) {
+    if (structure == null) {
       // A re-read that fails keeps what was there: the old structure is still the
       // table's and throwing it away would leave the screen in error over a
       // column change that never went through. The notice goes up top, like the
@@ -1099,7 +1052,7 @@ class TableViewService extends ChangeNotifier {
 
     final before = [for (final field in _structure.fields) field.id];
 
-    _structure = TableStructureModel.fromResponse(data);
+    _structure = structure;
     _structureStatus = TableStructureStatus.ready;
 
     // The error a previous re-read that had not arrived set is lifted: this one
@@ -1190,17 +1143,9 @@ class TableViewService extends ChangeNotifier {
     _status = TableViewStatus.loading;
     notifyListeners();
 
-    final data = await api
-        .post(
-          path: "/inventory/products/records/list/",
-          version: "v1",
-          data: {
-            "TABLE_ID": tableId,
-            "PAGE": page,
-            "SIZE": _pageSize,
-            if (_query.isNotEmpty) "MATCH": _query
-          }
-        )
+    final data = await _source
+        .records(tableId, page: page, size: _pageSize, match: _query)
+        .then<({TableViewModel page, int? total})?>((data) => data)
         .catchError((error) {
       if (kDebugMode) print("loadTableRecords failed: $error");
       return null;
@@ -1218,8 +1163,7 @@ class TableViewService extends ChangeNotifier {
       return;
     }
 
-    final rows = TableViewModel
-      .fromResponse(data)
+    final rows = data.page
       .alignedTo(_structure.fields)
       .rows;
 
@@ -1236,7 +1180,7 @@ class TableViewService extends ChangeNotifier {
     // you scroll down, like a table whose structure does not say how many
     // records it has.
     if (isSearching) {
-      _matches = _totalOf(data) ?? _paging.known;
+      _matches = data.total ?? _paging.known;
     }
 
     _cached.remove(page);
@@ -1245,17 +1189,6 @@ class TableViewService extends ChangeNotifier {
 
     _status = _rows.isEmpty ? TableViewStatus.empty : TableViewStatus.ready;
     notifyListeners();
-  }
-
-  /// How many rows match, according to a records page's response, or `null` if
-  /// it does not say it.
-  static int? _totalOf(dynamic data) {
-    if (data is! Map) return null;
-
-    final total = data["total"] ?? data["TOTAL"];
-
-    if (total is num) return total.toInt();
-    return int.tryParse(total?.toString() ?? "");
   }
 }
 

@@ -9,6 +9,10 @@ import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/services/business/sources/employees_cloud_source.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/services/business/sources/delivery_cloud_source.dart';
+import 'package:app/services/stock/sources/inventory_source.dart';
+import 'package:app/services/stock/sources/inventory_cloud_source.dart';
+import 'package:app/services/stock/sources/stock_source.dart';
+import 'package:app/services/stock/sources/stock_cloud_source.dart';
 
 /// Where the company's data lives (`docs/plan-offline-lan.md` §7).
 ///
@@ -54,6 +58,8 @@ abstract final class Sources {
   static BusinessSource get business => _pick(const BusinessCloudSource());
   static EmployeesSource get employees => _pick(const EmployeesCloudSource());
   static DeliverySource get delivery => _pick(const DeliveryCloudSource());
+  static InventorySource get inventory => _pick(const InventoryCloudSource());
+  static StockSource get stock => _pick(const StockCloudSource());
 
   /// There is no LAN source before plan phase 4, and nothing reaches another
   /// mode before phase 3: a call getting here outside the cloud is a bug, not

@@ -10,7 +10,9 @@ import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_normalizing_model.dart';
 import 'package:app/services/stock/tables/table_ready_model.dart';
+import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/toolkit.dart' show S;
 
 /// State of the table list load (`GET /inventory/products/builder/list/`).
@@ -58,11 +60,6 @@ enum TableImportStage {
   loading
 }
 
-/// Name of the form field the file travels under in both uploads of the
-/// import. Set by the backend (`multer().single("FILE")`): with any other
-/// name the file doesn't arrive and the request is rejected.
-const String _kImportField = "FILE";
-
 /// How long to wait for the notice that an imported table became ready before
 /// uploading its rows anyway.
 ///
@@ -108,7 +105,7 @@ const Duration _kReadyTimeout = Duration(minutes: 2);
 /// from another device shows up here the moment it is created, marked as
 /// still being built, and is not opened until it lands (see [isBusy]).
 class TablesService extends ChangeNotifier {
-  TablesService() {
+  TablesService({InventorySource? source}) : _injected = source {
     // Registered before the connection even exists: the socket keeps
     // listeners and hooks them up once it opens, so there's no need to wait
     // for anything or re-register after a reconnect.
@@ -123,6 +120,10 @@ class TablesService extends ChangeNotifier {
       ConnectionService().on(TableReadyModel.event, _onReady)
     ];
   }
+
+  final InventorySource? _injected;
+
+  InventorySource get _source => _injected ?? Sources.inventory;
 
   TablesStatus _status = TablesStatus.idle;
   List<TableLiteModel> _tables = const [];
@@ -226,9 +227,7 @@ class TablesService extends ChangeNotifier {
     _status = TablesStatus.loading;
     notifyListeners();
 
-    final data = await api
-        .get(path: "/inventory/products/builder/list/", version: "v1")
-        .catchError((error) {
+    final data = await _source.tables().then<List<TableLiteModel>?>((tables) => tables).catchError((error) {
       if (kDebugMode) print("loadTables failed: $error");
       return null;
     });
@@ -245,7 +244,7 @@ class TablesService extends ChangeNotifier {
       return;
     }
 
-    _tables = TableLiteModel.fromResponse(data);
+    _tables = data;
     _status = _tables.isEmpty ? TablesStatus.empty : TablesStatus.ready;
 
     notifyListeners();
@@ -264,13 +263,7 @@ class TablesService extends ChangeNotifier {
   /// the new table.
   Future<String> create(BuildContext context, Map<String, dynamic> data) async {
     try {
-      final response = await api.post(
-        path: "/inventory/products/builder/structure/",
-        version: "v1",
-        data: data,
-      );
-
-      final id = _readId(response);
+      final id = await _source.createTable(data);
 
       // The just-created table isn't in the cache yet: it's marked stale so
       // the list requests it again once opened.
@@ -312,15 +305,11 @@ class TablesService extends ChangeNotifier {
     if (table.id.isEmpty) return false;
 
     try {
-      await api.put(
-        path: "/inventory/products/builder/structure/",
-        version: "v1",
-        data: editTableRequest(
-          id: table.id,
-          title: title,
-          description: description
-        )
-      );
+      await _source.editTable(editTableRequest(
+        id: table.id,
+        title: title,
+        description: description
+      ));
     } catch (error) {
       if (kDebugMode) print("editTable failed: $error");
 
@@ -392,11 +381,7 @@ class TablesService extends ChangeNotifier {
     if (table.id.isEmpty) return false;
 
     try {
-      await api.delete(
-        path: "/inventory/products/builder/structure/",
-        version: "v1",
-        data: deleteTableRequest(id: table.id)
-      );
+      await _source.deleteTable(table.id);
     } catch (error) {
       if (kDebugMode) print("deleteTable failed: $error");
 
@@ -500,18 +485,7 @@ class TablesService extends ChangeNotifier {
     final String tableId;
 
     try {
-      final response = await api.file(
-        path: "/inventory/products/import/structure/${format.segment}/",
-        version: "v1",
-        file: file,
-        field: _kImportField,
-        // An empty name isn't sent: sending it would cover up the one the
-        // backend pulls from the file, and the table would be born called
-        // "table".
-        data: {if (name.isNotEmpty) "NAME": name, "ROW": "$headerRow"}
-      );
-
-      tableId = _readId(response);
+      tableId = await _source.importStructure(format, file, name: name, headerRow: headerRow);
     } catch (error) {
       if (kDebugMode) print("importTableStructure failed: $error");
 
@@ -573,13 +547,7 @@ class TablesService extends ChangeNotifier {
     bool ok = true;
 
     try {
-      await api.file(
-        path: "/inventory/products/import/records/${format.segment}/",
-        version: "v1",
-        file: file,
-        field: _kImportField,
-        data: {"TABLE_ID": tableId, "ROW": "$headerRow"}
-      );
+      await _source.importRecords(format, file, tableId: tableId, headerRow: headerRow);
     } catch (error) {
       ok = false;
 
@@ -773,24 +741,5 @@ class TablesService extends ChangeNotifier {
     FloatFlag.of(context).fromError(
       error is Map && error.isNotEmpty ? error : {"message": error.toString()}
     );
-  }
-
-  /// Reads the table's identifier from the creation response.
-  ///
-  /// The backend can return the bare id (`5`, `"5"`) or wrapped in an object
-  /// (`{"id": 5}`), so both forms are checked before giving up.
-  String _readId(dynamic response) {
-    if (response is Map) {
-      final id = response["id"] ?? response["table_id"] ?? response["ID"];
-      if (id != null) return id.toString();
-
-      throw {"message": "The table was created but no id came back"};
-    }
-
-    if (response == null) {
-      throw {"message": "The table was not created (empty response)"};
-    }
-
-    return response.toString();
   }
 }
