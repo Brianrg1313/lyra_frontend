@@ -69,7 +69,7 @@ abstract final class SheetCells {
       alignment: alignment,
       symbol: unit
     ),
-    TableFieldType.percentage => UnitCell(
+    TableFieldType.discount || TableFieldType.percentage => UnitCell(
       value: value,
       style: style,
       alignment: alignment,

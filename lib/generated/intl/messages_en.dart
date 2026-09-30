@@ -2227,6 +2227,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "field_type_description_hint": MessageLookupByLibrary.simpleMessage(
       "What the product is, in words. The AI reads it and searches by meaning",
     ),
+    "field_type_discount": MessageLookupByLibrary.simpleMessage("Discount"),
+    "field_type_discount_hint": MessageLookupByLibrary.simpleMessage(
+      "The percent taken off the price at checkout, from 0 to 100",
+    ),
     "field_type_email": MessageLookupByLibrary.simpleMessage("Email"),
     "field_type_email_hint": MessageLookupByLibrary.simpleMessage(
       "An email address",
@@ -2249,7 +2253,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "field_type_percentage": MessageLookupByLibrary.simpleMessage("Percentage"),
     "field_type_percentage_hint": MessageLookupByLibrary.simpleMessage(
-      "A rate written as 16, not as 0.16: discount, tax, margin",
+      "A rate written as 16, not as 0.16: tax, margin, commission",
     ),
     "field_type_phone": MessageLookupByLibrary.simpleMessage("Phone"),
     "field_type_phone_hint": MessageLookupByLibrary.simpleMessage(

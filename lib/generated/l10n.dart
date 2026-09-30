@@ -6511,6 +6511,26 @@ class S {
     );
   }
 
+  /// `Discount`
+  String get field_type_discount {
+    return Intl.message(
+      'Discount',
+      name: 'field_type_discount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The percent taken off the price at checkout, from 0 to 100`
+  String get field_type_discount_hint {
+    return Intl.message(
+      'The percent taken off the price at checkout, from 0 to 100',
+      name: 'field_type_discount_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Percentage`
   String get field_type_percentage {
     return Intl.message(
@@ -6521,10 +6541,10 @@ class S {
     );
   }
 
-  /// `A rate written as 16, not as 0.16: discount, tax, margin`
+  /// `A rate written as 16, not as 0.16: tax, margin, commission`
   String get field_type_percentage_hint {
     return Intl.message(
-      'A rate written as 16, not as 0.16: discount, tax, margin',
+      'A rate written as 16, not as 0.16: tax, margin, commission',
       name: 'field_type_percentage_hint',
       desc: '',
       args: [],

@@ -4,40 +4,40 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 
 void main() {
-  test('los dos semanticos encabezan la lista de tipos', () {
-    // Son los que la IA lee y busca por significado: los que conviene ver
-    // primero al elegir, no dos mas en el medio de una lista de veintitres.
+  test('the two semantic types head the list of types', () {
+    // They are what the AI reads and searches by meaning: the ones worth seeing
+    // first when choosing, not two more in the middle of a list of twenty-four.
     expect(
       TableFieldType.ordered.take(2),
       [TableFieldType.title, TableFieldType.description]
     );
   });
 
-  test('estan todos los tipos y una sola vez', () {
+  test('every type is listed, and only once', () {
     final ordered = TableFieldType.ordered;
 
     expect(ordered.length, TableFieldType.values.length);
     expect(ordered.toSet().length, ordered.length);
   });
 
-  test('detras de los semanticos el orden es el declarado', () {
+  test('after the semantic types the order is the declared one', () {
     expect(
       TableFieldType.ordered.skip(2),
       TableFieldType.values.where((type) => !type.semantic)
     );
   });
 
-  group('los codigos son los del backend', () {
-    test('el codigo es el nombre en mayusculas', () {
-      // Es lo unico que viaja en el alta y en la lectura de una tabla: si esta
-      // lista y la regla `TYPE` del backend se separan, la columna se crea con
-      // un tipo que del otro lado no existe.
+  group('the codes are the backend ones', () {
+    test('the code is the name in upper case', () {
+      // It is the only thing that travels when a table is created or read: if
+      // this list and the backend's `TYPE` rule drift apart, the column is
+      // created with a type the other side doesn't have.
       for (final type in TableFieldType.values) {
         expect(type.value, type.name.toUpperCase());
       }
     });
 
-    test('se leen todos de vuelta', () {
+    test('every code is read back', () {
       for (final type in TableFieldType.values) {
         expect(TableFieldType.from(type.value), type, reason: type.value);
         expect(
@@ -48,57 +48,73 @@ void main() {
       }
     });
 
-    test('un tipo desconocido se lee como texto', () {
-      // Se sigue viendo y editando la columna en vez de perderla.
+    test('an unknown type is read as text', () {
+      // The column is still seen and edited instead of lost.
       expect(TableFieldType.from("QUANTUM"), TableFieldType.text);
       expect(TableFieldType.from(null), TableFieldType.text);
     });
 
-    test('los dos nombres viejos se siguen leyendo', () {
-      // La base los migra sola, pero una instalacion sin migrar tiene que
-      // dibujar sus columnas igual.
+    test('the two old names are still read', () {
+      // The database migrates them on its own, but an installation that hasn't
+      // migrated yet still has to draw its columns.
       expect(TableFieldType.from("SELECT"), TableFieldType.options);
       expect(TableFieldType.from("VECTOR"), TableFieldType.description);
     });
+
+    test('a discount column is a discount, not text', () {
+      // The POS takes it off the price, so reading it as loose text hid the
+      // one column that changes what a customer pays.
+      expect(TableFieldType.from("DISCOUNT"), TableFieldType.discount);
+      expect(TableFieldType.discount, isNot(TableFieldType.percentage));
+    });
   });
 
-  group('las familias del tipo', () {
-    test('el texto que la IA indexa son dos', () {
+  group('the families of a type', () {
+    test('the text the AI indexes is two types', () {
       expect(
         TableFieldType.values.where((type) => type.semantic),
         [TableFieldType.title, TableFieldType.description]
       );
     });
 
-    test('los que eligen de una lista son dos', () {
+    test('the types that pick from a list are two', () {
       expect(
         TableFieldType.values.where((type) => type.listed),
         [TableFieldType.options, TableFieldType.categories]
       );
     });
 
-    test('solo el de varias etiquetas guarda mas de una', () {
+    test('only the multi-tag type stores more than one value', () {
       expect(
         TableFieldType.values.where((type) => type.multiple),
         [TableFieldType.categories]
       );
     });
 
-    test('los que llevan simbolo de columna son tres', () {
-      // El porcentaje queda afuera a proposito: ahi la unidad es el tipo.
+    test('the types that carry a column symbol are three', () {
+      // Discount and percentage are left out on purpose: there the unit is the
+      // type.
       expect(
         TableFieldType.values.where((type) => type.united),
         [TableFieldType.price, TableFieldType.currency, TableFieldType.measure]
       );
 
+      expect(TableFieldType.discount.united, isFalse);
       expect(TableFieldType.percentage.united, isFalse);
+    });
+
+    test('a discount is a number, written like one', () {
+      expect(TableFieldType.discount.money, isFalse);
+      expect(TableFieldType.discount.editable, isTrue);
+      expect(TableFieldType.discount.alignment, TableFieldType.percentage.alignment);
+      expect(TableFieldType.discount.keyboard, TableFieldType.percentage.keyboard);
     });
   });
 
-  group('el puntero dice que se hace en la celda', () {
-    test('donde se escribe, el de escribir', () {
-      // Es lo que se ve antes de tocar, y hasta ahora era el de una planilla:
-      // el mismo para la celda que se tipea y para la que despliega algo.
+  group('the cursor says what is done in the cell', () {
+    test('where it is typed, the text cursor', () {
+      // It is what is seen before touching, and until now it was a spreadsheet
+      // one: the same for the cell that is typed and the one that opens something.
       for (final type in [
         TableFieldType.text,
         TableFieldType.title,
@@ -111,15 +127,15 @@ void main() {
       }
     });
 
-    test('donde se toca y se despliega, el de un boton', () {
-      // Las celdas que no tienen editor: las dos listas se eligen y una imagen
-      // abre su desplegable.
+    test('where it is touched and opens, a button cursor', () {
+      // The cells with no editor: both lists are picked and an image opens its
+      // menu.
       expect(TableFieldType.options.cursor, SystemMouseCursors.click);
       expect(TableFieldType.categories.cursor, SystemMouseCursors.click);
       expect(TableFieldType.image.cursor, SystemMouseCursors.click);
     });
 
-    test('es la misma pregunta que decide si hay editor', () {
+    test('it is the same question that decides whether there is an editor', () {
       for (final type in TableFieldType.values) {
         expect(
           type.cursor,

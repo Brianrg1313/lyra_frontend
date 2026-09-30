@@ -41,6 +41,12 @@ enum TableFieldType {
   decimal,
   price,
   currency,
+
+  /// The only percent anything subtracts: the POS takes the first one off the first [price]
+  /// (`Catalog.net` in the backend) and the bot quotes the same figure. A [percentage] never
+  /// is, which is why they are two types, and why the backend refuses a discount outside
+  /// 0–100: a 1200 there would give the product away.
+  discount,
   percentage,
   measure,
   counter,
@@ -80,6 +86,7 @@ enum TableFieldType {
     "DECIMAL" => decimal,
     "PRICE" => price,
     "CURRENCY" => currency,
+    "DISCOUNT" => discount,
     "PERCENTAGE" => percentage,
     "MEASURE" => measure,
     "COUNTER" => counter,
@@ -111,6 +118,7 @@ enum TableFieldType {
     decimal => S.of(context).field_type_decimal,
     price => S.of(context).field_type_price,
     currency => S.of(context).field_type_currency,
+    discount => S.of(context).field_type_discount,
     percentage => S.of(context).field_type_percentage,
     measure => S.of(context).field_type_measure,
     counter => S.of(context).field_type_counter,
@@ -139,6 +147,7 @@ enum TableFieldType {
     decimal => S.of(context).field_type_decimal_hint,
     price => S.of(context).field_type_price_hint,
     currency => S.of(context).field_type_currency_hint,
+    discount => S.of(context).field_type_discount_hint,
     percentage => S.of(context).field_type_percentage_hint,
     measure => S.of(context).field_type_measure_hint,
     counter => S.of(context).field_type_counter_hint,
@@ -165,7 +174,8 @@ enum TableFieldType {
     decimal => Icons.straighten,
     price => CI.wallet,
     currency => CI.cashbox,
-    percentage => CI.discount,
+    discount => CI.discount,
+    percentage => Icons.percent,
     measure => CI.kg_square,
     counter => Icons.plus_one,
     boolean => Icons.toggle_on_outlined,
@@ -216,7 +226,7 @@ enum TableFieldType {
   /// the column and travels with it (see `TableFieldModel.unit`): the currency of
   /// [price] and [currency], the magnitude of [measure].
   ///
-  /// [percentage] is deliberately left out: there the unit **is** the type.
+  /// [discount] and [percentage] are deliberately left out: there the unit **is** the type.
   bool get united => this == price || this == currency || this == measure;
 
   /// Whether the field value is money. Both are read the same —an amount with the
@@ -270,6 +280,7 @@ enum TableFieldType {
     decimal ||
     price ||
     currency ||
+    discount ||
     percentage ||
     measure ||
     counter ||
@@ -284,6 +295,7 @@ enum TableFieldType {
     decimal ||
     price ||
     currency ||
+    discount ||
     percentage ||
     measure => const TextInputType.numberWithOptions(decimal: true),
     email => TextInputType.emailAddress,
@@ -300,7 +312,7 @@ enum TableFieldType {
   /// meaning to the catalog: they are the text the backend indexes by meaning, that
   /// is, what the AI reads, searches and cross-checks. A loose text column almost
   /// always wants to be one of the two, so they are offered before the rest instead
-  /// of getting lost in the middle of a list of twenty-three.
+  /// of getting lost in the middle of a list of twenty-four.
   static List<TableFieldType> get ordered => [
     title,
     description,

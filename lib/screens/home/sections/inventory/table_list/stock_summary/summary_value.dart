@@ -79,7 +79,7 @@ class SummaryValue extends StatelessWidget {
   String _written(BuildContext context, String value) => switch (column.type) {
     TableFieldType.price || TableFieldType.currency =>
       _money(context).label(value) ?? value,
-    TableFieldType.percentage => "$value%",
+    TableFieldType.discount || TableFieldType.percentage => "$value%",
     TableFieldType.measure =>
       column.unit.isEmpty ? value : "$value ${column.unit}",
     TableFieldType.date || TableFieldType.datetime => _date(context, value),
