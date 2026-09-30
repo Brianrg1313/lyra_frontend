@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/money/money_summary_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/money/sources/money_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum MoneySummaryStatus { idle, loading, ready, empty, error }
 
@@ -59,6 +60,12 @@ enum MoneyRange {
 /// The shell remounts the section when the company changes, so there is nothing
 /// to invalidate on its own account.
 class MoneyService extends ChangeNotifier {
+  MoneyService({MoneySource? source}) : _injected = source;
+
+  final MoneySource? _injected;
+
+  MoneySource get _source => _injected ?? Sources.money;
+
   MoneySummaryStatus _status = MoneySummaryStatus.idle;
   MoneySummary _summary = const MoneySummary();
   MoneyRange _range = MoneyRange.today;
@@ -104,19 +111,10 @@ class MoneyService extends ChangeNotifier {
 
     final from = _range.from(DateTime.now());
 
-    dynamic data;
+    final MoneySummary summary;
 
     try {
-      // Today is the bare read and any other window is the same answer with a
-      // body: the endpoint pair exists so a screen with a range picker does not
-      // have to switch URLs when somebody drags it.
-      data = from == null
-        ? await api.get(path: "/money/", version: "v1")
-        : await api.post(
-            path: "/money/summary/",
-            version: "v1",
-            data: {"FROM": from.toUtc().toIso8601String()}
-          );
+      summary = await _source.summary(from: from);
     } catch (error) {
       if (kDebugMode) print("loadMoneySummary failed: $error");
 
@@ -132,7 +130,6 @@ class MoneyService extends ChangeNotifier {
 
     if (generation != _generation) return;
 
-    final summary = MoneySummary.fromResponse(data);
 
     // A response that was not understood is an error and not an empty period:
     // drawing it would be a screen of zeros that nobody can tell from a quiet

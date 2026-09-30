@@ -3,8 +3,9 @@ import 'package:flutter/widgets.dart';
 
 // SERVICES
 import 'package:app/services/money/money_currency_model.dart';
-import 'package:app/services/money/money_currency_request.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/services/money/sources/money_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum MoneyCurrenciesStatus { idle, loading, ready, error }
 
@@ -19,6 +20,12 @@ enum MoneyCurrenciesStatus { idle, loading, ready, error }
 /// It is ephemeral, like every money service: owned by the finance section and
 /// dropped when leaving it. A business switch remounts the section.
 class MoneyCurrenciesService extends ChangeNotifier {
+  MoneyCurrenciesService({MoneySource? source}) : _injected = source;
+
+  final MoneySource? _injected;
+
+  MoneySource get _source => _injected ?? Sources.money;
+
   MoneyCurrenciesStatus _status = MoneyCurrenciesStatus.idle;
 
   MoneyCurrencies _currencies = const MoneyCurrencies(main: "");
@@ -40,9 +47,7 @@ class MoneyCurrenciesService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = await api.get(path: "/money/currencies/", version: "v1");
-
-      _currencies = MoneyCurrencies.fromJson(data);
+      _currencies = await _source.currencies();
       _status = MoneyCurrenciesStatus.ready;
     } catch (error) {
       if (kDebugMode) print("loadMoneyCurrencies failed: $error");
@@ -64,20 +69,12 @@ class MoneyCurrenciesService extends ChangeNotifier {
   Future<bool> save(
     BuildContext context, {
     required Map<String, dynamic> request
-  }) => _write(context, () => api.put(
-    path: "/money/currencies/",
-    version: "v1",
-    data: request
-  ));
+  }) => _write(context, () => _source.saveCurrency(request));
 
   /// Takes an exchange currency off.
   Future<bool> remove(BuildContext context, String currency) => _write(
     context,
-    () => api.delete(
-      path: "/money/currencies/",
-      version: "v1",
-      data: removeMoneyExchangeRequest(currency)
-    )
+    () => _source.removeCurrency(currency)
   );
 
   Future<bool> _write(

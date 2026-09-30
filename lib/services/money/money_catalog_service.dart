@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/money/money_concept_model.dart';
 import 'package:app/services/pos/pos_payment_method.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/money/sources/money_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum MoneyCatalogStatus { idle, loading, ready, error }
 
@@ -26,6 +27,12 @@ enum MoneyCatalogStatus { idle, loading, ready, error }
 /// them are the company's own accounts (`MoneyMethodsService`): those are what
 /// it turned on, with the number a customer is actually told.
 class MoneyCatalogService extends ChangeNotifier {
+  MoneyCatalogService({MoneySource? source}) : _injected = source;
+
+  final MoneySource? _injected;
+
+  MoneySource get _source => _injected ?? Sources.money;
+
   MoneyCatalogStatus _status = MoneyCatalogStatus.idle;
 
   List<MoneyConcept> _incoming = const [];
@@ -77,10 +84,14 @@ class MoneyCatalogService extends ChangeNotifier {
     _status = MoneyCatalogStatus.loading;
     notifyListeners();
 
-    dynamic data;
+    final ({
+      List<MoneyConcept> incoming,
+      List<MoneyConcept> outgoing,
+      List<PosPaymentMethod> settlements
+    }) data;
 
     try {
-      data = await api.get(path: "/money/catalog/", version: "v1");
+      data = await _source.catalog();
     } catch (error) {
       if (kDebugMode) print("loadMoneyCatalog failed: $error");
 
@@ -90,11 +101,9 @@ class MoneyCatalogService extends ChangeNotifier {
       return;
     }
 
-    final concepts = data is Map ? data["concepts"] : null;
-
-    _incoming = _concepts(concepts is Map ? concepts["in"] : null);
-    _outgoing = _concepts(concepts is Map ? concepts["out"] : null);
-    _settlements = _methods(data is Map ? data["methods"] : null);
+    _incoming = data.incoming;
+    _outgoing = data.outgoing;
+    _settlements = data.settlements;
 
     // Without concepts there is nothing to record a payment as, so it is
     // reported as the failure it is and offered for retry: an empty vocabulary
@@ -108,20 +117,4 @@ class MoneyCatalogService extends ChangeNotifier {
   }
 
   Future<void> retry() => load(force: true);
-
-  static List<MoneyConcept> _concepts(dynamic raw) => raw is! List
-    ? const []
-    : [
-        for (final entry in raw)
-          if (entry is Map)
-            MoneyConcept.fromJson(Map<String, dynamic>.from(entry))
-      ].where((concept) => concept.isValid).toList(growable: false);
-
-  static List<PosPaymentMethod> _methods(dynamic raw) => raw is! List
-    ? const []
-    : [
-        for (final entry in raw)
-          if (entry is Map)
-            PosPaymentMethod.fromJson(Map<String, dynamic>.from(entry))
-      ].where((method) => method.isValid).toList(growable: false);
 }

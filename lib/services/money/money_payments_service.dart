@@ -4,8 +4,9 @@ import 'package:flutter/widgets.dart';
 // SERVICES
 import 'package:app/services/money/money_concept_model.dart';
 import 'package:app/services/money/money_payment_model.dart';
-import 'package:app/services/money/money_payment_request.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/services/money/sources/money_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum MoneyPaymentsStatus { idle, loading, ready, empty, error }
 
@@ -30,6 +31,12 @@ enum MoneyPaymentsStatus { idle, loading, ready, empty, error }
 ///
 /// It is ephemeral: owned by the finance section and discarded when leaving it.
 class MoneyPaymentsService extends ChangeNotifier {
+  MoneyPaymentsService({MoneySource? source}) : _injected = source;
+
+  final MoneySource? _injected;
+
+  MoneySource get _source => _injected ?? Sources.money;
+
   /// How many movements are read at a time. The backend caps the page at 200;
   /// fifty fills the table twice over without making the tab wait for rows
   /// nobody scrolled to.
@@ -186,7 +193,7 @@ class MoneyPaymentsService extends ChangeNotifier {
     required Map<String, dynamic> request
   }) async {
     try {
-      await api.post(path: "/money/payments/", version: "v1", data: request);
+      await _source.recordPayment(request);
     } catch (error) {
       if (kDebugMode) print("recordPayment failed: $error");
 
@@ -212,11 +219,7 @@ class MoneyPaymentsService extends ChangeNotifier {
     String reason = ""
   }) async {
     try {
-      await api.post(
-        path: "/money/payments/void/",
-        version: "v1",
-        data: voidPaymentRequest(id: id, reason: reason)
-      );
+      await _source.voidPayment(id: id, reason: reason);
     } catch (error) {
       if (kDebugMode) print("voidPayment failed: $error");
 
@@ -246,20 +249,16 @@ class MoneyPaymentsService extends ChangeNotifier {
 
     final generation = _generation;
 
-    dynamic data;
+    final MoneyPaymentsPage result;
 
     try {
-      data = await api.post(
-        path: "/money/payments/search/",
-        version: "v1",
-        data: {
-          "PAGE": page,
-          "SIZE": _pageSize,
-          if (_direction != null) "DIRECTION": _direction!.value,
-          if (_concept.isNotEmpty) "CONCEPT": _concept,
-          if (_method.isNotEmpty) "METHOD": _method,
-          "STATUS": _state?.value ?? "all"
-        }
+      result = await _source.payments(
+        page: page,
+        size: _pageSize,
+        direction: _direction,
+        concept: _concept,
+        method: _method,
+        state: _state
       );
     } catch (error) {
       if (kDebugMode) print("loadPayments failed: $error");
@@ -279,8 +278,6 @@ class MoneyPaymentsService extends ChangeNotifier {
     if (generation != _generation) return;
 
     _reading = false;
-
-    final result = MoneyPaymentsPage.fromResponse(data);
 
     if (!result.isLoaded) {
       _nothing();

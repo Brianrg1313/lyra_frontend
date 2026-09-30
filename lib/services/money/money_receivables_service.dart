@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/money/money_receivable_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/money/sources/money_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum MoneyReceivablesStatus { idle, loading, ready, empty, error }
 
@@ -27,6 +28,12 @@ enum MoneyReceivablesStatus { idle, loading, ready, empty, error }
 ///
 /// It is ephemeral: owned by the finance section and discarded when leaving it.
 class MoneyReceivablesService extends ChangeNotifier {
+  MoneyReceivablesService({MoneySource? source}) : _injected = source;
+
+  final MoneySource? _injected;
+
+  MoneySource get _source => _injected ?? Sources.money;
+
   /// How many tickets are read at a time. The backend caps the page at 200.
   static const int _pageSize = 50;
 
@@ -117,18 +124,10 @@ class MoneyReceivablesService extends ChangeNotifier {
 
     final generation = _generation;
 
-    dynamic data;
+    final MoneyReceivablesPage result;
 
     try {
-      data = await api.post(
-        path: "/money/receivables/",
-        version: "v1",
-        data: {
-          "PAGE": page,
-          "SIZE": _pageSize,
-          "OPEN": _openOnly ? 1 : 0
-        }
-      );
+      result = await _source.receivables(page: page, size: _pageSize, openOnly: _openOnly);
     } catch (error) {
       if (kDebugMode) print("loadReceivables failed: $error");
 
@@ -144,8 +143,6 @@ class MoneyReceivablesService extends ChangeNotifier {
     if (generation != _generation) return;
 
     _reading = false;
-
-    final result = MoneyReceivablesPage.fromResponse(data);
 
     if (!result.isLoaded) {
       _nothing();

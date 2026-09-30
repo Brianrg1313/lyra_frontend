@@ -2,7 +2,7 @@
 
 **Path** `test` (flat, 111 files, `<subject>_test.dart`)
 **Run** `flutter test` · `flutter test test/<file>_test.dart`
-**Baseline** 996 tests, **3 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
+**Baseline** 1026 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
 
 Pure logic and small widgets, not whole screens. **No test may hit the network.** Each file's
 `///` header states the rule it pins and why — read it before changing the test.
@@ -59,3 +59,5 @@ Layout/colour assertions the design has moved past; each needs a decision on whi
 - `image_cell_test.dart` — the cell should stay square in a wide column: expects side `17.5`, gets `225.5`.
 - `stock_summary_test.dart` — rows should alternate zebra bands: gets `[null, null, null, null]`.
 - `sheet_zebra_test.dart` — hovered and cursor rows should have their own fill: hovered row gets plain white.
+- `business_employees_tab_test.dart` — "a narrow panel drops the contract and date columns" and "groups people by where
+  they are today": both expect a "Waiting to accept" group header, find none.

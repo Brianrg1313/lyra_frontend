@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 // SERVICES
-import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/money/money_method_model.dart';
-import 'package:app/services/money/money_method_request.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/services/money/sources/money_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum MoneyMethodsStatus { idle, loading, ready, empty, error }
 
@@ -31,6 +31,12 @@ enum MoneyMethodsStatus { idle, loading, ready, empty, error }
 /// depend on the company's country, so there is nothing to invalidate on its
 /// own account.
 class MoneyMethodsService extends ChangeNotifier {
+  MoneyMethodsService({MoneySource? source}) : _injected = source;
+
+  final MoneySource? _injected;
+
+  MoneySource get _source => _injected ?? Sources.money;
+
   MoneyMethodsStatus _status = MoneyMethodsStatus.idle;
 
   List<MoneyMethod> _methods = const [];
@@ -95,10 +101,10 @@ class MoneyMethodsService extends ChangeNotifier {
     _status = MoneyMethodsStatus.loading;
     notifyListeners();
 
-    dynamic data;
+    final ({List<MoneyMethod> methods, MoneyRailFields fields}) data;
 
     try {
-      data = await api.get(path: "/money/methods/", version: "v1");
+      data = await _source.methods();
     } catch (error) {
       if (kDebugMode) print("loadMoneyMethods failed: $error");
 
@@ -108,12 +114,9 @@ class MoneyMethodsService extends ChangeNotifier {
       return;
     }
 
-    _methods = [
-      for (final row in catalogRows(data is Map ? data["methods"] : null))
-        MoneyMethod.fromJson(row)
-    ].where((method) => method.isValid).toList(growable: false);
+    _methods = data.methods.where((method) => method.isValid).toList(growable: false);
 
-    _readFields(data is Map ? data["fields"] : null);
+    _fields.addAll(data.fields);
 
     // An empty list is not a failure here, unlike the concepts catalog: a
     // company that has not told anybody how to pay it is the normal state on
@@ -139,61 +142,35 @@ class MoneyMethodsService extends ChangeNotifier {
   Future<void> loadRails({bool force = false}) async {
     if (!force && _rails.isNotEmpty) return;
 
-    dynamic data;
+    final ({
+      String country,
+      List<MoneyRail> rails,
+      MoneyRailFields fields,
+      Map<String, List<MoneyPaymentOption>>? options
+    }) data;
 
     try {
-      data = await api.get(path: "/business/payments/", version: "v1");
+      data = await _source.rails();
     } catch (error) {
       if (kDebugMode) print("loadPaymentRails failed: $error");
 
       return;
     }
 
-    _country = (data is Map ? data["country"] ?? "" : "").toString();
-    _rails = [
-      for (final row in catalogRows(data is Map ? data["methods"] : null))
-        MoneyRail.fromJson(row)
-    ].where((entry) => entry.isValid).toList(growable: false);
+    _country = data.country;
+    _rails = data.rails;
 
-    _readFields(data is Map ? data["fields"] : null);
-    _readOptions(data is Map ? data["options"] : null);
+    // Merged and not replaced. The two reads see different sets —the list only
+    // knows the rails the company turned on, the catalog only the ones it may—
+    // and a rail that has since been withdrawn is in the first and not in the
+    // second, so dropping what was already read would leave the card of an
+    // account nobody can add again without labels.
+    _fields.addAll(data.fields);
+
+    // A catalogue that did not arrive leaves the ones already read.
+    if (data.options != null) _options = data.options!;
 
     notifyListeners();
-  }
-
-  /// Reads the requirement sheets both endpoints answer with: `{rail: [...]}`.
-  ///
-  /// They are merged and not replaced. The two reads see different sets —the
-  /// list only knows the rails the company turned on, the catalog only the ones
-  /// it may— and a rail that has since been withdrawn is in the first and not
-  /// in the second, so dropping what was already read would leave the card of
-  /// an account nobody can add again without labels.
-  void _readFields(dynamic data) {
-    if (data is! Map) return;
-
-    for (final entry in data.entries) {
-      final fields = [
-        for (final row in catalogRows(entry.value)) MoneyMethodField.fromJson(row)
-      ].where((field) => field.isValid).toList(growable: false);
-
-      _fields[entry.key.toString()] = fields;
-    }
-  }
-
-  /// Reads the option catalogs: `{banks: [{code, name}], ...}`. What is not
-  /// understood is left out, like every catalog in this app — a list that did
-  /// not arrive leaves a field without options, and the form draws it as text
-  /// rather than as an empty dropdown.
-  void _readOptions(dynamic data) {
-    if (data is! Map) return;
-
-    _options = {
-      for (final entry in data.entries)
-        entry.key.toString(): [
-          for (final row in catalogRows(entry.value))
-            MoneyPaymentOption.fromJson(row)
-        ].where((option) => option.isValid).toList(growable: false)
-    };
   }
 
   /// Turns a way of charging on. Returns `false` if it did not go in; the
@@ -206,31 +183,19 @@ class MoneyMethodsService extends ChangeNotifier {
   Future<bool> create(
     BuildContext context, {
     required Map<String, dynamic> request
-  }) => _write(context, () => api.post(
-    path: "/money/methods/",
-    version: "v1",
-    data: request
-  ));
+  }) => _write(context, () => _source.createMethod(request));
 
   /// Edits one of them. Only the keys the body carries are written, so a form
   /// that draws three fields cannot blank the two it does not show.
   Future<bool> update(
     BuildContext context, {
     required Map<String, dynamic> request
-  }) => _write(context, () => api.put(
-    path: "/money/methods/",
-    version: "v1",
-    data: request
-  ));
+  }) => _write(context, () => _source.updateMethod(request));
 
   /// Turns one off.
   Future<bool> remove(BuildContext context, String id) => _write(
     context,
-    () => api.delete(
-      path: "/money/methods/",
-      version: "v1",
-      data: removeMoneyMethodRequest(id)
-    )
+    () => _source.removeMethod(id)
   );
 
   /// The three writes, which differ only in the call: they all hold the same
