@@ -13,8 +13,11 @@ import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/screens/home/sections/business/employees/_employees.dart';
 import 'package:app/screens/home/sections/business/employees/employee_edit.dart';
+import 'package:app/screens/home/sections/business/employees/employee_permissions.dart';
 import 'package:app/screens/modals/business/invite_employee/_invite_employee.dart';
 
 /// The employees tab is two panels: the people on the left — the viewer's own
@@ -49,12 +52,21 @@ class _Employees extends BusinessEmployeesService {
     return true;
   }
 
+  /// Every write, whichever endpoint it took; [ownEdits] the ids that went
+  /// through the viewer's own profile.
   final List<(String, Map<String, dynamic>)> edits = [];
+  final List<String> ownEdits = [];
 
   @override
   Future<bool> edit(BuildContext context, String id, Map<String, dynamic> changes) async {
     edits.add((id, changes));
     return true;
+  }
+
+  @override
+  Future<bool> editOwn(BuildContext context, String id, Map<String, dynamic> changes) async {
+    ownEdits.add(id);
+    return edit(context, id, changes);
   }
 }
 
@@ -64,10 +76,10 @@ final _field = find.byWidgetPredicate((widget) => widget is EditableText && !wid
 /// The field of an open tile, not the panel's search box.
 final _tile = find.descendant(of: find.byType(EmployeeEditFrame), matching: _field);
 
-/// A detail of the viewer (`e-1`), active and with the whole profile;
-/// [editable] says whether the company may still write it.
-BusinessEmployeeDetail _detail({bool editable = true}) => BusinessEmployeeDetail.from({
-  "id": "e-1",
+/// A detail, the viewer's (`e-1`) unless [id] says otherwise, active and with
+/// the whole profile; [editable] says whether the company may still write it.
+BusinessEmployeeDetail _detail({String id = "e-1", bool editable = true}) => BusinessEmployeeDetail.from({
+  "id": id,
   "state": "active",
   "work_status": "working",
   "visibility": "full",
@@ -290,6 +302,73 @@ void main() {
       expect(find.text("Invite"), findsOneWidget);
     });
 
+    testWidgets('without the view it is only the own profile: no invite or counts, its own actions', (tester) async {
+      tester.view.physicalSize = const Size(1600, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      addTearDown(PermissionsService().clear);
+
+      businessService.seed({"keys": ["id", "name"], "values": [["b-1", "One"]]});
+      PermissionsService().seed({"b-1": {"business": {"view": true}}});
+
+      final service = _Employees()..seed(current: [_me], total: 1, details: [_detail()]);
+
+      await tester.pumpWidget(_app(service));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(service.selectedKey, "e-1");
+      expect(find.text("Invite"), findsNothing);
+      expect(find.text("1 active"), findsNothing);
+      // Their own permissions, settings, activity: to look at.
+      expect(find.text("Permissions"), findsOneWidget);
+    });
+
+    test("the viewer's own permissions are the /init grants, under their switches", () {
+      addTearDown(PermissionsService().clear);
+      businessService.seed({"keys": ["id", "name"], "values": [["b-1", "One"]]});
+      PermissionsService().seed({"b-1": {
+        "business": {"view": true, "employees": {"view": true, "invite": true}},
+        "messages": {"view": true, "reply": true},
+        "pos": {"view": true, "sell": true, "cancel_ticket": true}
+      }});
+
+      final own = EmployeePermission.own();
+
+      expect(own[EmployeePermission.business], {PermissionAccess.view});
+      expect(own[EmployeePermission.businessEmployees], {PermissionAccess.view, PermissionAccess.create});
+      expect(own[EmployeePermission.messages], {PermissionAccess.view, PermissionAccess.edit});
+      expect(own[EmployeePermission.pos], {PermissionAccess.view, PermissionAccess.create, PermissionAccess.delete});
+      expect(own.containsKey(EmployeePermission.finance), isFalse);
+    });
+
+    testWidgets('a read-only matrix does not toggle', (tester) async {
+      tester.view.physicalSize = const Size(1600, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      Map<EmployeePermission, Set<PermissionAccess>>? changed;
+
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: const [S.delegate, GlobalWidgetsLocalizations.delegate, GlobalMaterialLocalizations.delegate],
+        supportedLocales: S.delegate.supportedLocales,
+        home: Builder(builder: (context) {
+          AppSize.instance(context);
+
+          return Scaffold(body: EmployeePermissions(
+            initial: const {EmployeePermission.business: {PermissionAccess.view}},
+            readOnly: true,
+            onChanged: (grants) => changed = grants
+          ));
+        })
+      ));
+      await tester.pump();
+
+      expect(find.byType(FeedbackButton), findsNothing);
+      expect(find.text("These are your permissions in this business. Only someone who manages the team can change them."), findsOneWidget);
+      expect(changed, isNull);
+    });
+
     // Mounted directly, like the other modal tests: `showModal` picks the
     // phone sheet under the test binding.
     testWidgets('the invite form sends the email, lowercased, and the job title', (tester) async {
@@ -428,6 +507,25 @@ void main() {
       expect(service.edits.single.$1, "e-1");
       expect(service.edits.single.$2, {"POSTAL_CODE": "1070"});
       expect(_tile, findsNothing);
+      // The viewer's own personal data travels through their profile.
+      expect(service.ownEdits, ["e-1"]);
+    });
+
+    testWidgets('the viewer edits their own personal data without any permission', (tester) async {
+      addTearDown(PermissionsService().clear);
+      businessService.seed({"keys": ["id", "name"], "values": [["b-1", "One"]]});
+      PermissionsService().seed({"b-1": {"business": {"view": true}}});
+
+      final service = await _open(tester);
+
+      await tester.tap(find.text("1050"));
+      await tester.pump();
+      await tester.enterText(_tile, "1070");
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+
+      expect(service.ownEdits, ["e-1"]);
+      expect(service.edits.single.$2, {"POSTAL_CODE": "1070"});
     });
 
     testWidgets('a click outside drops the change; the check sends it', (tester) async {
@@ -565,12 +663,14 @@ void main() {
       expect(service.edits.single.$2, {"BIRTHDAY": "1991-03-05"});
     });
 
-    testWidgets("a profile the person owns is read, not edited", (tester) async {
+    testWidgets("another's profile the company may not write is read, not edited", (tester) async {
       tester.view.physicalSize = const Size(1600, 2400);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
 
-      final service = _Employees()..seed(current: [_me, _luis], total: 1, details: [_detail(editable: false)]);
+      final service = _Employees()
+        ..seed(current: [_me, _luis], total: 1, details: [_detail(id: "e-2", editable: false)])
+        ..select("e-2");
 
       await tester.pumpWidget(_app(service));
       await tester.pump();

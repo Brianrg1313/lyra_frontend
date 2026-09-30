@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
+import 'package:flutter/services.dart' show FilteringTextInputFormatter, LengthLimitingTextInputFormatter, TextEditingValue, TextInputFormatter, TextSelection;
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/catalog/country_catalog_service.dart';
+import 'package:app/services/catalog/phone_plan.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -19,6 +20,10 @@ import './employee_edit.dart';
 /// country code is chosen, with its flag, and only the digits of the number
 /// are typed. It travels as `+`, code and number, the only shape the backend
 /// takes (`0-9+`).
+///
+/// The number is checked against the code's plan ([PhonePlan]): its length,
+/// and the trunk `0` written at home (`0412 …`) is dropped as it is typed,
+/// since `+58 0412 …` is no one's phone.
 ///
 /// It asks for the whole row while open ([EmployeeWiden]): the code and the
 /// number side by side do not fit in half of it.
@@ -69,10 +74,6 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
   /// The chosen country, kept here: the select resolves its option only once
   /// it is mounted.
   String _country = "";
-
-  /// E.164 caps a whole number at 15 digits; the code takes up to three.
-  static const _longest = 12;
-  static const _shortest = 4;
 
   @override
   void initState() {
@@ -140,7 +141,7 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
             placeholder: text.employee_edit_phone_code,
             emptyText: text.employee_edit_no_match,
             buttonSpace: false,
-            fillColor: scheme.surfaceOver,
+            fillColor: scheme.surface,
             radius: radius,
             onSelected: (option) => setState(() => _country = option.value)
           )),
@@ -150,14 +151,33 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
             placeholder: text.employee_edit_phone_number,
             buttonSpace: false,
             autofocus: true,
-            fillColor: scheme.surfaceOver,
+            fillColor: scheme.surface,
             radius: radius,
-            formatters: [LengthLimitingTextInputFormatter(_longest)],
+            formatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              TextInputFormatter.withFunction(_trunk),
+              LengthLimitingTextInputFormatter(PhonePlan.of(_dial).max)
+            ],
             onSubmit: _commit
           ))
         ]
       )
     );
+  }
+
+  /// The chosen code's digits, empty while none is.
+  String get _dial => CountryCatalogService().byCode(_country)?.phone ?? "";
+
+  /// Drops the trunk zeros as they are typed or pasted, keeping the caret
+  /// where it was among the digits left.
+  TextEditingValue _trunk(TextEditingValue before, TextEditingValue after) {
+    final text = PhonePlan.national(_dial, after.text);
+    final dropped = after.text.length - text.length;
+    if (dropped == 0) return after;
+
+    final caret = (after.selection.baseOffset - dropped).clamp(0, text.length);
+
+    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: caret));
   }
 
   /// Redraws on each key: the check comes and goes with the change.
@@ -172,7 +192,9 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
     _country = saved?.code ?? (widget.value.isEmpty ? widget.country : "");
     // A value, not a label: the select finds its option when it mounts.
     _code.selectedValue = _country;
-    _number.textController.text = catalog.splitPhone(widget.value).number.replaceAll(RegExp(r"\D"), "");
+    // A phone saved before the check (`+580412…`) opens already mended: the
+    // check shows, and saving it is one press.
+    _number.textController.text = PhonePlan.national(saved?.phone ?? "", catalog.splitPhone(widget.value).number);
 
     setState(() => _editing = true);
     EmployeeWiden(true).dispatch(context);
@@ -191,10 +213,9 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
 
   /// The phone as it travels. No number is no phone, whatever the code.
   String get _value {
-    final number = _number.text.trim();
+    final dial = _dial;
+    final number = PhonePlan.national(dial, _number.text);
     if (number.isEmpty) return "";
-
-    final dial = CountryCatalogService().byCode(_country)?.phone ?? "";
 
     return dial.isEmpty ? number : "+$dial$number";
   }
@@ -207,10 +228,17 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
     if (value == widget.value) return _close();
 
     if (value.isNotEmpty) {
-      final digits = _number.text.trim().length;
-      final problem = _country.isEmpty
-        ? S.of(context).employee_edit_phone_no_code
-        : digits < _shortest || digits > _longest ? S.of(context).employee_edit_invalid_phone : null;
+      final text = S.of(context);
+      final dial = _dial;
+      final plan = PhonePlan.of(dial);
+
+      final problem = dial.isEmpty
+        ? text.employee_edit_phone_no_code
+        : plan.fits(PhonePlan.national(dial, _number.text))
+          ? null
+          : plan.min == plan.max
+            ? text.employee_edit_phone_digits("+$dial", plan.min)
+            : text.employee_edit_phone_digits_range("+$dial", plan.min, plan.max);
 
       if (problem != null) {
         FloatFlag.of(context).alert(message: problem);

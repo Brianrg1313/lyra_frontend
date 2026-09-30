@@ -50,8 +50,16 @@ void main() {
       }
     });
 
-    expect(BusinessTab.opening, BusinessTab.branches);
+    // The employees tab is always granted (the viewer's own profile) and comes first.
+    expect(BusinessTab.opening, BusinessTab.employees);
     expect(FinanceTab.opening, FinanceTab.payments);
+  });
+
+  test('the employees tab opens without its view: everyone sees their own profile', () {
+    PermissionsService().seed({"b-1": {"business": {"view": true}}});
+
+    expect(BusinessTab.employees.granted, isTrue);
+    expect(BusinessTab.settings.granted, isFalse);
   });
 
   test('with no tab granted it is the initial one, which shows the lock', () {

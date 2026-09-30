@@ -71,6 +71,29 @@ class PermissionsService extends ChangeNotifier {
   /// Whether [area] (`finance.payments`) can be opened: its `view`.
   bool canOpen(String area, {String? business}) => can("$area.view", business: business);
 
+  /// The actions granted in [area] (`view`, `reply`...), or `null` when every one is: an
+  /// owner, or no permissions loaded yet (the same cases [can] answers `true` to all).
+  Set<String>? granted(String area, {String? business}) {
+    if (!_loaded) return null;
+
+    final company = business ?? businessService.activeId;
+    if (company == null) return const {};
+    if (_owned.contains(company)) return null;
+
+    Object? node = _companies[company];
+    for (final key in area.split(".")) {
+      if (node is! Map) return const {};
+      node = node[key];
+    }
+
+    if (node is! Map) return const {};
+
+    return {
+      for (final entry in node.entries)
+        if (entry.value == true) entry.key.toString()
+    };
+  }
+
   /// Stores `/init`'s `permissions`. A company whose entry is not a map gets nothing.
   void seed(dynamic data) {
     if (data is! Map) return;

@@ -29,7 +29,8 @@ class EmployeeDateFact extends StatefulWidget implements EmployeeTile {
     required this.day,
     required this.onSave,
     this.empty,
-    this.enabled = true
+    this.enabled = true,
+    this.validate
   });
 
   final IconData icon;
@@ -45,6 +46,11 @@ class EmployeeDateFact extends StatefulWidget implements EmployeeTile {
 
   final String? empty;
   final bool enabled;
+
+  /// Checks a real day against the others it depends on (a contract does
+  /// not end before it starts): the message to show, or `null` when it can
+  /// be sent. Never called for an erased day.
+  final String? Function(DateTime day)? validate;
 
   /// Sends the day as `yyyy-MM-dd`; an empty one erases it.
   final Future<bool> Function(String day) onSave;
@@ -122,7 +128,7 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
             placeholder: text.employee_edit_day,
             buttonSpace: false,
             autofocus: true,
-            fillColor: scheme.surfaceOver,
+            fillColor: scheme.surface,
             radius: radius,
             formatters: [LengthLimitingTextInputFormatter(2)],
             next: _month.focus
@@ -137,7 +143,7 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
             placeholder: text.employee_edit_month,
             emptyText: text.employee_edit_no_match,
             buttonSpace: false,
-            fillColor: scheme.surfaceOver,
+            fillColor: scheme.surface,
             radius: radius,
             onSelected: (option) {
               setState(() => _chosen = int.tryParse(option.value) ?? 0);
@@ -149,7 +155,7 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
             controller: _year,
             placeholder: text.employee_edit_year,
             buttonSpace: false,
-            fillColor: scheme.surfaceOver,
+            fillColor: scheme.surface,
             radius: radius,
             formatters: [LengthLimitingTextInputFormatter(4)],
             onSubmit: _commit
@@ -217,6 +223,13 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
     }
 
     if (value == _saved) return _close();
+
+    final problem = value.isEmpty ? null : widget.validate?.call(DateTime.parse(value));
+
+    if (problem != null) {
+      FloatFlag.of(context).alert(message: problem);
+      return;
+    }
 
     setState(() => _saving = true);
     _form.loading.value = true;

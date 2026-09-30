@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart' show BuildContext;
 // SERVICES
 import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/toolkit/api.dart';
 
@@ -22,6 +23,9 @@ enum EmployeeDetailStatus { idle, loading, ready, error }
 /// viewer always first) and the former ones. The former are a second list the
 /// backend keeps apart; if only that read fails the current list still shows,
 /// because it is the one that is worked with.
+///
+/// Without `business.employees.view` the current list is only the viewer's own
+/// card (the backend narrows it) and the former one is not read at all.
 ///
 /// A detail is read once per person per page and kept: switching back and
 /// forth between two employees in the list does not reread either.
@@ -50,6 +54,9 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// which also holds the invitations and possibly the viewer's unfiled card.
   int get total => _total;
 
+  /// Whether the viewer sees everyone, not only their own card.
+  static bool get viewsAll => PermissionsService().canOpen("business.employees");
+
   /// Key ([BusinessEmployeeModel.key]) of the person open in the detail panel.
   String? get selectedKey => _selected;
 
@@ -76,7 +83,7 @@ class BusinessEmployeesService extends ChangeNotifier {
     _status = BusinessEmployeesStatus.loading;
     notifyListeners();
 
-    final (current, former) = await (_fetch(), _fetch(former: true)).wait;
+    final (current, former) = await (_fetch(), _fetchFormer()).wait;
 
     if (current == null) {
       _status = BusinessEmployeesStatus.error;
@@ -152,15 +159,36 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// Answers once the detail and the rows are read again, so the field that
   /// saved shows what the backend kept, not what was typed. A refusal is shown
   /// in the floating flag and answers `false`.
-  Future<bool> edit(BuildContext context, String id, Map<String, dynamic> changes) async {
+  Future<bool> edit(BuildContext context, String id, Map<String, dynamic> changes) =>
+    _write(context, id, "editEmployee", () => api.put(
+      path: "/business/employees/",
+      version: "v1",
+      data: {"ID": id, ...changes}
+    ));
+
+  /// Edits the viewer's own personal data (`PUT /profile/`) shown in their
+  /// employment [id]: the person's profile is theirs to write, with no company
+  /// permission (the backend reads who from the session, never from the body).
+  /// Same keys and answer as [edit]; the job stays [edit]'s.
+  Future<bool> editOwn(BuildContext context, String id, Map<String, dynamic> changes) =>
+    _write(context, id, "editOwnProfile", () => api.put(
+      path: "/profile/",
+      version: "v1",
+      data: changes
+    ));
+
+  /// Sends one write, then rereads the detail and the rows; a refusal goes to
+  /// the floating flag.
+  Future<bool> _write(
+    BuildContext context,
+    String id,
+    String label,
+    Future<dynamic> Function() request
+  ) async {
     try {
-      await api.put(
-        path: "/business/employees/",
-        version: "v1",
-        data: {"ID": id, ...changes}
-      );
+      await request();
     } catch (error) {
-      if (kDebugMode) print("editEmployee failed: $error");
+      if (kDebugMode) print("$label failed: $error");
 
       if (context.mounted) {
         FloatFlag.of(context).fromError(
@@ -180,7 +208,7 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// Rereads both lists without passing through `loading`, which would blank
   /// the list under a panel that is only saving one field.
   Future<void> _refreshRows() async {
-    final (current, former) = await (_fetch(), _fetch(former: true)).wait;
+    final (current, former) = await (_fetch(), _fetchFormer()).wait;
 
     if (current == null) return;
 
@@ -239,6 +267,11 @@ class BusinessEmployeesService extends ChangeNotifier {
         : current.isNotEmpty ? current.first.key : former.firstOrNull?.key;
     }
   }
+
+  /// The former list, or none for a viewer who may only see their own card:
+  /// that endpoint still needs `employees`.
+  Future<(List<BusinessEmployeeModel>, int)?> _fetchFormer() async =>
+    viewsAll ? _fetch(former: true) : (const <BusinessEmployeeModel>[], 0);
 
   /// One list, with the active count when it is the current one. `null` when
   /// the read failed.

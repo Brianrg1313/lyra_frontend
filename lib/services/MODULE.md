@@ -33,9 +33,9 @@ explicit `context.read` helpers). Screens read services through `provider`.
   (private fields empty unless `fullProfile`), `EmployeeJob` (`salary` null ≠ 0), `EmployeeManager`, `EmployeeLeave`,
   `EmployeeSpan`, `EmployeeEnding`, and the workday/period/contract-status/end-reason/document/sex enums.
 - `business_employees_service.dart` — `BusinessEmployeesService` (+ `BusinessEmployeesStatus`, `EmployeeDetailStatus`):
-  current + former lists (a failed former read leaves it empty), `total` = active count, selection (first read opens the
+  current + former lists (a failed former read leaves it empty; not read without `viewsAll`), `total` = active count, selection (first read opens the
   viewer), details cached per id, `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
-  and opens it). Provided by the business page. Seam `seed`.
+  and opens it), `edit` (`PUT /business/employees/`), `editOwn` (the viewer's personal keys, `PUT /profile/`). Provided by the business page. Seam `seed`.
 - `business_email_model.dart` — `BusinessEmailModel`, `BusinessEmailPurpose`.
 - `business_language.dart` — `BusinessLanguage`.
 - `business_location_model.dart` — `BusinessLocationModel`: written address **and** map point, two facts
@@ -73,6 +73,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
 
 - `catalog_table.dart` — format-agnostic decoder for an `/init` catalog.
 - `country_catalog_service.dart` / `country_model.dart` — operated countries.
+- `phone_plan.dart` — `PhonePlan`: digits after a country code per numbering plan (`of(dial)`, `fits`), `national` drops the trunk `0`.
 - `currency_catalog_service.dart` / `currency_model.dart` — currencies (`CurrencyKind`, symbol,
   side, decimals); `resolve(code)` falls back to the app currency; `CurrencyModel.parse`.
 
@@ -157,7 +158,7 @@ See `baileys_server/MODULE.md` for the server side.
 ## permissions/
 
 - `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree, ids of
-  `docs/app-areas.json`). `can(id)`, `canOpen(area)` on the active company by default; absent on the path = denied, account
+  `docs/app-areas.json`). `can(id)`, `canOpen(area)`, `granted(area)` (its granted actions, `null` = all) on the active company by default; absent on the path = denied, account
   areas (`dashboard`) always open, not loaded (older backend) = nothing hidden. `own(id)` after `createBusiness`. Cleared on sign out.
 - `permission_requests_service.dart` — `PermissionRequestsService` (+ status): `GET`/`POST /permissions/requests/` (active company), `isPending(id)`.
   Owned by `NoPermissionSection`. A `409` rereads the list and `/init` (`refreshCatalogs`) before rethrowing. Seam `seed`.

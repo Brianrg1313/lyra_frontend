@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-// SERVICES
-import 'package:app/services/permissions/permissions_service.dart';
-
 // WIDGETS
 import 'package:app/screens/home/sections/section_tabs.dart';
 
@@ -43,6 +40,6 @@ class BusinessDetailHeader extends StatelessWidget {
     icon: (value) => value.icon,
     title: (context, value) => value.title(context),
     onTab: onTab,
-    isLocked: (value) => !PermissionsService().canOpen(value.area)
+    isLocked: (value) => !value.granted
   );
 }

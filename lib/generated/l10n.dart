@@ -4227,6 +4227,96 @@ class S {
     );
   }
 
+  /// `Permissions`
+  String get employee_action_permissions {
+    return Intl.message(
+      'Permissions',
+      name: 'employee_action_permissions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What this person can see and do in the business.`
+  String get employee_action_permissions_description {
+    return Intl.message(
+      'What this person can see and do in the business.',
+      name: 'employee_action_permissions_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get employee_action_settings {
+    return Intl.message(
+      'Settings',
+      name: 'employee_action_settings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How this person works here: schedule, notices and preferences.`
+  String get employee_action_settings_description {
+    return Intl.message(
+      'How this person works here: schedule, notices and preferences.',
+      name: 'employee_action_settings_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Activity`
+  String get employee_action_activity {
+    return Intl.message(
+      'Activity',
+      name: 'employee_action_activity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What this person did lately, newest first.`
+  String get employee_action_activity_description {
+    return Intl.message(
+      'What this person did lately, newest first.',
+      name: 'employee_action_activity_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales`
+  String get employee_action_sales {
+    return Intl.message(
+      'Sales',
+      name: 'employee_action_sales',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The sales this person handled and how they went.`
+  String get employee_action_sales_description {
+    return Intl.message(
+      'The sales this person handled and how they went.',
+      name: 'employee_action_sales_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coming soon`
+  String get employee_action_soon_title {
+    return Intl.message(
+      'Coming soon',
+      name: 'employee_action_soon_title',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Day`
   String get employee_edit_day {
     return Intl.message('Day', name: 'employee_edit_day', desc: '', args: []);
@@ -4287,11 +4377,81 @@ class S {
     );
   }
 
-  /// `A phone number has 4 to 12 digits after the code`
-  String get employee_edit_invalid_phone {
+  /// `Numbers from {dial} have {count} digits after the code`
+  String employee_edit_phone_digits(Object dial, Object count) {
     return Intl.message(
-      'A phone number has 4 to 12 digits after the code',
-      name: 'employee_edit_invalid_phone',
+      'Numbers from $dial have $count digits after the code',
+      name: 'employee_edit_phone_digits',
+      desc: '',
+      args: [dial, count],
+    );
+  }
+
+  /// `Numbers from {dial} have {min} to {max} digits after the code`
+  String employee_edit_phone_digits_range(Object dial, Object min, Object max) {
+    return Intl.message(
+      'Numbers from $dial have $min to $max digits after the code',
+      name: 'employee_edit_phone_digits_range',
+      desc: '',
+      args: [dial, min, max],
+    );
+  }
+
+  /// `That isn't an email, like name@company.com`
+  String get employee_edit_invalid_email {
+    return Intl.message(
+      'That isn\'t an email, like name@company.com',
+      name: 'employee_edit_invalid_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{label} takes only letters, spaces, hyphens and apostrophes`
+  String employee_edit_invalid_name(Object label) {
+    return Intl.message(
+      '$label takes only letters, spaces, hyphens and apostrophes',
+      name: 'employee_edit_invalid_name',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `A birthday can't be today or later`
+  String get employee_edit_birthday_future {
+    return Intl.message(
+      'A birthday can\'t be today or later',
+      name: 'employee_edit_birthday_future',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `They must be at least {years} years old`
+  String employee_edit_birthday_young(Object years) {
+    return Intl.message(
+      'They must be at least $years years old',
+      name: 'employee_edit_birthday_young',
+      desc: '',
+      args: [years],
+    );
+  }
+
+  /// `The contract can't end before it starts`
+  String get employee_edit_end_before_start {
+    return Intl.message(
+      'The contract can\'t end before it starts',
+      name: 'employee_edit_end_before_start',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The job can't start after the contract ends`
+  String get employee_edit_start_after_end {
+    return Intl.message(
+      'The job can\'t start after the contract ends',
+      name: 'employee_edit_start_after_end',
       desc: '',
       args: [],
     );
@@ -16668,6 +16828,546 @@ class S {
       name: 'welcome_jobs_body',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Search a permission: sales, inventory, payments...`
+  String get permission_search_hint {
+    return Intl.message(
+      'Search a permission: sales, inventory, payments...',
+      name: 'permission_search_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `These are your permissions in this business. Only someone who manages the team can change them.`
+  String get permission_own_read_only {
+    return Intl.message(
+      'These are your permissions in this business. Only someone who manages the team can change them.',
+      name: 'permission_own_read_only',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No permission matches the search.`
+  String get permission_search_empty {
+    return Intl.message(
+      'No permission matches the search.',
+      name: 'permission_search_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View`
+  String get permission_access_view {
+    return Intl.message(
+      'View',
+      name: 'permission_access_view',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create`
+  String get permission_access_create {
+    return Intl.message(
+      'Create',
+      name: 'permission_access_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit`
+  String get permission_access_edit {
+    return Intl.message(
+      'Edit',
+      name: 'permission_access_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete`
+  String get permission_access_delete {
+    return Intl.message(
+      'Delete',
+      name: 'permission_access_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This area has no such action`
+  String get permission_access_unavailable {
+    return Intl.message(
+      'This area has no such action',
+      name: 'permission_access_unavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Business`
+  String get permission_business_title {
+    return Intl.message(
+      'Business',
+      name: 'permission_business_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open the business page. Delete removes the whole company from its settings.`
+  String get permission_business_description {
+    return Intl.message(
+      'Open the business page. Delete removes the whole company from its settings.',
+      name: 'permission_business_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Statistics`
+  String get permission_business_statistics_title {
+    return Intl.message(
+      'Statistics',
+      name: 'permission_business_statistics_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The business statistics tab: sales, clients and activity over time.`
+  String get permission_business_statistics_description {
+    return Intl.message(
+      'The business statistics tab: sales, clients and activity over time.',
+      name: 'permission_business_statistics_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Employees`
+  String get permission_business_employees_title {
+    return Intl.message(
+      'Employees',
+      name: 'permission_business_employees_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The team: see who works here, invite people by email and edit their job and profile.`
+  String get permission_business_employees_description {
+    return Intl.message(
+      'The team: see who works here, invite people by email and edit their job and profile.',
+      name: 'permission_business_employees_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Branches`
+  String get permission_business_branches_title {
+    return Intl.message(
+      'Branches',
+      name: 'permission_business_branches_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The company's branches: add new ones and edit their address, contact and map point.`
+  String get permission_business_branches_description {
+    return Intl.message(
+      'The company\'s branches: add new ones and edit their address, contact and map point.',
+      name: 'permission_business_branches_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clients`
+  String get permission_business_clients_title {
+    return Intl.message(
+      'Clients',
+      name: 'permission_business_clients_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The list of the company's clients.`
+  String get permission_business_clients_description {
+    return Intl.message(
+      'The list of the company\'s clients.',
+      name: 'permission_business_clients_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Business settings`
+  String get permission_business_settings_title {
+    return Intl.message(
+      'Business settings',
+      name: 'permission_business_settings_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The company profile: legal name, handle, activity, fiscal id, phone, website, country and logo.`
+  String get permission_business_settings_description {
+    return Intl.message(
+      'The company profile: legal name, handle, activity, fiscal id, phone, website, country and logo.',
+      name: 'permission_business_settings_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Messages`
+  String get permission_messages_title {
+    return Intl.message(
+      'Messages',
+      name: 'permission_messages_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The conversation desk. Edit covers replying, taking over from the assistant, assigning, tags and stages.`
+  String get permission_messages_description {
+    return Intl.message(
+      'The conversation desk. Edit covers replying, taking over from the assistant, assigning, tags and stages.',
+      name: 'permission_messages_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries`
+  String get permission_deliveries_title {
+    return Intl.message(
+      'Deliveries',
+      name: 'permission_deliveries_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The deliveries desk and its map. Create opens new deliveries.`
+  String get permission_deliveries_description {
+    return Intl.message(
+      'The deliveries desk and its map. Create opens new deliveries.',
+      name: 'permission_deliveries_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery settings`
+  String get permission_deliveries_settings_title {
+    return Intl.message(
+      'Delivery settings',
+      name: 'permission_deliveries_settings_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whether the company delivers or offers pickup, the delivery note and the delivery options.`
+  String get permission_deliveries_settings_description {
+    return Intl.message(
+      'Whether the company delivers or offers pickup, the delivery note and the delivery options.',
+      name: 'permission_deliveries_settings_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery areas`
+  String get permission_deliveries_areas_title {
+    return Intl.message(
+      'Delivery areas',
+      name: 'permission_deliveries_areas_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The zones the company delivers to, with their fee and minimum order.`
+  String get permission_deliveries_areas_description {
+    return Intl.message(
+      'The zones the company delivers to, with their fee and minimum order.',
+      name: 'permission_deliveries_areas_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales`
+  String get permission_sales_title {
+    return Intl.message(
+      'Sales',
+      name: 'permission_sales_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The live sales board. Edit covers the handover of an order and confirming a payment.`
+  String get permission_sales_description {
+    return Intl.message(
+      'The live sales board. Edit covers the handover of an order and confirming a payment.',
+      name: 'permission_sales_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales in process`
+  String get permission_sales_process_title {
+    return Intl.message(
+      'Sales in process',
+      name: 'permission_sales_process_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The tab of sales that are still open.`
+  String get permission_sales_process_description {
+    return Intl.message(
+      'The tab of sales that are still open.',
+      name: 'permission_sales_process_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Finished sales`
+  String get permission_sales_done_title {
+    return Intl.message(
+      'Finished sales',
+      name: 'permission_sales_done_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The tab of sales already closed.`
+  String get permission_sales_done_description {
+    return Intl.message(
+      'The tab of sales already closed.',
+      name: 'permission_sales_done_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Inventory`
+  String get permission_inventory_title {
+    return Intl.message(
+      'Inventory',
+      name: 'permission_inventory_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Product tables: create, import, edit fields and records, move stock and delete tables.`
+  String get permission_inventory_description {
+    return Intl.message(
+      'Product tables: create, import, edit fields and records, move stock and delete tables.',
+      name: 'permission_inventory_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Channels`
+  String get permission_channels_title {
+    return Intl.message(
+      'Channels',
+      name: 'permission_channels_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The AI channels: create them, edit their role, data and credentials, turn them on or off and disconnect them.`
+  String get permission_channels_description {
+    return Intl.message(
+      'The AI channels: create them, edit their role, data and credentials, turn them on or off and disconnect them.',
+      name: 'permission_channels_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Finance`
+  String get permission_finance_title {
+    return Intl.message(
+      'Finance',
+      name: 'permission_finance_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open the finance section. Each of its tabs has its own permission below.`
+  String get permission_finance_description {
+    return Intl.message(
+      'Open the finance section. Each of its tabs has its own permission below.',
+      name: 'permission_finance_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overview`
+  String get permission_finance_overview_title {
+    return Intl.message(
+      'Overview',
+      name: 'permission_finance_overview_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The summary of the company's money and the assistant's cost.`
+  String get permission_finance_overview_description {
+    return Intl.message(
+      'The summary of the company\'s money and the assistant\'s cost.',
+      name: 'permission_finance_overview_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payments`
+  String get permission_finance_payments_title {
+    return Intl.message(
+      'Payments',
+      name: 'permission_finance_payments_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payments received. Create records a payment, delete voids one.`
+  String get permission_finance_payments_description {
+    return Intl.message(
+      'Payments received. Create records a payment, delete voids one.',
+      name: 'permission_finance_payments_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receivables`
+  String get permission_finance_receivables_title {
+    return Intl.message(
+      'Receivables',
+      name: 'permission_finance_receivables_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What clients still owe. Edit marks an amount as collected.`
+  String get permission_finance_receivables_description {
+    return Intl.message(
+      'What clients still owe. Edit marks an amount as collected.',
+      name: 'permission_finance_receivables_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment methods`
+  String get permission_finance_methods_title {
+    return Intl.message(
+      'Payment methods',
+      name: 'permission_finance_methods_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The accounts clients pay into, plus exchange currencies and their rates.`
+  String get permission_finance_methods_description {
+    return Intl.message(
+      'The accounts clients pay into, plus exchange currencies and their rates.',
+      name: 'permission_finance_methods_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connections`
+  String get permission_connections_title {
+    return Intl.message(
+      'Connections',
+      name: 'permission_connections_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Third-party accounts linked to the company.`
+  String get permission_connections_description {
+    return Intl.message(
+      'Third-party accounts linked to the company.',
+      name: 'permission_connections_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Point of sale`
+  String get permission_pos_title {
+    return Intl.message(
+      'Point of sale',
+      name: 'permission_pos_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The point of sale mode. Create adds products to a ticket and charges it, delete discards a ticket.`
+  String get permission_pos_description {
+    return Intl.message(
+      'The point of sale mode. Create adds products to a ticket and charges it, delete discards a ticket.',
+      name: 'permission_pos_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{granted} of {total} open`
+  String permission_group_count(Object granted, Object total) {
+    return Intl.message(
+      '$granted of $total open',
+      name: 'permission_group_count',
+      desc: '',
+      args: [granted, total],
+    );
+  }
+
+  /// `{access}: {area}`
+  String permission_access_cell(Object access, Object area) {
+    return Intl.message(
+      '$access: $area',
+      name: 'permission_access_cell',
+      desc: '',
+      args: [access, area],
     );
   }
 }

@@ -34,8 +34,8 @@ import './employee_format.dart';
 /// Blocks that have nothing to say are left out rather than drawn empty —
 /// except the job and the person, which say what is missing in words, and
 /// the ones that can be filled from here, which are the only place to do it.
-List<Widget> employeeBlocks(BuildContext context, BusinessEmployeeDetail detail) {
-  final edit = EmployeeEditor(context, detail);
+List<Widget> employeeBlocks(BuildContext context, BusinessEmployeeDetail detail, {bool own = false}) {
+  final edit = EmployeeEditor(context, detail, own: own);
 
   return [
     _Person(detail: detail, edit: edit),
@@ -54,12 +54,17 @@ List<Widget> employeeBlocks(BuildContext context, BusinessEmployeeDetail detail)
 }
 
 /// What of one detail can be changed from the panel, and how a change travels
-/// (`PUT /business/employees/`, see [BusinessEmployeesService.edit]).
+/// (`PUT /business/employees/`, see [BusinessEmployeesService.edit]; the
+/// viewer's own personal data `PUT /profile/`, see
+/// [BusinessEmployeesService.editOwn]).
 class EmployeeEditor {
-  EmployeeEditor(this.context, this.detail);
+  EmployeeEditor(this.context, this.detail, {this.own = false});
 
   final BuildContext context;
   final BusinessEmployeeDetail detail;
+
+  /// The detail is the viewer's own employment.
+  final bool own;
 
   /// The job: with `employees.manage`, while it is invited or active — the
   /// backend refuses a closed one.
@@ -71,7 +76,8 @@ class EmployeeEditor {
 
   /// The personal data: while the job is active. It is the person's own
   /// profile, so a change reaches their account and every other employer.
-  bool get person => job && detail.fullProfile && detail.profileEditable;
+  /// The viewer always writes their own, with or without a permission.
+  bool get person => detail.fullProfile && (own || (job && detail.profileEditable));
 
   /// Saves one backend key with what a tile sent, reshaped by [shape] (a
   /// salary typed with a comma travels with a dot).
@@ -82,20 +88,29 @@ class EmployeeEditor {
       {key: shape == null || value.isEmpty ? value : shape(value)}
     );
 
+  /// Saves one personal key like [save]; the viewer's own through their
+  /// profile, since the company endpoint needs `employees.manage`.
+  Future<bool> Function(String value) savePerson(String key) =>
+    (value) => _person({key: value});
+
+  Future<bool> _person(Map<String, dynamic> changes) {
+    final service = context.read<BusinessEmployeesService>();
+
+    return own
+      ? service.editOwn(context, detail.id, changes)
+      : service.edit(context, detail.id, changes);
+  }
+
   /// Saves a place picked from the address search: the street line and the
   /// parts it came with, in one change. A part the place did not answer is
   /// left as it was rather than erased.
-  Future<bool> place(PlaceModel place) => context.read<BusinessEmployeesService>().edit(
-    context,
-    detail.id,
-    {
-      "ADDRESS": place.address,
-      if (place.city.isNotEmpty) "CITY": place.city,
-      if (place.region.isNotEmpty) "REGION": place.region,
-      if (place.postalCode.isNotEmpty) "POSTAL_CODE": place.postalCode,
-      if (place.country.isNotEmpty) "COUNTRY": place.country
-    }
-  );
+  Future<bool> place(PlaceModel place) => _person({
+    "ADDRESS": place.address,
+    if (place.city.isNotEmpty) "CITY": place.city,
+    if (place.region.isNotEmpty) "REGION": place.region,
+    if (place.postalCode.isNotEmpty) "POSTAL_CODE": place.postalCode,
+    if (place.country.isNotEmpty) "COUNTRY": place.country
+  });
 }
 
 /// The company's country: the phone code offered for a phone that has none.
@@ -119,6 +134,35 @@ String? _checkAmount(BuildContext context, String text) {
   final amount = double.tryParse(_amount(text));
 
   return amount != null && amount >= 0 ? null : S.of(context).employee_edit_invalid_amount;
+}
+
+/// Letters of any alphabet and what joins them in a name ("O'Neil",
+/// "Ana-María", "Jr."); it starts with a letter.
+final _nameShape = RegExp(r"^[\p{L}\p{M}][\p{L}\p{M} .'’\-]*$", unicode: true);
+
+String? _checkName(BuildContext context, String label, String text) =>
+  _nameShape.hasMatch(text) ? null : S.of(context).employee_edit_invalid_name(label);
+
+/// One `@` between a name and a domain with a dot: the backend and the mail
+/// server judge the rest.
+final _emailShape = RegExp(r"^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$");
+
+String? _checkEmail(BuildContext context, String text) =>
+  _emailShape.hasMatch(text) ? null : S.of(context).employee_edit_invalid_email;
+
+/// The youngest a person takes a job at in the countries the platform
+/// operates in (14 in most of Latin America).
+const _youngest = 14;
+
+String? _checkBirthday(BuildContext context, DateTime day) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+
+  if (!day.isBefore(today)) return S.of(context).employee_edit_birthday_future;
+
+  final grown = DateTime(day.year + _youngest, day.month, day.day);
+
+  return grown.isAfter(today) ? S.of(context).employee_edit_birthday_young(_youngest) : null;
 }
 
 /// The names in use across the company for one job field, for the list a
@@ -273,6 +317,7 @@ class _WorkContact extends StatelessWidget {
           empty: none,
           copy: true,
           enabled: edit.job,
+          validate: (value) => _checkEmail(context, value),
           onSave: edit.save("WORK_EMAIL")
         )
       ])]
@@ -402,6 +447,7 @@ class _Job extends StatelessWidget {
           day: job.startDate,
           empty: none,
           enabled: editable,
+          validate: (day) => job.endDate != null && day.isAfter(job.endDate!) ? text.employee_edit_start_after_end : null,
           onSave: edit.save("START_DATE")
         ),
         if (editable || job.endDate != null) EmployeeDateFact(
@@ -411,6 +457,7 @@ class _Job extends StatelessWidget {
           day: job.endDate,
           empty: none,
           enabled: editable,
+          validate: (day) => job.startDate != null && day.isBefore(job.startDate!) ? text.employee_edit_end_before_start : null,
           onSave: edit.save("END_DATE")
         ),
         if (!editable) EmployeeFact(
@@ -508,7 +555,8 @@ class _Person extends StatelessWidget {
             empty: none,
             enabled: editable,
             required: true,
-            onSave: edit.save("FIRST_NAME")
+            validate: (value) => _checkName(context, text.employee_field_first_name, value),
+            onSave: edit.savePerson("FIRST_NAME")
           ),
           EmployeeTextFact(
             icon: CI.user,
@@ -517,7 +565,8 @@ class _Person extends StatelessWidget {
             empty: none,
             enabled: editable,
             required: true,
-            onSave: edit.save("LAST_NAME")
+            validate: (value) => _checkName(context, text.employee_field_last_name, value),
+            onSave: edit.savePerson("LAST_NAME")
           ),
           EmployeePhoneFact(
             icon: CI.phone,
@@ -526,7 +575,7 @@ class _Person extends StatelessWidget {
             country: person.country.isEmpty ? _companyCountry(context) : person.country,
             empty: none,
             enabled: editable,
-            onSave: edit.save("PHONE")
+            onSave: edit.savePerson("PHONE")
           ),
           // The account's sign-in email: not a profile field, so never
           // written from here.
@@ -543,7 +592,7 @@ class _Person extends StatelessWidget {
             // Searched where they live; the company's country until that is said.
             placesCountry: person.country,
             onPlace: edit.place,
-            onSave: edit.save("ADDRESS")
+            onSave: edit.savePerson("ADDRESS")
           ),
           EmployeeTextFact(
             icon: CI.home,
@@ -551,7 +600,7 @@ class _Person extends StatelessWidget {
             value: person.city,
             empty: none,
             enabled: editable,
-            onSave: edit.save("CITY")
+            onSave: edit.savePerson("CITY")
           ),
           EmployeeTextFact(
             icon: CI.home,
@@ -559,7 +608,7 @@ class _Person extends StatelessWidget {
             value: person.region,
             empty: none,
             enabled: editable,
-            onSave: edit.save("REGION")
+            onSave: edit.savePerson("REGION")
           ),
           EmployeeTextFact(
             icon: CI.home,
@@ -568,7 +617,7 @@ class _Person extends StatelessWidget {
             empty: none,
             enabled: editable,
             formatters: _digits(10),
-            onSave: edit.save("POSTAL_CODE")
+            onSave: edit.savePerson("POSTAL_CODE")
           ),
           EmployeeSelectFact(
             icon: CI.globe_shopping,
@@ -578,7 +627,7 @@ class _Person extends StatelessWidget {
             empty: none,
             enabled: editable,
             options: nations,
-            onSave: edit.save("COUNTRY")
+            onSave: edit.savePerson("COUNTRY")
           ),
           EmployeeDateFact(
             icon: CI.gift,
@@ -587,7 +636,8 @@ class _Person extends StatelessWidget {
             day: person.birthday,
             empty: none,
             enabled: editable,
-            onSave: edit.save("BIRTHDAY")
+            validate: (day) => _checkBirthday(context, day),
+            onSave: edit.savePerson("BIRTHDAY")
           ),
           EmployeeSelectFact(
             icon: CI.user,
@@ -600,7 +650,7 @@ class _Person extends StatelessWidget {
               for (final sex in EmployeeSex.values)
                 SelectOption(value: sex.value, placeholder: employeeSexLabel(context, sex))
             ],
-            onSave: edit.save("SEX")
+            onSave: edit.savePerson("SEX")
           ),
           EmployeeSelectFact(
             icon: CI.network,
@@ -610,7 +660,7 @@ class _Person extends StatelessWidget {
             empty: none,
             enabled: editable,
             options: nations,
-            onSave: edit.save("NATIONALITY")
+            onSave: edit.savePerson("NATIONALITY")
           ),
           EmployeeSelectFact(
             icon: CI.safe_user,
@@ -623,7 +673,7 @@ class _Person extends StatelessWidget {
               for (final document in EmployeeDocument.values)
                 SelectOption(value: document.value, placeholder: employeeDocumentLabel(context, document))
             ],
-            onSave: edit.save("DOCUMENT_TYPE")
+            onSave: edit.savePerson("DOCUMENT_TYPE")
           ),
           EmployeeTextFact(
             icon: CI.safe_user,
@@ -637,7 +687,7 @@ class _Person extends StatelessWidget {
             formatters: person.documentType == EmployeeDocument.passport
               ? [FilteringTextInputFormatter.allow(RegExp("[A-Za-z0-9]")), LengthLimitingTextInputFormatter(20)]
               : _digits(20),
-            onSave: edit.save("DOCUMENT_NUMBER")
+            onSave: edit.savePerson("DOCUMENT_NUMBER")
           ),
           if (editable || person.about.isNotEmpty) EmployeeTextFact(
             icon: CI.message_ai,
@@ -647,7 +697,7 @@ class _Person extends StatelessWidget {
             wide: true,
             lines: 6,
             enabled: editable,
-            onSave: edit.save("ABOUT")
+            onSave: edit.savePerson("ABOUT")
           )
         ])
       ]
@@ -680,14 +730,16 @@ class _Emergency extends StatelessWidget {
           value: person.emergencyName,
           empty: none,
           enabled: editable,
-          onSave: edit.save("EMERGENCY_NAME")
+          validate: (value) => _checkName(context, text.employee_field_emergency_name, value),
+          onSave: edit.savePerson("EMERGENCY_NAME")
         ),
         if (editable) EmployeeTextFact(
           icon: CI.support,
           label: text.employee_field_emergency_relation,
           value: person.emergencyRelation,
           empty: none,
-          onSave: edit.save("EMERGENCY_RELATION")
+          validate: (value) => _checkName(context, text.employee_field_emergency_relation, value),
+          onSave: edit.savePerson("EMERGENCY_RELATION")
         ),
         if (editable || person.emergencyPhone.isNotEmpty) EmployeePhoneFact(
           icon: CI.phone,
@@ -696,7 +748,7 @@ class _Emergency extends StatelessWidget {
           country: person.country.isEmpty ? _companyCountry(context) : person.country,
           empty: none,
           enabled: editable,
-          onSave: edit.save("EMERGENCY_PHONE")
+          onSave: edit.savePerson("EMERGENCY_PHONE")
         )
       ])]
     );

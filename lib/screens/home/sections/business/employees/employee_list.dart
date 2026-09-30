@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/business_employees_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
@@ -39,9 +40,14 @@ class EmployeeList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Heading(
+          // Without the view the list is only the viewer's card, so no count
+          // speaks for the company.
+          counts: BusinessEmployeesService.viewsAll,
           active: service.total,
           invited: invited,
-          onInvite: () => showInviteEmployee(context, employees: service)
+          onInvite: PermissionsService().can("business.employees.invite")
+            ? () => showInviteEmployee(context, employees: service)
+            : null
         ),
         SizedBox(height: AppSize.spaceS),
         Expanded(child: LayoutBuilder(builder: (context, constraints) {
@@ -86,14 +92,18 @@ class EmployeeList extends StatelessWidget {
 /// What the panel is, how many it holds, and the button that invites one more.
 class _Heading extends StatelessWidget {
   const _Heading({
+    required this.counts,
     required this.active,
     required this.invited,
     required this.onInvite
   });
 
+  final bool counts;
   final int active;
   final int invited;
-  final void Function() onInvite;
+
+  /// `null` hides the button: inviting needs `business.employees.invite`.
+  final void Function()? onInvite;
 
   @override
   Widget build(BuildContext context) {
@@ -106,24 +116,28 @@ class _Heading extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           TextMedium(text.employees_title, bold: true, ellipsis: true),
-          SizedBox(height: AppSize.gap * 0.5),
-          TextSmall(
-            [
-              text.employees_active_count(active),
-              if (invited > 0) text.employees_invited_count(invited)
-            ].join(" · "),
-            ellipsis: true,
-            color: scheme.text.secondary
-          )
+          if (counts) ...[
+            SizedBox(height: AppSize.gap * 0.5),
+            TextSmall(
+              [
+                text.employees_active_count(active),
+                if (invited > 0) text.employees_invited_count(invited)
+              ].join(" · "),
+              ellipsis: true,
+              color: scheme.text.secondary
+            )
+          ]
         ]
       )),
-      SizedBox(width: AppSize.spaceS),
-      Button(
-        width: null,
-        title: text.employees_invite,
-        leftIcon: Icon(CI.plus, color: scheme.button.text),
-        action: onInvite
-      )
+      if (onInvite != null) ...[
+        SizedBox(width: AppSize.spaceS),
+        Button(
+          width: null,
+          title: text.employees_invite,
+          leftIcon: Icon(CI.plus, color: scheme.button.text),
+          action: onInvite!
+        )
+      ]
     ]);
   }
 }
@@ -182,7 +196,7 @@ class _GroupTitle extends StatelessWidget {
   );
 }
 
-/// One person: picture with their status dot, name and job, and — when the
+/// One person: picture, name and job, and — when the
 /// panel is wide enough — contract and start date in their own columns. The
 /// status tag closes the row.
 class EmployeeTile extends StatelessWidget {
@@ -216,7 +230,6 @@ class EmployeeTile extends StatelessWidget {
       .where((part) => part.isNotEmpty)
       .join(" · ");
 
-    final background = selected ? scheme.surfaceOver : scheme.surface;
     final date = employee.state == EmployeeState.ended
       ? employeeRangeLabel(context, employee.startDate, employee.endedDate)
       : employeeDayLabel(context, employee.startDate);
@@ -224,58 +237,59 @@ class EmployeeTile extends StatelessWidget {
     return FocusableWidget(
       action: onTap,
       message: employee.fullName,
-      child: Row(children: [
-        EmployeeAvatar(
-          name: employee.fullName,
-          picture: employee.picture,
-          size: AppSize.action,
-          status: presence.color,
-          ring: background
-        ),
-        SizedBox(width: AppSize.spaceXS),
-        Expanded(flex: 4, child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(children: [
-              Flexible(child: TextMedium(employee.fullName, bold: true, ellipsis: true)),
-              if (employee.me) ...[
-                SizedBox(width: AppSize.gap),
-                TextSmall(text.employees_you, color: scheme.primary)
-              ]
-            ]),
-            SizedBox(height: AppSize.gap * 0.5),
-            TextSmall(
-              job.isEmpty ? "@${employee.username}" : job,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSize.spaceXS),
+        child: Row(children: [
+          EmployeeAvatar(
+            name: employee.fullName,
+            picture: employee.picture,
+            size: AppSize.action
+          ),
+          SizedBox(width: AppSize.spaceXS),
+          Expanded(flex: 4, child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(children: [
+                Flexible(child: TextMedium(employee.fullName, bold: true, ellipsis: true)),
+                if (employee.me) ...[
+                  SizedBox(width: AppSize.gap),
+                  TextSmall(text.employees_you, color: scheme.primary)
+                ]
+              ]),
+              SizedBox(height: AppSize.gap * 0.5),
+              TextSmall(
+                job.isEmpty ? "@${employee.username}" : job,
+                ellipsis: true,
+                color: scheme.text.secondary
+              )
+            ]
+          )),
+          if (wide) ...[
+            Expanded(flex: 2, child: TextSmall(
+              employeeContractLabel(context, employee.contract),
               ellipsis: true,
               color: scheme.text.secondary
-            )
-          ]
-        )),
-        if (wide) ...[
-          Expanded(flex: 2, child: TextSmall(
-            employeeContractLabel(context, employee.contract),
-            ellipsis: true,
-            color: scheme.text.secondary
-          )),
-          Expanded(flex: 2, child: TextSmall(
-            date,
-            ellipsis: true,
-            color: scheme.text.secondary
-          ))
-        ],
-        SizedBox(
-          width: statusWidth,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SettingsTag(
-              icon: presence.icon,
-              label: presence.label,
-              color: presence.color
+            )),
+            Expanded(flex: 2, child: TextSmall(
+              date,
+              ellipsis: true,
+              color: scheme.text.secondary
+            ))
+          ],
+          SizedBox(
+            width: statusWidth,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SettingsTag(
+                icon: presence.icon,
+                label: presence.label,
+                color: presence.color
+              )
             )
           )
-        )
-      ])
+        ])
+      )
     );
   }
 }

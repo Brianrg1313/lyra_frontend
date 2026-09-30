@@ -169,7 +169,7 @@ class _EmployeeTextFactState extends State<EmployeeTextFact> {
       placeholder: widget.hint ?? widget.label,
       buttonSpace: false,
       autofocus: true,
-      fillColor: scheme.surfaceOver,
+      fillColor: scheme.surface,
       radius: EmployeeFactFrame.radius,
       formatters: widget.formatters,
       onSubmit: _commit
@@ -375,7 +375,7 @@ class _EmployeeSelectFactState extends State<EmployeeSelectFact> {
 
     final scheme = ThemeColor.of(context);
 
-    return FeedbackButton(
+    return EmployeeHover(builder: (context, hover) => FeedbackButton(
       action: _saving ? null : _pick,
       message: S.of(context).employee_edit_hint(widget.label),
       color: scheme.surface,
@@ -387,10 +387,13 @@ class _EmployeeSelectFactState extends State<EmployeeSelectFact> {
         label: widget.label,
         trailing: _saving
           ? const EmployeeSaving()
-          : Icon(CI.arrow_down, size: EmployeeFactFrame.hintSize, color: scheme.text.secondary),
+          : EmployeeHint(
+              shown: hover,
+              child: Icon(CI.arrow_down, size: EmployeeFactFrame.hintSize, color: scheme.text.secondary)
+            ),
         child: EmployeeFactValue(value: widget.value, empty: widget.empty)
       )
-    );
+    ));
   }
 
   Future<void> _pick() async {
@@ -438,8 +441,8 @@ class _EmployeeSelectFactState extends State<EmployeeSelectFact> {
   }
 }
 
-/// A closed typed tile: its value, a copy button when [copy], and the pencil
-/// that says a click edits it.
+/// A closed typed tile: its value and, under the pointer, a copy button when
+/// [copy] and the pencil that says a click edits it.
 class EmployeeEditButton extends StatelessWidget {
   const EmployeeEditButton({
     super.key,
@@ -465,7 +468,7 @@ class EmployeeEditButton extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final copyable = copy && value.trim().isNotEmpty;
 
-    return FeedbackButton(
+    return EmployeeHover(builder: (context, hover) => FeedbackButton(
       action: onOpen,
       message: S.of(context).employee_edit_hint(label),
       color: scheme.surface,
@@ -475,24 +478,29 @@ class EmployeeEditButton extends StatelessWidget {
       child: EmployeeFactFrame(
         icon: icon,
         label: label,
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (copyable) ...[
-              _Copy(value: value, label: label),
-              SizedBox(width: AppSize.gap * 0.5)
-            ],
-            Icon(CI.edit, size: EmployeeFactFrame.hintSize, color: scheme.text.secondary)
-          ]
+        trailing: EmployeeHint(
+          shown: hover,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (copyable) ...[
+                _Copy(value: value, label: label),
+                SizedBox(width: AppSize.gap * 0.5)
+              ],
+              Icon(CI.edit, size: EmployeeFactFrame.hintSize, color: scheme.text.secondary)
+            ]
+          )
         ),
         child: EmployeeFactValue(value: value, empty: empty, lines: lines)
       )
-    );
+    ));
   }
 }
 
 /// An open typed tile: its [field] (one input, or several in a row) and, once
-/// it is [changed], the check that sends it. Escape anywhere inside it calls
+/// it is [changed], the check that sends it. It is the one cell of the panel
+/// in the brand color, lifted over its sheet: while a datum is open, it is
+/// the only thing on the panel that is not settled. Escape anywhere inside it calls
 /// [onCancel]; a press anywhere outside it calls [onOutside].
 ///
 /// Outside is told apart by where the press lands ([TapRegion]), not by the
@@ -531,28 +539,35 @@ class EmployeeEditFrame extends StatelessWidget {
     child: _tile(context)
   );
 
-  Widget _tile(BuildContext context) => Surface(
-    color: ThemeColor.of(context).surface,
-    radius: EmployeeFactFrame.radius,
-    padding: EmployeeFactFrame.padding,
-    child: EmployeeFactFrame(
-      icon: icon,
-      label: label,
-      child: CallbackShortcuts(
-        bindings: {const SingleActivator(LogicalKeyboardKey.escape): onCancel},
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: field),
-            if (changed || saving) ...[
-              SizedBox(width: AppSize.gap),
-              EmployeeConfirm(saving: saving, action: onConfirm)
+  Widget _tile(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+
+    return Surface.line(
+      color: scheme.surfaceOver,
+      borderColor: scheme.primary,
+      thickness: 1,
+      radius: EmployeeFactFrame.radius,
+      padding: EmployeeFactFrame.padding,
+      child: EmployeeFactFrame(
+        icon: icon,
+        label: label,
+        accent: scheme.primary,
+        child: CallbackShortcuts(
+          bindings: {const SingleActivator(LogicalKeyboardKey.escape): onCancel},
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: field),
+              if (changed || saving) ...[
+                SizedBox(width: AppSize.gap),
+                EmployeeConfirm(saving: saving, action: onConfirm)
+              ]
             ]
-          ]
+          )
         )
       )
-    )
-  );
+    );
+  }
 }
 
 /// The square check beside an open field, as tall as the field: it is what

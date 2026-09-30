@@ -56,6 +56,7 @@ through `Navigator.pop(context, value)`.
 - `edit_business_field/business_field.dart` — `BusinessField`: registry of editable data (key, value, input). **Add a datum here.**
 - `edit_business_email/_edit_business_email.dart` — `EditBusinessEmailModal`: create/edit an address.
 - `verify_business_email/_verify_business_email.dart` — `VerifyBusinessEmailModal`.
+- `employee_tool/_employee_tool.dart` — `showEmployeeTool(context, icon:, title:, description:, person:, builder?)`, `EmployeeToolModal`: side panel of one employee action (from `EmployeeActions`); `builder` draws its body (permissions → `EmployeePermissions`), otherwise the placeholder.
 - `invite_employee/_invite_employee.dart` — `showInviteEmployee(context, employees:)`, `InviteEmployeeModal`: email + job title
   (the backend files the job with the invitation); **writes** through the `BusinessEmployeesService` passed in. Returns `true` if sent.
 - `branch_form/_branch_form.dart` — `showBranchForm(context, branches:, country:, branch?)`, `BranchFormModal`:

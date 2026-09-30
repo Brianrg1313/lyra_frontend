@@ -14,6 +14,7 @@ import 'package:core/form.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
+import './employee_actions.dart';
 import './employee_avatar.dart';
 import './employee_blocks.dart';
 import './employee_card.dart';
@@ -89,19 +90,28 @@ class _EmployeeDetailPanelState extends State<EmployeeDetailPanel> {
               else if (detail != null) ...[
                 Padding(
                   padding: EdgeInsets.only(bottom: AppSize.spaceS),
+                  // Drawn like the sheets below it: it searches them, so it
+                  // reads as one of them rather than a form field on top.
                   child: Input(
                     controller: _search,
                     placeholder: S.of(context).employee_search_hint,
-                    leftIcon: Icon(CI.search, size: AppSize.text * 1.2, color: ThemeColor.of(context).text.secondary),
-                    buttonSpace: false
+                    leftIcon: Icon(CI.search, size: EmployeeFactFrame.hintSize, color: ThemeColor.of(context).text.secondary),
+                    buttonSpace: false,
+                    fillColor: ThemeColor.of(context).surface,
+                    radius: EmployeeFactFrame.sheetRadius
                   )
+                ),
+                // Everyone sees their own; someone else's only with the view.
+                if (BusinessEmployeesService.viewsAll || employee.me) Padding(
+                  padding: EdgeInsets.only(bottom: AppSize.spaceS),
+                  child: EmployeeActions(employee: employee)
                 ),
                 EmployeeSearch(
                   query: _search.text,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: employeeBlocks(context, detail)
+                    children: employeeBlocks(context, detail, own: employee.me)
                   )
                 )
               ]
@@ -180,9 +190,7 @@ class _Header extends StatelessWidget {
               EmployeeAvatar(
                 name: name,
                 picture: person?.picture ?? employee.picture,
-                size: AppSize.action * 2.6,
-                status: presence.color,
-                ring: scheme.surfaceOver
+                size: AppSize.action * 2.6
               ),
               SizedBox(width: AppSize.spaceS),
               Flexible(child: Column(

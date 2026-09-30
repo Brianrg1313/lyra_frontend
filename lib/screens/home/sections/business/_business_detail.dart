@@ -157,7 +157,7 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
   BusinessTab get _tab =>
     BusinessTab.byRouteKey(Navis.currentKey.value) ?? BusinessTab.opening;
 
-  bool _granted(BusinessTab tab) => PermissionsService().canOpen(tab.area);
+  bool _granted(BusinessTab tab) => tab.granted;
 
   @override
   Widget build(BuildContext context) {

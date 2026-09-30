@@ -60,13 +60,17 @@ enum BusinessTab {
   /// Permission area of this tab (`docs/app-areas.json`): `business.<key>`. Its `view` opens it.
   String get area => "business.$key";
 
-  /// Tab the bare section opens: [initial], unless it is not granted in the active company,
-  /// then the first one that is. With none granted it is [initial], which shows it is locked.
-  static BusinessTab get opening {
-    final permissions = PermissionsService();
-    if (permissions.canOpen(initial.area)) return initial;
+  /// Whether the tab opens in the active company: its area's `view`. The employees tab
+  /// opens for every member, since everyone may see their own profile; without the `view`
+  /// the backend narrows it to that one card.
+  bool get granted => this == employees || PermissionsService().canOpen(area);
 
-    return values.firstWhere((tab) => permissions.canOpen(tab.area), orElse: () => initial);
+  /// Tab the bare section opens: [initial], unless it is not [granted], then the first one
+  /// that is.
+  static BusinessTab get opening {
+    if (initial.granted) return initial;
+
+    return values.firstWhere((tab) => tab.granted, orElse: () => initial);
   }
 
   /// URL of this tab for the business [businessId]. It is the only source of

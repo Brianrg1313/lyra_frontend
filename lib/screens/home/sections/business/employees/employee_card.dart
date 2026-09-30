@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RendererBinding;
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:app/toolkit/toolkit.dart';
 
@@ -7,9 +8,11 @@ import './employee_format.dart';
 /// The shapes the detail panel is drawn with: a titled section, a grid of
 /// data tiles, a dated event, a note and the header's quick actions.
 ///
-/// Every tile is a box of the sheet's color over the panel's: the panel is
-/// already a surface, so the data points sink into it instead of stacking
-/// another card on top.
+/// The panel reads as a personnel file: each group of data is one sheet
+/// ([EmployeeFacts]) and its data are cells of it, not a card each. A cell
+/// only lights up under the pointer, and says what a click does (edit, copy,
+/// unfold) only then: thirty pencils at rest are noise. The one cell that
+/// stands out is the one being edited ([EmployeeFactFrame.accent]).
 
 /// Copies [value] and says which datum went to the clipboard.
 Future<void> employeeCopy(BuildContext context, String value, String label) async {
@@ -61,7 +64,9 @@ class EmployeeSection extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: AppSize.gap * 0.5),
-          child: TextMedium(title, bold: true, ellipsis: true)
+          // Inter, like the person's name above: the section titles are the
+          // panel's second level under it.
+          child: TextInter(title, bold: true, multiplier: 1.1, ellipsis: true)
         ),
         if (subtitle != null) ...[
           SizedBox(height: AppSize.gap * 0.5),
@@ -90,28 +95,37 @@ class EmployeeFacts extends StatelessWidget {
   final List<Widget> facts;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(builder: (context, constraints) {
+  Widget build(BuildContext context) {
     final search = EmployeeSearch.of(context);
     final shown = search.isEmpty ? facts : facts.where(search.tile).toList();
-    final gap = AppSize.gap;
-    final columns = constraints.maxWidth < AppSize.action * 8 ? 1 : 2;
-    final half = (constraints.maxWidth - gap * (columns - 1)) / columns;
+    final gap = AppSize.gap * 0.5;
 
-    return Wrap(
-      spacing: gap,
-      runSpacing: gap,
-      children: [
-        // Keyed by what the tile is: a search drops tiles in between, and a
-        // tile being edited must keep its own slot.
-        for (final fact in shown) _Slot(
-          key: fact.key ?? (fact is EmployeeTile ? ValueKey((fact as EmployeeTile).label) : null),
-          width: fact is EmployeeTile && (fact as EmployeeTile).wide ? constraints.maxWidth : half,
-          full: constraints.maxWidth,
-          child: fact
-        )
-      ]
+    // One sheet for the group; the cells inside are only lit under the pointer.
+    return Surface(
+      color: ThemeColor.of(context).surface,
+      radius: EmployeeFactFrame.sheetRadius,
+      padding: EdgeInsets.all(gap),
+      child: LayoutBuilder(builder: (context, constraints) {
+        final columns = constraints.maxWidth < AppSize.action * 8 ? 1 : 2;
+        final half = (constraints.maxWidth - gap * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            // Keyed by what the tile is: a search drops tiles in between, and a
+            // tile being edited must keep its own slot.
+            for (final fact in shown) _Slot(
+              key: fact.key ?? (fact is EmployeeTile ? ValueKey((fact as EmployeeTile).label) : null),
+              width: fact is EmployeeTile && (fact as EmployeeTile).wide ? constraints.maxWidth : half,
+              full: constraints.maxWidth,
+              child: fact
+            )
+          ]
+        );
+      })
     );
-  });
+  }
 }
 
 /// Sent up by a tile whose field needs the whole row while it is edited (a
@@ -203,7 +217,7 @@ class EmployeeSearch extends InheritedWidget {
   bool updateShouldNotify(EmployeeSearch old) => old.query != query;
 }
 
-/// The inside of every tile: the icon box, what the datum is called, its
+/// The inside of every tile: the datum's icon, what the datum is called, its
 /// [child] (the value, or the field that edits it) and an optional [trailing]
 /// hint of what a tap does.
 class EmployeeFactFrame extends StatelessWidget {
@@ -212,7 +226,8 @@ class EmployeeFactFrame extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.child,
-    this.trailing
+    this.trailing,
+    this.accent
   });
 
   final IconData icon;
@@ -220,10 +235,17 @@ class EmployeeFactFrame extends StatelessWidget {
   final Widget child;
   final Widget? trailing;
 
+  /// Tints the icon and the label: the tile being edited.
+  final Color? accent;
+
   /// Box every tile is padded with.
   static EdgeInsets get padding => EdgeInsets.all(AppSize.spaceXS);
 
-  static double get radius => AppSize.cornerInset(AppSize.gap);
+  /// Corner of a group's sheet ([EmployeeFacts]).
+  static double get sheetRadius => AppSize.cornerInset(AppSize.gap);
+
+  /// Corner of a cell, nested in its sheet.
+  static double get radius => AppSize.cornerInset(AppSize.gap * 0.5, sheetRadius);
 
   /// The datum's icon. The text size itself read lost in its box.
   static double get iconSize => AppSize.text * 1.35;
@@ -236,22 +258,18 @@ class EmployeeFactFrame extends StatelessWidget {
     final scheme = ThemeColor.of(context);
 
     return Row(children: [
-      Container(
+      // No box behind it: the cell is already one, and a box per datum is
+      // what made the panel a grid of cards. The slot keeps labels aligned.
+      SizedBox(
         width: AppSize.text * 2.5,
-        height: AppSize.text * 2.5,
-        decoration: BoxDecoration(
-          color: scheme.surfaceOver,
-          borderRadius: BorderRadius.circular(AppSize.spaceXS)
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: iconSize, color: scheme.text.primary)
+        child: Icon(icon, size: iconSize, color: accent ?? scheme.text.secondary)
       ),
-      SizedBox(width: AppSize.spaceXS),
+      SizedBox(width: AppSize.gap * 0.5),
       Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextSmall(label, ellipsis: true, color: scheme.text.secondary),
+          TextSmall(label, ellipsis: true, color: accent ?? scheme.text.secondary),
           SizedBox(height: AppSize.gap * 0.25),
           child
         ]
@@ -262,6 +280,48 @@ class EmployeeFactFrame extends StatelessWidget {
       ]
     ]);
   }
+}
+
+/// Tells its [builder] whether the pointer is over it, for the hints a cell
+/// shows only then ([EmployeeHint]). With no mouse at all (a touch screen)
+/// it always says yes: there is no hover to wait for.
+class EmployeeHover extends StatefulWidget {
+  const EmployeeHover({super.key, required this.builder});
+
+  final Widget Function(BuildContext context, bool hover) builder;
+
+  @override
+  State<EmployeeHover> createState() => _EmployeeHoverState();
+}
+
+class _EmployeeHoverState extends State<EmployeeHover> {
+  bool _over = false;
+
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+    onEnter: (_) => setState(() => _over = true),
+    onExit: (_) => setState(() => _over = false),
+    child: widget.builder(context, _over || !RendererBinding.instance.mouseTracker.mouseIsConnected)
+  );
+}
+
+/// A hint that keeps its room while hidden, so the value beside it does not
+/// jump, and takes no click while it cannot be seen.
+class EmployeeHint extends StatelessWidget {
+  const EmployeeHint({super.key, required this.shown, required this.child});
+
+  final bool shown;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    ignoring: !shown,
+    child: AnimatedOpacity(
+      opacity: shown ? 1 : 0,
+      duration: const Duration(milliseconds: 120),
+      child: child
+    )
+  );
 }
 
 /// A value as every tile says it: an empty one in words and in grey, like
@@ -318,31 +378,36 @@ class EmployeeFact extends StatelessWidget implements EmployeeTile {
     final scheme = ThemeColor.of(context);
     final copyable = copy && value.trim().isNotEmpty;
 
-    final body = EmployeeFactFrame(
-      icon: icon,
-      label: label,
-      trailing: copyable ? Icon(CI.copy, size: EmployeeFactFrame.hintSize, color: scheme.text.secondary) : null,
-      child: EmployeeFactValue(value: value, empty: empty, lines: lines)
-    );
-
     if (!copyable) {
       return Surface(
         color: scheme.surface,
         radius: EmployeeFactFrame.radius,
         padding: EmployeeFactFrame.padding,
-        child: body
+        child: EmployeeFactFrame(
+          icon: icon,
+          label: label,
+          child: EmployeeFactValue(value: value, empty: empty, lines: lines)
+        )
       );
     }
 
-    return FeedbackButton(
+    return EmployeeHover(builder: (context, hover) => FeedbackButton(
       action: () => employeeCopy(context, value, label),
       message: S.of(context).employee_copy,
       color: scheme.surface,
       feedbackColor: scheme.line,
       radius: EmployeeFactFrame.radius,
       padding: EmployeeFactFrame.padding,
-      child: body
-    );
+      child: EmployeeFactFrame(
+        icon: icon,
+        label: label,
+        trailing: EmployeeHint(
+          shown: hover,
+          child: Icon(CI.copy, size: EmployeeFactFrame.hintSize, color: scheme.text.secondary)
+        ),
+        child: EmployeeFactValue(value: value, empty: empty, lines: lines)
+      )
+    ));
   }
 }
 
