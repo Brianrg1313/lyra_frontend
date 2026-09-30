@@ -2,7 +2,9 @@
 
 **Status** 2026-09-30. Product decisions settled the same day (§13). Phase 0 closed (specs and
 protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: the data-source seam,
-`DeploymentMode` and `CapabilityService` are in the app, with only `cloud` reachable.
+`DeploymentMode` and `CapabilityService` are in the app, with only `cloud` reachable. Phase 2 done:
+`lyra_protocol` and `lyra_node` exist (encrypted store, keyring, oplog, audit, owner account, detached
+process), and the app drives the engine through `LocalServerService`; no screen reaches it yet.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the
@@ -157,14 +159,17 @@ Dart so that it (a) runs as a background executable, (b) is tested with `dart te
 in-memory DB, and (c) has no widget dependency. Each gets its own `MODULE.md` and a row in
 CLAUDE.md §2 when it's created.
 
-Proposed engine internals:
+Engine internals (phase 2 built `storage`, `crypto`, `identity`, `oplog`, `audit`, `process`; the file
+list is `lyra_node/MODULE.md`):
 
 ```
 lyra_node/lib/src/
-  storage/   db.dart (SQLCipher open, WAL, single writer), migrations/NNN_*.sql, repos/
-  crypto/    keyring.dart (DEK/KEK), envelope.dart (AES-256-GCM), kdf.dart (Argon2id), sealed.dart
-  domain/    identity/ business/ employees/ clients/ inventory/ stock/ pos/ sales/ money/ deliveries/
-  oplog/     hlc.dart, oplog.dart (append, feed since seq), tombstones
+  storage/   store.dart (SQLCipher open, WAL, single writer), migrations.dart, migrations/mNNN_*.dart
+  crypto/    keyring.dart (DEK/KEK), envelope.dart (AES-256-GCM), secrets.dart (Argon2id, HKDF),
+             recovery.dart (24 words), vault.dart (DPAPI, Keychain, libsecret), sealed.dart (phase 4)
+  identity/  accounts.dart, passwords.dart
+  domain/    business/ employees/ clients/ inventory/ stock/ pos/ sales/ money/ deliveries/
+  oplog/     hlc.dart, oplog.dart (append, feed since seq), commands.dart (commandId ledger)
   net/       server.dart (TLS only), tls.dart (installation CA), pairing.dart (PAKE),
              discovery.dart (mDNS), auth.dart, rpc.dart (router + authorization),
              files.dart, web_bundle.dart
@@ -172,7 +177,7 @@ lyra_node/lib/src/
   backup/    snapshot.dart, schedule.dart, restore.dart
   sync/      (phase 6) edge_client.dart, outbound.dart, inbound.dart, conflicts.dart
   audit/     audit_log.dart (hash-chained)
-  process/   lock.dart, control.dart (app ↔ engine attach and stop)
+  process/   lock.dart, control.dart (signed state file and stop requests), runner.dart, status.dart
 ```
 
 ---
@@ -555,8 +560,8 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 
 ## 12. Rules to add to CLAUDE.md when phase 1 lands
 
-The first two are in CLAUDE.md since phase 1. The other three go in with the phase that creates
-what they govern (the packages in phase 2, the network in phase 3).
+The first two are in CLAUDE.md since phase 1, the next two since phase 2. The last one goes in with
+the network, in phase 3.
 - A new service call goes through its domain's `XSource`, never `api.*` from a service.
 - A new area in `app-areas.json` declares `modes: ["cloud"]` or `["cloud","local"]`, and the
   capability table reads it.

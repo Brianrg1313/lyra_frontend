@@ -126,7 +126,7 @@ Rules are numbered (`POS-7`) so the contract tests can name the rule they check.
   (`pos.md` Open question 2) and credit (`money.md`), deferred by the product owner; the two
   delivery questions, which only matter in `hybrid` (phase 6).
 - [ ] Every service in `lib/services` that has a local mode maps to ops in a spec (table below).
-- [ ] The protocol draft is agreed and `lyra_protocol` can be generated from it.
+- [x] The protocol draft is agreed and `lyra_protocol` matches it (`test/protocol_catalogue_test.dart`).
 - [ ] The EULA text is drafted by a lawyer (outside these files).
 
 ## Service → spec map

@@ -25,6 +25,16 @@ explicit `context.read` helpers). Screens read services through `provider`.
   domains (chats, channels, connections, maps, baileys, places, money AI, sign up, business
   e-mails) are not split.
 
+## local_server/ — the master's engine (`lyra_node`), desktop only
+
+Not provided app-wide yet: the boot flow and the setup screens use it from phase 3 (`docs/plan-offline-lan.md` §7.4).
+
+- `local_server_service.dart` — `LocalServerService` (+ `LocalServerStatus`): `refresh`, `setUp` (answers the 24
+  recovery words once), `start` (attaches to a running engine that proved it is ours, else spawns it detached and waits),
+  `stop`, `recover`; `error` keeps the engine's refusal code. `unavailable` on web/mobile or with no executable.
+- `node_commands.dart` — `NodeCommands` (seam), `ProcessNodeCommands`: runs `lyra_node <command>` (one JSON line out,
+  secrets on stdin), `spawn` detached; finds it in `lyra_node/bin/` next to the app's executable, or `LYRA_NODE`.
+
 ## capabilities/
 
 - `capability_service.dart` — `CapabilityService` singleton, `Capability` (`available`, `needsInternet`, `hidden`):

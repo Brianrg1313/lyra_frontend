@@ -95,6 +95,8 @@ the single import for screens; never import `package:core/core.dart` directly.
 | i18n | `lib/l10n`, `lib/generated` | `intl_en.arb` and generated `S`. All user-facing strings. | `lib/l10n/MODULE.md` |
 | tests | `test` | Widget and unit tests, flat, one file per behaviour. | `test/MODULE.md` |
 | baileys_server | `baileys_server` | Node.js sidecar: Baileys (unofficial WhatsApp Web), local control API, outbound relay to the backend. Own toolchain. | `baileys_server/MODULE.md` |
+| lyra_protocol (external) | `E:/andromeda/frontend/packages/lyra_protocol` | LAN protocol shared with the engine: op catalogue, frames, error codes, handshake. Pure Dart, own repo. | `E:/andromeda/frontend/packages/lyra_protocol/MODULE.md` |
+| lyra_node (external) | `E:/andromeda/frontend/packages/lyra_node` | The master's engine (offline/LAN mode): encrypted store, keys, oplog, audit, accounts, process. Pure Dart, own repo; the app only runs its executable. | `E:/andromeda/frontend/packages/lyra_node/MODULE.md` |
 
 No spec: `lib/main.dart` (calls `starter`), `lib/screens/_splash/_splash.dart` (centered
 `Loading` while `initialValidator` resolves the first route).
@@ -131,6 +133,11 @@ call `api` directly. Screens never know the deployment mode (`docs/plan-offline-
 **Deployment modes** — every area of `docs/app-areas.json` declares `modes`, and
 `CapabilityService.modes` carries the same entry (`test/capabilities_test.dart` enforces it). A new
 feature says in the same change whether it is `cloud` only or `local` too.
+
+**Local ops** — a new op of the LAN protocol goes into `docs/offline/protocol-v1.md`, `lyra_protocol`
+(`Ops`), an engine handler with its authorization rule, and a contract test, in the same change
+(`test/protocol_catalogue_test.dart` keeps the doc and `Ops` equal). Sensitive fields (a person's money,
+identity documents, bank data) are **sealed by default** in the engine (plan §6.3).
 
 **Navigation** — `Navis`, never `Navigator.pushNamed`:
 `Navis.push/pop/navigate/pushAndClearStack/back/forward`; active screen `Navis.currentKey`,
