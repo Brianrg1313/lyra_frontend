@@ -122,6 +122,16 @@ User-facing copy is the only non-English text, and it lives in `lib/l10n/intl_en
 `lib/toolkit/settings/initial_builder.dart`; flow- or section-scoped ones are created and
 provided by their screen. Load states: `enum XStatus { idle, loading, ready, empty, error }`.
 
+**Backend access** — a service reads and writes through its domain's source
+(`lib/services/<domain>/sources/`: `XSource` returns models, `XCloudSource` holds the REST
+calls), resolved by `Sources` in `lib/toolkit/deployment.dart`. **Never `api.*` from a service.**
+Only cloud-only services (chats, channels, connections, maps, Baileys, places, money AI, sign up)
+call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
+
+**Deployment modes** — every area of `docs/app-areas.json` declares `modes`, and
+`CapabilityService.modes` carries the same entry (`test/capabilities_test.dart` enforces it). A new
+feature says in the same change whether it is `cloud` only or `local` too.
+
 **Navigation** — `Navis`, never `Navigator.pushNamed`:
 `Navis.push/pop/navigate/pushAndClearStack/back/forward`; active screen `Navis.currentKey`,
 URL args `Navis.currentArgs`. Routes live in `lib/toolkit/settings/routes.dart`; home

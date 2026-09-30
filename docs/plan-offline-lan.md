@@ -1,7 +1,8 @@
 # Plan: offline / LAN mode (local master)
 
-**Status** Proposal, 2026-09-30. Product decisions settled the same day (§13). Phase 0 in
-review: specs and protocol draft in `docs/offline/` (open questions listed there). Nothing built yet.
+**Status** 2026-09-30. Product decisions settled the same day (§13). Phase 0 closed (specs and
+protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: the data-source seam,
+`DeploymentMode` and `CapabilityService` are in the app, with only `cloud` reachable.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the
@@ -553,6 +554,9 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 ---
 
 ## 12. Rules to add to CLAUDE.md when phase 1 lands
+
+The first two are in CLAUDE.md since phase 1. The other three go in with the phase that creates
+what they govern (the packages in phase 2, the network in phase 3).
 - A new service call goes through its domain's `XSource`, never `api.*` from a service.
 - A new area in `app-areas.json` declares `modes: ["cloud"]` or `["cloud","local"]`, and the
   capability table reads it.
