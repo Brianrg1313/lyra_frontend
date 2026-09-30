@@ -1194,6 +1194,11 @@ class S {
     );
   }
 
+  /// `Server`
+  String get local_server {
+    return Intl.message('Server', name: 'local_server', desc: '', args: []);
+  }
+
   /// `Sign out`
   String get sign_out {
     return Intl.message('Sign out', name: 'sign_out', desc: '', args: []);
@@ -17531,6 +17536,86 @@ class S {
     );
   }
 
+  /// `Your business`
+  String get lan_master_company {
+    return Intl.message(
+      'Your business',
+      name: 'lan_master_company',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Business name`
+  String get lan_master_company_name {
+    return Intl.message(
+      'Business name',
+      name: 'lan_master_company_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Country`
+  String get lan_master_country {
+    return Intl.message(
+      'Country',
+      name: 'lan_master_country',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Main currency`
+  String get lan_master_currency {
+    return Intl.message(
+      'Main currency',
+      name: 'lan_master_currency',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Language`
+  String get lan_master_language {
+    return Intl.message(
+      'Language',
+      name: 'lan_master_language',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing matches`
+  String get lan_master_no_match {
+    return Intl.message(
+      'Nothing matches',
+      name: 'lan_master_no_match',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Prices are written in the main currency. It can't be changed later.`
+  String get lan_master_currency_note {
+    return Intl.message(
+      'Prices are written in the main currency. It can\'t be changed later.',
+      name: 'lan_master_currency_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your account`
+  String get lan_master_owner {
+    return Intl.message(
+      'Your account',
+      name: 'lan_master_owner',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Username`
   String get lan_username_input {
     return Intl.message(
@@ -17836,6 +17921,16 @@ class S {
     );
   }
 
+  /// `Opening Lyra…`
+  String get lan_entering {
+    return Intl.message(
+      'Opening Lyra…',
+      name: 'lan_entering',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The server is locked`
   String get lan_locked_title {
     return Intl.message(
@@ -18091,10 +18186,10 @@ class S {
     );
   }
 
-  /// `The company's sections arrive here in the next versions. For now, this is where the server's devices are managed.`
+  /// `The devices that use this server: who is connected, adding one, removing one.`
   String get lan_ready_subtitle {
     return Intl.message(
-      'The company\'s sections arrive here in the next versions. For now, this is where the server\'s devices are managed.',
+      'The devices that use this server: who is connected, adding one, removing one.',
       name: 'lan_ready_subtitle',
       desc: '',
       args: [],

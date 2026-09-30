@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:core/socket.dart' show SocketStatus, SocketHandler;
 
 import 'package:app/toolkit/sockets.dart';
+import 'package:app/toolkit/deployment.dart';
 
 // The status and the handler signature are part of this service's API:
 // whoever consumes it shouldn't have to import the package just to name them.
@@ -92,7 +93,12 @@ class ConnectionService extends ChangeNotifier {
   /// it (app startup, entering the home screen), so the error is left in
   /// [error] and the client keeps retrying on its own. It's idempotent, it
   /// can be called every time an authenticated section is entered.
+  ///
+  /// Only in the cloud: on a master's devices there is no socket.io server to
+  /// reach, and the master's events (`protocol-v1.md` §5) reach the services
+  /// with the first domain that needs them live (plan §7.2).
   Future<void> open() async {
+    if (Deployment.mode != DeploymentMode.cloud) return;
     if (isConnected) return;
 
     final pending = _opening;

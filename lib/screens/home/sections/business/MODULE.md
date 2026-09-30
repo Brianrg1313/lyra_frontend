@@ -41,8 +41,10 @@
 
 - `_settings.dart` — `BusinessSettingsTab`: assembles the sheet.
 - `profile_header.dart` — `BusinessProfileHeader`: logo, name, legal status, ownership.
-- `profile_logo.dart` — `BusinessProfileLogo`: pick + crop + upload (`/business/logo/`).
-- `profile_details.dart` — `BusinessProfileDetails`: all loaded data, grouped.
+- `profile_logo.dart` — `BusinessProfileLogo`: pick + crop + upload (`/business/logo/`); only drawn where
+  `business.settings.edit_logo` isn't shown (`CapabilityService`).
+- `profile_details.dart` — `BusinessProfileDetails`: all loaded data, grouped; the e-mails block and the danger zone only
+  where `business.settings.manage_emails` / `business.delete` exist (`CapabilityService`).
 - `profile_identity.dart` — `BusinessProfileIdentity`: legal name, handle, activity, fiscal id, incorporation.
 - `profile_incorporation.dart` — `BusinessProfileIncorporation`: year typed, month selected, day typed.
 - `profile_phone.dart` — `BusinessProfilePhone`: country code + number.

@@ -16,6 +16,13 @@ macOS) or saves it for another computer. The web build is made with
 phase 3: the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt), which
 also covers what no test here can reach: the camera, the OS trust-store dialogs (`certutil`, `security`),
 and Firefox, which may keep its own store.
+Phase 4, first release (business): setup creates the company; the engine serves `session.bootstrap`,
+the company, its site and the catalogues (`business.md`); the app reads them through
+`SessionLanSource` and `BusinessLanSource`, opens the home once signed in on the LAN, and moves the
+server's devices to a `local_server` home section. Areas whose release hasn't come stay hidden on a
+master's devices (`CapabilityService._builtOnMaster`). Left for later in this domain: the logo (images
+over the master's channel, with the inventory release), a site form (no screen writes the location
+today), the time zone database, and live events in the app.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the
@@ -404,8 +411,9 @@ this network (connect to a server)". Web skips the server option. The first loca
 the licence agreement (principle 7), which must be accepted.
 
 ### 7.5 Catalogs
-Countries, currencies and phone plans come from `/init` today. The app bundles a snapshot
-(`assets/catalogs/*.json`, regenerated at release). The master serves it, and in hybrid
+Countries, currencies and phone plans come from `/init` today. The release bundles a snapshot in
+`lyra_protocol` (`Catalogs`, regenerated at release), which both the engine and the app compile in:
+the master serves it, the app reads it before any master exists, and in hybrid the master
 refreshes it from the cloud.
 
 ### 7.6 i18n, docs, tests

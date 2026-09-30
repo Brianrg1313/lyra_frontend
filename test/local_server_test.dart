@@ -10,13 +10,15 @@ import 'package:app/toolkit/deployment.dart';
 /// The app's side of the engine (`docs/plan-offline-lan.md` §3): every step is a `lyra_node`
 /// command, secrets go on stdin, and the engine is started detached only when it isn't already
 /// running. The executable itself is tested in `lyra_node/test/process_test.dart`.
+const _company = (name: "Lovelace Café", country: "VE", currency: "USD", language: "es");
+
 void main() {
   test('a build that cannot be a master never runs the engine', () async {
     final node = _Node();
     final service = LocalServerService(commands: node, supported: false, store: MemoryLanIdentityStore());
 
     expect(await service.refresh(), LocalServerStatus.unavailable);
-    expect(await service.setUp(username: "a", password: "b", firstName: "c", lastName: "d"), isNull);
+    expect(await service.setUp(username: "a", password: "b", firstName: "c", lastName: "d", company: _company), isNull);
     expect(node.calls, isEmpty);
   });
 
@@ -34,6 +36,7 @@ void main() {
       password: "correct horse battery",
       firstName: "Ada",
       lastName: "L",
+      company: _company,
       passphrase: "a long passphrase",
     );
 
@@ -44,6 +47,7 @@ void main() {
 
     final input = jsonDecode(node.calls.single.input!) as Map<String, Object?>;
     expect(input["owner"], {"username": "ada", "password": "correct horse battery", "firstName": "Ada", "lastName": "L"});
+    expect(input["company"], {"name": "Lovelace Café", "country": "VE", "currency": "USD", "language": "es"});
     expect(input["passphrase"], "a long passphrase");
     expect((input["device"] as Map)["publicKey"], isA<String>());
 
@@ -69,7 +73,7 @@ void main() {
     final node = _Node()..answers["setup"] = {"error": "already_set_up"};
     final service = LocalServerService(commands: node, supported: true, store: MemoryLanIdentityStore());
 
-    expect(await service.setUp(username: "a", password: "b", firstName: "c", lastName: "d"), isNull);
+    expect(await service.setUp(username: "a", password: "b", firstName: "c", lastName: "d", company: _company), isNull);
     expect(service.status, LocalServerStatus.error);
     expect(service.error, "already_set_up");
   });

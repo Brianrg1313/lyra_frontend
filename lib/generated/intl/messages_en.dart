@@ -2881,6 +2881,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "lan_enroll_title": MessageLookupByLibrary.simpleMessage(
       "Connect this app to the server",
     ),
+    "lan_entering": MessageLookupByLibrary.simpleMessage("Opening Lyra…"),
     "lan_error_code": m76,
     "lan_error_title": MessageLookupByLibrary.simpleMessage(
       "The server couldn\'t start",
@@ -2907,8 +2908,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "lan_locked_title": MessageLookupByLibrary.simpleMessage(
       "The server is locked",
     ),
+    "lan_master_company": MessageLookupByLibrary.simpleMessage("Your business"),
+    "lan_master_company_name": MessageLookupByLibrary.simpleMessage(
+      "Business name",
+    ),
+    "lan_master_country": MessageLookupByLibrary.simpleMessage("Country"),
     "lan_master_create": MessageLookupByLibrary.simpleMessage(
       "Create the server",
+    ),
+    "lan_master_currency": MessageLookupByLibrary.simpleMessage(
+      "Main currency",
+    ),
+    "lan_master_currency_note": MessageLookupByLibrary.simpleMessage(
+      "Prices are written in the main currency. It can\'t be changed later.",
     ),
     "lan_master_eula_required": MessageLookupByLibrary.simpleMessage(
       "Accept the licence agreement to continue.",
@@ -2919,6 +2931,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "lan_master_invalid_username": MessageLookupByLibrary.simpleMessage(
       "The username must be 3 to 32 letters, digits, dots, dashes or underscores, starting with a letter.",
     ),
+    "lan_master_language": MessageLookupByLibrary.simpleMessage("Language"),
+    "lan_master_no_match": MessageLookupByLibrary.simpleMessage(
+      "Nothing matches",
+    ),
+    "lan_master_owner": MessageLookupByLibrary.simpleMessage("Your account"),
     "lan_master_subtitle": MessageLookupByLibrary.simpleMessage(
       "You\'ll be the owner. Other people join later with invitations.",
     ),
@@ -2986,7 +3003,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Ask for a passphrase every time the server starts",
     ),
     "lan_ready_subtitle": MessageLookupByLibrary.simpleMessage(
-      "The company\'s sections arrive here in the next versions. For now, this is where the server\'s devices are managed.",
+      "The devices that use this server: who is connected, adding one, removing one.",
     ),
     "lan_ready_title": MessageLookupByLibrary.simpleMessage(
       "Connected to the server",
@@ -3064,6 +3081,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "lan_update_title": MessageLookupByLibrary.simpleMessage("Update Lyra"),
     "lan_username_input": MessageLookupByLibrary.simpleMessage("Username"),
     "last_name_input": MessageLookupByLibrary.simpleMessage("Last name"),
+    "local_server": MessageLookupByLibrary.simpleMessage("Server"),
     "login": MessageLookupByLibrary.simpleMessage("Login"),
     "marketing": MessageLookupByLibrary.simpleMessage("Marketing"),
     "messages": MessageLookupByLibrary.simpleMessage("Messages"),

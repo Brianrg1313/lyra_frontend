@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +17,8 @@ import 'package:app/screens/pre_start/deployment/desktop/_body.dart' as chooser;
 import 'package:app/screens/pre_start/deployment/master/desktop/_body.dart' as master;
 import 'package:app/screens/pre_start/deployment/pair/desktop/_body.dart' as pair;
 import 'package:app/screens/pre_start/lan/desktop/_body.dart' as landing;
-import 'package:app/screens/pre_start/lan/widgets/pairing_qr.dart';
+import 'package:app/screens/home/sections/local_server/_local_server.dart';
+import 'package:app/screens/home/sections/local_server/widgets/pairing_qr.dart';
 import 'package:lyra_protocol/lyra_protocol.dart' show PairingOffer, Pairing;
 
 import 'lan_client_test.dart' show FakeMaster, device;
@@ -29,7 +32,7 @@ void main() {
   });
   tearDown(() => Deployment.use(DeploymentMode.cloud));
 
-  Future<void> pump(WidgetTester tester, Widget body, {required LanService lan, Size size = const Size(1024, 720)}) async {
+  Future<void> pump(WidgetTester tester, Widget body, {required LanService lan, Size size = const Size(1024, 720), bool settle = true}) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -55,7 +58,8 @@ void main() {
         ], child: Material(child: body));
       })
     ));
-    await tester.pumpAndSettle();
+    // A page that keeps loading never settles.
+    settle ? await tester.pumpAndSettle() : await tester.pump(const Duration(milliseconds: 100));
   }
 
   /// Leaves the tree, so the connected page's refresh timer stops.
@@ -113,11 +117,22 @@ void main() {
         expect(find.text("Use the username and password of your account on this server."), findsOneWidget);
       });
 
-      testWidgets('connected, it lists the devices', (tester) async {
+      testWidgets('signed in, it opens the app', (tester) async {
+        final lan = client(FakeMaster(), refresh: "refresh-1");
+        expect(await lan.open(), LanStatus.ready);
+        final entered = Completer<String?>();
+
+        await pump(tester, landing.DesktopBody(enter: () => entered.future), lan: lan, size: size, settle: false);
+
+        expect(tester.takeException(), isNull);
+        expect(find.text("Opening Lyra…"), findsOneWidget);
+      });
+
+      testWidgets('the server section lists the devices', (tester) async {
         final lan = client(FakeMaster(), refresh: "refresh-1");
         expect(await lan.open(), LanStatus.ready);
 
-        await pump(tester, const landing.DesktopBody(), lan: lan, size: size);
+        await pump(tester, const LocalServerSection(), lan: lan, size: size);
 
         expect(tester.takeException(), isNull);
         expect(find.text("Connected to the server"), findsOneWidget);

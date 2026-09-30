@@ -83,14 +83,15 @@ class ClientService extends ChangeNotifier {
   /// client ended up loaded and nothing is pending. A pending task with a
   /// screen wins over the dashboard and over a deep link: the backend lists
   /// what must be done before either.
+  ///
+  /// On a master's device the session is the LAN one, opened on the LAN
+  /// landing, and signing in again means going back there
+  /// ([SessionSource.signInRoute]).
   Future<String?> resolve() async {
-    // A cookie session cannot be seen from here (it is `HttpOnly`): only
-    // `/init` can tell, and a missing cookie answers 401 → `/login` below.
-    final hasSession = useCookieSession ||
-      await _database.hasInSecure(api.current.tokenName);
+    final signIn = _source.signInRoute;
 
-    if (!hasSession) {
-      return "/login";
+    if (!await _source.hasSession()) {
+      return signIn;
     }
 
     String? page;
@@ -105,7 +106,7 @@ class ClientService extends ChangeNotifier {
       // failure. Without this translation, returning "login" plain leaves the
       // parser with a path with no match and the app stays stuck on the splash.
       final action = E is Map ? E["action"] as String? : null;
-      page = (action != null ? Navis.byKey(action)?.url : null) ?? "/login";
+      page = (action != null && action != "login" ? Navis.byKey(action)?.url : null) ?? signIn;
       return null;
     });
 
@@ -117,7 +118,7 @@ class ClientService extends ChangeNotifier {
     }
 
     if (clientData == null) {
-      return "/login";
+      return signIn;
     }
 
     // The platform configuration goes first: it is with it that the data that
@@ -305,7 +306,7 @@ class ClientService extends ChangeNotifier {
       await baileys.signOut();
       await _dropSession();
 
-      if (context.mounted) Navis.pushAndClearStack(context, "/login");
+      if (context.mounted) Navis.pushAndClearStack(context, _source.signInRoute);
       await WidgetsBinding.instance.endOfFrame;
 
       if (expired) FloatFlag.of().alert(message: S.current.session_expired);

@@ -1,0 +1,170 @@
+import 'dart:io';
+
+// PACKAGES
+import 'package:lyra_protocol/lyra_protocol.dart';
+
+// SERVICES
+import 'package:app/services/business/business_branch_model.dart';
+import 'package:app/services/business/business_location_model.dart';
+import 'package:app/services/business/business_profile_model.dart';
+import 'package:app/services/business/sources/business_source.dart';
+import 'package:app/services/lan/lan_service.dart';
+import 'package:app/toolkit/deployment.dart';
+
+/// [BusinessSource] over the master (`docs/offline/specs/business.md`): its one company and one
+/// site.
+///
+/// The screens send the cloud's request keys (`LEGAL_NAME`, `POSTAL_CODE`); this maps them onto
+/// the spec's fields and the answers back onto what the models read, so no model or screen
+/// changes (plan principle 8). What doesn't exist on a master (creating a company, branches,
+/// e-mails) is closed by `CapabilityService` before a screen can call it.
+class BusinessLanSource implements BusinessSource {
+  const BusinessLanSource(this._lan);
+
+  final LanService _lan;
+
+  /// The screens' profile keys → `business.edit`'s (`BusinessFields.editable`).
+  static const profileKeys = {
+    "NAME": "name",
+    "DESCRIPTION": "caption",
+    "LEGAL_NAME": "legalName",
+    "NICKNAME": "nickname",
+    "ACTIVITY_TYPE": "activity",
+    "TAX_ID": "taxId",
+    "COUNTRY": "country",
+    "LANGUAGE": "language",
+    "PHONE": "phone",
+    "WEBSITE": "website",
+    "INCORPORATION_DATE": "incorporationDate",
+    "TIMEZONE": "timezone",
+  };
+
+  /// The location form's keys → `business.site.edit`'s (`BusinessFields.site`).
+  static const siteKeys = {
+    "ADDRESS": "address",
+    "LANDMARK": "landmark",
+    "CITY": "city",
+    "REGION": "region",
+    "POSTAL_CODE": "postalCode",
+    "COUNTRY": "country",
+    "LATITUDE": "latitude",
+    "LONGITUDE": "longitude",
+  };
+
+  @override
+  Future<BusinessProfileModel> profile() async {
+    final answer = await _lan.call(Ops.businessProfile);
+    if (answer is! Map) throw const UnreadableAnswer("business.profile");
+
+    return BusinessProfileModel.fromJson(profileJson(answer));
+  }
+
+  /// `business.profile` in the keys [BusinessProfileModel.fromJson] reads. The address is the
+  /// site's, which the location page edits.
+  static Map<String, dynamic> profileJson(Map answer) => {
+    "id": answer["id"],
+    "name": answer["name"],
+    "legal_name": answer["legalName"],
+    "nickname": answer["nickname"],
+    "caption": answer["caption"],
+    "logo": null,
+    "activity_type": answer["activity"],
+    "verification": answer["verification"],
+    "tax_id": answer["taxId"],
+    "country": answer["country"],
+    "language": answer["language"],
+    "currency": answer["currency"],
+    "phone": answer["phone"],
+    "emails": const <Object?>[],
+    "website": answer["website"],
+    "incorporation_date": answer["incorporationDate"],
+    "owner": answer["owner"],
+    "date": answer["created"],
+  };
+
+  @override
+  Future<void> editProfile(String key, String value) async {
+    final field = profileKeys[key];
+    // A key the master doesn't keep is a screen this mode should not have shown.
+    if (field == null) throw UnsupportedError("No profile key $key on a master");
+
+    await _lan.call(Ops.businessEdit, args: {field: value});
+  }
+
+  @override
+  Future<BusinessLocationModel> location() async {
+    final answer = await _lan.call(Ops.businessSiteGet);
+    if (answer is! Map) throw const UnreadableAnswer("business.site.get");
+
+    return BusinessLocationModel.fromJson(locationJson(answer));
+  }
+
+  /// `business.site.get` in the keys [BusinessLocationModel.fromJson] reads. The map link is
+  /// derived from the point, as the spec says, never stored.
+  static Map<String, dynamic> locationJson(Map answer) {
+    final latitude = answer["latitude"];
+    final longitude = answer["longitude"];
+
+    return {
+      "address": answer["address"],
+      "landmark": answer["landmark"],
+      "city": answer["city"],
+      "region": answer["region"],
+      "postal_code": answer["postalCode"],
+      "country": answer["country"],
+      "latitude": latitude,
+      "longitude": longitude,
+      "maps": latitude is num && longitude is num
+        ? "https://www.google.com/maps/search/?api=1&query=${latitude.toStringAsFixed(6)},${longitude.toStringAsFixed(6)}"
+        : "",
+    };
+  }
+
+  @override
+  Future<void> editLocation(Map<String, dynamic> request) async {
+    final changes = <String, Object?>{};
+
+    for (final entry in request.entries) {
+      final field = siteKeys[entry.key];
+      if (field == null) throw UnsupportedError("No site key ${entry.key} on a master");
+
+      changes[field] = entry.value;
+    }
+
+    if (changes.isNotEmpty) await _lan.call(Ops.businessSiteEdit, args: changes);
+  }
+
+  // A master's company is made at setup (B-1); its logo waits for images over the master's
+  // channel; its site is not a branches list (plan D6); e-mails are cloud only. The capability
+  // table hides every screen that calls these.
+
+  @override
+  Future<String> create(Map<String, dynamic> data) => throw UnsupportedError("A master's company is made at setup");
+
+  @override
+  Future<void> setLogo(File file) => throw UnsupportedError("The logo on a master arrives with images");
+
+  @override
+  Future<List<BusinessBranchModel>> branches() => throw UnsupportedError("A master has one site");
+
+  @override
+  Future<void> createBranch(Map<String, dynamic> request) => throw UnsupportedError("A master has one site");
+
+  @override
+  Future<void> editBranch(Map<String, dynamic> request) => throw UnsupportedError("A master has one site");
+
+  @override
+  Future<void> addEmail(Map<String, dynamic> data) => throw UnsupportedError("E-mails are cloud only");
+
+  @override
+  Future<void> editEmail(String id, Map<String, dynamic> data) => throw UnsupportedError("E-mails are cloud only");
+
+  @override
+  Future<void> removeEmail(String id) => throw UnsupportedError("E-mails are cloud only");
+
+  @override
+  Future<String?> sendEmailCode(String id) => throw UnsupportedError("E-mails are cloud only");
+
+  @override
+  Future<void> verifyEmail(String id, String code) => throw UnsupportedError("E-mails are cloud only");
+}

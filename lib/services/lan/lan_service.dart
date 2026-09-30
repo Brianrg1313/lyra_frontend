@@ -7,6 +7,8 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:uuid/uuid.dart';
 
 // SERVICES
+import 'package:app/generated/l10n.dart';
+import 'package:app/toolkit/api.dart' show onSessionRejected;
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/lan.dart';
 import 'package:app/services/local_server/local_server_service.dart';
@@ -166,6 +168,25 @@ class LanService extends ChangeNotifier {
     _set(LanStatus.idle);
   }
 
+  /// Runs [op] as this session: what the LAN sources call (`Sources`). A write gets its
+  /// `commandId` here. A refusal is thrown as the api layer throws one (`lanFailure`); a master
+  /// that stopped answering is thrown the same way, with a message to show, so a screen treats
+  /// it as any failed request while [open] tries again behind it.
+  Future<Object?> call(Op op, {Map<String, Object?> args = const {}}) async {
+    final client = _client;
+    if (client == null || _status != LanStatus.ready) throw _unreachable;
+
+    try {
+      return await client.call(op, args: args, commandId: op.needsCommandId ? const Uuid().v7() : null);
+    } on LanUnreachable {
+      unawaited(_connectAndResume());
+      throw _unreachable;
+    }
+  }
+
+  static Map<String, Object?> get _unreachable =>
+    {"message": S.current.lan_unreachable_title, "action": null, "code": "unreachable"};
+
   /// The browsers' root of this installation (`devices.browserCa`): `{certificate, fingerprint}`.
   Future<Map<String, Object?>> browserCa() async =>
     (await _client!.call(Ops.devicesBrowserCa)) as Map<String, Object?>;
@@ -219,9 +240,15 @@ class LanService extends ChangeNotifier {
     }
   }
 
+  /// Leaving [LanStatus.ready] ends the session the app runs on (`ClientService` through
+  /// [onSessionRejected]): the LAN landing then says why and offers the way back.
   LanStatus _set(LanStatus status) {
+    final left = _status == LanStatus.ready && status != LanStatus.ready && status != LanStatus.connecting;
+
     _status = status;
     notifyListeners();
+
+    if (left) onSessionRejected?.call();
 
     return status;
   }

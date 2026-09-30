@@ -185,7 +185,9 @@ The master closes the connection after `version_mismatch` (close code 4002), `se
   it can't read.
 - Event names and payloads are the ones the app already parses (`stock/changed`,
   `invoice/*`, `sale/progress`, `table/*`), plus `business/changed`, `permissions/changed` and
-  `table/changed`. The `XLanSource` feeds them to the same `receive(...)` seams.
+  `table/changed` (`Events` in `lyra_protocol`). The `XLanSource` feeds them to the same
+  `receive(...)` seams. The engine emits `business/changed` from the business release; the app
+  subscribes with the first domain that needs a screen to follow changes live (plan §7.2).
 
 ---
 

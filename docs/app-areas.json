@@ -20,7 +20,8 @@
       ]
     },
     "backend_must_enforce": "The app only hides what is not granted; every endpoint must check the same permission ids.",
-    "modes": "Deployment modes the area exists in: 'cloud', 'local', 'hybrid'. Every area declares it (docs/plan-offline-lan.md §12); the app mirrors it in CapabilityService.modes, kept equal by test/capabilities_test.dart. An area with 'cloud' but not 'hybrid' is cloud only: hidden in local, and in hybrid open while the internet is."
+    "modes": "Deployment modes the area exists in: 'cloud', 'local', 'hybrid'. Every area declares it (docs/plan-offline-lan.md §12); the app mirrors it in CapabilityService.modes, kept equal by test/capabilities_test.dart. An area with 'cloud' but not 'hybrid' is cloud only: hidden in local, and in hybrid open while the internet is.",
+    "action_modes": "An action that exists in fewer modes than its area (deleting the company, company e-mails) declares its own, under 'action_modes'; the app reads it as the area '<area>.<action>'."
   },
   "areas": [
     {
@@ -43,6 +44,9 @@
       "actions": ["view", "delete"],
       "action_notes": {
         "delete": "Delete the company (settings danger zone)."
+      },
+      "action_modes": {
+        "delete": ["cloud"]
       },
       "children": [
         {
@@ -69,7 +73,7 @@
         {
           "key": "business.branches",
           "title": "Branches",
-          "modes": ["cloud", "local", "hybrid"],
+          "modes": ["cloud", "hybrid"],
           "routes": ["business_branches"],
           "paths": ["/home/business/:id/branches"],
           "actions": ["view", "create", "edit"]
@@ -92,6 +96,9 @@
           "action_notes": {
             "edit": "Profile data: legal name, handle, activity, fiscal id, phone, website, sector, language, country.",
             "manage_emails": "Add, edit and verify company emails."
+          },
+          "action_modes": {
+            "manage_emails": ["cloud"]
           }
         }
       ]

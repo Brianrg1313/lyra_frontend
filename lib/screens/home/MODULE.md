@@ -35,11 +35,12 @@
 - `desktop/side_bar/option.dart` — `Option({icon, title, action, isExpanded, isActive, lockedMessage})` (`lockedMessage` non-null = locked, shown as tooltip; `opensLocked` = still clickable).
 - `desktop/side_bar/profile.dart` — `ProfileCard`. `desktop/side_bar/sign_out.dart` — `SignOut`: calls `ClientService.signOut`.
 - `header/_header.dart` — `HomeHeader`: search (`HomeService.searchQuery`, cleared on screen change), business selector, inbox.
-- `header/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation.
+- `header/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation; with
+  `CapabilityService.singleCompany` only shows the one company.
 - `sections/_sections.dart` — **section registry**: `enum HomeSection` (`key path icon`; `dashboard
-  business inventory services channels connections messages deliveries sales finance marketing report externalServices`),
-  groups `.home` (dashboard, business, messages, deliveries, sales; untitled) `.products`
-  `.reports` (finance first) `.connectionGroups`; `byKey`, `containing`, `isCurrent`, `title(context)`,
+  business inventory services channels connections messages deliveries sales finance marketing report externalServices
+  server`), groups `.home` (dashboard, business, messages, deliveries, sales; untitled) `.products`
+  `.reports` (finance first) `.connectionGroups` (with `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
   `needsBusiness`, `build()`; `homeContent(currentKey, section, businessId)` (incl. sub-pages).
 - `sections/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?})` (locked = lock icon, still opens): tab bar used
   by business, finance and sales. **Reuse it for any new tabbed section.**
@@ -55,7 +56,7 @@
 
 ## Sections with their own module
 
-`sections/{business,inventory,channels,connections,messages,deliveries,sales,finance}/MODULE.md`.
+`sections/{business,inventory,channels,connections,messages,deliveries,sales,finance,local_server}/MODULE.md`.
 
 ## Adding a section
 

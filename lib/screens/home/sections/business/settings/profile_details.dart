@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/business/business_language.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 
@@ -47,6 +48,8 @@ class BusinessProfileDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final capabilities = CapabilityService();
+
     // The groups that can run out of data. Identity isn't in the list because
     // it can't: the sector always comes.
     final optional = <ProfileBlock>[
@@ -59,8 +62,9 @@ class BusinessProfileDetails extends StatelessWidget {
         fields: _contact(context)
       ),
       // This block is always drawn, even if the company has no address: it's
-      // the only place from which the first one is added.
-      ProfileBlock(
+      // the only place from which the first one is added. Where e-mails don't
+      // exist (a master's devices) it isn't.
+      if (capabilities.shows("business.settings.manage_emails")) ProfileBlock(
         title: S.of(context).business_profile_section_emails,
         fields: _emails(context),
         action: const ProfileEmailAdd()
@@ -81,8 +85,9 @@ class BusinessProfileDetails extends StatelessWidget {
       ...optional.where((block) => block.fields.isNotEmpty),
       // Deleting the company goes at the very end and only for whoever created
       // it: it's the only thing on the sheet that can't be undone, and it's
-      // not one more datum (see [BusinessProfileDanger]).
-      if (profile.owner) BusinessProfileDanger(profile: profile)
+      // not one more datum (see [BusinessProfileDanger]). A master's company
+      // isn't deleted from here: resetting the master is (business.md B-7).
+      if (profile.owner && capabilities.shows("business.delete")) BusinessProfileDanger(profile: profile)
     ];
 
     return Column(

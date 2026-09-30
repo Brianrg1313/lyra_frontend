@@ -4,25 +4,32 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/settings/initial_builder.dart' show clientService;
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/preferences/preferences_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/pre_start/deployment/widgets/deployment_frame.dart';
 import '../widgets/lan_sign_in.dart';
 import '../widgets/lan_unlock.dart';
-import '../widgets/lan_connected.dart';
 
 class DesktopBody extends StatefulWidget {
-  const DesktopBody({super.key});
+  const DesktopBody({super.key, this.enter});
+
+  /// Loads the session once signed in and answers where to go (`ClientService.resolve`); a
+  /// seam for tests.
+  final Future<String?> Function()? enter;
 
   @override
   State<DesktopBody> createState() => _DesktopBodyState();
 }
 
 /// One page, one [LanService.status] at a time: each state says what's wrong and the one thing
-/// to do about it.
+/// to do about it. Signed in, it loads the session and opens the app (plan §7.4).
 class _DesktopBodyState extends State<DesktopBody> {
+  bool _entering = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,7 +52,7 @@ class _DesktopBodyState extends State<DesktopBody> {
         ? const LanUnlock()
         : _message(context, s.lan_locked_title, s.lan_locked_client, retry: true),
       LanStatus.signedOut => const LanSignIn(),
-      LanStatus.ready => const LanConnected(),
+      LanStatus.ready => _enter(),
       LanStatus.unpaired => lan.isMaster
         ? const LanUnlock(enroll: true)
         : _message(context, s.lan_unpaired_title, s.lan_unpaired_subtitle, pair: true),
@@ -60,6 +67,26 @@ class _DesktopBodyState extends State<DesktopBody> {
       LanStatus.updateRequired => _message(context, s.lan_update_title, s.lan_update_subtitle, retry: true),
       LanStatus.error => _message(context, s.lan_error_title, s.lan_error_code(lan.error ?? "unknown"), retry: true)
     };
+  }
+
+  /// The session is the master's: [ClientService] reads the bootstrap through the LAN source,
+  /// then the app opens where it would in the cloud.
+  Widget _enter() {
+    if (!_entering) {
+      _entering = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final page = await (widget.enter ?? clientService.resolve)();
+        _entering = false;
+        if (!mounted || context.read<LanService>().status != LanStatus.ready) return;
+
+        Navis.pushAndClearStack(context, page ?? Navis.consumePendingDeepLink() ?? PreferencesService().homePath);
+      });
+    }
+
+    return DeploymentFrame(
+      title: S.of(context).lan_entering,
+      children: [SizedBox(height: AppSize.action, child: const Center(child: Loading()))]
+    );
   }
 
   Widget _message(

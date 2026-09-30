@@ -21,8 +21,8 @@ backend, routes and theme. No UI.
   - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
 - `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`,
   `lanEnabled` (native build, or the web build a master serves, with `--dart-define=LYRA_LAN=true`), `chosen`, `restore`
-  (from preferences, in `preCall`), `choose` (persists), `forget` (asks again next start), `use` (tests); `Sources` (one getter per domain: the cloud source, `UnsupportedError` in any other
-  mode until phase 4), `UnreadableAnswer` (an answer its model can't read).
+  (from preferences, in `preCall`), `choose` (persists), `forget` (asks again next start), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
+  `lanService` — session and business so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
 - `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in + `session.bind`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
   `lanPlatform`, `lanSupported`, `lanServingMaster` (web: the page's origin), `lanCanScan` (Android, iOS),

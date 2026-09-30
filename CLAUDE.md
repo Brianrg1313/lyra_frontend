@@ -88,6 +88,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 | deliveries section | `lib/screens/home/sections/deliveries` | Deliveries desk, below messages in the side bar: pending list (placeholder, no endpoint yet) and a map drawn by the self-hosted tile server (`/scorpius`); settings and delivery-area sub-pages. | `.../deliveries/MODULE.md` |
 | sales section | `lib/screens/home/sections/sales` | Live sales board (sockets), two tabs: in process / done. | `.../sales/MODULE.md` |
 | finance section | `lib/screens/home/sections/finance` | Company money: overview, payments, receivables, payment methods. | `.../finance/MODULE.md` |
+| local_server section | `lib/screens/home/sections/local_server` | The master's devices (pair, remove, browsers' root, stop the server), only on a master's devices. | `.../local_server/MODULE.md` |
 | modals | `lib/screens/modals` | Every dialog and side panel, grouped by the section that opens it. | `lib/screens/modals/MODULE.md` |
 | auth | `lib/screens/authentication` | One email-only entry (`/login`) that branches to sign in (password, code) or sign up (code). | `lib/screens/authentication/MODULE.md` |
 | pre_start | `lib/screens/pre_start` | Pages before the home, one per pending `/init` task (`welcome`: no company or a pending invitation). | `lib/screens/pre_start/MODULE.md` |

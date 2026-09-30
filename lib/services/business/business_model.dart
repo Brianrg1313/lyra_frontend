@@ -1,4 +1,5 @@
 // SERVICES
+import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/files/file_model.dart';
 
 class BusinessModel {
@@ -56,27 +57,14 @@ class BusinessModel {
   }
 
   /// Decodes the `/init` columnar table:
-  /// `{"keys": ["id", "name", "caption"], "values": [[...], ...]}`.
+  /// `{"keys": ["id", "name", "caption"], "values": [[...], ...]}`, or the list
+  /// of objects a master's bootstrap answers ([catalogRows]).
   ///
   /// Columns are read by name and not by position, so the backend can reorder
   /// them or add fields without breaking the parse.
-  static List<BusinessModel> fromTable(dynamic table) {
-    if (table is! Map) return const [];
-
-    final keys = table["keys"];
-    final rows = table["values"];
-
-    if (keys is! List || rows is! List) return const [];
-
-    return [
-      for (final row in rows)
-        if (row is List)
-          BusinessModel.fromJson({
-            for (int i = 0; i < keys.length && i < row.length; i++)
-              keys[i].toString(): row[i]
-          })
-    ];
-  }
+  static List<BusinessModel> fromTable(dynamic table) => [
+    for (final row in catalogRows(table)) BusinessModel.fromJson(row)
+  ];
 
   Map<String, dynamic> toJson() {
     return {

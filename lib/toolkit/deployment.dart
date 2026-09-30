@@ -5,8 +5,10 @@ import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/toolkit/lan.dart' show lanSupported;
 import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
+import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/services/business/sources/business_cloud_source.dart';
+import 'package:app/services/business/sources/business_lan_source.dart';
 import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/services/business/sources/employees_cloud_source.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
@@ -21,6 +23,7 @@ import 'package:app/services/sales/sources/sales_source.dart';
 import 'package:app/services/sales/sources/sales_cloud_source.dart';
 import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/services/money/sources/money_cloud_source.dart';
+import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
 
 /// Where the company's data lives (`docs/plan-offline-lan.md` §7).
 ///
@@ -98,8 +101,8 @@ abstract final class Deployment {
 /// A service reads its source from here unless a test hands it one. Cloud
 /// sources hold no state, so the same instance serves every service.
 abstract final class Sources {
-  static SessionSource get session => _pick(const SessionCloudSource());
-  static BusinessSource get business => _pick(const BusinessCloudSource());
+  static SessionSource get session => _pick(const SessionCloudSource(), () => SessionLanSource(lanService));
+  static BusinessSource get business => _pick(const BusinessCloudSource(), () => BusinessLanSource(lanService));
   static EmployeesSource get employees => _pick(const EmployeesCloudSource());
   static DeliverySource get delivery => _pick(const DeliveryCloudSource());
   static InventorySource get inventory => _pick(const InventoryCloudSource());
@@ -108,13 +111,14 @@ abstract final class Sources {
   static SalesSource get sales => _pick(const SalesCloudSource());
   static MoneySource get money => _pick(const MoneyCloudSource());
 
-  /// There is no LAN source before plan phase 4: in LAN mode the app stays on
-  /// its LAN pages (`/lan`), so a call getting here outside the cloud is a bug,
-  /// not a state to recover from.
-  static T _pick<T>(T cloud) => switch (Deployment.mode) {
+  /// LAN sources arrive one domain per release (plan phase 4), over the one
+  /// connection [lanService] holds. A domain without one yet is hidden on a
+  /// master's devices (`CapabilityService`), so a call getting here without a
+  /// [lan] source is a bug, not a state to recover from.
+  static T _pick<T>(T cloud, [T Function()? lan]) => switch (Deployment.mode) {
     DeploymentMode.cloud => cloud,
     DeploymentMode.local || DeploymentMode.hybrid =>
-      throw UnsupportedError("No LAN source for $T yet")
+      lan?.call() ?? (throw UnsupportedError("No LAN source for $T yet"))
   };
 }
 

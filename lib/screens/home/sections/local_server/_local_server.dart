@@ -6,26 +6,27 @@ import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/client/client_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/pre_start/deployment/widgets/deployment_frame.dart';
-import './lan_browsers.dart';
-import './pairing_qr.dart';
+import './widgets/lan_browsers.dart';
+import './widgets/pairing_qr.dart';
 
-/// Signed in to the master. Until the domains arrive (plan phase 4) this is the server's
-/// devices: who is paired and online, removing one, and, on the master's own app, adding one
-/// (`pairing.start` shows the code to type on the new device and the QR a phone scans). A
-/// native device also hands out the browsers' root ([LanBrowsers]).
-class LanConnected extends StatefulWidget {
-  const LanConnected({super.key});
+/// The `local_server` home section, only on a master's devices (plan §4 admin screens): this
+/// device's code and the CA it trusts; the server's devices, who is paired and online, removing
+/// one, and, on the master's own app, adding one (`pairing.start` shows the code to type on the
+/// new device and the QR a phone scans). A native device also hands out the browsers' root
+/// ([LanBrowsers]).
+class LocalServerSection extends StatefulWidget {
+  const LocalServerSection({super.key});
 
   @override
-  State<LanConnected> createState() => _LanConnectedState();
+  State<LocalServerSection> createState() => _LocalServerSectionState();
 }
 
-class _LanConnectedState extends State<LanConnected> {
+class _LocalServerSectionState extends State<LocalServerSection> {
   List<Map<String, Object?>>? _devices;
   Map<String, Object?>? _pairing;
   Timer? _refresh;
@@ -65,11 +66,16 @@ class _LanConnectedState extends State<LanConnected> {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
 
-    return DeploymentFrame(
-      title: s.lan_ready_title,
-      subtitle: s.lan_ready_subtitle,
-      maxWidth: 560,
-      children: [
+    return ScrollableWidget(
+      padding: EdgeInsets.all(AppSize.spaceM),
+      children: [Align(alignment: Alignment.topLeft, child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        TextInter(s.lan_ready_title, multiplier: 1.8, bold: true, lines: 2),
+        Padding(
+          padding: EdgeInsets.only(top: AppSize.spaceXS, bottom: AppSize.spaceM),
+          child: TextMedium(s.lan_ready_subtitle, lines: 5, color: scheme.subtitle)
+        ),
         if (device != null) Surface(
           color: scheme.surface,
           padding: EdgeInsets.all(AppSize.spaceS),
@@ -95,12 +101,12 @@ class _LanConnectedState extends State<LanConnected> {
         ],
         if (!kIsWeb) const LanBrowsers(),
         SizedBox(height: AppSize.spaceM),
-        Button(title: s.lan_sign_out, action: lan.signOut),
+        Button(title: s.lan_sign_out, action: () => context.read<ClientService>().signOut(context)),
         if (lan.isMaster) ...[
           SizedBox(height: AppSize.spaceXS),
           Button(title: s.lan_stop_server, action: _stopServer)
         ]
-      ]
+      ])))]
     );
   }
 

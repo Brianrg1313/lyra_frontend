@@ -7,6 +7,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/files/image_file.dart';
@@ -59,13 +60,19 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
   /// loading.
   bool _busy = false;
 
+  /// Where the logo can't be changed (a master's devices, until images travel over its
+  /// channel), it is only drawn.
+  bool get _editable => CapabilityService().shows("business.settings.edit_logo");
+
   @override
-  Widget build(BuildContext context) => FeedbackButton(
-    action: _change,
-    message: _label(context),
-    radius: AppSize.corner,
-    child: _image(context, widget.profile)
-  );
+  Widget build(BuildContext context) => _editable
+    ? FeedbackButton(
+        action: _change,
+        message: _label(context),
+        radius: AppSize.corner,
+        child: _image(context, widget.profile)
+      )
+    : _image(context, widget.profile);
 
   /// The logo, with the pencil on top and the loading while the new one is
   /// uploaded.
@@ -91,7 +98,7 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
       // The pencil disappears while uploading: the action is already in
       // progress, and offering it over the loading is offering something that
       // doesn't respond.
-      else Positioned(
+      else if (_editable) Positioned(
         right: AppSize.gap,
         bottom: AppSize.gap,
         child: _pen(context)

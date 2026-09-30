@@ -82,7 +82,7 @@ Areas with no spec, and why:
 - Closed lists the app already reads from the server (payment concepts, settlement kinds,
   stock reasons, sale stages, handover modes, payment rails, banks, document types, delivery
   providers, countries, currencies, phone plans) are **product data, not backend design**. The
-  release build snapshots them into `assets/catalogs/*.json` (plan §7.5). The engine serves that
+  release build snapshots them into `Catalogs` in `lyra_protocol` (plan §7.5). The engine serves that
   snapshot, and in hybrid refreshes it from the cloud.
 - An engine rule that depends on a code (for example "the concept `settlement` pays a credit
   ticket down") reads the **flag** the vocabulary carries (`settles: true`), never the code, so a

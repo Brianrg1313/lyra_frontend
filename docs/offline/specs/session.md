@@ -144,6 +144,11 @@ tasks and the platform catalogues. The `XLanSource` maps it onto the same `Clien
   file ids to master URLs.
 - **S-33** `deployment` is new and only used by the capability gate and the diagnostics screen.
   The cloud answer never carries it.
+- **S-34** `client` is the account (`id`, `name`, `lastName`, `username`, `email`, `sex`,
+  `picture`, `birthday`); `permissions` lists the account's grants per company, wildcards
+  included (`["*"]`), not the cloud's nested tree; `catalogs` carries its `version`. The app's
+  LAN source lays the answer out as `/init` (the person and the catalogues at the top level), and
+  `PermissionsService` reads a listed company with the P-1 rules.
 
 ---
 

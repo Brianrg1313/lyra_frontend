@@ -1,5 +1,6 @@
 // SERVICES
 import 'package:app/services/client/sources/session_source.dart';
+import 'package:app/services/database/database_service.dart';
 import 'package:app/services/permissions/permission_request.dart';
 import 'package:app/services/permissions/permission_request_model.dart';
 import 'package:app/services/sign_in/login_method.dart';
@@ -9,6 +10,15 @@ import 'package:app/toolkit/deployment.dart';
 /// [SessionSource] over the backend's REST api.
 class SessionCloudSource implements SessionSource {
   const SessionCloudSource();
+
+  /// A cookie session can't be seen from here (it is `HttpOnly`): only `/init` can tell, and
+  /// a missing cookie answers 401 there.
+  @override
+  Future<bool> hasSession() async =>
+    useCookieSession || await DatabaseService().hasInSecure(api.current.tokenName);
+
+  @override
+  String get signInRoute => "/login";
 
   @override
   Future<Map<String, dynamic>> bootstrap() async {

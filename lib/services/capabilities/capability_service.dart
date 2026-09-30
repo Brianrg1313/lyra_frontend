@@ -37,18 +37,21 @@ class CapabilityService extends ChangeNotifier {
   static const _lan = {DeploymentMode.local, DeploymentMode.hybrid};
   static const _notLocal = {DeploymentMode.cloud, DeploymentMode.hybrid};
 
-  /// The `modes` of every area of `docs/app-areas.json`, which a test keeps equal.
+  /// The `modes` of every area of `docs/app-areas.json`, and the `action_modes` of
+  /// its actions as `<area>.<action>`, which a test keeps equal.
   ///
   /// An area in `cloud` only is a cloud-only feature: hidden in `local`, and
   /// in `hybrid` open while the internet is.
   static const Map<String, Set<DeploymentMode>> modes = {
     "dashboard": _all,
     "business": _all,
+    "business.delete": _online,
     "business.statistics": _all,
     "business.employees": _all,
-    "business.branches": _all,
+    "business.branches": _notLocal,
     "business.clients": _all,
     "business.settings": _all,
+    "business.settings.manage_emails": _online,
     "messages": _online,
     "deliveries": _notLocal,
     "deliveries.settings": _notLocal,
@@ -72,7 +75,31 @@ class CapabilityService extends ChangeNotifier {
     "local_server": _lan
   };
 
+  /// The areas whose master side exists: plan phase 4 ships one domain per
+  /// release, and until an area's release it is hidden on a master's devices
+  /// even where [modes] says it belongs, since its services have no source to
+  /// read there. What sits under a listed area is built with it, except a child
+  /// area declared in [modes] (employees under business) and what is in
+  /// [_pendingOnMaster]. Goes away when phase 4 ends.
+  static const Set<String> _builtOnMaster = {
+    "dashboard",
+    "business",
+    "business.statistics",
+    "business.clients",
+    "business.settings",
+    "local_server"
+  };
+
+  /// Parts of a built area whose master side is still missing: the logo needs
+  /// images fetched over the master's pinned channel, which arrives with the
+  /// product images of the inventory release.
+  static const Set<String> _pendingOnMaster = {"business.settings.edit_logo"};
+
   bool _internet = true;
+
+  /// Whether this install sees one company only (plan principle 3, D6): a
+  /// master holds one, so there is nothing to switch to or create.
+  bool get singleCompany => Deployment.mode != DeploymentMode.cloud;
 
   /// Whether the internet is reachable. Only `hybrid` reads it.
   bool get internet => _internet;
@@ -92,6 +119,10 @@ class CapabilityService extends ChangeNotifier {
     final mode = Deployment.mode;
     final declared = _declared(area) ?? _online;
 
+    if (mode != DeploymentMode.cloud && declared.contains(DeploymentMode.local) && !_builtLocally(area)) {
+      return Capability.hidden;
+    }
+
     if (declared.contains(mode)) return Capability.available;
 
     if (mode == DeploymentMode.hybrid && declared.contains(DeploymentMode.cloud)) {
@@ -103,6 +134,24 @@ class CapabilityService extends ChangeNotifier {
 
   /// Whether [area] is part of the product in the running mode.
   bool shows(String area) => of(area) != Capability.hidden;
+
+  /// Read like [_declared]: the most specific key on the path that is listed
+  /// as built, or declared as an area of its own, decides.
+  static bool _builtLocally(String area) {
+    if (_pendingOnMaster.any((pending) => area == pending || area.startsWith("$pending."))) return false;
+
+    var key = area;
+
+    while (true) {
+      if (_builtOnMaster.contains(key)) return true;
+      if (modes.containsKey(key)) return false;
+
+      final dot = key.lastIndexOf(".");
+      if (dot == -1) return false;
+
+      key = key.substring(0, dot);
+    }
+  }
 
   static Set<DeploymentMode>? _declared(String area) {
     var key = area;

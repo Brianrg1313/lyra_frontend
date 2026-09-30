@@ -115,14 +115,15 @@ class LocalServerService extends ChangeNotifier {
     return _set(_statusOf(json["status"]));
   }
 
-  /// Makes this computer a master with its first owner (plan §7.4, `session.md` S-6).
-  /// [passphrase] chooses passphrase mode. Answers the 24 recovery words, **shown once**: the
-  /// engine keeps no copy. Null when it was refused ([error]).
+  /// Makes this computer a master with its first owner and its company (plan §7.4,
+  /// `session.md` S-6, `business.md` B-1). [passphrase] chooses passphrase mode. Answers the 24
+  /// recovery words, **shown once**: the engine keeps no copy. Null when it was refused ([error]).
   Future<List<String>?> setUp({
     required String username,
     required String password,
     required String firstName,
     required String lastName,
+    required ({String name, String country, String currency, String language}) company,
     String? email,
     String? passphrase,
   }) async {
@@ -139,6 +140,12 @@ class LocalServerService extends ChangeNotifier {
         "firstName": firstName,
         "lastName": lastName,
         "email": ?email,
+      },
+      "company": {
+        "name": company.name,
+        "country": company.country,
+        "currency": company.currency,
+        "language": company.language,
       },
       "device": _device(key),
       "passphrase": ?passphrase,

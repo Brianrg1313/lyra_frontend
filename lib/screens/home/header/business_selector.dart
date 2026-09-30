@@ -7,6 +7,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/business/business_model.dart';
 
@@ -52,6 +53,10 @@ class _BusinessSelectorState extends State<BusinessSelector> {
       : _createBusiness(context);
   }
 
+  /// A master's device sees its one company: nothing to switch to or create,
+  /// so the anchor only shows it.
+  bool get _single => CapabilityService().singleCompany;
+
   // -- Anchor --
 
   /// Shows the active business and unfolds the list when pressed.
@@ -62,7 +67,7 @@ class _BusinessSelectorState extends State<BusinessSelector> {
       link: _link,
       child: FeedbackButton(
         key: _anchor,
-        action: _toggle,
+        action: _single ? null : _toggle,
         color: ThemeColor.of(context).input.fill,
         height: AppSize.action,
         radius: AppSize.cornerInset(AppSize.gap),
@@ -96,7 +101,7 @@ class _BusinessSelectorState extends State<BusinessSelector> {
               TextSmall(business.caption, ellipsis: true)
           ])
       )),
-      SizedBox(
+      if (_single) SizedBox(width: AppSize.spaceXS) else SizedBox(
         width: AppSize.button,
         child: AnimatedRotation(
           turns: _showing ? 0.5 : 0,

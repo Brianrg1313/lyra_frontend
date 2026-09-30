@@ -53,24 +53,35 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
   is outside this spec.
 - **B-8** Logo: an image upload (see `protocol-v1.md`, files), at most 5 MB, `png`/`jpeg`/`webp`.
   The engine keeps the original and a 256 px square version. Replacing it keeps the old file
-  until the next backup rotation, then drops it.
+  until the next backup rotation, then drops it. *Built so far:* `business.setLogo` takes the
+  account's own `logo` upload and makes it readable with `business.view`; the one it replaces
+  goes back to the orphan sweep (1 hour), since backups don't exist before phase 5. No 256 px
+  version yet, and the app hides the logo change on a master until images are fetched over the
+  master's pinned channel (the inventory release, which needs it for product images).
 - **B-9** `timezone` is nullable, as in the cloud. `null` means the country's default zone (the
-  `countries` catalogue carries one per country); the setup form proposes the master's OS zone.
-  An edit is checked against the IANA list (`invalid_timezone`); an empty value clears it.
+  `countries` catalogue carries one per country). An edit is checked against the IANA list
+  (`invalid_timezone`); an empty value clears it. *Built so far:* setup leaves it `null` (Dart
+  can't read the OS zone's IANA name on every platform), and the engine checks the name's shape
+  only (`Area/Location`, or `UTC`): it carries no zone database until the day boundaries of money
+  and POS need one.
 
 ### Ops
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
 | `business.profile` | `business.view` | — | the profile | — |
-| `business.edit` | `business.settings.edit` | `{KEY: value}` (one key) | the profile | `required`, `invalid_field` |
-| `business.setLogo` | `business.settings.edit_logo` | `fileId` \| `null` | the profile | `invalid_file` |
+| `business.edit` | `business.settings.edit` | `{KEY: value}` (one key of `BusinessFields.editable`) | the profile | `required`, `invalid_field`, `invalid_timezone`, `bad_request` (not one key) |
+| `business.setLogo` | `business.settings.edit_logo` | `{fileId: id \| null}` | the profile | `invalid_file` |
+
+The profile answer: the fields above, `created`, `verification: "untrusted"`, `emails: []`, and
+`owner` (whether the reader holds `*`, the app's owner badge). `logo` is a file id. The app's LAN
+source maps the screens' keys (`LEGAL_NAME`, `DESCRIPTION`…) onto these.
 
 ### Events
 
 | Event | When | Payload |
 |---|---|---|
-| `business/changed` | any profile field or the logo changed | `{keys: [...]}`. Clients re-read the profile. |
+| `business/changed` | any profile field, the logo or the site changed | `{keys: [...]}`, the changed profile keys, or `["site"]`. Clients re-read what they show. Sent to sessions holding `business.view`. |
 
 ---
 
@@ -99,6 +110,10 @@ point and never stored.
   hands that one key to the company's own write"), so it goes through B-4.
 - **B-13** There is no place search offline (`BusinessPlacesService` answers `unavailable`, which
   the form already treats as "type the address yourself").
+- **B-14** The answer carries `main: true` and the company's `country`; a point comes back in
+  degrees at 6 decimals (stored in millionths). *Not reachable from a screen yet:* no page of the
+  app writes the location today (in the cloud the main branch is edited in the branches tab,
+  hidden on a master); a site form on the business settings is a follow-up.
 
 ### Ops
 
@@ -116,8 +131,12 @@ marked, and only the site can be edited while offline.
 ## Catalogues and vocabularies
 
 Read-only data the app already takes from the server. Offline it comes from the snapshot
-bundled with the app release (`assets/catalogs/*.json`, plan §7.5). The master serves **its own
-copy**, so every client of one master sees the same version even if clients run different builds.
+bundled with the release: `Catalogs` in `lyra_protocol` (plan §7.5), which the engine serves and the
+app reads before any master exists (the setup form). The master serves **its own copy**, so every
+client of one master sees the same version even if clients run different builds. Built so far:
+`countries` and `currencies` (each with the columns the cloud's `/init` rows carry, `flag` null,
+countries with their `timezone`), plus the vocabularies the engine checks (`languages`,
+`activities`). The others arrive with the domain that reads them.
 
 | Catalogue | App reader today | Used by |
 |---|---|---|
@@ -146,7 +165,8 @@ copy**, so every client of one master sees the same version even if clients run 
 
 ### Ops
 
-`catalog.get` · session · `name` (one of the table above) · the catalogue.
+`catalog.get` · session · `name` (one of the table above) · `{version, items}` · `not_found` for a
+catalogue this release doesn't carry.
 
 ---
 

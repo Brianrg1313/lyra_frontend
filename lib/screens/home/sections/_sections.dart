@@ -20,6 +20,7 @@ import './deliveries/_deliveries.dart';
 import './deliveries/area/_area.dart';
 import './deliveries/settings/_settings.dart';
 import './finance/_finance.dart';
+import './local_server/_local_server.dart';
 import './inventory/table_list/_table_list.dart';
 import './inventory/table_view/_table_view.dart';
 import './messages/_messages.dart';
@@ -45,7 +46,9 @@ enum HomeSection {
   finance(key: "finance", path: "/home/finance", icon: CI.wallet),
   marketing(key: "marketing", path: "/home/marketing", icon: Icons.campaign_outlined),
   report(key: "report", path: "/home/report", icon: CI.chart),
-  externalServices(key: "external_services", path: "/home/external_services", icon: CI.link);
+  externalServices(key: "external_services", path: "/home/external_services", icon: CI.link),
+  // Only on a master's devices (`local_server` is a LAN area).
+  server(key: "local_server", path: "/home/server", icon: CI.network);
 
   const HomeSection({
     required this.key,
@@ -101,7 +104,8 @@ enum HomeSection {
   /// platform consumes behind the scenes.
   static const List<HomeSection> connectionGroups = [
     connections,
-    externalServices
+    externalServices,
+    server
   ];
 
   static final Map<String, HomeSection> _byKey = {
@@ -139,7 +143,8 @@ enum HomeSection {
     finance => S.of(context).finance,
     marketing => S.of(context).marketing,
     report => S.of(context).report,
-    externalServices => S.of(context).external_services
+    externalServices => S.of(context).external_services,
+    server => S.of(context).local_server
   };
 
   /// `true` if the section cannot be opened without an active business.
@@ -159,7 +164,9 @@ enum HomeSection {
   /// Both sides of the same rule look at it: the side bar, to block the option
   /// (see `options`), and the shell, to not mount the section even if it is
   /// reached by URL (see [homeContent]).
-  bool get needsBusiness => this != dashboard && this != business;
+  ///
+  /// The server's page isn't a company's either: it's the master's devices.
+  bool get needsBusiness => this != dashboard && this != business && this != server;
 
   /// Section content.
   ///
@@ -184,6 +191,7 @@ enum HomeSection {
     messages => const MessagesSection(),
     deliveries => const DeliveriesSection(),
     finance => const FinanceSection(),
+    server => const LocalServerSection(),
     _ => SectionPlaceholder(section: this)
   };
 }

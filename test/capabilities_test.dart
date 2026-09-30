@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/deployment.dart';
+import 'package:app/services/client/sources/session_lan_source.dart';
+import 'package:app/services/business/sources/business_lan_source.dart';
 
 /// Which areas each deployment mode has (`docs/plan-offline-lan.md` §2). The mode is read
 /// before any grant, so an area a mode lacks is closed even to an owner, and a cloud area
@@ -29,6 +31,9 @@ void main() {
         expect(modes, isA<List>(), reason: "${area["key"]} declares no modes");
 
         declared[area["key"] as String] = {...(modes as List).cast<String>()};
+        for (final action in (area["action_modes"] as Map? ?? const {}).entries) {
+          declared["${area["key"]}.${action.key}"] = {...(action.value as List).cast<String>()};
+        }
         walk(area["children"] as List? ?? const []);
       }
     }
@@ -54,6 +59,7 @@ void main() {
         reason: area
       );
     }
+    expect(capabilities.singleCompany, isFalse);
   });
 
   test('in local the cloud-only areas are hidden, not waiting', () {
@@ -63,9 +69,27 @@ void main() {
     expect(capabilities.of("messages"), Capability.hidden);
     expect(capabilities.of("deliveries"), Capability.hidden);
     expect(capabilities.of("finance.receivables"), Capability.hidden);
-    expect(capabilities.of("pos"), Capability.available);
-    expect(capabilities.of("finance.payments"), Capability.available);
+    expect(capabilities.of("business.branches"), Capability.hidden);
+    expect(capabilities.of("business.delete"), Capability.hidden);
+    expect(capabilities.of("business.settings.manage_emails"), Capability.hidden);
+    expect(capabilities.of("business.settings.edit"), Capability.available);
     expect(capabilities.of("local_server"), Capability.available);
+    expect(capabilities.singleCompany, isTrue);
+  });
+
+  test('on a master, a local area waits for its phase 4 release', () {
+    Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
+    final capabilities = CapabilityService();
+
+    // Built: the business domain.
+    expect(capabilities.of("business"), Capability.available);
+    expect(capabilities.of("business.settings"), Capability.available);
+    // Not yet: they belong to local, but their sources don't exist.
+    expect(capabilities.of("pos"), Capability.hidden);
+    expect(capabilities.of("finance.payments"), Capability.hidden);
+    expect(capabilities.of("business.employees"), Capability.hidden);
+    expect(capabilities.of("business.employees.view"), Capability.hidden);
+    expect(capabilities.of("business.settings.edit_logo"), Capability.hidden);
   });
 
   test('in hybrid a cloud area waits for the internet, a master one does not', () {
@@ -80,7 +104,7 @@ void main() {
     expect(capabilities.of("messages"), Capability.needsInternet);
     expect(capabilities.shows("messages"), isTrue);
     expect(capabilities.of("deliveries"), Capability.available);
-    expect(capabilities.of("pos"), Capability.available);
+    expect(capabilities.of("business.settings"), Capability.available);
   });
 
   test('an action is read from its area, and an unknown area is cloud only', () {
@@ -88,7 +112,7 @@ void main() {
     final capabilities = CapabilityService();
 
     expect(capabilities.of("finance.receivables.collect"), Capability.hidden);
-    expect(capabilities.of("finance.payments.record"), Capability.available);
+    expect(capabilities.of("business.settings.edit"), Capability.available);
     expect(capabilities.of("quantum"), Capability.hidden);
   });
 
@@ -106,11 +130,13 @@ void main() {
     expect(PermissionsService().can("local_server.devices", business: "b-1"), isTrue);
   });
 
-  test('outside the cloud no source exists yet', () {
-    expect(Sources.session, isNotNull);
+  test('outside the cloud only the built domains have a source', () {
+    expect(Sources.pos, isNotNull);
 
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
 
-    expect(() => Sources.session, throwsUnsupportedError);
+    expect(Sources.session, isA<SessionLanSource>());
+    expect(Sources.business, isA<BusinessLanSource>());
+    expect(() => Sources.pos, throwsUnsupportedError);
   });
 }

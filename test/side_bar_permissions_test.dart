@@ -69,15 +69,17 @@ void main() {
 
   testWidgets('a section the mode lacks is left out, not locked', (tester) async {
     final business = BusinessService()..seed(_companies);
-    PermissionsService().seed({"b-1": {"sales": {"view": true}}});
+    PermissionsService().seed({"b-1": {"business": {"view": true}}});
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
 
     await _pump(tester, business);
 
     expect(find.byKey(ValueKey(HomeSection.messages.key)), findsNothing);
     expect(find.byKey(ValueKey(HomeSection.channels.key)), findsNothing);
-    expect(_locked(tester, HomeSection.sales), isFalse);
-    expect(_locked(tester, HomeSection.finance), isTrue);
+    // Local, but its master side arrives in a later release of plan phase 4.
+    expect(find.byKey(ValueKey(HomeSection.sales.key)), findsNothing);
+    expect(_locked(tester, HomeSection.business), isFalse);
+    expect(_locked(tester, HomeSection.server), isTrue);
   });
 }
 
