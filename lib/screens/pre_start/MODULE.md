@@ -42,7 +42,8 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `deployment/widgets/recovery_words.dart` — `RecoveryWords`: numbered, three per row, selectable.
 - `lan/_lan.dart` — `LanHome extends PageBuilder`.
 - `lan/desktop/_body.dart` — one view per `LanStatus`: connecting, locked (master: `LanUnlock`), signed out
-  (`LanSignIn`), ready (loads the session with `ClientService.resolve` and opens the home; `enter` seam), unpaired
+  (`LanSignIn`), ready (loads the session with `ClientService.resolve` and opens the home; `enter` seam; a session
+  that can't be loaded stops with a message and a retry instead of coming back here forever), unpaired
   (master: `LanUnlock(enroll: true)`), unreachable, revoked, update, error; "use Lyra another way" (`LanService.leave`,
   confirmed; not in a browser).
 - `lan/widgets/lan_sign_in.dart` — `LanSignIn`: username + password → `LanService.signIn`.

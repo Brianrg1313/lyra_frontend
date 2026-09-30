@@ -13,6 +13,7 @@ import 'package:core/button.dart';
 import 'package:app/screens/pre_start/deployment/widgets/deployment_frame.dart';
 import '../widgets/lan_sign_in.dart';
 import '../widgets/lan_unlock.dart';
+import '../_lan.dart';
 
 class DesktopBody extends StatefulWidget {
   const DesktopBody({super.key, this.enter});
@@ -29,6 +30,11 @@ class DesktopBody extends StatefulWidget {
 /// to do about it. Signed in, it loads the session and opens the app (plan §7.4).
 class _DesktopBodyState extends State<DesktopBody> {
   bool _entering = false;
+
+  /// The master answered but the session couldn't be loaded (an engine without this release's
+  /// ops, a master set up before its company existed). Sending the person back here would only
+  /// try again forever, so it stops and says so.
+  bool _enterFailed = false;
 
   @override
   void initState() {
@@ -72,12 +78,17 @@ class _DesktopBodyState extends State<DesktopBody> {
   /// The session is the master's: [ClientService] reads the bootstrap through the LAN source,
   /// then the app opens where it would in the cloud.
   Widget _enter() {
+    if (_enterFailed) {
+      return _message(context, S.of(context).lan_error_title, S.of(context).lan_enter_failed, onRetry: () => setState(() => _enterFailed = false));
+    }
+
     if (!_entering) {
       _entering = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final page = await (widget.enter ?? clientService.resolve)();
         _entering = false;
         if (!mounted || context.read<LanService>().status != LanStatus.ready) return;
+        if (page == LanHome.path) return setState(() => _enterFailed = true);
 
         Navis.pushAndClearStack(context, page ?? Navis.consumePendingDeepLink() ?? PreferencesService().homePath);
       });
@@ -95,12 +106,13 @@ class _DesktopBodyState extends State<DesktopBody> {
     String subtitle, {
     bool retry = false,
     bool pair = false,
-    String? retryTitle
+    String? retryTitle,
+    VoidCallback? onRetry
   }) {
     final lan = context.read<LanService>();
 
     return DeploymentFrame(title: title, subtitle: subtitle, children: [
-      if (retry) MainButton(title: retryTitle ?? S.of(context).lan_retry, action: lan.open),
+      if (retry || onRetry != null) MainButton(title: retryTitle ?? S.of(context).lan_retry, action: onRetry ?? lan.open),
       if (pair) MainButton(
         title: S.of(context).lan_pair_again,
         action: () => lan.leave().then((_) {

@@ -1846,6 +1846,7 @@
   "lan_other_mode": "Use Lyra another way",
   "lan_connecting": "Connecting to the server…",
   "lan_entering": "Opening Lyra…",
+  "lan_enter_failed": "The server answered, but the business couldn't be opened. Update Lyra on the server computer, then try again.",
   "lan_locked_title": "The server is locked",
   "lan_locked_master": "Type the passphrase to unlock the data.",
   "lan_locked_client": "Ask someone to unlock it on the server computer.",

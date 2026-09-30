@@ -2881,6 +2881,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "lan_enroll_title": MessageLookupByLibrary.simpleMessage(
       "Connect this app to the server",
     ),
+    "lan_enter_failed": MessageLookupByLibrary.simpleMessage(
+      "The server answered, but the business couldn\'t be opened. Update Lyra on the server computer, then try again.",
+    ),
     "lan_entering": MessageLookupByLibrary.simpleMessage("Opening Lyra…"),
     "lan_error_code": m76,
     "lan_error_title": MessageLookupByLibrary.simpleMessage(

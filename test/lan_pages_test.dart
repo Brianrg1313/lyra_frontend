@@ -128,6 +128,17 @@ void main() {
         expect(find.text("Opening Lyra…"), findsOneWidget);
       });
 
+      testWidgets('a session the master cannot load stops with a message instead of trying forever', (tester) async {
+        final lan = client(FakeMaster(), refresh: "refresh-1");
+        expect(await lan.open(), LanStatus.ready);
+
+        await pump(tester, landing.DesktopBody(enter: () async => "/lan"), lan: lan, size: size);
+
+        expect(tester.takeException(), isNull);
+        expect(find.textContaining("the business couldn't be opened"), findsOneWidget);
+        expect(find.text("Try again"), findsOneWidget);
+      });
+
       testWidgets('the server section lists the devices', (tester) async {
         final lan = client(FakeMaster(), refresh: "refresh-1");
         expect(await lan.open(), LanStatus.ready);

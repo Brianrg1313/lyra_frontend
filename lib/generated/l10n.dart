@@ -17931,6 +17931,16 @@ class S {
     );
   }
 
+  /// `The server answered, but the business couldn't be opened. Update Lyra on the server computer, then try again.`
+  String get lan_enter_failed {
+    return Intl.message(
+      'The server answered, but the business couldn\'t be opened. Update Lyra on the server computer, then try again.',
+      name: 'lan_enter_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The server is locked`
   String get lan_locked_title {
     return Intl.message(
