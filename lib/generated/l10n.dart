@@ -1609,6 +1609,46 @@ class S {
     );
   }
 
+  /// `Needs the internet`
+  String get section_needs_internet_title {
+    return Intl.message(
+      'Needs the internet',
+      name: 'section_needs_internet_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This section works through the cloud. It comes back as soon as the connection does.`
+  String get section_needs_internet_subtitle {
+    return Intl.message(
+      'This section works through the cloud. It comes back as soon as the connection does.',
+      name: 'section_needs_internet_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not available here`
+  String get section_unavailable_title {
+    return Intl.message(
+      'Not available here',
+      name: 'section_unavailable_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This section is not part of Lyra on a local network.`
+  String get section_unavailable_subtitle {
+    return Intl.message(
+      'This section is not part of Lyra on a local network.',
+      name: 'section_unavailable_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `You don't have access to {section}`
   String permission_denied_title(Object section) {
     return Intl.message(

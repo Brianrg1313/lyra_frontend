@@ -3772,6 +3772,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Search for a subscription",
     ),
     "section_connections": MessageLookupByLibrary.simpleMessage("Connections"),
+    "section_needs_internet_subtitle": MessageLookupByLibrary.simpleMessage(
+      "This section works through the cloud. It comes back as soon as the connection does.",
+    ),
+    "section_needs_internet_title": MessageLookupByLibrary.simpleMessage(
+      "Needs the internet",
+    ),
     "section_no_business_subtitle": MessageLookupByLibrary.simpleMessage(
       "Create your business to start using this section.",
     ),
@@ -3785,6 +3791,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "section_reports": MessageLookupByLibrary.simpleMessage("Reports"),
     "section_transactions": MessageLookupByLibrary.simpleMessage(
       "Transactions",
+    ),
+    "section_unavailable_subtitle": MessageLookupByLibrary.simpleMessage(
+      "This section is not part of Lyra on a local network.",
+    ),
+    "section_unavailable_title": MessageLookupByLibrary.simpleMessage(
+      "Not available here",
     ),
     "select_a_service": MessageLookupByLibrary.simpleMessage(
       "Select a service",

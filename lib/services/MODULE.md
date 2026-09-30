@@ -17,6 +17,20 @@ explicit `context.read` helpers). Screens read services through `provider`.
   `sales/` (sales section), `pos/` (POS page). Their state belongs to the active company and
   is dropped on leaving. `chats/` (messages section) and `maps/` (deliveries section) too.
 - Socket seams for tests: `seed(...)` / `receive(...)`, `@visibleForTesting`.
+- `<domain>/sources/` — the data-source seam (`docs/plan-offline-lan.md` §7.1):
+  `<x>_source.dart` (`abstract interface class XSource`, returns models, throws the normalised
+  error or `UnreadableAnswer`) and `<x>_cloud_source.dart` (the REST calls, `const`, stateless).
+  A service takes `{XSource? source}` for tests and otherwise reads `Sources.<x>`
+  (`lib/toolkit/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
+  domains (chats, channels, connections, maps, baileys, places, money AI, sign up, business
+  e-mails) are not split.
+
+## capabilities/
+
+- `capability_service.dart` — `CapabilityService` singleton, `Capability` (`available`, `needsInternet`, `hidden`):
+  which areas the deployment mode has. `modes` mirrors every area's `modes` in `docs/app-areas.json` (a test keeps them
+  equal); `of(area)` reads the most specific declared area (undeclared = cloud only); `internet` (hybrid only).
+  `PermissionsService.can`/`granted` ask it first.
 
 ## business/
 
@@ -86,6 +100,9 @@ explicit `context.read` helpers). Screens read services through `provider`.
   The same teardown runs when the backend rejects the session mid-use (`onSessionRejected`), without the logout call, plus a `session_expired` flag.
   With `useCookieSession` a failed logout aborts the sign out (only the backend can clear the cookie).
   `acceptInvitation(id)`: `PUT /profile/employments/` with `ACTION: accept`; throws the api error.
+- `sources/session_source.dart` — `SessionSource`: bootstrap (`/init`), accept invitation, sign out, identify, sign in
+  (password, code), permission requests. Shared by `ClientService`, `SignInService`, `PermissionRequestsService`.
+- `sources/session_cloud_source.dart` — `SessionCloudSource`.
 - `client_model.dart` — `ClientModel`.
 - `employment_invitation_model.dart` — `EmploymentInvitation`: one invitation of the `employment.invitation` task.
 - `client_task.dart` — `ClientTask` (`invitations`), `ClientTaskKey` (backend key → pre-start route; `null` = no screen yet): `/init`'s `tasks`.
@@ -159,7 +176,7 @@ See `baileys_server/MODULE.md` for the server side.
 
 - `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree, ids of
   `docs/app-areas.json`). `can(id)`, `canOpen(area)`, `granted(area)` (its granted actions, `null` = all) on the active company by default; absent on the path = denied, account
-  areas (`dashboard`) always open, not loaded (older backend) = nothing hidden. `own(id)` after `createBusiness`. Cleared on sign out.
+  areas (`dashboard`) always open, not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`. Cleared on sign out.
 - `permission_requests_service.dart` — `PermissionRequestsService` (+ status): `GET`/`POST /permissions/requests/` (active company), `isPending(id)`.
   Owned by `NoPermissionSection`. A `409` rereads the list and `/init` (`refreshCatalogs`) before rethrowing. Seam `seed`.
 - `permission_request_model.dart` — `PermissionRequestModel`, `PermissionRequestState` (`granted` = held now, measured on read).

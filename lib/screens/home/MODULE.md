@@ -21,6 +21,8 @@
   mark the lock but still open, and the body refuses to mount without `<area>.view` → `NoPermissionSection`.
   A tab's area is `<section>.<key>` (its enum's `area`); a bare section opens its enum's `opening` (first granted tab).
   Tabbed pages listen to `PermissionsService` themselves (const-section trap).
+- **The deployment mode gates before both** (`CapabilityService`): the side bar leaves a hidden section out (a group
+  with none left loses its title), and `homeContent` mounts `UnavailableSection` for a hidden or needs-internet one.
 
 ## Files
 
@@ -46,6 +48,7 @@
   business, finance and sales. **Wrap the body of any new tabbed section in it.**
 - `sections/business_listener.dart` — `mixin BusinessListener<T>`.
 - `sections/no_business.dart` — `NoBusinessSection`.
+- `sections/unavailable.dart` — `UnavailableSection({capability})`: a section the deployment mode lacks, or a cloud one waiting for the internet in hybrid. Nothing to ask for.
 - `sections/no_permission.dart` — `NoPermissionSection({permission, title, surface = true})`: shown by `homeContent` in place of a section without `<key>.view`, and by business/finance/sales in place of a tab (`surface: false`); owns a `PermissionRequestsService`, offers "Request access" unless one is pending.
 - `sections/placeholder.dart` — `SectionPlaceholder`: `dashboard services marketing report externalServices`.
 - `sections/section_message.dart` — `SectionMessage({icon, message, action?})`: full-section empty/error/loading. Use instead of ad-hoc centered columns.

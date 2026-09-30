@@ -10,6 +10,8 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/toolkit/deployment.dart';
 import 'package:app/screens/home/desktop/side_bar/option.dart';
 import 'package:app/screens/home/desktop/side_bar/options.dart';
 import 'package:app/screens/home/sections/_sections.dart';
@@ -17,12 +19,16 @@ import 'package:app/screens/home/sections/_sections.dart';
 /// **A section the person is not granted is locked in the side bar**, per company: its
 /// `<section>.view` in `/init`'s `permissions`. With no company at all only
 /// `needsBusiness` locks, never a missing grant, or the first company could not be created.
+/// A section the deployment mode lacks is not locked but left out: there is nothing to ask.
 void main() {
   setUpAll(() {
     ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFFFFFFF));
     ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
   });
-  tearDown(() => PermissionsService().clear());
+  tearDown(() {
+    PermissionsService().clear();
+    Deployment.use(DeploymentMode.cloud);
+  });
 
   testWidgets('sections without their view are locked in the active company', (tester) async {
     final business = BusinessService()..seed(_companies);
@@ -60,6 +66,19 @@ void main() {
     expect(_locked(tester, HomeSection.sales), isTrue);
     expect(_option(tester, HomeSection.sales).opensLocked, isFalse);
   });
+
+  testWidgets('a section the mode lacks is left out, not locked', (tester) async {
+    final business = BusinessService()..seed(_companies);
+    PermissionsService().seed({"b-1": {"sales": {"view": true}}});
+    Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
+
+    await _pump(tester, business);
+
+    expect(find.byKey(ValueKey(HomeSection.messages.key)), findsNothing);
+    expect(find.byKey(ValueKey(HomeSection.channels.key)), findsNothing);
+    expect(_locked(tester, HomeSection.sales), isFalse);
+    expect(_locked(tester, HomeSection.finance), isTrue);
+  });
 }
 
 final _companies = {
@@ -85,6 +104,7 @@ Future<void> _pump(WidgetTester tester, BusinessService business) async {
       providers: [
         ChangeNotifierProvider<BusinessService>.value(value: business),
         ChangeNotifierProvider<PermissionsService>.value(value: PermissionsService()),
+        ChangeNotifierProvider<CapabilityService>.value(value: CapabilityService()),
         ChangeNotifierProvider<HomeService>.value(value: HomeService())
       ],
       child: Builder(builder: (context) {

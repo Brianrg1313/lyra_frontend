@@ -1,7 +1,9 @@
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
 // SERVICES
+import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/database/database_service.dart';
 import 'package:app/services/sign_in/login_method.dart';
 
@@ -16,22 +18,31 @@ import 'package:app/services/sign_in/login_method.dart';
 /// responds whether it has an account and which [LoginMethod] applies; only
 /// afterwards is it completed with [signInWithPassword] or [signInWithCode].
 class SignInService {
+  SignInService({SessionSource? source}) : _injected = source;
+
+  final SessionSource? _injected;
+
+  SessionSource get _source => _injected ?? Sources.session;
+
   static const _pendingEmailKey = "SIGN_IN_EMAIL";
   static const _pendingAccountKey = "SIGN_IN_ACCOUNT";
 
   final _database = DatabaseService();
 
-  Future<dynamic> _post(BuildContext context, String path, Map<String, dynamic> data) =>
-    api.post(path: path, version: "v1", data: data)
-      .catchError((E) {
-        if (E is Map) {
-          if (!context.mounted) return;
+  /// Shows a refusal and answers null for it, except one with an `action`,
+  /// which is thrown for the page to follow.
+  Future<T?> _guard<T>(BuildContext context, Future<T> call) =>
+    call.then<T?>((answer) => answer).catchError((E) {
+      if (E is Map) {
+        if (!context.mounted) return null;
 
-          if (E["action"] != null) throw E["action"];
+        if (E["action"] != null) throw E["action"];
 
-          FloatFlag.of(context).fromError(E);
-        }
-      });
+        FloatFlag.of(context).fromError(E);
+      }
+
+      return null;
+    });
 
   /// First step: sends only the email. The backend answers whether it has an
   /// account and the [LoginMethod] to continue with (`null` if this version
@@ -41,12 +52,11 @@ class SignInService {
   /// the same endpoint already sent it; here it is only stored which email it
   /// belongs to.
   Future<({bool account, LoginMethod? method})> verifyEmail(BuildContext context, String email) async {
-    final answer = await _post(context, "/authentication/email/verify/", {"EMAIL": email});
+    final answer = await _guard(context, _source.identify(email));
 
-    if (answer is! Map) throw "";
+    if (answer == null) throw "";
 
-    final account = answer["account"] == true;
-    final method = LoginMethod.from(answer["method"]);
+    final (:account, :method) = answer;
 
     // The code screen is another route, with its own service instance:
     // without leaving these stored it would not know which account the
@@ -59,32 +69,16 @@ class SignInService {
     return (account: account, method: method);
   }
 
-  /// Answers `{token, two_factor}`. A non-null `two_factor` means the session
-  /// still has to pass `two_factor/verify`; there is no screen for it yet, so
-  /// the token is saved either way.
   Future<void> signInWithPassword(BuildContext context, String email, String password) async {
-    final answer = await _post(context, "/authentication/email/sign_in/password/", {
-      "EMAIL": email,
-      "PASSWORD": password
-    });
-
-    await openSession(answer is Map ? answer["token"] : null);
+    await openSession(await _guard<Object?>(context, _source.signInWithPassword(email, password)));
   }
 
-  /// Answers `{token, two_factor}` like the password sign in. After a code
-  /// `two_factor` can only be `null` or `"app"`; the app step has no page yet,
-  /// so it is ignored for now.
   Future<void> signInWithCode(BuildContext context, String code) async {
     final email = await _database.fromSecure<String>(_pendingEmailKey);
     if (email == null) throw "";
     if (!context.mounted) throw "";
 
-    final answer = await _post(context, "/authentication/email/sign_in/code/", {
-      "EMAIL": email,
-      "CODE": code
-    });
-
-    await openSession(answer is Map ? answer["token"] : null);
+    await openSession(await _guard<Object?>(context, _source.signInWithCode(email, code)));
     await clearPending();
   }
 
@@ -109,7 +103,7 @@ class SignInService {
     if (email == null) throw "";
     if (!context.mounted) throw "";
 
-    final answer = await _post(context, "/authentication/email/verify/", {"EMAIL": email});
+    final answer = await _guard(context, _source.identify(email));
 
     if (answer == null) throw "";
   }

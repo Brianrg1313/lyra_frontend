@@ -20,12 +20,13 @@
       ]
     },
     "backend_must_enforce": "The app only hides what is not granted; every endpoint must check the same permission ids.",
-    "modes": "Optional. Deployment modes the area exists in: 'cloud', 'local', 'hybrid'. Absent = cloud only for now; every area declares it when phase 1 of docs/plan-offline-lan.md lands (§12)."
+    "modes": "Deployment modes the area exists in: 'cloud', 'local', 'hybrid'. Every area declares it (docs/plan-offline-lan.md §12); the app mirrors it in CapabilityService.modes, kept equal by test/capabilities_test.dart. An area with 'cloud' but not 'hybrid' is cloud only: hidden in local, and in hybrid open while the internet is."
   },
   "areas": [
     {
       "key": "dashboard",
       "title": "Home",
+      "modes": ["cloud", "local", "hybrid"],
       "scope": "account",
       "routes": ["dashboard"],
       "paths": ["/home"],
@@ -35,6 +36,7 @@
     {
       "key": "business",
       "title": "Business",
+      "modes": ["cloud", "local", "hybrid"],
       "scope": "company",
       "routes": ["business", "business_detail"],
       "paths": ["/home/business", "/home/business/:id"],
@@ -46,6 +48,7 @@
         {
           "key": "business.statistics",
           "title": "Statistics",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["business_statistics"],
           "paths": ["/home/business/:id/statistics"],
           "actions": ["view"]
@@ -53,6 +56,7 @@
         {
           "key": "business.employees",
           "title": "Employees",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["business_employees"],
           "paths": ["/home/business/:id/employees"],
           "actions": ["view", "view_personal", "invite", "permissions"],
@@ -65,6 +69,7 @@
         {
           "key": "business.branches",
           "title": "Branches",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["business_branches"],
           "paths": ["/home/business/:id/branches"],
           "actions": ["view", "create", "edit"]
@@ -72,6 +77,7 @@
         {
           "key": "business.clients",
           "title": "Clients",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["business_clients"],
           "paths": ["/home/business/:id/clients"],
           "actions": ["view"]
@@ -79,6 +85,7 @@
         {
           "key": "business.settings",
           "title": "Settings",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["business_settings"],
           "paths": ["/home/business/:id/settings"],
           "actions": ["view", "edit", "edit_logo", "manage_emails"],
@@ -92,6 +99,7 @@
     {
       "key": "messages",
       "title": "Messages",
+      "modes": ["cloud"],
       "scope": "company",
       "routes": ["messages"],
       "paths": ["/home/messages"],
@@ -107,6 +115,7 @@
     {
       "key": "deliveries",
       "title": "Deliveries",
+      "modes": ["cloud", "hybrid"],
       "scope": "company",
       "routes": ["deliveries"],
       "paths": ["/home/deliveries"],
@@ -118,6 +127,7 @@
         {
           "key": "deliveries.settings",
           "title": "Delivery settings",
+          "modes": ["cloud", "hybrid"],
           "routes": ["deliveries_settings"],
           "paths": ["/home/deliveries/settings"],
           "actions": ["view", "edit"],
@@ -128,6 +138,7 @@
         {
           "key": "deliveries.areas",
           "title": "Delivery area",
+          "modes": ["cloud", "hybrid"],
           "routes": ["deliveries_area"],
           "paths": ["/home/deliveries/area"],
           "actions": ["view", "create", "edit", "delete"]
@@ -137,6 +148,7 @@
     {
       "key": "sales",
       "title": "Sales",
+      "modes": ["cloud", "local", "hybrid"],
       "scope": "company",
       "routes": ["sales"],
       "paths": ["/home/sales"],
@@ -150,6 +162,7 @@
         {
           "key": "sales.process",
           "title": "In process",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["sales_process"],
           "paths": ["/home/sales/process"],
           "actions": ["view"]
@@ -157,6 +170,7 @@
         {
           "key": "sales.done",
           "title": "Done",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["sales_done"],
           "paths": ["/home/sales/done"],
           "actions": ["view"]
@@ -166,6 +180,7 @@
     {
       "key": "inventory",
       "title": "Inventory",
+      "modes": ["cloud", "local", "hybrid"],
       "scope": "company",
       "routes": ["inventory", "inventory_table_view"],
       "paths": ["/home/inventory", "/home/inventory/:id"],
@@ -180,6 +195,7 @@
     {
       "key": "services",
       "title": "Services",
+      "modes": ["cloud"],
       "scope": "company",
       "routes": ["services"],
       "paths": ["/home/services"],
@@ -189,6 +205,7 @@
     {
       "key": "channels",
       "title": "Channels",
+      "modes": ["cloud"],
       "scope": "company",
       "routes": ["channels", "channel_detail"],
       "paths": ["/home/channels", "/home/channels/:id"],
@@ -202,6 +219,7 @@
     {
       "key": "finance",
       "title": "Finance",
+      "modes": ["cloud", "local", "hybrid"],
       "scope": "company",
       "routes": ["finance"],
       "paths": ["/home/finance"],
@@ -213,6 +231,7 @@
         {
           "key": "finance.overview",
           "title": "Overview",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["finance_overview"],
           "paths": ["/home/finance/overview"],
           "actions": ["view", "view_bot_cost"]
@@ -220,6 +239,7 @@
         {
           "key": "finance.payments",
           "title": "Payments",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["finance_payments"],
           "paths": ["/home/finance/payments"],
           "actions": ["view", "record", "void"]
@@ -227,6 +247,7 @@
         {
           "key": "finance.receivables",
           "title": "Receivables",
+          "modes": ["cloud", "hybrid"],
           "routes": ["finance_receivables"],
           "paths": ["/home/finance/receivables"],
           "actions": ["view", "collect"]
@@ -234,6 +255,7 @@
         {
           "key": "finance.methods",
           "title": "Payment methods",
+          "modes": ["cloud", "local", "hybrid"],
           "routes": ["finance_methods"],
           "paths": ["/home/finance/methods"],
           "actions": ["view", "create", "edit", "delete", "manage_currencies"],
@@ -246,6 +268,7 @@
     {
       "key": "marketing",
       "title": "Marketing",
+      "modes": ["cloud"],
       "scope": "company",
       "routes": ["marketing"],
       "paths": ["/home/marketing"],
@@ -255,6 +278,7 @@
     {
       "key": "report",
       "title": "Report",
+      "modes": ["cloud"],
       "scope": "company",
       "routes": ["report"],
       "paths": ["/home/report"],
@@ -264,6 +288,7 @@
     {
       "key": "connections",
       "title": "Connections",
+      "modes": ["cloud"],
       "scope": "company",
       "routes": ["connections", "connection_new", "connection_detail"],
       "paths": ["/home/connections", "/home/connections/new", "/home/connections/:id"],
@@ -272,6 +297,7 @@
     {
       "key": "external_services",
       "title": "External services",
+      "modes": ["cloud"],
       "scope": "company",
       "routes": ["external_services"],
       "paths": ["/home/external_services"],
@@ -281,6 +307,7 @@
     {
       "key": "pos",
       "title": "Point of sale",
+      "modes": ["cloud", "local", "hybrid"],
       "scope": "company",
       "routes": ["pos"],
       "paths": ["/pos"],

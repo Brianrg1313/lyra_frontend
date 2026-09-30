@@ -3,10 +3,12 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 import './business_listener.dart';
 import './no_business.dart';
 import './no_permission.dart';
+import './unavailable.dart';
 import './page_switcher.dart';
 import './placeholder.dart';
 import 'business/_business_detail.dart';
@@ -230,6 +232,10 @@ enum HomeSection {
 /// same door: its reads would only meet a 403. [NoPermissionSection] goes in
 /// its place, with the way to ask for it. The caller watches the permissions.
 ///
+/// Before either, a section the deployment mode doesn't have, or can't reach
+/// without the internet ([CapabilityService]), shows [UnavailableSection]: the
+/// side bar leaves it out, but a URL still gets here.
+///
 /// Moving between the pages of one section (the inventory list and a table,
 /// the channels and one channel's form) goes through a [PageSwitcher]; moving
 /// to another section does not animate. The switcher is keyed by [section], so
@@ -242,8 +248,14 @@ Widget homeContent(
   String? businessId
 ) {
   final Widget screen;
+  final capability = CapabilityService().of(section.key);
 
-  if (businessId == null && section.needsBusiness) {
+  if (capability != Capability.available) {
+    screen = UnavailableSection(
+      key: ValueKey("unavailable_${section.key}"),
+      capability: capability
+    );
+  } else if (businessId == null && section.needsBusiness) {
     screen = const NoBusinessSection();
   } else if (businessId != null && !PermissionsService().canOpen(section.key, business: businessId)) {
     screen = Builder(

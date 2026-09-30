@@ -19,6 +19,9 @@ backend, routes and theme. No UI.
   - `useCookieSession` — web-only `HttpOnly` cookie session, off unless `--dart-define=LYRA_COOKIE_SESSION=true`
     (backend contract: `docs/task-cookie-session-backend.md`). `openSession(token)` — stores the token a sign in answered (no-op in cookie mode).
   - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
+- `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`; only `cloud` reachable until plan phase 3),
+  `DeploymentRole`, `Deployment.mode`/`.role` (`use` for tests), `Sources` (one getter per domain: the cloud source,
+  `UnsupportedError` in any other mode until phase 4), `UnreadableAnswer` (an answer its model can't read).
 - `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` in headers **and**
   `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
 - `settings/routes.dart` — the route table. Home sections, business/finance/sales tabs are generated
@@ -37,4 +40,4 @@ backend, routes and theme. No UI.
 
 - New screen → `ScreenRoute` in `settings/routes.dart` (home sections: a `HomeSection` value instead).
 - New app-wide service → `settings/initial_builder.dart`; `.value` when its lifecycle must not follow the tree.
-- Never call `http` directly; use `api` / `assets`.
+- Never call `http` directly; use `api` / `assets`, and those only from a `*_cloud_source.dart` or a cloud-only service.

@@ -10,6 +10,7 @@ import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channels_service.dart';
@@ -64,6 +65,9 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // What the person may open in each company, from the same response:
     // the side bar and the buttons watch it to hide what would be a 403.
     ChangeNotifierProvider.value(value: PermissionsService()),
+    // Which areas the deployment mode has: the side bar leaves out the ones
+    // it doesn't, and in hybrid it changes with the internet.
+    ChangeNotifierProvider.value(value: CapabilityService()),
     // The state (the list's cache) must survive navigation between the table
     // list and the creation screen, so it lives at the app's scope and not
     // the section's.

@@ -7,7 +7,9 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/client/client_model.dart';
 import 'package:app/services/client/client_task.dart';
 import 'package:app/services/client/employment_invitation_model.dart';
+import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 // SERVICES
 import 'package:app/services/database/database_service.dart';
@@ -45,9 +47,13 @@ import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 /// catalogs, [CdnService] the image bases and [PermissionsService] what the
 /// person may do in each company. None is stored here.
 class ClientService extends ChangeNotifier {
-  ClientService() {
+  ClientService({SessionSource? source}) : _injected = source {
     onSessionRejected = _expire;
   }
+
+  final SessionSource? _injected;
+
+  SessionSource get _source => _injected ?? Sources.session;
 
   final DatabaseService _database = DatabaseService();
 
@@ -88,7 +94,7 @@ class ClientService extends ChangeNotifier {
     }
 
     String? page;
-    final clientData = await api.get(path: "/init/", version: "v1").catchError((E) {
+    final Map<String, dynamic>? clientData = await _source.bootstrap().then<Map<String, dynamic>?>((data) => data).catchError((E) {
       if (kDebugMode) {
         print(E);
       }
@@ -201,14 +207,14 @@ class ClientService extends ChangeNotifier {
   Future<void> refreshCatalogs() async {
     if (!isAuthenticated) return;
 
-    final data = await api.get(path: "/init/", version: "v1").catchError((E) {
+    final data = await _source.bootstrap().then<Map<String, dynamic>?>((data) => data).catchError((E) {
       if (kDebugMode) {
         print("refreshCatalogs failed: $E");
       }
       return null;
     });
 
-    if (data is! Map) return;
+    if (data == null) return;
 
     _seedCatalogs(data);
     // Grants change mid-session (a role edited by an admin); seeding them
@@ -216,15 +222,11 @@ class ClientService extends ChangeNotifier {
     _seedPermissions(data);
   }
 
-  /// Accepts an invitation (`PUT /profile/employments/`, `ACTION: accept`):
-  /// the job becomes active and the company can read the person's profile.
-  /// Throws the api error; whoever calls it shows it. The pending task is not
-  /// touched here: the caller re-`resolve()`s so `/init` says what is left.
-  Future<void> acceptInvitation(String id) => api.put(
-    path: "/profile/employments/",
-    version: "v1",
-    data: {"ID": id, "ACTION": "accept"}
-  );
+  /// Accepts an invitation: the job becomes active and the company can read
+  /// the person's profile. Throws the api error; whoever calls it shows it.
+  /// The pending task is not touched here: the caller re-`resolve()`s so
+  /// `/init` says what is left.
+  Future<void> acceptInvitation(String id) => _source.acceptInvitation(id);
 
   bool _signingOut = false;
 
@@ -281,8 +283,8 @@ class ClientService extends ChangeNotifier {
       if (!expired) {
         var closed = true;
 
-        await api
-          .post(path: "/authentication/logout/", version: "v1")
+        await _source
+          .signOut()
           .timeout(const Duration(seconds: 5))
           .catchError((E) {
             if (kDebugMode) print("signOut: backend logout failed: $E");

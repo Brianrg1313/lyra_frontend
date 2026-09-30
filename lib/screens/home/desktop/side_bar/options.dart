@@ -6,6 +6,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 import 'package:app/screens/home/sections/_sections.dart';
 
@@ -32,6 +33,9 @@ import './option.dart';
 /// The businesses option is always granted to a member, and the dashboard is
 /// not a company's.
 ///
+/// A section the deployment mode doesn't have ([CapabilityService]) is left out
+/// instead: it is not part of the product there, so there is nothing to ask for.
+///
 /// Only the active business **id** is watched, not the whole service: the
 /// grants are per company, so a switch relocks the list, but the rest of its
 /// notifications (a creation, loading the detail) change nothing here.
@@ -40,6 +44,7 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
     (service) => service.activeId
   );
   final permissions = context.watch<PermissionsService>();
+  final capabilities = context.watch<CapabilityService>();
 
   String? lock(HomeSection section) {
     if (businessId == null) {
@@ -54,14 +59,22 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
   Widget option(HomeSection section) =>
     _option(context, section, active, isExpanded, lock(section), businessId != null);
 
+  /// A group whose sections are all left out loses its title too.
+  List<Widget> group(Iterable<HomeSection> sections, [String? title]) {
+    final shown = sections.where((section) => capabilities.shows(section.key));
+    if (shown.isEmpty) return const [];
+
+    return [
+      if (title != null) Sp(isExpanded, title: title),
+      ...shown.map(option)
+    ];
+  }
+
   return [
-    ...HomeSection.home.map(option),
-    Sp(isExpanded, title: S.of(context).section_products),
-    ...HomeSection.products.map(option),
-    Sp(isExpanded, title: S.of(context).section_reports),
-    ...HomeSection.reports.map(option),
-    Sp(isExpanded, title: S.of(context).section_connections),
-    ...HomeSection.connectionGroups.map(option)
+    ...group(HomeSection.home),
+    ...group(HomeSection.products, S.of(context).section_products),
+    ...group(HomeSection.reports, S.of(context).section_reports),
+    ...group(HomeSection.connectionGroups, S.of(context).section_connections)
   ];
 }
 

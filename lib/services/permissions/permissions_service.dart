@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// What the person may open and do in each company, from `/init`'s `permissions`.
@@ -14,6 +15,9 @@ import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 ///
 /// It exists so the app hides a door instead of meeting a 403 behind it. It is not the
 /// guard: every endpoint checks the same ids.
+///
+/// An area the deployment mode doesn't have ([CapabilityService]) is denied before any
+/// grant is read, even to an owner: it is not part of the product there.
 ///
 /// A singleton registered with `ChangeNotifierProvider.value`, like the catalogs:
 /// [ClientService.resolve] fills it before the tree exists, and screens `watch` it to
@@ -51,6 +55,8 @@ class PermissionsService extends ChangeNotifier {
   /// Whether [id] (`<area>.<action>`) is granted in [business], the active company by
   /// default. No company at all is denied, except for account areas.
   bool can(String id, {String? business}) {
+    if (!CapabilityService().shows(id)) return false;
+
     final path = id.split(".");
     if (_accountAreas.contains(path.first)) return true;
     if (!_loaded) return true;
@@ -74,6 +80,7 @@ class PermissionsService extends ChangeNotifier {
   /// The actions granted in [area] (`view`, `reply`...), or `null` when every one is: an
   /// owner, or no permissions loaded yet (the same cases [can] answers `true` to all).
   Set<String>? granted(String area, {String? business}) {
+    if (!CapabilityService().shows(area)) return const {};
     if (!_loaded) return null;
 
     final company = business ?? businessService.activeId;
