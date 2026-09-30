@@ -4,7 +4,9 @@ import 'package:flutter/widgets.dart' show BuildContext;
 // SERVICES
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
+import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum BusinessDeliveryStatus { idle, loading, ready, error }
 
@@ -21,6 +23,12 @@ enum BusinessDeliveryStatus { idle, loading, ready, error }
 /// and an option is stored as the backend composed it — the carrier decides
 /// the mode, a reach off local drops the zones.
 class BusinessDeliveryService extends ChangeNotifier {
+  BusinessDeliveryService({DeliverySource? source}) : _injected = source;
+
+  final DeliverySource? _injected;
+
+  DeliverySource get _source => _injected ?? Sources.delivery;
+
   BusinessDeliveryStatus _status = BusinessDeliveryStatus.idle;
   BusinessDeliveryModel? _delivery;
   DeliveryCatalog? _catalog;
@@ -73,12 +81,7 @@ class BusinessDeliveryService extends ChangeNotifier {
     if (!force && _catalog != null) return;
 
     try {
-      final data = await api.get(
-        path: "/business/delivery/providers/",
-        version: "v1"
-      );
-
-      if (data is Map) _catalog = DeliveryCatalog.fromJson(data);
+      _catalog = await _source.providers();
     } catch (error) {
       if (kDebugMode) print("loadDeliveryProviders failed: $error");
 
@@ -90,52 +93,28 @@ class BusinessDeliveryService extends ChangeNotifier {
 
   /// Sets one of the yes/no settings; `null` is "has not said".
   Future<bool> setFlag(BuildContext context, DeliveryFlag flag, bool? value) =>
-    _write(context, () => api.put(
-      path: "/business/delivery/",
-      version: "v1",
-      data: deliveryFlagRequest(flag, value)
-    ));
+    _write(context, () => _source.editDelivery(deliveryFlagRequest(flag, value)));
 
   /// Sets whether its delivery areas are fixed or flexible (meet a customer
   /// outside them at the nearest spot it reaches).
   Future<bool> setMeeting(BuildContext context, bool value) =>
-    _write(context, () => api.put(
-      path: "/business/delivery/",
-      version: "v1",
-      data: deliveryMeetingRequest(value)
-    ));
+    _write(context, () => _source.editDelivery(deliveryMeetingRequest(value)));
 
   /// Sets the company's sentence about delivery; empty erases it.
   Future<bool> setNotes(BuildContext context, String notes) =>
-    _write(context, () => api.put(
-      path: "/business/delivery/",
-      version: "v1",
-      data: deliveryNotesRequest(notes)
-    ));
+    _write(context, () => _source.editDelivery(deliveryNotesRequest(notes)));
 
   /// Adds a way of delivering, from `createDeliveryOptionRequest`.
   Future<bool> createOption(BuildContext context, Map<String, dynamic> request) =>
-    _write(context, () => api.post(
-      path: "/business/delivery/options/",
-      version: "v1",
-      data: request
-    ));
+    _write(context, () => _source.createOption(request));
 
   /// Edits one, from `updateDeliveryOptionRequest`.
   Future<bool> updateOption(BuildContext context, Map<String, dynamic> request) =>
-    _write(context, () => api.put(
-      path: "/business/delivery/options/",
-      version: "v1",
-      data: request
-    ));
+    _write(context, () => _source.updateOption(request));
 
   /// Removes one. Whoever calls it has already asked for confirmation.
   Future<bool> removeOption(BuildContext context, String id) =>
-    _write(context, () => api.delete(
-      path: "/business/delivery/options/",
-      version: "v1",
-      data: removeDeliveryOptionRequest(id)
-    ));
+    _write(context, () => _source.removeOption(id));
 
   /// The common body of every write: hold the lock, send it, report a
   /// failure in the floating flag, and reread.
@@ -180,9 +159,7 @@ class BusinessDeliveryService extends ChangeNotifier {
 
   Future<BusinessDeliveryModel?> _fetch() async {
     try {
-      final data = await api.get(path: "/business/delivery/", version: "v1");
-
-      return data is Map ? BusinessDeliveryModel.fromJson(data) : null;
+      return await _source.delivery();
     } catch (error) {
       if (kDebugMode) print("loadDelivery failed: $error");
 

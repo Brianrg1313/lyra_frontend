@@ -34,6 +34,12 @@ explicit `context.read` helpers). Screens read services through `provider`.
 
 ## business/
 
+- `sources/business_source.dart` — `BusinessSource`: create, profile, logo, e-mails (cloud only), location, branches.
+  Used by `BusinessService`, `BusinessLocationService`, `BusinessBranchesService`. `business_cloud_source.dart` — REST.
+- `sources/employees_source.dart` — `EmployeesSource`: current (+ active count), former, detail, invite, edit, edit own
+  profile. Used by `BusinessEmployeesService`. `employees_cloud_source.dart` — REST.
+- `sources/delivery_source.dart` — `DeliverySource`: settings, carriers, options, areas, isochrone (cloud only). Used by
+  `BusinessDeliveryService`, `DeliveryAreasService`. `delivery_cloud_source.dart` — REST, and the isochrone's largest ring.
 - `business_service.dart` — `BusinessService` (+ `BusinessProfileStatus`): companies from `/init/`,
   the **active** one (every change goes through `useBusiness`, then `ConnectionService().rebind()`), create, profile,
   logo (`/business/logo/`, multipart `FILE`), emails. `currency`/`currencyCode` via

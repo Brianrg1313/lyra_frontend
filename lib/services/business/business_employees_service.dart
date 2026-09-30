@@ -6,7 +6,9 @@ import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
+import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum BusinessEmployeesStatus { idle, loading, ready, error }
 
@@ -30,6 +32,12 @@ enum EmployeeDetailStatus { idle, loading, ready, error }
 /// A detail is read once per person per page and kept: switching back and
 /// forth between two employees in the list does not reread either.
 class BusinessEmployeesService extends ChangeNotifier {
+  BusinessEmployeesService({EmployeesSource? source}) : _injected = source;
+
+  final EmployeesSource? _injected;
+
+  EmployeesSource get _source => _injected ?? Sources.employees;
+
   BusinessEmployeesStatus _status = BusinessEmployeesStatus.idle;
   List<BusinessEmployeeModel> _current = const [];
   List<BusinessEmployeeModel> _former = const [];
@@ -125,13 +133,7 @@ class BusinessEmployeesService extends ChangeNotifier {
     String? id;
 
     try {
-      final data = await api.post(
-        path: "/business/employees/invite/",
-        version: "v1",
-        data: {"EMAIL": email, "JOB_TITLE": jobTitle}
-      );
-
-      id = data is Map ? employeeText(data["id"]) : null;
+      id = await _source.invite(email: email, jobTitle: jobTitle);
     } catch (error) {
       if (kDebugMode) print("inviteEmployee failed: $error");
 
@@ -160,22 +162,14 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// saved shows what the backend kept, not what was typed. A refusal is shown
   /// in the floating flag and answers `false`.
   Future<bool> edit(BuildContext context, String id, Map<String, dynamic> changes) =>
-    _write(context, id, "editEmployee", () => api.put(
-      path: "/business/employees/",
-      version: "v1",
-      data: {"ID": id, ...changes}
-    ));
+    _write(context, id, "editEmployee", () => _source.edit(id, changes));
 
   /// Edits the viewer's own personal data (`PUT /profile/`) shown in their
   /// employment [id]: the person's profile is theirs to write, with no company
   /// permission (the backend reads who from the session, never from the body).
   /// Same keys and answer as [edit]; the job stays [edit]'s.
   Future<bool> editOwn(BuildContext context, String id, Map<String, dynamic> changes) =>
-    _write(context, id, "editOwnProfile", () => api.put(
-      path: "/profile/",
-      version: "v1",
-      data: changes
-    ));
+    _write(context, id, "editOwnProfile", () => _source.editOwn(changes));
 
   /// Sends one write, then rereads the detail and the rows; a refusal goes to
   /// the floating flag.
@@ -229,10 +223,7 @@ class BusinessEmployeesService extends ChangeNotifier {
     BusinessEmployeeDetail? detail;
 
     try {
-      // No trailing slash: the id is a route segment (`params: ["ID"]`).
-      final data = await api.get(path: "/business/employees/detail/$id", version: "v1");
-
-      detail = BusinessEmployeeDetail.from(data);
+      detail = await _source.detail(id);
     } catch (error) {
       if (kDebugMode) print("loadEmployeeDetail failed: $error");
     }
@@ -277,18 +268,9 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// the read failed.
   Future<(List<BusinessEmployeeModel>, int)?> _fetch({bool former = false}) async {
     try {
-      final data = await api.get(
-        path: former ? "/business/employees/former/" : "/business/employees/",
-        version: "v1"
-      );
+      if (former) return (await _source.former(), 0);
 
-      if (former) return (BusinessEmployeeModel.listFrom(data, former: true), 0);
-
-      if (data is! Map) return null;
-
-      final rows = BusinessEmployeeModel.listFrom(data["employees"]);
-
-      return (rows, int.tryParse("${data["total"]}") ?? 0);
+      return await _source.current();
     } catch (error) {
       if (kDebugMode) print("loadEmployees${former ? "Former" : ""} failed: $error");
 

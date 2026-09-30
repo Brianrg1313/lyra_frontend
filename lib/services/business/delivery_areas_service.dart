@@ -6,8 +6,9 @@ import 'package:latlong2/latlong.dart';
 
 // SERVICES
 import 'package:app/services/business/delivery_area_model.dart';
-import 'package:app/services/business/delivery_area_request.dart';
+import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum DeliveryAreasStatus { idle, loading, ready, error }
 
@@ -22,6 +23,12 @@ enum DeliveryAreasStatus { idle, loading, ready, error }
 /// Every write rereads the whole list instead of patching it: the backend
 /// orders the areas and may simplify a shape it stores.
 class DeliveryAreasService extends ChangeNotifier {
+  DeliveryAreasService({DeliverySource? source}) : _injected = source;
+
+  final DeliverySource? _injected;
+
+  DeliverySource get _source => _injected ?? Sources.delivery;
+
   DeliveryAreasStatus _status = DeliveryAreasStatus.idle;
   DeliveryAreasModel? _areas;
 
@@ -60,27 +67,15 @@ class DeliveryAreasService extends ChangeNotifier {
 
   /// Adds an area, from `createDeliveryAreaRequest`.
   Future<bool> create(BuildContext context, Map<String, dynamic> request) =>
-    _write(context, () => api.post(
-      path: "/business/delivery/areas/",
-      version: "v1",
-      data: request
-    ));
+    _write(context, () => _source.createArea(request));
 
   /// Edits one, from `updateDeliveryAreaRequest` or `deliveryAreaActiveRequest`.
   Future<bool> update(BuildContext context, Map<String, dynamic> request) =>
-    _write(context, () => api.put(
-      path: "/business/delivery/areas/",
-      version: "v1",
-      data: request
-    ));
+    _write(context, () => _source.updateArea(request));
 
   /// Removes one. Whoever calls it has already asked for confirmation.
   Future<bool> remove(BuildContext context, String id) =>
-    _write(context, () => api.delete(
-      path: "/business/delivery/areas/",
-      version: "v1",
-      data: removeDeliveryAreaRequest(id)
-    ));
+    _write(context, () => _source.removeArea(id));
 
   /// How far one gets from [from] in [minutes] by [mode]: the largest outline
   /// the routing engine answers, simplified for editing. `null` when there is
@@ -95,50 +90,12 @@ class DeliveryAreasService extends ChangeNotifier {
     DeliveryTravelMode mode
   ) async {
     try {
-      final data = await scorpius.post(
-        path: "/isochrone",
-        version: "v1",
-        data: {
-          "POINT": {"LATITUDE": from.latitude, "LONGITUDE": from.longitude},
-          "MINUTES": [minutes],
-          "MODE": mode.value
-        }
-      );
-
-      return _largestRing(data);
+      return await _source.travelShape(from, minutes, mode);
     } catch (error) {
       if (kDebugMode) print("deliveryTravelShape failed: $error");
 
       return null;
     }
-  }
-
-  /// The outer ring of the largest polygon of the first area answered
-  /// (`[{minutes, polygons: [[ring, ...holes], ...]}]`). An island a route
-  /// reaches across a bridge is left out: an area is one outline.
-  static List<LatLng>? _largestRing(dynamic data) {
-    if (data is! List || data.isEmpty || data.first is! Map) return null;
-
-    final polygons = (data.first as Map)["polygons"];
-
-    if (polygons is! List) return null;
-
-    List<LatLng>? best;
-    var size = 0.0;
-
-    for (final polygon in polygons) {
-      if (polygon is! List || polygon.isEmpty) continue;
-
-      final ring = readRing(polygon.first);
-      final area = ringSquareKm(ring);
-
-      if (area > size) {
-        size = area;
-        best = ring;
-      }
-    }
-
-    return best == null ? null : simplifyRing(best, limit: maxRingPoints);
   }
 
   /// The common body of every write: hold the lock, send it, report a
@@ -181,9 +138,7 @@ class DeliveryAreasService extends ChangeNotifier {
 
   Future<DeliveryAreasModel?> _fetch() async {
     try {
-      final data = await api.get(path: "/business/delivery/areas/", version: "v1");
-
-      return data is Map || data is List ? DeliveryAreasModel.fromJson(data) : null;
+      return await _source.areas();
     } catch (error) {
       if (kDebugMode) print("loadDeliveryAreas failed: $error");
 

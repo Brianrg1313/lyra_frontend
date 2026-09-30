@@ -3,6 +3,12 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
+import 'package:app/services/business/sources/business_source.dart';
+import 'package:app/services/business/sources/business_cloud_source.dart';
+import 'package:app/services/business/sources/employees_source.dart';
+import 'package:app/services/business/sources/employees_cloud_source.dart';
+import 'package:app/services/business/sources/delivery_source.dart';
+import 'package:app/services/business/sources/delivery_cloud_source.dart';
 
 /// Where the company's data lives (`docs/plan-offline-lan.md` §7).
 ///
@@ -45,6 +51,9 @@ abstract final class Deployment {
 /// sources hold no state, so the same instance serves every service.
 abstract final class Sources {
   static SessionSource get session => _pick(const SessionCloudSource());
+  static BusinessSource get business => _pick(const BusinessCloudSource());
+  static EmployeesSource get employees => _pick(const EmployeesCloudSource());
+  static DeliverySource get delivery => _pick(const DeliveryCloudSource());
 
   /// There is no LAN source before plan phase 4, and nothing reaches another
   /// mode before phase 3: a call getting here outside the cloud is a bug, not

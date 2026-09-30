@@ -3,7 +3,9 @@ import 'package:flutter/widgets.dart' show BuildContext;
 
 // SERVICES
 import 'package:app/services/business/business_branch_model.dart';
+import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum BusinessBranchesStatus { idle, loading, ready, error }
 
@@ -16,6 +18,12 @@ enum BusinessBranchesStatus { idle, loading, ready, error }
 /// A write rereads the whole list instead of patching it: the backend orders
 /// it (the main branch first, then by `position`).
 class BusinessBranchesService extends ChangeNotifier {
+  BusinessBranchesService({BusinessSource? source}) : _injected = source;
+
+  final BusinessSource? _injected;
+
+  BusinessSource get _source => _injected ?? Sources.business;
+
   BusinessBranchesStatus _status = BusinessBranchesStatus.idle;
   List<BusinessBranchModel> _branches = const [];
 
@@ -53,7 +61,7 @@ class BusinessBranchesService extends ChangeNotifier {
   /// flag and answers `false`.
   Future<bool> create(BuildContext context, Map<String, dynamic> request) =>
     _write(context, "createBranch", () =>
-      api.post(path: "/business/branches/", version: "v1", data: request));
+      _source.createBranch(request));
 
   /// Edits a branch, from `editBranchRequest` (it carries the `ID`). An empty
   /// body went through: there was nothing to write.
@@ -61,7 +69,7 @@ class BusinessBranchesService extends ChangeNotifier {
     if (request.length <= 1) return true;
 
     return _write(context, "editBranch", () =>
-      api.put(path: "/business/branches/", version: "v1", data: request));
+      _source.editBranch(request));
   }
 
   Future<bool> _write(
@@ -103,9 +111,7 @@ class BusinessBranchesService extends ChangeNotifier {
 
   Future<List<BusinessBranchModel>?> _fetch() async {
     try {
-      final data = await api.get(path: "/business/branches/", version: "v1");
-
-      return data is Map || data is List ? BusinessBranchModel.listFrom(data) : null;
+      return await _source.branches();
     } catch (error) {
       if (kDebugMode) print("loadBranches failed: $error");
 

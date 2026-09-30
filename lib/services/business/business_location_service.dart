@@ -3,7 +3,9 @@ import 'package:flutter/widgets.dart' show BuildContext;
 
 // SERVICES
 import 'package:app/services/business/business_location_model.dart';
+import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum BusinessLocationStatus { idle, loading, ready, error }
 
@@ -18,6 +20,12 @@ enum BusinessLocationStatus { idle, loading, ready, error }
 /// uppercases the postal code, rounds the point and builds the map link, so
 /// what is shown is what was stored and not what was sent.
 class BusinessLocationService extends ChangeNotifier {
+  BusinessLocationService({BusinessSource? source}) : _injected = source;
+
+  final BusinessSource? _injected;
+
+  BusinessSource get _source => _injected ?? Sources.business;
+
   BusinessLocationStatus _status = BusinessLocationStatus.idle;
   BusinessLocationModel? _location;
 
@@ -66,7 +74,7 @@ class BusinessLocationService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await api.put(path: "/business/location/", version: "v1", data: request);
+      await _source.editLocation(request);
     } catch (error) {
       if (kDebugMode) print("updateLocation failed: $error");
 
@@ -97,9 +105,7 @@ class BusinessLocationService extends ChangeNotifier {
 
   Future<BusinessLocationModel?> _fetch() async {
     try {
-      final data = await api.get(path: "/business/location/", version: "v1");
-
-      return data is Map ? BusinessLocationModel.fromJson(data) : null;
+      return await _source.location();
     } catch (error) {
       if (kDebugMode) print("loadLocation failed: $error");
 

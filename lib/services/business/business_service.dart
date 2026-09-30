@@ -13,15 +13,12 @@ import 'package:app/services/client/client_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
+import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 /// Status of loading the active business's profile (`/business/profile/`).
 enum BusinessProfileStatus { idle, loading, ready, error }
-
-/// Name of the form field the logo travels under. The backend decides it:
-/// it's the one its multipart reads, and with any other name the request
-/// arrives without a file.
-const String _kLogoField = "FILE";
 
 /// State and behavior of the client's businesses.
 ///
@@ -34,6 +31,12 @@ const String _kLogoField = "FILE";
 /// `ChangeNotifierProvider.value` because its state must survive
 /// navigation between sections.
 class BusinessService extends ChangeNotifier {
+  BusinessService({BusinessSource? source}) : _injected = source;
+
+  final BusinessSource? _injected;
+
+  BusinessSource get _source => _injected ?? Sources.business;
+
   // ─── Basic collection (comes from /init) ────────────────────────────────────
 
   List<BusinessModel> _businesses = const [];
@@ -148,21 +151,22 @@ class BusinessService extends ChangeNotifier {
   Future<void> createBusiness(BuildContext context, Map<String, dynamic> data) async {
     final profile = context.read<ClientService>().username;
 
-    final id = await api.post(path: "/business/create/", version: "v1", data: data)
-      .catchError((E) {
-        if (E is Map) {
-          if (!context.mounted) return;
+    final id = await _source.create(data).then<String?>((id) => id).catchError((E) {
+      if (E is Map) {
+        if (!context.mounted) return null;
 
-          if (E["action"] != null) throw E["action"];
+        if (E["action"] != null) throw E["action"];
 
-          FloatFlag.of(context).fromError(E);
-        }
-      });
+        FloatFlag.of(context).fromError(E);
+      }
+
+      return null;
+    });
 
     if (id == null) throw "";
 
     _active = BusinessModel(
-      id: id.toString(),
+      id: id,
       name: data["LEGAL_NAME"] ?? "",
       activity: data["ACTIVITY_TYPE"] ?? "",
       profile: profile,
@@ -229,7 +233,7 @@ class BusinessService extends ChangeNotifier {
     _profileStatus = BusinessProfileStatus.loading;
     notifyListeners();
 
-    final data = await api.get(path: "/business/profile/", version: "v1").catchError((E) {
+    final data = await _source.profile().then<BusinessProfileModel?>((profile) => profile).catchError((E) {
       if (kDebugMode) {
         print(E);
       }
@@ -242,13 +246,13 @@ class BusinessService extends ChangeNotifier {
     // or about to be requested, so there's nothing left to do here.
     if (_profileOwner != id) return;
 
-    if (data is! Map) {
+    if (data == null) {
       _profileStatus = BusinessProfileStatus.error;
       notifyListeners();
       return;
     }
 
-    _profile = BusinessProfileModel.fromJson(data);
+    _profile = data;
     _profileStatus = BusinessProfileStatus.ready;
 
     notifyListeners();
@@ -280,11 +284,7 @@ class BusinessService extends ChangeNotifier {
     if (activeId == null) return false;
 
     try {
-      await api.put(
-        path: "/business/profile/",
-        version: "v1",
-        data: {key: value.trim()}
-      );
+      await _source.editProfile(key, value.trim());
     } catch (error) {
       if (kDebugMode) print("editProfile failed: $error");
 
@@ -315,12 +315,7 @@ class BusinessService extends ChangeNotifier {
     if (activeId == null) return false;
 
     try {
-      await api.file(
-        path: "/business/logo/",
-        version: "v1",
-        file: file,
-        field: _kLogoField
-      );
+      await _source.setLogo(file);
     } catch (error) {
       if (kDebugMode) print("setLogo failed: $error");
 
@@ -344,11 +339,7 @@ class BusinessService extends ChangeNotifier {
   /// Returns `true` if it went through. On error it shows the floating
   /// flag and returns `false`, with the list left as it was.
   Future<bool> addEmail(BuildContext context, Map<String, dynamic> data) =>
-    _writeEmail(context, "addEmail", () => api.post(
-      path: "/business/emails/",
-      version: "v1",
-      data: data
-    ));
+    _writeEmail(context, "addEmail", () => _source.addEmail(data));
 
   /// Changes one of the business's addresses against `PUT /business/emails/`.
   ///
@@ -361,11 +352,7 @@ class BusinessService extends ChangeNotifier {
     BuildContext context,
     String id,
     Map<String, dynamic> data
-  ) => _writeEmail(context, "editEmail", () => api.put(
-    path: "/business/emails/",
-    version: "v1",
-    data: {"ID": id, ...data}
-  ));
+  ) => _writeEmail(context, "editEmail", () => _source.editEmail(id, data));
 
   /// Deletes one of the business's addresses against `DELETE /business/emails/`.
   ///
@@ -373,11 +360,7 @@ class BusinessService extends ChangeNotifier {
   /// doesn't ask. Deleting the main one is allowed and promotes the oldest
   /// of the remaining ones.
   Future<bool> removeEmail(BuildContext context, String id) =>
-    _writeEmail(context, "removeEmail", () => api.delete(
-      path: "/business/emails/",
-      version: "v1",
-      data: {"ID": id}
-    ));
+    _writeEmail(context, "removeEmail", () => _source.removeEmail(id));
 
   /// Requests the code an address is verified with, against
   /// `POST /business/emails/verify/`.
@@ -397,13 +380,7 @@ class BusinessService extends ChangeNotifier {
     if (activeId == null) return null;
 
     try {
-      final sent = await api.post(
-        path: "/business/emails/verify/",
-        version: "v1",
-        data: {"ID": id}
-      );
-
-      return sent?.toString();
+      return await _source.sendEmailCode(id);
     } catch (error) {
       if (kDebugMode) print("sendEmailCode failed: $error");
 
@@ -428,11 +405,7 @@ class BusinessService extends ChangeNotifier {
     BuildContext context,
     String id,
     String code
-  ) => _writeEmail(context, "verifyEmail", () => api.put(
-    path: "/business/emails/verify/",
-    version: "v1",
-    data: {"ID": id, "CODE": code}
-  ));
+  ) => _writeEmail(context, "verifyEmail", () => _source.verifyEmail(id, code));
 
   /// The common body of email writes: send it, and if it went through,
   /// reread the profile.
@@ -490,7 +463,7 @@ class BusinessService extends ChangeNotifier {
     final id = activeId;
     if (id == null) return;
 
-    final data = await api.get(path: "/business/profile/", version: "v1").catchError((E) {
+    final data = await _source.profile().then<BusinessProfileModel?>((profile) => profile).catchError((E) {
       if (kDebugMode) {
         print(E);
       }
@@ -500,9 +473,9 @@ class BusinessService extends ChangeNotifier {
     // Same as in [loadProfile]: the active business may have changed while
     // this was being read, and what arrived describes the previous one.
     if (activeId != id || _profileOwner != id) return;
-    if (data is! Map) return;
+    if (data == null) return;
 
-    _profile = BusinessProfileModel.fromJson(data);
+    _profile = data;
     _syncActive(_profile!);
 
     notifyListeners();
