@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/pos/pos_product_model.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/pos/sources/pos_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 /// Status of the catalog read (`POST /pos/catalog/`).
 ///
@@ -50,12 +51,16 @@ enum PosCatalogStatus { idle, loading, ready, empty, missing, error }
 ///
 /// It is ephemeral: the POS page owns it and it is discarded when leaving it.
 class PosCatalogService extends ChangeNotifier {
-  PosCatalogService() {
+  PosCatalogService({PosSource? source}) : _injected = source {
     // Registered before the connection is even open: the socket notes its
     // listeners down and hooks them up when it connects, and they survive a
     // reconnection.
     _unlisten = ConnectionService().on(StockChangedModel.event, _onStock);
   }
+
+  final PosSource? _injected;
+
+  PosSource get _source => _injected ?? Sources.pos;
 
   /// How many products are read at a time. The backend caps the page at 100 and
   /// defaults to 40; the grid draws small tiles and several rows of them fit on
@@ -237,18 +242,14 @@ class PosCatalogService extends ChangeNotifier {
 
     final generation = _generation;
 
-    dynamic data;
+    final PosCatalogPage page;
 
     try {
-      data = await api.post(
-        path: "/pos/catalog/",
-        version: "v1",
-        data: {
-          "SIZE": _pageSize,
-          if (cursor.isNotEmpty) "CURSOR": cursor,
-          if (_query.isNotEmpty) "SEARCH": _query,
-          if (_category.isNotEmpty) "CATEGORY": _category
-        }
+      page = await _source.catalog(
+        size: _pageSize,
+        cursor: cursor,
+        search: _query,
+        category: _category
       );
     } catch (error) {
       if (kDebugMode) print("loadPosCatalog failed: $error");
@@ -262,7 +263,9 @@ class PosCatalogService extends ChangeNotifier {
       _reading = false;
 
       // Without a main table there is no catalog, and that is not something to
-      // retry from the counter: it is fixed by importing one.
+      // retry from the counter: it is fixed by importing one. An answer that is
+      // not an object ([UnreadableAnswer]) was not understood: drawing it would
+      // be a grid of holes, so it is the failure it is and not an empty catalog.
       if (error is Map && error["message"] == _noTable) {
         _status = PosCatalogStatus.missing;
       } else {
@@ -276,17 +279,6 @@ class PosCatalogService extends ChangeNotifier {
     if (generation != _generation) return;
 
     _reading = false;
-
-    // A response that is not an object is a read that was not understood.
-    // Drawing it would be a grid of holes, so it is treated as the failure it
-    // is instead of as an empty catalog.
-    if (data is! Map) {
-      _nothing();
-      notifyListeners();
-      return;
-    }
-
-    final page = PosCatalogPage.fromResponse(data);
 
     if (page.table.isNotEmpty) _table = page.table;
 

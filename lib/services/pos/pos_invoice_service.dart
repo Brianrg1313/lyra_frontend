@@ -9,7 +9,8 @@ import 'package:app/services/pos/pos_invoice_event.dart';
 import 'package:app/services/pos/pos_invoice_model.dart';
 import 'package:app/services/pos/pos_product_model.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/pos/sources/pos_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 /// What the ticket on screen is up to.
 ///
@@ -89,7 +90,7 @@ class PosInvoiceService extends ChangeNotifier {
   /// looking. The handlers are registered on construction and not when an
   /// invoice is opened, because a ticket recovered on load ([recover]) has to
   /// be watched too, and the socket keeps them across a reconnection.
-  PosInvoiceService() {
+  PosInvoiceService({PosSource? source}) : _injected = source {
     _unlisten = [
       for (final event in const [
         PosInvoiceEvent.updated,
@@ -100,6 +101,10 @@ class PosInvoiceService extends ChangeNotifier {
         ConnectionService().on(event, (data) => receive(event, data))
     ];
   }
+
+  final PosSource? _injected;
+
+  PosSource get _source => _injected ?? Sources.pos;
 
   /// How each subscription is dropped. Without this the handlers outlive the
   /// page —the connection is a singleton and this service is not— and a closed
@@ -229,17 +234,10 @@ class PosInvoiceService extends ChangeNotifier {
   Future<void> recover() async {
     if (_invoice != null || _status == PosInvoiceStatus.opening) return;
 
-    dynamic data;
+    final List<PosInvoice> invoices;
 
     try {
-      // The filters travel in the query string and not in the path: `Uri`
-      // escapes a `?` written into a path, which would ask for every open tab
-      // in the company without saying so.
-      data = await api.get(
-        path: "/pos/invoices/",
-        version: "v1",
-        query: {"MINE": 1, "SIZE": 1}
-      );
+      invoices = await _source.openInvoices(mine: true, size: 1);
     } catch (error) {
       if (kDebugMode) print("recoverPosInvoice failed: $error");
 
@@ -249,11 +247,9 @@ class PosInvoiceService extends ChangeNotifier {
       return;
     }
 
-    final invoices = data is Map ? data["invoices"] : null;
+    if (invoices.isEmpty) return;
 
-    if (invoices is! List || invoices.isEmpty) return;
-
-    final invoice = PosInvoice.fromJson(invoices.first);
+    final invoice = invoices.first;
 
     if (!invoice.isValid || !invoice.isOpen) return;
 
@@ -454,19 +450,10 @@ class PosInvoiceService extends ChangeNotifier {
     _status = PosInvoiceStatus.closing;
     notifyListeners();
 
-    dynamic data;
+    final PosInvoice sale;
 
     try {
-      data = await api.post(
-        path: "/pos/invoices/close/",
-        version: "v1",
-        data: {
-          "ID": invoice.id,
-          "METHOD": method,
-          if (reference.trim().isNotEmpty) "REFERENCE": reference.trim(),
-          if (note.trim().isNotEmpty) "NOTE": note.trim()
-        }
-      );
+      sale = await _source.close(invoice.id, method: method, reference: reference, note: note);
     } catch (error) {
       if (kDebugMode) print("closePosInvoice failed: $error");
 
@@ -483,8 +470,6 @@ class PosInvoiceService extends ChangeNotifier {
 
       return null;
     }
-
-    final sale = PosInvoice.fromJson(data);
 
     _ending = false;
 
@@ -525,11 +510,7 @@ class PosInvoiceService extends ChangeNotifier {
     _ending = true;
 
     try {
-      await api.post(
-        path: "/pos/invoices/cancel/",
-        version: "v1",
-        data: {"ID": invoice.id}
-      );
+      await _source.cancel(invoice.id);
     } catch (error) {
       if (kDebugMode) print("cancelPosInvoice failed: $error");
 
@@ -716,19 +697,15 @@ class PosInvoiceService extends ChangeNotifier {
     _status = PosInvoiceStatus.opening;
     notifyListeners();
 
-    dynamic data;
+    final PosInvoice invoice;
 
     try {
-      // No `TABLE_ID`: the backend sells the company's main table and says
+      // No table id: the backend sells the company's main table and says
       // which one it was, so the counter never carries a table id from screen
-      // to screen. `TAX` is the rate every line inherits unless it carries its
-      // own — and they all carry their own, so this is only the ticket's
+      // to screen. The tax is the rate every line inherits unless it carries
+      // its own — and they all carry their own, so this is only the ticket's
       // default.
-      data = await api.post(
-        path: "/pos/invoices/",
-        version: "v1",
-        data: {"TAX": _tax}
-      );
+      invoice = await _source.open(tax: _tax);
     } catch (error) {
       if (kDebugMode) print("openPosInvoice failed: $error");
 
@@ -738,8 +715,6 @@ class PosInvoiceService extends ChangeNotifier {
 
       return false;
     }
-
-    final invoice = PosInvoice.fromJson(data);
 
     if (!invoice.isValid) {
       _status = PosInvoiceStatus.error;
@@ -765,14 +740,10 @@ class PosInvoiceService extends ChangeNotifier {
     _error = null;
     _pending++;
 
-    dynamic data;
+    final PosInvoice updated;
 
     try {
-      data = await api.put(
-        path: "/pos/invoices/items/",
-        version: "v1",
-        data: {"ID": invoice.id, ...body}
-      );
+      updated = await _source.writeLine(invoice.id, body);
     } catch (error) {
       if (kDebugMode) print("writePosInvoiceLine failed: $error");
 
@@ -791,8 +762,6 @@ class PosInvoiceService extends ChangeNotifier {
 
     _pending--;
 
-    final answer = data is Map ? data["invoice"] : null;
-    final updated = PosInvoice.fromJson(answer);
 
     // An answer that arrives while another tap is already travelling is older
     // than the screen: adopting it would walk a quantity backwards under the
@@ -814,7 +783,7 @@ class PosInvoiceService extends ChangeNotifier {
 
     if (invoice == null || _pending > 0) return;
 
-    dynamic data;
+    final List<PosInvoice> invoices;
 
     try {
       // The company's open tabs and not this till's: an invoice this counter is
@@ -822,24 +791,14 @@ class PosInvoiceService extends ChangeNotifier {
       // hide exactly the case that has to be noticed. A hundred is the page the
       // endpoint caps at, and a shop with more open tabs than that has a
       // problem this read is not going to solve.
-      data = await api.get(
-        path: "/pos/invoices/",
-        version: "v1",
-        query: {"SIZE": 100}
-      );
+      invoices = await _source.openInvoices(size: 100);
     } catch (error) {
       if (kDebugMode) print("readPosInvoice failed: $error");
 
       return;
     }
 
-    final invoices = data is Map ? data["invoices"] : null;
-
-    if (invoices is! List) return;
-
-    for (final entry in invoices) {
-      final open = PosInvoice.fromJson(entry);
-
+    for (final open in invoices) {
       if (open.id != invoice.id) continue;
 
       _adopt(open);

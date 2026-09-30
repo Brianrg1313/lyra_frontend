@@ -273,6 +273,8 @@ Nothing here adds figures up: every total is the backend's answer.
 
 ## pos/ — owned by the POS page
 
+- `sources/pos_source.dart` — `PosSource`: day summary, payment methods (unfiltered), catalogue page, open tickets,
+  open, write a line, close, cancel. Used by all four POS services. `pos_cloud_source.dart` — REST.
 - `pos_service.dart` — `PosService`: `/pos/` — `mineSales`, `categories`.
 - `pos_catalog_service.dart` — `PosCatalogService`: `POST /pos/catalog/`, cursor-paged (no total);
   `search()` (`SEARCH`), `filter()` (`CATEGORY`), `more()`/`retryMore()`. `CODE` not wired.

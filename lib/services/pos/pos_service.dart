@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 // SERVICES
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/pos/sources/pos_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum PosSummaryStatus { idle, loading, ready, error }
 
@@ -18,6 +19,12 @@ enum PosSummaryStatus { idle, loading, ready, error }
 ///
 /// It is ephemeral: the POS page owns it and it is discarded when leaving it.
 class PosService extends ChangeNotifier {
+  PosService({PosSource? source}) : _injected = source;
+
+  final PosSource? _injected;
+
+  PosSource get _source => _injected ?? Sources.pos;
+
   PosSummaryStatus _status = PosSummaryStatus.idle;
   int _mineSales = 0;
   List<String> _categories = const [];
@@ -40,24 +47,22 @@ class PosService extends ChangeNotifier {
     _status = PosSummaryStatus.loading;
     notifyListeners();
 
-    final data = await api.get(path: "/pos/", version: "v1").catchError((E) {
-      if (kDebugMode) print(E);
-      return null;
-    });
+    final data = await _source
+      .summary()
+      .then<({int mineSales, List<String> categories})?>((data) => data)
+      .catchError((E) {
+        if (kDebugMode) print(E);
+        return null;
+      });
 
-    if (data is! Map) {
+    if (data == null) {
       _status = PosSummaryStatus.error;
       notifyListeners();
       return;
     }
 
-    final mine = data["mine"];
-    _mineSales = mine is Map ? ((mine["sales"] as num?)?.toInt() ?? 0) : 0;
-
-    final categories = data["categories"];
-    _categories = categories is List
-      ? categories.whereType<String>().where((label) => label.isNotEmpty).toList(growable: false)
-      : const [];
+    _mineSales = data.mineSales;
+    _categories = data.categories;
 
     _status = PosSummaryStatus.ready;
 

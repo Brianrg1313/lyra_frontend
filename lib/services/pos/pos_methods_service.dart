@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/pos/pos_payment_method.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/services/pos/sources/pos_source.dart';
+import 'package:app/toolkit/deployment.dart';
 
 enum PosMethodsStatus { idle, loading, ready, error }
 
@@ -22,6 +23,12 @@ enum PosMethodsStatus { idle, loading, ready, error }
 /// read here: this screen is the counter, so its channel is always `pos` and a
 /// picker for it would be a control with one option.
 class PosMethodsService extends ChangeNotifier {
+  PosMethodsService({PosSource? source}) : _injected = source;
+
+  final PosSource? _injected;
+
+  PosSource get _source => _injected ?? Sources.pos;
+
   PosMethodsStatus _status = PosMethodsStatus.idle;
   List<PosPaymentMethod> _methods = const [];
 
@@ -58,10 +65,10 @@ class PosMethodsService extends ChangeNotifier {
     _status = PosMethodsStatus.loading;
     notifyListeners();
 
-    dynamic data;
+    final List<PosPaymentMethod> methods;
 
     try {
-      data = await api.get(path: "/pos/methods/", version: "v1");
+      methods = await _source.methods();
     } catch (error) {
       if (kDebugMode) print("loadPosMethods failed: $error");
 
@@ -71,20 +78,7 @@ class PosMethodsService extends ChangeNotifier {
       return;
     }
 
-    final methods = data is Map ? data["methods"] : null;
-
-    if (methods is! List) {
-      _status = PosMethodsStatus.error;
-      notifyListeners();
-
-      return;
-    }
-
-    _methods = [
-      for (final entry in methods)
-        if (entry is Map)
-          PosPaymentMethod.fromJson(Map<String, dynamic>.from(entry))
-    ].where((method) => method.isValid).toList(growable: false);
+    _methods = methods.where((method) => method.isValid).toList(growable: false);
 
     // An empty list is a read that answered nothing usable, not a company that
     // takes no payment: without a method there is no way to charge, so it is
