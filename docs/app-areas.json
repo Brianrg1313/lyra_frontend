@@ -19,7 +19,8 @@
         }
       ]
     },
-    "backend_must_enforce": "The app only hides what is not granted; every endpoint must check the same permission ids."
+    "backend_must_enforce": "The app only hides what is not granted; every endpoint must check the same permission ids.",
+    "modes": "Optional. Deployment modes the area exists in: 'cloud', 'local', 'hybrid'. Absent = cloud only for now; every area declares it when phase 1 of docs/plan-offline-lan.md lands (§12)."
   },
   "areas": [
     {
@@ -54,10 +55,11 @@
           "title": "Employees",
           "routes": ["business_employees"],
           "paths": ["/home/business/:id/employees"],
-          "actions": ["view", "view_personal", "invite"],
+          "actions": ["view", "view_personal", "invite", "permissions"],
           "action_notes": {
             "view_personal": "Full profile: personal data, emergency contact, pay, notes.",
-            "invite": "Invite a person by email with a job title."
+            "invite": "Invite a person by email with a job title.",
+            "permissions": "Grant and revoke other people's permissions, and answer permission requests."
           }
         },
         {
@@ -203,7 +205,10 @@
       "scope": "company",
       "routes": ["finance"],
       "paths": ["/home/finance"],
-      "actions": ["view"],
+      "actions": ["view", "export"],
+      "action_notes": {
+        "export": "Accounting export of sales, payments, receivables and stock movements (CSV/XLSX). Local and hybrid first (docs/offline/specs/money.md)."
+      },
       "children": [
         {
           "key": "finance.overview",
@@ -287,6 +292,21 @@
         "checkout": "Close the invoice (charge).",
         "cancel_ticket": "Discard the ticket, releasing its holds."
       }
+    },
+    {
+      "key": "local_server",
+      "title": "Local server",
+      "scope": "company",
+      "modes": ["local", "hybrid"],
+      "routes": ["local_server"],
+      "paths": ["/home/business/:id/settings/local_server"],
+      "actions": ["view", "devices", "backups", "stop"],
+      "action_notes": {
+        "devices": "Pair, rename and revoke devices (docs/offline/specs/session.md).",
+        "backups": "Run, schedule and restore encrypted backups.",
+        "stop": "Stop the master's engine."
+      },
+      "status": "planned"
     }
   ],
   "always_open": {

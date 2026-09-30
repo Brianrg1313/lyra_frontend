@@ -1,0 +1,165 @@
+# Spec: business (company, site, settings, catalogues)
+
+**Plan** §1 principle 3, §2, §7.5. **App today** `business/business_service.dart`,
+`business_profile_model.dart`, `business_location_*`, `business_branches_service.dart`,
+`catalog/*`, `files/*`.
+
+A master holds **one company at one site** (plan D6). The company is created at setup; it is
+never created, switched or deleted from the business screens.
+
+---
+
+## business.company
+
+### Data
+
+The fields of `BusinessProfileModel`, minus what needs the internet:
+
+| Field | Type | Written by |
+|---|---|---|
+| `id` | uuid | setup |
+| `name`, `legalName`, `nickname`, `caption` | string | `business.settings.edit` |
+| `logo` | fileId? | `business.settings.edit_logo` |
+| `activity` | code of `BusinessActivity` | `business.settings.edit` |
+| `taxId` | string | `business.settings.edit` |
+| `country` | ISO 3166-1 alpha-2 | setup; `business.settings.edit` (see B-4) |
+| `language` | code | `business.settings.edit` |
+| `currency` | ISO 4217 | setup only (B-5) |
+| `phone`, `website` | string | `business.settings.edit` |
+| `incorporationDate` | `YYYY-MM-DD`? | `business.settings.edit` |
+| `timeZone` | IANA name | setup (default: the master OS zone); `business.settings.edit` |
+| `verification` | always `untrusted` | nobody (B-6) |
+| `emails` | always `[]` | nobody (cloud only) |
+| `created` | instant | setup |
+
+### Rules
+
+- **B-1** Setup creates the company with `name`, `country`, `currency`, `language` and
+  `timeZone`, and the owner account (`session.md`, S-6). It runs once. Afterwards there is no op
+  that creates a company (the "create business" entry points are hidden in `local`, plan §7.3).
+- **B-2** An edit writes one key at a time, as `BusinessService.editProfile` does today
+  (`{KEY: value}`). An empty string clears an optional field. `name` can't be cleared
+  (`required`).
+- **B-3** `nickname` (the handle) is free text offline: there is no global namespace to be
+  unique in. It is only unique within the master, which trivially holds one.
+- **B-4** Changing `country` changes which rails, banks and document types the catalogues offer
+  (`money.md`), and the default phone plan. It never rewrites stored data.
+- **B-5** `currency` (the main currency) is fixed after setup, as in the cloud ("the main currency
+  is never written from the app"). Changing it would relabel every price without converting it.
+- **B-6** Verification is a cloud process: `local` always answers `untrusted`, and the app shows
+  nothing about it (capability gate).
+- **B-7** Deleting the company (`business.delete`) doesn't exist offline. Its local equivalent
+  is **resetting the master** (admin screen, recovery key required, backup offered first), which
+  is outside this spec.
+- **B-8** Logo: an image upload (see `protocol-v1.md`, files), at most 5 MB, `png`/`jpeg`/`webp`.
+  The engine keeps the original and a 256 px square version. Replacing it keeps the old file
+  until the next backup rotation, then drops it.
+
+### Ops
+
+| Op | Permission | Args | Answer | Errors |
+|---|---|---|---|---|
+| `business.profile` | `business.view` | — | the profile | — |
+| `business.edit` | `business.settings.edit` | `{KEY: value}` (one key) | the profile | `required`, `invalid_field` |
+| `business.setLogo` | `business.settings.edit_logo` | `fileId` \| `null` | the profile | `invalid_file` |
+
+### Events
+
+| Event | When | Payload |
+|---|---|---|
+| `business/changed` | any profile field or the logo changed | `{keys: [...]}`. Clients re-read the profile. |
+
+---
+
+## business.site
+
+The one site this master runs. The app has two screens that write a location: the business
+location (`BusinessLocationService`) and the branches list (`BusinessBranchesService`). In
+`local` the branches list is hidden (plan §2), and **both sources read and write this one
+record**, so the delivery screens, which read the business location, keep working.
+
+### Data
+
+The union of `BusinessLocationModel` and `BusinessBranchModel`:
+
+`name, legalName, taxId, phone, address, landmark, city, region, postalCode, country, latitude,
+longitude, storefront, online`. `main` is always `true`. `maps` (a map link) is derived from the
+point and never stored.
+
+### Rules
+
+- **B-10** Edits carry **only what changed** (the app's request builders already do). A key with
+  `null` (location) or `""` (branch form) clears the field.
+- **B-11** A point is both coordinates or neither. Half a point is refused (`invalid_point`).
+  Coordinates are stored at 6 decimals. Latitude is in [-90, 90], longitude in [-180, 180].
+- **B-12** `country` sent in a location write is the **company's** country (as today: "the backend
+  hands that one key to the company's own write"), so it goes through B-4.
+- **B-13** There is no place search offline (`BusinessPlacesService` answers `unavailable`, which
+  the form already treats as "type the address yourself").
+
+### Ops
+
+| Op | Permission | Args | Answer | Errors |
+|---|---|---|---|---|
+| `business.site.get` | `business.view` | — | the site | — |
+| `business.site.edit` | `business.settings.edit` | changed keys | the site | `invalid_point`, `invalid_field` |
+
+`BusinessLocationService` maps `GET`/`PUT /business/location/` onto these. `BusinessBranchesService`
+is not reachable in `local`; in `hybrid` it lists the cloud's branches with the master's own site
+marked, and only the site can be edited while offline.
+
+---
+
+## Catalogues and vocabularies
+
+Read-only data the app already takes from the server. Offline it comes from the snapshot
+bundled with the app release (`assets/catalogs/*.json`, plan §7.5). The master serves **its own
+copy**, so every client of one master sees the same version even if clients run different builds.
+
+| Catalogue | App reader today | Used by |
+|---|---|---|
+| `countries` | `CountryCatalogService` | bootstrap, forms |
+| `currencies` | `CurrencyCatalogService` | bootstrap, money formatting, minor units |
+| `phone_plans` | `PhonePlan` | phone inputs |
+| `money.concepts` (in / out, with `ticket`, `settles`) | `MoneyCatalogService` | `money.md` |
+| `money.settlements` (with `reference`, `change`, `default`, and a new `credit` flag) | `MoneyCatalogService`, `PosMethodsService` | `pos.md`, `money.md` |
+| `money.rails` per country, with requirement sheets (`fields`) | `MoneyMethodsService.rails` | `money.md` |
+| `money.options` (`banks`, `documents`, `networks`) per country | `MoneyMethodsService.options` | `money.md` |
+| `sales.stages`, `sales.handover` | `SalesCatalogService` | `sales.md` |
+| `sales.channels` | `SalesCatalogService` (from `/pos/methods`) | `sales.md` (offline: `pos` only) |
+| `stock.reasons` | `StockReason` (hard-coded in the app today) | `stock.md` |
+| `delivery.providers` per country | `BusinessDeliveryService` | `deliveries.md` |
+| `common_passwords` | none | `session.md` S-2 |
+
+### Rules
+
+- **B-20** A catalogue answer has the same shape the app reads today, so the cloud and LAN
+  sources share the model parsing.
+- **B-21** Each catalogue carries `version` (the release that built it). The diagnostics screen
+  shows it. In `hybrid`, the master refreshes catalogues from the cloud when online and keeps
+  the newer one.
+- **B-22** Texts in catalogues (`name` of a concept, a stage, a rail) are in the company
+  `language`. The snapshot holds every language the app ships.
+
+### Ops
+
+`catalog.get` · session · `name` (one of the table above) · the catalogue.
+
+---
+
+## Differences from cloud
+
+- No company creation, switching or deletion; no verification; no company e-mails.
+- One site instead of a branches list.
+- No place search and no map link lookup; a map link is still derived from the stored point.
+- Catalogues are as fresh as the master's app release (`local`), or the last cloud refresh
+  (`hybrid`).
+
+## Open questions
+
+1. Does the cloud expose `timeZone` for a company, or is it derived from the country? The
+   engine needs it for day boundaries. If the cloud derives it, hybrid sync maps country → zone
+   and a local override is kept local.
+2. The `credit` flag on settlement kinds: the app knows `account` = credit sale only from notes
+   (`MoneySummary.credit`). Proposed: the vocabulary gets `credit: true` on `account`, and the
+   engine reads the flag (README, vocabularies).
