@@ -58,7 +58,10 @@ A person who can sign in to this master.
   by the admin (`employees.reissueActivation`).
 - **S-9** Changing one's own password needs the current one, ends every other session of that
   account, and re-wraps the account's sealed-key wrap (plan §6.3).
-- **S-10** An admin reset (`business.employees.edit` on that person and `*`, see Open question 2)
+- **S-10** An admin reset needs `business.employees.edit`, and the target may hold **no
+  permission the resetter lacks** (`insufficient_permissions`): otherwise a reset is a way to
+  sign in as somebody with more rights. So only a `*` holder resets another `*` holder, and
+  nobody resets their own password this way (S-9). Every reset goes to the audit log. It
   sets a temporary password with `mustChangePassword`. The account's sealed-key wrap is lost:
   a holder of the sealed key must grant it again (plan §6.3). This is said on the confirmation.
 - **S-11** A forgotten owner password is reset **on the master only**, with the recovery key.
@@ -127,7 +130,7 @@ tasks and the platform catalogues. The `XLanSource` maps it onto the same `Clien
   "permissions": { "<businessId>": ["*"] },
   "tasks":       [],
   "catalogs":    { "countries": [...], "currencies": [...] },
-  "deployment":  { "mode": "local", "instanceId", "engine": "1.0.0", "timeZone": "America/Caracas" }
+  "deployment":  { "mode": "local", "instanceId", "engine": "1.0.0", "timezone": "America/Caracas" }
 }
 ```
 
@@ -235,7 +238,7 @@ reused. It prefixes ticket codes minted by that device (`pos.md`, POS-40).
 1. ~~New permission ids.~~ **Decided 2026-09-30:** `business.employees.permissions` and the
    area `local_server` (`view`, `devices`, `backups`, `stop`, `modes: ["local", "hybrid"]`) are
    in `docs/app-areas.json`.
-2. Who may reset another person's password: `*` only (proposed), or also
-   `business.employees.edit`?
-3. Should a POS PIN be allowed for accounts that hold more than `pos.*`? Proposed: yes, since
-   the PIN session is limited to `pos.*` anyway (S-22).
+2. ~~Who may reset a password.~~ **Decided 2026-09-30:** whoever holds
+   `business.employees.edit`, never over someone with more permissions (S-10).
+3. ~~PIN for accounts that hold more than `pos.*`.~~ Decided: allowed, since the PIN session is
+   limited to `pos.*` anyway (S-22).

@@ -109,10 +109,9 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
 
 ## Open questions
 
-1. The invite form must show the activation code in `local`. Proposed: a result sheet with the
-   code and a "copy" button, reached only when the answer carries `activation`.
-2. The app has no writer for **leaves** nor for **ending a job** (no keys for them in the edit
-   form). Offline they'd stay empty forever. Are they planned in the cloud? If so, their spec is
-   written with them (plan principle 9).
-3. Which permission is the "HR permission" that holds the `hr` sealed key: exactly
-   `business.employees.view_personal` (proposed)?
+1. ~~Showing the activation code.~~ Decided: a result sheet with the code and a "copy" button,
+   reached only when the answer carries `activation` (built in phase 4).
+2. ~~Leaves and job endings.~~ **Decided 2026-09-30:** planned for later. Until the app has a
+   writer for them they stay empty in `local`, and their spec is written when the cloud builds
+   them (plan principle 9).
+3. ~~The HR permission.~~ Decided: `business.employees.view_personal` holds the `hr` key.

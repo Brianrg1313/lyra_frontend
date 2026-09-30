@@ -91,6 +91,8 @@ active, position}` and the list's `currency`.
 ## Open questions
 
 1. ~~Hide in `local`?~~ Decided: hidden in `local`, available in `hybrid`.
+Questions 2 and 3 only matter in `hybrid` and are answered in phase 6.
+
 2. Is a courier's `provider` always from the catalogue, or can it be free text?
 3. Without map tiles, how is a polygon drawn? Options: a plain canvas with the site's pin and a
    scale bar; typing coordinates; or waiting for the offline tile pack (plan §14).

@@ -18,7 +18,7 @@ What the counter draws: the primary table's records, read **by field type**, not
 
 - **POS-1** A product's fields come from the primary table (`inventory.md`, I-3):
   `name` = first `TITLE` field; `sku` = first `SKU`; `barcode` = first `BARCODE`; `price` = first
-  `PRICE`; `image` = cover of the first `IMAGE`; `categories` = every label of every `CATEGORIES`
+  `PRICE` net of the first `DISCOUNT` (POS-7); `image` = cover of the first `IMAGE`; `categories` = every label of every `CATEGORIES`
   field; `stock`/`reserved` = the ledger (`stock.md`), `null` for untracked products (POS-6).
 - **POS-2** A product whose `PRICE` cell is empty has `price: null`. It is listed (it exists) and
   it **can't be put on a ticket** (`no_price`): null is not zero.
@@ -33,6 +33,11 @@ What the counter draws: the primary table's records, read **by field type**, not
 - **POS-6** An untracked product (its table has no `STOCK` field) is sold **without holds** and
   is never refused or shown as sold out for stock: the counter is the sale in person, and the
   product leaves right there (ST-1). Its tile shows no stock count.
+- **POS-7** A product's price is its list price (first `PRICE`) with its own discount off (first
+  `DISCOUNT`, a percent): `price = round(list × (1 − discount / 100))`, rounded once, in minor
+  units. A discount outside (0, 100] is ignored (the price is the list price). Only `DISCOUNT` is
+  a discount: a `PERCENTAGE` column never is. This is the one place a discounted price is
+  computed, so the grid, the ticket and the sale detail can't disagree.
 
 ### Ops
 
@@ -67,9 +72,10 @@ What the counter draws: the primary table's records, read **by field type**, not
 | `opened`, `closed` | instant | |
 | `origin` | `live` / `outbox` | POS-50 |
 
-**Line** `{lineId, productId?, name, sku, qty, held, price, taxRate, subtotal, tax, total}`.
-`productId` is `null` on a typed-in charge. `name`, `sku`, `price` are **frozen** when the line
-is created.
+**Line** `{lineId, productId?, name, sku, qty, held, price, list, discount, taxRate, subtotal,
+tax, total}`. `productId` is `null` on a typed-in charge. `name`, `sku`, `price`, `list` and
+`discount` are **frozen** when the line is created. `list` and `discount` are `null` on a
+typed-in charge, and `discount` is `null` when the product had none (POS-7).
 
 ### Rules: opening and lines
 
@@ -78,8 +84,9 @@ is created.
   what a till has between opening and the answer to its first line).
 - **POS-11** Adding a product: `productId` plus `add: n` (relative) or `quantity: n` (absolute).
   A product appears **at most once** per ticket: adding it again grows its line.
-- **POS-12** A new product line freezes the product's current `name`, `sku` and `price`. Later
-  edits to the record don't change the line.
+- **POS-12** A new product line freezes the product's current `name`, `sku`, `price`, `list` and
+  `discount`. Later edits to the record don't change the line: a ticket open for twenty minutes
+  charges the offer that was running when the product went on it.
 - **POS-13** Tracked product: growing a line reserves the extra units **before** the line
   changes. If `available` can't cover them, the write is refused with `insufficient_stock`
   (naming the product and what is available) and nothing changes. Shrinking a line releases
@@ -106,8 +113,8 @@ is created.
 ### Rules: closing (checkout) and cancelling
 
 - **POS-30** `pos.invoices.close` needs `method` from the settlement vocabulary (`unknown_method`
-  otherwise, never a silent default). `reference` is **required** when the method has
-  `reference: true` (`reference_required`); `note` is optional. An invoice with no lines can't be
+  otherwise, never a silent default). `reference` is optional and stored when sent: a method
+  with `reference: true` tells the **app** to ask for it, as in the cloud. `note` is optional. An invoice with no lines can't be
   closed (`empty_invoice`).
 - **POS-31** Before charging, every tracked line's hold is checked: a line whose `held < qty`
   (its hold was released from the stock screen, ST-22) takes the missing units again. If they
@@ -148,7 +155,7 @@ is created.
 |---|---|---|---|---|
 | `pos.invoices.open` | `pos.sell` | `tax?` | invoice | — |
 | `pos.invoices.line` | `pos.sell`; with `concept`: `pos.custom_amount`; with `tax` changing a rate: `pos.set_tax` | `id`, one of (`productId` \| `lineId` \| `concept`+`price`), one of (`add` \| `quantity`), `tax?` | `{invoice}` | `not_found`, `no_price`, `insufficient_stock`, `too_many_units`, `invoice_closed`, `invoice_cancelled` |
-| `pos.invoices.close` | `pos.checkout` | `id`, `method`, `reference?`, `note?` | the closed invoice | `empty_invoice`, `unknown_method`, `reference_required`, `insufficient_stock`, `invoice_closed`, `invoice_cancelled` |
+| `pos.invoices.close` | `pos.checkout` | `id`, `method`, `reference?`, `note?` | the closed invoice | `empty_invoice`, `unknown_method`, `insufficient_stock`, `invoice_closed`, `invoice_cancelled` |
 | `pos.invoices.cancel` | `pos.cancel_ticket` | `id` | `{}` | `invoice_closed`, `invoice_cancelled` |
 | `pos.invoices.list` | `pos.view` | `mine?`, `size?` | `{invoices: [invoice]}` | — |
 
@@ -175,7 +182,8 @@ ticket reads it back in full (`PosInvoiceEvent`).
 ### What a POS may do offline
 
 - **POS-50** Only a device paired as a POS, signed in, and with a catalogue snapshot younger than
-  the limit (Open question 3) may sell offline.
+  the limit may sell offline: 24 hours by default, set by the owner in the local server settings
+  (`local_server`).
 - **POS-51** Offline ops are **append-only and local to that device**: open a ticket, write its
   lines, close it, cancel it. Nothing else (no catalogue edits, no stock screen, no payments).
 - **POS-52** Prices, names and the method list come from the snapshot. The device mints ticket
@@ -230,7 +238,7 @@ ticket reads it back in full (`PosInvoiceEvent`).
    `PosInvoiceService` computes `tax = subtotal × rate` on top of the sum of line totals for its
    optimistic draw. The two readings disagree. Pin the cloud's rule with a contract test and fix
    POS-20/21 and the app's optimistic getters to the same rule.
-3. How old may the offline catalogue snapshot be before a POS refuses to sell offline? Proposed:
-   24 hours, set by the owner.
-4. Is `reference` required by the cloud when the method says `reference: true` (POS-30), or only
-   asked for by the app?
+3. ~~Age of the offline catalogue snapshot.~~ Decided: a POS refuses to sell offline with a
+   snapshot older than 24 hours by default; the owner can change the limit (POS-50).
+4. ~~Is `reference` required?~~ Answered: no, the cloud stores it when sent and the app asks for
+   it (POS-30).

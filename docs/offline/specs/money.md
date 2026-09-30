@@ -229,8 +229,8 @@ Lyra is not accounting software. It hands its data to the software that is.
 ## Open questions
 
 1. **Customer on credit sales.** *Deferred with credit itself* (money.receivable).
-2. **`credit` in the summary.** Is it what was **sold** on credit in the window, or what is still
-   **owed** from it (proposed, M-24)? The model's note ("what went out on credit and has not been
-   collected") suggests the second.
-3. Is a `settles` payment without a ticket allowed in the cloud (a general payment on account)?
-   Proposed: no (M-7).
+2. **`credit` in the summary.** *Deferred with credit.* Proposal kept: what is still owed on the
+   credit tickets of the window (M-24). The cloud reports it apart from income for the same reason.
+3. **`settles` without a ticket.** *Deferred with credit.* The cloud accepts one today and applies
+   it to nothing; M-7 proposes refusing it (`ticket_required`), which the contract test will
+   show as a difference to settle.

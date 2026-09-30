@@ -600,5 +600,9 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 - **Web setup friction**: installing the CA on each browser computer is extra work. Native
   clients are the recommended path, and web is documented as the secondary option.
 - **Hybrid divergence.** A soak test with scripted outages is the exit criterion, not a unit test.
+- **Pairing crypto** (`protocol-v1.md`, Open questions): CPace needs a vetted Dart
+  implementation or a small FFI binding, and a browser's device identity is a WebCrypto key that
+  clearing the site data destroys (that browser pairs again). Both get the phase 3 security
+  review and are retested in phase 7.
 - **LAN environments** (client isolation on Wi-Fi, blocked mDNS, captive firewalls). Mitigated
   by the manual address, QR fallback and the diagnostics screen.

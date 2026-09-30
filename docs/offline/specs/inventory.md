@@ -33,8 +33,11 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 - **I-2** Deleting a table is soft. Its records disappear from every list and from the POS.
   Stock movements that name its products are kept (history is never deleted) and keep reading
   the product's frozen name.
-- **I-3** The first table created is primary. If the primary table is deleted, the oldest
-  remaining table becomes primary. (See Open question 1 about choosing it.)
+- **I-3** The first table created is primary. The company can give the flag to another table
+  (`primary: true` on `inventory.tables.edit`), which takes it from the one that held it in the
+  same write. There is no unmarking: `primary: false` is refused (`invalid_primary`), since a
+  company with tables and no primary one has nothing to sell or count. If the primary table is
+  deleted, the oldest remaining table becomes primary.
 
 ### Ops
 
@@ -42,7 +45,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 |---|---|---|---|---|
 | `inventory.tables.list` | `inventory.view` | — | `[TableLite]` | — |
 | `inventory.tables.create` | `inventory.create_table` | `title`, `description?`, `color`, `template?` | `{id}` | `invalid_field`, `unknown_template` |
-| `inventory.tables.edit` | `inventory.edit_table` | `id`, `name?`, `description?` | table | `not_found` |
+| `inventory.tables.edit` | `inventory.edit_table` | `id`, `name?`, `description?`, `primary?` | table | `not_found`, `invalid_primary` |
 | `inventory.tables.delete` | `inventory.delete_table` | `id` | `{}` | `not_found`, `has_open_tickets` (I-4) |
 | `inventory.tables.structure` | `inventory.view` | `id` | `TableStructure` (fields in the `{keys, values}` shape) | `not_found` |
 | `inventory.tables.details` | `inventory.view` | `id` | `TableDetail` | `not_found` |
@@ -102,7 +105,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 | `inventory.fields.delete` | `inventory.edit_columns` | `id` | `{}` | `not_found` |
 
 - **I-17** A column width is a property of the table, shared by everyone (as today). Anyone who
-  can open the table may drag it. (Open question 2.)
+  can open the table may drag it.
 
 ---
 
@@ -123,6 +126,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
   | `TEXT` `TITLE` `SKU` `BARCODE` `EMAIL` `PHONE` `URL` | string | any text ≤ 1000 (`TEXTAREA`/`DESCRIPTION` ≤ 10 000). No format check on email/phone/url offline: the app formats, the engine stores. |
   | `NUMBER` | integer | an integer |
   | `DECIMAL` `PERCENTAGE` `MEASURE` | decimal string | a number, dot as the decimal separator |
+  | `DISCOUNT` | decimal string | a percent off the price, 0–100 (`20`, never `0.20`); anything else is refused, because the POS subtracts it (POS-7) |
   | `PRICE` `CURRENCY` | decimal string | a number ≥ 0, with at most the column currency's decimals |
   | `BOOLEAN` | bool | `true`/`false`/`1`/`0` |
   | `DATE` | `YYYY-MM-DD` | that shape (`ProductDate`) |
@@ -246,8 +250,8 @@ two, the table is `preparing`, and the app waits for `table/ready`.
 
 ## Open questions
 
-1. How is the primary table chosen in the cloud: always the first one, or can the company pick?
-   If it can, add `inventory.tables.setPrimary` (`inventory.edit_table`).
-2. Is a column width a table setting that needs `inventory.edit_columns`, or can anyone who opens
-   the table save it (proposed, I-17)?
-3. Do record rows need a delete in the app? The engine has one (I-23); the app has none.
+1. ~~How is the primary table chosen?~~ Answered: the company picks it, with `PRIMARY: 1` on the
+   table edit, and it can't be unmarked (I-3).
+2. ~~Column width.~~ Decided: anyone who can open the table (I-17).
+3. ~~Record delete.~~ Answered: the cloud has one (soft), so the engine keeps I-23. The app has no
+   button for it today; adding one is an app change for both sources, outside these specs.

@@ -119,8 +119,8 @@ otherwise), `mode`, `state`, `seller` (name), `chat` (`""`), `date`, `updated`.
 
 - **SA-30** `reference` resolves a ticket code (POS-41, any case) or a row id. Not found answers
   `sale_not_found`, which the app shows as news, not as an error.
-- **SA-31** `items` come from the invoice lines: `price`, `subtotal`, `taxRate`, `tax`, `total`;
-  `list` and `discount` are `null` (the POS has no discounts, Open question 2). `held`, `state`
+- **SA-31** `items` come from the invoice lines: `price`, `list`, `discount` (POS-7),
+  `subtotal`, `taxRate`, `tax`, `total`. `held`, `state`
   and `available` are filled for an open invoice; `gone` is true when the product was deleted.
 - **SA-32** `reservations` is the list of the invoice's holds (`stock.md`) for an invoice, and
   **`null` on a ticket** (the app tells the two apart by it).
@@ -148,4 +148,5 @@ sales' notices (SA-11).
 ## Open questions
 
 1. ~~Stage codes.~~ Decided: the cloud catalogue's codes and precedence (table above).
-2. The POS has no line discounts; `list` and `discount` stay `null`. Is a POS discount planned?
+2. ~~POS discounts.~~ Answered: the product's own discount (`DISCOUNT` column) is taken off at
+   the counter (POS-7). There is no discount typed in at the till, as in the cloud.

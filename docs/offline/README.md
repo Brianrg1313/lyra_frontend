@@ -57,8 +57,8 @@ Areas with no spec, and why:
 
 **Time**
 - Instants are ISO 8601 UTC strings on the wire, as the app reads them today.
-- The company has a **time zone** (`business.settings.timeZone`, IANA name; default: the master
-  OS zone at setup). "Today", "this month" and every day boundary are computed in that zone, on
+- The company has a **time zone** (`business.settings.timezone`, IANA name, nullable: `null` is the
+  country's default zone, `business.md` B-9). "Today", "this month" and every day boundary are computed in that zone, on
   the master's clock (so the POS and the finance screen agree, as they do today).
 - Calendar days with no time (birthdays, contract dates, leaves) travel as `YYYY-MM-DD` and are
   never shifted by a time zone (`employeeDay` in the app).
@@ -122,7 +122,9 @@ Rules are numbered (`POS-7`) so the contract tests can name the rule they check.
 
 ## Review checklist (exit criterion of phase 0)
 
-- [ ] Every open question answered or moved to the plan's risks.
+- [x] Every open question answered or moved to the plan's risks. Still open by decision: tax
+  (`pos.md` Open question 2) and credit (`money.md`), deferred by the product owner; the two
+  delivery questions, which only matter in `hybrid` (phase 6).
 - [ ] Every service in `lib/services` that has a local mode maps to ops in a spec (table below).
 - [ ] The protocol draft is agreed and `lyra_protocol` can be generated from it.
 - [ ] The EULA text is drafted by a lawyer (outside these files).

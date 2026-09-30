@@ -27,7 +27,7 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 | `currency` | ISO 4217 | setup only (B-5) |
 | `phone`, `website` | string | `business.settings.edit` |
 | `incorporationDate` | `YYYY-MM-DD`? | `business.settings.edit` |
-| `timeZone` | IANA name | setup (default: the master OS zone); `business.settings.edit` |
+| `timezone` | IANA name? | setup (proposed: the master OS zone); `business.settings.edit` (B-9) |
 | `verification` | always `untrusted` | nobody (B-6) |
 | `emails` | always `[]` | nobody (cloud only) |
 | `created` | instant | setup |
@@ -35,7 +35,7 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 ### Rules
 
 - **B-1** Setup creates the company with `name`, `country`, `currency`, `language` and
-  `timeZone`, and the owner account (`session.md`, S-6). It runs once. Afterwards there is no op
+  `timezone`, and the owner account (`session.md`, S-6). It runs once. Afterwards there is no op
   that creates a company (the "create business" entry points are hidden in `local`, plan §7.3).
 - **B-2** An edit writes one key at a time, as `BusinessService.editProfile` does today
   (`{KEY: value}`). An empty string clears an optional field. `name` can't be cleared
@@ -54,6 +54,9 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 - **B-8** Logo: an image upload (see `protocol-v1.md`, files), at most 5 MB, `png`/`jpeg`/`webp`.
   The engine keeps the original and a 256 px square version. Replacing it keeps the old file
   until the next backup rotation, then drops it.
+- **B-9** `timezone` is nullable, as in the cloud. `null` means the country's default zone (the
+  `countries` catalogue carries one per country); the setup form proposes the master's OS zone.
+  An edit is checked against the IANA list (`invalid_timezone`); an empty value clears it.
 
 ### Ops
 
@@ -157,9 +160,9 @@ copy**, so every client of one master sees the same version even if clients run 
 
 ## Open questions
 
-1. Does the cloud expose `timeZone` for a company, or is it derived from the country? The
-   engine needs it for day boundaries. If the cloud derives it, hybrid sync maps country → zone
-   and a local override is kept local.
-2. The `credit` flag on settlement kinds: the app knows `account` = credit sale only from notes
-   (`MoneySummary.credit`). Proposed: the vocabulary gets `credit: true` on `account`, and the
+1. ~~Time zone in the cloud.~~ Answered: the cloud stores `timezone` on the company (profile
+   `GET`/`PUT`, `TIMEZONE` on create and edit), nullable, falling back to the country's default
+   zone (B-9). It syncs like any other profile key.
+2. The `credit` flag on settlement kinds. *Deferred with credit itself* (`money.md`,
+   money.receivable). Proposal kept: the vocabulary gets `credit: true` on `account`, and the
    engine reads the flag (README, vocabularies).

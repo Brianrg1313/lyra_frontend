@@ -222,6 +222,8 @@ phase 5 and get their own spec then (`specs/operations.md`).
 
 ## Open questions
 
+Both are moved to the plan's risks (§15) and decided in phase 3.
+
 1. CPace or SPAKE2 for the code pairing? Proposed: **CPace** (simpler, one round trip, IETF
    draft with test vectors). Either needs a vetted Dart implementation or a small FFI binding;
    that choice is made in phase 3, with a security review.

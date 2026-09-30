@@ -56,8 +56,7 @@ history keeps reading after a product is renamed or deleted.
 | `return` | `returns +n` | `customer`, `defective`, `wrong_item`, `warranty` |
 
 A returned unit leaves `returns` through an `add` with reason `return` (back on the shelf) or a
-`remove` with reason `damage` / `correction` (discarded); both also take `returns −n`.
-(Open question 2.)
+`remove` with reason `damage` / `correction` (discarded); both also take `returns −n`, in the same movement.
 
 ### Rules
 
@@ -155,7 +154,8 @@ The stock screen's list: one row per product of the primary table.
 ## Open questions
 
 1. ~~Untracked products.~~ Decided: sold without holds, never refused (ST-1).
-2. What happens to `returns` when a returned unit is approved or discarded: is it taken out of
-   `returns` by the same movement (proposed), or by a separate one?
-3. Should manual reservations (`reserve` from the stock screen) be allowed to expire? The model
-   has `expiresAt`, and the app never sends one. Proposed: no expiry offline.
+2. ~~Returns.~~ Decided: the same movement takes the unit out of `returns` (the `return` /
+   `damage` / `correction` rows above).
+3. ~~Expiring manual holds.~~ Decided: no expiry. In the cloud only the holds a WhatsApp bot
+   places expire (a separate service releases them), and bots don't exist offline. `expires`
+   stays in the data for hybrid, where a pulled-down bot hold keeps its date.
