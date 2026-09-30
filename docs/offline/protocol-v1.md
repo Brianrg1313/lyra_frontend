@@ -64,35 +64,63 @@ the order the master **receives** them, one at a time (one writer, plan principl
 
 ## 3. Pairing (`/pair`)
 
-Plan §5.3. The device has no certificate yet; the master shows a QR or an 8-digit code
-(`session.md`, `pairing.start`).
+Plan §5.3. The device has no certificate yet; the master shows a QR and an 8-digit code
+(`session.md`, `pairing.start`). Code: `lyra_protocol` (`pairDevice`) on the device, `lyra_node`
+(`PairingDesk`) on the master.
 
-**With the QR** (it holds `{addresses, port, instanceId, caFingerprint, pairingToken}`):
-1. The client connects to `/pair` and checks that the server certificate chains to a CA whose
-   SHA-256 fingerprint is `caFingerprint`. Otherwise it stops.
-2. It sends `{pairingToken, csr, device: {name, platform, appVersion}}`. The CSR is for a key the
-   device just created and keeps in its OS key store.
-3. The master answers `{certificate, caCertificate, deviceId, deviceCode, instanceId}`.
+**Both ways run SPAKE2** (RFC 9382, P256-SHA256-HKDF-HMAC). The secret is the typed code or the
+QR's `token`; it is never sent. An attacker in the middle gets one guess per exchange and nothing
+to test offline; a wrong exchange counts one failure, and three void the pairing (S-40). The
+device is party A (`idA = "lyra-device"`), the master party B (`idB = instanceId`), and
+`w = SHA-512(len‖"lyra/pairing/v1" ‖ len‖instanceId ‖ len‖secret) mod n`, so the same code for another
+master is another secret. (Chosen over CPace: RFC 9382 is final and has test vectors for this
+suite, and it needs only point arithmetic; CPace needs hash-to-curve, which no vetted Dart library
+offers. The exchange is retested in the phase 7 review.)
 
-**With the code** (no camera):
-1. The client connects to `/pair` **without** trusting the certificate yet.
-2. Both sides run **CPace** over the connection with the 8-digit code as the password and
-   `instanceId ‖ transcript` as the context. The code itself never travels.
-3. With the key CPace agreed, the master sends the CA certificate and its fingerprint,
-   authenticated (HMAC). The client checks it matches the server certificate it saw.
-4. Then steps 2–3 of the QR flow, inside the authenticated channel.
-- A failed CPace ends the connection and counts one failure. Three failures void the code
-  (S-40).
+The QR is `lyra-pair:` + base64url of `{v: 1, instanceId, addresses, port, caFingerprint, token}`.
+
+The device connects to `/pair` without trusting the certificate yet, and records its SHA-256.
+One JSON object per frame:
+
+```
+master → device  {step: "hello", instanceId, protocol}
+device → master  {step: "start", secret: "code" | "token", pA}
+master → device  {step: "reply", pB}
+device → master  {step: "enroll", confirm: cA, device: {name, platform, appVersion},
+                  publicKey, proof, mac}
+master → device  {step: "paired", confirm: cB, instanceId, caCertificate, serverFingerprint,
+                  certificate, deviceId, deviceCode, mac}
+               | {step: "failed", code: "pairing_failed" | "pairing_expired" | "pairing_closed" | "bad_request"}
+```
+
+- `mac` is HMAC-SHA256 over the canonical JSON of the rest of the message, with
+  `HKDF(Ke, "lyra/pairing/mac")`. `publicKey` is the SPKI of a P-256 key the device just made
+  and keeps in its OS key store; `proof` is its signature of `"lyra/pairing/proof/v1" ‖ cA`, so
+  an enrolment can't carry somebody else's key.
+- The master checks `cA` first: a wrong one is a wrong secret. Then the MAC and the proof. Then it
+  issues the device certificate (none for a browser) and consumes the ticket.
+- The device trusts nothing in `paired` until `cB` and the MAC check out. Then it refuses
+  (`wrong_master`) when `instanceId` differs, when the CA's fingerprint differs from the QR's, or
+  when `serverFingerprint` differs from the certificate TLS showed it: that last one means the TLS
+  connection ends at someone in the middle, even though the code was right.
+- A QR is checked before any secret is used: another `instanceId` in `hello` is `wrong_master`.
 
 After pairing, every `/rpc` connection uses **mutual TLS**: the client presents its device
-certificate, and it pins the installation CA. A revoked certificate is refused during the TLS
-handshake.
+certificate and trusts only the installation CA it received. A revoked certificate still passes TLS
+(it chains to the CA); the master refuses the WebSocket upgrade with `403` before any frame.
+
+**The installation CA has two roots** of one key and one name. Native clients pin the plain one:
+it never leaves Lyra's own TLS context. The one exported for web browsers carries critical name
+constraints (private and link-local ranges, loopback, `.local`, the master's hostname), which
+browsers and OS verifiers enforce. Dart's TLS refuses IP name constraints outright, so a native
+client could not use that one.
 
 **Web** clients pair from the browser with the code flow, run in the page (the CA is already
-trusted by the OS, plan §5.3). The "device certificate" of a browser is a **non-extractable
-WebCrypto key** registered at pairing; each `/rpc` connection starts by signing a
-master-provided challenge with it (`device.prove`), since browsers can't present client
-certificates reliably.
+trusted by the OS, plan §5.3; `serverFingerprint` isn't checked there, the browser verified the
+chain). The "device certificate" of a browser is a **non-extractable WebCrypto key** registered at
+pairing. On `/rpc` without a client certificate, the `hello` answer carries a `challenge`; the
+browser signs `"lyra/device/prove/v1" ‖ 0 ‖ instanceId ‖ 0 ‖ challenge` and sends it with
+`device.prove {deviceId, signature}` before anything else (`DeviceProof` in `lyra_protocol`).
 
 ---
 
@@ -102,20 +130,27 @@ certificates reliably.
    ```json
    {"id": 1, "op": "hello", "args": {"protocol": 1, "app": "0.0.7", "platform": "windows"}}
    ```
-   Answer: `{protocol, engine, minApp, instanceId, state}`. `state` is `ready` or `locked`
-   (passphrase mode, plan §6.2).
+   Answer: `{protocol, engine, minApp, instanceId, state, challenge?}`. `state` is `ready` or
+   `locked` (passphrase mode, plan §6.2). `challenge` (base64, 32 bytes) comes only on a connection
+   without a client certificate: a browser signs it (`device.prove`, §3).
    - A protocol the master doesn't speak → `version_mismatch` with `action: "update"`, and the
      connection closes.
    - `app < minApp` → `update_required` with `action: "update"`.
 2. While `locked`, only `hello` and (from the master's own device) `engine.unlock` are
    accepted; everything else answers `locked`.
-3. `auth.*` ops (`session.md`) give tokens. Then `session.bind {accessToken}` ties the
-   connection to that session. Every later frame runs as that account on that device.
+3. `auth.*` ops (`session.md`) give tokens:
+   `{accessToken, accessExpires, refreshToken, refreshExpires}` (`auth.signIn` adds `accountId` and
+   `mustChangePassword`). Then `session.bind {accessToken}` ties the connection to that session
+   (answer `{accountId, expires}`). Every later frame runs as that account on that device.
 4. Before the access token expires, the client calls `auth.refresh` and `session.bind` again on
    the same connection. A frame that arrives with an expired binding answers `session_expired`
    (`action: "login"` only when the refresh also fails).
 
-Keepalive: WebSocket ping every 20 s; 3 missed pongs close the connection.
+Keepalive: WebSocket ping every 20 s. (`dart:io` closes a connection whose pong doesn't come back
+within one interval, not three; the difference is accepted.)
+
+The master closes the connection after `version_mismatch` (close code 4002), `session_revoked`
+(4003) and when the device is revoked (4001).
 
 ---
 
@@ -222,10 +257,11 @@ phase 5 and get their own spec then (`specs/operations.md`).
 
 ## Open questions
 
-Both are moved to the plan's risks (§15) and decided in phase 3.
+Both answered in phase 3:
 
-1. CPace or SPAKE2 for the code pairing? Proposed: **CPace** (simpler, one round trip, IETF
-   draft with test vectors). Either needs a vetted Dart implementation or a small FFI binding;
-   that choice is made in phase 3, with a security review.
-2. Is a WebCrypto non-extractable key strong enough as a browser's device identity (§3)? It
-   survives until the site data is cleared; clearing it means pairing that browser again.
+1. ~~CPace or SPAKE2?~~ SPAKE2 (RFC 9382), for both the code and the QR (§3). Implemented in
+   `lyra_protocol` over `pointycastle`, with the RFC's vectors as tests. Its EC arithmetic isn't
+   constant time; with a one-use secret, three attempts and a 5-minute life, that is accepted and
+   goes to the phase 7 review.
+2. ~~Is a WebCrypto non-extractable key strong enough as a browser's device identity?~~ Yes, with
+   the stated cost: it survives until the site data is cleared, and then that browser pairs again.

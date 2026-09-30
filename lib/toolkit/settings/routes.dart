@@ -7,6 +7,10 @@ import 'package:app/screens/authentication/code/_code.dart';
 import 'package:app/screens/home/_home.dart';
 import 'package:app/screens/pos/_pos.dart';
 import 'package:app/screens/pre_start/welcome/_welcome.dart';
+import 'package:app/screens/pre_start/deployment/_deployment.dart';
+import 'package:app/screens/pre_start/deployment/master/_master.dart';
+import 'package:app/screens/pre_start/deployment/pair/_pair.dart';
+import 'package:app/screens/pre_start/lan/_lan.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/business/_business_detail.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
@@ -55,6 +59,36 @@ final List<ScreenRoute> routes = [
     key: Welcome.routeKey,
     url: Welcome.path,
     page: (_) => const Welcome()
+  ),
+  // LAN mode (`docs/plan-offline-lan.md` §7.4): choosing how to use Lyra, making
+  // this computer the server or pairing with one, and the LAN landing. Reached
+  // only when `Deployment.lanEnabled` (`initialValidator`).
+  ScreenRoute(
+    animation: _animation,
+    key: DeploymentChooser.routeKey,
+    url: DeploymentChooser.path,
+    page: (_) => const DeploymentChooser()
+  ),
+  ScreenRoute(
+    animation: _animation,
+    key: MasterSetup.routeKey,
+    url: MasterSetup.path,
+    parents: [DeploymentChooser.routeKey],
+    page: (_) => const MasterSetup()
+  ),
+  ScreenRoute(
+    animation: _animation,
+    key: PairDevice.routeKey,
+    url: PairDevice.path,
+    parents: [DeploymentChooser.routeKey],
+    page: (_) => const PairDevice()
+  ),
+  ScreenRoute(
+    animation: _animation,
+    key: LanHome.routeKey,
+    url: LanHome.path,
+    clearHistoryOnExit: true,
+    page: (_) => const LanHome()
   ),
   // Each home section is its own route: it's reflected in the URL and can be
   // opened by deep link, always reusing the same shell (side bar).

@@ -1,8 +1,8 @@
 # Module: tests
 
-**Path** `test` (flat, 113 files, `<subject>_test.dart`)
+**Path** `test` (flat, 120 files, `<subject>_test.dart`)
 **Run** `flutter test` · `flutter test test/<file>_test.dart`
-**Baseline** 1037 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
+**Baseline** 1068 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
 
 Pure logic and small widgets, not whole screens. **No test may hit the network.** Each file's
 `///` header states the rule it pins and why — read it before changing the test.
@@ -24,7 +24,7 @@ Pure logic and small widgets, not whole screens. **No test may hit the network.*
 | Sales | `sales_board` `sales_search` `sales_filters` `sales_detail` `sales_detail_panel` `sales_proof` `sales_approve` `sales_money_layout` `sales_items_panel` | Tabs = `SECTION`; nulls kept; `sale/progress` effects; detail parse nulls; proof from file; approval by conversation; money grid; items virtualized. Seams `SalesService.seed`/`.receive`. |
 | Messages | `messages_inbox` `messages_thread` | Rows by key name; tag codes and catalog; request bodies; socket events on rows (top, handover, stage, tags, attended, pending past page 1); inbox panel at a third of the width with tag chips; messages deduped by id, ticks forward only, rekey, detail marks and tags, `chat/tags` on the open chat, detail `usage` (null ≠ zero). Seams `ChatsService`/`ChatThreadService` `.seed`/`.receive`. |
 | Money | `finance_tabs` `payment_method_form` `account_mask` `money_bot_spend` `finance_bot_block` `finance_overview_layout` `money_currencies` `exchange_currency_form` | Tabs carry no id; request bodies (no `DIRECTION`, blanks/`null`, no rail on edit); rail-driven form; mask; bot spend areas and rendering; currency setup parse (main never an exchange, rate ≤ 0 = none), `RATE` only when custom, account currency/commission (rail currency wins, percent < 100). |
-| Offline engine | `local_server` `protocol_catalogue` | The engine is driven only through `lyra_node` commands, secrets on stdin, started detached only when not already running, never trusted without proof (`unverified`, unknown status); `lyra_protocol`'s ops and common error codes equal `docs/offline/protocol-v1.md`. The engine itself is tested in `lyra_node/test`. |
+| Offline engine | `local_server` `protocol_catalogue` `lan_client` `lan_service` `lan_pairing` `lan_pages` | The engine is driven only through `lyra_node` commands, secrets on stdin, started detached only when not already running, never trusted without proof (`unverified`, unknown status); setup enrols this app with a key it made and keeps it; `lyra_protocol`'s ops and common error codes equal `docs/offline/protocol-v1.md`. The LAN client says hello on connect, tries addresses in order, keeps only the refresh token, refreshes once on `session_expired`, throws `{message, action, code}`; each connect outcome is one `LanStatus` (unpaired, signed out, ready, unreachable, revoked); pairing by code keeps the certificate, a wrong code pairs nothing, a certificate other than TLS's is `wrongMaster`; the deployment and LAN pages draw every state at 1024 and 400 px (the server option only where the engine ships). The engine and the real TLS are tested in `lyra_node/test`. |
 | Core rules | `select_menu` `table_frozen_band` `modal_scroll` | Dropdown height cap; frozen band width includes its divider (else 1 px overflow in every table); a modal's scroll bar lives in its right padding (content inset equal both sides, one scroll holds the modal controller, draggable there). |
 
 `_scratch_create_table_smoke_test.dart` — scratch smoke test, not a contract.

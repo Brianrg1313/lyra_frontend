@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 // SERVICES
+import 'package:app/services/preferences/preferences_service.dart';
+import 'package:app/toolkit/lan.dart' show lanSupported;
 import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
 import 'package:app/services/business/sources/business_source.dart';
@@ -26,8 +28,9 @@ import 'package:app/services/money/sources/money_cloud_source.dart';
 /// - [local]: one desktop install is the master and serves the LAN, no cloud.
 /// - [hybrid]: the master serves the LAN and syncs with the cloud.
 ///
-/// Only [cloud] is reachable until the engine exists (plan phases 2–3): the
-/// other two are named so the seams can already switch on them.
+/// [local] is reachable from phase 3 behind `--dart-define=LYRA_LAN=true`
+/// ([Deployment.lanEnabled]): it is released after plan phase 5. [hybrid] needs
+/// phase 6.
 enum DeploymentMode { cloud, local, hybrid }
 
 /// What this install is in a LAN deployment. Meaningless in [DeploymentMode.cloud].
@@ -47,7 +50,35 @@ abstract final class Deployment {
   /// Null in [DeploymentMode.cloud].
   static DeploymentRole? get role => _role;
 
-  /// Until the boot flow reads it from preferences (plan §7.4) only tests set it.
+  /// Whether this build offers LAN mode: a native build compiled with
+  /// `--dart-define=LYRA_LAN=true`. Without it the app is today's cloud app,
+  /// whatever the preferences say.
+  static bool get lanEnabled => const bool.fromEnvironment("LYRA_LAN") && lanSupported;
+
+  /// Whether this install has chosen a mode yet (a fresh install asks, plan §7.4).
+  static bool get chosen => PreferencesService().deployment != null;
+
+  /// Reads the mode chosen on this device (`preCall`, before the first route).
+  static void restore() {
+    final stored = PreferencesService().deployment?.split("/");
+    final mode = DeploymentMode.values.asNameMap()[stored?.first];
+    final role = stored != null && stored.length > 1 ? DeploymentRole.values.asNameMap()[stored[1]] : null;
+
+    if (mode == null || mode == DeploymentMode.cloud || !lanEnabled || role == null) {
+      _mode = DeploymentMode.cloud;
+      _role = null;
+    } else {
+      _mode = mode;
+      _role = role;
+    }
+  }
+
+  /// Makes [mode] this device's mode from now on (the setup screens).
+  static void choose(DeploymentMode mode, {DeploymentRole? role}) {
+    use(mode, role: role);
+    PreferencesService().deployment = mode == DeploymentMode.cloud ? mode.name : "${mode.name}/${role!.name}";
+  }
+
   @visibleForTesting
   static void use(DeploymentMode mode, {DeploymentRole? role}) {
     _mode = mode;
@@ -70,9 +101,9 @@ abstract final class Sources {
   static SalesSource get sales => _pick(const SalesCloudSource());
   static MoneySource get money => _pick(const MoneyCloudSource());
 
-  /// There is no LAN source before plan phase 4, and nothing reaches another
-  /// mode before phase 3: a call getting here outside the cloud is a bug, not
-  /// a state to recover from.
+  /// There is no LAN source before plan phase 4: in LAN mode the app stays on
+  /// its LAN pages (`/lan`), so a call getting here outside the cloud is a bug,
+  /// not a state to recover from.
   static T _pick<T>(T cloud) => switch (Deployment.mode) {
     DeploymentMode.cloud => cloud,
     DeploymentMode.local || DeploymentMode.hybrid =>

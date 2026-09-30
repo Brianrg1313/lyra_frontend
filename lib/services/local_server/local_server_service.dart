@@ -3,8 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
+import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/lan.dart';
+import 'package:app/services/lan/lan_device.dart';
+import 'package:app/services/lan/lan_identity_store.dart';
 import './node_commands.dart';
 
 /// What the engine on this computer is doing, as `lyra_node status` reports it.
@@ -45,15 +50,20 @@ enum LocalServerStatus {
 /// `lyra_node` command, and the engine proves it is ours with a state file signed by a key
 /// only it reads from the OS vault.
 ///
-/// Not provided app-wide yet: the boot flow and the setup screens use it from phase 3
-/// (`docs/plan-offline-lan.md` §7.4).
+/// The app is also the master's first **device** (plan §3): [setUp], [recover] and [enroll]
+/// make it a key, have the engine certify it, and keep the result ([LanDevice]) in the OS key
+/// store; from then on the app talks to its engine over mutual TLS like any client.
 class LocalServerService extends ChangeNotifier {
-  LocalServerService({NodeCommands? commands, bool? supported})
+  LocalServerService({NodeCommands? commands, bool? supported, LanIdentityStore? store})
     : _supported = supported ?? _desktopWithEngine,
-      _commands = commands ?? ProcessNodeCommands();
+      _commands = commands ?? ProcessNodeCommands(),
+      _store = store ?? const SecureLanIdentityStore();
 
   final bool _supported;
   final NodeCommands _commands;
+  final LanIdentityStore _store;
+
+  bool get supported => _supported;
 
   static bool get _desktopWithEngine =>
     !kIsWeb &&
@@ -97,6 +107,11 @@ class LocalServerService extends ChangeNotifier {
     _version = json["version"] as String?;
     _port = json["port"] as int?;
 
+    final stored = _port == null ? null : await _store.device();
+    if (stored != null && stored.role == DeploymentRole.master && stored.port != _port) {
+      await _store.saveDevice(stored.copyWith(port: _port));
+    }
+
     return _set(_statusOf(json["status"]));
   }
 
@@ -116,6 +131,7 @@ class LocalServerService extends ChangeNotifier {
       return null;
     }
 
+    final key = EcKeyPair.generate();
     final answer = await _run(["setup"], input: jsonEncode({
       "owner": {
         "username": username,
@@ -124,6 +140,7 @@ class LocalServerService extends ChangeNotifier {
         "lastName": lastName,
         "email": ?email,
       },
+      "device": _device(key),
       "passphrase": ?passphrase,
     }));
     final words = answer?.json["recovery"];
@@ -131,10 +148,25 @@ class LocalServerService extends ChangeNotifier {
     if (words is! List) return null;
 
     _instanceId = answer!.json["instanceId"] as String?;
+    await _keep(answer.json, key);
     _set(LocalServerStatus.stopped);
 
     return words.cast<String>();
   }
+
+  /// Certifies a new key for this app when it has none (the key store was wiped, the app was
+  /// reinstalled). Needs the engine stopped; [passphrase] opens it in passphrase mode.
+  Future<bool> enroll({String? passphrase}) async {
+    if (!_supported) return false;
+
+    final key = EcKeyPair.generate();
+    final answer = await _run(["enroll"], input: jsonEncode({"device": _device(key), "passphrase": ?passphrase}));
+
+    return answer != null && await _keep(answer.json, key);
+  }
+
+  /// Whether this app holds its certificate for the master on this computer.
+  Future<bool> get enrolled async => (await _store.device())?.role == DeploymentRole.master;
 
   /// Makes sure the engine runs: attaches to the one already running (after it proved it is
   /// ours), or starts it detached and waits for it. Answers the status it settled in; `ready`
@@ -184,9 +216,43 @@ class LocalServerService extends ChangeNotifier {
   Future<bool> recover(String words, {String? passphrase}) async {
     if (!_supported) return false;
 
-    final answer = await _run(["recover"], input: jsonEncode({"words": words, "passphrase": ?passphrase}));
+    final key = EcKeyPair.generate();
+    final answer = await _run(["recover"], input: jsonEncode({
+      "words": words,
+      "passphrase": ?passphrase,
+      "device": _device(key),
+    }));
 
-    return answer?.json["instanceId"] != null;
+    return answer != null && await _keep(answer.json, key);
+  }
+
+  Map<String, Object?> _device(EcKeyPair key) => {
+    "name": Platform.localHostname,
+    "platform": lanPlatform,
+    "appVersion": lanAppVersion,
+    "publicKey": base64.encode(key.spki),
+  };
+
+  /// Keeps what the engine answered for this app's [key] (`{instanceId, device}`).
+  Future<bool> _keep(Map<String, Object?> json, EcKeyPair key) async {
+    final device = json["device"];
+    if (device is! Map<String, Object?>) return false;
+
+    await _store.saveDevice(LanDevice(
+      role: DeploymentRole.master,
+      instanceId: json["instanceId"] as String,
+      deviceId: device["deviceId"] as String,
+      code: device["code"] as String,
+      caCertificate: base64.decode(device["caCertificate"] as String),
+      certificate: base64.decode(device["certificate"] as String),
+      privateKeyPem: key.privateKeyPem,
+      // The app reaches its own engine on loopback, which the server certificate names.
+      hosts: const ["127.0.0.1"],
+      port: _port ?? defaultPort,
+    ));
+    await _store.saveRefreshToken(null);
+
+    return true;
   }
 
   Future<NodeAnswer?> _run(List<String> command, {String? input}) async {

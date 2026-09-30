@@ -1,0 +1,177 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:lyra_protocol/lyra_protocol.dart';
+
+import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/lan.dart';
+import 'package:app/services/lan/lan_device.dart';
+import 'package:app/services/lan/lan_identity_store.dart';
+
+/// The app's end of `/rpc` (`docs/offline/protocol-v1.md` §4): hello on every connect, the
+/// session bound after sign in, a silent refresh, and failures in the api layer's shape. The
+/// real transport and the real master are tested in `lyra_node/test/net_test.dart`.
+void main() {
+  test('lanAppVersion is the pubspec version', () {
+    final pubspec = File("pubspec.yaml").readAsStringSync();
+    final version = RegExp(r"^version: (\d+\.\d+\.\d+)", multiLine: true).firstMatch(pubspec)!.group(1);
+
+    expect(lanAppVersion, version);
+  });
+
+  test('tries the known addresses in order and puts the one that answered first', () async {
+    final store = MemoryLanIdentityStore();
+    final master = FakeMaster();
+    final client = LanClient(device(hosts: ["10.0.0.9", "192.168.1.5"]), store: store, connect: (device, host) async {
+      if (host == "10.0.0.9") throw const SocketException("no route");
+      return master.connect();
+    });
+
+    final hello = await client.connect();
+
+    expect(hello.state, EngineState.ready);
+    expect(master.received.first["op"], "hello");
+    expect((master.received.first["args"] as Map)["app"], lanAppVersion);
+    expect(store.stored!.hosts, ["192.168.1.5", "10.0.0.9"]);
+  });
+
+  test('no address answering is LanUnreachable', () async {
+    final client = LanClient(device(), store: MemoryLanIdentityStore(), connect: (device, host) async {
+      throw const SocketException("down");
+    });
+
+    await expectLater(client.connect(), throwsA(isA<LanUnreachable>()));
+  });
+
+  test('signs in, keeps only the refresh token, and binds the session', () async {
+    final store = MemoryLanIdentityStore();
+    final master = FakeMaster();
+    final client = LanClient(device(), store: store, connect: (_, _) async => master.connect());
+
+    expect(await client.signIn("ada", "correct horse battery"), isFalse);
+    expect(store.refresh, "refresh-1");
+    expect(master.received.map((frame) => frame["op"]), ["hello", "auth.signIn", "session.bind"]);
+    expect(client.accountId, "owner");
+  });
+
+  test('a session the master says expired is refreshed once and the op sent again', () async {
+    final store = MemoryLanIdentityStore();
+    final master = FakeMaster();
+    final client = LanClient(device(), store: store, connect: (_, _) async => master.connect());
+
+    await client.signIn("ada", "correct horse battery");
+    master.expireNext = true;
+
+    expect(await client.call(Ops.devicesList), isEmpty);
+    expect(store.refresh, "refresh-2");
+    expect(
+      master.received.map((frame) => frame["op"]).skip(3),
+      ["devices.list", "auth.refresh", "session.bind", "devices.list"],
+    );
+  });
+
+  test('a refusal comes as the api layer throws it, {message, action, code}', () async {
+    final master = FakeMaster();
+    final client = LanClient(device(), store: MemoryLanIdentityStore(), connect: (_, _) async => master.connect());
+
+    await expectLater(
+      client.signIn("ada", "wrong"),
+      throwsA(allOf(
+        containsPair("code", "invalid_credentials"),
+        containsPair("message", "Wrong username or password."),
+      )),
+    );
+  });
+}
+
+LanDevice device({List<String> hosts = const ["127.0.0.1"]}) => LanDevice(
+  role: DeploymentRole.client,
+  instanceId: "i1",
+  deviceId: "d1",
+  code: "B",
+  caCertificate: Uint8List(0),
+  certificate: Uint8List(0),
+  privateKeyPem: "",
+  hosts: hosts,
+  port: 4780,
+);
+
+/// A master that answers the handful of ops the client uses, over an in-memory socket.
+class FakeMaster {
+  final List<Map<String, Object?>> received = [];
+  bool locked = false;
+  bool expireNext = false;
+  int _refreshes = 1;
+
+  RpcClient connect() => RpcClient(_Socket(this));
+
+  Object? answer(Map<String, Object?> request) {
+    final args = request["args"] as Map<String, Object?>? ?? const {};
+
+    switch (request["op"]) {
+      case "hello":
+        return HelloAnswer(
+          protocol: 1,
+          engine: "0.2.0",
+          minApp: "0.0.6",
+          instanceId: "i1",
+          state: locked ? EngineState.locked : EngineState.ready,
+        ).toJson();
+      case "auth.signIn":
+        if (args["password"] != "correct horse battery") {
+          throw const RpcError("invalid_credentials", "Wrong username or password.");
+        }
+        return _tokens();
+      case "auth.refresh":
+        return _tokens(++_refreshes);
+      case "session.bind":
+        return {"accountId": "owner", "expires": "2030-01-01T00:00:00Z"};
+      case "devices.list":
+        if (expireNext) {
+          expireNext = false;
+          throw const RpcError("session_expired", "Sign in again.", action: "login");
+        }
+        return const [];
+    }
+
+    throw const RpcError("unknown_op", "");
+  }
+
+  Map<String, Object?> _tokens([int n = 1]) => {
+    "accessToken": "access-$n",
+    "accessExpires": DateTime.now().add(const Duration(minutes: 15)).toUtc().toIso8601String(),
+    "refreshToken": "refresh-$n",
+    "refreshExpires": "2030-01-01T00:00:00Z",
+    "accountId": "owner",
+    "mustChangePassword": false,
+  };
+}
+
+class _Socket implements FrameSocket {
+  _Socket(this._master);
+
+  final FakeMaster _master;
+  final StreamController<String> _out = StreamController();
+
+  @override
+  Stream<String> get frames => _out.stream;
+
+  @override
+  void send(String frame) {
+    final request = jsonDecode(frame) as Map<String, Object?>;
+    _master.received.add(request);
+
+    final id = request["id"] as int;
+    try {
+      _out.add(RpcResponse.ok(id, _master.answer(request)).encode());
+    } on RpcError catch (error) {
+      _out.add(RpcResponse.failed(id, error).encode());
+    }
+  }
+
+  @override
+  Future<void> close() => _out.close();
+}

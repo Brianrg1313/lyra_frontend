@@ -27,13 +27,28 @@ explicit `context.read` helpers). Screens read services through `provider`.
 
 ## local_server/ — the master's engine (`lyra_node`), desktop only
 
-Not provided app-wide yet: the boot flow and the setup screens use it from phase 3 (`docs/plan-offline-lan.md` §7.4).
+Reached through `LanService.server` (the `lan/` services own it).
 
-- `local_server_service.dart` — `LocalServerService` (+ `LocalServerStatus`): `refresh`, `setUp` (answers the 24
-  recovery words once), `start` (attaches to a running engine that proved it is ours, else spawns it detached and waits),
-  `stop`, `recover`; `error` keeps the engine's refusal code. `unavailable` on web/mobile or with no executable.
+- `local_server_service.dart` — `LocalServerService` (+ `LocalServerStatus`): `refresh` (also records the LAN port on the
+  stored device), `setUp` (answers the 24 recovery words once; enrols this app as the master device and keeps its
+  `LanDevice`), `enroll` (a new certificate for this app, engine stopped), `start` (attaches to a running engine that
+  proved it is ours, else spawns it detached and waits), `stop`, `recover` (enrols too); `error` keeps the engine's
+  refusal code. `unavailable` on web/mobile or with no executable.
 - `node_commands.dart` — `NodeCommands` (seam), `ProcessNodeCommands`: runs `lyra_node <command>` (one JSON line out,
   secrets on stdin), `spawn` detached; finds it in `lyra_node/bin/` next to the app's executable, or `LYRA_NODE`.
+
+## lan/ — this install's side of LAN mode (`docs/plan-offline-lan.md` §5, §7.4)
+
+- `lan_device.dart` — `LanDevice`: role, instance, device id and code, pinned CA, certificate, private key (PEM), master
+  addresses (last that answered first) and port.
+- `lan_identity_store.dart` — `LanIdentityStore` (seam): the device and the session's refresh token.
+  `SecureLanIdentityStore` (OS key store via `DatabaseService`), `MemoryLanIdentityStore` (tests).
+- `lan_service.dart` — `LanService` (+ `LanStatus`), app-wide (`lanService`): `open` (on the master, starts the engine
+  first; connects; resumes the stored session), `unlock`, `enrollMaster`, `signIn`, `signOut`, `devices`,
+  `startPairing`, `revoke`, `stopServer`, `leave` (back to cloud). A dropped socket reconnects once (→ `revoked`,
+  `unreachable` or where it was).
+- `lan_pairing_service.dart` — `LanPairingService` (+ `LanPairingError`), flow-scoped (the pairing page): `search` (mDNS),
+  `pair` (code exchange with a fresh key; the device becomes a `local` client).
 
 ## capabilities/
 

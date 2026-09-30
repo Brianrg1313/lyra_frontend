@@ -11,6 +11,7 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channels_service.dart';
@@ -31,6 +32,10 @@ final clientService = ClientService();
 /// populates it from `/init` before the tree is built, onto the same instance
 /// that the side bar's selector and the business section consume.
 final businessService = BusinessService();
+
+/// Single instance of the LAN session (plan §7.4): the boot flow and every LAN page share one
+/// connection to the master.
+final lanService = LanService();
 
 // Wraps the whole app before it is handed to MaterialApp.
 //
@@ -68,6 +73,7 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // Which areas the deployment mode has: the side bar leaves out the ones
     // it doesn't, and in hybrid it changes with the internet.
     ChangeNotifierProvider.value(value: CapabilityService()),
+    ChangeNotifierProvider.value(value: lanService),
     // The state (the list's cache) must survive navigation between the table
     // list and the creation screen, so it lives at the app's scope and not
     // the section's.

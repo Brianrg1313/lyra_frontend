@@ -4,7 +4,12 @@
 protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: the data-source seam,
 `DeploymentMode` and `CapabilityService` are in the app, with only `cloud` reachable. Phase 2 done:
 `lyra_protocol` and `lyra_node` exist (encrypted store, keyring, oplog, audit, owner account, detached
-process), and the app drives the engine through `LocalServerService`; no screen reaches it yet.
+process), and the app drives the engine through `LocalServerService`. Phase 3 done on one computer:
+the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR token, mutual
+TLS, revocation, events, files, web bundle, mDNS), and the app has the setup, pairing and LAN pages
+behind `--dart-define=LYRA_LAN=true`. Still open from phase 3: the browser client (WebCrypto key,
+`device.prove`; the engine side exists), scanning the QR (the QR is issued; pairing uses the code),
+and the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt).
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the
@@ -221,6 +226,12 @@ certificate for its IPs and hostname. The CA's private key stays in the encrypte
 CA carries **X.509 Name Constraints**: it can only vouch for the master's own addresses, never
 for any other site. So installing it on a computer can't be abused to intercept that computer's
 other traffic.
+
+The CA exists as **two self-signed roots of one key and name** (phase 3 finding): native clients
+pin the plain one inside their own TLS context, and only the name-constrained one goes into an OS
+trust store for web. Dart's TLS (BoringSSL) refuses IP name constraints outright, so a native
+client can't verify through the constrained root; every certificate the key signs chains to both
+(`protocol-v1.md` §3).
 
 **Native clients (desktop, Android, iOS): the recommended way to use the LAN.**
 - An admin, signed in on the master, opens "Add device". The master shows a QR and an 8-digit
@@ -560,8 +571,7 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 
 ## 12. Rules to add to CLAUDE.md when phase 1 lands
 
-The first two are in CLAUDE.md since phase 1, the next two since phase 2. The last one goes in with
-the network, in phase 3.
+The first two are in CLAUDE.md since phase 1, the next two since phase 2, the last one since phase 3.
 - A new service call goes through its domain's `XSource`, never `api.*` from a service.
 - A new area in `app-areas.json` declares `modes: ["cloud"]` or `["cloud","local"]`, and the
   capability table reads it.
@@ -609,9 +619,9 @@ the network, in phase 3.
 - **Web setup friction**: installing the CA on each browser computer is extra work. Native
   clients are the recommended path, and web is documented as the secondary option.
 - **Hybrid divergence.** A soak test with scripted outages is the exit criterion, not a unit test.
-- **Pairing crypto** (`protocol-v1.md`, Open questions): CPace needs a vetted Dart
-  implementation or a small FFI binding, and a browser's device identity is a WebCrypto key that
-  clearing the site data destroys (that browser pairs again). Both get the phase 3 security
-  review and are retested in phase 7.
+- **Pairing crypto** (`protocol-v1.md` §3): SPAKE2 (RFC 9382) in pure Dart over `pointycastle`,
+  checked against the RFC's vectors, not constant time; a browser's device identity is a WebCrypto
+  key that clearing the site data destroys (that browser pairs again). Both are retested in the
+  phase 7 review.
 - **LAN environments** (client isolation on Wi-Fi, blocked mDNS, captive firewalls). Mitigated
   by the manual address, QR fallback and the diagnostics screen.

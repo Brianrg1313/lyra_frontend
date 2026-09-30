@@ -17430,6 +17430,826 @@ class S {
       args: [access, area],
     );
   }
+
+  /// `How will you use Lyra?`
+  String get lan_choose_title {
+    return Intl.message(
+      'How will you use Lyra?',
+      name: 'lan_choose_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Online, your company lives in the cloud. On a local network, one computer is the server and the other devices connect to it, with or without internet.`
+  String get lan_choose_subtitle {
+    return Intl.message(
+      'Online, your company lives in the cloud. On a local network, one computer is the server and the other devices connect to it, with or without internet.',
+      name: 'lan_choose_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use Lyra online`
+  String get lan_choose_cloud {
+    return Intl.message(
+      'Use Lyra online',
+      name: 'lan_choose_cloud',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your company lives in the cloud. Sign in from anywhere.`
+  String get lan_choose_cloud_subtitle {
+    return Intl.message(
+      'Your company lives in the cloud. Sign in from anywhere.',
+      name: 'lan_choose_cloud_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This computer is the server`
+  String get lan_choose_master {
+    return Intl.message(
+      'This computer is the server',
+      name: 'lan_choose_master',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep the company on this computer, encrypted, and let the devices on this network connect to it.`
+  String get lan_choose_master_subtitle {
+    return Intl.message(
+      'Keep the company on this computer, encrypted, and let the devices on this network connect to it.',
+      name: 'lan_choose_master_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect to a server`
+  String get lan_choose_client {
+    return Intl.message(
+      'Connect to a server',
+      name: 'lan_choose_client',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Another computer on this network is the server. Pair this device with it.`
+  String get lan_choose_client_subtitle {
+    return Intl.message(
+      'Another computer on this network is the server. Pair this device with it.',
+      name: 'lan_choose_client_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set up this computer as the server`
+  String get lan_master_title {
+    return Intl.message(
+      'Set up this computer as the server',
+      name: 'lan_master_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You'll be the owner. Other people join later with invitations.`
+  String get lan_master_subtitle {
+    return Intl.message(
+      'You\'ll be the owner. Other people join later with invitations.',
+      name: 'lan_master_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Username`
+  String get lan_username_input {
+    return Intl.message(
+      'Username',
+      name: 'lan_username_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ask for a passphrase every time the server starts`
+  String get lan_passphrase_toggle {
+    return Intl.message(
+      'Ask for a passphrase every time the server starts',
+      name: 'lan_passphrase_toggle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Without one, this computer's own sign-in protects the data. With one, nobody can open the data without it: if you forget it, only the recovery key gets the data back.`
+  String get lan_passphrase_hint {
+    return Intl.message(
+      'Without one, this computer\'s own sign-in protects the data. With one, nobody can open the data without it: if you forget it, only the recovery key gets the data back.',
+      name: 'lan_passphrase_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passphrase`
+  String get lan_passphrase_input {
+    return Intl.message(
+      'Passphrase',
+      name: 'lan_passphrase_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I accept the Lyra licence agreement`
+  String get lan_eula_accept {
+    return Intl.message(
+      'I accept the Lyra licence agreement',
+      name: 'lan_eula_accept',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create the server`
+  String get lan_master_create {
+    return Intl.message(
+      'Create the server',
+      name: 'lan_master_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Accept the licence agreement to continue.`
+  String get lan_master_eula_required {
+    return Intl.message(
+      'Accept the licence agreement to continue.',
+      name: 'lan_master_eula_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The username must be 3 to 32 letters, digits, dots, dashes or underscores, starting with a letter.`
+  String get lan_master_invalid_username {
+    return Intl.message(
+      'The username must be 3 to 32 letters, digits, dots, dashes or underscores, starting with a letter.',
+      name: 'lan_master_invalid_username',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The password must have at least 10 characters.`
+  String get lan_master_weak_password {
+    return Intl.message(
+      'The password must have at least 10 characters.',
+      name: 'lan_master_weak_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This computer is already a server. Go back and choose it again to open it.`
+  String get lan_master_exists {
+    return Intl.message(
+      'This computer is already a server. Go back and choose it again to open it.',
+      name: 'lan_master_exists',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write down your recovery key`
+  String get lan_recovery_title {
+    return Intl.message(
+      'Write down your recovery key',
+      name: 'lan_recovery_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `These 24 words are the only way to get the data back if this computer's keys are lost. Lyra keeps no copy: without them the data is gone for good.`
+  String get lan_recovery_subtitle {
+    return Intl.message(
+      'These 24 words are the only way to get the data back if this computer\'s keys are lost. Lyra keeps no copy: without them the data is gone for good.',
+      name: 'lan_recovery_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I wrote the 24 words down and keep them somewhere safe`
+  String get lan_recovery_confirm {
+    return Intl.message(
+      'I wrote the 24 words down and keep them somewhere safe',
+      name: 'lan_recovery_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm you wrote the words down first. They won't be shown again.`
+  String get lan_recovery_required {
+    return Intl.message(
+      'Confirm you wrote the words down first. They won\'t be shown again.',
+      name: 'lan_recovery_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start the server`
+  String get lan_recovery_continue {
+    return Intl.message(
+      'Start the server',
+      name: 'lan_recovery_continue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pair with the server`
+  String get lan_pair_title {
+    return Intl.message(
+      'Pair with the server',
+      name: 'lan_pair_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On the server, open Lyra and choose Add device. Then type here the code it shows.`
+  String get lan_pair_subtitle {
+    return Intl.message(
+      'On the server, open Lyra and choose Add device. Then type here the code it shows.',
+      name: 'lan_pair_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Looking for servers on this network…`
+  String get lan_pair_searching {
+    return Intl.message(
+      'Looking for servers on this network…',
+      name: 'lan_pair_searching',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No server found. Type its address instead.`
+  String get lan_pair_none {
+    return Intl.message(
+      'No server found. Type its address instead.',
+      name: 'lan_pair_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Servers on this network`
+  String get lan_pair_found {
+    return Intl.message(
+      'Servers on this network',
+      name: 'lan_pair_found',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Server address`
+  String get lan_pair_address_input {
+    return Intl.message(
+      'Server address',
+      name: 'lan_pair_address_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Port`
+  String get lan_pair_port_input {
+    return Intl.message(
+      'Port',
+      name: 'lan_pair_port_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name of this device`
+  String get lan_pair_name_input {
+    return Intl.message(
+      'Name of this device',
+      name: 'lan_pair_name_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pairing code`
+  String get lan_pair_code {
+    return Intl.message(
+      'Pairing code',
+      name: 'lan_pair_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pair`
+  String get lan_pair_submit {
+    return Intl.message('Pair', name: 'lan_pair_submit', desc: '', args: []);
+  }
+
+  /// `That code didn't work. Check it, or add the device again on the server for a new one.`
+  String get lan_pair_wrong_code {
+    return Intl.message(
+      'That code didn\'t work. Check it, or add the device again on the server for a new one.',
+      name: 'lan_pair_wrong_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something on this network answered in place of the server, so pairing was stopped to protect you. Check the address, and that you're on the right network.`
+  String get lan_pair_wrong_master {
+    return Intl.message(
+      'Something on this network answered in place of the server, so pairing was stopped to protect you. Check the address, and that you\'re on the right network.',
+      name: 'lan_pair_wrong_master',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No Lyra server answered at that address.`
+  String get lan_pair_unreachable {
+    return Intl.message(
+      'No Lyra server answered at that address.',
+      name: 'lan_pair_unreachable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search again`
+  String get lan_search_again {
+    return Intl.message(
+      'Search again',
+      name: 'lan_search_again',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use Lyra another way`
+  String get lan_other_mode {
+    return Intl.message(
+      'Use Lyra another way',
+      name: 'lan_other_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connecting to the server…`
+  String get lan_connecting {
+    return Intl.message(
+      'Connecting to the server…',
+      name: 'lan_connecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The server is locked`
+  String get lan_locked_title {
+    return Intl.message(
+      'The server is locked',
+      name: 'lan_locked_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type the passphrase to unlock the data.`
+  String get lan_locked_master {
+    return Intl.message(
+      'Type the passphrase to unlock the data.',
+      name: 'lan_locked_master',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ask someone to unlock it on the server computer.`
+  String get lan_locked_client {
+    return Intl.message(
+      'Ask someone to unlock it on the server computer.',
+      name: 'lan_locked_client',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlock`
+  String get lan_unlock {
+    return Intl.message('Unlock', name: 'lan_unlock', desc: '', args: []);
+  }
+
+  /// `Connect this app to the server`
+  String get lan_enroll_title {
+    return Intl.message(
+      'Connect this app to the server',
+      name: 'lan_enroll_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This computer is the server, but this app lost its key. It gets a new one now. If the server asks for a passphrase when it starts, type it; otherwise leave it empty.`
+  String get lan_enroll_subtitle {
+    return Intl.message(
+      'This computer is the server, but this app lost its key. It gets a new one now. If the server asks for a passphrase when it starts, type it; otherwise leave it empty.',
+      name: 'lan_enroll_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect`
+  String get lan_enroll {
+    return Intl.message('Connect', name: 'lan_enroll', desc: '', args: []);
+  }
+
+  /// `Sign in`
+  String get lan_sign_in_title {
+    return Intl.message(
+      'Sign in',
+      name: 'lan_sign_in_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use the username and password of your account on this server.`
+  String get lan_sign_in_subtitle {
+    return Intl.message(
+      'Use the username and password of your account on this server.',
+      name: 'lan_sign_in_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The server isn't answering`
+  String get lan_unreachable_title {
+    return Intl.message(
+      'The server isn\'t answering',
+      name: 'lan_unreachable_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The server on this computer is stopped.`
+  String get lan_unreachable_master {
+    return Intl.message(
+      'The server on this computer is stopped.',
+      name: 'lan_unreachable_master',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ask someone to open Lyra on the server computer, and check this device is on the same network.`
+  String get lan_unreachable_client {
+    return Intl.message(
+      'Ask someone to open Lyra on the server computer, and check this device is on the same network.',
+      name: 'lan_unreachable_client',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get lan_retry {
+    return Intl.message('Try again', name: 'lan_retry', desc: '', args: []);
+  }
+
+  /// `Start the server`
+  String get lan_start_server {
+    return Intl.message(
+      'Start the server',
+      name: 'lan_start_server',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device was removed`
+  String get lan_revoked_title {
+    return Intl.message(
+      'This device was removed',
+      name: 'lan_revoked_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An admin removed it from the server. Pair it again to keep using it.`
+  String get lan_revoked_subtitle {
+    return Intl.message(
+      'An admin removed it from the server. Pair it again to keep using it.',
+      name: 'lan_revoked_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pair again`
+  String get lan_pair_again {
+    return Intl.message(
+      'Pair again',
+      name: 'lan_pair_again',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device isn't paired`
+  String get lan_unpaired_title {
+    return Intl.message(
+      'This device isn\'t paired',
+      name: 'lan_unpaired_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pair it with the server, or use Lyra another way.`
+  String get lan_unpaired_subtitle {
+    return Intl.message(
+      'Pair it with the server, or use Lyra another way.',
+      name: 'lan_unpaired_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update Lyra`
+  String get lan_update_title {
+    return Intl.message(
+      'Update Lyra',
+      name: 'lan_update_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This app and the server don't speak the same version. Update Lyra on both.`
+  String get lan_update_subtitle {
+    return Intl.message(
+      'This app and the server don\'t speak the same version. Update Lyra on both.',
+      name: 'lan_update_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The server couldn't start`
+  String get lan_error_title {
+    return Intl.message(
+      'The server couldn\'t start',
+      name: 'lan_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Code: {code}`
+  String lan_error_code(Object code) {
+    return Intl.message(
+      'Code: $code',
+      name: 'lan_error_code',
+      desc: '',
+      args: [code],
+    );
+  }
+
+  /// `Use Lyra another way`
+  String get lan_leave {
+    return Intl.message(
+      'Use Lyra another way',
+      name: 'lan_leave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stop using this server here?`
+  String get lan_leave_title {
+    return Intl.message(
+      'Stop using this server here?',
+      name: 'lan_leave_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device forgets its pairing and goes back to choosing how to use Lyra. The server and its data stay as they are.`
+  String get lan_leave_message {
+    return Intl.message(
+      'This device forgets its pairing and goes back to choosing how to use Lyra. The server and its data stay as they are.',
+      name: 'lan_leave_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connected to the server`
+  String get lan_ready_title {
+    return Intl.message(
+      'Connected to the server',
+      name: 'lan_ready_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The company's sections arrive here in the next versions. For now, this is where the server's devices are managed.`
+  String get lan_ready_subtitle {
+    return Intl.message(
+      'The company\'s sections arrive here in the next versions. For now, this is where the server\'s devices are managed.',
+      name: 'lan_ready_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device: {code}`
+  String lan_device_code(Object code) {
+    return Intl.message(
+      'This device: $code',
+      name: 'lan_device_code',
+      desc: '',
+      args: [code],
+    );
+  }
+
+  /// `Server fingerprint`
+  String get lan_fingerprint {
+    return Intl.message(
+      'Server fingerprint',
+      name: 'lan_fingerprint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Devices`
+  String get lan_devices {
+    return Intl.message('Devices', name: 'lan_devices', desc: '', args: []);
+  }
+
+  /// `online`
+  String get lan_devices_online {
+    return Intl.message(
+      'online',
+      name: 'lan_devices_online',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `removed`
+  String get lan_devices_revoked {
+    return Intl.message(
+      'removed',
+      name: 'lan_devices_revoked',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `server`
+  String get lan_devices_master {
+    return Intl.message(
+      'server',
+      name: 'lan_devices_master',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove`
+  String get lan_devices_remove {
+    return Intl.message(
+      'Remove',
+      name: 'lan_devices_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove {name}?`
+  String lan_devices_remove_title(Object name) {
+    return Intl.message(
+      'Remove $name?',
+      name: 'lan_devices_remove_title',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Its sessions end now, and it can't connect again until it's paired again.`
+  String get lan_devices_remove_message {
+    return Intl.message(
+      'Its sessions end now, and it can\'t connect again until it\'s paired again.',
+      name: 'lan_devices_remove_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add device`
+  String get lan_add_device {
+    return Intl.message(
+      'Add device',
+      name: 'lan_add_device',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type this code on the new device`
+  String get lan_pairing_code {
+    return Intl.message(
+      'Type this code on the new device',
+      name: 'lan_pairing_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It works for 5 minutes and for one device.`
+  String get lan_pairing_expires {
+    return Intl.message(
+      'It works for 5 minutes and for one device.',
+      name: 'lan_pairing_expires',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign out`
+  String get lan_sign_out {
+    return Intl.message('Sign out', name: 'lan_sign_out', desc: '', args: []);
+  }
+
+  /// `Stop the server`
+  String get lan_stop_server {
+    return Intl.message(
+      'Stop the server',
+      name: 'lan_stop_server',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stop the server?`
+  String get lan_stop_server_title {
+    return Intl.message(
+      'Stop the server?',
+      name: 'lan_stop_server_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} other devices are connected. Every device stops working until the server starts again.`
+  String lan_stop_server_message(Object count) {
+    return Intl.message(
+      '$count other devices are connected. Every device stops working until the server starts again.',
+      name: 'lan_stop_server_message',
+      desc: '',
+      args: [count],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

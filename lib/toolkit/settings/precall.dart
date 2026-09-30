@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/services/database/database_service.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
+import 'package:app/toolkit/deployment.dart';
 import 'package:core/core.dart';
 
 import 'package:window_manager/window_manager.dart';
@@ -19,6 +20,9 @@ Future<void> preCall() async {
   // After `AppController.instance` (run by `starter` before this): it applies
   // the stored theme and language to it, so the first frame already has them.
   await PreferencesService.preload();
+
+  // Before the first route: the boot flow branches on the mode (plan §7.4).
+  Deployment.restore();
 
   if (controller.isWindows) {
     const windowOptions = WindowOptions(
