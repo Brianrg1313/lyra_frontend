@@ -40,15 +40,16 @@ Reached through `LanService.server` (the `lan/` services own it).
 ## lan/ — this install's side of LAN mode (`docs/plan-offline-lan.md` §5, §7.4)
 
 - `lan_device.dart` — `LanDevice`: role, instance, device id and code, pinned CA, certificate, private key (PEM), master
-  addresses (last that answered first) and port.
+  addresses (last that answered first) and port. A browser's has no certificate and no PEM (its key is in IndexedDB).
 - `lan_identity_store.dart` — `LanIdentityStore` (seam): the device and the session's refresh token.
   `SecureLanIdentityStore` (OS key store via `DatabaseService`), `MemoryLanIdentityStore` (tests).
 - `lan_service.dart` — `LanService` (+ `LanStatus`), app-wide (`lanService`): `open` (on the master, starts the engine
   first; connects; resumes the stored session), `unlock`, `enrollMaster`, `signIn`, `signOut`, `devices`,
-  `startPairing`, `revoke`, `stopServer`, `leave` (back to cloud). A dropped socket reconnects once (→ `revoked`,
+  `startPairing`, `revoke`, `browserCa`, `stopServer`, `leave` (back to cloud; a browser asks again). A dropped socket reconnects once (→ `revoked`,
   `unreachable` or where it was).
 - `lan_pairing_service.dart` — `LanPairingService` (+ `LanPairingError`), flow-scoped (the pairing page): `search` (mDNS),
-  `pair` (code exchange with a fresh key; the device becomes a `local` client).
+  `pair` (code exchange with a fresh key; the device becomes a `local` client), `pairScanned` (a QR: its token, each of its
+  addresses until one answers).
 
 ## capabilities/
 

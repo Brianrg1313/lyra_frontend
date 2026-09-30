@@ -5,11 +5,17 @@ protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: t
 `DeploymentMode` and `CapabilityService` are in the app, with only `cloud` reachable. Phase 2 done:
 `lyra_protocol` and `lyra_node` exist (encrypted store, keyring, oplog, audit, owner account, detached
 process), and the app drives the engine through `LocalServerService`. Phase 3 done on one computer:
-the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR token, mutual
-TLS, revocation, events, files, web bundle, mDNS), and the app has the setup, pairing and LAN pages
-behind `--dart-define=LYRA_LAN=true`. Still open from phase 3: the browser client (WebCrypto key,
-`device.prove`; the engine side exists), scanning the QR (the QR is issued; pairing uses the code),
-and the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt).
+the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR, mutual TLS,
+revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages behind
+`--dart-define=LYRA_LAN=true`: phones scan the QR, desktops type the code, and the web build the master
+serves pairs, keeps a WebCrypto key and proves itself (checked in a real Chrome,
+`lyra_node/test/browser_e2e_test.dart`). A paired native device installs the browsers' root (Windows,
+macOS) or saves it for another computer. The web build is made with
+`flutter build web --release --dart-define=LYRA_LAN=true --no-web-resources-cdn` and served from
+`lyra_node/web` next to the engine (`LYRA_WEB` while developing); shipping it is phase 5. Still open from
+phase 3: the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt), which
+also covers what no test here can reach: the camera, the OS trust-store dialogs (`certutil`, `security`),
+and Firefox, which may keep its own store.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the
@@ -254,7 +260,9 @@ in LAN mode **only works on a computer where the installation CA is installed**:
 - Otherwise, the admin exports the CA to a USB drive from the master's admin screen and installs
   it on the other computer.
 - As a last resort it can be downloaded, but the OS install dialog shows the fingerprint, and
-  the setup guide requires checking it against the one on the master's screen.
+  the setup guide requires checking it against the one on the master's screen. (Not built in
+  phase 3: the two ways above cover it, and a download over a connection the browser doesn't
+  trust yet is the warning this section refuses.)
 - Without the CA, the browser shows its certificate error and Lyra's setup guide explains why
   it must not be bypassed.
 - Web sessions are also bound to the pairing: the first sign in from a browser needs a pairing

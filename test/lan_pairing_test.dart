@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
@@ -55,6 +56,56 @@ void main() {
     expect(store.stored, isNull);
   });
 
+  group('a scanned QR', () {
+    PairingOffer offer({String? caFingerprint}) => PairingOffer(
+      instanceId: _ScriptedMaster.instanceId,
+      addresses: const ["10.0.0.9", "192.168.1.5"],
+      port: 4780,
+      caFingerprint: caFingerprint ?? Fingerprint.of(utf8.encode("ca")),
+      token: "the-qr-token",
+    );
+
+    test('pairs with its token, on the first of its addresses that answers', () async {
+      final store = MemoryLanIdentityStore();
+      final tried = <String>[];
+      final pairing = LanPairingService(store: store, open: (host, port) async {
+        tried.add(host);
+        if (host == "10.0.0.9") throw StateError("no route");
+        return LanPairingSocket(_ScriptedMaster("the-qr-token"), () async {});
+      });
+
+      expect(await pairing.pairScanned(offer(), name: "Phone"), isNull);
+      expect(tried, ["10.0.0.9", "192.168.1.5"]);
+      expect(store.stored!.hosts, ["192.168.1.5"]);
+    });
+
+    test('a CA other than the one in the QR is someone in the middle; no other address is tried', () async {
+      final tried = <String>[];
+      final pairing = LanPairingService(store: MemoryLanIdentityStore(), open: (host, port) async {
+        tried.add(host);
+        return LanPairingSocket(_ScriptedMaster("the-qr-token"), () async {});
+      });
+
+      expect(await pairing.pairScanned(offer(caFingerprint: "0" * 64), name: "Phone"), LanPairingError.wrongMaster);
+      expect(tried, ["10.0.0.9"]);
+    });
+  });
+
+  test('a browser keeps no certificate and no PEM: its WebCrypto key is kept apart', () async {
+    final store = MemoryLanIdentityStore();
+    final key = _BrowserKey();
+    final pairing = LanPairingService(
+      store: store,
+      open: (host, port) async => LanPairingSocket(_ScriptedMaster("12345678", seen: null, browser: true), () async {}),
+      newKey: () async => key,
+    );
+
+    expect(await pairing.pair(host: "192.168.1.5", port: 4780, code: "12345678", name: "Browser"), isNull);
+    expect(key.kept, isTrue);
+    expect(store.stored!.certificate, isEmpty);
+    expect(store.stored!.privateKeyPem, isEmpty);
+  });
+
   test('servers found by mDNS are listed', () async {
     final pairing = service(MemoryLanIdentityStore(), _ScriptedMaster("1"));
 
@@ -66,7 +117,11 @@ void main() {
 
 /// The master's side of `/pair`, scripted: hello, reply, then `paired` with a made-up CA.
 class _ScriptedMaster implements PairingChannel {
-  _ScriptedMaster(this.code, {String? seen}) : serverFingerprint = seen ?? _serverFingerprint;
+  _ScriptedMaster(this.code, {String? seen = "", this.browser = false})
+    : serverFingerprint = seen == "" ? _serverFingerprint : seen;
+
+  /// A browser pairs through the page's TLS, which shows no certificate, and gets none.
+  final bool browser;
 
   static const instanceId = "0192f0aa-1111-7000-8000-000000000001";
   static final _server = utf8.encode("server certificate");
@@ -116,10 +171,28 @@ class _ScriptedMaster implements PairingChannel {
           "instanceId": instanceId,
           "caCertificate": base64.encode(utf8.encode("ca")),
           "serverFingerprint": _serverFingerprint,
-          "certificate": base64.encode(utf8.encode("device certificate")),
+          "certificate": browser ? null : base64.encode(utf8.encode("device certificate")),
           "deviceId": "d3",
           "deviceCode": "C",
         }, macKey));
     }
   }
+}
+
+/// A browser's device key, as `lan_web.dart` makes it: no PEM, kept on its own.
+class _BrowserKey implements LanDeviceKey {
+  final _key = EcKeyPair.generate();
+  bool kept = false;
+
+  @override
+  Uint8List get spki => _key.spki;
+
+  @override
+  Future<Uint8List> sign(List<int> message) async => _key.sign(message);
+
+  @override
+  String? get privateKeyPem => null;
+
+  @override
+  Future<void> keep() async => kept = true;
 }

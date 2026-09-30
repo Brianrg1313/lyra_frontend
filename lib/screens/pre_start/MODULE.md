@@ -29,21 +29,28 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `deployment/master/_master.dart` — `MasterSetup extends PageBuilder`.
 - `deployment/master/desktop/_body.dart` — owner form, optional passphrase, licence tick → `LocalServerService.setUp` →
   the 24 words (`RecoveryWords`) with a required "written down" tick → `local`/`master` → `/lan`.
-- `deployment/pair/_pair.dart` — `PairDevice extends PageBuilder`: provides `LanPairingService` (searches at once).
-- `deployment/pair/desktop/_body.dart` — found servers fill the address; address, port, device name, 8-digit `CodeInput`;
-  wrong code / someone in the middle / unreachable each say so.
+- `deployment/pair/_pair.dart` — `PairDevice extends PageBuilder`: provides `LanPairingService` (searches at once, not on
+  web).
+- `deployment/pair/desktop/_body.dart` — phones: "scan the QR" (`QrScanner` in a modal); found servers fill the address;
+  address, port, device name, 8-digit `CodeInput`; a browser shows only the master it was served by, the name and the
+  code; wrong code / someone in the middle / unreachable each say so.
+- `deployment/pair/widgets/qr_scanner.dart` — `QrScanner`: camera (`mobile_scanner`), the first Lyra `PairingOffer` read
+  closes the modal; another QR is said to be foreign.
 - `deployment/widgets/deployment_frame.dart` — `DeploymentFrame` (centered column, title, subtitle), `DeploymentCheck`
   (tick + label), `DeploymentNote` (note or error line).
 - `deployment/widgets/recovery_words.dart` — `RecoveryWords`: numbered, three per row, selectable.
 - `lan/_lan.dart` — `LanHome extends PageBuilder`.
 - `lan/desktop/_body.dart` — one view per `LanStatus`: connecting, locked (master: `LanUnlock`), signed out
   (`LanSignIn`), ready (`LanConnected`), unpaired (master: `LanUnlock(enroll: true)`), unreachable, revoked, update,
-  error; "use Lyra another way" (`LanService.leave`, confirmed).
+  error; "use Lyra another way" (`LanService.leave`, confirmed; not in a browser).
 - `lan/widgets/lan_sign_in.dart` — `LanSignIn`: username + password → `LanService.signIn`.
 - `lan/widgets/lan_unlock.dart` — `LanUnlock`: the passphrase → `engine.unlock`, or with `enroll` → `enrollMaster`.
 - `lan/widgets/lan_connected.dart` — `LanConnected`: this device's code and the CA fingerprint; the devices list
-  (refreshed every 5 s, online / server / removed), remove (confirmed), "Add device" on the master (the code to type);
-  sign out; stop the server (confirmed, counts connected devices).
+  (refreshed every 5 s, online / server / removed), remove (confirmed), "Add device" on the master (the code to type and
+  `PairingQr`); `LanBrowsers` on native devices; sign out; stop the server (confirmed, counts connected devices).
+- `lan/widgets/lan_browsers.dart` — `LanBrowsers`: the browsers' root (`devices.browserCa`): SHA-256 and SHA-1
+  fingerprints, the web address, install on this computer (Windows, macOS) or save as `.crt`.
+- `lan/widgets/pairing_qr.dart` — `PairingQr`: the pairing QR painted from `package:qr`, always black on white.
 - `welcome/widgets/invitation_card.dart` — `InvitationCard`: full-width card drawn first, large company `BusinessAvatar` + title + position + "Review" button.
 
 ## Invariants

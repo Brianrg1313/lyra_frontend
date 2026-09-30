@@ -18216,6 +18216,186 @@ class S {
     );
   }
 
+  /// `Or, on a phone, scan this QR with Lyra.`
+  String get lan_pairing_scan {
+    return Intl.message(
+      'Or, on a phone, scan this QR with Lyra.',
+      name: 'lan_pairing_scan',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan the QR on the server`
+  String get lan_scan_button {
+    return Intl.message(
+      'Scan the QR on the server',
+      name: 'lan_scan_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan the server's QR`
+  String get lan_scan_title {
+    return Intl.message(
+      'Scan the server\'s QR',
+      name: 'lan_scan_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Point the camera at the QR on the server's screen.`
+  String get lan_scan_hint {
+    return Intl.message(
+      'Point the camera at the QR on the server\'s screen.',
+      name: 'lan_scan_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That QR isn't a Lyra pairing code. Scan the one on the server's screen.`
+  String get lan_scan_foreign {
+    return Intl.message(
+      'That QR isn\'t a Lyra pairing code. Scan the one on the server\'s screen.',
+      name: 'lan_scan_foreign',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The camera isn't available. Allow Lyra to use it, or type the code instead.`
+  String get lan_scan_no_camera {
+    return Intl.message(
+      'The camera isn\'t available. Allow Lyra to use it, or type the code instead.',
+      name: 'lan_scan_no_camera',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Or type the code it shows`
+  String get lan_pair_or_code {
+    return Intl.message(
+      'Or type the code it shows',
+      name: 'lan_pair_or_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This browser will pair with the server at {address}.`
+  String lan_pair_browser(String address) {
+    return Intl.message(
+      'This browser will pair with the server at $address.',
+      name: 'lan_pair_browser',
+      desc: '',
+      args: [address],
+    );
+  }
+
+  /// `Web browsers`
+  String get lan_browsers_title {
+    return Intl.message(
+      'Web browsers',
+      name: 'lan_browsers_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A browser opens Lyra from the server only on a computer that trusts this server's certificate. Install it here, or save it and install it on the other computer.`
+  String get lan_browsers_subtitle {
+    return Intl.message(
+      'A browser opens Lyra from the server only on a computer that trusts this server\'s certificate. Install it here, or save it and install it on the other computer.',
+      name: 'lan_browsers_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Certificate fingerprint (SHA-256)`
+  String get lan_browsers_fingerprint {
+    return Intl.message(
+      'Certificate fingerprint (SHA-256)',
+      name: 'lan_browsers_fingerprint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Windows shows it as its thumbprint (SHA-1)`
+  String get lan_browsers_thumbprint {
+    return Intl.message(
+      'Windows shows it as its thumbprint (SHA-1)',
+      name: 'lan_browsers_thumbprint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Install on this computer`
+  String get lan_browsers_install {
+    return Intl.message(
+      'Install on this computer',
+      name: 'lan_browsers_install',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Installed. Browsers on this computer now trust the server; restart any that were open.`
+  String get lan_browsers_installed {
+    return Intl.message(
+      'Installed. Browsers on this computer now trust the server; restart any that were open.',
+      name: 'lan_browsers_installed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It wasn't installed. You can save it and install it by hand.`
+  String get lan_browsers_not_installed {
+    return Intl.message(
+      'It wasn\'t installed. You can save it and install it by hand.',
+      name: 'lan_browsers_not_installed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save the certificate`
+  String get lan_browsers_save {
+    return Intl.message(
+      'Save the certificate',
+      name: 'lan_browsers_save',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Saved. When installing it on the other computer, check that the fingerprint it shows is the one above.`
+  String get lan_browsers_saved {
+    return Intl.message(
+      'Saved. When installing it on the other computer, check that the fingerprint it shows is the one above.',
+      name: 'lan_browsers_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Then open {address} in the browser.`
+  String lan_browsers_open(String address) {
+    return Intl.message(
+      'Then open $address in the browser.',
+      name: 'lan_browsers_open',
+      desc: '',
+      args: [address],
+    );
+  }
+
   /// `Sign out`
   String get lan_sign_out {
     return Intl.message('Sign out', name: 'lan_sign_out', desc: '', args: []);

@@ -1876,6 +1876,34 @@
   "lan_add_device": "Add device",
   "lan_pairing_code": "Type this code on the new device",
   "lan_pairing_expires": "It works for 5 minutes and for one device.",
+  "lan_pairing_scan": "Or, on a phone, scan this QR with Lyra.",
+  "lan_scan_button": "Scan the QR on the server",
+  "lan_scan_title": "Scan the server's QR",
+  "lan_scan_hint": "Point the camera at the QR on the server's screen.",
+  "lan_scan_foreign": "That QR isn't a Lyra pairing code. Scan the one on the server's screen.",
+  "lan_scan_no_camera": "The camera isn't available. Allow Lyra to use it, or type the code instead.",
+  "lan_pair_or_code": "Or type the code it shows",
+  "lan_pair_browser": "This browser will pair with the server at {address}.",
+  "@lan_pair_browser": {
+    "placeholders": {
+      "address": {"type": "String"}
+    }
+  },
+  "lan_browsers_title": "Web browsers",
+  "lan_browsers_subtitle": "A browser opens Lyra from the server only on a computer that trusts this server's certificate. Install it here, or save it and install it on the other computer.",
+  "lan_browsers_fingerprint": "Certificate fingerprint (SHA-256)",
+  "lan_browsers_thumbprint": "Windows shows it as its thumbprint (SHA-1)",
+  "lan_browsers_install": "Install on this computer",
+  "lan_browsers_installed": "Installed. Browsers on this computer now trust the server; restart any that were open.",
+  "lan_browsers_not_installed": "It wasn't installed. You can save it and install it by hand.",
+  "lan_browsers_save": "Save the certificate",
+  "lan_browsers_saved": "Saved. When installing it on the other computer, check that the fingerprint it shows is the one above.",
+  "lan_browsers_open": "Then open {address} in the browser.",
+  "@lan_browsers_open": {
+    "placeholders": {
+      "address": {"type": "String"}
+    }
+  },
   "lan_sign_out": "Sign out",
   "lan_stop_server": "Stop the server",
   "lan_stop_server_title": "Stop the server?",

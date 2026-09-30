@@ -73,6 +73,31 @@ void main() {
     );
   });
 
+  group('a browser', () {
+    test('signs the hello challenge with its key before anything else', () async {
+      final key = EcKeyPair.generate();
+      final master = FakeMaster()..browserKey = key.spki;
+      final client = LanClient(device(), store: MemoryLanIdentityStore(), connect: (_, _) async => master.connect(),
+        prove: (_, message) async => key.sign(message));
+
+      await client.signIn("ada", "correct horse battery");
+
+      expect(master.received.map((frame) => frame["op"]), ["hello", "device.prove", "auth.signIn", "session.bind"]);
+      expect(master.proved, isTrue);
+    });
+
+    test('with no key left, or one the master refuses, is a removed device', () async {
+      final master = FakeMaster()..browserKey = EcKeyPair.generate().spki;
+      final lost = LanClient(device(), store: MemoryLanIdentityStore(), connect: (_, _) async => master.connect(),
+        prove: (_, _) async => null);
+      final other = LanClient(device(), store: MemoryLanIdentityStore(), connect: (_, _) async => master.connect(),
+        prove: (_, message) async => EcKeyPair.generate().sign(message));
+
+      await expectLater(lost.connect(), throwsA(containsPair("code", ErrorCodes.deviceRevoked)));
+      await expectLater(other.connect(), throwsA(containsPair("code", ErrorCodes.deviceRevoked)));
+    });
+  });
+
   test('a refusal comes as the api layer throws it, {message, action, code}', () async {
     final master = FakeMaster();
     final client = LanClient(device(), store: MemoryLanIdentityStore(), connect: (_, _) async => master.connect());
@@ -103,6 +128,11 @@ LanDevice device({List<String> hosts = const ["127.0.0.1"]}) => LanDevice(
 class FakeMaster {
   final List<Map<String, Object?>> received = [];
   bool locked = false;
+
+  /// Set: the client is a browser whose key this is; `hello` carries a challenge.
+  Uint8List? browserKey;
+  final Uint8List _challenge = Uint8List.fromList(List.generate(32, (i) => i));
+  bool proved = false;
   bool expireNext = false;
   int _refreshes = 1;
 
@@ -119,7 +149,15 @@ class FakeMaster {
           minApp: "0.0.6",
           instanceId: "i1",
           state: locked ? EngineState.locked : EngineState.ready,
+          challenge: browserKey == null ? null : _challenge,
         ).toJson();
+      case "device.prove":
+        final signature = base64.decode(args["signature"] as String);
+        if (!P256.verify(browserKey!, DeviceProof.message("i1", _challenge), signature)) {
+          throw const RpcError("forbidden", "Not a paired device.");
+        }
+        proved = true;
+        return {"deviceId": args["deviceId"], "code": "B"};
       case "auth.signIn":
         if (args["password"] != "correct horse battery") {
           throw const RpcError("invalid_credentials", "Wrong username or password.");
@@ -129,6 +167,14 @@ class FakeMaster {
         return _tokens(++_refreshes);
       case "session.bind":
         return {"accountId": "owner", "expires": "2030-01-01T00:00:00Z"};
+      case "devices.browserCa":
+        return {
+          "certificate": base64.encode(utf8.encode("browser root")),
+          "fingerprint": "ab" * 32,
+          "thumbprint": "cd" * 20,
+          "addresses": ["192.168.1.5"],
+          "port": 4780,
+        };
       case "devices.list":
         if (expireNext) {
           expireNext = false;

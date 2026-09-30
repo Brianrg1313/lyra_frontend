@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 // PACKAGES
 import 'package:lyra_protocol/io.dart';
@@ -9,6 +10,7 @@ import 'package:multicast_dns/multicast_dns.dart';
 // SERVICES
 import 'package:app/services/lan/lan_device.dart';
 import './lan_found.dart';
+import './lan_key.dart';
 
 /// Native transport of the LAN client (`lan.dart`): `dart:io` sockets, mutual TLS pinned to
 /// the installation CA, mDNS discovery.
@@ -86,3 +88,44 @@ Future<List<LanFound>> discover({Duration timeout = const Duration(seconds: 3)})
 }
 
 bool get lanSupported => true;
+
+Future<LanDeviceKey> newDeviceKey() async => PemDeviceKey();
+
+/// A native device proves itself with its TLS certificate and the master never challenges it;
+/// should one ask, it signs with the same key.
+Future<Uint8List?> signProof(LanDevice device, List<int> message) async =>
+  device.privateKeyPem.isEmpty ? null : EcKeyPair.fromPem(device.privateKeyPem).sign(message);
+
+/// The key lives in the `LanDevice`, cleared with it.
+Future<void> forgetDeviceKey() async {}
+
+bool get canInstallBrowserCa => Platform.isWindows || Platform.isMacOS;
+
+/// Installs the browsers' root (the name-constrained one, plan §5.3) in this user's trust store,
+/// so a browser on this computer can open the master's web build. The OS asks the person first
+/// (Windows: its security warning; macOS: the account password). False when they say no or
+/// this OS has no way here (Linux: the file is exported instead).
+///
+/// It came over the pinned channel, so nothing on the network could have swapped it.
+Future<bool> installBrowserCa(Uint8List certificate) async {
+  if (!canInstallBrowserCa) return false;
+
+  final folder = await Directory.systemTemp.createTemp("lyra-ca");
+  final file = File("${folder.path}${Platform.pathSeparator}lyra-ca.crt");
+
+  try {
+    await file.writeAsBytes(certificate);
+
+    final result = Platform.isWindows
+      ? await Process.run("certutil", ["-user", "-addstore", "Root", file.path])
+      : await Process.run("security", [
+          "add-trusted-cert", "-r", "trustRoot",
+          "-k", "${Platform.environment["HOME"]}/Library/Keychains/login.keychain-db",
+          file.path,
+        ]);
+
+    return result.exitCode == 0;
+  } finally {
+    await folder.delete(recursive: true);
+  }
+}

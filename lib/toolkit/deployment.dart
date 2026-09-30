@@ -50,9 +50,9 @@ abstract final class Deployment {
   /// Null in [DeploymentMode.cloud].
   static DeploymentRole? get role => _role;
 
-  /// Whether this build offers LAN mode: a native build compiled with
-  /// `--dart-define=LYRA_LAN=true`. Without it the app is today's cloud app,
-  /// whatever the preferences say.
+  /// Whether this build offers LAN mode: a native build, or the web build a
+  /// master serves (plan §3), compiled with `--dart-define=LYRA_LAN=true`.
+  /// Without it the app is today's cloud app, whatever the preferences say.
   static bool get lanEnabled => const bool.fromEnvironment("LYRA_LAN") && lanSupported;
 
   /// Whether this install has chosen a mode yet (a fresh install asks, plan §7.4).
@@ -77,6 +77,13 @@ abstract final class Deployment {
   static void choose(DeploymentMode mode, {DeploymentRole? role}) {
     use(mode, role: role);
     PreferencesService().deployment = mode == DeploymentMode.cloud ? mode.name : "${mode.name}/${role!.name}";
+  }
+
+  /// Forgets the choice: the next start asks again. A browser leaving LAN mode
+  /// does this, as the page it runs from is the master's and has no cloud.
+  static void forget() {
+    use(DeploymentMode.cloud);
+    PreferencesService().deployment = null;
   }
 
   @visibleForTesting

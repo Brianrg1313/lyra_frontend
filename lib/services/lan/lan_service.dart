@@ -48,13 +48,15 @@ enum LanStatus {
 ///
 /// App-wide (`initial_builder.dart`): the boot flow and every LAN page share one connection.
 class LanService extends ChangeNotifier {
-  LanService({LanIdentityStore? store, LocalServerService? server, LanConnect? connect})
+  LanService({LanIdentityStore? store, LocalServerService? server, LanConnect? connect, LanProve? prove})
     : _store = store ?? const SecureLanIdentityStore(),
       _server = server,
-      _connect = connect;
+      _connect = connect,
+      _prove = prove;
 
   final LanIdentityStore _store;
   final LanConnect? _connect;
+  final LanProve? _prove;
   LocalServerService? _server;
   LanClient? _client;
 
@@ -92,7 +94,7 @@ class LanService extends ChangeNotifier {
     if (device == null) return _set(LanStatus.unpaired);
 
     await _drop();
-    _client = LanClient(device, store: _store, connect: _connect);
+    _client = LanClient(device, store: _store, connect: _connect, prove: _prove);
 
     return _connectAndResume();
   }
@@ -150,13 +152,23 @@ class LanService extends ChangeNotifier {
     return stopped;
   }
 
-  /// Leaves LAN mode on this device: forgets the pairing and goes back to the cloud app.
+  /// Leaves LAN mode on this device: forgets the pairing (and a browser's key) and goes back
+  /// to the cloud app. A browser, whose page is the master's, goes back to pairing instead.
   Future<void> leave() async {
     await _drop();
     await _store.clear();
-    Deployment.choose(DeploymentMode.cloud);
+    await forgetDeviceKey();
+    if (kIsWeb) {
+      Deployment.forget();
+    } else {
+      Deployment.choose(DeploymentMode.cloud);
+    }
     _set(LanStatus.idle);
   }
+
+  /// The browsers' root of this installation (`devices.browserCa`): `{certificate, fingerprint}`.
+  Future<Map<String, Object?>> browserCa() async =>
+    (await _client!.call(Ops.devicesBrowserCa)) as Map<String, Object?>;
 
   Future<LanStatus> _connectAndResume() => _guard(() async {
     final client = _client!;

@@ -15,6 +15,8 @@ import 'package:app/screens/pre_start/deployment/desktop/_body.dart' as chooser;
 import 'package:app/screens/pre_start/deployment/master/desktop/_body.dart' as master;
 import 'package:app/screens/pre_start/deployment/pair/desktop/_body.dart' as pair;
 import 'package:app/screens/pre_start/lan/desktop/_body.dart' as landing;
+import 'package:app/screens/pre_start/lan/widgets/pairing_qr.dart';
+import 'package:lyra_protocol/lyra_protocol.dart' show PairingOffer, Pairing;
 
 import 'lan_client_test.dart' show FakeMaster, device;
 
@@ -120,6 +122,10 @@ void main() {
         expect(tester.takeException(), isNull);
         expect(find.text("Connected to the server"), findsOneWidget);
         expect(find.text("This device: B"), findsOneWidget);
+        // A native device hands out the browsers' root, with what the OS will show to compare.
+        expect(find.text("Web browsers"), findsOneWidget);
+        expect(find.text("CDCD CDCD CDCD CDCD CDCD CDCD CDCD CDCD CDCD CDCD"), findsOneWidget);
+        expect(find.text("Then open https://192.168.1.5:4780 in the browser."), findsOneWidget);
         await leave(tester);
       });
 
@@ -131,6 +137,21 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.text("Ask someone to unlock it on the server computer."), findsOneWidget);
+      });
+
+      testWidgets('the pairing QR draws the offer', (tester) async {
+        final offer = PairingOffer(
+          instanceId: "i1",
+          addresses: const ["192.168.1.5"],
+          port: 4780,
+          caFingerprint: "ab" * 32,
+          token: Pairing.newToken(),
+        );
+
+        await pump(tester, Center(child: PairingQr(data: offer.encode())), lan: LanService(), size: size);
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(PairingQr), findsOneWidget);
       });
 
       testWidgets('unpaired, it offers to pair', (tester) async {

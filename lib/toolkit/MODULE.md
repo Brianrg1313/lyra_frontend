@@ -20,14 +20,18 @@ backend, routes and theme. No UI.
     (backend contract: `docs/task-cookie-session-backend.md`). `openSession(token)` — stores the token a sign in answered (no-op in cookie mode).
   - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
 - `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`,
-  `lanEnabled` (native build with `--dart-define=LYRA_LAN=true`), `chosen`, `restore` (from preferences, in `preCall`),
-  `choose` (persists), `use` (tests); `Sources` (one getter per domain: the cloud source, `UnsupportedError` in any other
+  `lanEnabled` (native build, or the web build a master serves, with `--dart-define=LYRA_LAN=true`), `chosen`, `restore`
+  (from preferences, in `preCall`), `choose` (persists), `forget` (asks again next start), `use` (tests); `Sources` (one getter per domain: the cloud source, `UnsupportedError` in any other
   mode until phase 4), `UnreadableAnswer` (an answer its model can't read).
-- `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, sign in + `session.bind`, silent refresh, failures as
-  `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec), `lanPlatform`, `lanSupported`,
-  `discoverMasters`, `openPairingSocket`, `lanFailure`.
-- `lan_io.dart` / `lan_web.dart` — the transport behind `lan.dart` (conditional import): native mutual TLS pinned to the
-  CA (`403` → `device_revoked`) and mDNS; web is a stub until the browser client exists.
+- `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in + `session.bind`,
+  silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
+  `lanPlatform`, `lanSupported`, `lanServingMaster` (web: the page's origin), `lanCanScan` (Android, iOS),
+  `discoverMasters`, `openPairingSocket`, `newDeviceKey`, `signDeviceProof`, `forgetDeviceKey`, `canInstallBrowserCa`,
+  `installBrowserCa`, `saveBrowserCa`, `lanFailure`.
+- `lan_io.dart` — native transport: mutual TLS pinned to the CA (`403` → `device_revoked`), mDNS, PEM keys, the
+  browsers' root into the user trust store (Windows `certutil`, macOS `security`).
+- `lan_web.dart` — browser transport: WebSockets to the page's origin, a non-extractable WebCrypto key in IndexedDB.
+- `lan_key.dart` — `LanDeviceKey` (a pairing key: signs, PEM or none, `keep`), `PemDeviceKey`.
 - `lan_found.dart` — `LanFound` (a master mDNS found), `LanPairingSocket`.
 - `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` in headers **and**
   `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
@@ -39,7 +43,7 @@ backend, routes and theme. No UI.
   Windows window (1024x720, hidden title bar, `window_manager`).
 - `settings/initial_builder.dart` — `initialBuilder(app)`: root `MultiProvider` + the
   pre-tree instances `clientService`, `businessService`, `lanService`. App-wide services only.
-- `settings/initial_validator.dart` — `initialValidator()`: a LAN build with no mode chosen → `/deployment`; `local` → `/lan`; otherwise `clientService.resolve()` (session failure or pending task), then a pending deep link, else `PreferencesService().homePath` (last home page, or `/home`).
+- `settings/initial_validator.dart` — `initialValidator()`: a LAN build with no mode chosen → `/deployment` (a browser: `/deployment/pair`); `local` → `/lan`; otherwise `clientService.resolve()` (session failure or pending task), then a pending deep link, else `PreferencesService().homePath` (last home page, or `/home`).
 - `settings/translations.dart` — bridges core's strings (`hide_keyboard`, `connectionError`) to `S`.
 - `theme/dark.dart` / `theme/light.dart` — `darkScheme` / `lightScheme` (`SchemeColor`), accent `0xfffb8e00`.
 

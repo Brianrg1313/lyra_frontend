@@ -214,6 +214,7 @@ reused. It prefixes ticket codes minted by that device (`pos.md`, POS-40).
 | `devices.rename` | `local_server.devices` | `id`, `name` | device | `not_found` |
 | `devices.revoke` | `local_server.devices` | `id` | device | `not_found`, `self` (can't revoke the master's own device) |
 | `pairing.start` | `local_server.devices`, **on the master's own device only** | `name?` | `{qr, code, expires}` | `not_master` |
+| `devices.browserCa` | any session | — | `{certificate, fingerprint, thumbprint, addresses, port}`: the browsers' root (plan §5.3) and where the web build answers | — |
 
 ### Rules
 

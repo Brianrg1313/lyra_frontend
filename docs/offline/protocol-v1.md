@@ -25,6 +25,11 @@ Response headers on every HTTPS answer: `Strict-Transport-Security: max-age=3153
 `Cache-Control: no-store` (except hashed web build assets), `X-Content-Type-Options: nosniff`,
 a restrictive `Content-Security-Policy` for the web build.
 
+A WebSocket upgrade (`/rpc`, `/pair`) that carries an `Origin` must come from the master's own
+page: `https://` and the host and port the request was sent to. Anything else is `403` before
+the upgrade, so a page of another site, open in a browser that trusts the CA, can't reach the
+master (cross-site WebSocket hijacking). Native clients send no `Origin`.
+
 ---
 
 ## 2. Frames
@@ -78,6 +83,9 @@ suite, and it needs only point arithmetic; CPace needs hash-to-curve, which no v
 offers. The exchange is retested in the phase 7 review.)
 
 The QR is `lyra-pair:` + base64url of `{v: 1, instanceId, addresses, port, caFingerprint, token}`.
+Phones scan it in the app (Android, iOS); a device tries each address in order and stops at the
+first that answers, since any master that answered has spent the token. Desktops and browsers
+type the code.
 
 The device connects to `/pair` without trusting the certificate yet, and records its SHA-256.
 One JSON object per frame:
@@ -117,8 +125,17 @@ client could not use that one.
 
 **Web** clients pair from the browser with the code flow, run in the page (the CA is already
 trusted by the OS, plan §5.3; `serverFingerprint` isn't checked there, the browser verified the
-chain). The "device certificate" of a browser is a **non-extractable WebCrypto key** registered at
-pairing. On `/rpc` without a client certificate, the `hello` answer carries a `challenge`; the
+chain). The page is the master's own web build, so `/pair` and `/rpc` always go to the page's
+origin. The "device certificate" of a browser is a **non-extractable WebCrypto key** (ECDSA
+P-256) made for the pairing and kept in IndexedDB as a `CryptoKey`: scripts can sign with it but
+never read it. Clearing the site data drops it, and that browser pairs again.
+
+The browsers' root reaches a computer from a native device that is paired already (its channel
+is pinned): `devices.browserCa` answers `{certificate, fingerprint, thumbprint, addresses, port}`,
+and the app installs it in the user's trust store (Windows `certutil -user`, macOS
+`security add-trusted-cert`; the OS asks first) or saves it as a `.crt` for another computer,
+whose install dialog shows the SHA-1 `thumbprint` (Windows) or the SHA-256 `fingerprint` to
+compare. On `/rpc` without a client certificate, the `hello` answer carries a `challenge`; the
 browser signs `"lyra/device/prove/v1" ‖ 0 ‖ instanceId ‖ 0 ‖ challenge` and sends it with
 `device.prove {deviceId, signature}` before anything else (`DeviceProof` in `lyra_protocol`).
 
@@ -232,7 +249,7 @@ Grouped by spec. Arguments, answers and errors are in the spec files.
 | Spec | Ops |
 |---|---|
 | protocol | `hello`, `engine.unlock`, `session.bind`, `device.prove`, `events.subscribe`, `events.unsubscribe` |
-| session | `auth.identify`, `auth.signIn`, `auth.signInPin`, `auth.activate`, `auth.refresh`, `auth.signOut`, `account.changePassword`, `account.setPin`, `session.bootstrap`, `permissions.of`, `permissions.set`, `permissions.requests.list`, `permissions.requests.create`, `permissions.requests.inbox`, `permissions.requests.answer`, `devices.list`, `devices.rename`, `devices.revoke`, `pairing.start` |
+| session | `auth.identify`, `auth.signIn`, `auth.signInPin`, `auth.activate`, `auth.refresh`, `auth.signOut`, `account.changePassword`, `account.setPin`, `session.bootstrap`, `permissions.of`, `permissions.set`, `permissions.requests.list`, `permissions.requests.create`, `permissions.requests.inbox`, `permissions.requests.answer`, `devices.list`, `devices.rename`, `devices.revoke`, `pairing.start`, `devices.browserCa` |
 | business | `business.profile`, `business.edit`, `business.setLogo`, `business.site.get`, `business.site.edit`, `catalog.get` |
 | inventory | `inventory.tables.list`, `inventory.tables.create`, `inventory.tables.edit`, `inventory.tables.delete`, `inventory.tables.structure`, `inventory.tables.details`, `inventory.tables.normalize`, `inventory.fields.create`, `inventory.fields.edit`, `inventory.fields.delete`, `inventory.records.list`, `inventory.records.create`, `inventory.records.edit`, `inventory.records.delete`, `inventory.images.add`, `inventory.images.remove`, `inventory.import.structure`, `inventory.import.records` |
 | stock | `stock.move`, `stock.history`, `stock.summary` |

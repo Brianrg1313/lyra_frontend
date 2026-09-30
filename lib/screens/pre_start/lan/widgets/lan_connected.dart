@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
@@ -10,10 +11,13 @@ import 'package:app/services/lan/lan_service.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/pre_start/deployment/widgets/deployment_frame.dart';
+import './lan_browsers.dart';
+import './pairing_qr.dart';
 
 /// Signed in to the master. Until the domains arrive (plan phase 4) this is the server's
 /// devices: who is paired and online, removing one, and, on the master's own app, adding one
-/// (`pairing.start` shows the code to type on the new device).
+/// (`pairing.start` shows the code to type on the new device and the QR a phone scans). A
+/// native device also hands out the browsers' root ([LanBrowsers]).
 class LanConnected extends StatefulWidget {
   const LanConnected({super.key});
 
@@ -89,6 +93,7 @@ class _LanConnectedState extends State<LanConnected> {
           else
             for (final item in _devices!) _DeviceRow(device: item, onRemove: () => _remove(item))
         ],
+        if (!kIsWeb) const LanBrowsers(),
         SizedBox(height: AppSize.spaceM),
         Button(title: s.lan_sign_out, action: lan.signOut),
         if (lan.isMaster) ...[
@@ -141,7 +146,8 @@ class _LanConnectedState extends State<LanConnected> {
   }
 }
 
-/// The code to type on the new device, and when it stops working (S-40).
+/// The code to type on the new device, when it stops working (S-40), and the QR with the same
+/// lifetime for a phone.
 class _PairingCode extends StatelessWidget {
   const _PairingCode({required this.pairing});
 
@@ -162,7 +168,11 @@ class _PairingCode extends StatelessWidget {
           SizedBox(height: AppSize.gap),
           TextInter("${code.substring(0, 4)} ${code.substring(4)}", multiplier: 2.4, bold: true, selectable: true),
           SizedBox(height: AppSize.gap),
-          TextSmall(S.of(context).lan_pairing_expires, color: scheme.subtitle, textAlign: TextAlign.center, lines: 2)
+          TextSmall(S.of(context).lan_pairing_expires, color: scheme.subtitle, textAlign: TextAlign.center, lines: 2),
+          SizedBox(height: AppSize.spaceS),
+          TextSmall(S.of(context).lan_pairing_scan, color: scheme.subtitle, textAlign: TextAlign.center, lines: 2),
+          SizedBox(height: AppSize.gap),
+          PairingQr(data: pairing["qr"] as String)
         ])
       )
     );

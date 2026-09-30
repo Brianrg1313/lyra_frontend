@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/toolkit/lan.dart';
 import 'package:app/services/lan/lan_service.dart';
 
 // WIDGETS
@@ -79,8 +80,11 @@ class _DesktopBodyState extends State<DesktopBody> {
           if (context.mounted) Navis.pushAndClearStack(context, "/deployment/pair");
         })
       ),
-      SizedBox(height: AppSize.spaceXS),
-      Button(title: S.of(context).lan_leave, action: () => _leave(context))
+      // A browser's page is the master's: there is no other way to use Lyra from it.
+      if (lanServingMaster == null) ...[
+        SizedBox(height: AppSize.spaceXS),
+        Button(title: S.of(context).lan_leave, action: () => _leave(context))
+      ]
     ]);
   }
 }

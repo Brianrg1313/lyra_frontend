@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
 // PACKAGES
+import 'package:file_selector/file_selector.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
@@ -10,15 +12,52 @@ import 'package:app/services/lan/lan_device.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'lan_web.dart' if (dart.library.io) 'lan_io.dart' as transport;
 import './lan_found.dart';
+import './lan_key.dart';
 
 export './lan_found.dart';
+export './lan_key.dart';
 
 /// This app's version as `hello` sends it (`protocol-v1.md` §4). `test/lan_client_test.dart`
 /// keeps it equal to `pubspec.yaml`.
 const String lanAppVersion = "0.0.6";
 
-/// Whether this build can use LAN mode at all (native builds; the web client is still to come).
+/// Whether this build can use LAN mode at all: native builds, and the web build the master
+/// serves (plan §3).
 bool get lanSupported => transport.lanSupported;
+
+/// On web, the master that served this page: the only one a browser pairs with and talks to.
+({String host, int port})? get lanServingMaster => kIsWeb ? (host: Uri.base.host, port: Uri.base.port) : null;
+
+/// Phones scan the master's QR with their camera (plan §5.3); the others type the code.
+bool get lanCanScan => !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
+
+/// A fresh device key for pairing: a PEM key natively, a non-extractable WebCrypto key in a browser.
+Future<LanDeviceKey> newDeviceKey() => transport.newDeviceKey();
+
+/// Signs a `device.prove` challenge with the key this browser kept at pairing; null without one.
+Future<Uint8List?> signDeviceProof(LanDevice device, List<int> message) => transport.signProof(device, message);
+
+/// Drops the browser's device key (leaving LAN mode); nothing natively.
+Future<void> forgetDeviceKey() => transport.forgetDeviceKey();
+
+/// Whether this computer can put the browsers' root in its trust store itself (Windows, macOS).
+bool get canInstallBrowserCa => transport.canInstallBrowserCa;
+
+Future<bool> installBrowserCa(Uint8List certificate) => transport.installBrowserCa(certificate);
+
+/// Saves the browsers' root as a `.crt` file the person picks the place of (a USB drive, for
+/// another computer, plan §5.3). False when they cancel.
+Future<bool> saveBrowserCa(Uint8List certificate) async {
+  final location = await getSaveLocation(
+    suggestedName: "lyra-ca.crt",
+    acceptedTypeGroups: const [XTypeGroup(label: "Certificate", extensions: ["crt"])],
+  );
+  if (location == null) return false;
+
+  await XFile.fromData(certificate, mimeType: "application/x-x509-ca-cert", name: "lyra-ca.crt").saveTo(location.path);
+
+  return true;
+}
 
 /// The `platform` a device says it is (`PairingDevice.platforms`).
 String get lanPlatform => kIsWeb ? "web" : defaultTargetPlatform.name.toLowerCase();
@@ -47,18 +86,24 @@ class LanUnreachable implements Exception {
 /// How a client opens `/rpc` to its master; a seam for tests.
 typedef LanConnect = Future<RpcClient> Function(LanDevice device, String host);
 
+/// How a browser signs the `hello` challenge with its device key (`device.prove`); null when
+/// it has no key any more. A seam for tests.
+typedef LanProve = Future<Uint8List?> Function(LanDevice device, List<int> message);
+
 /// The connection of this install to its master (plan §4 `lan.dart`, `protocol-v1.md` §4): one
 /// `/rpc` socket, `hello` on every connect, the session bound to it, and its refresh.
 ///
 /// Every failure of an op is thrown as [lanFailure]'s map, like the api layer does, so a
 /// service reads LAN and cloud errors the same way.
 class LanClient {
-  LanClient(this._device, {LanIdentityStore store = const SecureLanIdentityStore(), LanConnect? connect})
+  LanClient(this._device, {LanIdentityStore store = const SecureLanIdentityStore(), LanConnect? connect, LanProve? prove})
     : _store = store,
-      _connect = connect ?? transport.openRpc;
+      _connect = connect ?? transport.openRpc,
+      _prove = prove ?? signDeviceProof;
 
   final LanIdentityStore _store;
   final LanConnect _connect;
+  final LanProve _prove;
   LanDevice _device;
   RpcClient? _rpc;
   HelloAnswer? _hello;
@@ -100,6 +145,7 @@ class LanClient {
 
       try {
         _hello = await rpc.hello(app: lanAppVersion, platform: lanPlatform);
+        await _proveDevice(rpc, _hello!);
       } on RpcError catch (error) {
         await rpc.close();
         throw lanFailure(error);
@@ -117,6 +163,25 @@ class LanClient {
     }
 
     throw const LanUnreachable();
+  }
+
+  /// A browser has no client certificate: it signs the challenge before anything else
+  /// (`protocol-v1.md` §3). A key the master doesn't know, or no key at all, means this browser
+  /// is no longer paired: it is told so as a revoked device, which pairs again.
+  Future<void> _proveDevice(RpcClient rpc, HelloAnswer hello) async {
+    final challenge = hello.challenge;
+    // A locked master proves nobody yet; the browser waits on the locked page.
+    if (challenge == null || hello.state == EngineState.locked) return;
+
+    final signature = await _prove(_device, DeviceProof.message(hello.instanceId, challenge));
+    if (signature == null) throw const RpcError(ErrorCodes.deviceRevoked, "");
+
+    try {
+      await rpc.call(Ops.deviceProve, args: {"deviceId": _device.deviceId, "signature": base64.encode(signature)});
+    } on RpcError catch (error) {
+      if (error.code == ErrorCodes.forbidden) throw RpcError(ErrorCodes.deviceRevoked, error.message, action: error.action);
+      rethrow;
+    }
   }
 
   /// Unlocks a master in passphrase mode (only the master's own app may).

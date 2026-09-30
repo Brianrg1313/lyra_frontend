@@ -41,6 +41,18 @@ final class ProcessNodeCommands implements NodeCommands {
     return bundled.existsSync() ? bundled.path : null;
   }
 
+  /// The web build the engine serves to browsers (plan §3): `lyra_node/web` next to the
+  /// executable's bundle, or `LYRA_WEB` while developing. Null when there is none; the engine
+  /// then serves no pages, and native clients work the same.
+  static String? locateWeb() {
+    final override = Platform.environment["LYRA_WEB"];
+    if (override != null && override.isNotEmpty) return Directory(override).existsSync() ? override : null;
+
+    final bundled = Directory([File(Platform.resolvedExecutable).parent.path, "lyra_node", "web"].join(Platform.pathSeparator));
+
+    return bundled.existsSync() ? bundled.path : null;
+  }
+
   List<String> get _data => dataFolder == null ? const [] : ["--data", dataFolder!];
 
   String get _executable => locate() ?? (throw StateError("lyra_node is not installed"));
@@ -73,7 +85,7 @@ final class ProcessNodeCommands implements NodeCommands {
   Future<void> spawn({String? passphrase}) async {
     final process = await Process.start(
       _executable,
-      ["run", ..._data, if (passphrase != null) "--passphrase-stdin"],
+      ["run", ..._data, if (locateWeb() case final web?) ...["--web", web], if (passphrase != null) "--passphrase-stdin"],
       mode: passphrase == null ? ProcessStartMode.detached : ProcessStartMode.detachedWithStdio,
     );
 
