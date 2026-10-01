@@ -93,6 +93,18 @@ install(DIRECTORY "${NATIVE_ASSETS_DIR}"
    DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
    COMPONENT Runtime)
 
+# The master's engine, once built in its own repo (`dart build cli` in packages/lyra_node):
+# LocalServerService looks for it in lyra_node/bin beside app.exe. Without it this computer
+# can't become a master, and an offline sign in only shows the "no connection" placeholder.
+set(LYRA_NODE_BUNDLE "${CMAKE_CURRENT_SOURCE_DIR}/../../../packages/lyra_node/build/cli/windows_x64/bundle")
+if(EXISTS "${LYRA_NODE_BUNDLE}/bin/lyra_node.exe")
+  install(DIRECTORY "${LYRA_NODE_BUNDLE}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lyra_node"
+    COMPONENT Runtime)
+else()
+  message(WARNING "lyra_node is not built (${LYRA_NODE_BUNDLE}): this build can't host a master.")
+endif()
+
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.
 set(FLUTTER_ASSET_DIR_NAME "flutter_assets")
