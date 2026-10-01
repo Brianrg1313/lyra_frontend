@@ -1962,6 +1962,12 @@
       "address": {"type": "String"}
     }
   },
+  "lan_browsers_fallback": "If that name doesn't open, use {address}.",
+  "@lan_browsers_fallback": {
+    "placeholders": {
+      "address": {"type": "String"}
+    }
+  },
   "lan_sign_out": "Sign out",
   "lan_stop_server": "Stop the server",
   "lan_stop_server_title": "Stop the server?",

@@ -154,7 +154,8 @@ P-256) made for the pairing and kept in IndexedDB as a `CryptoKey`: scripts can 
 never read it. Clearing the site data drops it, and that browser pairs again.
 
 The browsers' root reaches a computer from a native device that is paired already (its channel
-is pinned): `devices.browserCa` answers `{certificate, fingerprint, thumbprint, addresses, port}`,
+is pinned): `devices.browserCa` answers `{certificate, fingerprint, thumbprint, host, addresses, port}`
+(`host` is the master's `.local` name, plan §5.2, which a browser opens first; `null` before its company exists),
 and the app installs it in the user's trust store (Windows `certutil -user`, macOS
 `security add-trusted-cert`; the OS asks first) or saves it as a `.crt` for another computer,
 whose install dialog shows the SHA-1 `thumbprint` (Windows) or the SHA-256 `fingerprint` to

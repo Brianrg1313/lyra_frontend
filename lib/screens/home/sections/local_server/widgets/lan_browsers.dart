@@ -50,7 +50,11 @@ class _LanBrowsersState extends State<LanBrowsers> {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
     final addresses = (ca["addresses"] as List).cast<String>();
-    final address = addresses.isEmpty ? null : "https://${addresses.first}:${ca["port"]}";
+    final host = ca["host"] as String?;
+    final ip = addresses.isEmpty ? null : "https://${addresses.first}:${ca["port"]}";
+    // The master's `.local` name first: it stays when the computer's address changes, and nobody
+    // has to look one up. An engine that has none yet (no company, or an older one) gives the IP.
+    final address = host == null ? ip : "https://$host:${ca["port"]}";
 
     return Padding(
       padding: EdgeInsets.only(top: AppSize.spaceM),
@@ -70,7 +74,8 @@ class _LanBrowsersState extends State<LanBrowsers> {
             TextSmall(Fingerprint.display(ca["thumbprint"] as String), lines: 2, selectable: true),
             if (address != null) ...[
               SizedBox(height: AppSize.gap),
-              TextSmall(s.lan_browsers_open(address), lines: 2, selectable: true)
+              TextSmall(s.lan_browsers_open(address), lines: 2, selectable: true),
+              if (host != null && ip != null) TextSmall(s.lan_browsers_fallback(ip), lines: 2, selectable: true, color: scheme.subtitle)
             ]
           ])
         ),

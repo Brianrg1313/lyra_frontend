@@ -139,7 +139,9 @@ void main() {
         // A native device hands out the browsers' root, with what the OS will show to compare.
         expect(find.text("Web browsers"), findsOneWidget);
         expect(find.text("CDCD CDCD CDCD CDCD CDCD CDCD CDCD CDCD CDCD CDCD"), findsOneWidget);
-        expect(find.text("Then open https://192.168.1.5:4780 in the browser."), findsOneWidget);
+        // By the master's name first; its address in case the name doesn't resolve there.
+        expect(find.text("Then open https://lovelace-cafe.local:4780 in the browser."), findsOneWidget);
+        expect(find.text("If that name doesn't open, use https://192.168.1.5:4780."), findsOneWidget);
         await leave(tester);
       });
 

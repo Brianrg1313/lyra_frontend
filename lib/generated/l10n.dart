@@ -18901,6 +18901,16 @@ class S {
     );
   }
 
+  /// `If that name doesn't open, use {address}.`
+  String lan_browsers_fallback(String address) {
+    return Intl.message(
+      'If that name doesn\'t open, use $address.',
+      name: 'lan_browsers_fallback',
+      desc: '',
+      args: [address],
+    );
+  }
+
   /// `Sign out`
   String get lan_sign_out {
     return Intl.message('Sign out', name: 'lan_sign_out', desc: '', args: []);

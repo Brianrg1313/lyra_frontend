@@ -92,12 +92,16 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
 - Not yet seen either: the sign in's "Create Master Server" creating the company end to end and
   landing on the master's home (checked up to the welcome's modal opening).
 - Repos, all on this disk, **nothing pushed**: the app on `feat/offline-phase4-business` (no remote,
-  35 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on
+  36 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on
   `feat/offline-lan`, whose one commit holds what the app depends on (`button.dart`, `select_menu`,
   modals, charts, `InputRow` without `LayoutBuilder`…), over a `main` one commit ahead of `origin/main`.
-- A browser reaches a master only at the address the master serves (`https://<host>:4780`), never at
-  `flutter run -d chrome`'s; the engine serves the web build only if `build/web` was copied to
-  `lyra_node/web` next to `app.exe` or `LYRA_WEB` points at it when the master starts.
+- A browser reaches a master only at the address the master serves, never at `flutter run -d
+  chrome`'s: by its name, `https://<company-label>.local:4780` (§5.2; the server section shows it,
+  the IP below it), or `https://<ip>:4780`. A browser's pairing belongs to the address it was made
+  at, so one paired by IP pairs again by name. The engine serves the web build only if `build/web`
+  was copied to `lyra_node/web` next to `app.exe` or `LYRA_WEB` points at it when the master starts.
+  The name was checked resolving on Windows from a live responder; not yet in a browser on another
+  device.
 - To run a master: `dart build cli` in `lyra_node`, then `flutter run -d windows` here (the CMake
   install copies the engine next to `app.exe`). This computer's earlier master was wiped on
   2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
@@ -307,6 +311,12 @@ lyra_node/lib/src/
 ### 5.2 Discovery
 - mDNS / DNS-SD `_lyra._tcp` advertises only a random instance id and the port. Nothing about the
   company is in the advertisement.
+- Browsers open the master by a name, never an address: `<label>.local`, made once from the
+  company's name (`panaderia-don-jose.local`; kept through a rename, so saved links still work).
+  The master answers it over mDNS, with no router setup, and only to a question about that name.
+  If another device on the LAN already answers it, the master takes `label-2`, `label-3`… Its
+  certificate carries the name, and the browser root already allows any `.local` name. The name
+  works from the moment the company is created, with no restart.
 - Fallbacks: a typed IP or host, or the QR from pairing, which lists every master address.
 - Discovery is only a hint. Trust comes from pairing (§5.3), so a spoofed advertisement at most
   gets a refused connection.

@@ -251,6 +251,7 @@ class FakeMaster {
           "certificate": base64.encode(utf8.encode("browser root")),
           "fingerprint": "ab" * 32,
           "thumbprint": "cd" * 20,
+          "host": "lovelace-cafe.local",
           "addresses": ["192.168.1.5"],
           "port": 4780,
         };
