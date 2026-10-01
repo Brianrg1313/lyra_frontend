@@ -89,6 +89,12 @@ class MoneyService extends ChangeNotifier {
 
   Future<void> retry() => _read();
 
+  /// The accounting export's file for a `moneyExportRequest` body (M-60). It
+  /// holds no state: the file is the caller's to save, and the summary on
+  /// screen has nothing to do with the period exported.
+  Future<Uint8List> exportAccounting(Map<String, dynamic> request) =>
+    _source.exportAccounting(request);
+
   /// Reads the same summary over another window.
   ///
   /// The figures on screen belong to the previous one, so they are dropped and

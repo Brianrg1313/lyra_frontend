@@ -63,7 +63,11 @@ company's payment accounts on them (`money.md` M-40 to M-46): the rails, sheets 
 and network lists as a snapshot of the cloud's catalogue, holder, document and number sealed and
 never in clear at rest (rows, oplog, the `commandId` ledger), their reads audited. A session
 without the key answers `sealed_locked` and the app tells the person to sign in again. The
-methods tab, with the exchange currencies, now shows on a master. Left: the accounting export.
+methods tab, with the exchange currencies, now shows on a master. The eighth release (finance,
+export) adds the accounting export (`money.md` M-60 to M-65): sales, their lines, payments,
+receivables and stock movements for a window of calendar days, as CSV in a zip or one XLSX
+workbook, kept for the asker for an hour and audited; the overview tab offers it beside the range
+picker. Finance is complete on a master.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the

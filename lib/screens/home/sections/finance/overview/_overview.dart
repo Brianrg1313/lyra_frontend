@@ -7,9 +7,13 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/money/money_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
 import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/modals/finance/accounting_export/_accounting_export.dart';
+import 'package:app/toolkit/save_file.dart';
 
 import '../money_format.dart';
 import 'bot_block.dart';
@@ -35,6 +39,16 @@ class FinanceOverviewTab extends StatefulWidget {
 }
 
 class _FinanceOverviewTabState extends State<FinanceOverviewTab> {
+  /// While the master builds the export and it comes down: the button spins
+  /// and a second click is ignored.
+  final ValueNotifier<bool> _exporting = ValueNotifier(false);
+
+  @override
+  void dispose() {
+    _exporting.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -57,14 +71,56 @@ class _FinanceOverviewTabState extends State<FinanceOverviewTab> {
         // The picker stays in view while the summary loads or fails: it is what
         // one reaches for after reading a bad number, and hiding it would leave
         // an error message with no way out but a retry of the same window.
-        MoneyRangePicker(
-          range: service.range,
-          onRange: service.select
-        ),
+        Row(children: [
+          Expanded(child: MoneyRangePicker(
+            range: service.range,
+            onRange: service.select
+          )),
+          // Beside the picker and not under the figures: it is the other thing
+          // one does with a period, and it doesn't depend on the summary loading.
+          if (PermissionsService().can("finance.export")) Button(
+            width: null,
+            title: S.of(context).finance_export,
+            leftIcon: Icon(CI.documents_excel, color: ThemeColor.of(context).button.text),
+            loading: _exporting,
+            action: _export
+          )
+        ]),
         SizedBox(height: AppSize.padding),
         Expanded(child: _body(context, service))
       ]
     );
+  }
+
+  /// The accounting export (`money.md` M-60): the panel picks, the master
+  /// builds the file, and the person chooses where it goes.
+  Future<void> _export() async {
+    if (_exporting.value) return;
+
+    final picked = await showAccountingExport(context);
+    if (picked == null || !mounted) return;
+
+    final service = context.read<MoneyService>();
+    final flag = FloatFlag.of(context);
+    final saved = S.of(context).finance_export_saved;
+    _exporting.value = true;
+
+    try {
+      final bytes = await service.exportAccounting(picked.request);
+      final kept = await saveFile(
+        bytes,
+        name: picked.name,
+        mimeType: picked.format.mimeType,
+        extension: picked.format.extension,
+        label: picked.format.extension.toUpperCase()
+      );
+
+      if (kept) flag.message(saved);
+    } catch (error) {
+      FloatFlag.showFromError(error);
+    } finally {
+      _exporting.value = false;
+    }
   }
 
   Widget _body(BuildContext context, MoneyService service) =>

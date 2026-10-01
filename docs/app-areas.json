@@ -234,6 +234,9 @@
       "routes": ["finance"],
       "paths": ["/home/finance"],
       "actions": ["view", "export"],
+      "action_modes": {
+        "export": ["local", "hybrid"]
+      },
       "action_notes": {
         "export": "Accounting export of sales, payments, receivables and stock movements (CSV/XLSX). Local and hybrid first (docs/offline/specs/money.md)."
       },

@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 // PACKAGES
-import 'package:file_selector/file_selector.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
@@ -14,6 +13,7 @@ import 'lan_web.dart' if (dart.library.io) 'lan_io.dart' as transport;
 import './lan_found.dart';
 import './lan_key.dart';
 import './lan_file.dart';
+import './save_file.dart';
 
 export './lan_found.dart';
 export './lan_key.dart';
@@ -49,17 +49,13 @@ Future<bool> installBrowserCa(Uint8List certificate) => transport.installBrowser
 
 /// Saves the browsers' root as a `.crt` file the person picks the place of (a USB drive, for
 /// another computer, plan §5.3). False when they cancel.
-Future<bool> saveBrowserCa(Uint8List certificate) async {
-  final location = await getSaveLocation(
-    suggestedName: "lyra-ca.crt",
-    acceptedTypeGroups: const [XTypeGroup(label: "Certificate", extensions: ["crt"])],
-  );
-  if (location == null) return false;
-
-  await XFile.fromData(certificate, mimeType: "application/x-x509-ca-cert", name: "lyra-ca.crt").saveTo(location.path);
-
-  return true;
-}
+Future<bool> saveBrowserCa(Uint8List certificate) => saveFile(
+  certificate,
+  name: "lyra-ca.crt",
+  mimeType: "application/x-x509-ca-cert",
+  extension: "crt",
+  label: "Certificate"
+);
 
 /// The `platform` a device says it is (`PairingDevice.platforms`).
 String get lanPlatform => kIsWeb ? "web" : defaultTargetPlatform.name.toLowerCase();

@@ -59,7 +59,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `capability_service.dart` — `CapabilityService` singleton, `Capability` (`available`, `needsInternet`, `hidden`):
   which areas the deployment mode has. `modes` mirrors every area's `modes` in `docs/app-areas.json` (a test keeps them
   equal, `action_modes` as `<area>.<action>`); `of(area)` reads the most specific declared area (undeclared = cloud only);
-  on a master's devices a local area whose phase 4 release hasn't come is hidden (`_builtOnMaster`, `_pendingOnMaster`);
+  on a master's devices a local area whose phase 4 release hasn't come is hidden (`_builtOnMaster`);
   `singleCompany` (not cloud); `internet` (hybrid only). `PermissionsService.can`/`granted` ask it first.
 
 ## business/
@@ -284,16 +284,19 @@ See `baileys_server/MODULE.md` for the server side.
 ## money/ — owned by the finance section
 
 - `sources/money_source.dart` — `MoneySource` (+ `MoneyRailFields`, `moneyRailFields`, `moneyPaymentOptions`): summary, payments (search, record, void),
-  receivables, payment accounts (+ rail sheets), rails catalogue, currencies, concepts catalogue. Used by every money
-  service but `MoneyBotService` (cloud only). `money_cloud_source.dart` — REST, and the catalogue row readers.
+  receivables, payment accounts (+ rail sheets), rails catalogue, currencies, concepts catalogue, the accounting export's
+  file. Used by every money service but `MoneyBotService` (cloud only). `money_cloud_source.dart` — REST, and the
+  catalogue row readers (no export: `UnsupportedError`).
   `money_lan_source.dart` — `MoneyLanSource`: the master's `money.*` ops (summary, payments, receivables, accounts and
   rails, currencies, catalogue), money from and to minor units of the main currency (an account's fixed commission
-  travels as an amount); the cloud's account bodies in the master's keys.
+  travels as an amount); the cloud's account bodies in the master's keys; `export.accounting` then the file's download.
 Nothing here adds figures up: every total is the backend's answer.
 
 - `money_service.dart` — `MoneyService` (+ `MoneySummaryStatus`, `MoneyRange`): `GET /money`
   (today = server day, so this and POS agree), `POST /money/summary` for other ranges.
-  `MoneyRange.code` = backend shorthand (`today 7d 30d 12m`).
+  `MoneyRange.code` = backend shorthand (`today 7d 30d 12m`). `exportAccounting(request)`: the export's bytes, no state.
+- `money_export_request.dart` — `MoneyExportFormat` (`xlsx`, `csv` zipped), `MoneyExportPeriod` (whole month or year,
+  `day` as `YYYY-MM-DD`), `moneyExportDatasets`, `moneyExportRequest`, `moneyExportName`.
 - `money_bot_service.dart` — `MoneyBotService`: `POST /money/ai`, its own window (30 days). A 503 is an error, never zero.
 - `money_bot_model.dart` — `MoneyBotSpend`, `MoneyBotAnswers`, `MoneyBotVectors`, `MoneyBotLine`:
   four disjoint areas summing to `total`, in **USD**. `tasks` deliberately not read.

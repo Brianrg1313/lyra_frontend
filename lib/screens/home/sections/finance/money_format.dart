@@ -60,6 +60,11 @@ String moneyDateLabel(BuildContext context, DateTime? at) {
 String moneyDayLabel(BuildContext context, DateTime? at) =>
   at == null ? "" : DateFormat.yMMMd(_locale(context)).format(at.toLocal());
 
+/// A calendar month, `September 2026`: a period of the accounting export. It
+/// is a calendar date and not an instant, so it is not moved to local time.
+String moneyMonthLabel(BuildContext context, DateTime month) =>
+  DateFormat.yMMMM(_locale(context)).format(month);
+
 /// The language the numbers and dates are ordered and translated in.
 ///
 /// It comes out of the loaded localizations and not from a constant: `intl`

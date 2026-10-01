@@ -209,7 +209,8 @@ The master closes the connection after `version_mismatch` (close code 4002), `se
   the rest become PNG.
   Permission: the one that reads the record the file belongs to; a product image is also
   readable with `pos.view` (a till draws the pictures without seeing the inventory). Export files (`export.*`) are
-  readable only by the account that asked for them, for 1 hour.
+  readable only by the account that asked for them, for 1 hour; they are made by the master and
+  never uploaded (`export` is not an `X-Lyra-Purpose`).
 - Files are stored encrypted (plan §6.2) and decrypted while streaming over TLS.
 
 ---

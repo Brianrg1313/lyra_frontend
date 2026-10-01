@@ -20,13 +20,14 @@ all seven created and provided by `_finance.dart`, none app-wide.
   `isShown`/`shown` (the running mode's tabs, `CapabilityService`), `initial = overview`, `opening`. Add a tab here.
   A tab's URL the mode lacks opens `opening`.
 - `money_format.dart` — `moneyLabel`, `moneyFineLabel` (4 decimals under a cent, for bot cost),
-  `moneyCount`, `moneyDateLabel`, `moneyDayLabel`, `moneyRateLabel` (`1 USD = Bs. 36,5234`, up to 4
+  `moneyCount`, `moneyDateLabel`, `moneyDayLabel`, `moneyMonthLabel`, `moneyRateLabel` (`1 USD = Bs. 36,5234`, up to 4
   decimals). **Every figure and date of the section goes through it.**
 
 ### overview/
 - `_overview.dart` — `FinanceOverviewTab`: `GET /money` (today) / `POST /money/summary`; below a
   separator the bot cost, **drawn regardless of the money half's state**, where the mode has it
-  (`finance.overview.view_bot_cost`: not in `local`).
+  (`finance.overview.view_bot_cost`: not in `local`). Beside the range picker, the accounting export
+  (`finance.export`, a master's only): `showAccountingExport` → `MoneyService.exportAccounting` → `saveFile`.
 - `range_picker.dart` — `MoneyRangePicker`: today / 7d / 30d / 12m; reports to its owner (`MoneyService` or the bot card).
 - `summary_cards.dart` — `MoneySummaryCards`: received, paid, net, and **sold on credit** (apart: not income).
 - `breakdown_block.dart` — `MoneyBreakdown`: by settlement kind (both directions) and by concept.

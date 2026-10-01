@@ -69,6 +69,7 @@ class CapabilityService extends ChangeNotifier {
     "finance.payments": _all,
     "finance.receivables": _notLocal,
     "finance.methods": _all,
+    "finance.export": _lan,
     "marketing": _online,
     "report": _online,
     "connections": _online,
@@ -81,8 +82,8 @@ class CapabilityService extends ChangeNotifier {
   /// release, and until an area's release it is hidden on a master's devices
   /// even where [modes] says it belongs, since its services have no source to
   /// read there. What sits under a listed area is built with it, except a child
-  /// area declared in [modes] (employees under business) and what is in
-  /// [_pendingOnMaster]. Goes away when phase 4 ends.
+  /// area or action declared in [modes] (employees under business, the
+  /// accounting export). Goes away when phase 4 ends.
   static const Set<String> _builtOnMaster = {
     "dashboard",
     "business",
@@ -98,12 +99,9 @@ class CapabilityService extends ChangeNotifier {
     "finance.overview",
     "finance.payments",
     "finance.methods",
+    "finance.export",
     "local_server"
   };
-
-  /// Parts of a built area whose master side is still missing, hidden until
-  /// their release: the accounting export comes after the rest of finance.
-  static const Set<String> _pendingOnMaster = {"finance.export"};
 
   bool _internet = true;
 
@@ -148,8 +146,6 @@ class CapabilityService extends ChangeNotifier {
   /// Read like [_declared]: the most specific key on the path that is listed
   /// as built, or declared as an area of its own, decides.
   static bool _builtLocally(String area) {
-    if (_pendingOnMaster.any((pending) => area == pending || area.startsWith("$pending."))) return false;
-
     var key = area;
 
     while (true) {

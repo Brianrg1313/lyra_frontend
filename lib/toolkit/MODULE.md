@@ -38,6 +38,7 @@ backend, routes and theme. No UI.
   its channel, cached by id and size; `address`, `parse`).
 - `lan_key.dart` — `LanDeviceKey` (a pairing key: signs, PEM or none, `keep`), `PemDeviceKey`.
 - `lan_found.dart` — `LanFound` (a master mDNS found), `LanPairingSocket`.
+- `save_file.dart` — `saveFile` (bytes to a file the person keeps: a save dialog natively, a download in a browser).
 - `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` in headers **and**
   `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
 - `settings/routes.dart` — the route table. Home sections, business/finance/sales tabs are generated

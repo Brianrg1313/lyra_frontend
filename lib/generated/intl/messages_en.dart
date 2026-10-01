@@ -2427,6 +2427,57 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "finance_currency_updated": m59,
     "finance_expenses": MessageLookupByLibrary.simpleMessage("Paid"),
+    "finance_export": MessageLookupByLibrary.simpleMessage("Export"),
+    "finance_export_csv": MessageLookupByLibrary.simpleMessage("CSV (.zip)"),
+    "finance_export_csv_hint": MessageLookupByLibrary.simpleMessage(
+      "One file per dataset, for importing",
+    ),
+    "finance_export_datasets": MessageLookupByLibrary.simpleMessage(
+      "What to include",
+    ),
+    "finance_export_datasets_empty": MessageLookupByLibrary.simpleMessage(
+      "Pick at least one.",
+    ),
+    "finance_export_format": MessageLookupByLibrary.simpleMessage("Format"),
+    "finance_export_last_month": MessageLookupByLibrary.simpleMessage(
+      "Last month",
+    ),
+    "finance_export_last_year": MessageLookupByLibrary.simpleMessage(
+      "Last year",
+    ),
+    "finance_export_payments": MessageLookupByLibrary.simpleMessage("Payments"),
+    "finance_export_period": MessageLookupByLibrary.simpleMessage("Period"),
+    "finance_export_receivables": MessageLookupByLibrary.simpleMessage(
+      "Receivables",
+    ),
+    "finance_export_sale_lines": MessageLookupByLibrary.simpleMessage(
+      "Sale lines",
+    ),
+    "finance_export_sales": MessageLookupByLibrary.simpleMessage("Sales"),
+    "finance_export_saved": MessageLookupByLibrary.simpleMessage(
+      "Export saved",
+    ),
+    "finance_export_stock_movements": MessageLookupByLibrary.simpleMessage(
+      "Stock movements",
+    ),
+    "finance_export_subtitle": MessageLookupByLibrary.simpleMessage(
+      "Sales, payments and stock movements for your accounting software. Every row carries its Lyra ID, so exporting a period again matches what was already imported.",
+    ),
+    "finance_export_this_month": MessageLookupByLibrary.simpleMessage(
+      "This month",
+    ),
+    "finance_export_this_year": MessageLookupByLibrary.simpleMessage(
+      "This year",
+    ),
+    "finance_export_title": MessageLookupByLibrary.simpleMessage(
+      "Accounting export",
+    ),
+    "finance_export_xlsx": MessageLookupByLibrary.simpleMessage(
+      "Excel (.xlsx)",
+    ),
+    "finance_export_xlsx_hint": MessageLookupByLibrary.simpleMessage(
+      "One sheet per dataset",
+    ),
     "finance_income": MessageLookupByLibrary.simpleMessage("Received"),
     "finance_income_payments": MessageLookupByLibrary.simpleMessage(
       "Other income",

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 // SERVICES
 import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/money/money_concept_model.dart';
@@ -166,4 +168,10 @@ class MoneyCloudSource implements MoneySource {
           if (entry is Map)
             PosPaymentMethod.fromJson(Map<String, dynamic>.from(entry))
       ].where((method) => method.isValid).toList(growable: false);
+
+  /// The cloud has no accounting export yet (`app-areas.json`: local and
+  /// hybrid first), so the capability hides it there.
+  @override
+  Future<Uint8List> exportAccounting(Map<String, dynamic> request) =>
+    throw UnsupportedError("The accounting export is a master's for now");
 }

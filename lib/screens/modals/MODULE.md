@@ -162,6 +162,9 @@ through `Navigator.pop(context, value)`.
 - `exchange_currency_form/_exchange_currency_form.dart` — `showExchangeCurrencyForm(context, main:, taken:,
   exchange?)`, `ExchangeCurrencyFormModal`: currency (fixed on edit; fiat minus main and taken), mode, custom
   rate. Returns `saveMoneyExchangeRequest` (no `RATE` when official).
+- `accounting_export/_accounting_export.dart` — `showAccountingExport(context)`, `AccountingExportModal`: period (this
+  month, last month, ten more months, this and last year; never typed), datasets (all but receivables by default, at
+  least one), format (XLSX default, CSV). Returns `(request, name, format)`.
 
 ### `pos/`
 All three **return a value and write nothing** (POS services live below this navigator).

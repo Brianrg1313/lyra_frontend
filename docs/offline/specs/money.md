@@ -210,8 +210,8 @@ Lyra is not accounting software. It hands its data to the software that is.
   `stock_movements`) and `format` (`csv` or `xlsx`). It answers a `fileId` to download
   (`protocol-v1.md`, files), valid for 1 hour.
 - **M-61** One file per dataset (a `.zip` for CSV, one sheet each for XLSX). Column names are
-  stable English snake case and documented in `lyra_node/docs/export.md` when it's built; a new
-  column is only ever **added at the end**.
+  stable English snake case and documented in `lyra_node/docs/export.md`; a new column is only
+  ever **added at the end**.
 - **M-62** Every row carries its Lyra `id` (and the ticket code where there is one), so a
   re-export can be matched on the other side.
 - **M-63** Money columns are decimal numbers with the currency's decimals and a `currency`
@@ -224,7 +224,8 @@ Lyra is not accounting software. It hands its data to the software that is.
 ### Ops
 
 `export.accounting` · `finance.export` (new permission, plan §8.5) · M-60 · `{fileId, expires}`
-· `invalid_range`, `too_large` (more than 1 000 000 rows: narrow the window).
+· `invalid_range` (`from` after `to`), `too_many_rows` (more than 1 000 000 rows: narrow the
+window).
 
 ---
 
@@ -259,7 +260,18 @@ The accounts release serves `money.methods.*` (M-40 to M-46). On the wire:
   catalogue (2026-09) shipped with the engine (`lyra_node` `Rails`); `icon` is null, since a
   master doesn't have the cloud's assets.
 
-Still to come: `export.accounting`. Until then a master hides the export.
+The export release serves `export.accounting` (M-60 to M-65). On the wire and in the file:
+- `from` and `to` are `YYYY-MM-DD`; a date that doesn't exist is `invalid_field`. A closed ticket
+  falls in the window by when it closed, a cancelled one by when it was cancelled; an open one is
+  never exported;
+- the answer is `{fileId, expires}`; the file is downloaded at `/f/<fileId>` by the account that
+  asked, until `expires` (`protocol-v1.md` §6), and the app fetches it at once;
+- the decimal comma goes with the company **language** (`es`, `pt`, `fr`, `it`, `de`), not its
+  country: a company in Mexico writing Spanish gets `;` and `1,5`;
+- dates are the company's wall clock with its offset; a CSV text cell starting with `=`, `+`, `-`
+  or `@` gets a leading `'` so it never runs as a formula; an XLSX never holds formulas;
+- the app offers whole months (this one and the eleven before) and whole years, never typed dates.
+  The export exists only in `local` and `hybrid` (`app-areas.json` `action_modes`).
 
 ## Differences from cloud
 

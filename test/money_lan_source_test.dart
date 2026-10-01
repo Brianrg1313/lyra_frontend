@@ -7,6 +7,7 @@ import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/money/money_concept_model.dart';
 import 'package:app/services/money/money_currency_model.dart';
 import 'package:app/services/money/money_currency_request.dart';
+import 'package:app/services/money/money_export_request.dart';
 import 'package:app/services/money/money_method_model.dart';
 import 'package:app/services/money/money_method_request.dart';
 import 'package:app/services/money/money_methods_service.dart';
@@ -183,6 +184,25 @@ void main() {
     expect(master.calls[4].$1, Ops.moneyMethodsRemove.name);
     expect(master.calls[4].$2, {"id": "m1"});
   });
+
+  test('the accounting export: whole calendar days, the datasets in order, the file fetched at once (M-60)', () async {
+    master.answers[Ops.exportAccounting.name] = {"fileId": "f1", "expires": "2026-10-01T13:00:00.000Z"};
+
+    final request = moneyExportRequest(
+      period: MoneyExportPeriod.month(2026, 2),
+      datasets: {"payments", "sales"},
+      format: MoneyExportFormat.csv
+    );
+    final bytes = await MoneyLanSource(master).exportAccounting(request);
+
+    expect(master.calls.single.$2, {
+      "from": "2026-02-01", "to": "2026-02-28", "datasets": ["sales", "payments"], "format": "csv"
+    });
+    expect(master.downloads, ["f1"]);
+    expect(bytes, [0x50, 0x4b, 3, 4]);
+    expect(moneyExportName(MoneyExportPeriod.year(2025), MoneyExportFormat.xlsx),
+      "lyra-accounting-2025-01-01-2025-12-31.xlsx");
+  });
 }
 
 class _Refusing extends _Master {
@@ -211,4 +231,13 @@ class _Master extends LanService {
 
   @override
   Future<String> upload(String purpose, Uint8List bytes) async => "uploaded";
+
+  final List<String> downloads = [];
+
+  @override
+  Future<Uint8List> download(String id, {int? size}) async {
+    downloads.add(id);
+
+    return Uint8List.fromList([0x50, 0x4b, 3, 4]);
+  }
 }

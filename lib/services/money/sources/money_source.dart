@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 // SERVICES
 import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/money/money_concept_model.dart';
@@ -101,4 +103,8 @@ abstract interface class MoneySource {
     List<MoneyConcept> outgoing,
     List<PosPaymentMethod> settlements
   })> catalog();
+
+  /// The accounting export's file (`export.accounting`, M-60) for a
+  /// `moneyExportRequest` body. A master's only for now (`money.md`).
+  Future<Uint8List> exportAccounting(Map<String, dynamic> request);
 }

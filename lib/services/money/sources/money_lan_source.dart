@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 // PACKAGES
 import 'package:lyra_protocol/lyra_protocol.dart';
 
@@ -234,6 +236,17 @@ class MoneyLanSource implements MoneySource {
           if (row is Map) PosPaymentMethod.fromJson(Map<String, dynamic>.from(row))
       ].where((method) => method.isValid).toList(growable: false)
     );
+  }
+
+  /// `export.accounting` answers a file id, valid for an hour and readable
+  /// only by this session's account (`protocol-v1.md` §6); it is fetched at once.
+  @override
+  Future<Uint8List> exportAccounting(Map<String, dynamic> request) async {
+    final answer = await _lan.call(Ops.exportAccounting, args: request);
+    final id = answer is Map ? answer["fileId"] : null;
+    if (id is! String) throw const UnreadableAnswer("export.accounting");
+
+    return _lan.download(id);
   }
 
   /// The cloud's account body keys, as the master names them.

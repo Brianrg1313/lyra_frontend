@@ -11620,6 +11620,211 @@ class S {
     );
   }
 
+  /// `Export`
+  String get finance_export {
+    return Intl.message('Export', name: 'finance_export', desc: '', args: []);
+  }
+
+  /// `Accounting export`
+  String get finance_export_title {
+    return Intl.message(
+      'Accounting export',
+      name: 'finance_export_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales, payments and stock movements for your accounting software. Every row carries its Lyra ID, so exporting a period again matches what was already imported.`
+  String get finance_export_subtitle {
+    return Intl.message(
+      'Sales, payments and stock movements for your accounting software. Every row carries its Lyra ID, so exporting a period again matches what was already imported.',
+      name: 'finance_export_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Period`
+  String get finance_export_period {
+    return Intl.message(
+      'Period',
+      name: 'finance_export_period',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This month`
+  String get finance_export_this_month {
+    return Intl.message(
+      'This month',
+      name: 'finance_export_this_month',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last month`
+  String get finance_export_last_month {
+    return Intl.message(
+      'Last month',
+      name: 'finance_export_last_month',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This year`
+  String get finance_export_this_year {
+    return Intl.message(
+      'This year',
+      name: 'finance_export_this_year',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last year`
+  String get finance_export_last_year {
+    return Intl.message(
+      'Last year',
+      name: 'finance_export_last_year',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What to include`
+  String get finance_export_datasets {
+    return Intl.message(
+      'What to include',
+      name: 'finance_export_datasets',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick at least one.`
+  String get finance_export_datasets_empty {
+    return Intl.message(
+      'Pick at least one.',
+      name: 'finance_export_datasets_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales`
+  String get finance_export_sales {
+    return Intl.message(
+      'Sales',
+      name: 'finance_export_sales',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sale lines`
+  String get finance_export_sale_lines {
+    return Intl.message(
+      'Sale lines',
+      name: 'finance_export_sale_lines',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payments`
+  String get finance_export_payments {
+    return Intl.message(
+      'Payments',
+      name: 'finance_export_payments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receivables`
+  String get finance_export_receivables {
+    return Intl.message(
+      'Receivables',
+      name: 'finance_export_receivables',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stock movements`
+  String get finance_export_stock_movements {
+    return Intl.message(
+      'Stock movements',
+      name: 'finance_export_stock_movements',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Format`
+  String get finance_export_format {
+    return Intl.message(
+      'Format',
+      name: 'finance_export_format',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Excel (.xlsx)`
+  String get finance_export_xlsx {
+    return Intl.message(
+      'Excel (.xlsx)',
+      name: 'finance_export_xlsx',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One sheet per dataset`
+  String get finance_export_xlsx_hint {
+    return Intl.message(
+      'One sheet per dataset',
+      name: 'finance_export_xlsx_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `CSV (.zip)`
+  String get finance_export_csv {
+    return Intl.message(
+      'CSV (.zip)',
+      name: 'finance_export_csv',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One file per dataset, for importing`
+  String get finance_export_csv_hint {
+    return Intl.message(
+      'One file per dataset, for importing',
+      name: 'finance_export_csv_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Export saved`
+  String get finance_export_saved {
+    return Intl.message(
+      'Export saved',
+      name: 'finance_export_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No payment method yet`
   String get finance_methods_empty_title {
     return Intl.message(

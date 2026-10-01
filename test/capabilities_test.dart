@@ -52,13 +52,13 @@ void main() {
     );
   });
 
-  test('in the cloud every area is open but the local server', () {
+  test('in the cloud every area is open but those of a master (its server, the accounting export)', () {
     final capabilities = CapabilityService();
 
     for (final area in CapabilityService.modes.keys) {
       expect(
         capabilities.of(area),
-        area == "local_server" ? Capability.hidden : Capability.available,
+        area == "local_server" || area == "finance.export" ? Capability.hidden : Capability.available,
         reason: area
       );
     }
@@ -87,7 +87,7 @@ void main() {
     final capabilities = CapabilityService();
 
     // Built: the business domain, inventory (importing too), stock, the POS, the sales board and
-    // finance's summary, payments and accounts.
+    // finance's summary, payments, accounts and the accounting export.
     expect(capabilities.of("business"), Capability.available);
     expect(capabilities.of("business.settings"), Capability.available);
     expect(capabilities.of("business.settings.edit_logo"), Capability.available);
@@ -105,8 +105,8 @@ void main() {
     expect(capabilities.of("finance.payments.void"), Capability.available);
     expect(capabilities.of("finance.methods"), Capability.available);
     expect(capabilities.of("finance.methods.manage_currencies"), Capability.available);
+    expect(capabilities.of("finance.export"), Capability.available);
     // Not yet: they belong to local, but their sources don't exist.
-    expect(capabilities.of("finance.export"), Capability.hidden);
     expect(capabilities.of("business.employees"), Capability.hidden);
     expect(capabilities.of("business.employees.view"), Capability.hidden);
   });
