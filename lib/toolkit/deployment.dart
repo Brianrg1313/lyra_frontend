@@ -31,6 +31,8 @@ import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/services/money/sources/money_cloud_source.dart';
 import 'package:app/services/money/sources/money_lan_source.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
+import 'package:app/toolkit/api.dart' show api;
+import 'package:app/services/database/database_service.dart';
 
 /// Where the company's data lives (`docs/plan-offline-lan.md` §7, decision D9).
 ///
@@ -38,9 +40,10 @@ import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
 /// - [local]: one desktop of each site is the master and serves the LAN, no cloud.
 /// - [hybrid]: the master serves the LAN and syncs with the cloud (a subscription, phase 6).
 ///
-/// It is never chosen: a device is in LAN mode while it is paired with a master or is one
-/// ([Deployment.restore]). Whether a master syncs is the company's subscription, not the
-/// device's.
+/// It is never chosen up front: a device is in LAN mode while it is paired with a master or is
+/// one ([Deployment.restore]), unless its session is the cloud's: the sign in page offers the
+/// cloud whenever the backend answers, paired or not, and the session decides where the data
+/// comes from. Whether a master syncs is the company's subscription, not the device's.
 enum DeploymentMode { cloud, local, hybrid }
 
 /// What this install is in a LAN deployment. Meaningless in [DeploymentMode.cloud].
@@ -54,11 +57,16 @@ enum DeploymentRole { master, client }
 abstract final class Deployment {
   static DeploymentMode _mode = DeploymentMode.cloud;
   static DeploymentRole? _role;
+  static DeploymentRole? _paired;
 
   static DeploymentMode get mode => _mode;
 
   /// Null in [DeploymentMode.cloud].
   static DeploymentRole? get role => _role;
+
+  /// What this device's pairing makes it, whichever session it runs: a paired device signed in
+  /// to the cloud keeps its pairing for the next time it signs in to the master ([offline]).
+  static DeploymentRole? get paired => _paired;
 
   /// Whether this install offers LAN mode: every native one, and the page a
   /// master serves (plan §3). The same build is the cloud app everywhere else:
@@ -67,9 +75,13 @@ abstract final class Deployment {
 
   /// Reads this device's mode from what it holds (`preCall`, before the first route): the
   /// pairing [store] keeps (`LanDevice`, written by the setup and by pairing) makes it a
-  /// master or a client, anything else is the cloud app. Nothing up front decides it, and
-  /// leaving the LAN ([detach]) or pairing ([attach]) changes it at any time.
-  static Future<void> restore([LanIdentityStore store = const SecureLanIdentityStore()]) async {
+  /// master or a client, anything else is the cloud app. A paired device that holds a cloud
+  /// session ([cloudSession]) stays the cloud app until it signs out. Nothing up front decides
+  /// it, and leaving the LAN ([detach]) or pairing ([attach]) changes it at any time.
+  static Future<void> restore([
+    LanIdentityStore store = const SecureLanIdentityStore(),
+    Future<bool> Function() cloudSession = _cloudToken
+  ]) async {
     LanDevice? device;
 
     if (lanEnabled) {
@@ -81,8 +93,22 @@ abstract final class Deployment {
       }
     }
 
-    use(device == null ? DeploymentMode.cloud : DeploymentMode.local, role: device?.role);
+    var cloud = device == null;
+    if (!cloud) {
+      try {
+        cloud = await cloudSession();
+      } on Object {
+        cloud = false;
+      }
+    }
+
+    use(cloud ? DeploymentMode.cloud : DeploymentMode.local, role: device?.role, paired: device?.role);
   }
+
+  /// A browser's cloud session is a cookie this page can't see, and a master's page is never
+  /// the cloud's origin: only a stored token says so.
+  static Future<bool> _cloudToken() async =>
+    !kIsWeb && await DatabaseService().hasInSecure(api.current.tokenName);
 
   /// This device was just set up as the master or paired with one (its `LanDevice` stored).
   static void attach(DeploymentRole role) => use(DeploymentMode.local, role: role);
@@ -90,10 +116,23 @@ abstract final class Deployment {
   /// This device just forgot its pairing.
   static void detach() => use(DeploymentMode.cloud);
 
+  /// The sign in page goes to the cloud: its sources serve this session, the pairing kept.
+  static void online() {
+    _mode = DeploymentMode.cloud;
+    _role = null;
+  }
+
+  /// The sign in page goes to the master this device is paired with.
+  static void offline() {
+    if (_paired != null) use(DeploymentMode.local, role: _paired);
+  }
+
+  /// [paired] defaults to [role]: a test of a session on a master is a test of a paired device.
   @visibleForTesting
-  static void use(DeploymentMode mode, {DeploymentRole? role}) {
+  static void use(DeploymentMode mode, {DeploymentRole? role, DeploymentRole? paired}) {
     _mode = mode;
     _role = mode == DeploymentMode.cloud ? null : role;
+    _paired = paired ?? _role;
   }
 }
 

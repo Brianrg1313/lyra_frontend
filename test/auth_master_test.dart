@@ -8,11 +8,13 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/screens/authentication/_authentication.dart';
 
-/// A device paired with a master signs in on the same page as the cloud's, in its steps: the
-/// e-mail alone, then what `auth.identify` answers: the password under it, or (someone invited)
-/// the activation code and a new password. No scan of the network: the mode is a fact (D9).
+/// A device paired with a master signs in on the one sign in page: with the backend answering,
+/// the cloud's form (sign in or sign up, a cloud session); without it, its master's, in the
+/// cloud's steps: the e-mail alone, then what `auth.identify` answers: the password under it,
+/// or (someone invited) the activation code and a new password.
 void main() {
   setUpAll(() {
     ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFFFFFFF));
@@ -22,7 +24,7 @@ void main() {
   setUp(() => Deployment.use(DeploymentMode.local, role: DeploymentRole.client));
   tearDown(() => Deployment.use(DeploymentMode.cloud));
 
-  Future<_Master> pump(WidgetTester tester, {bool activation = false}) async {
+  Future<_Master> pump(WidgetTester tester, {bool activation = false, bool online = false}) async {
     tester.view.physicalSize = const Size(1600, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -41,7 +43,11 @@ void main() {
         home: Builder(builder: (context) {
           AppSize.instance(context);
 
-          return const Authentication();
+          return Authentication(scan: () => NetworkScanService(
+            cloud: () async => online,
+            discover: () async => const [],
+            canHost: () async => false
+          ));
         })
       )
     ));
@@ -57,10 +63,22 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
   }
 
-  testWidgets('signed out of a master, the e-mail alone and "continue", as in the cloud', (tester) async {
+  testWidgets("with the backend answering, a paired device gets the cloud's sign in and sign up", (tester) async {
+    await pump(tester, online: true);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(S.current.auth_title), findsOneWidget);
+    expect(find.text(S.current.auth_master_title), findsNothing);
+    expect(Deployment.mode, DeploymentMode.cloud);
+    expect(Deployment.paired, DeploymentRole.client);
+  });
+
+  testWidgets("without the backend, its master's: the e-mail alone and 'continue', as in the cloud", (tester) async {
+    Deployment.online();
     await pump(tester);
 
     expect(tester.takeException(), isNull);
+    expect(Deployment.mode, DeploymentMode.local);
     expect(find.text(S.current.auth_master_title), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text(S.current.auth_continue), findsOneWidget);

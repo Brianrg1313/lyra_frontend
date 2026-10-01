@@ -4,6 +4,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/lan.dart' show lanServingMaster;
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/services/sign_in/sign_in_service.dart';
@@ -18,14 +19,13 @@ import 'auth_offline.dart';
 /// Single entry for signing in and signing up: the person only types the
 /// email, and `email/verify` decides which of the two flows follows.
 ///
-/// What is drawn depends on the network ([NetworkScanService], plan §7.4):
-/// the backend answers → the cloud's form, as always; it doesn't but a master
-/// is on the LAN → [AuthLan] signs in to it; neither → [AuthLan] creates the
-/// master on this computer, or [AuthOffline] where none can run (web, phones).
-///
-/// A device paired with a master, or that is one, signs in to it here too ([AuthMaster]), the
-/// network aside: its mode is a fact (D9), so signing out of a master lands on the same page as
-/// signing out of the cloud.
+/// What is drawn depends on the network ([NetworkScanService], plan §7.4), never on a choice:
+/// the backend answers → the cloud's form, as always, paired with a master or not (the session
+/// it opens is the cloud's, [Deployment.online]); it doesn't and this device is paired with a
+/// master (or is one) → that master's sign in, [AuthMaster], in the same frame and steps
+/// ([Deployment.offline]); it doesn't but a master is on the LAN → [AuthLan] signs in to it;
+/// neither → [AuthLan] creates the master on this computer, or [AuthOffline] where none can run
+/// (web, phones). A browser on a master's page has only that master: the cloud is another origin.
 class Authentication extends PageBuilder {
   const Authentication({super.key, this.scan});
 
@@ -33,7 +33,7 @@ class Authentication extends PageBuilder {
   final NetworkScanService Function()? scan;
 
   @override
-  Widget build(BuildContext context) => Deployment.mode != DeploymentMode.cloud ? const _MasterGate() : MultiProvider(
+  Widget build(BuildContext context) => lanServingMaster != null ? const _MasterGate() : MultiProvider(
     providers: [
       Provider(create: (_) => SignInService()),
       ChangeNotifierProvider(create: (_) => (scan ?? NetworkScanService.new)()..watch())
@@ -70,6 +70,14 @@ class _GateState extends State<_Gate> {
 
     final scan = context.watch<NetworkScanService>();
 
+    // The sources follow the form on screen: the cloud's identify the e-mail through the backend,
+    // a master's through `LanService`. Nothing reads them before a submit.
+    if (scan.reach == NetworkReach.online) Deployment.online();
+    if (scan.reach != NetworkReach.online && scan.reach != NetworkReach.searching && Deployment.paired != null) {
+      Deployment.offline();
+      return const _MasterGate();
+    }
+
     return switch (scan.reach) {
       NetworkReach.searching => const Center(child: Loading()),
       NetworkReach.online => const DesktopBody(),
@@ -80,9 +88,9 @@ class _GateState extends State<_Gate> {
   }
 }
 
-/// The master's sign in while it can take one ([LanStatus.signedOut]); any other state of the
-/// connection (connecting aside) is `/lan`'s to show and act on, and so is entering once signed
-/// in.
+/// The sign in of a paired device without the backend, while its master can take one
+/// ([LanStatus.signedOut]); any other state of the connection (connecting aside) is `/lan`'s to
+/// show and act on, and so is entering once signed in.
 class _MasterGate extends StatefulWidget {
   const _MasterGate();
 

@@ -92,7 +92,8 @@ class LanService extends ChangeNotifier {
 
   LanDevice? get device => _client?.device;
 
-  bool get isMaster => Deployment.role == DeploymentRole.master;
+  /// The pairing's role, not the session's: a master signed in to the cloud is still the master.
+  bool get isMaster => Deployment.paired == DeploymentRole.master;
 
   String? get accountId => _client?.accountId;
 

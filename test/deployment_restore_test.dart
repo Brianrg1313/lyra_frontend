@@ -7,8 +7,9 @@ import 'package:app/services/lan/lan_identity_store.dart';
 import 'lan_client_test.dart' show device;
 
 /// The mode is never chosen up front (`docs/plan-offline-lan.md` D9): a device is in LAN mode
-/// while it holds a pairing, as the master or a client, and is the cloud app otherwise. Leaving
-/// the LAN or pairing changes it while the app runs.
+/// while it holds a pairing, as the master or a client, and is the cloud app otherwise, or while
+/// its session is the cloud's. Leaving the LAN, pairing or signing in changes it while the app
+/// runs.
 void main() {
   tearDown(() => Deployment.use(DeploymentMode.cloud));
 
@@ -22,7 +23,7 @@ void main() {
   });
 
   test('a paired device is a client, and the master its own role', () async {
-    await Deployment.restore(MemoryLanIdentityStore()..stored = device());
+    await Deployment.restore(MemoryLanIdentityStore()..stored = device(), () async => false);
 
     expect(Deployment.mode, DeploymentMode.local);
     expect(Deployment.role, DeploymentRole.client);
@@ -38,7 +39,7 @@ void main() {
       privateKeyPem: master.privateKeyPem,
       hosts: master.hosts,
       port: master.port
-    ));
+    ), () async => false);
 
     expect(Deployment.mode, DeploymentMode.local);
     expect(Deployment.role, DeploymentRole.master);
@@ -48,6 +49,27 @@ void main() {
     await Deployment.restore(_BrokenStore());
 
     expect(Deployment.mode, DeploymentMode.cloud);
+  });
+
+  test('a paired device holding a cloud session stays the cloud app, its pairing kept', () async {
+    await Deployment.restore(MemoryLanIdentityStore()..stored = device(), () async => true);
+
+    expect((Deployment.mode, Deployment.role), (DeploymentMode.cloud, null));
+    expect(Deployment.paired, DeploymentRole.client);
+  });
+
+  test('the sign in page moves a paired device between the cloud and its master', () {
+    Deployment.attach(DeploymentRole.master);
+
+    Deployment.online();
+    expect((Deployment.mode, Deployment.paired), (DeploymentMode.cloud, DeploymentRole.master));
+
+    Deployment.offline();
+    expect((Deployment.mode, Deployment.role), (DeploymentMode.local, DeploymentRole.master));
+
+    Deployment.detach();
+    Deployment.offline();
+    expect((Deployment.mode, Deployment.paired), (DeploymentMode.cloud, null));
   });
 
   test('pairing and leaving switch the mode while the app runs', () {

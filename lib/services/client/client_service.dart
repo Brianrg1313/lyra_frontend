@@ -84,8 +84,8 @@ class ClientService extends ChangeNotifier {
   /// screen wins over the dashboard and over a deep link: the backend lists
   /// what must be done before either.
   ///
-  /// `/login` signs in again in either mode: on a master's device it is the
-  /// master's sign in (`AuthMaster`).
+  /// `/login` signs in again in either mode: the cloud's while the backend
+  /// answers, a paired device's master's (`AuthMaster`) when it doesn't.
   Future<String?> resolve() async {
     const signIn = "/login";
 
