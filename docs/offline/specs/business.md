@@ -61,9 +61,8 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 - **B-9** `timezone` is nullable, as in the cloud. `null` means the country's default zone (the
   `countries` catalogue carries one per country). An edit is checked against the IANA list
   (`invalid_timezone`); an empty value clears it. *Built so far:* setup leaves it `null` (Dart
-  can't read the OS zone's IANA name on every platform), and the engine checks the name's shape
-  only (`Area/Location`, or `UTC`): it carries no zone database until the day boundaries of money
-  and POS need one.
+  can't read the OS zone's IANA name on every platform), and the engine checks the name against
+  the IANA database it carries since the POS release (`Zones`, which also computes "today").
 
 ### Ops
 

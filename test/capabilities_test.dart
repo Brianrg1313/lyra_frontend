@@ -8,6 +8,7 @@ import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
+import 'package:app/services/pos/sources/pos_lan_source.dart';
 
 /// Which areas each deployment mode has (`docs/plan-offline-lan.md` §2). The mode is read
 /// before any grant, so an area a mode lacks is closed even to an owner, and a cloud area
@@ -81,15 +82,17 @@ void main() {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
     final capabilities = CapabilityService();
 
-    // Built: the business domain, inventory (importing too) and stock.
+    // Built: the business domain, inventory (importing too), stock and the POS.
     expect(capabilities.of("business"), Capability.available);
     expect(capabilities.of("business.settings"), Capability.available);
     expect(capabilities.of("business.settings.edit_logo"), Capability.available);
     expect(capabilities.of("inventory"), Capability.available);
     expect(capabilities.of("inventory.move_stock"), Capability.available);
     expect(capabilities.of("inventory.import"), Capability.available);
+    expect(capabilities.of("pos"), Capability.available);
+    expect(capabilities.of("pos.checkout"), Capability.available);
     // Not yet: they belong to local, but their sources don't exist.
-    expect(capabilities.of("pos"), Capability.hidden);
+    expect(capabilities.of("sales"), Capability.hidden);
     expect(capabilities.of("finance.payments"), Capability.hidden);
     expect(capabilities.of("business.employees"), Capability.hidden);
     expect(capabilities.of("business.employees.view"), Capability.hidden);
@@ -134,12 +137,13 @@ void main() {
   });
 
   test('outside the cloud only the built domains have a source', () {
-    expect(Sources.pos, isNotNull);
+    expect(Sources.sales, isNotNull);
 
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
 
     expect(Sources.session, isA<SessionLanSource>());
     expect(Sources.business, isA<BusinessLanSource>());
-    expect(() => Sources.pos, throwsUnsupportedError);
+    expect(Sources.pos, isA<PosLanSource>());
+    expect(() => Sources.sales, throwsUnsupportedError);
   });
 }

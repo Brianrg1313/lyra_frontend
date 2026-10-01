@@ -37,6 +37,13 @@ re-types the columns nobody typed by hand (`inventory.tables.normalize`, I-47); 
 (`LanService` subscribes, `ConnectionService.on` hands them to the same handlers as the cloud's
 socket), which is what ends an import's wait. Importing from the web build has the same `dart:io`
 gap as photos. No screen yet follows `table/changed` or `stock/changed` live on its own.
+Phase 4, fourth release (POS): the engine serves the counter's catalogue (read by field type, priced
+net of its discount), the settlement kinds (`Settlements` in `lyra_protocol`, without credit), and
+the ticket: per-device codes, lines that hold stock, money computed in minor units, close and
+cancel (`pos.md` POS-1 to POS-45), with the ticket holds of `stock.md` and I-4; "today" is computed
+with the IANA zone database the engine now carries. The app reads it through `PosLanSource`, and a
+product whose table counts no stock is sold without holds and shows no count (POS-6). Left for
+later: the POS outbox and ST-14 (plan phase 5), and `sale/progress`, with the sales release.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the

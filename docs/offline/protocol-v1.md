@@ -187,8 +187,9 @@ The master closes the connection after `version_mismatch` (close code 4002), `se
   `invoice/*`, `sale/progress`, `table/*`), plus `business/changed`, `permissions/changed` and
   `table/changed` (`Events` in `lyra_protocol`). The `XLanSource` feeds them to the same
   `receive(...)` seams. The engine emits `business/changed` from the business release,
-  `table/changed` and `stock/changed` from the inventory release, and `table/normalizing` and
-  `table/ready` from the import release.
+  `table/changed` and `stock/changed` from the inventory release, `table/normalizing` and
+  `table/ready` from the import release, and `invoice/*` from the POS release (`sale/progress`
+  arrives with the sales release).
 - The app subscribes once its session is ready (`LanService`), and hands each event to the
   handlers of `ConnectionService.on`, the same ones the cloud's socket feeds. A reconnect asks for
   `since` the last seq it handed over; `resync_required` fires `ConnectionService.onRestored`.
@@ -206,7 +207,8 @@ The master closes the connection after `version_mismatch` (close code 4002), `se
   master keeps one, 320 px wide (`FileSizes.thumbnail`), made at upload: `size` ≤ 320 answers it,
   a larger one or an image already that small answers the original. A JPEG thumbnail stays JPEG,
   the rest become PNG.
-  Permission: the one that reads the record the file belongs to. Export files (`export.*`) are
+  Permission: the one that reads the record the file belongs to; a product image is also
+  readable with `pos.view` (a till draws the pictures without seeing the inventory). Export files (`export.*`) are
   readable only by the account that asked for them, for 1 hour.
 - Files are stored encrypted (plan §6.2) and decrypted while streaming over TLS.
 

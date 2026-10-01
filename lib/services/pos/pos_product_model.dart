@@ -21,8 +21,8 @@ class PosProduct {
     this.sku = "",
     this.barcode = "",
     this.price,
-    this.stock = 0,
-    this.reserved = 0,
+    this.stock,
+    this.reserved,
     this.image,
     this.categories = const []
   });
@@ -48,11 +48,16 @@ class PosProduct {
   /// Units left to sell, from the inventory ledger and not from the stock
   /// column mirrored into the record. A product the ledger has never been told
   /// about reads 0, which is what it has.
-  final int stock;
+  ///
+  /// Null is a product whose table counts no stock (`pos.md` POS-6): it is sold
+  /// at the counter without holds, never refused for stock, and its tile shows
+  /// no count. The cloud always counts, so only a master answers null.
+  final int? stock;
 
   /// Units held for someone. Not shown next to the stock —it is a different
   /// question— but it travels because it is the other half of the balance.
-  final int reserved;
+  /// Null with [stock].
+  final int? reserved;
 
   /// Cover picture, already resolved by the backend, or null without one.
   final ProductImage? image;
@@ -73,7 +78,7 @@ class PosProduct {
   /// Whether there is anything left to sell. Zero is a real answer —the shelf
   /// is empty— and it is drawn as such instead of hiding the product: it is
   /// still in the catalog and can still be ordered.
-  bool get isSoldOut => stock <= 0;
+  bool get isSoldOut => stock != null && stock! <= 0;
 
   /// The same product with the balance the ledger just announced.
   ///
@@ -83,7 +88,7 @@ class PosProduct {
   /// a restock. Everything else about the product is left exactly as it was
   /// read: the notice is about a balance and says nothing about a name or a
   /// price.
-  PosProduct withBalance({required int stock, required int reserved}) => PosProduct(
+  PosProduct withBalance({required int? stock, required int? reserved}) => PosProduct(
     id: id,
     name: name,
     sku: sku,
@@ -102,8 +107,8 @@ class PosProduct {
     sku: _text(entry["sku"]),
     barcode: _text(entry["barcode"]),
     price: _price(entry["price"]),
-    stock: _int(entry["stock"]) ?? 0,
-    reserved: _int(entry["reserved"]) ?? 0,
+    stock: _int(entry["stock"]),
+    reserved: _int(entry["reserved"]),
     image: _cover(entry["image"]),
     categories: _categories(entry["categories"])
   );

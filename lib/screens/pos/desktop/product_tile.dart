@@ -82,7 +82,7 @@ class PosProductTile extends StatelessWidget {
           ),
           SizedBox(height: AppSize.spaceXS / 2),
           _Price(price: product.price, currency: currency),
-          _Stock(stock: product.stock)
+          if (product.stock != null) _Stock(stock: product.stock!)
         ]
       )
     );
@@ -215,7 +215,8 @@ class _Price extends StatelessWidget {
 ///
 /// Nothing left is painted in the error colour and the product is still drawn:
 /// it remains in the catalog and can still be ordered, so hiding it would only
-/// make whoever is attending look for it.
+/// make whoever is attending look for it. A product whose table counts no stock
+/// has no line at all: "0 left" would be a lie about something nobody counts.
 class _Stock extends StatelessWidget {
   const _Stock({required this.stock});
 

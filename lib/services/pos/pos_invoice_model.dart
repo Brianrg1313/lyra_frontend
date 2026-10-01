@@ -18,7 +18,8 @@ class PosInvoiceLine {
     this.held = 0,
     this.price = 0,
     this.taxRate = 0,
-    this.total = 0
+    this.total = 0,
+    this.tracked = true
   });
 
   /// Identity of the line **within the invoice**, minted by the backend. It is
@@ -52,6 +53,11 @@ class PosInvoiceLine {
   /// three above on every read.
   final double total;
 
+  /// Whether the product's stock is counted, so [held] means something. A
+  /// master answers false for a product whose table counts no stock (`pos.md`
+  /// POS-6); the cloud counts every product and never sends it.
+  final bool tracked;
+
   factory PosInvoiceLine.fromJson(Map<String, dynamic> data) => PosInvoiceLine(
     lineId: (data["lineId"] ?? "").toString(),
     // Null and not empty: it is what tells a delivery charge apart from
@@ -63,7 +69,8 @@ class PosInvoiceLine {
     held: _int(data["held"]),
     price: _double(data["price"]),
     taxRate: _double(data["taxRate"]),
-    total: _double(data["total"])
+    total: _double(data["total"]),
+    tracked: data["tracked"] != false
   );
 
   static int _int(dynamic raw) => switch (raw) {

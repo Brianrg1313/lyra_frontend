@@ -88,6 +88,7 @@ class CapabilityService extends ChangeNotifier {
     "business.clients",
     "business.settings",
     "inventory",
+    "pos",
     "local_server"
   };
 

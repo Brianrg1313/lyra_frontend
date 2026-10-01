@@ -112,7 +112,9 @@ invoice|manual, id}, created, expires? }`.
   announces ("released"). The ticket is not written to.
 - **ST-23** Charging a ticket turns its holds into `consumed` (`remove` / `sale` for the held
   units plus whatever was missing, `pos.md` POS-31). Cancelling turns them `released`
-  (`unreserve` / `cancelled`).
+  (`unreserve` / `cancelled`). That `remove` (`source: pos`) also takes its units off
+  `reserved`, in the same movement: the hold it consumes holds exactly that many once POS-31 has
+  topped it up. A rebuild (ST-3) reads it the same way.
 
 ---
 
@@ -160,8 +162,10 @@ The inventory release serves `stock.move`, `stock.history` and `stock.summary`, 
 manual holds (ST-22) and the rebuild (`Stock.rebuild`, no screen yet). The import release writes
 an imported stock column as opening balances (`inventory.md` I-44): one `add` / `restock`
 movement per product, `source: import`, note "import", in the records step's transaction, with no
-`stock/changed` for each (that step's one `table/changed` tells about all of them). ST-14 is reached only by a
-POS outbox replay, which arrives with the POS. A discarded returned unit (the `remove` row above)
+`stock/changed` for each (that step's one `table/changed` tells about all of them). The POS release
+adds the ticket holds (ST-20, ST-21, ST-23; a line's hold is the `stock_holds` row with the line's
+id) and `pos.view` to `stock/changed`'s audience. ST-14 is reached only by a POS outbox replay, which
+arrives with the outbox (plan phase 5). A discarded returned unit (the `remove` row above)
 has no way to be told apart from a shelf removal in today's `stock.move` arguments: it waits for
 open question 4.
 

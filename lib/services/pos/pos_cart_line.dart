@@ -19,7 +19,8 @@ class PosCartLine {
     required this.price,
     required this.quantity,
     this.productId,
-    this.held = 0
+    this.held = 0,
+    this.tracked = true
   });
 
   /// What a key looks like before the backend has given the line its own.
@@ -61,14 +62,20 @@ class PosCartLine {
   /// has no shelf to take anything off.
   final int held;
 
+  /// Whether the product's stock is counted. False on a product whose table
+  /// counts none (`pos.md` POS-6): it is sold without holds, so its [held] is
+  /// zero and that says nothing about the shelf. Only a master answers false.
+  final bool tracked;
+
   /// Whether the line was typed in and does not point at any product.
   bool get isConcept => productId == null;
 
   /// Whether the units on this line are still set aside for this customer.
   ///
-  /// A charge with no product is always "held": there is nothing to hold, so
-  /// there is nothing that can be taken away either.
-  bool get isHeld => isConcept || held >= quantity;
+  /// A charge with no product, or a product nobody counts, is always "held":
+  /// there is nothing to hold, so there is nothing that can be taken away
+  /// either.
+  bool get isHeld => isConcept || !tracked || held >= quantity;
 
   /// Whether the backend has not answered for this line yet.
   ///
@@ -90,7 +97,8 @@ class PosCartLine {
     price: price,
     quantity: value,
     productId: productId,
-    held: isConcept ? 0 : value
+    held: isConcept || !tracked ? 0 : value,
+    tracked: tracked
   );
 
   /// The same line holding [value] units. It is what a shelf that no longer
@@ -101,6 +109,7 @@ class PosCartLine {
     price: price,
     quantity: quantity,
     productId: productId,
-    held: value
+    held: value,
+    tracked: tracked
   );
 }

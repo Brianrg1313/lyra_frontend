@@ -308,8 +308,9 @@ class PosInvoiceService extends ChangeNotifier {
           productId: product.id,
           // Drawn as held for the same reason the line is drawn at all: the
           // write that holds it is already travelling, and the answer is what
-          // corrects both.
-          held: 1
+          // corrects both. A product nobody counts holds nothing (POS-6).
+          held: product.stock == null ? 0 : 1,
+          tracked: product.stock != null
         )
       ];
     } else {
@@ -876,7 +877,8 @@ class PosInvoiceService extends ChangeNotifier {
           price: line.price,
           quantity: line.quantity,
           productId: line.productId,
-          held: line.held
+          held: line.held,
+          tracked: line.tracked
         )
     ];
 

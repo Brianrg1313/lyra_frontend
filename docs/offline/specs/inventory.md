@@ -278,7 +278,7 @@ two, the table is `preparing`, and the app waits for `table/ready`.
 
 The inventory release serves tables, fields, records and images; the import release adds the
 three ops of `inventory.import` and `inventory.tables.normalize`, so every op above is served.
-I-4 (open tickets) arrives with the POS. A cell written by hand is checked by I-21: the app's date-and-time form (`2026-02-12 12:30`)
+The POS release adds I-4 (`has_open_tickets` names the codes in `data.tickets`). A cell written by hand is checked by I-21: the app's date-and-time form (`2026-02-12 12:30`)
 and categories typed as `a, b` are accepted and stored as given / as a list.
 
 ## Open questions

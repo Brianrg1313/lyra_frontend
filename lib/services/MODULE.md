@@ -323,21 +323,24 @@ Nothing here adds figures up: every total is the backend's answer.
 
 - `sources/pos_source.dart` — `PosSource`: day summary, payment methods (unfiltered), catalogue page, open tickets,
   open, write a line, close, cancel. Used by all four POS services. `pos_cloud_source.dart` — REST.
+  `pos_lan_source.dart` — the master's `pos.*` ops; money in minor units of the answer's `currency` ↔ the models'
+  amounts, percents as text (`"7.5"`), a typed charge's price in the company's currency.
 - `pos_service.dart` — `PosService`: `/pos/` — `mineSales`, `categories`.
 - `pos_catalog_service.dart` — `PosCatalogService`: `POST /pos/catalog/`, cursor-paged (no total);
   `search()` (`SEARCH`), `filter()` (`CATEGORY`), `more()`/`retryMore()`. `CODE` not wired.
   Listens to `stock/changed` and patches loaded products.
-- `pos_product_model.dart` — `PosProduct`, `PosCatalogPage`.
+- `pos_product_model.dart` — `PosProduct` (`stock`/`reserved` null = not counted, POS-6), `PosCatalogPage`.
 - `pos_invoice_service.dart` — `PosInvoiceService`: **the ticket is a backend invoice**. Opens on
   first line, lines via `PUT /pos/invoices/items/` (holds units), `close`, `cancel`, `recover()`
   (`?MINE=1`). Owns tax rate and totals; optimistic, reconciles when idle; failed write rereads.
   Listens to `invoice/*` and `stock/changed` → `notice`/`noticeLabel`, `isShort`. Seams `seed`/`receive`.
 - `pos_invoice_event.dart` — `PosInvoiceEvent` (the `invoice/*` names + thin payload), `PosTicketNotice`.
-- `pos_invoice_model.dart` — `PosInvoice`, `PosInvoiceLine` (`productId` null on a charge line; `qty` ≠ `held`).
+- `pos_invoice_model.dart` — `PosInvoice`, `PosInvoiceLine` (`productId` null on a charge line; `qty` ≠ `held`;
+  `tracked` false only from a master).
 - `pos_payment_method.dart` — `PosPaymentMethod` (`reference`, `change` flags).
 - `pos_methods_service.dart` — `PosMethodsService`: `GET /pos/methods` (channels ignored).
 - `pos_cart_line.dart` — `PosCartLine`: a line as drawn; `key` = backend `lineId` or `draft:…`
-  (`isPending`); `held` vs `quantity` (`isHeld`).
+  (`isPending`); `held` vs `quantity` (`isHeld`; always true for a charge or an untracked product).
 
 ## sales/ — owned by the sales section
 

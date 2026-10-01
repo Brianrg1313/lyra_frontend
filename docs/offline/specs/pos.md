@@ -72,8 +72,9 @@ What the counter draws: the primary table's records, read **by field type**, not
 | `opened`, `closed` | instant | |
 | `origin` | `live` / `outbox` | POS-50 |
 
-**Line** `{lineId, productId?, name, sku, qty, held, price, list, discount, taxRate, subtotal,
-tax, total}`. `productId` is `null` on a typed-in charge. `name`, `sku`, `price`, `list` and
+**Line** `{lineId, productId?, name, sku, qty, held, tracked, price, list, discount, taxRate,
+subtotal, tax, total}`. `tracked` is false on a typed-in charge and on an untracked product
+(POS-6): their `held` of 0 isn't a hold released underneath them. `productId` is `null` on a typed-in charge. `name`, `sku`, `price`, `list` and
 `discount` are **frozen** when the line is created. `list` and `discount` are `null` on a
 typed-in charge, and `discount` is `null` when the product had none (POS-7).
 
@@ -221,6 +222,16 @@ ticket reads it back in full (`PosInvoiceEvent`).
 
 ---
 
+## Release status
+
+The POS release serves `pos.summary`, `pos.catalog`, `pos.methods` and the five `pos.invoices.*`
+ops (POS-1 to POS-45), the ticket holds of `stock.md` (ST-20 to ST-23) and `inventory.md` I-4. On
+the wire, the catalogue page and every invoice carry `currency`, and their money is in minor units
+of it (README, money; the app's `PosLanSource` turns it into the amounts its models hold).
+`pos.summary` counts the tickets the person closed (`closedBy`). Still to come: the outbox
+(`pos.outbox.sale`, `pos.snapshot`, POS-50 to POS-59) in plan phase 5, and `sale/progress` with the
+sales release, the first one that reads it on a master.
+
 ## Differences from cloud
 
 - Ticket codes look different (`B-000153` instead of `K7M4-2QX9`). The app treats them as opaque
@@ -231,8 +242,8 @@ ticket reads it back in full (`PosInvoiceEvent`).
 
 ## Open questions
 
-1. ~~Untracked products.~~ Decided: sold without holds (POS-6). App change in phase 4:
-   `PosProduct.stock` becomes nullable, read as "not counted".
+1. ~~Untracked products.~~ Decided: sold without holds (POS-6). Done in the POS release:
+   `PosProduct.stock` is nullable, read as "not counted", and a line says whether it is `tracked`.
 2. **Tax-inclusive or exclusive prices.** *Deferred: the product owner will research how taxes
    work and decide later.* The model says a line's `total` is "tax included", and
    `PosInvoiceService` computes `tax = subtotal × rate` on top of the sum of line totals for its

@@ -189,7 +189,8 @@ void main() {
     expect(product.sku, "SKU-0d");
     expect(product.barcode, isEmpty);
     expect(product.price, isNull);
-    expect(product.stock, 0);
+    expect(product.stock, isNull);
+    expect(product.isSoldOut, isFalse);
     expect(product.categories, isEmpty);
   });
 }

@@ -26,7 +26,8 @@ returns to the section as it was. No in-page back button.
 - `desktop/catalog.dart` — `PosCatalog`: search + product grid, load/error/missing/empty/ready,
   infinite scroll (`_lookahead`), footer loading/retry.
 - `desktop/product_tile.dart` — `PosProductTile`: **the tile is the button** — tap adds (and
-  holds) a unit. No price → refused here; everything else refused by the backend as worded.
+  holds) a unit. No price → refused here; everything else refused by the backend as worded. No stock line for
+  a product nobody counts (`stock` null).
 - `desktop/pos_currency.dart` — `posCurrency(context)`, `posAmount(currency, value)`: every figure goes through it.
 - `desktop/right_panel.dart` — `PosRightPanel`: the ticket (fixed head/foot, lines scroll).
   Turns `PosTicketNotice` into a `FloatFlag`, once.

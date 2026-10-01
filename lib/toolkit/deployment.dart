@@ -21,6 +21,7 @@ import 'package:app/services/stock/sources/stock_cloud_source.dart';
 import 'package:app/services/stock/sources/stock_lan_source.dart';
 import 'package:app/services/pos/sources/pos_source.dart';
 import 'package:app/services/pos/sources/pos_cloud_source.dart';
+import 'package:app/services/pos/sources/pos_lan_source.dart';
 import 'package:app/services/sales/sources/sales_source.dart';
 import 'package:app/services/sales/sources/sales_cloud_source.dart';
 import 'package:app/services/money/sources/money_source.dart';
@@ -109,7 +110,7 @@ abstract final class Sources {
   static DeliverySource get delivery => _pick(const DeliveryCloudSource());
   static InventorySource get inventory => _pick(const InventoryCloudSource(), () => InventoryLanSource(lanService));
   static StockSource get stock => _pick(const StockCloudSource(), () => StockLanSource(lanService));
-  static PosSource get pos => _pick(const PosCloudSource());
+  static PosSource get pos => _pick(const PosCloudSource(), () => PosLanSource(lanService));
   static SalesSource get sales => _pick(const SalesCloudSource());
   static MoneySource get money => _pick(const MoneyCloudSource());
 
