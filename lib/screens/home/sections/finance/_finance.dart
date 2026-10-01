@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/money/money_bot_service.dart';
 import 'package:app/services/money/money_catalog_service.dart';
 import 'package:app/services/money/money_currencies_service.dart';
@@ -16,6 +17,7 @@ import 'package:app/services/money/money_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/no_permission.dart';
+import 'package:app/screens/home/sections/unavailable.dart';
 import 'package:app/screens/home/sections/page_switcher.dart';
 import 'package:app/screens/home/sections/section_tabs.dart';
 
@@ -104,6 +106,14 @@ class _FinanceSectionState extends State<FinanceSection> {
   /// The open tab, or the "no access" message when it is not granted: the URL still
   /// opens it (a link, the back button), so the check is here and not only in the bar.
   Widget _body(BuildContext context, FinanceTab tab) {
+    if (!tab.isReachable) {
+      return UnavailableSection(
+        key: ValueKey("unavailable_${tab.area}"),
+        capability: CapabilityService().of(tab.area),
+        surface: false
+      );
+    }
+
     if (PermissionsService().canOpen(tab.area)) return tab.build();
 
     return NoPermissionSection(
@@ -143,7 +153,7 @@ class _FinanceSectionState extends State<FinanceSection> {
     ],
     // Permissions too: a reread of `/init` may open or close the tab being looked at.
     child: ListenableBuilder(
-      listenable: Listenable.merge([Navis.currentKey, PermissionsService()]),
+      listenable: Listenable.merge([Navis.currentKey, PermissionsService(), CapabilityService()]),
       builder: (context, _) {
         final tab = _tabOf(Navis.currentKey.value);
 

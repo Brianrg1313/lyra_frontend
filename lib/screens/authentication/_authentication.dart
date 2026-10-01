@@ -5,6 +5,8 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/lan.dart' show lanServingMaster;
+import 'package:app/toolkit/settings/initial_builder.dart' show clientService;
+import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/services/sign_in/sign_in_service.dart';
@@ -26,11 +28,18 @@ import 'auth_offline.dart';
 /// ([Deployment.offline]); it doesn't but a master is on the LAN → [AuthLan] signs in to it;
 /// neither → [AuthLan] creates the master on this computer, or [AuthOffline] where none can run
 /// (web, phones). A browser on a master's page has only that master: the cloud is another origin.
+///
+/// A session kept through a network failure (`ClientService.resolve`) enters by itself once the
+/// backend answers: the form is only drawn when there is none, or the backend refused it.
 class Authentication extends PageBuilder {
-  const Authentication({super.key, this.scan});
+  const Authentication({super.key, this.scan, this.resume});
 
   /// Makes the scan. Injected by the tests.
   final NetworkScanService Function()? scan;
+
+  /// Enters with the stored cloud session: the route to open, or `/login` without one.
+  /// [ClientService.resolve] unless a test hands one.
+  final Future<String?> Function()? resume;
 
   @override
   Widget build(BuildContext context) => lanServingMaster != null ? const _MasterGate() : MultiProvider(
@@ -38,12 +47,14 @@ class Authentication extends PageBuilder {
       Provider(create: (_) => SignInService()),
       ChangeNotifierProvider(create: (_) => (scan ?? NetworkScanService.new)()..watch())
     ],
-    child: const _Gate()
+    child: _Gate(resume: resume ?? clientService.resolve)
   );
 }
 
 class _Gate extends StatefulWidget {
-  const _Gate();
+  const _Gate({required this.resume});
+
+  final Future<String?> Function() resume;
 
   @override
   State<_Gate> createState() => _GateState();
@@ -53,6 +64,26 @@ class _GateState extends State<_Gate> {
   /// Set by "create the server": the setup takes the page, and no look of the
   /// network may take it back until the person returns from it.
   ({String email, String password})? _owner;
+
+  /// Whether the stored cloud session was tried: once per page, the first time the backend
+  /// answers. Until then the form waits, so a kept session never flashes it.
+  bool _resumed = false;
+  bool _resuming = false;
+
+  Widget _resume() {
+    if (!_resuming) {
+      _resuming = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final page = await widget.resume();
+        if (!mounted) return;
+        if (page == "/login") return setState(() => _resumed = true);
+
+        Navis.pushAndClearStack(context, page ?? Navis.consumePendingDeepLink() ?? PreferencesService().homePath);
+      });
+    }
+
+    return const Center(child: Loading());
+  }
 
   void _create(String email, String password) {
     context.read<NetworkScanService>().hold(true);
@@ -80,7 +111,7 @@ class _GateState extends State<_Gate> {
 
     return switch (scan.reach) {
       NetworkReach.searching => const Center(child: Loading()),
-      NetworkReach.online => const DesktopBody(),
+      NetworkReach.online => _resumed ? const DesktopBody() : _resume(),
       NetworkReach.master => AuthLan(masters: scan.masters, onCreate: _create),
       NetworkReach.none when scan.canHost => AuthLan(masters: const [], onCreate: _create),
       NetworkReach.none => AuthOffline(onRetry: scan.scan)

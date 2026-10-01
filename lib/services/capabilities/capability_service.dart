@@ -8,11 +8,14 @@ enum Capability {
   /// Open, as far as the mode goes (the permission still decides).
   available,
 
-  /// Part of the product here but unreachable right now: a cloud-only area in
-  /// `hybrid` with the internet down. Shown with a `SectionMessage`, not hidden.
+  /// Part of the product but not reachable here and now: a cloud-only area without the
+  /// internet (in `local`, or `hybrid` with it down), or one whose master side isn't built yet.
+  /// Shown locked, with a `SectionMessage`, never hidden: the app is the same one with or
+  /// without the network (plan §9.6, D17).
   needsInternet,
 
-  /// Not part of the product in this mode: hidden like an area without its `view`.
+  /// What can't exist in this mode at all (a master's accounting export in the cloud): hidden
+  /// like an area without its `view`.
   hidden
 }
 
@@ -20,7 +23,9 @@ enum Capability {
 ///
 /// It answers from the mode alone; `PermissionsService` asks it before any grant,
 /// so every door the permissions already close (side bar, tabs, routes, deep
-/// links) closes the same way for an area the mode doesn't have.
+/// links) closes the same way for an area the mode doesn't have. Sections and tabs
+/// draw a locked one ([needsInternet]) instead of leaving it out ([shows] is
+/// whether it works now, [exists] whether it is drawn).
 ///
 /// A singleton notifier like the permissions: in `hybrid`, losing the internet
 /// changes the answer while the app runs.
@@ -137,21 +142,25 @@ class CapabilityService extends ChangeNotifier {
     final mode = Deployment.mode;
     final declared = _declared(area) ?? _online;
 
-    if (mode != DeploymentMode.cloud && declared.contains(DeploymentMode.local) && !_builtLocally(area)) {
-      return Capability.hidden;
+    if (mode == DeploymentMode.cloud) {
+      return declared.contains(mode) ? Capability.available : Capability.hidden;
     }
 
-    if (declared.contains(mode)) return Capability.available;
+    // What the master serves: always there, whatever the internet.
+    if (declared.contains(DeploymentMode.local) && _builtLocally(area)) return Capability.available;
 
-    if (mode == DeploymentMode.hybrid && declared.contains(DeploymentMode.cloud)) {
-      return _internet ? Capability.available : Capability.needsInternet;
-    }
+    // The rest is the cloud's: a cloud-only area, or one whose master side isn't built yet,
+    // which `hybrid` reads from the cloud meanwhile. Without it, locked.
+    if (!declared.contains(DeploymentMode.cloud)) return Capability.hidden;
 
-    return Capability.hidden;
+    return mode == DeploymentMode.hybrid && _internet ? Capability.available : Capability.needsInternet;
   }
 
-  /// Whether [area] is part of the product in the running mode.
-  bool shows(String area) => of(area) != Capability.hidden;
+  /// Whether [area] works now: what an action, a button or a grant asks.
+  bool shows(String area) => of(area) == Capability.available;
+
+  /// Whether [area] is drawn, open or locked: what a side bar option or a tab asks.
+  bool exists(String area) => of(area) != Capability.hidden;
 
   /// Read like [_declared]: the most specific key on the path that is listed
   /// as built, or declared as an area of its own, decides.

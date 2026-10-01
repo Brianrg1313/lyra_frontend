@@ -152,13 +152,14 @@ abstract final class Sources {
   static MoneySource get money => _pick(const MoneyCloudSource(), () => MoneyLanSource(lanService));
 
   /// LAN sources arrive one domain per release (plan phase 4), over the one
-  /// connection [lanService] holds. A domain without one yet is hidden on a
-  /// master's devices (`CapabilityService`), so a call getting here without a
-  /// [lan] source is a bug, not a state to recover from.
+  /// connection [lanService] holds. A domain without one yet is the cloud's in
+  /// `hybrid` (plan §9.6) and locked in `local` (`CapabilityService`), so a call
+  /// getting here in `local` without a [lan] source is a bug, not a state to
+  /// recover from.
   static T _pick<T>(T cloud, [T Function()? lan]) => switch (Deployment.mode) {
     DeploymentMode.cloud => cloud,
-    DeploymentMode.local || DeploymentMode.hybrid =>
-      lan?.call() ?? (throw UnsupportedError("No LAN source for $T yet"))
+    DeploymentMode.hybrid => lan?.call() ?? cloud,
+    DeploymentMode.local => lan?.call() ?? (throw UnsupportedError("No LAN source for $T yet"))
   };
 }
 

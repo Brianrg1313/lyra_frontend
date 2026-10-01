@@ -94,20 +94,30 @@ class ClientService extends ChangeNotifier {
     }
 
     String? page;
+    var unreachable = false;
     final Map<String, dynamic>? clientData = await _source.bootstrap().then<Map<String, dynamic>?>((data) => data).catchError((E) {
       if (kDebugMode) {
         print(E);
       }
-      // The backend sends `action` as the destination identifier (for example
-      // "login" when the session is no longer valid), which matches the route's
-      // key, not its URL. It is translated to the real route by its key; if it
-      // does not match any, login is the safe destination on a session
-      // failure. Without this translation, returning "login" plain leaves the
-      // parser with a path with no match and the app stays stuck on the splash.
+      // Only an answer with an `action` judges the session: the backend sends it as the
+      // destination identifier (for example "login" when the session is no longer valid), which
+      // matches the route's key, not its URL. It is translated to the real route by its key; if
+      // it does not match any, login is the safe destination. Without this translation,
+      // returning "login" plain leaves the parser with a path with no match and the app stays
+      // stuck on the splash.
       final action = E is Map ? E["action"] as String? : null;
-      page = (action != null && action != "login" ? Navis.byKey(action)?.url : null) ?? signIn;
+      if (action == null) {
+        // No answer (no network, the backend down) says nothing of the session: it is kept,
+        // and the sign in page enters with it once the backend answers (plan §9.6).
+        unreachable = true;
+        return null;
+      }
+
+      page = (action != "login" ? Navis.byKey(action)?.url : null) ?? signIn;
       return null;
     });
+
+    if (unreachable) return signIn;
 
     if (page != null) {
       // The stored session is no longer useful: without discarding it, the

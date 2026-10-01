@@ -17,7 +17,8 @@ all seven created and provided by `_finance.dart`, none app-wide.
 
 - `_finance.dart` — `FinanceSection`: creates/provides the seven services, `SectionTabs` + active tab body (`NoPermissionSection` when not granted, see home module).
 - `finance_tab.dart` — `enum FinanceTab { overview, payments, receivables, methods }`: `key icon routeKey path area`,
-  `isShown`/`shown` (the running mode's tabs, `CapabilityService`), `initial = overview`, `opening`. Add a tab here.
+  `isShown`/`shown` (the tabs drawn, `CapabilityService.exists`), `isReachable` (open now; locked otherwise, its body
+  `UnavailableSection`), `initial = overview`, `opening`. Add a tab here.
   A tab's URL the mode lacks opens `opening`.
 - `money_format.dart` — `moneyLabel`, `moneyFineLabel` (4 decimals under a cent, for bot cost),
   `moneyCount`, `moneyDateLabel`, `moneyDayLabel`, `moneyMonthLabel`, `moneyRateLabel` (`1 USD = Bs. 36,5234`, up to 4

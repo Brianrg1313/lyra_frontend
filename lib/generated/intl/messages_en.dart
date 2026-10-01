@@ -3354,7 +3354,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "section_connections":
             MessageLookupByLibrary.simpleMessage("Connections"),
         "section_needs_internet_subtitle": MessageLookupByLibrary.simpleMessage(
-            "This section works through the cloud. It comes back as soon as the connection does."),
+            "This section works through the cloud. It opens as soon as Lyra is connected to the internet."),
         "section_needs_internet_title":
             MessageLookupByLibrary.simpleMessage("Needs the internet"),
         "section_no_business_subtitle": MessageLookupByLibrary.simpleMessage(

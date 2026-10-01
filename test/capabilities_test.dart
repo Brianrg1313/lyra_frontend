@@ -13,9 +13,9 @@ import 'package:app/services/pos/sources/pos_lan_source.dart';
 import 'package:app/services/money/sources/money_lan_source.dart';
 import 'package:app/services/sales/sources/sales_lan_source.dart';
 
-/// Which areas each deployment mode has (`docs/plan-offline-lan.md` §2). The mode is read
-/// before any grant, so an area a mode lacks is closed even to an owner, and a cloud area
-/// in hybrid waits for the internet instead of disappearing.
+/// Which areas each deployment mode has (`docs/plan-offline-lan.md` §2, §9.6). The mode is
+/// read before any grant, so an area a mode lacks is closed even to an owner, and what the
+/// network or the master can't serve now is locked, never left out.
 void main() {
   tearDown(() {
     Deployment.use(DeploymentMode.cloud);
@@ -66,18 +66,18 @@ void main() {
     expect(capabilities.singleCompany, isFalse);
   });
 
-  test('in local the cloud-only areas are hidden, not waiting', () {
+  test('in local the cloud-only areas are locked, not hidden', () {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
     final capabilities = CapabilityService();
 
-    expect(capabilities.of("messages"), Capability.hidden);
-    expect(capabilities.of("deliveries"), Capability.hidden);
-    expect(capabilities.of("finance.receivables"), Capability.hidden);
+    for (final area in ["messages", "deliveries", "finance.receivables", "business.branches", "business.delete", "business.settings.manage_emails"]) {
+      expect(capabilities.of(area), Capability.needsInternet, reason: area);
+      expect(capabilities.exists(area), isTrue, reason: area);
+      // Locked: no action of it works, no grant opens it.
+      expect(capabilities.shows(area), isFalse, reason: area);
+    }
     // What Lyra's assistant cost is measured in the cloud.
-    expect(capabilities.of("finance.overview.view_bot_cost"), Capability.hidden);
-    expect(capabilities.of("business.branches"), Capability.hidden);
-    expect(capabilities.of("business.delete"), Capability.hidden);
-    expect(capabilities.of("business.settings.manage_emails"), Capability.hidden);
+    expect(capabilities.of("finance.overview.view_bot_cost"), Capability.needsInternet);
     expect(capabilities.of("business.settings.edit"), Capability.available);
     expect(capabilities.of("local_server"), Capability.available);
     expect(capabilities.singleCompany, isTrue);
@@ -100,7 +100,7 @@ void main() {
     expect(capabilities.of("sales.done"), Capability.available);
     expect(capabilities.of("sales.fulfil"), Capability.available);
     // Approving a payment is about conversations, which a master has none of.
-    expect(capabilities.of("sales.approve"), Capability.hidden);
+    expect(capabilities.of("sales.approve"), Capability.needsInternet);
     expect(capabilities.of("finance"), Capability.available);
     expect(capabilities.of("finance.overview"), Capability.available);
     expect(capabilities.of("finance.payments.void"), Capability.available);
@@ -113,19 +113,23 @@ void main() {
     expect(capabilities.cloudServices, isFalse);
   });
 
-  test('in hybrid a cloud area waits for the internet, a master one does not', () {
+  test('in hybrid the cloud areas, and those the master does not serve yet, wait for the internet', () {
     Deployment.use(DeploymentMode.hybrid, role: DeploymentRole.client);
     final capabilities = CapabilityService();
 
     expect(capabilities.of("messages"), Capability.available);
     expect(capabilities.of("deliveries"), Capability.available);
+    expect(capabilities.of("business.clients"), Capability.available);
 
     capabilities.internet = false;
 
     expect(capabilities.of("messages"), Capability.needsInternet);
-    expect(capabilities.shows("messages"), isTrue);
-    expect(capabilities.of("deliveries"), Capability.available);
+    expect(capabilities.exists("messages"), isTrue);
+    expect(capabilities.shows("messages"), isFalse);
+    // Read from the cloud until the master serves it.
+    expect(capabilities.of("deliveries"), Capability.needsInternet);
     expect(capabilities.of("business.settings"), Capability.available);
+    expect(capabilities.of("inventory"), Capability.available);
     expect(capabilities.cloudServices, isFalse);
   });
 
@@ -133,9 +137,9 @@ void main() {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
     final capabilities = CapabilityService();
 
-    expect(capabilities.of("finance.receivables.collect"), Capability.hidden);
+    expect(capabilities.of("finance.receivables.collect"), Capability.needsInternet);
     expect(capabilities.of("business.settings.edit"), Capability.available);
-    expect(capabilities.of("quantum"), Capability.hidden);
+    expect(capabilities.of("quantum"), Capability.needsInternet);
   });
 
   test('an area the mode lacks is denied even to an owner', () {
@@ -150,6 +154,13 @@ void main() {
 
     expect(PermissionsService().canOpen("messages", business: "b-1"), isFalse);
     expect(PermissionsService().can("local_server.devices", business: "b-1"), isTrue);
+  });
+
+  test("in hybrid a domain the master does not serve yet is the cloud's", () {
+    Deployment.use(DeploymentMode.hybrid, role: DeploymentRole.client);
+
+    expect(Sources.business, isA<BusinessLanSource>());
+    expect(Sources.delivery, isNotNull);
   });
 
   test('outside the cloud only the built domains have a source', () {

@@ -84,7 +84,11 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
 (`employees.reissueActivation` is served, no button calls it), the pre-start task for a rehire
 (`employees.accept` is served), grants for other people (`permissions.*`), leaves and job endings.
 **Where we left off (2026-10-01)** Read this before anything else.
-- Next: phase 4, clients and deliveries, then statistics (§11); the permissions ops
+- In progress: phase 4b, one app (§9.6, D14 to D17, the owner's call of 2026-10-01). E1 done: nothing
+  disappears (locked areas and tabs), a network failure keeps the session. Next E2: the server section
+  in the cloud, `hybrid` on a device with a master (the master's session opened with the cloud's sign
+  in), "work offline", a master made from the cloud with the company's profile; then E3, the cloud grant.
+- After it: phase 4, clients and deliveries, then statistics (§11); the permissions ops
   (`session.md` session.permissions), without which an invited person holds no grant yet. Still
   open from phase 3: the exit check on real hardware.
 - Last finished: the employees release. Not yet seen on screen: an invitation on a real master, its
@@ -109,7 +113,7 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
   2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
   `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that master's 24 words; delete it
   otherwise. A fresh start offers "Create Master Server" again.
-- Gate: `flutter analyze` clean, `flutter test` 1157 passing with the 5 known failures of
+- Gate: `flutter analyze` clean, `flutter test` 1160 passing with the 5 known failures of
   `test/MODULE.md`.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
@@ -194,8 +198,11 @@ losing data (§9.4).
 | Business e-mails, verification | — | — | Cloud only. |
 | Permission requests | yes | yes | Handled by the local owner or admin. |
 
-A cloud-only area in `local` mode is **hidden** (it isn't part of the product there). In
-`hybrid` with the internet down it is **shown with `SectionMessage`** ("needs internet").
+Nothing disappears (D17): a cloud-only area in `local`, or in `hybrid` with the internet down, is
+**shown locked** (the side bar marks it, the section says it needs the internet); an area whose master
+side isn't built yet (phase 4) is locked the same way, saying it isn't available without the internet
+yet. Only what can't exist on the device (the server section on a phone or in the cloud's browser) is
+left out.
 
 ---
 
@@ -662,6 +669,32 @@ The master is never reachable from the internet: no open port, no forwarding.
 - A relay of ours (the master dialling out, end-to-end TLS through it) is left for when owners
   without a subscription ask for it: it costs us traffic for installs that don't pay.
 
+### 9.6 One app, one session (D14 to D17, 2026-10-01)
+The owner's model of the product: the cloud and the master are two homes of the same data, never two
+apps. What the person sees, how they sign in and what the side bar holds don't change with the network.
+- **Where the data lives (D15).** Within the free allowance the company's data lives in the cloud
+  **and** on its master, kept equal by the edge sync (§9.2, §9.3); with a subscription too. Past the
+  allowance without a subscription it lives on the master only, and the cloud keeps serving what is
+  vital (signing in, the account, the link to the master), so the data is always reachable. The
+  allowance and its measure are the backend's (`docs/task-edge-sync-backend.md`).
+- **Mode on a device with a master.** A paired device (or the master) signed in online runs `hybrid`:
+  the local domains always go to the master (one writer, principle 4; it always holds the full copy),
+  the cloud-only areas to the cloud while the internet answers, locked while it doesn't. A domain whose
+  master side isn't built yet reads the cloud while online. Losing the internet never signs anyone out
+  and never changes what the local domains show; coming back unlocks the cloud areas in place.
+  "Work offline" (the server section) is the same state chosen on purpose, the session kept.
+- **One session, two credentials (D14).** Signing in online on a device with a master also opens that
+  person's session on the master (30-day rotating refresh, `session.md` S-21), so the session survives
+  the internet, the subscription and a restart. The master accepts a **cloud grant**: a short-lived
+  statement signed by the backend's edge key (the account, this master's id, a nonce, the expiry) that
+  the master checks offline against the key pinned when it was linked, single use, then maps to its own
+  account. Until the backend issues grants, the master's password opens it: the one typed online when
+  it was a password sign in, otherwise asked once after a Google or code sign in.
+- **The server section is everywhere a master can be (D16).** In the cloud too, on a computer: create a
+  master from there, whose owner is the signed-in account (its password asked, since the sealed keys of
+  §6.3 hang on it) and whose company starts from the cloud company's profile (name, logo, country,
+  currency); the rest arrives by the sync. The master stores the cloud company's id (the link).
+
 ---
 
 ## 10. Operations
@@ -716,6 +749,7 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 | 2 | Engine core | `lyra_protocol`, `lyra_node` storage, crypto (§6.2), oplog, migrations, identity, audit, process lifecycle (§3), `LocalServerService` | L | engine tests: encrypt, reopen, key loss = unreadable, migration; app close leaves the engine alive |
 | 3 | LAN networking | TLS-only server, installation CA, QR and PAKE pairing, mutual TLS, CA install for web, mDNS, RPC, events, files, web bundle, setup screens (§7.4) | L | a second PC, a phone and a browser pair and sign in; a MITM test on the LAN fails to read or pair; revocation works |
 | 4 | Domains, one per release | business (single site) → inventory and stock → POS → sales → finance and accounting export → employees (sealed fields) → clients, deliveries → statistics | XL | each domain's contract tests pass on both sources |
+| 4b | One app (§9.6) | E1 nothing disappears: locked areas, the server section in the cloud, a network failure keeps the session · E2 one session: `hybrid` on a device with a master, the master's session opened with the cloud's sign in (password), "work offline", a master made from the cloud with the company's profile · E3 the cloud grant (engine side, backend task) | L | a paired device loses and regains the internet without signing in again or losing a section |
 | 5 | Operations | backups and restore, update gating, master migration, diagnostics, POS outbox (§8.4), EULA flow, signed builds | L | disaster drill: kill the master, restore on new hardware, POS outbox replays |
 | 6 | Hybrid | backend edge API (§9.2), sync engine, conflicts inbox, offline verifier (§6.4), subscribing and cancelling with the accounts (§9.4), remote access through the cloud and the VPN address (§9.5) | XL | a week-long soak with scripted outages and no divergence |
 | 7 | Hardening | passphrase unlock UI polish, external security review (incl. LAN pentest), performance with 50 clients | M | review findings closed |
@@ -756,6 +790,10 @@ The first two are in CLAUDE.md since phase 1, the next two since phase 2, the la
 | D11 | Sites with a subscription and after it (2026-10-01) | Each site has its own master. Cancelling keeps every site's data on its master, each working on its own; in the cloud the main site stays and the others become inactive (§9.4). |
 | D12 | Remote access (2026-10-01) | Through the cloud with a subscription; without one, the owner's own VPN. The master never opens a port; our relay only if asked for (§9.5). |
 | D13 | Entering the LAN without a pairing (2026-10-01) | The sign in follows the network: the cloud's while the backend answers; otherwise a master found on the LAN, whose sign in pairs the device with the account's password (SPAKE2, no code: any active account adds its own devices, the admin sees and revokes them); with neither, "create master server" where the engine runs, the e-mail and password becoming the owner (§7.4). |
+| D14 | One session (2026-10-01) | Signing in online on a device with a master opens the master's session too: a backend-signed grant the master checks offline; until it exists, the master's password (reused, or asked once) (§9.6). |
+| D15 | Where the data lives (2026-10-01) | In the cloud and on the master while within the free allowance or subscribed; past it, on the master only, with sign in and the account still served by the cloud (§9.6). |
+| D16 | Server section online (2026-10-01) | Shown in the cloud on a computer; a master made from there takes the account as owner and the cloud company's profile (§9.6). |
+| D17 | Nothing disappears (2026-10-01) | Areas the network or the master can't serve are locked, never hidden (§2). |
 
 ---
 

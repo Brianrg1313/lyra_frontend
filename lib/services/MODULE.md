@@ -65,7 +65,9 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `capability_service.dart` — `CapabilityService` singleton, `Capability` (`available`, `needsInternet`, `hidden`):
   which areas the deployment mode has. `modes` mirrors every area's `modes` in `docs/app-areas.json` (a test keeps them
   equal, `action_modes` as `<area>.<action>`); `of(area)` reads the most specific declared area (undeclared = cloud only);
-  on a master's devices a local area whose phase 4 release hasn't come is hidden (`_builtOnMaster`);
+  outside the cloud what the master serves is open, the rest (cloud only, or a local area whose phase 4 release hasn't
+  come, `_builtOnMaster`) is the cloud's: open in hybrid online, `needsInternet` (locked, never hidden) otherwise;
+  `shows` = works now (actions, grants), `exists` = drawn (side bar, tabs);
   `singleCompany` (not cloud); `internet` (hybrid only); `cloudServices` (cloud-only helpers such as the places search
   answer: cloud, or hybrid online). `PermissionsService.can`/`granted` ask it first.
 
@@ -147,6 +149,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 
 - `client_service.dart` — `ClientService.resolve()`: reads `/init/` before the tree exists
   (for `initialValidator`), fills `businessService` and the catalogs, returns the landing route or `null` (the first pending task's `route` wins over the home; `employment.invitation` is skipped when the person already has a company).
+  Only an answer with an `action` judges the session (dropped on `login`); no answer (no network) keeps it and returns `/login`, whose page enters with it once the backend answers.
   `signOut(context)`: `POST /authentication/logout/` (best effort, 5 s), drops the token, clears the sidecar's
   credentials, goes to `/login` (a master's sign in there too), then `clear()`s every session service. A new session service with a cache → add it there.
   The same teardown runs when the backend rejects the session mid-use (`onSessionRejected`), without the logout call, plus a `session_expired` flag.

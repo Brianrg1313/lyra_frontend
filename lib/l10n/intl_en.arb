@@ -189,7 +189,7 @@
   "section_no_business_subtitle": "Create your business to start using this section.",
   "section_no_permission": "You don't have access to this section in this business.",
   "section_needs_internet_title": "Needs the internet",
-  "section_needs_internet_subtitle": "This section works through the cloud. It comes back as soon as the connection does.",
+  "section_needs_internet_subtitle": "This section works through the cloud. It opens as soon as Lyra is connected to the internet.",
   "section_unavailable_title": "Not available here",
   "section_unavailable_subtitle": "This section is not part of Lyra on a local network.",
   "permission_denied_title": "You don't have access to {section}",

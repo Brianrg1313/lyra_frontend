@@ -59,7 +59,7 @@ void main() {
     Future<bool> Function()? cloud,
     List<LanFound> masters = const [],
     bool canHost = false,
-  }) => pump(tester, () => Authentication(scan: () => NetworkScanService(
+  }) => pump(tester, () => Authentication(resume: () async => "/login", scan: () => NetworkScanService(
     cloud: cloud ?? () async => false,
     discover: () async => masters,
     canHost: () async => canHost
@@ -152,9 +152,31 @@ void main() {
     expect(find.text(S.current.lan_master_eula_required), findsOneWidget);
   });
 
+  testWidgets('a session kept through a network failure is tried before the form, once', (tester) async {
+    final answer = Completer<String?>();
+    var tries = 0;
+    await pump(tester, () => Authentication(
+      resume: () {
+        tries++;
+        return answer.future;
+      },
+      scan: () => NetworkScanService(cloud: () async => true, discover: () async => const [], canHost: () async => false)
+    ));
+
+    expect(tries, 1);
+    expect(find.text(S.current.auth_title), findsNothing);
+
+    // No session, or the backend refused it: the sign in as always.
+    answer.complete("/login");
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text(S.current.auth_title), findsOneWidget);
+    expect(tries, 1);
+  });
+
   testWidgets('where no master can run (web, phones), the placeholder; "try again" looks once more', (tester) async {
     final answers = <Completer<bool>>[];
-    await pump(tester, () => Authentication(scan: () => NetworkScanService(
+    await pump(tester, () => Authentication(resume: () async => "/login", scan: () => NetworkScanService(
       cloud: () {
         answers.add(Completer());
         return answers.last.future;
@@ -176,6 +198,8 @@ void main() {
     expect(answers, hasLength(2));
 
     answers.last.complete(true);
+    await tester.pump();
+    // The stored session is tried first (none here), then the form.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text(S.current.auth_title), findsOneWidget);

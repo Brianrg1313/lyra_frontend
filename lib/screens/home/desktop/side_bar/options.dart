@@ -33,8 +33,10 @@ import './option.dart';
 /// The businesses option is always granted to a member, and the dashboard is
 /// not a company's.
 ///
-/// A section the deployment mode doesn't have ([CapabilityService]) is left out
-/// instead: it is not part of the product there, so there is nothing to ask for.
+/// A section the network or the master can't serve now ([CapabilityService],
+/// `needsInternet`) is locked before any of that, and opens on the message that
+/// says so: nothing disappears with the internet (plan §9.6). Only one that can't
+/// exist in the mode at all is left out.
 ///
 /// Only the active business **id** is watched, not the whole service: the
 /// grants are per company, so a switch relocks the list, but the rest of its
@@ -47,6 +49,10 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
   final capabilities = context.watch<CapabilityService>();
 
   String? lock(HomeSection section) {
+    if (capabilities.of(section.key) == Capability.needsInternet) {
+      return S.of(context).section_needs_internet_title;
+    }
+
     if (businessId == null) {
       return section.needsBusiness ? S.of(context).section_no_business_subtitle : null;
     }
@@ -56,12 +62,18 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
       : S.of(context).section_no_permission;
   }
 
-  Widget option(HomeSection section) =>
-    _option(context, section, active, isExpanded, lock(section), businessId != null);
+  Widget option(HomeSection section) => _option(
+    context,
+    section,
+    active,
+    isExpanded,
+    lock(section),
+    businessId != null || capabilities.of(section.key) == Capability.needsInternet
+  );
 
   /// A group whose sections are all left out loses its title too.
   List<Widget> group(Iterable<HomeSection> sections, [String? title]) {
-    final shown = sections.where((section) => capabilities.shows(section.key));
+    final shown = sections.where((section) => capabilities.exists(section.key));
     if (shown.isEmpty) return const [];
 
     return [

@@ -67,15 +67,19 @@ void main() {
     expect(_option(tester, HomeSection.sales).opensLocked, isFalse);
   });
 
-  testWidgets('a section the mode lacks is left out, not locked', (tester) async {
+  testWidgets('a section the network cannot serve is locked, not left out, and says why', (tester) async {
     final business = BusinessService()..seed(_companies);
     PermissionsService().seed({"b-1": {"business": {"view": true}}});
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
 
     await _pump(tester, business);
 
-    expect(find.byKey(ValueKey(HomeSection.messages.key)), findsNothing);
-    expect(find.byKey(ValueKey(HomeSection.channels.key)), findsNothing);
+    // Cloud only: locked on the internet, and still opens onto the message that says so.
+    for (final section in [HomeSection.messages, HomeSection.channels, HomeSection.deliveries]) {
+      expect(_locked(tester, section), isTrue, reason: section.key);
+      expect(_option(tester, section).lockedMessage, S.current.section_needs_internet_title, reason: section.key);
+      expect(_option(tester, section).opensLocked, isTrue, reason: section.key);
+    }
     // Built on a master, and this person may not open it.
     expect(_locked(tester, HomeSection.sales), isTrue);
     expect(_locked(tester, HomeSection.finance), isTrue);

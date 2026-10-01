@@ -10,10 +10,12 @@ import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/business/business_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/business_listener.dart';
 import 'package:app/screens/home/sections/no_permission.dart';
+import 'package:app/screens/home/sections/unavailable.dart';
 import 'package:app/screens/home/sections/page_switcher.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 
@@ -246,6 +248,15 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     // previous business, so nothing is shown until the shell remounts this
     // screen with the new business.
     if (service.activeId != id) return const Center(child: Loading());
+
+    // Locked by the network: drawn, saying why (plan §9.6).
+    if (!_tab.isReachable) {
+      return UnavailableSection(
+        key: ValueKey("unavailable_${_tab.area}"),
+        capability: CapabilityService().of(_tab.area),
+        surface: false
+      );
+    }
 
     // Not granted: the URL still opens it (a link, the back button), so the check is here
     // and not only in the tab bar.

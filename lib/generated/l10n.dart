@@ -1950,10 +1950,10 @@ class S {
     );
   }
 
-  /// `This section works through the cloud. It comes back as soon as the connection does.`
+  /// `This section works through the cloud. It opens as soon as Lyra is connected to the internet.`
   String get section_needs_internet_subtitle {
     return Intl.message(
-      'This section works through the cloud. It comes back as soon as the connection does.',
+      'This section works through the cloud. It opens as soon as Lyra is connected to the internet.',
       name: 'section_needs_internet_subtitle',
       desc: '',
       args: [],

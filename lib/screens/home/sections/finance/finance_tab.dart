@@ -60,9 +60,12 @@ enum FinanceTab {
   /// Permission area of this tab (`docs/app-areas.json`): `finance.<key>`. Its `view` opens it.
   String get area => "finance.$key";
 
-  /// Whether the running mode has this tab (`CapabilityService`): receivables wait for credit in
-  /// `local`, and a master serves the accounts in a later release.
-  bool get isShown => CapabilityService().shows(area);
+  /// Whether the running mode draws this tab (`CapabilityService.exists`): one the network can't
+  /// serve now (receivables without the internet) is drawn locked, not left out.
+  bool get isShown => CapabilityService().exists(area);
+
+  /// Whether it opens now (`CapabilityService.shows`): drawn but locked otherwise.
+  bool get isReachable => CapabilityService().shows(area);
 
   /// The tabs of the running mode, in order.
   static List<FinanceTab> get shown => values.where((tab) => tab.isShown).toList(growable: false);
@@ -71,9 +74,9 @@ enum FinanceTab {
   /// then the first one that is. With none granted it is [initial], which shows it is locked.
   static FinanceTab get opening {
     final permissions = PermissionsService();
-    if (permissions.canOpen(initial.area)) return initial;
+    if (initial.isReachable && permissions.canOpen(initial.area)) return initial;
 
-    return shown.firstWhere((tab) => permissions.canOpen(tab.area), orElse: () => initial);
+    return shown.firstWhere((tab) => tab.isReachable && permissions.canOpen(tab.area), orElse: () => initial);
   }
 
   /// URL of this tab. It is the only source of the `url` of its route and of

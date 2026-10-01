@@ -43,7 +43,7 @@ void main() {
         home: Builder(builder: (context) {
           AppSize.instance(context);
 
-          return Authentication(scan: () => NetworkScanService(
+          return Authentication(resume: () async => "/login", scan: () => NetworkScanService(
             cloud: () async => online,
             discover: () async => const [],
             canHost: () async => false

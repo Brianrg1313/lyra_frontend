@@ -3,6 +3,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 import './branches/_branches.dart';
 import './clients/_clients.dart';
@@ -63,7 +64,11 @@ enum BusinessTab {
   /// Whether the tab opens in the active company: its area's `view`. The employees tab
   /// opens for every member, since everyone may see their own profile; without the `view`
   /// the backend narrows it to that one card.
-  bool get granted => this == employees || PermissionsService().canOpen(area);
+  bool get granted => isReachable && (this == employees || PermissionsService().canOpen(area));
+
+  /// Whether the running mode opens it now (`CapabilityService.shows`): the branches without the
+  /// internet are drawn locked, on the message that says why, not left out.
+  bool get isReachable => CapabilityService().shows(area);
 
   /// Tab the bare section opens: [initial], unless it is not [granted], then the first one
   /// that is.
