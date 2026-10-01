@@ -11,7 +11,7 @@ import 'package:app/toolkit/deployment.dart';
 
 /// [SessionSource] over the master (`docs/offline/specs/session.md`).
 ///
-/// Signing in happens on the LAN landing (`LanService`), before any service reads a source: by
+/// Signing in happens on the sign in page (`AuthMaster`, through `LanService`), before any service reads a source: by
 /// the time [ClientService] resolves, the connection is open and bound. So the cloud's sign-in
 /// steps and invitations have no LAN side here (S-7); the one task is `business.none`, a master
 /// set up without its company (S-31).
@@ -22,9 +22,6 @@ class SessionLanSource implements SessionSource {
 
   @override
   Future<bool> hasSession() async => _lan.status == LanStatus.ready;
-
-  @override
-  String get signInRoute => "/lan";
 
   @override
   Future<Map<String, dynamic>> bootstrap() async {
@@ -72,11 +69,11 @@ class SessionLanSource implements SessionSource {
 
   @override
   Future<({bool account, LoginMethod? method})> identify(String email) =>
-    throw UnsupportedError("Signing in happens on the LAN landing");
+    throw UnsupportedError("Signing in to a master goes through LanService");
 
   @override
   Future<Object?> signInWithPassword(String email, String password) =>
-    throw UnsupportedError("Signing in happens on the LAN landing");
+    throw UnsupportedError("Signing in to a master goes through LanService");
 
   @override
   Future<Object?> signInWithCode(String email, String code) =>

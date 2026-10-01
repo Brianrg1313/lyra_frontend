@@ -18,9 +18,6 @@ class SessionCloudSource implements SessionSource {
     useCookieSession || await DatabaseService().hasInSecure(api.current.tokenName);
 
   @override
-  String get signInRoute => "/login";
-
-  @override
   Future<Map<String, dynamic>> bootstrap() async {
     final data = await api.get(path: "/init/", version: "v1");
     if (data is! Map) throw const UnreadableAnswer("init");

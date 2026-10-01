@@ -109,7 +109,7 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
   2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
   `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that master's 24 words; delete it
   otherwise. A fresh start offers "Create Master Server" again.
-- Gate: `flutter analyze` clean, `flutter test` 1151 passing with the 5 known failures of
+- Gate: `flutter analyze` clean, `flutter test` 1154 passing with the 5 known failures of
   `test/MODULE.md`.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).

@@ -95,14 +95,15 @@ void main() {
         expect(find.text("No server found. Type its address instead."), findsOneWidget);
       });
 
-      testWidgets('signed out, it asks for the account', (tester) async {
+      testWidgets('signed out, it leaves the sign in to the sign in page', (tester) async {
         final lan = client(FakeMaster());
         await lan.open();
 
-        await pump(tester, const landing.DesktopBody(), lan: lan, size: size);
+        await pump(tester, const landing.DesktopBody(), lan: lan, size: size, settle: false);
 
         expect(tester.takeException(), isNull);
-        expect(find.text("Use the username and password of your account on this server."), findsOneWidget);
+        expect(find.text(S.current.lan_connecting), findsOneWidget);
+        expect(find.byType(TextField), findsNothing);
       });
 
       testWidgets('signed in, it opens the app', (tester) async {
@@ -120,7 +121,7 @@ void main() {
         final lan = client(FakeMaster(), refresh: "refresh-1");
         expect(await lan.open(), LanStatus.ready);
 
-        await pump(tester, landing.DesktopBody(enter: () async => "/lan"), lan: lan, size: size);
+        await pump(tester, landing.DesktopBody(enter: () async => "/login"), lan: lan, size: size);
 
         expect(tester.takeException(), isNull);
         expect(find.textContaining("the business couldn't be opened"), findsOneWidget);

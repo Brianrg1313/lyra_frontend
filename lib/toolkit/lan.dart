@@ -210,7 +210,12 @@ class LanClient {
     _hello = await _rpc!.hello(app: lanAppVersion, platform: lanPlatform);
   }
 
-  /// `auth.identify` + `auth.signIn` + `session.bind`. Answers `mustChangePassword`.
+  /// `auth.identify`: `password`, or `activation` for an invited account not activated yet. An
+  /// unknown login answers `password` too, so the sign in tells nobody which accounts exist.
+  Future<String?> identify(String login) async =>
+    ((await _raw(Ops.authIdentify, {"login": login})) as Map?)?["method"] as String?;
+
+  /// `auth.signIn` + `session.bind`. Answers `mustChangePassword`.
   Future<bool> signIn(String login, String password) async {
     final tokens = await _raw(Ops.authSignIn, {"login": login, "password": password}) as Map<String, Object?>;
 

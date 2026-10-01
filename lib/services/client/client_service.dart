@@ -84,11 +84,10 @@ class ClientService extends ChangeNotifier {
   /// screen wins over the dashboard and over a deep link: the backend lists
   /// what must be done before either.
   ///
-  /// On a master's device the session is the LAN one, opened on the LAN
-  /// landing, and signing in again means going back there
-  /// ([SessionSource.signInRoute]).
+  /// `/login` signs in again in either mode: on a master's device it is the
+  /// master's sign in (`AuthMaster`).
   Future<String?> resolve() async {
-    final signIn = _source.signInRoute;
+    const signIn = "/login";
 
     if (!await _source.hasSession()) {
       return signIn;
@@ -306,7 +305,7 @@ class ClientService extends ChangeNotifier {
       await baileys.signOut();
       await _dropSession();
 
-      if (context.mounted) Navis.pushAndClearStack(context, _source.signInRoute);
+      if (context.mounted) Navis.pushAndClearStack(context, "/login");
       await WidgetsBinding.instance.endOfFrame;
 
       if (expired) FloatFlag.of().alert(message: S.current.session_expired);

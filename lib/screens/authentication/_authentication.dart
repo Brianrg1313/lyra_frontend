@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/toolkit/deployment.dart';
+import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/services/sign_in/sign_in_service.dart';
 
@@ -10,6 +12,7 @@ import 'package:app/services/sign_in/sign_in_service.dart';
 import 'package:app/screens/pre_start/deployment/master/desktop/_body.dart' as master;
 import 'desktop/_body.dart';
 import 'auth_lan.dart';
+import 'auth_master.dart';
 import 'auth_offline.dart';
 
 /// Single entry for signing in and signing up: the person only types the
@@ -19,6 +22,10 @@ import 'auth_offline.dart';
 /// the backend answers → the cloud's form, as always; it doesn't but a master
 /// is on the LAN → [AuthLan] signs in to it; neither → [AuthLan] creates the
 /// master on this computer, or [AuthOffline] where none can run (web, phones).
+///
+/// A device paired with a master, or that is one, signs in to it here too ([AuthMaster]), the
+/// network aside: its mode is a fact (D9), so signing out of a master lands on the same page as
+/// signing out of the cloud.
 class Authentication extends PageBuilder {
   const Authentication({super.key, this.scan});
 
@@ -26,7 +33,7 @@ class Authentication extends PageBuilder {
   final NetworkScanService Function()? scan;
 
   @override
-  Widget build(BuildContext context) => MultiProvider(
+  Widget build(BuildContext context) => Deployment.mode != DeploymentMode.cloud ? const _MasterGate() : MultiProvider(
     providers: [
       Provider(create: (_) => SignInService()),
       ChangeNotifierProvider(create: (_) => (scan ?? NetworkScanService.new)()..watch())
@@ -70,5 +77,46 @@ class _GateState extends State<_Gate> {
       NetworkReach.none when scan.canHost => AuthLan(masters: const [], onCreate: _create),
       NetworkReach.none => AuthOffline(onRetry: scan.scan)
     };
+  }
+}
+
+/// The master's sign in while it can take one ([LanStatus.signedOut]); any other state of the
+/// connection (connecting aside) is `/lan`'s to show and act on, and so is entering once signed
+/// in.
+class _MasterGate extends StatefulWidget {
+  const _MasterGate();
+
+  @override
+  State<_MasterGate> createState() => _MasterGateState();
+}
+
+class _MasterGateState extends State<_MasterGate> {
+  bool _leaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final lan = context.read<LanService>();
+    if (lan.status == LanStatus.idle) WidgetsBinding.instance.addPostFrameCallback((_) => lan.open());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status = context.watch<LanService>().status;
+
+    switch (status) {
+      case LanStatus.signedOut: return const AuthMaster();
+      case LanStatus.idle || LanStatus.connecting: break;
+      default:
+        if (!_leaving) {
+          _leaving = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) Navis.pushAndClearStack(context, "/lan");
+          });
+        }
+    }
+
+    return const Center(child: Loading());
   }
 }

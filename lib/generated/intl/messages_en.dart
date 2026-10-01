@@ -436,6 +436,12 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Sign in to your server"),
         "auth_lan_wrong":
             MessageLookupByLibrary.simpleMessage("Wrong email or password."),
+        "auth_master_activate_subtitle": MessageLookupByLibrary.simpleMessage(
+            "Your account isn\'t active yet. Type the code your company gave you and the password you want to use from now on."),
+        "auth_master_subtitle": MessageLookupByLibrary.simpleMessage(
+            "Enter the email of your account on your business\'s Lyra server."),
+        "auth_master_title":
+            MessageLookupByLibrary.simpleMessage("Sign in to Lyra"),
         "auth_offline_message": MessageLookupByLibrary.simpleMessage(
             "This device can\'t reach Lyra\'s servers, and there\'s no Lyra server on this network. Check the connection and try again."),
         "auth_offline_retry": MessageLookupByLibrary.simpleMessage("Try again"),
@@ -1816,7 +1822,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Done"),
         "employees_invite_code_expires": m51,
         "employees_invite_code_subtitle": MessageLookupByLibrary.simpleMessage(
-            "Give this code to the person you invited. On a device connected to this server, they choose \"I have an activation code\" when signing in, then type their email, this code and a password of their own. It is shown only this once."),
+            "Give this code to the person you invited. On a device connected to this server, they type their email when signing in, then this code and a password of their own. It is shown only this once."),
         "employees_invite_email": MessageLookupByLibrary.simpleMessage("Email"),
         "employees_invite_email_hint":
             MessageLookupByLibrary.simpleMessage("name@example.com"),
@@ -2380,18 +2386,12 @@ class MessageLookup extends MessageLookupByLibrary {
             "Only spreadsheet and CSV files can be imported"),
         "inbox": MessageLookupByLibrary.simpleMessage("Inbox"),
         "inventory": MessageLookupByLibrary.simpleMessage("Inventory"),
-        "lan_activate_back":
-            MessageLookupByLibrary.simpleMessage("I already have a password"),
         "lan_activate_button":
             MessageLookupByLibrary.simpleMessage("Activate and sign in"),
         "lan_activate_code_input":
             MessageLookupByLibrary.simpleMessage("Activation code"),
-        "lan_activate_link":
-            MessageLookupByLibrary.simpleMessage("I have an activation code"),
         "lan_activate_password_input": MessageLookupByLibrary.simpleMessage(
             "New password (10 characters or more)"),
-        "lan_activate_subtitle": MessageLookupByLibrary.simpleMessage(
-            "Type your username or e-mail, the code your company gave you, and the password you want to use from now on."),
         "lan_activate_title":
             MessageLookupByLibrary.simpleMessage("Activate your account"),
         "lan_add_device": MessageLookupByLibrary.simpleMessage("Add device"),
@@ -2560,9 +2560,6 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Scan the server\'s QR"),
         "lan_search_again":
             MessageLookupByLibrary.simpleMessage("Search again"),
-        "lan_sign_in_subtitle": MessageLookupByLibrary.simpleMessage(
-            "Use the username and password of your account on this server."),
-        "lan_sign_in_title": MessageLookupByLibrary.simpleMessage("Sign in"),
         "lan_sign_out": MessageLookupByLibrary.simpleMessage("Sign out"),
         "lan_start_server":
             MessageLookupByLibrary.simpleMessage("Start the server"),

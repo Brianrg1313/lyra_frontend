@@ -10,10 +10,6 @@ abstract interface class SessionSource {
   /// Whether a session is there to resume without asking anyone to sign in.
   Future<bool> hasSession();
 
-  /// Where signing in happens: the cloud's sign in, or the LAN landing, which signs in on the
-  /// master.
-  String get signInRoute;
-
   /// The bootstrap answer (`/init` today): who is signed in, their companies,
   /// permissions, tasks and the platform catalogues. Handed out as it came,
   /// because each block is the `seed` payload of the service that owns it.

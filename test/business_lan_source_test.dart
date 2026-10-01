@@ -75,11 +75,11 @@ void main() {
       expect(permissions.can("local_server.devices", business: "c1"), isTrue);
     });
 
-    test('a master\'s sign in is its LAN landing', () async {
+    test('a master\'s sign in is the cloud\'s sign in page', () async {
       Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
       master.ready = false;
 
-      expect(await ClientService(source: SessionLanSource(master)).resolve(), "/lan");
+      expect(await ClientService(source: SessionLanSource(master)).resolve(), "/login");
     });
 
     test('a master set up without its company lands on the welcome (S-31)', () async {

@@ -142,6 +142,23 @@ class LanService extends ChangeNotifier {
     return await _client!.resume() ? LanStatus.ready : LanStatus.signedOut;
   });
 
+  /// The sign in's first step, as the cloud's `email/verify` (`auth.identify`): whether [login]
+  /// still has to be activated with its code (S-8). `null` when the master didn't answer, with
+  /// [error] or the status saying why.
+  Future<bool?> needsActivation(String login) async {
+    try {
+      _error = null;
+      return await _client!.identify(login) == "activation";
+    } on LanUnreachable {
+      _set(LanStatus.unreachable);
+    } on Map<String, Object?> catch (failure) {
+      _error = failure["message"] as String?;
+      notifyListeners();
+    }
+
+    return null;
+  }
+
   Future<LanStatus> signIn(String login, String password) => _guard(() async {
     await _client!.signIn(login, password);
 

@@ -13,8 +13,7 @@ import 'package:core/form.dart';
 import 'package:core/images.dart';
 import 'package:core/button.dart';
 import '../auth_brand.dart';
-import '../auth_footer.dart';
-import '../auth_panel.dart';
+import '../auth_frame.dart';
 
 class DesktopBody extends StatefulWidget {
   const DesktopBody({super.key});
@@ -61,34 +60,8 @@ class _DesktopBodyState extends State<DesktopBody> {
     super.dispose();
   }
 
-  /// Below this width the form alone fills the window: the panel is brand,
-  /// never information, so it is the first thing to give up its room.
-  static const _panelBreakpoint = 860.0;
-
   @override
-  Widget build(BuildContext context) {
-    final wide = MediaQuery.sizeOf(context).width >= _panelBreakpoint;
-
-    return Skeleton.simple(
-      padding: EdgeInsets.all(AppSize.spaceS),
-      body: Row(children: [
-        if (wide) const Expanded(flex: 5, child: AuthPanel()),
-        Expanded(flex: 7, child: Padding(
-          padding: EdgeInsets.all(AppSize.spaceS),
-          child: Column(children: [
-            Expanded(child: Center(child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(vertical: AppSize.spaceM),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 340),
-                child: _fields(context)
-              )
-            ))),
-            const AuthFooter()
-          ])
-        ))
-      ])
-    );
-  }
+  Widget build(BuildContext context) => AuthFrame(child: _fields(context));
 
   /// Left-aligned like the rest of the app's forms; the headline carries the
   /// weight, so the subtitle stays in the subtitle color.

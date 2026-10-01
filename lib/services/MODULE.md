@@ -45,7 +45,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `lan_identity_store.dart` — `LanIdentityStore` (seam): the device and the session's refresh token.
   `SecureLanIdentityStore` (OS key store via `DatabaseService`), `MemoryLanIdentityStore` (tests).
 - `lan_service.dart` — `LanService` (+ `LanStatus`), app-wide (`lanService`): `open` (on the master, starts the engine
-  first; connects; resumes the stored session), `unlock`, `enrollMaster`, `signIn`, `activate` (an invited person's code
+  first; connects; resumes the stored session), `unlock`, `enrollMaster`, `needsActivation` (`auth.identify`, the sign in's first step), `signIn`, `activate` (an invited person's code
   and new password, `auth.activate`), `signOut`, `devices`,
   `startPairing`, `revoke`, `browserCa`, `stopServer`, `leave` (back to cloud; a browser asks again), `call(op, args)` (what
   the LAN sources run: a write gets its `commandId`; a lost master is thrown as `{message, action, code: "unreachable"}`).
@@ -148,16 +148,16 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `client_service.dart` — `ClientService.resolve()`: reads `/init/` before the tree exists
   (for `initialValidator`), fills `businessService` and the catalogs, returns the landing route or `null` (the first pending task's `route` wins over the home; `employment.invitation` is skipped when the person already has a company).
   `signOut(context)`: `POST /authentication/logout/` (best effort, 5 s), drops the token, clears the sidecar's
-  credentials, goes to the source's `signInRoute` (`/login`, or `/lan` on a master's device), then `clear()`s every session service. A new session service with a cache → add it there.
+  credentials, goes to `/login` (a master's sign in there too), then `clear()`s every session service. A new session service with a cache → add it there.
   The same teardown runs when the backend rejects the session mid-use (`onSessionRejected`), without the logout call, plus a `session_expired` flag.
   With `useCookieSession` a failed logout aborts the sign out (only the backend can clear the cookie).
   `acceptInvitation(id)`: `PUT /profile/employments/` with `ACTION: accept`; throws the api error.
-- `sources/session_source.dart` — `SessionSource`: `hasSession`, `signInRoute`, bootstrap (`/init`), accept invitation,
+- `sources/session_source.dart` — `SessionSource`: `hasSession`, bootstrap (`/init`), accept invitation,
   sign out, identify, sign in (password, code), permission requests. Shared by `ClientService`, `SignInService`,
   `PermissionRequestsService`.
 - `sources/session_cloud_source.dart` — `SessionCloudSource`.
 - `sources/session_lan_source.dart` — `SessionLanSource`: `session.bootstrap` laid out as `/init` (`initFrom`), sign out on
-  the master; sign in happens on the LAN landing, so identify/sign in/invitations throw; no permission requests yet.
+  the master; sign in goes through `LanService` (`AuthMaster`), so identify/sign in/invitations throw; no permission requests yet.
 - `client_model.dart` — `ClientModel`.
 - `employment_invitation_model.dart` — `EmploymentInvitation`: one invitation of the `employment.invitation` task.
 - `client_task.dart` — `ClientTask` (`invitations`), `ClientTaskKey` (backend key → pre-start route; `null` = no screen yet): `/init`'s `tasks`.

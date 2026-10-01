@@ -3635,10 +3635,10 @@ class S {
     );
   }
 
-  /// `Give this code to the person you invited. On a device connected to this server, they choose "I have an activation code" when signing in, then type their email, this code and a password of their own. It is shown only this once.`
+  /// `Give this code to the person you invited. On a device connected to this server, they type their email when signing in, then this code and a password of their own. It is shown only this once.`
   String get employees_invite_code_subtitle {
     return Intl.message(
-      'Give this code to the person you invited. On a device connected to this server, they choose "I have an activation code" when signing in, then type their email, this code and a password of their own. It is shown only this once.',
+      'Give this code to the person you invited. On a device connected to this server, they type their email when signing in, then this code and a password of their own. It is shown only this once.',
       name: 'employees_invite_code_subtitle',
       desc: '',
       args: [],
@@ -18419,6 +18419,36 @@ class S {
     );
   }
 
+  /// `Sign in to Lyra`
+  String get auth_master_title {
+    return Intl.message(
+      'Sign in to Lyra',
+      name: 'auth_master_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the email of your account on your business's Lyra server.`
+  String get auth_master_subtitle {
+    return Intl.message(
+      'Enter the email of your account on your business\'s Lyra server.',
+      name: 'auth_master_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your account isn't active yet. Type the code your company gave you and the password you want to use from now on.`
+  String get auth_master_activate_subtitle {
+    return Intl.message(
+      'Your account isn\'t active yet. Type the code your company gave you and the password you want to use from now on.',
+      name: 'auth_master_activate_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `There's no internet, but your business's Lyra server is on this network. Sign in with your account on it.`
   String get auth_lan_subtitle {
     return Intl.message(
@@ -19009,41 +19039,11 @@ class S {
     );
   }
 
-  /// `Sign in`
-  String get lan_sign_in_title {
-    return Intl.message(
-      'Sign in',
-      name: 'lan_sign_in_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Use the username and password of your account on this server.`
-  String get lan_sign_in_subtitle {
-    return Intl.message(
-      'Use the username and password of your account on this server.',
-      name: 'lan_sign_in_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Activate your account`
   String get lan_activate_title {
     return Intl.message(
       'Activate your account',
       name: 'lan_activate_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Type your username or e-mail, the code your company gave you, and the password you want to use from now on.`
-  String get lan_activate_subtitle {
-    return Intl.message(
-      'Type your username or e-mail, the code your company gave you, and the password you want to use from now on.',
-      name: 'lan_activate_subtitle',
       desc: '',
       args: [],
     );
@@ -19074,26 +19074,6 @@ class S {
     return Intl.message(
       'Activate and sign in',
       name: 'lan_activate_button',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `I have an activation code`
-  String get lan_activate_link {
-    return Intl.message(
-      'I have an activation code',
-      name: 'lan_activate_link',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `I already have a password`
-  String get lan_activate_back {
-    return Intl.message(
-      'I already have a password',
-      name: 'lan_activate_back',
       desc: '',
       args: [],
     );

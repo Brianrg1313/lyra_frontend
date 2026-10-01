@@ -11,9 +11,7 @@ import 'package:app/services/preferences/preferences_service.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/pre_start/deployment/widgets/deployment_frame.dart';
-import '../widgets/lan_sign_in.dart';
 import '../widgets/lan_unlock.dart';
-import '../_lan.dart';
 
 class DesktopBody extends StatefulWidget {
   const DesktopBody({super.key, this.enter});
@@ -30,6 +28,7 @@ class DesktopBody extends StatefulWidget {
 /// to do about it. Signed in, it loads the session and opens the app (plan §7.4).
 class _DesktopBodyState extends State<DesktopBody> {
   bool _entering = false;
+  bool _signingIn = false;
 
   /// The master answered but the session couldn't be loaded (an engine without this release's
   /// ops, a master set up before its company existed). Sending the person back here would only
@@ -57,7 +56,7 @@ class _DesktopBodyState extends State<DesktopBody> {
       LanStatus.locked => lan.isMaster
         ? const LanUnlock()
         : _message(context, s.lan_locked_title, s.lan_locked_client, retry: true),
-      LanStatus.signedOut => const LanSignIn(),
+      LanStatus.signedOut => _signIn(),
       LanStatus.ready => _enter(),
       LanStatus.unpaired => lan.isMaster
         ? const LanUnlock(enroll: true)
@@ -75,6 +74,21 @@ class _DesktopBodyState extends State<DesktopBody> {
     };
   }
 
+  /// Signing in to a master is the sign in page's, the same as the cloud's (`AuthMaster`).
+  Widget _signIn() {
+    if (!_signingIn) {
+      _signingIn = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navis.pushAndClearStack(context, "/login");
+      });
+    }
+
+    return DeploymentFrame(
+      title: S.of(context).lan_connecting,
+      children: [SizedBox(height: AppSize.action, child: const Center(child: Loading()))]
+    );
+  }
+
   /// The session is the master's: [ClientService] reads the bootstrap through the LAN source,
   /// then the app opens where it would in the cloud.
   Widget _enter() {
@@ -88,7 +102,7 @@ class _DesktopBodyState extends State<DesktopBody> {
         final page = await (widget.enter ?? clientService.resolve)();
         _entering = false;
         if (!mounted || context.read<LanService>().status != LanStatus.ready) return;
-        if (page == LanHome.path) return setState(() => _enterFailed = true);
+        if (page == "/login") return setState(() => _enterFailed = true);
 
         Navis.pushAndClearStack(context, page ?? Navis.consumePendingDeepLink() ?? PreferencesService().homePath);
       });

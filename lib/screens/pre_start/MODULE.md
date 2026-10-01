@@ -43,12 +43,10 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `deployment/widgets/recovery_words.dart` — `RecoveryWords`: numbered, three per row, selectable.
 - `lan/_lan.dart` — `LanHome extends PageBuilder`.
 - `lan/desktop/_body.dart` — one view per `LanStatus`: connecting, locked (master: `LanUnlock`), signed out
-  (`LanSignIn`), ready (loads the session with `ClientService.resolve` and opens the home; `enter` seam; a session
+  (→ `/login`, whose `AuthMaster` signs in), ready (loads the session with `ClientService.resolve` and opens the home; `enter` seam; a session
   that can't be loaded stops with a message and a retry instead of coming back here forever), unpaired
   (master: `LanUnlock(enroll: true)`), unreachable, revoked, update, error; "use Lyra another way" (`LanService.leave`, confirmed, then `/login`; not in a
   browser).
-- `lan/widgets/lan_sign_in.dart` — `LanSignIn`: username + password → `LanService.signIn`; "I have an activation code"
-  switches it to username, code and a new password → `LanService.activate` (an invited person's first sign in).
 - `lan/widgets/lan_unlock.dart` — `LanUnlock`: the passphrase → `engine.unlock`, or with `enroll` → `enrollMaster`.
 - `welcome/widgets/invitation_card.dart` — `InvitationCard`: full-width card drawn first, large company `BusinessAvatar` + title + position + "Review" button.
 

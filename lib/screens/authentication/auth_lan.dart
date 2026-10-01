@@ -12,10 +12,9 @@ import 'package:app/services/lan/network_scan_service.dart';
 import 'package:core/form.dart';
 import 'package:core/button.dart';
 import 'auth_brand.dart';
-import 'auth_footer.dart';
-import 'auth_panel.dart';
+import 'auth_frame.dart';
 
-/// The sign in while the backend doesn't answer (plan §7.4), in the cloud sign in's frame.
+/// The sign in while the backend doesn't answer (plan §7.4), in the cloud sign in's frame ([AuthFrame]).
 ///
 /// With [masters] (found by `NetworkScanService`) it signs in to one: the e-mail and password
 /// pair this device first (`LanPairingService.pairWithPassword`, no code), then open the
@@ -64,9 +63,6 @@ class _AuthLanState extends State<AuthLan> {
 
   bool get _create => widget.masters.isEmpty;
 
-  /// Mirrors the cloud sign in (`desktop/_body.dart`).
-  static const _panelBreakpoint = 860.0;
-
   @override
   void dispose() {
     _form.dispose();
@@ -74,29 +70,7 @@ class _AuthLanState extends State<AuthLan> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final wide = MediaQuery.sizeOf(context).width >= _panelBreakpoint;
-
-    return Skeleton.simple(
-      padding: EdgeInsets.all(AppSize.spaceS),
-      body: Row(children: [
-        if (wide) const Expanded(flex: 5, child: AuthPanel()),
-        Expanded(flex: 7, child: Padding(
-          padding: EdgeInsets.all(AppSize.spaceS),
-          child: Column(children: [
-            Expanded(child: Center(child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(vertical: AppSize.spaceM),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 340),
-                child: _fields(context)
-              )
-            ))),
-            const AuthFooter()
-          ])
-        ))
-      ])
-    );
-  }
+  Widget build(BuildContext context) => AuthFrame(child: _fields(context));
 
   Widget _fields(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
