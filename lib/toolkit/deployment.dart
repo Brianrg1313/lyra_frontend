@@ -36,8 +36,7 @@ import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
 /// - [local]: one desktop install is the master and serves the LAN, no cloud.
 /// - [hybrid]: the master serves the LAN and syncs with the cloud.
 ///
-/// [local] is reachable from phase 3 behind `--dart-define=LYRA_LAN=true`
-/// ([Deployment.lanEnabled]): it is released after plan phase 5. [hybrid] needs
+/// [local] is part of every build ([Deployment.lanEnabled]). [hybrid] needs
 /// phase 6.
 enum DeploymentMode { cloud, local, hybrid }
 
@@ -58,10 +57,10 @@ abstract final class Deployment {
   /// Null in [DeploymentMode.cloud].
   static DeploymentRole? get role => _role;
 
-  /// Whether this build offers LAN mode: a native build, or the web build a
-  /// master serves (plan §3), compiled with `--dart-define=LYRA_LAN=true`.
-  /// Without it the app is today's cloud app, whatever the preferences say.
-  static bool get lanEnabled => const bool.fromEnvironment("LYRA_LAN") && lanSupported;
+  /// Whether this install offers LAN mode: every native one, and the page a
+  /// master serves (plan §3). The same build is the cloud app everywhere else:
+  /// a browser on the cloud's site never sees it, whatever the preferences say.
+  static bool get lanEnabled => lanSupported;
 
   /// Whether this install has chosen a mode yet (a fresh install asks, plan §7.4).
   static bool get chosen => PreferencesService().deployment != null;

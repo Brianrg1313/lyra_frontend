@@ -6,12 +6,13 @@ protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: t
 `lyra_protocol` and `lyra_node` exist (encrypted store, keyring, oplog, audit, owner account, detached
 process), and the app drives the engine through `LocalServerService`. Phase 3 done on one computer:
 the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR, mutual TLS,
-revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages behind
-`--dart-define=LYRA_LAN=true`: phones scan the QR, desktops type the code, and the web build the master
+revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages
+(in every build since 2026-10-01, no build flag: a native install asks on its first start, and a browser
+offers them only on the page a master serves, which carries `WebBundle.marker`): phones scan the QR, desktops type the code, and the web build the master
 serves pairs, keeps a WebCrypto key and proves itself (checked in a real Chrome,
 `lyra_node/test/browser_e2e_test.dart`). A paired native device installs the browsers' root (Windows,
 macOS) or saves it for another computer. The web build is made with
-`flutter build web --release --dart-define=LYRA_LAN=true --no-web-resources-cdn` and served from
+`flutter build web --release --no-web-resources-cdn`, the same as the cloud's, and served from
 `lyra_node/web` next to the engine (`LYRA_WEB` while developing); shipping it is phase 5. Still open from
 phase 3: the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt), which
 also covers what no test here can reach: the camera, the OS trust-store dialogs (`certutil`, `security`),
@@ -626,7 +627,9 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 | 6 | Hybrid | backend edge API (§9.2), sync engine, conflicts inbox, offline verifier (§6.4), local → hybrid migration | XL | a week-long soak with scripted outages and no divergence |
 | 7 | Hardening | passphrase unlock UI polish, external security review (incl. LAN pentest), performance with 50 clients | M | review findings closed |
 
-`local` can be released after phase 5, without the cloud. `hybrid` needs phase 6.
+`local` can be released after phase 5, without the cloud. `hybrid` needs phase 6. Every build already
+offers `local` (2026-10-01, the owner's call: one build, no flag), so until phase 5 a store build shows the
+choice with a master that has no backups.
 
 ---
 

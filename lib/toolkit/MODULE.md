@@ -20,12 +20,12 @@ backend, routes and theme. No UI.
     (backend contract: `docs/task-cookie-session-backend.md`). `openSession(token)` — stores the token a sign in answered (no-op in cookie mode).
   - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
 - `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`,
-  `lanEnabled` (native build, or the web build a master serves, with `--dart-define=LYRA_LAN=true`), `chosen`, `restore`
+  `lanEnabled` (every native install, or the page a master serves; no build flag), `chosen`, `restore`
   (from preferences, in `preCall`), `choose` (persists), `forget` (asks again next start), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
   `lanService` — session, business, inventory and stock so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
 - `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in + `session.bind`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
-  `lanPlatform`, `lanSupported`, `lanServingMaster` (web: the page's origin), `lanCanScan` (Android, iOS),
+  `lanPlatform`, `lanSupported` (web: the `<meta name="lyra-master">` a master writes into its page), `lanServingMaster` (web: the page's origin, if a master's), `lanCanScan` (Android, iOS),
   `discoverMasters`, `openPairingSocket`, `newDeviceKey`, `signDeviceProof`, `forgetDeviceKey`, `canInstallBrowserCa`,
   `installBrowserCa`, `saveBrowserCa`, `lanFailure`; `download` / `upload` (`/f`, the session's token, refreshed once),
   `LanFiles` (the seam).

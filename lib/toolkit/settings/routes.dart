@@ -62,7 +62,7 @@ final List<ScreenRoute> routes = [
   ),
   // LAN mode (`docs/plan-offline-lan.md` §7.4): choosing how to use Lyra, making
   // this computer the server or pairing with one, and the LAN landing. Reached
-  // only when `Deployment.lanEnabled` (`initialValidator`).
+  // only where `Deployment.lanEnabled` (`initialValidator`).
   ScreenRoute(
     animation: _animation,
     key: DeploymentChooser.routeKey,

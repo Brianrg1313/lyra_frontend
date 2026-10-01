@@ -19,7 +19,7 @@ One TCP port (default `4780`), **TLS 1.3 only**. There is no plaintext listener.
 | `/pair` | WebSocket upgrade | pairing handshake (§3) | TLS with the installation certificate; no client cert yet |
 | `/f/<fileId>` | `GET` | download a file (range support) | session token in `Authorization: Bearer` |
 | `/f` | `PUT` | upload a file (§6) | session token |
-| `/` and `/app/**` | `GET` | the web build (plan §3) | none (static files) |
+| `/` and `/app/**` | `GET` | the web build (plan §3); its HTML carries `<meta name="lyra-master" content="1">`, which tells the app (the cloud's build too) it runs from a master | none (static files) |
 
 Response headers on every HTTPS answer: `Strict-Transport-Security: max-age=31536000`,
 `Cache-Control: no-store` (except hashed web build assets), `X-Content-Type-Options: nosniff`,

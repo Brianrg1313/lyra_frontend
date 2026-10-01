@@ -34,7 +34,9 @@ Future<LanPairingSocket> openPairing(String host, int port) async {
 /// A browser has no multicast: the master is the page's origin.
 Future<List<LanFound>> discover({Duration timeout = const Duration(seconds: 3)}) async => const [];
 
-bool get lanSupported => true;
+/// Only the page a master serves: the cloud's web app is the same build, and the master writes
+/// a `<meta name="lyra-master">` into the HTML it serves (`lyra_node`'s `WebBundle.marker`).
+final bool lanSupported = web.document.querySelector('meta[name="lyra-master"]') != null;
 
 Future<LanDeviceKey> newDeviceKey() async {
   final pair = await _subtle.generateKey(

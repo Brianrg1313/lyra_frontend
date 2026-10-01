@@ -23,12 +23,12 @@ export './lan_file.dart';
 /// keeps it equal to `pubspec.yaml`.
 const String lanAppVersion = "0.0.6";
 
-/// Whether this build can use LAN mode at all: native builds, and the web build the master
-/// serves (plan §3).
+/// Whether this install can use LAN mode at all: every native build, and in a browser the page
+/// a master serves (plan §3), never the cloud's.
 bool get lanSupported => transport.lanSupported;
 
 /// On web, the master that served this page: the only one a browser pairs with and talks to.
-({String host, int port})? get lanServingMaster => kIsWeb ? (host: Uri.base.host, port: Uri.base.port) : null;
+({String host, int port})? get lanServingMaster => kIsWeb && lanSupported ? (host: Uri.base.host, port: Uri.base.port) : null;
 
 /// Phones scan the master's QR with their camera (plan §5.3); the others type the code.
 bool get lanCanScan => !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
