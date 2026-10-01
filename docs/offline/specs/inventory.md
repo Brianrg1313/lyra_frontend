@@ -192,37 +192,60 @@ two, the table is `preparing`, and the app waits for `table/ready`.
 
 ### Rules
 
-- **I-40** Formats: `.xlsx` and `.csv` (UTF-8, or UTF-16 with a BOM; the separator is detected
-  from `,` `;` and tab). Maximum 20 MB and 50 000 data rows.
-- **I-41** `ROW` is the 1-based header row. Empty header cells get the name `Column N`. Duplicate
-  header names get ` (2)`, ` (3)` appended.
+- **I-40** Formats: `.xlsx` (`.xlsm` too, its macros ignored; the first sheet is read) and
+  `.csv` (UTF-8, UTF-16 with a BOM, or Windows-1252 when the bytes aren't UTF-8, as Excel saves a
+  CSV on a Spanish or Portuguese Windows; the separator is detected from `,` `;` and tab). The
+  cloud also reads `.xls`, `.xlsb` and `.ods`; the app offers a master only the two it reads.
+  Maximum 20 MB, 50 000 data rows and 250 columns (`too_large`). The upload is read once and
+  deleted by the op that reads it: each step uploads the file again, as with the cloud.
+- **I-41** `ROW` is the 1-based header row; rows above it are ignored, empty rows dropped. Empty
+  header cells get the name `Column N`. Duplicate header names (without case) get ` (2)`, ` (3)`
+  appended. A name is cut at 60 characters. A table name the app doesn't send is "Imported table"
+  in the company's language.
 - **I-42** The structure step creates the table with every column as `TEXT`, sets `importStage =
-  preparing`, emits `table/normalizing`, and answers `{id}` straight away.
+  preparing`, emits `table/normalizing`, and answers `{id}`. The rules of I-43 take milliseconds,
+  so offline they run inside the same step: both events follow its answer, and the app's wait
+  (which may see `table/ready` before it starts waiting) reads it the same way.
 - **I-43** **Typing rules** (the offline replacement of the AI pass), run on the header and the
   first 200 values of each column:
-  1. By header, using the bundled keyword dictionary per language (`name`, `nombre`,
-     `producto` → `TITLE`; `precio`, `price`, `pvp` → `PRICE`; `sku`, `código`, `ref` → `SKU`;
-     `ean`, `barcode`, `código de barras` → `BARCODE`; `stock`, `existencia`, `cantidad` →
-     `STOCK` (I-44); `categoría`, `category` → `CATEGORIES`; `imagen`, `foto`, `image` → `IMAGE`;
-     `descripción` → `DESCRIPTION`).
-  2. Otherwise by values, when at least 95 % of the non-empty values fit: integers → `NUMBER`,
-     decimals → `DECIMAL`, `YYYY-MM-DD` or the locale's date → `DATE`, `true/false/sí/no` →
-     `BOOLEAN`, e-mail → `EMAIL`, URL → `URL`; 8/12/13/14-digit codes with a valid check digit →
-     `BARCODE`.
-  3. At most one `TITLE` (the first match), one `STOCK`, one `COUNTER`. Everything else stays
-     `TEXT`.
+  1. By header, using the bundled keyword dictionary (`Typing.keywords` in the engine: English,
+     Spanish, Portuguese, matched as whole words without case or accents, the more specific kinds
+     first: `código de barras`, `ean` → `BARCODE`; `foto`, `imagen` → `IMAGE`; `categoría` →
+     `CATEGORIES`; `descripción` → `DESCRIPTION`; `stock`, `existencia`, `cantidad` → `STOCK`
+     (I-44); `precio`, `pvp`, `costo` → `PRICE`; `sku`, `código`, `ref` → `SKU`; `nombre`,
+     `producto` → `TITLE`), when at least 95 % of the column's non-empty values fit that type (a
+     "Stock" column of yes/no is not a stock column).
+  2. Otherwise by values, when at least 95 % of the non-empty values fit, tried in this order:
+     `true/false/sí/no` → `BOOLEAN`, 8/12/13/14-digit codes with a valid check digit → `BARCODE`,
+     integers → `NUMBER`, decimals → `DECIMAL`, `YYYY-MM-DD` or the language's day order
+     (`31/12/2026`; `12/31/2026` in English) → `DATE`, `YYYY-MM-DD HH:mm` → `DATETIME`, e-mail →
+     `EMAIL`, URL → `URL`. A number takes `,` or `.` as its decimal mark, a currency sign and
+     thousands separators (`$1.234,50`).
+  3. At most one `TITLE` (the first match) and one `STOCK`; a later one stays `TEXT`. When no
+     header named the title, the first column left as `TEXT` becomes the `TITLE` (a product needs a
+     name to be sold and searched by). Everything else stays `TEXT`.
   4. `summary` is turned on for the `TITLE`, `SKU` and `PRICE` fields.
+  5. A table without an `IMAGE` column gets one at the end ("Photos" in the company's language),
+     which is what `table/ready` names as `image`.
 - **I-44** A column typed `STOCK` doesn't become a stock field with values: its numbers are read
   as the **opening balance** and written to the ledger as `add` / `restock` movements with the
   note "import", one per record, when the records step runs (`stock.md`).
 - **I-45** When typing ends, the engine sets `importStage = loading`, emits `table/ready`
-  (`{id, ok: true, normalized: true}`), and waits for the records step. The records step adds
-  rows in batches of 500, then sets `importStage = null` and emits `table/changed`.
-- **I-46** A row that fails I-21 is still imported with the offending cell kept as text (I-14).
-  The answer of the records step reports `{imported, withInvalidCells}`.
+  (`{id, ok: true, normalized: true, retyped, summarized, image}`), and waits for the records
+  step. The records step matches each file column to the field of the same name (without case or
+  accents; a column with no field is skipped), adds the rows in the file's order in one
+  transaction, then sets `importStage = null` and emits one `table/changed`.
+- **I-46** A row whose cell doesn't fit its column is still imported with that cell kept as text
+  (I-14), read with I-43's number and date marks first. Two exceptions drop the cell instead: a
+  repeated SKU (I-22; the first row keeps it) and an image cell without an address. The answer of
+  the records step reports `{imported, withInvalidCells}` (rows with at least one such cell). A
+  `COUNTER` numbers the rows; rows with nothing in any matched column are skipped.
 - **I-47** `inventory.tables.normalize` re-runs I-43 on a table **only for fields nobody typed by
-  hand** (`TableNormalizeModel`: "it only reviews the columns nobody touched"). It answers the
-  `TableNormalizeModel` counts; `reindexed` is always `false` offline.
+  hand** (an import's columns until someone changes their type; `TableNormalizeModel`: "it only
+  reviews the columns nobody touched"), over the first 200 records' values. It never makes a
+  `STOCK` or `COUNTER` column (their values aren't cells), nor a second `TITLE`. Values are read
+  again as I-46 reads them. It answers the `TableNormalizeModel` counts (`narrowed` and `renamed`
+  are always 0, `reindexed` always `false` offline) and emits `table/changed`, no import events.
 
 ### Ops
 
@@ -253,10 +276,9 @@ two, the table is `preparing`, and the app waits for `table/ready`.
 
 ## Release status
 
-The inventory release serves tables, fields, records and images (every op above except the
-three of `inventory.import` and `inventory.tables.normalize`, which arrive in their own release;
-the app hides import and re-typing on a master until then). I-4 (open tickets) arrives with the
-POS. A cell written by hand is checked by I-21: the app's date-and-time form (`2026-02-12 12:30`)
+The inventory release serves tables, fields, records and images; the import release adds the
+three ops of `inventory.import` and `inventory.tables.normalize`, so every op above is served.
+I-4 (open tickets) arrives with the POS. A cell written by hand is checked by I-21: the app's date-and-time form (`2026-02-12 12:30`)
 and categories typed as `a, b` are accepted and stored as given / as a list.
 
 ## Open questions

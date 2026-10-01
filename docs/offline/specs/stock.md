@@ -157,7 +157,10 @@ answers `no_primary_table` (as the `code`; the cloud sends it as the `message`).
 ## Release status
 
 The inventory release serves `stock.move`, `stock.history` and `stock.summary`, the projection,
-manual holds (ST-22) and the rebuild (`Stock.rebuild`, no screen yet). ST-14 is reached only by a
+manual holds (ST-22) and the rebuild (`Stock.rebuild`, no screen yet). The import release writes
+an imported stock column as opening balances (`inventory.md` I-44): one `add` / `restock`
+movement per product, `source: import`, note "import", in the records step's transaction, with no
+`stock/changed` for each (that step's one `table/changed` tells about all of them). ST-14 is reached only by a
 POS outbox replay, which arrives with the POS. A discarded returned unit (the `remove` row above)
 has no way to be told apart from a shelf removal in today's `stock.move` arguments: it waits for
 open question 4.

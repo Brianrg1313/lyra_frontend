@@ -56,6 +56,9 @@ class ConnectionService extends ChangeNotifier {
   /// Who wants to know when the connection comes back — see [onRestored].
   final List<void Function()> _restored = [];
 
+  /// The handlers of [on], by event, for the master's stream ([receive]).
+  final Map<String, List<SocketHandler>> _master = {};
+
   Map<String, dynamic>? _error;
 
   // ─── Status ─────────────────────────────────────────────────────────────────
@@ -95,8 +98,9 @@ class ConnectionService extends ChangeNotifier {
   /// can be called every time an authenticated section is entered.
   ///
   /// Only in the cloud: on a master's devices there is no socket.io server to
-  /// reach, and the master's events (`protocol-v1.md` §5) reach the services
-  /// with the first domain that needs them live (plan §7.2).
+  /// reach. The master's events (`protocol-v1.md` §5) come over its own
+  /// channel, which `LanService` holds, and reach the same handlers through
+  /// [receive].
   Future<void> open() async {
     if (Deployment.mode != DeploymentMode.cloud) return;
     if (isConnected) return;
@@ -185,9 +189,39 @@ class ConnectionService extends ChangeNotifier {
   // the connection is open: they're noted down and hooked up on connect, and
   // they survive a [refresh].
 
-  /// Listens for a server event. Returns the function that removes it.
-  void Function() on(String event, SocketHandler handler) =>
-    sockets.on(event, handler);
+  /// Listens for a server event, from the cloud's socket or the master's
+  /// stream (whichever this install has). Returns the function that removes
+  /// it.
+  ///
+  /// One registration for both because the names and payloads are the same
+  /// (`protocol-v1.md` §5): a service listens once and never knows the mode.
+  void Function() on(String event, SocketHandler handler) {
+    final off = sockets.on(event, handler);
+    (_master[event] ??= []).add(handler);
+
+    return () {
+      off();
+      _master[event]?.remove(handler);
+    };
+  }
+
+  /// An event of the master's stream, handed to whoever listens to it with
+  /// [on]. `LanService` calls it.
+  void receive(String event, dynamic data) {
+    // A copy: a handler is free to take itself off the list as it runs.
+    for (final handler in List<SocketHandler>.from(_master[event] ?? const [])) {
+      handler(data);
+    }
+  }
+
+  /// The master could not replay what this install missed (`resync_required`,
+  /// `protocol-v1.md` §5): the same as a socket that comes back, every
+  /// [onRestored] handler reads again. `LanService` calls it.
+  void resync() {
+    for (final handler in List<void Function()>.from(_restored)) {
+      handler();
+    }
+  }
 
   /// **Called when the connection comes back after having been down.** Returns
   /// the function that removes the handler.
@@ -204,13 +238,16 @@ class ConnectionService extends ChangeNotifier {
   /// only honest answer is to read again, which is what every listener here
   /// does. It is deliberately **not** fired by the first connection of the run:
   /// nothing had been missed yet, and every screen reads when it opens.
+  ///
+  /// A master does keep what it emitted, and replays it after a drop; it only
+  /// fires these when it can't ([resync]).
   void Function() onRestored(void Function() handler) {
     _restored.add(handler);
 
     return () => _restored.remove(handler);
   }
 
-  /// Listens for an event once.
+  /// Listens for an event once. Cloud only, like [off] and [stream].
   void once(String event, SocketHandler handler) => sockets.once(event, handler);
 
   /// Removes a handler, or all of the event's handlers if none is passed.

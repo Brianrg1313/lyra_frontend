@@ -48,6 +48,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   `startPairing`, `revoke`, `browserCa`, `stopServer`, `leave` (back to cloud; a browser asks again), `call(op, args)` (what
   the LAN sources run: a write gets its `commandId`; a lost master is thrown as `{message, action, code: "unreachable"}`).
   A dropped socket reconnects once (→ `revoked`, `unreachable` or where it was); leaving `ready` fires `onSessionRejected`.
+  On `ready` it subscribes to the master's events (`since` the last seq after a reconnect) and hands them to
+  `ConnectionService.receive`; `resync_required` → `ConnectionService.resync`.
 - `lan_pairing_service.dart` — `LanPairingService` (+ `LanPairingError`), flow-scoped (the pairing page): `search` (mDNS),
   `pair` (code exchange with a fresh key; the device becomes a `local` client), `pairScanned` (a QR: its token, each of its
   addresses until one answers).
@@ -151,7 +153,8 @@ Reached through `LanService.server` (the `lan/` services own it).
 ## connection/ — the realtime link (singular)
 
 - `connection_service.dart` — `ConnectionService`: owns the `sockets` lifecycle and status; `open` does nothing outside the
-  cloud (a master's events reach the app with the first domain that needs them live).
+  cloud. `on(event)` listens to the cloud's socket and to the master's stream alike (`receive`, fed by `LanService`;
+  `resync` fires `onRestored`); `once`/`off`/`stream` are cloud only.
   `refresh()` forces a reconnect. `rebind()` is that reconnect after a business change (called by
   `BusinessService` on every switch/creation; the server joins rooms only in the handshake) —
   no-op while no connection was opened or after `close()`. `onRestored` fires when a dropped
@@ -242,7 +245,8 @@ See `baileys_server/MODULE.md` for the server side.
 - `table_field_type.dart` — `TableFieldType`.
 - `table_field_options.dart` — `OPTIONS`/`CATEGORIES` rules (`sameFieldOption`, `fieldLabelsOf`, `fieldLabelsText`, `fieldLabelsValue`).
 - `table_template.dart` — `TableTemplate`: starting categories.
-- `import_file.dart` — `ImportFormat`, `pickImportFile()`, `importTableName(path)`.
+- `import_file.dart` — `ImportFormat`, `importExtensions` (the cloud's `kImportExtensions`, a master's
+  `kLocalImportExtensions`: `.xlsx`, `.xlsm`, `.csv`), `importFormatOf`, `pickImportFile()`, `importTableName(path)`.
 - `import_source.dart` — `ImportSource`, `ImportSourceGroup`.
 - `product_date.dart` — `ProductDate`, `DateSeparatorFormatter`.
 - `product_image.dart` — `ProductImage`: thumbnail sizing/URLs.
@@ -254,7 +258,8 @@ See `baileys_server/MODULE.md` for the server side.
   import (structure, then records), normalisation (cloud only). Used by `TablesService`, `TableDetailService`, `TableViewService`.
   `inventory_cloud_source.dart` — REST (reads the created table's id in either shape). `inventory_lan_source.dart` —
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
-  `inventory.images.add`; import and normalisation throw (hidden on a master until their release).
+  `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
+  `inventory.tables.normalize`.
 - `sources/stock_source.dart` — `StockSource`: summary page, a movement (answers the balance). Used by `StockSummaryService`.
   `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
   `stock.move` (`operationOf`).

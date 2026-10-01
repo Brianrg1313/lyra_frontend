@@ -156,6 +156,14 @@ class TablesService extends ChangeNotifier {
   /// for the rest of the session over a notice that is never coming.
   final Map<String, Timer> _watching = {};
 
+  /// `table/ready` notices nobody was waiting for yet, by table id.
+  ///
+  /// A master types an import's columns before it answers, so its notice can
+  /// arrive between the answer and [_awaitReady]: kept here, the wait that
+  /// starts next finds it instead of sitting out [_kReadyTimeout] for a notice
+  /// that already came.
+  final Map<String, TableReadyModel> _landed = {};
+
   TablesStatus get status => _status;
   List<TableLiteModel> get tables => List.unmodifiable(_tables);
 
@@ -573,6 +581,9 @@ class TablesService extends ChangeNotifier {
   /// not, but that no longer depends on this side— but the signal to keep
   /// going without the notice.
   Future<TableReadyModel?> _awaitReady(String tableId) {
+    final landed = _landed.remove(tableId);
+    if (landed != null) return Future.value(landed);
+
     final completer = Completer<TableReadyModel?>();
     _pending[tableId] = completer;
 
@@ -642,6 +653,7 @@ class TablesService extends ChangeNotifier {
       return;
     }
 
+    _landed[report.id] = report;
     _importing.remove(report.id);
 
     _reload();
@@ -710,6 +722,7 @@ class TablesService extends ChangeNotifier {
   /// which is what makes them give up.
   void _abandon() {
     _importing.clear();
+    _landed.clear();
 
     for (final timer in _watching.values) {
       timer.cancel();

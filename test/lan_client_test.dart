@@ -197,7 +197,18 @@ class FakeMaster {
   bool expireNext = false;
   int _refreshes = 1;
 
-  RpcClient connect() => RpcClient(_Socket(this));
+  /// The last event seq emitted, and the oldest one still kept for a replay.
+  int head = 0;
+  int keptFrom = 0;
+  _Socket? _socket;
+
+  RpcClient connect() => RpcClient(_socket = _Socket(this));
+
+  /// Sends an event to the open connection, as after `events.subscribe`.
+  void emit(String event, Object? data) => _socket!._out.add(RpcEvent(event: event, seq: ++head, data: data).encode());
+
+  /// Closes the connection from the master's side (a restart, a network change).
+  Future<void> drop() => _socket!._out.close();
 
   Object? answer(Map<String, Object?> request) {
     final args = request["args"] as Map<String, Object?>? ?? const {};
@@ -226,6 +237,10 @@ class FakeMaster {
         return _tokens();
       case "auth.refresh":
         return _tokens(++_refreshes);
+      case "events.subscribe":
+        final since = args["since"] as int?;
+        if (since != null && since < keptFrom) throw const RpcError("resync_required", "");
+        return {"head": head};
       case "session.bind":
         return {"accountId": "owner", "expires": "2030-01-01T00:00:00Z"};
       case "devices.browserCa":

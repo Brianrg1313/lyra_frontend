@@ -27,11 +27,16 @@ fields, records (checked cells, SKUs, counters, accent-free text search), produc
 320 px thumbnail, and the stock ledger (`stock.move`, holds, history, summary) (`inventory.md`,
 `stock.md`); the app reads them through `InventoryLanSource` and `StockLanSource`, and draws every
 image with `mediaImage`, which on a master downloads it over the pinned channel with the session's
-token (`LanFileImage`), so the company logo works there too. Left for later: importing spreadsheets
-and re-typing columns (hidden on a master), I-4 and ST-14 (with the POS), live `table/changed` /
-`stock/changed` in the app, and uploading a photo or a logo from the web build (the app hands it to
-its sources as a `dart:io` file, which a browser has none of; native devices upload, every client
-draws).
+token (`LanFileImage`), so the company logo works there too. Left for later: I-4 and ST-14 (with the
+POS), and uploading a photo or a logo from the web build (the app hands it to its sources as a
+`dart:io` file, which a browser has none of; native devices upload, every client draws).
+Phase 4, third release (spreadsheet import): the engine reads `.xlsx` and `.csv` (I-40, I-41), types
+the columns by rules instead of a model (I-43), writes a stock column as opening balances (I-44), and
+re-types the columns nobody typed by hand (`inventory.tables.normalize`, I-47); the app's
+`InventoryLanSource` uploads the file for each step, and the app now follows the master's events
+(`LanService` subscribes, `ConnectionService.on` hands them to the same handlers as the cloud's
+socket), which is what ends an import's wait. Importing from the web build has the same `dart:io`
+gap as photos. No screen yet follows `table/changed` or `stock/changed` live on its own.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the

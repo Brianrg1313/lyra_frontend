@@ -19,9 +19,9 @@ import 'package:app/toolkit/deployment.dart';
 ///
 /// The services build the cloud's bodies (`*_request.dart`, `TABLE_ID`, `DATA`); [args] turns
 /// their keys into the spec's (`tableId`, `data`), and the master answers in the shapes the
-/// models already read, so no model or screen changes (plan principle 8). Importing a
-/// spreadsheet and re-typing its columns arrive in a later release: `CapabilityService` hides
-/// them on a master until then.
+/// models already read, so no model or screen changes (plan principle 8). An import types its
+/// columns by rules, not by a model (I-43), and reads `.xlsx` and `.csv` only
+/// (`importExtensions`).
 class InventoryLanSource implements InventorySource {
   const InventoryLanSource(this._lan);
 
@@ -131,23 +131,45 @@ class InventoryLanSource implements InventorySource {
     args: {"tableId": tableId, "productId": recordId, "fileId": fileId}
   );
 
+  /// The file goes up (`PUT /f`, purpose `import`) and the master reads it once (I-40). It
+  /// types the columns before it answers, so its `table/ready` follows right behind (I-45).
   @override
   Future<String> importStructure(
     ImportFormat format,
     File file, {
     required String name,
     required int headerRow
-  }) => throw UnsupportedError("Importing on a master arrives in a later release");
+  }) async {
+    final answer = await _lan.call(Ops.inventoryImportStructure, args: {
+      "fileId": await _lan.upload("import", await file.readAsBytes()),
+      "format": format.segment,
+      if (name.isNotEmpty) "name": name,
+      "row": headerRow
+    });
+    final id = answer is Map ? answer["id"] : null;
+    if (id is! String) throw const UnreadableAnswer("inventory.import.structure");
 
+    return id;
+  }
+
+  /// The same file again: the master keeps nothing between the two steps, like the cloud.
   @override
   Future<void> importRecords(
     ImportFormat format,
     File file, {
     required String tableId,
     required int headerRow
-  }) => throw UnsupportedError("Importing on a master arrives in a later release");
+  }) async {
+    await _lan.call(Ops.inventoryImportRecords, args: {
+      "fileId": await _lan.upload("import", await file.readAsBytes()),
+      "format": format.segment,
+      "tableId": tableId,
+      "row": headerRow
+    });
+  }
 
+  /// The rules again (I-47), no model: [timeout] is the cloud's wait and has nothing to bound.
   @override
-  Future<TableNormalizeModel> normalize(String tableId, {required Duration timeout}) =>
-    throw UnsupportedError("Re-typing columns on a master arrives with importing");
+  Future<TableNormalizeModel> normalize(String tableId, {required Duration timeout}) async =>
+    TableNormalizeModel.fromResponse(await _lan.call(Ops.inventoryTablesNormalize, args: {"tableId": tableId}));
 }

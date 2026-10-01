@@ -40,6 +40,45 @@ void main() {
     expect(store.refresh, "refresh-2");
   });
 
+  test("the master's events reach the services; a reconnect asks for what it missed (protocol-v1.md §5)", () async {
+    final master = FakeMaster();
+    final got = <(String, Object?)>[];
+    var resyncs = 0;
+    final lan = LanService(
+      store: MemoryLanIdentityStore()
+        ..stored = device()
+        ..refresh = "refresh-1",
+      connect: (_, _) async => master.connect(),
+      deliver: (event, data) => got.add((event, data)),
+      resync: () => resyncs++,
+    );
+    List<Object?> subscriptions() => [
+      for (final request in master.received) if (request["op"] == "events.subscribe") request["args"],
+    ];
+
+    expect(await lan.open(), LanStatus.ready);
+    master.emit("table/ready", {"id": "t1", "ok": true});
+    master.emit("table/changed", {"id": "t1", "what": "records"});
+    await pumpEventQueue();
+
+    expect(got.map((event) => event.$1), ["table/ready", "table/changed"]);
+    expect(subscriptions(), [{}]);
+
+    // The connection drops and comes back: the master replays from the last one handed over.
+    await master.drop();
+    await pumpEventQueue();
+    expect(lan.status, LanStatus.ready);
+    expect(subscriptions().last, {"since": 2});
+    expect(resyncs, 0);
+
+    // Past what the master keeps: every screen reads again, and the stream starts over live.
+    master.keptFrom = 10;
+    await master.drop();
+    await pumpEventQueue();
+    expect(subscriptions().sublist(2), [{"since": 2}, {}]);
+    expect(resyncs, 1);
+  });
+
   test('a wrong password stays signed out and says why', () async {
     final master = FakeMaster();
     final lan = LanService(store: MemoryLanIdentityStore()..stored = device(), connect: (_, _) async => master.connect());

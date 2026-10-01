@@ -1,9 +1,18 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/painting.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
+
+import 'package:core/core.dart' show Navis, AppSize, ThemeColor, SchemeColor;
+import 'package:app/generated/l10n.dart';
+import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/inventory/import_file.dart';
+import 'package:app/services/stock/tables/table_normalizing_model.dart';
+import 'package:app/services/stock/tables/table_ready_model.dart';
+import 'package:app/services/stock/tables/tables_service.dart';
 
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/files/cdn_service.dart';
@@ -99,15 +108,75 @@ void main() {
       expect(images.single.id, "0192f0aa-0000-7000-8000-000000000001");
     });
 
-    test('on a master, importing and re-typing columns wait for their release; the rest is there', () {
+    test('an import uploads the file for each step; a master reads .xlsx and .csv only (I-40)', () async {
+      final folder = await Directory.systemTemp.createTemp("lyra-import");
+      addTearDown(() => folder.delete(recursive: true));
+      final file = File("${folder.path}/lista.csv")..writeAsStringSync("Nombre\nCafé\n");
+      final source = InventoryLanSource(master);
+      master.answers[Ops.inventoryImportStructure.name] = {"id": "t9"};
+      master.answers[Ops.inventoryTablesNormalize.name] = {"id": "t9", "retyped": 1, "recast": 1, "reindexed": false};
+
+      expect(await source.importStructure(ImportFormat.csv, file, name: "lista", headerRow: 1), "t9");
+      await source.importRecords(ImportFormat.csv, file, tableId: "t9", headerRow: 1);
+      final normalized = await source.normalize("t9", timeout: const Duration(minutes: 3));
+
+      expect(master.uploads.map((upload) => upload.$1), ["import", "import"]);
+      expect(master.calls.map((call) => call.$2), [
+        {"fileId": "uploaded-1", "format": "csv", "name": "lista", "row": 1},
+        {"fileId": "uploaded-2", "format": "csv", "tableId": "t9", "row": 1},
+        {"tableId": "t9"},
+      ]);
+      expect(normalized.changedValues, isTrue);
+
       Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
-
-      expect(CapabilityService().shows("inventory"), isTrue);
-      expect(CapabilityService().shows("inventory.import"), isFalse);
-      expect(CapabilityService().shows("channels"), isFalse);
-
-      Deployment.use(DeploymentMode.cloud);
       expect(CapabilityService().shows("inventory.import"), isTrue);
+      expect(importFormatOf("lista.xlsx"), ImportFormat.excel);
+      expect(importFormatOf("lista.xls"), isNull);
+      expect(importFormatOf("lista.ods"), isNull);
+      expect(CapabilityService().shows("channels"), isFalse);
+    });
+
+    testWidgets("a master's ready notice can arrive before the wait starts: the rows still go right up (I-45)", (tester) async {
+      final folder = (await tester.runAsync(() => Directory.systemTemp.createTemp("lyra-import")))!;
+      addTearDown(() => folder.deleteSync(recursive: true));
+      final file = File("${folder.path}/lista.csv")..writeAsStringSync("Nombre\nCafé\n");
+      master.answers[Ops.inventoryImportStructure.name] = {"id": "t9"};
+      master.answers[Ops.inventoryImportRecords.name] = {"imported": 1, "withInvalidCells": 0};
+      // The master types before it answers: both notices come with the answer.
+      master.before[Ops.inventoryImportStructure.name] = () {
+        ConnectionService().receive(TableNormalizingModel.event, {"id": "t9", "normalize": true});
+        ConnectionService().receive(TableReadyModel.event, {"id": "t9", "ok": true, "normalized": true});
+      };
+      final tables = TablesService(source: InventoryLanSource(master));
+      late BuildContext context;
+      // The banner that says the import ended draws with the theme.
+      ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFFFFFFF));
+      ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
+
+      await tester.pumpWidget(MaterialApp(
+        navigatorKey: Navis.delegate.navigatorKey,
+        localizationsDelegates: const [S.delegate, GlobalWidgetsLocalizations.delegate, GlobalMaterialLocalizations.delegate],
+        supportedLocales: S.delegate.supportedLocales,
+        home: Builder(builder: (built) {
+          context = built;
+          AppSize.instance(built);
+          return const SizedBox();
+        }),
+      ));
+
+      final started = await tester.runAsync(() async {
+        final result = await tables.import(context, file);
+        // The second step reads the file again; real I/O needs real time.
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        return result;
+      });
+
+      expect(started, TableImportResult.started);
+      expect(master.calls.map((call) => call.$1), [Ops.inventoryImportStructure.name, Ops.inventoryImportRecords.name]);
+      expect(tables.importStage("t9"), isNull);
+
+      await tester.pump(const Duration(seconds: 10));
+      tables.dispose();
     });
   });
 
@@ -210,6 +279,7 @@ const _structure = {
 class _Master extends LanService {
   final Map<String, Object?> answers = {};
   final Map<String, Map<String, Object?>> refusals = {};
+  final Map<String, void Function()> before = {};
   final List<(String, Map<String, Object?>)> calls = [];
   final List<(String, List<int>)> uploads = [];
 
@@ -219,6 +289,7 @@ class _Master extends LanService {
   @override
   Future<Object?> call(Op op, {Map<String, Object?> args = const {}}) async {
     calls.add((op.name, args));
+    before[op.name]?.call();
     final refusal = refusals[op.name];
     if (refusal != null) throw refusal;
 

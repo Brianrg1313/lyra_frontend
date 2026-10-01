@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 
+import 'package:app/toolkit/deployment.dart';
+
 /// How the backend reads the file uploaded to build a table.
 ///
 /// It is not the file format but **which parser the backend opens it with**, and
@@ -34,6 +36,15 @@ const List<String> kImportExtensions = [
   "csv"
 ];
 
+/// What a master reads (`inventory.md` I-40): `.xlsx` (and `.xlsm`, the same format with macros
+/// it ignores) and `.csv`. The older and other spreadsheet formats need the cloud's library.
+const List<String> kLocalImportExtensions = ["xlsx", "xlsm", "csv"];
+
+/// The extensions this install can import: [kImportExtensions] in the cloud,
+/// [kLocalImportExtensions] on a master.
+List<String> get importExtensions =>
+  Deployment.mode == DeploymentMode.cloud ? kImportExtensions : kLocalImportExtensions;
+
 /// Which parser [path] has to be opened with, or `null` if its extension is not
 /// a spreadsheet nor a CSV.
 ///
@@ -50,7 +61,7 @@ ImportFormat? importFormatOf(String path) {
 
   final extension = name.substring(dot + 1).toLowerCase();
 
-  if (!kImportExtensions.contains(extension)) return null;
+  if (!importExtensions.contains(extension)) return null;
 
   return extension == "csv" ? ImportFormat.csv : ImportFormat.excel;
 }
@@ -81,7 +92,7 @@ String _fileName(String path) {
 }
 
 /// Opens the system dialog to choose the spreadsheet to import, filtered to
-/// [kImportExtensions]: the other files cannot even be selected.
+/// [importExtensions]: the other files cannot even be selected.
 ///
 /// [label] is what that group of types is called in the dialog's dropdown
 /// ("Spreadsheets and CSV"), and it arrives translated from the screen because this file
@@ -89,24 +100,25 @@ String _fileName(String path) {
 ///
 /// Returns `null` if the dialog was closed without choosing anything.
 Future<File?> pickImportFile({required String label}) async {
+  final cloud = Deployment.mode == DeploymentMode.cloud;
   final picked = await openFile(
     acceptedTypeGroups: [
       XTypeGroup(
         label: label,
-        extensions: kImportExtensions,
+        extensions: importExtensions,
         // Windows filters by extension, but macOS and iOS do it by UTI and
         // Android by MIME: without these two the dialog on those platforms would not
         // filter anything and would let any file be chosen.
-        uniformTypeIdentifiers: const [
+        uniformTypeIdentifiers: [
           "org.openxmlformats.spreadsheetml.sheet",
-          "com.microsoft.excel.xls",
-          "org.oasis-open.opendocument.spreadsheet",
+          if (cloud) "com.microsoft.excel.xls",
+          if (cloud) "org.oasis-open.opendocument.spreadsheet",
           "public.comma-separated-values-text"
         ],
-        mimeTypes: const [
+        mimeTypes: [
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "application/vnd.ms-excel",
-          "application/vnd.oasis.opendocument.spreadsheet",
+          if (cloud) "application/vnd.ms-excel",
+          if (cloud) "application/vnd.oasis.opendocument.spreadsheet",
           "text/csv"
         ]
       )

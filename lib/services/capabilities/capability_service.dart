@@ -91,10 +91,9 @@ class CapabilityService extends ChangeNotifier {
     "local_server"
   };
 
-  /// Parts of a built area whose master side is still missing: importing a
-  /// spreadsheet, and the re-typing of columns that only exists for imported
-  /// ones (`inventory.md` I-40 to I-47), arrive in their own release.
-  static const Set<String> _pendingOnMaster = {"inventory.import"};
+  /// Parts of a built area whose master side is still missing, hidden until
+  /// their release. None today: kept for the next domain that lands in parts.
+  static const Set<String> _pendingOnMaster = {};
 
   bool _internet = true;
 

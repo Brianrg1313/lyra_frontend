@@ -11,6 +11,7 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/toolkit/api.dart' show onSessionRejected;
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/lan.dart';
+import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/local_server/local_server_service.dart';
 import './lan_device.dart';
 import './lan_identity_store.dart';
@@ -45,24 +46,40 @@ enum LanStatus {
 }
 
 /// This install's session with its master in `local` mode (plan §7.4): starting the engine
-/// when this computer is the master, connecting, unlocking, signing in, and the admin ops of
-/// phase 3 (devices, pairing). The domains arrive with plan phase 4.
+/// when this computer is the master, connecting, unlocking, signing in, the admin ops of
+/// phase 3 (devices, pairing), and the master's events, handed to the services through
+/// `ConnectionService` (`protocol-v1.md` §5).
 ///
 /// App-wide (`initial_builder.dart`): the boot flow and every LAN page share one connection.
 class LanService extends ChangeNotifier {
-  LanService({LanIdentityStore? store, LocalServerService? server, LanConnect? connect, LanProve? prove, LanFiles? files})
-    : _store = store ?? const SecureLanIdentityStore(),
+  LanService({
+    LanIdentityStore? store,
+    LocalServerService? server,
+    LanConnect? connect,
+    LanProve? prove,
+    LanFiles? files,
+    void Function(String event, Object? data)? deliver,
+    void Function()? resync,
+  }) : _store = store ?? const SecureLanIdentityStore(),
       _server = server,
       _connect = connect,
       _prove = prove,
-      _files = files;
+      _files = files,
+      _deliver = deliver ?? ConnectionService().receive,
+      _resync = resync ?? ConnectionService().resync;
 
   final LanIdentityStore _store;
   final LanConnect? _connect;
   final LanProve? _prove;
   final LanFiles? _files;
+  final void Function(String event, Object? data) _deliver;
+  final void Function() _resync;
   LocalServerService? _server;
   LanClient? _client;
+
+  /// The last event seq handed over: a reconnect asks the master to replay from it.
+  int? _seq;
+  StreamSubscription<RpcEvent>? _feed;
 
   LocalServerService get server => _server ??= LocalServerService(store: _store);
 
@@ -132,6 +149,7 @@ class LanService extends ChangeNotifier {
   });
 
   Future<void> signOut() async {
+    await _stopEvents();
     await _client?.signOut();
     _set(LanStatus.signedOut);
   }
@@ -227,7 +245,48 @@ class LanService extends ChangeNotifier {
   Future<void> _drop() async {
     final client = _client;
     _client = null;
+    await _stopEvents();
     await client?.close();
+  }
+
+  /// Follows the master's events once the session is ready (`events.subscribe`). A reconnect
+  /// asks for what came after the last one handed over, so nothing in between is lost; when the
+  /// master no longer keeps that far back (`resync_required`), every screen reads again instead.
+  ///
+  /// A refusal here doesn't fail the session: screens still read, only not live.
+  Future<void> _subscribe() async {
+    final client = _client!;
+
+    await _feed?.cancel();
+    _feed = client.events.listen((event) {
+      _seq = event.seq;
+      _deliver(event.event, event.data);
+    });
+
+    try {
+      Object? answer;
+      try {
+        answer = await client.call(Ops.eventsSubscribe, args: {"since": ?_seq});
+      } on Map<String, Object?> catch (failure) {
+        if (failure["code"] != ErrorCodes.resyncRequired) rethrow;
+
+        _seq = null;
+        answer = await client.call(Ops.eventsSubscribe);
+        _resync();
+      }
+
+      final head = answer is Map ? answer["head"] : null;
+      if (_seq == null && head is int) _seq = head;
+    } on Map<String, Object?> catch (failure) {
+      if (kDebugMode) print("lan: events.subscribe refused: $failure");
+    }
+  }
+
+  /// Stops following: signing out ends the session the stream belonged to.
+  Future<void> _stopEvents() async {
+    await _feed?.cancel();
+    _feed = null;
+    _seq = null;
   }
 
   /// When the socket closes under an open page (the master stopped, this device was revoked,
@@ -245,7 +304,10 @@ class LanService extends ChangeNotifier {
   Future<LanStatus> _guard(Future<LanStatus> Function() body) async {
     try {
       _error = null;
-      return _set(await body());
+      final status = await body();
+      if (status == LanStatus.ready) await _subscribe();
+
+      return _set(status);
     } on LanUnreachable {
       return _set(LanStatus.unreachable);
     } on Map<String, Object?> catch (failure) {
@@ -276,6 +338,7 @@ class LanService extends ChangeNotifier {
 
   @override
   void dispose() {
+    unawaited(_feed?.cancel());
     unawaited(_client?.close());
     super.dispose();
   }
