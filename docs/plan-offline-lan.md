@@ -92,7 +92,7 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
 - Not yet seen either: the sign in's "Create Master Server" creating the company end to end and
   landing on the master's home (checked up to the welcome's modal opening).
 - Repos, all on this disk, **nothing pushed**: the app on `feat/offline-phase4-business` (no remote,
-  31 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on
+  35 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on
   `feat/offline-lan`, whose one commit holds what the app depends on (`button.dart`, `select_menu`,
   modals, charts, `InputRow` without `LayoutBuilder`…), over a `main` one commit ahead of `origin/main`.
 - A browser reaches a master only at the address the master serves (`https://<host>:4780`), never at
