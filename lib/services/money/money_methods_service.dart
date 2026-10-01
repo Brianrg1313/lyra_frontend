@@ -7,7 +7,10 @@ import 'package:app/toolkit/api.dart';
 import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/toolkit/deployment.dart';
 
-enum MoneyMethodsStatus { idle, loading, ready, empty, error }
+/// `locked`: a master answered that the accounts' sealed details need this
+/// person's password (`sealed_locked`, `money.md` M-45), which signing in again
+/// gives it; a different thing to tell than a read that failed.
+enum MoneyMethodsStatus { idle, loading, ready, empty, error, locked }
 
 /// The ways this company charges (`GET /money/methods`) and the rails it may
 /// turn on (`GET /business/payments`).
@@ -108,7 +111,9 @@ class MoneyMethodsService extends ChangeNotifier {
     } catch (error) {
       if (kDebugMode) print("loadMoneyMethods failed: $error");
 
-      _status = MoneyMethodsStatus.error;
+      _status = error is Map && error["code"] == "sealed_locked"
+        ? MoneyMethodsStatus.locked
+        : MoneyMethodsStatus.error;
       notifyListeners();
 
       return;

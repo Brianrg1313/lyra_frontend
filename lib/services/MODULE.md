@@ -283,12 +283,12 @@ See `baileys_server/MODULE.md` for the server side.
 
 ## money/ — owned by the finance section
 
-- `sources/money_source.dart` — `MoneySource` (+ `MoneyRailFields`): summary, payments (search, record, void),
+- `sources/money_source.dart` — `MoneySource` (+ `MoneyRailFields`, `moneyRailFields`, `moneyPaymentOptions`): summary, payments (search, record, void),
   receivables, payment accounts (+ rail sheets), rails catalogue, currencies, concepts catalogue. Used by every money
   service but `MoneyBotService` (cloud only). `money_cloud_source.dart` — REST, and the catalogue row readers.
-  `money_lan_source.dart` — `MoneyLanSource`: the master's `money.*` ops (summary, payments, receivables, currencies,
-  catalogue), money from and to minor units of the main currency; the accounts (`money.methods.*`) throw until a master
-  serves them.
+  `money_lan_source.dart` — `MoneyLanSource`: the master's `money.*` ops (summary, payments, receivables, accounts and
+  rails, currencies, catalogue), money from and to minor units of the main currency (an account's fixed commission
+  travels as an amount); the cloud's account bodies in the master's keys.
 Nothing here adds figures up: every total is the backend's answer.
 
 - `money_service.dart` — `MoneyService` (+ `MoneySummaryStatus`, `MoneyRange`): `GET /money`
@@ -307,7 +307,7 @@ Nothing here adds figures up: every total is the backend's answer.
 - `money_receivable_model.dart` — `MoneyReceivable`, `MoneyReceivableTotals`, `MoneyReceivablesPage`.
 - `money_methods_service.dart` — `MoneyMethodsService`: accounts (`GET/POST/PUT/DELETE /money/methods`,
   delete is soft) and rails (`GET /business/payments`). `fields(code)` = a rail's requirement sheet;
-  `options` = `banks`, `documents`, `networks`.
+  `options` = `banks`, `documents`, `networks`. `locked` status = a master's `sealed_locked` (M-45).
 - `money_method_model.dart` — `MoneyMethod` (account; `currency`, `fee`), `MoneyRail` (available rail; `currency`
   it is fixed to, if any), `MoneyMethodField` (one requirement), `MoneyPaymentOption`, `MoneyFee` + `MoneyFeeType`
   (`none`/`fixed`/`percent`). Rail ≠ account ≠ settlement kind.

@@ -1,4 +1,5 @@
 // SERVICES
+import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/money/money_concept_model.dart';
 import 'package:app/services/money/money_currency_model.dart';
 import 'package:app/services/money/money_method_model.dart';
@@ -9,6 +10,28 @@ import 'package:app/services/pos/pos_payment_method.dart';
 
 /// The requirement sheets of the payment rails, by rail code.
 typedef MoneyRailFields = Map<String, List<MoneyMethodField>>;
+
+/// The requirement sheets both method reads answer with: `{rail: [...]}`.
+MoneyRailFields moneyRailFields(dynamic data) => data is! Map
+  ? const {}
+  : {
+      for (final entry in data.entries)
+        entry.key.toString(): [
+          for (final row in catalogRows(entry.value)) MoneyMethodField.fromJson(row)
+        ].where((field) => field.isValid).toList(growable: false)
+    };
+
+/// The option catalogues: `{banks: [{code, name}], ...}`. What is not
+/// understood is left out, like every catalogue in this app — a list that did
+/// not arrive leaves a field without options, and the form draws it as text
+/// rather than as an empty dropdown.
+Map<String, List<MoneyPaymentOption>> moneyPaymentOptions(Map data) => {
+  for (final entry in data.entries)
+    entry.key.toString(): [
+      for (final row in catalogRows(entry.value))
+        MoneyPaymentOption.fromJson(row)
+    ].where((option) => option.isValid).toList(growable: false)
+};
 
 /// The company's money: summary, payments, receivables, its payment accounts,
 /// currencies and the vocabularies they are recorded with

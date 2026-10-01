@@ -142,15 +142,24 @@ decided, and for hybrid, where cloud credit tickets are pulled down.
   (`money.rails`). An unknown `code` is refused (`unknown_rail`). `code` can't be changed.
 - **M-41** The rail's requirement sheet (`fields`) is checked: a `required` field that is missing
   or blank is refused (`required`, naming the field); a field the sheet doesn't list is stored
-  empty. `select` values must be codes of their option list (`invalid_option`).
+  empty. `select` values must be codes of their option list (`invalid_option`); a `document` is a
+  type of its list and a number, stored joined (`V-12345678`, `invalid_option` otherwise). A field
+  with a `format` mask is stored spaced by it (`04121234567` → `0412 123 45 67`); a value the mask
+  can't describe (an e-mail, a `+` number) is stored as typed. A `select` or `document` whose list
+  is empty in the company's country is asked as free text. On an edit, the account is checked as
+  the merge of the change over the row, so it can't clear a required field by leaving it out.
 - **M-42** `currency` must be the main currency or an exchange currency (`unknown_currency`). A
   rail with a fixed currency stores that one whatever is sent.
-- **M-43** `fee`: `none`, `fixed` (an amount in the method's currency, ≥ 0), or `percent` (0–100).
-  On an edit, `FEE_TYPE: none` with `FEE: null` removes it.
+- **M-43** `fee`: `none`, `fixed` (an amount in the method's currency, > 0), or `percent` (> 0 and
+  < 100); anything else is `invalid_fee`. On an edit, `FEE_TYPE: none` with `FEE: null` removes it.
+  A company keeps at most 40 active accounts (`too_many_methods`).
 - **M-44** Removing is soft (`active: false`). Payments that named it keep reading its label.
 - **M-45** `holder`, `document` and `account` are **sealed** (plan §6.3, scope `payments`): they
   are readable only in a session whose account holds `finance.methods.view`, and unwrapped with
-  that person's password at sign in. A PIN session can't read them.
+  that person's password at sign in. A PIN session can't read them. A session without the key
+  (signed in before the key existed, or a holder nobody shared it with yet) answers
+  `sealed_locked` to the list and to a write that has any of them; signing in again with the
+  password clears it. Reading them is audited (`sealed.read`).
 - **M-46** Fees are not applied to POS sales: POS checkout uses settlement kinds, not accounts.
   (In the cloud, fees apply to channel payments, which don't exist offline.)
 
@@ -229,15 +238,28 @@ The finance release serves `money.catalog`, `money.summary`, `money.payments.*`,
   a `settlement` asks for `finance.receivables.collect` and then always answers `ticket_required`
   or `not_credit`; the receivables answer an empty page;
 - a payment names a settlement kind (`unknown_method` when it names none, as the cloud refuses);
-  `accountId` answers `unknown_account` until the accounts are served;
+  `accountId` names an active account (M-4);
 - a search row is flat (`counterpart` read down to a name or contact, `account` a label), as the
   cloud's; `record` and `void` answer the whole payment, with `voided {at, by, reason}`;
 - a custom rate is required in `custom` mode (`invalid_rate`); `money.currencies.remove` of a
-  currency that isn't there is `not_found`; `in_use` arrives with the accounts.
+  currency that isn't there is `not_found`, and of one an account uses `in_use`.
 
-Still to come: `money.methods.*` (needs the `payments` sealed key, plan §6.3, and the rails, banks
-and document types snapshot, `business.md`), then `export.accounting`. Until then a master hides
-the methods tab (and with it the currencies block) and the export.
+The accounts release serves `money.methods.*` (M-40 to M-46). On the wire:
+- the args are the cloud body's keys in camelCase (`code`, `label`, `holder`, `document`,
+  `institution`, `account`, `instructions`, `currency`, `feeType`, `fee`, `position`; `id` on an
+  edit); on an edit a key left out keeps its value and `null` clears it;
+- a `fixed` fee travels as an amount (a number, like a rate) with at most the decimals of the
+  account's currency, since an edit's body doesn't always name that currency and the engine knows
+  it; a `percent` travels as a number or text and is answered as text (`"2.5"`); `currency` null is
+  the main currency;
+- `create` and `edit` answer the account **without** `holder`, `document` and `account`: a write's
+  answer is kept in clear under its `commandId`, whose args hash leaves them out too; `list` reads
+  them;
+- the rails, their sheets and the bank, document and network lists are a snapshot of the cloud's
+  catalogue (2026-09) shipped with the engine (`lyra_node` `Rails`); `icon` is null, since a
+  master doesn't have the cloud's assets.
+
+Still to come: `export.accounting`. Until then a master hides the export.
 
 ## Differences from cloud
 

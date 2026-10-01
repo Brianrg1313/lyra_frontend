@@ -2,7 +2,7 @@
 
 **Path** `test` (flat, 122 files, `<subject>_test.dart`)
 **Run** `flutter test` · `flutter test test/<file>_test.dart`
-**Baseline** 1117 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
+**Baseline** 1119 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
 
 Pure logic and small widgets, not whole screens. **No test may hit the network.** Each file's
 `///` header states the rule it pins and why — read it before changing the test.
@@ -29,8 +29,9 @@ release: a board row, the handover's answer and the detail read money as amounts
 reaches the master in its keys, an unknown reference is news by its code, and one catalogue answers
 stages, modes and channels. The finance release: the summary, a page of payments and the receivables
 read money as amounts, a payment's body reaches the master in its keys with the amount in minor units
-(sent as typed when it has too many decimals), rates travel as they are, and the accounts aren't
-asked of a master yet. The engine, the real TLS and a real Chrome are tested in `lyra_node/test`. |
+(sent as typed when it has too many decimals), rates travel as they are; the accounts are read with
+their sheets, the account bodies reach the master in its keys (an emptied field as `null`), and
+`sealed_locked` leaves the accounts locked rather than failed. The engine, the real TLS and a real Chrome are tested in `lyra_node/test`. |
 | Core rules | `select_menu` `table_frozen_band` `modal_scroll` | Dropdown height cap; frozen band width includes its divider (else 1 px overflow in every table); a modal's scroll bar lives in its right padding (content inset equal both sides, one scroll holds the modal controller, draggable there). |
 
 `_scratch_create_table_smoke_test.dart` — scratch smoke test, not a contract.

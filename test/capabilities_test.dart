@@ -87,7 +87,7 @@ void main() {
     final capabilities = CapabilityService();
 
     // Built: the business domain, inventory (importing too), stock, the POS, the sales board and
-    // finance's summary and payments.
+    // finance's summary, payments and accounts.
     expect(capabilities.of("business"), Capability.available);
     expect(capabilities.of("business.settings"), Capability.available);
     expect(capabilities.of("business.settings.edit_logo"), Capability.available);
@@ -103,9 +103,9 @@ void main() {
     expect(capabilities.of("finance"), Capability.available);
     expect(capabilities.of("finance.overview"), Capability.available);
     expect(capabilities.of("finance.payments.void"), Capability.available);
+    expect(capabilities.of("finance.methods"), Capability.available);
+    expect(capabilities.of("finance.methods.manage_currencies"), Capability.available);
     // Not yet: they belong to local, but their sources don't exist.
-    expect(capabilities.of("finance.methods"), Capability.hidden);
-    expect(capabilities.of("finance.methods.manage_currencies"), Capability.hidden);
     expect(capabilities.of("finance.export"), Capability.hidden);
     expect(capabilities.of("business.employees"), Capability.hidden);
     expect(capabilities.of("business.employees.view"), Capability.hidden);

@@ -83,7 +83,7 @@ class MoneyCloudSource implements MoneySource {
         for (final row in catalogRows(data is Map ? data["methods"] : null))
           MoneyMethod.fromJson(row)
       ],
-      fields: _fields(data is Map ? data["fields"] : null)
+      fields: moneyRailFields(data is Map ? data["fields"] : null)
     );
   }
 
@@ -103,8 +103,8 @@ class MoneyCloudSource implements MoneySource {
         for (final row in catalogRows(data is Map ? data["methods"] : null))
           MoneyRail.fromJson(row)
       ].where((entry) => entry.isValid).toList(growable: false),
-      fields: _fields(data is Map ? data["fields"] : null),
-      options: options is Map ? _options(options) : null
+      fields: moneyRailFields(data is Map ? data["fields"] : null),
+      options: options is Map ? moneyPaymentOptions(options) : null
     );
   }
 
@@ -150,28 +150,6 @@ class MoneyCloudSource implements MoneySource {
       settlements: _methods(data is Map ? data["methods"] : null)
     );
   }
-
-  /// The requirement sheets both method endpoints answer with: `{rail: [...]}`.
-  static MoneyRailFields _fields(dynamic data) => data is! Map
-    ? const {}
-    : {
-        for (final entry in data.entries)
-          entry.key.toString(): [
-            for (final row in catalogRows(entry.value)) MoneyMethodField.fromJson(row)
-          ].where((field) => field.isValid).toList(growable: false)
-      };
-
-  /// The option catalogues: `{banks: [{code, name}], ...}`. What is not
-  /// understood is left out, like every catalogue in this app — a list that did
-  /// not arrive leaves a field without options, and the form draws it as text
-  /// rather than as an empty dropdown.
-  static Map<String, List<MoneyPaymentOption>> _options(Map data) => {
-    for (final entry in data.entries)
-      entry.key.toString(): [
-        for (final row in catalogRows(entry.value))
-          MoneyPaymentOption.fromJson(row)
-      ].where((option) => option.isValid).toList(growable: false)
-  };
 
   static List<MoneyConcept> _concepts(dynamic raw) => raw is! List
     ? const []

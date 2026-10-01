@@ -112,6 +112,14 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
         actionLabel: S.of(context).finance_retry
       )
     ),
+    MoneyMethodsStatus.locked => Padding(
+      padding: EdgeInsets.symmetric(vertical: AppSize.spaceM),
+      child: SectionMessage(
+        icon: CI.key,
+        title: S.of(context).finance_methods_locked_title,
+        subtitle: S.of(context).finance_methods_locked_subtitle
+      )
+    ),
     // No account is the normal state on the first day and not a failure: a
     // company that has not told anybody how to pay it simply has not got
     // round to it.

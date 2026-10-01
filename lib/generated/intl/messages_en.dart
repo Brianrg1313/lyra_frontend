@@ -2527,6 +2527,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "finance_methods_error_title": MessageLookupByLibrary.simpleMessage(
       "The payment methods could not be loaded",
     ),
+    "finance_methods_locked_subtitle": MessageLookupByLibrary.simpleMessage(
+      "Sign out and sign in again with your password to see the payment accounts.",
+    ),
+    "finance_methods_locked_title": MessageLookupByLibrary.simpleMessage(
+      "Account details are protected",
+    ),
     "finance_methods_subtitle": MessageLookupByLibrary.simpleMessage(
       "Each method takes money in one currency and can add its own commission to the charge.",
     ),

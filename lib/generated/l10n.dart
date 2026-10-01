@@ -11600,6 +11600,26 @@ class S {
     );
   }
 
+  /// `Account details are protected`
+  String get finance_methods_locked_title {
+    return Intl.message(
+      'Account details are protected',
+      name: 'finance_methods_locked_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign out and sign in again with your password to see the payment accounts.`
+  String get finance_methods_locked_subtitle {
+    return Intl.message(
+      'Sign out and sign in again with your password to see the payment accounts.',
+      name: 'finance_methods_locked_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No payment method yet`
   String get finance_methods_empty_title {
     return Intl.message(

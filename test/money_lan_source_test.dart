@@ -7,6 +7,9 @@ import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/money/money_concept_model.dart';
 import 'package:app/services/money/money_currency_model.dart';
 import 'package:app/services/money/money_currency_request.dart';
+import 'package:app/services/money/money_method_model.dart';
+import 'package:app/services/money/money_method_request.dart';
+import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/services/money/money_payment_model.dart';
 import 'package:app/services/money/money_payment_request.dart';
 import 'package:app/services/money/sources/money_lan_source.dart';
@@ -122,8 +125,74 @@ void main() {
     expect(catalog.incoming.single.direction, MoneyDirection.incoming);
     expect(catalog.outgoing.single.ticket, isTrue);
     expect(catalog.settlements.single.method, "cash");
-    expect(() => source.methods(), throwsUnsupportedError);
   });
+
+  test('a session that cannot open the sealed details is locked, not failed (M-45)', () async {
+    final locked = MoneyMethodsService(source: MoneyLanSource(_Refusing("sealed_locked")));
+    final failed = MoneyMethodsService(source: MoneyLanSource(_Refusing("internal")));
+
+    await locked.load();
+    await failed.load();
+
+    expect(locked.status, MoneyMethodsStatus.locked);
+    expect(failed.status, MoneyMethodsStatus.error);
+  });
+
+  test('accounts: read with their sheets, and the cloud bodies reach the master in its keys (M-40 to M-45)',
+      () async {
+    master.answers[Ops.moneyMethodsList.name] = {
+      "methods": [
+        {"id": "m1", "code": "pago_movil", "name": "Pago móvil", "label": "Banesco", "method": "mobile",
+          "holder": null, "document": "V-12345678", "institution": "0134", "institutionName": "Banesco",
+          "account": "0412 123 45 67", "currency": "VES", "fee": {"type": "fixed", "value": 1.5},
+          "reference": true, "position": 200},
+      ],
+      "fields": {
+        "pago_movil": [{"field": "institution", "type": "select", "label": "Bank", "options": "banks", "required": true}],
+      },
+    };
+    master.answers[Ops.moneyMethodsRails.name] = {
+      "country": "VE",
+      "methods": [{"code": "zelle", "name": "Zelle", "method": "transfer", "currency": "USD"}],
+      "fields": {"zelle": []},
+      "options": {"banks": [{"code": "0134", "name": "Banesco"}]},
+    };
+    final source = MoneyLanSource(master);
+
+    final accounts = await source.methods();
+    final rails = await source.rails();
+    await source.createMethod(createMoneyMethodRequest(code: "pago_movil", label: "Banesco",
+      fields: {"institution": "0134", "document": "V-12345678", "account": "04121234567"},
+      fee: const MoneyFee(type: MoneyFeeType.fixed, value: 1.5)));
+    await source.updateMethod(updateMoneyMethodRequest(id: "m1", label: "", fields: {"account": "04241111111"},
+      fee: const MoneyFee()));
+    await source.removeMethod("m1");
+
+    expect(accounts.methods.single.subtitle, "Banesco · 0412 123 45 67");
+    expect(accounts.methods.single.fee.value, 1.5);
+    expect(accounts.fields["pago_movil"]!.single.options, "banks");
+    expect(rails.country, "VE");
+    expect(rails.rails.single.currency, "USD");
+    expect(rails.options!["banks"]!.single.title, "0134 - Banesco");
+    expect(master.calls[2].$2, {
+      "code": "pago_movil", "label": "Banesco", "institution": "0134", "document": "V-12345678",
+      "account": "04121234567", "feeType": "fixed", "fee": 1.5,
+    });
+    // An edit: an emptied field travels as null, which clears it on the master too.
+    expect(master.calls[3].$2, {"id": "m1", "label": null, "account": "04241111111", "feeType": "none", "fee": null});
+    expect(master.calls[4].$1, Ops.moneyMethodsRemove.name);
+    expect(master.calls[4].$2, {"id": "m1"});
+  });
+}
+
+class _Refusing extends _Master {
+  _Refusing(this.code);
+
+  final String code;
+
+  @override
+  Future<Object?> call(Op op, {Map<String, Object?> args = const {}}) async =>
+    throw {"message": "refused", "action": null, "code": code};
 }
 
 class _Master extends LanService {

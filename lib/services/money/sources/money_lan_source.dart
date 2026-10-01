@@ -19,9 +19,10 @@ import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 ///
 /// The master answers the cloud's shapes with money in minor units of the company's main currency
 /// (README, money), which this source turns into the amounts the models hold, and back for the
-/// amount of a payment. The company's accounts (`money.methods.*`) aren't served yet: they arrive
-/// with the engine's sealed fields, and the methods tab stays hidden on a master until then
-/// (`CapabilityService`).
+/// amount of a payment. An account's fixed commission is the exception: it is in the account's
+/// own currency and travels as an amount, like a rate (`money.md`, release status). An account's
+/// holder, document and number are sealed on the master (M-45): a session that can't open them
+/// is refused with `sealed_locked`, which `MoneyMethodsService` tells apart.
 class MoneyLanSource implements MoneySource {
   const MoneyLanSource(this._lan);
 
@@ -146,7 +147,18 @@ class MoneyLanSource implements MoneySource {
   }
 
   @override
-  Future<({List<MoneyMethod> methods, MoneyRailFields fields})> methods() => _accountsLater();
+  Future<({List<MoneyMethod> methods, MoneyRailFields fields})> methods() async {
+    final answer = await _lan.call(Ops.moneyMethodsList);
+    if (answer is! Map) throw const UnreadableAnswer("money.methods.list");
+
+    return (
+      methods: [
+        for (final row in answer["methods"] as List? ?? const [])
+          if (row is Map) MoneyMethod.fromJson(Map<String, dynamic>.from(row))
+      ],
+      fields: moneyRailFields(answer["fields"])
+    );
+  }
 
   @override
   Future<({
@@ -154,16 +166,34 @@ class MoneyLanSource implements MoneySource {
     List<MoneyRail> rails,
     MoneyRailFields fields,
     Map<String, List<MoneyPaymentOption>>? options
-  })> rails() => _accountsLater();
+  })> rails() async {
+    final answer = await _lan.call(Ops.moneyMethodsRails);
+    if (answer is! Map) throw const UnreadableAnswer("money.methods.rails");
+
+    final options = answer["options"];
+
+    return (
+      country: (answer["country"] ?? "").toString(),
+      rails: [
+        for (final row in answer["methods"] as List? ?? const [])
+          if (row is Map) MoneyRail.fromJson(Map<String, dynamic>.from(row))
+      ].where((rail) => rail.isValid).toList(growable: false),
+      fields: moneyRailFields(answer["fields"]),
+      options: options is Map ? moneyPaymentOptions(options) : null
+    );
+  }
+
+  /// The service's body is the cloud's (`createMoneyMethodRequest`), in the master's keys.
+  @override
+  Future<void> createMethod(Map<String, dynamic> request) => _lan.call(Ops.moneyMethodsCreate, args: _method(request));
+
+  /// The service's body is the cloud's (`updateMoneyMethodRequest`): a key it leaves out keeps the
+  /// value and a `null` clears it, on the master too.
+  @override
+  Future<void> updateMethod(Map<String, dynamic> request) => _lan.call(Ops.moneyMethodsEdit, args: _method(request));
 
   @override
-  Future<void> createMethod(Map<String, dynamic> request) => _accountsLater();
-
-  @override
-  Future<void> updateMethod(Map<String, dynamic> request) => _accountsLater();
-
-  @override
-  Future<void> removeMethod(String id) => _accountsLater();
+  Future<void> removeMethod(String id) => _lan.call(Ops.moneyMethodsRemove, args: {"id": id});
 
   /// Rates are not money: they travel as they are (`1 main = rate`).
   @override
@@ -206,8 +236,27 @@ class MoneyLanSource implements MoneySource {
     );
   }
 
-  /// The company's accounts need the master's sealed fields (plan §6.3), a later release.
-  static Never _accountsLater() => throw UnsupportedError("money.methods isn't served by a master yet");
+  /// The cloud's account body keys, as the master names them.
+  static const _methodKeys = {
+    "ID": "id",
+    "CODE": "code",
+    "LABEL": "label",
+    "HOLDER": "holder",
+    "DOCUMENT": "document",
+    "INSTITUTION": "institution",
+    "ACCOUNT": "account",
+    "INSTRUCTIONS": "instructions",
+    "CURRENCY": "currency",
+    "FEE_TYPE": "feeType",
+    "FEE": "fee",
+    "POSITION": "position"
+  };
+
+  /// [request] in the master's keys; a key it has, `null` included, travels.
+  static Map<String, Object?> _method(Map<String, dynamic> request) => {
+    for (final MapEntry(:key, :value) in request.entries)
+      ?_methodKeys[key]: value
+  };
 
   /// Decimals of the company's main currency, which every payment is in (M-5).
   static int get _digits => PosLanSource.decimalsOf(businessService.currencyCode);

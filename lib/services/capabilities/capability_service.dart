@@ -97,6 +97,7 @@ class CapabilityService extends ChangeNotifier {
     "finance",
     "finance.overview",
     "finance.payments",
+    "finance.methods",
     "local_server"
   };
 

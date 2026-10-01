@@ -55,8 +55,15 @@ Phase 4, sixth release (finance, first part): the engine records and voids payme
 filter's totals, answers the summary beside the register's closed tickets, the receivables (empty
 while credit is deferred) and the exchange currencies with custom rates (`money.md` M-1 to M-53).
 The app reads it through `MoneyLanSource`; finance's tabs now follow the running mode, and the
-bot cost isn't drawn in `local`. Left for the next parts: the company's accounts (with the
-`payments` sealed key and the rails snapshot) and the accounting export.
+bot cost isn't drawn in `local`.
+Phase 4, seventh release (finance, accounts): the sealed keys of §6.3 (`lyra_node` `SealedKeys`: an
+X25519 pair per account sealed by its password, each scope's key wrapped to its holders and to the
+recovery key, a session's keys sealed by its refresh token so a restart doesn't lock them), and the
+company's payment accounts on them (`money.md` M-40 to M-46): the rails, sheets and bank, document
+and network lists as a snapshot of the cloud's catalogue, holder, document and number sealed and
+never in clear at rest (rows, oplog, the `commandId` ledger), their reads audited. A session
+without the key answers `sealed_locked` and the app tells the person to sign in again. The
+methods tab, with the exchange currencies, now shows on a master. Left: the accounting export.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the

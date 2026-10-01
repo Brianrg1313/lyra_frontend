@@ -1203,6 +1203,8 @@
   "finance_methods_add": "Add method",
   "finance_methods_error_title": "The payment methods could not be loaded",
   "finance_methods_error_subtitle": "The accounts of this company could not be read. Try again in a moment.",
+  "finance_methods_locked_title": "Account details are protected",
+  "finance_methods_locked_subtitle": "Sign out and sign in again with your password to see the payment accounts.",
   "finance_methods_empty_title": "No payment method yet",
   "finance_methods_empty_subtitle": "Add the account a customer is told to send money to.",
   "finance_method_create_title": "Add a payment method",
