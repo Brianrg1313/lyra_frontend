@@ -112,7 +112,8 @@ class SaleDetailService extends ChangeNotifier {
       // belongs to a panel nobody is looking at.
       if (_reference != reference) return;
 
-      _reason = error is Map ? (error["message"] ?? "").toString() : "";
+      // The cloud names the decline in `message`; a master in `code`, beside a sentence.
+      _reason = error is Map ? (error["code"] ?? error["message"] ?? "").toString() : "";
       _status = _reason == _gone
         ? SaleDetailStatus.missing
         : SaleDetailStatus.error;

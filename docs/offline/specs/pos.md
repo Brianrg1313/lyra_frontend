@@ -171,7 +171,7 @@ Delivered to sessions with `pos.view` or `sales.view`.
 | `invoice/closed` | POS-32 | `{id, ticket, units, total}` |
 | `invoice/cancelled` | POS-35 | `{id, ticket, units, total}` |
 | `stock/changed` | every hold or sale movement | `stock.md` |
-| `sale/progress` | open, close, cancel | `sales.md` |
+| `sale/progress` | open, a line that changes the total, close, cancel | `sales.md` |
 
 The thin payload is deliberate: every till receives every notice, and the one holding that
 ticket reads it back in full (`PosInvoiceEvent`).
@@ -228,9 +228,9 @@ The POS release serves `pos.summary`, `pos.catalog`, `pos.methods` and the five 
 ops (POS-1 to POS-45), the ticket holds of `stock.md` (ST-20 to ST-23) and `inventory.md` I-4. On
 the wire, the catalogue page and every invoice carry `currency`, and their money is in minor units
 of it (README, money; the app's `PosLanSource` turns it into the amounts its models hold).
-`pos.summary` counts the tickets the person closed (`closedBy`). Still to come: the outbox
-(`pos.outbox.sale`, `pos.snapshot`, POS-50 to POS-59) in plan phase 5, and `sale/progress` with the
-sales release, the first one that reads it on a master.
+`pos.summary` counts the tickets the person closed (`closedBy`). The sales release adds
+`sale/progress` to open, close, cancel and every line write that changes the total. Still to come:
+the outbox (`pos.outbox.sale`, `pos.snapshot`, POS-50 to POS-59) in plan phase 5.
 
 ## Differences from cloud
 

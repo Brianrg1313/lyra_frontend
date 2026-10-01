@@ -160,6 +160,9 @@
       "routes": ["sales"],
       "paths": ["/home/sales"],
       "actions": ["view", "view_all", "fulfil", "approve"],
+      "action_modes": {
+        "approve": ["cloud", "hybrid"]
+      },
       "action_notes": {
         "view_all": "Without it only the person's own sales are listed ('sold by me').",
         "fulfil": "PUT /sales/fulfillment: handover mode and state.",

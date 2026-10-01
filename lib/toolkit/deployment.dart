@@ -24,6 +24,7 @@ import 'package:app/services/pos/sources/pos_cloud_source.dart';
 import 'package:app/services/pos/sources/pos_lan_source.dart';
 import 'package:app/services/sales/sources/sales_source.dart';
 import 'package:app/services/sales/sources/sales_cloud_source.dart';
+import 'package:app/services/sales/sources/sales_lan_source.dart';
 import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/services/money/sources/money_cloud_source.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
@@ -111,7 +112,7 @@ abstract final class Sources {
   static InventorySource get inventory => _pick(const InventoryCloudSource(), () => InventoryLanSource(lanService));
   static StockSource get stock => _pick(const StockCloudSource(), () => StockLanSource(lanService));
   static PosSource get pos => _pick(const PosCloudSource(), () => PosLanSource(lanService));
-  static SalesSource get sales => _pick(const SalesCloudSource());
+  static SalesSource get sales => _pick(const SalesCloudSource(), () => SalesLanSource(lanService));
   static MoneySource get money => _pick(const MoneyCloudSource());
 
   /// LAN sources arrive one domain per release (plan phase 4), over the one

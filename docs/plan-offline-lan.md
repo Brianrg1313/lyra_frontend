@@ -43,7 +43,13 @@ the ticket: per-device codes, lines that hold stock, money computed in minor uni
 cancel (`pos.md` POS-1 to POS-45), with the ticket holds of `stock.md` and I-4; "today" is computed
 with the IANA zone database the engine now carries. The app reads it through `PosLanSource`, and a
 product whose table counts no stock is sold without holds and shows no count (POS-6). Left for
-later: the POS outbox and ST-14 (plan phase 5), and `sale/progress`, with the sales release.
+later: the POS outbox and ST-14 (plan phase 5).
+Phase 4, fifth release (sales): the engine measures each POS invoice into the cloud's stages
+(`SaleStages` and `Handover` in `lyra_protocol`, named in the company's language), pages the board by
+section with attention first, answers a sale's detail, and records the handover (`sales.md` SA-1 to
+SA-35); `sale/progress` is emitted by every POS write that moves a row and by the handover, only to
+the seller's sessions and those with `sales.view_all`. The app reads it through `SalesLanSource`;
+approving a payment stays cloud only, since a master has no conversations.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the

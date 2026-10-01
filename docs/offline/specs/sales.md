@@ -139,6 +139,20 @@ sales' notices (SA-11).
 
 ---
 
+## Release status
+
+The sales release serves the four ops (SA-1 to SA-35) and `sale/progress`. On the wire:
+- money is in minor units of each row's `currency`, as on the ticket (`pos.md`; the app's
+  `SalesLanSource` turns it into amounts); `sale/progress` carries no money;
+- the detail's `status` is the cloud's (`open`, `completed`, `cancelled`), a standing hold reads
+  `pending`, and a tracked line of an open invoice reads `state: reserved`, so a hold shrunk from the
+  stock screen shows as unheld;
+- the handover written at close is the counter's reading (`stored: false`); `sales.fulfil` writes
+  `stored: true`;
+- `sales.detail` and `sales.fulfil` apply SA-11 too: another person's sale is `sale_not_found`.
+  `sales.detail` takes a ticket code or an id, `sales.fulfil` only the id;
+- a stage with `offline: false` filters to an empty page; an unknown one is `invalid_field`.
+
 ## Differences from cloud
 
 - No `chat` rows and none of their stages (`uncharged`, `verifying`, `paying`, `reserving`,

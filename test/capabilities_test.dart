@@ -9,6 +9,7 @@ import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
 import 'package:app/services/pos/sources/pos_lan_source.dart';
+import 'package:app/services/sales/sources/sales_lan_source.dart';
 
 /// Which areas each deployment mode has (`docs/plan-offline-lan.md` §2). The mode is read
 /// before any grant, so an area a mode lacks is closed even to an owner, and a cloud area
@@ -82,7 +83,7 @@ void main() {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
     final capabilities = CapabilityService();
 
-    // Built: the business domain, inventory (importing too), stock and the POS.
+    // Built: the business domain, inventory (importing too), stock, the POS and the sales board.
     expect(capabilities.of("business"), Capability.available);
     expect(capabilities.of("business.settings"), Capability.available);
     expect(capabilities.of("business.settings.edit_logo"), Capability.available);
@@ -91,8 +92,11 @@ void main() {
     expect(capabilities.of("inventory.import"), Capability.available);
     expect(capabilities.of("pos"), Capability.available);
     expect(capabilities.of("pos.checkout"), Capability.available);
+    expect(capabilities.of("sales.done"), Capability.available);
+    expect(capabilities.of("sales.fulfil"), Capability.available);
+    // Approving a payment is about conversations, which a master has none of.
+    expect(capabilities.of("sales.approve"), Capability.hidden);
     // Not yet: they belong to local, but their sources don't exist.
-    expect(capabilities.of("sales"), Capability.hidden);
     expect(capabilities.of("finance.payments"), Capability.hidden);
     expect(capabilities.of("business.employees"), Capability.hidden);
     expect(capabilities.of("business.employees.view"), Capability.hidden);
@@ -137,13 +141,14 @@ void main() {
   });
 
   test('outside the cloud only the built domains have a source', () {
-    expect(Sources.sales, isNotNull);
+    expect(Sources.money, isNotNull);
 
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
 
     expect(Sources.session, isA<SessionLanSource>());
     expect(Sources.business, isA<BusinessLanSource>());
     expect(Sources.pos, isA<PosLanSource>());
-    expect(() => Sources.sales, throwsUnsupportedError);
+    expect(Sources.sales, isA<SalesLanSource>());
+    expect(() => Sources.money, throwsUnsupportedError);
   });
 }

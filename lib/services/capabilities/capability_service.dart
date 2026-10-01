@@ -57,6 +57,7 @@ class CapabilityService extends ChangeNotifier {
     "deliveries.settings": _notLocal,
     "deliveries.areas": _notLocal,
     "sales": _all,
+    "sales.approve": _notLocal,
     "sales.process": _all,
     "sales.done": _all,
     "inventory": _all,
@@ -89,6 +90,9 @@ class CapabilityService extends ChangeNotifier {
     "business.settings",
     "inventory",
     "pos",
+    "sales",
+    "sales.process",
+    "sales.done",
     "local_server"
   };
 
