@@ -14,15 +14,13 @@
 
 ## Files
 
-- `_authentication.dart` — `Authentication extends PageBuilder`: provides `SignInService`.
-- `desktop/_body.dart` — `DesktopBody`: `AuthPanel` on the left from 860 px wide, form column (`AuthBrand`, headline, left-aligned fields, `AuthFooter`) on the right; email only, then `email/verify` — no account or code → `/login/code`, password → inline password field; OAuth buttons (inert), `AuthLocal`, terms line.
+- `_authentication.dart` — `Authentication extends PageBuilder`: provides `SignInService`; asks `cloudReachable` (`toolkit/api.dart`) first — loading, then `DesktopBody` when the backend answers, `AuthOffline` when not.
+- `desktop/_body.dart` — `DesktopBody`: `AuthPanel` on the left from 860 px wide, form column (`AuthBrand`, headline, left-aligned fields, `AuthFooter`) on the right; email only, then `email/verify` — no account or code → `/login/code`, password → inline password field; OAuth buttons (inert), terms line.
 - `code/_code.dart` — `AuthCode extends PageBuilder`: provides `SignInService` + `SignUpService`; branches on `SignInService.pending().account`.
 - `code/desktop/_body.dart` — `DesktopBody`: same frame as the entry (`AuthPanel(drop: false)` from 860 px, 340 px column, `AuthFooter`); back to `/login` if no pending email; account → `AuthBrand`, headline, `_SentTo` (email with "Change" → `/login`), `CodeInput` auto-submits `sign_in/code`, one status line under it (resend countdown → resend link, "signing you in" while submitting); no account → two `_Step`s, code then first/last name (`InputRow`), each marker a check once filled; a full code reveals the optional-password notice, "continue" (`MainButton`) and "continue and create a password" (`FeedbackButton` sized like `MainButton`), both `sign_up/code` + `sign_up/names`; after the cooldown, "resend code" (`FeedbackButton`, `AppSize.button` tall).
 - `auth_panel.dart` — `AuthPanel`: `gradient-1.png` with the `l.png` pin cut out in the page background, dropping in once (`drop: false` skips it; reduced motion respected).
 - `auth_brand.dart` — `AuthBrand`: pin + name heading the form column of the auth pages.
-- `auth_local.dart` — `AuthLocal`: under the sign in where `Deployment.lanEnabled`, the LAN without a subscription
-  (plan D9): "this computer is the server" (only with the engine; an existing master goes straight to `/lan`, a new one
-  to `/deployment/master`) and "connect to a server" (`/deployment/pair`).
+- `auth_offline.dart` — `AuthOffline`: placeholder in place of the sign in while the backend does not answer (`AuthBrand`, title, message, "try again", `AuthFooter`); what an offline device does from there is still undecided.
 - `auth_footer.dart` — `AuthFooter`: bottom strip of the auth pages — copyright, privacy/terms links (no URLs yet), language picker (sets `AppController().locale`).
 
 ## Conventions

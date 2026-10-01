@@ -17661,41 +17661,31 @@ class S {
     );
   }
 
-  /// `Or on your business's network`
-  String get auth_local_or {
+  /// `No connection to Lyra`
+  String get auth_offline_title {
     return Intl.message(
-      'Or on your business\'s network',
-      name: 'auth_local_or',
+      'No connection to Lyra',
+      name: 'auth_offline_title',
       desc: '',
       args: [],
     );
   }
 
-  /// `Without a subscription: one computer of your business keeps its data, encrypted, and the other devices connect to it, with or without internet.`
-  String get auth_local_hint {
+  /// `This device can't reach Lyra's servers right now. Check the internet connection and try again.`
+  String get auth_offline_message {
     return Intl.message(
-      'Without a subscription: one computer of your business keeps its data, encrypted, and the other devices connect to it, with or without internet.',
-      name: 'auth_local_hint',
+      'This device can\'t reach Lyra\'s servers right now. Check the internet connection and try again.',
+      name: 'auth_offline_message',
       desc: '',
       args: [],
     );
   }
 
-  /// `This computer is the server`
-  String get auth_local_master {
+  /// `Try again`
+  String get auth_offline_retry {
     return Intl.message(
-      'This computer is the server',
-      name: 'auth_local_master',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Connect to a server`
-  String get auth_local_client {
-    return Intl.message(
-      'Connect to a server',
-      name: 'auth_local_client',
+      'Try again',
+      name: 'auth_offline_retry',
       desc: '',
       args: [],
     );

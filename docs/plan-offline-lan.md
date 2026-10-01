@@ -7,9 +7,9 @@ protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: t
 process), and the app drives the engine through `LocalServerService`. Phase 3 done on one computer:
 the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR, mutual TLS,
 revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages
-(in every build since 2026-10-01, no build flag; nothing is asked up front since the same day (D9): the
-cloud sign in offers "this computer is the server" and "connect to a server", a device is in LAN mode while
-it holds a pairing, and a browser offers the LAN only on the page a master serves, which carries
+(in every build since 2026-10-01, no build flag; nothing is asked up front since the same day (D9): a
+device is in LAN mode while it holds a pairing, the cloud sign in shows only while the backend answers and
+a placeholder otherwise, where the way into the LAN is still to be decided, and a browser offers the LAN only on the page a master serves, which carries
 `WebBundle.marker`): phones scan the QR, desktops type the code, and the web build the master
 serves pairs, keeps a WebCrypto key and proves itself (checked in a real Chrome,
 `lyra_node/test/browser_e2e_test.dart`). A paired native device installs the browsers' root (Windows,
@@ -457,11 +457,11 @@ cloud app. `initialValidator` then:
   passphrase mode, then sign in.
 - client → find the master (last address, then mDNS, then the pairing screen), then sign in.
 - a browser on a master's page with no pairing → the pairing screen (its page has no cloud).
-- anything else → today's cloud path. Its sign in also offers "this computer is the server" (only
-  where the engine ships) and "connect to a server", so a business without a subscription starts
-  there too.
+- anything else → today's cloud path. Its sign in is drawn only while the backend answers; without
+  it a placeholder takes its place. How a device with no pairing gets into the LAN (setting up a
+  master, pairing) starts from there, still to be decided.
 Leaving the LAN ("use Lyra another way") forgets the pairing and returns to the sign in; the master's
-engine and data stay, and "this computer is the server" finds them again. The first local setup shows
+engine and data stay. The first local setup shows
 the licence agreement (principle 7), which must be accepted. Whether a master syncs with the cloud is
 the company's subscription (§9.4), read from the master, never a setting of the device.
 

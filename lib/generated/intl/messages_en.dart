@@ -416,17 +416,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "auth_footer_terms": MessageLookupByLibrary.simpleMessage(
       "Terms and conditions",
     ),
-    "auth_local_client": MessageLookupByLibrary.simpleMessage(
-      "Connect to a server",
+    "auth_offline_message": MessageLookupByLibrary.simpleMessage(
+      "This device can\'t reach Lyra\'s servers right now. Check the internet connection and try again.",
     ),
-    "auth_local_hint": MessageLookupByLibrary.simpleMessage(
-      "Without a subscription: one computer of your business keeps its data, encrypted, and the other devices connect to it, with or without internet.",
-    ),
-    "auth_local_master": MessageLookupByLibrary.simpleMessage(
-      "This computer is the server",
-    ),
-    "auth_local_or": MessageLookupByLibrary.simpleMessage(
-      "Or on your business\'s network",
+    "auth_offline_retry": MessageLookupByLibrary.simpleMessage("Try again"),
+    "auth_offline_title": MessageLookupByLibrary.simpleMessage(
+      "No connection to Lyra",
     ),
     "auth_or_with": MessageLookupByLibrary.simpleMessage("or continue with"),
     "auth_subtitle": MessageLookupByLibrary.simpleMessage(

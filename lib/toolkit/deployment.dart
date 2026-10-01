@@ -75,8 +75,7 @@ abstract final class Deployment {
       try {
         device = await store.device();
       } on Object {
-        // The OS key store can't be read: the cloud app still opens, and its sign in offers
-        // the LAN again.
+        // The OS key store can't be read: the cloud app still opens.
         device = null;
       }
     }

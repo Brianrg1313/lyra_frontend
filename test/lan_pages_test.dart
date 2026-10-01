@@ -13,7 +13,6 @@ import 'package:app/services/lan/lan_pairing_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/local_server/local_server_service.dart';
 import 'package:app/services/local_server/node_commands.dart';
-import 'package:app/screens/authentication/auth_local.dart';
 import 'package:app/screens/pre_start/deployment/master/desktop/_body.dart' as master;
 import 'package:app/screens/pre_start/deployment/pair/desktop/_body.dart' as pair;
 import 'package:app/screens/pre_start/lan/desktop/_body.dart' as landing;
@@ -81,19 +80,6 @@ void main() {
 
   for (final size in const [Size(1024, 720), Size(400, 700)]) {
     group('at ${size.width.toInt()} px', () {
-      testWidgets('the sign in offers the server only where the engine ships', (tester) async {
-        for (final engine in [false, true]) {
-          final lan = LanService(server: LocalServerService(commands: _NoNode(), supported: engine, store: MemoryLanIdentityStore()));
-
-          await pump(tester, const AuthLocal(), lan: lan, size: size);
-
-          expect(tester.takeException(), isNull);
-          expect(find.text("This computer is the server"), engine ? findsOneWidget : findsNothing);
-          expect(find.text("Connect to a server"), findsOneWidget);
-          await leave(tester);
-        }
-      });
-
       testWidgets('the master setup asks for the licence before anything', (tester) async {
         final lan = LanService(server: LocalServerService(commands: _NoNode(), supported: true, store: MemoryLanIdentityStore()));
 
