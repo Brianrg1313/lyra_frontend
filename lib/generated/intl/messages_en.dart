@@ -416,6 +416,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "auth_footer_terms": MessageLookupByLibrary.simpleMessage(
       "Terms and conditions",
     ),
+    "auth_local_client": MessageLookupByLibrary.simpleMessage(
+      "Connect to a server",
+    ),
+    "auth_local_hint": MessageLookupByLibrary.simpleMessage(
+      "Without a subscription: one computer of your business keeps its data, encrypted, and the other devices connect to it, with or without internet.",
+    ),
+    "auth_local_master": MessageLookupByLibrary.simpleMessage(
+      "This computer is the server",
+    ),
+    "auth_local_or": MessageLookupByLibrary.simpleMessage(
+      "Or on your business\'s network",
+    ),
     "auth_or_with": MessageLookupByLibrary.simpleMessage("or continue with"),
     "auth_subtitle": MessageLookupByLibrary.simpleMessage(
       "Enter your email. If it\'s new to Lyra, we\'ll create your account with it.",
@@ -2896,28 +2908,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Windows shows it as its thumbprint (SHA-1)",
     ),
     "lan_browsers_title": MessageLookupByLibrary.simpleMessage("Web browsers"),
-    "lan_choose_client": MessageLookupByLibrary.simpleMessage(
-      "Connect to a server",
-    ),
-    "lan_choose_client_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Another computer on this network is the server. Pair this device with it.",
-    ),
-    "lan_choose_cloud": MessageLookupByLibrary.simpleMessage("Use Lyra online"),
-    "lan_choose_cloud_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Your company lives in the cloud. Sign in from anywhere.",
-    ),
-    "lan_choose_master": MessageLookupByLibrary.simpleMessage(
-      "This computer is the server",
-    ),
-    "lan_choose_master_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Keep the company on this computer, encrypted, and let the devices on this network connect to it.",
-    ),
-    "lan_choose_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Online, your company lives in the cloud. On a local network, one computer is the server and the other devices connect to it, with or without internet.",
-    ),
-    "lan_choose_title": MessageLookupByLibrary.simpleMessage(
-      "How will you use Lyra?",
-    ),
     "lan_connecting": MessageLookupByLibrary.simpleMessage(
       "Connecting to the server…",
     ),
@@ -2954,7 +2944,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "lan_leave": MessageLookupByLibrary.simpleMessage("Use Lyra another way"),
     "lan_leave_message": MessageLookupByLibrary.simpleMessage(
-      "This device forgets its pairing and goes back to choosing how to use Lyra. The server and its data stay as they are.",
+      "This device forgets its pairing and goes back to the sign in. The server and its data stay as they are.",
     ),
     "lan_leave_title": MessageLookupByLibrary.simpleMessage(
       "Stop using this server here?",

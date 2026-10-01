@@ -7,8 +7,10 @@ protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: t
 process), and the app drives the engine through `LocalServerService`. Phase 3 done on one computer:
 the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR, mutual TLS,
 revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages
-(in every build since 2026-10-01, no build flag: a native install asks on its first start, and a browser
-offers them only on the page a master serves, which carries `WebBundle.marker`): phones scan the QR, desktops type the code, and the web build the master
+(in every build since 2026-10-01, no build flag; nothing is asked up front since the same day (D9): the
+cloud sign in offers "this computer is the server" and "connect to a server", a device is in LAN mode while
+it holds a pairing, and a browser offers the LAN only on the page a master serves, which carries
+`WebBundle.marker`): phones scan the QR, desktops type the code, and the web build the master
 serves pairs, keeps a WebCrypto key and proves itself (checked in a real Chrome,
 `lyra_node/test/browser_e2e_test.dart`). A paired native device installs the browsers' root (Windows,
 macOS) or saves it for another computer. The web build is made with
@@ -77,15 +79,17 @@ LAN. Every other install (desktop, web, Android, iOS, POS) is a **client** of th
 features that really need the internet (WhatsApp, AI, e-mail, maps and place search) are left
 out.
 
-Three customer profiles drive the design:
+The mode is a fact of the company, never a choice made on the first screen (D9):
 
-| Profile | Mode | Cloud cost to us | Source of truth |
+| The company has | Mode | Cloud cost to us | Source of truth |
 |---|---|---|---|
-| Doesn't want our cloud at all | `local` | zero | the master |
-| Wants no dependence on the internet | `local` | zero | the master |
-| Uses the cloud but often loses the connection | `hybrid` | today's cost | cloud plus master, reconciled by sync |
+| No computer (phones, the web) | `cloud` | today's cost | the cloud, today's app unchanged |
+| A computer and no subscription | `local` | zero | the master of each site |
+| A computer and a subscription | `hybrid` | today's cost | the master of each site plus the cloud, reconciled by sync (§9) |
 
-`cloud` (today's app, no master) stays the default and does not change.
+With a computer there is always a master, which keeps a full copy of its site: losing the internet
+changes nothing on the LAN. Subscribing or cancelling moves between `local` and `hybrid` without
+losing data (§9.4).
 
 ---
 
@@ -446,15 +450,20 @@ routes and deep links respect it. Hidden or `SectionMessage` behaviour follows �
 the business selector and "create business" are hidden (principle 3).
 
 ### 7.4 Boot flow
-`initialValidator` reads `DeploymentMode` from preferences first:
-- `cloud` → today's path, unchanged.
-- `local`/`hybrid` + master → `LocalServerService` starts or attaches to `lyra_node` (§3), then
-  unlocks it in passphrase mode, then sign in.
-- `local`/`hybrid` + client → find the master (last address, then mDNS, then the pairing
-  screen), then sign in.
-A fresh install asks: "Use Lyra online / On this network (this computer is the server) / On
-this network (connect to a server)". Web skips the server option. The first local setup shows
-the licence agreement (principle 7), which must be accepted.
+Nothing is asked up front (D9). `Deployment.restore` reads what the device holds: a stored pairing
+(`LanDevice`, written by the setup or by pairing) makes it a master or a client; anything else is the
+cloud app. `initialValidator` then:
+- master → `LocalServerService` starts or attaches to `lyra_node` (§3), then unlocks it in
+  passphrase mode, then sign in.
+- client → find the master (last address, then mDNS, then the pairing screen), then sign in.
+- a browser on a master's page with no pairing → the pairing screen (its page has no cloud).
+- anything else → today's cloud path. Its sign in also offers "this computer is the server" (only
+  where the engine ships) and "connect to a server", so a business without a subscription starts
+  there too.
+Leaving the LAN ("use Lyra another way") forgets the pairing and returns to the sign in; the master's
+engine and data stay, and "this computer is the server" finds them again. The first local setup shows
+the licence agreement (principle 7), which must be accepted. Whether a master syncs with the cloud is
+the company's subscription (§9.4), read from the master, never a setting of the device.
 
 ### 7.5 Catalogs
 Countries, currencies and phone plans come from `/init` today. The release bundles a snapshot in
@@ -533,6 +542,8 @@ Lyra hands data to accounting and fiscal systems instead of being one.
 ## 9. Hybrid: edge sync with the cloud (phase 6, needs backend work)
 
 ### 9.1 Who talks to whom
+- `hybrid` is what a subscription buys a company that has computers (D9). **Every site has its own
+  master** (D11), so each keeps working through an outage.
 - The master in `hybrid` belongs to **one site** of a cloud company. It holds that site's
   operational data (its stock, POS, tickets, payments, staff) and the company data that site
   uses (catalogue, prices, clients, payment methods, its employees).
@@ -568,6 +579,27 @@ Lyra hands data to accounting and fiscal systems instead of being one.
 
 Clock: HLC on the master. Clients take the master's time. A master clock that is off by more
 than a threshold blocks sync and warns.
+
+### 9.4 Subscribing and cancelling (D10, D11)
+- **Subscribing** links an existing `local` master: it uploads its data (`/edge/v1/snapshot`), and the
+  backend **creates a cloud account for each local user**, so everyone keeps signing in. A local
+  user whose e-mail already has a cloud account is not merged: that person settles it with their
+  administrator. Local accounts with a username and no e-mail need one before the link.
+- **Cancelling** keeps every site's data: each site's master pulls its own site's data one last time,
+  stops syncing and goes on as a `local` install of its own. In the cloud the main site stays the
+  company's and the secondary sites become inactive. A site without a master downloads its data to a
+  new one before the subscription ends.
+- Open: how long the cloud keeps a cancelled company's data, read-only, for a site to pull it.
+
+### 9.5 Remote access (D12)
+The master is never reachable from the internet: no open port, no forwarding.
+- **With a subscription**, a device away from the LAN uses the cloud, which holds the synced data;
+  what it changes reaches the master by the normal sync (§9.3).
+- **Without one**, the owner can bring the device into the LAN with their own VPN (WireGuard,
+  Tailscale). Pairing already takes a typed address; the master's certificate names only LAN
+  addresses (name constraints, §5.3), so the owner must be able to add the VPN's address to it.
+- A relay of ours (the master dialling out, end-to-end TLS through it) is left for when owners
+  without a subscription ask for it: it costs us traffic for installs that don't pay.
 
 ---
 
@@ -624,12 +656,12 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 | 3 | LAN networking | TLS-only server, installation CA, QR and PAKE pairing, mutual TLS, CA install for web, mDNS, RPC, events, files, web bundle, setup screens (§7.4) | L | a second PC, a phone and a browser pair and sign in; a MITM test on the LAN fails to read or pair; revocation works |
 | 4 | Domains, one per release | business (single site) → inventory and stock → POS → sales → finance and accounting export → employees (sealed fields) → clients, deliveries → statistics | XL | each domain's contract tests pass on both sources |
 | 5 | Operations | backups and restore, update gating, master migration, diagnostics, POS outbox (§8.4), EULA flow, signed builds | L | disaster drill: kill the master, restore on new hardware, POS outbox replays |
-| 6 | Hybrid | backend edge API (§9.2), sync engine, conflicts inbox, offline verifier (§6.4), local → hybrid migration | XL | a week-long soak with scripted outages and no divergence |
+| 6 | Hybrid | backend edge API (§9.2), sync engine, conflicts inbox, offline verifier (§6.4), subscribing and cancelling with the accounts (§9.4), remote access through the cloud and the VPN address (§9.5) | XL | a week-long soak with scripted outages and no divergence |
 | 7 | Hardening | passphrase unlock UI polish, external security review (incl. LAN pentest), performance with 50 clients | M | review findings closed |
 
 `local` can be released after phase 5, without the cloud. `hybrid` needs phase 6. Every build already
-offers `local` (2026-10-01, the owner's call: one build, no flag), so until phase 5 a store build shows the
-choice with a master that has no backups.
+offers `local` (2026-10-01, the owner's call: one build, no flag), so until phase 5 a store build's sign in
+offers a master that has no backups.
 
 ---
 
@@ -658,6 +690,10 @@ The first two are in CLAUDE.md since phase 1, the next two since phase 2, the la
 | D6 | Scope of a master | One company, one site (the current one). No business selector and no branch list offline. |
 | D7 | Engine packages | Their own private repos next to `core`. |
 | D8 | POS selling without the master | Yes, in the first `local` release (§8.4). |
+| D9 | How a device gets its mode (2026-10-01) | Never chosen up front. The mode follows the company: no computer = `cloud`; a computer = a master per site, `local` without a subscription and `hybrid` with one. A device is in LAN mode while it holds a pairing (§7.4). |
+| D10 | Accounts when subscribing (2026-10-01) | The backend creates a cloud account for each local user. An e-mail that already has a cloud account is settled with the administrator, never merged automatically (§9.4). |
+| D11 | Sites with a subscription and after it (2026-10-01) | Each site has its own master. Cancelling keeps every site's data on its master, each working on its own; in the cloud the main site stays and the others become inactive (§9.4). |
+| D12 | Remote access (2026-10-01) | Through the cloud with a subscription; without one, the owner's own VPN. The master never opens a port; our relay only if asked for (§9.5). |
 
 ---
 

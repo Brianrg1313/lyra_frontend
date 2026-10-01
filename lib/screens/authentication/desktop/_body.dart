@@ -7,6 +7,7 @@ import 'package:app/services/client/client_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/sign_in/login_method.dart';
 import 'package:app/services/sign_in/sign_in_service.dart';
+import 'package:app/toolkit/deployment.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -14,6 +15,7 @@ import 'package:core/images.dart';
 import 'package:core/button.dart';
 import '../auth_brand.dart';
 import '../auth_footer.dart';
+import '../auth_local.dart';
 import '../auth_panel.dart';
 
 class DesktopBody extends StatefulWidget {
@@ -144,6 +146,10 @@ class _DesktopBodyState extends State<DesktopBody> {
         SizedBox(width: AppSize.spaceS),
         Expanded(child: _provider(context, "apple.webp", AppSize.spaceXS))
       ]),
+      if (Deployment.lanEnabled) Padding(
+        padding: EdgeInsets.only(top: AppSize.spaceM),
+        child: const AuthLocal()
+      ),
       Padding(
         padding: EdgeInsets.only(top: AppSize.spaceL),
         child: Wrap(children: [

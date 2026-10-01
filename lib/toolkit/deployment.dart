@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 // SERVICES
-import 'package:app/services/preferences/preferences_service.dart';
+import 'package:app/services/lan/lan_device.dart';
+import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/toolkit/lan.dart' show lanSupported;
 import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
@@ -30,14 +31,15 @@ import 'package:app/services/money/sources/money_cloud_source.dart';
 import 'package:app/services/money/sources/money_lan_source.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
 
-/// Where the company's data lives (`docs/plan-offline-lan.md` §7).
+/// Where the company's data lives (`docs/plan-offline-lan.md` §7, decision D9).
 ///
-/// - [cloud]: today's app, the backend over the internet.
-/// - [local]: one desktop install is the master and serves the LAN, no cloud.
-/// - [hybrid]: the master serves the LAN and syncs with the cloud.
+/// - [cloud]: today's app, the backend over the internet. A business without a computer.
+/// - [local]: one desktop of each site is the master and serves the LAN, no cloud.
+/// - [hybrid]: the master serves the LAN and syncs with the cloud (a subscription, phase 6).
 ///
-/// [local] is part of every build ([Deployment.lanEnabled]). [hybrid] needs
-/// phase 6.
+/// It is never chosen: a device is in LAN mode while it is paired with a master or is one
+/// ([Deployment.restore]). Whether a master syncs is the company's subscription, not the
+/// device's.
 enum DeploymentMode { cloud, local, hybrid }
 
 /// What this install is in a LAN deployment. Meaningless in [DeploymentMode.cloud].
@@ -59,39 +61,34 @@ abstract final class Deployment {
 
   /// Whether this install offers LAN mode: every native one, and the page a
   /// master serves (plan §3). The same build is the cloud app everywhere else:
-  /// a browser on the cloud's site never sees it, whatever the preferences say.
+  /// a browser on the cloud's site never sees it, whatever it has stored.
   static bool get lanEnabled => lanSupported;
 
-  /// Whether this install has chosen a mode yet (a fresh install asks, plan §7.4).
-  static bool get chosen => PreferencesService().deployment != null;
+  /// Reads this device's mode from what it holds (`preCall`, before the first route): the
+  /// pairing [store] keeps (`LanDevice`, written by the setup and by pairing) makes it a
+  /// master or a client, anything else is the cloud app. Nothing up front decides it, and
+  /// leaving the LAN ([detach]) or pairing ([attach]) changes it at any time.
+  static Future<void> restore([LanIdentityStore store = const SecureLanIdentityStore()]) async {
+    LanDevice? device;
 
-  /// Reads the mode chosen on this device (`preCall`, before the first route).
-  static void restore() {
-    final stored = PreferencesService().deployment?.split("/");
-    final mode = DeploymentMode.values.asNameMap()[stored?.first];
-    final role = stored != null && stored.length > 1 ? DeploymentRole.values.asNameMap()[stored[1]] : null;
-
-    if (mode == null || mode == DeploymentMode.cloud || !lanEnabled || role == null) {
-      _mode = DeploymentMode.cloud;
-      _role = null;
-    } else {
-      _mode = mode;
-      _role = role;
+    if (lanEnabled) {
+      try {
+        device = await store.device();
+      } on Object {
+        // The OS key store can't be read: the cloud app still opens, and its sign in offers
+        // the LAN again.
+        device = null;
+      }
     }
+
+    use(device == null ? DeploymentMode.cloud : DeploymentMode.local, role: device?.role);
   }
 
-  /// Makes [mode] this device's mode from now on (the setup screens).
-  static void choose(DeploymentMode mode, {DeploymentRole? role}) {
-    use(mode, role: role);
-    PreferencesService().deployment = mode == DeploymentMode.cloud ? mode.name : "${mode.name}/${role!.name}";
-  }
+  /// This device was just set up as the master or paired with one (its `LanDevice` stored).
+  static void attach(DeploymentRole role) => use(DeploymentMode.local, role: role);
 
-  /// Forgets the choice: the next start asks again. A browser leaving LAN mode
-  /// does this, as the page it runs from is the master's and has no cloud.
-  static void forget() {
-    use(DeploymentMode.cloud);
-    PreferencesService().deployment = null;
-  }
+  /// This device just forgot its pairing.
+  static void detach() => use(DeploymentMode.cloud);
 
   @visibleForTesting
   static void use(DeploymentMode mode, {DeploymentRole? role}) {

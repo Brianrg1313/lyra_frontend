@@ -20,8 +20,9 @@ backend, routes and theme. No UI.
     (backend contract: `docs/task-cookie-session-backend.md`). `openSession(token)` — stores the token a sign in answered (no-op in cookie mode).
   - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
 - `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`,
-  `lanEnabled` (every native install, or the page a master serves; no build flag), `chosen`, `restore`
-  (from preferences, in `preCall`), `choose` (persists), `forget` (asks again next start), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
+  `lanEnabled` (every native install, or the page a master serves; no build flag), `restore`
+  (in `preCall`: a stored `LanDevice` is LAN mode with its role, anything else cloud; never chosen), `attach` (set up or
+  paired), `detach` (left the LAN), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
   `lanService` — session, business, inventory and stock so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
 - `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in + `session.bind`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
@@ -49,7 +50,7 @@ backend, routes and theme. No UI.
   Windows window (1024x720, hidden title bar, `window_manager`).
 - `settings/initial_builder.dart` — `initialBuilder(app)`: root `MultiProvider` + the
   pre-tree instances `clientService`, `businessService`, `lanService`. App-wide services only.
-- `settings/initial_validator.dart` — `initialValidator()`: a LAN build with no mode chosen → `/deployment` (a browser: `/deployment/pair`); `local` → `/lan`; otherwise `clientService.resolve()` (session failure or pending task), then a pending deep link, else `PreferencesService().homePath` (last home page, or `/home`).
+- `settings/initial_validator.dart` — `initialValidator()`: `local` → `/lan`; a browser on a master's page not paired yet → `/deployment/pair`; otherwise `clientService.resolve()` (session failure or pending task), then a pending deep link, else `PreferencesService().homePath` (last home page, or `/home`).
 - `settings/translations.dart` — bridges core's strings (`hide_keyboard`, `connectionError`) to `S`.
 - `theme/dark.dart` / `theme/light.dart` — `darkScheme` / `lightScheme` (`SchemeColor`), accent `0xfffb8e00`.
 

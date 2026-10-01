@@ -120,7 +120,7 @@ class _DesktopBodyState extends State<DesktopBody> {
         MainButton(title: S.of(context).lan_pair_submit, loading: _form.loading, action: _submit),
         if (_served == null) ...[
           SizedBox(height: AppSize.spaceXS),
-          Button(title: S.of(context).lan_other_mode, action: () => Navis.pushAndClearStack(context, "/deployment"))
+          Button(title: S.of(context).lan_other_mode, action: () => Navis.pushAndClearStack(context, "/login"))
         ]
       ]
     );

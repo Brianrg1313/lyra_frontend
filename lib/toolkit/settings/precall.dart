@@ -22,7 +22,7 @@ Future<void> preCall() async {
   await PreferencesService.preload();
 
   // Before the first route: the boot flow branches on the mode (plan §7.4).
-  Deployment.restore();
+  await Deployment.restore();
 
   if (controller.isWindows) {
     const windowOptions = WindowOptions(

@@ -113,7 +113,7 @@ class LanPairingService extends ChangeNotifier {
         port: port,
       ));
       await _store.saveRefreshToken(null);
-      Deployment.choose(DeploymentMode.local, role: DeploymentRole.client);
+      Deployment.attach(DeploymentRole.client);
 
       return null;
     } on PairingFailure catch (failure) {

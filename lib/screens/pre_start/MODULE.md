@@ -9,10 +9,9 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 | key | url | task |
 |---|---|---|
 | `welcome` | `/welcome` | `business.none`, `employment.invitation` |
-| `deployment` | `/deployment` | LAN build, no mode chosen yet |
-| `deployment_master` | `/deployment/master` | making this computer the server (`parents: ["deployment"]`) |
-| `deployment_pair` | `/deployment/pair` | pairing with a server (`parents: ["deployment"]`) |
-| `lan` | `/lan` | every start in `local` mode |
+| `deployment_master` | `/deployment/master` | making this computer the server (`parents: ["login"]`, offered by the sign in) |
+| `deployment_pair` | `/deployment/pair` | pairing with a server (`parents: ["login"]`; a browser on a master's page starts here) |
+| `lan` | `/lan` | every start of a paired device or a master |
 
 ## Files
 
@@ -23,18 +22,17 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `welcome/widgets/welcome_avatar.dart` — `WelcomeAvatar`: round profile picture, initial fallback.
 - `welcome/widgets/welcome_option.dart` — `WelcomeOption`: full-width main card (create a company): 120 px `gradient-1.png` band, icon + title + subtitle, action button on the right.
 - `welcome/widgets/welcome_choice.dart` — `WelcomeChoice`: compact secondary card (waiting for an invitation, open jobs), arrow or a `tag`; two in an equal-height `Row`.
-- `deployment/_deployment.dart` — `DeploymentChooser extends PageBuilder`.
-- `deployment/desktop/_body.dart` — online / this computer is the server (only with the engine; an existing master goes
-  straight to `/lan`) / connect to a server, as `WelcomeChoice`s.
 - `deployment/master/_master.dart` — `MasterSetup extends PageBuilder`.
 - `deployment/master/desktop/_body.dart` — the company (name, country and currency from `Catalogs`, the country proposing
   its currency, language), owner form, optional passphrase, licence tick → `LocalServerService.setUp` →
-  the 24 words (`RecoveryWords`) with a required "written down" tick → `local`/`master` → `/lan`.
+  the 24 words (`RecoveryWords`) with a required "written down" tick → `Deployment.attach(master)` → `/lan`; "use Lyra
+  another way" back to `/login`.
 - `deployment/pair/_pair.dart` — `PairDevice extends PageBuilder`: provides `LanPairingService` (searches at once, not on
   web).
 - `deployment/pair/desktop/_body.dart` — phones: "scan the QR" (`QrScanner` in a modal); found servers fill the address;
   address, port, device name, 8-digit `CodeInput`; a browser shows only the master it was served by, the name and the
-  code; wrong code / someone in the middle / unreachable each say so.
+  code; wrong code / someone in the middle / unreachable each say so; "use Lyra another way" back to `/login` (not in a
+  browser).
 - `deployment/pair/widgets/qr_scanner.dart` — `QrScanner`: camera (`mobile_scanner`), the first Lyra `PairingOffer` read
   closes the modal; another QR is said to be foreign.
 - `deployment/widgets/deployment_frame.dart` — `DeploymentFrame` (centered column, title, subtitle), `DeploymentCheck`
@@ -44,8 +42,8 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `lan/desktop/_body.dart` — one view per `LanStatus`: connecting, locked (master: `LanUnlock`), signed out
   (`LanSignIn`), ready (loads the session with `ClientService.resolve` and opens the home; `enter` seam; a session
   that can't be loaded stops with a message and a retry instead of coming back here forever), unpaired
-  (master: `LanUnlock(enroll: true)`), unreachable, revoked, update, error; "use Lyra another way" (`LanService.leave`,
-  confirmed; not in a browser).
+  (master: `LanUnlock(enroll: true)`), unreachable, revoked, update, error; "use Lyra another way" (`LanService.leave`, confirmed, then `/login`; not in a
+  browser).
 - `lan/widgets/lan_sign_in.dart` — `LanSignIn`: username + password → `LanService.signIn`.
 - `lan/widgets/lan_unlock.dart` — `LanUnlock`: the passphrase → `engine.unlock`, or with `enroll` → `enrollMaster`.
 - `welcome/widgets/invitation_card.dart` — `InvitationCard`: full-width card drawn first, large company `BusinessAvatar` + title + position + "Review" button.

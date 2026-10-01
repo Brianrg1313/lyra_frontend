@@ -17661,81 +17661,41 @@ class S {
     );
   }
 
-  /// `How will you use Lyra?`
-  String get lan_choose_title {
+  /// `Or on your business's network`
+  String get auth_local_or {
     return Intl.message(
-      'How will you use Lyra?',
-      name: 'lan_choose_title',
+      'Or on your business\'s network',
+      name: 'auth_local_or',
       desc: '',
       args: [],
     );
   }
 
-  /// `Online, your company lives in the cloud. On a local network, one computer is the server and the other devices connect to it, with or without internet.`
-  String get lan_choose_subtitle {
+  /// `Without a subscription: one computer of your business keeps its data, encrypted, and the other devices connect to it, with or without internet.`
+  String get auth_local_hint {
     return Intl.message(
-      'Online, your company lives in the cloud. On a local network, one computer is the server and the other devices connect to it, with or without internet.',
-      name: 'lan_choose_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Use Lyra online`
-  String get lan_choose_cloud {
-    return Intl.message(
-      'Use Lyra online',
-      name: 'lan_choose_cloud',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Your company lives in the cloud. Sign in from anywhere.`
-  String get lan_choose_cloud_subtitle {
-    return Intl.message(
-      'Your company lives in the cloud. Sign in from anywhere.',
-      name: 'lan_choose_cloud_subtitle',
+      'Without a subscription: one computer of your business keeps its data, encrypted, and the other devices connect to it, with or without internet.',
+      name: 'auth_local_hint',
       desc: '',
       args: [],
     );
   }
 
   /// `This computer is the server`
-  String get lan_choose_master {
+  String get auth_local_master {
     return Intl.message(
       'This computer is the server',
-      name: 'lan_choose_master',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Keep the company on this computer, encrypted, and let the devices on this network connect to it.`
-  String get lan_choose_master_subtitle {
-    return Intl.message(
-      'Keep the company on this computer, encrypted, and let the devices on this network connect to it.',
-      name: 'lan_choose_master_subtitle',
+      name: 'auth_local_master',
       desc: '',
       args: [],
     );
   }
 
   /// `Connect to a server`
-  String get lan_choose_client {
+  String get auth_local_client {
     return Intl.message(
       'Connect to a server',
-      name: 'lan_choose_client',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Another computer on this network is the server. Pair this device with it.`
-  String get lan_choose_client_subtitle {
-    return Intl.message(
-      'Another computer on this network is the server. Pair this device with it.',
-      name: 'lan_choose_client_subtitle',
+      name: 'auth_local_client',
       desc: '',
       args: [],
     );
@@ -18401,10 +18361,10 @@ class S {
     );
   }
 
-  /// `This device forgets its pairing and goes back to choosing how to use Lyra. The server and its data stay as they are.`
+  /// `This device forgets its pairing and goes back to the sign in. The server and its data stay as they are.`
   String get lan_leave_message {
     return Intl.message(
-      'This device forgets its pairing and goes back to choosing how to use Lyra. The server and its data stay as they are.',
+      'This device forgets its pairing and goes back to the sign in. The server and its data stay as they are.',
       name: 'lan_leave_message',
       desc: '',
       args: [],

@@ -43,7 +43,6 @@ class PreferencesService {
   static const String _box = "preferences";
   static const String _themeKey = "theme";
   static const String _localeKey = "locale";
-  static const String _deploymentKey = "deployment";
 
   final DatabaseService _database = DatabaseService();
 
@@ -104,14 +103,6 @@ class PreferencesService {
   Locale? get locale => AppController().locale.value;
 
   set locale(Locale? value) => AppController().locale.value = value;
-
-  // ───────────────────────────── deployment ─────────────────────────────
-
-  /// `<mode>` or `<mode>/<role>` (`Deployment.restore`): device-wide, a
-  /// computer is a master or a client whoever signs in on it.
-  String? get deployment => _read<String>(_deploymentKey);
-
-  set deployment(String? value) => _write(_deploymentKey, value);
 
   // ───────────────────────────── last page ─────────────────────────────
 

@@ -174,17 +174,14 @@ class LanService extends ChangeNotifier {
     return stopped;
   }
 
-  /// Leaves LAN mode on this device: forgets the pairing (and a browser's key) and goes back
-  /// to the cloud app. A browser, whose page is the master's, goes back to pairing instead.
+  /// Leaves LAN mode on this device: forgets the pairing (and a browser's key), which is what
+  /// made it a LAN device (`Deployment.restore`), so it starts as the cloud app. A browser,
+  /// whose page is the master's, can only pair again.
   Future<void> leave() async {
     await _drop();
     await _store.clear();
     await forgetDeviceKey();
-    if (kIsWeb) {
-      Deployment.forget();
-    } else {
-      Deployment.choose(DeploymentMode.cloud);
-    }
+    Deployment.detach();
     _set(LanStatus.idle);
   }
 

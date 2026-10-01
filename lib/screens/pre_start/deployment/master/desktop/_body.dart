@@ -141,7 +141,9 @@ class _DesktopBodyState extends State<DesktopBody> {
       ),
       if (_error != null) DeploymentNote(_error!, error: true),
       SizedBox(height: AppSize.spaceS),
-      MainButton(title: S.of(context).lan_master_create, loading: _form.loading, action: _submit)
+      MainButton(title: S.of(context).lan_master_create, loading: _form.loading, action: _submit),
+      SizedBox(height: AppSize.spaceXS),
+      Button(title: S.of(context).lan_other_mode, action: () => Navis.pushAndClearStack(context, "/login"))
     ]
   );
 
@@ -213,7 +215,7 @@ class _DesktopBodyState extends State<DesktopBody> {
   void _start() {
     if (!_wroteDown) return setState(() => _error = S.of(context).lan_recovery_required);
 
-    Deployment.choose(DeploymentMode.local, role: DeploymentRole.master);
+    Deployment.attach(DeploymentRole.master);
     Navis.pushAndClearStack(context, "/lan");
   }
 

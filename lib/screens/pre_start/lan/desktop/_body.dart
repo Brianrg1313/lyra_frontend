@@ -128,8 +128,8 @@ class _DesktopBodyState extends State<DesktopBody> {
   }
 }
 
-/// Back to the mode chooser, forgetting this device's pairing. On the master the engine and its
-/// data stay: choosing "this computer is the server" again finds them.
+/// Back to the sign in, forgetting this device's pairing. On the master the engine and its
+/// data stay: "this computer is the server" there finds them again.
 Future<void> _leave(BuildContext context) async {
   final confirmed = await showAlertModal(
     context: context,
@@ -141,5 +141,5 @@ Future<void> _leave(BuildContext context) async {
   if (!confirmed || !context.mounted) return;
 
   await context.read<LanService>().leave();
-  if (context.mounted) Navis.pushAndClearStack(context, "/deployment");
+  if (context.mounted) Navis.pushAndClearStack(context, "/login");
 }
