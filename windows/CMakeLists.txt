@@ -105,6 +105,18 @@ else()
   message(WARNING "lyra_node is not built (${LYRA_NODE_BUNDLE}): this build can't host a master.")
 endif()
 
+# The web build the master serves to browsers (`flutter build web --release --no-web-resources-cdn`
+# in this repo): NodeCommands.locateWeb looks for lyra_node/web beside app.exe. Without it a
+# browser that reaches the master gets a 404; native devices work the same.
+set(LYRA_WEB_BUILD "${CMAKE_CURRENT_SOURCE_DIR}/../build/web")
+if(EXISTS "${LYRA_WEB_BUILD}/index.html")
+  install(DIRECTORY "${LYRA_WEB_BUILD}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lyra_node/web"
+    COMPONENT Runtime)
+else()
+  message(WARNING "The web build is missing (${LYRA_WEB_BUILD}): browsers can't open this master.")
+endif()
+
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.
 set(FLUTTER_ASSET_DIR_NAME "flutter_assets")

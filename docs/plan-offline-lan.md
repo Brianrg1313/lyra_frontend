@@ -98,8 +98,10 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
 - A browser reaches a master only at the address the master serves, never at `flutter run -d
   chrome`'s: by its name, `https://<company-label>.local:4780` (§5.2; the server section shows it,
   the IP below it), or `https://<ip>:4780`. A browser's pairing belongs to the address it was made
-  at, so one paired by IP pairs again by name. The engine serves the web build only if `build/web`
-  was copied to `lyra_node/web` next to `app.exe` or `LYRA_WEB` points at it when the master starts.
+  at, so one paired by IP pairs again by name. The engine serves the web build only if `lyra_node/web` is next
+  to `app.exe` or `LYRA_WEB` points at one when the master starts (a 404 otherwise): the Windows CMake
+  install copies `build/web` there, so `flutter build web --release --no-web-resources-cdn` goes
+  before `flutter run -d windows`.
   The name was checked resolving on Windows from a live responder; not yet in a browser on another
   device.
 - To run a master: `dart build cli` in `lyra_node`, then `flutter run -d windows` here (the CMake
