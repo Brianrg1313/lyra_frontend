@@ -117,6 +117,41 @@ void main() {
     expect(find.text(S.current.auth_create_button), findsOneWidget);
   });
 
+  testWidgets('the setup says what is missing under each field, the ticked passphrase included', (tester) async {
+    await pumpGate(tester, canHost: true);
+    await tester.enterText(find.byType(TextField).at(0), "ada@lyra.app");
+    await tester.enterText(find.byType(TextField).at(1), "correct horse battery");
+    await tester.tap(find.text(S.current.auth_create_button));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    Future<void> create() async {
+      await tester.ensureVisible(find.text(S.current.lan_master_create));
+      await tester.tap(find.text(S.current.lan_master_create));
+      await tester.pump();
+    }
+
+    await create();
+    expect(find.text(S.current.lan_field_empty(S.current.first_name_input)), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).at(0), "Ada");
+    await tester.enterText(find.byType(TextField).at(1), "Lovelace");
+    await tester.tap(find.text(S.current.lan_passphrase_toggle));
+    await tester.pump();
+    await create();
+    expect(find.text(S.current.lan_field_empty(S.current.lan_passphrase_input)), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).at(2), "short");
+    await create();
+    expect(find.text(S.current.lan_passphrase_short), findsOneWidget);
+
+    // Unticked, the short passphrase no longer counts: the licence is what's left.
+    await tester.tap(find.text(S.current.lan_passphrase_toggle));
+    await tester.pump();
+    await create();
+    expect(find.text(S.current.lan_master_eula_required), findsOneWidget);
+  });
+
   testWidgets('where no master can run (web, phones), the placeholder; "try again" looks once more', (tester) async {
     final answers = <Completer<bool>>[];
     await pump(tester, () => Authentication(scan: () => NetworkScanService(

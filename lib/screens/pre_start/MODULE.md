@@ -25,7 +25,7 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `welcome/widgets/welcome_choice.dart` — `WelcomeChoice`: compact secondary card (waiting for an invitation, open jobs), arrow or a `tag`; two in an equal-height `Row`.
 - `deployment/master/_master.dart` — `MasterSetup extends PageBuilder`.
 - `deployment/master/desktop/_body.dart` — owner form (no company: the welcome creates it), optional passphrase, licence
-  tick → `LocalServerService.setUp` → the 24 words (`RecoveryWords`) with a required "written down" tick →
+  tick (only the drawn fields are validated, each with its message under it) → `LocalServerService.setUp` → the 24 words (`RecoveryWords`) with a required "written down" tick →
   `Deployment.attach(master)` → `/lan`; "use Lyra another way" back to `/login`. With `owner` (the sign in's "Create
   Master Server") the owner's e-mail and password come from there: no username or password fields, the username made
   from the e-mail (`LocalServerService.usernameOf`), the engine opened and signed in with them before `/lan` (which then

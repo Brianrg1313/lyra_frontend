@@ -36,13 +36,38 @@ class DesktopBody extends StatefulWidget {
 class _DesktopBodyState extends State<DesktopBody> {
   final _form = FormController();
 
-  // Created only when drawn: with an [owner] they never join the form.
-  late final _username = InputController(key: "USERNAME", form: _form, obligatory: true, min: 3, max: 32);
-  late final _firstName = InputController(key: "FIRST_NAME", form: _form, obligatory: true, max: 64);
-  late final _lastName = InputController(key: "LAST_NAME", form: _form, obligatory: true, max: 64);
-  late final _password = InputController(key: "PASSWORD", form: _form, obligatory: true, type: InputType.password, min: 10, max: 256);
-  // The server's own rule is 10 characters (`session.md` S-2); a passphrase gets the same.
-  late final _passphrase = InputController(key: "PASSPHRASE", form: _form, type: InputType.password, min: 10, max: 256);
+  // Created only when drawn: with an [owner] they never join the form. Each says what's wrong
+  // under it; without its own messages a refused field only turned red, and a page that didn't
+  // fit the window looked like a button doing nothing.
+  late final _username = InputController(
+    key: "USERNAME", form: _form, obligatory: true, min: 3, max: 32,
+    customErrors: _errors(S.of(context).lan_username_input, short: S.of(context).lan_master_invalid_username)
+  );
+  late final _firstName = InputController(
+    key: "FIRST_NAME", form: _form, obligatory: true, max: 64,
+    customErrors: _errors(S.of(context).first_name_input)
+  );
+  late final _lastName = InputController(
+    key: "LAST_NAME", form: _form, obligatory: true, max: 64,
+    customErrors: _errors(S.of(context).last_name_input)
+  );
+  late final _password = InputController(
+    key: "PASSWORD", form: _form, obligatory: true, type: InputType.password, min: 10, max: 256,
+    customErrors: _errors(S.of(context).password_input, short: S.of(context).lan_master_weak_password)
+  );
+  // The server's own rule is 10 characters (`session.md` S-2); a passphrase gets the same. Obligatory
+  // once ticked: it's validated only while drawn (see [_submit]).
+  late final _passphrase = InputController(
+    key: "PASSPHRASE", form: _form, obligatory: true, type: InputType.password, min: 10, max: 256,
+    customErrors: _errors(S.of(context).lan_passphrase_input, short: S.of(context).lan_passphrase_short)
+  );
+
+  Map<InputError, String> _errors(String field, {String? short}) => {
+    InputError.empty: S.of(context).lan_field_empty(field),
+    InputError.long: S.of(context).lan_field_long(field),
+    InputError.incomplete: ?short,
+    InputError.invalid: ?short
+  };
 
   bool _usePassphrase = false;
   bool _licence = false;
@@ -122,10 +147,17 @@ class _DesktopBodyState extends State<DesktopBody> {
 
   void _submit() {
     if (_form.loading.value) return;
-    if (!_form.validate()) return;
-    if (_usePassphrase && _passphrase.value.length < 10) {
-      _passphrase.status.setStatus(InputStatus.error, InputError.incomplete);
-      return;
+    // Only what is drawn: `_form.validate()` would also check a passphrase typed and then
+    // unticked, refusing the page over a field nobody can see.
+    final drawn = [
+      if (widget.owner == null) _username,
+      _firstName,
+      _lastName,
+      if (widget.owner == null) _password,
+      if (_usePassphrase) _passphrase
+    ];
+    for (final input in drawn) {
+      if (!input.validate(input)) return;
     }
     if (!_licence) return setState(() => _error = S.of(context).lan_master_eula_required);
 

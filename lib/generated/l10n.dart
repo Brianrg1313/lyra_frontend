@@ -17946,6 +17946,36 @@ class S {
     );
   }
 
+  /// `{field} can't be empty.`
+  String lan_field_empty(Object field) {
+    return Intl.message(
+      '$field can\'t be empty.',
+      name: 'lan_field_empty',
+      desc: '',
+      args: [field],
+    );
+  }
+
+  /// `{field} is too long.`
+  String lan_field_long(Object field) {
+    return Intl.message(
+      '$field is too long.',
+      name: 'lan_field_long',
+      desc: '',
+      args: [field],
+    );
+  }
+
+  /// `The passphrase must have at least 10 characters.`
+  String get lan_passphrase_short {
+    return Intl.message(
+      'The passphrase must have at least 10 characters.',
+      name: 'lan_passphrase_short',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `This computer is already a server. Go back and choose it again to open it.`
   String get lan_master_exists {
     return Intl.message(
