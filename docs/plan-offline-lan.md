@@ -82,10 +82,12 @@ picker. Finance is complete on a master.
   `business.create`. Checked on this computer up to the modal opening; not yet seen: creating the
   company end to end and landing on the master's home.
 - Repos, all on this disk, **nothing pushed**: the app on `feat/offline-phase4-business` (no remote,
-  31 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on `main`,
-  one commit ahead of `origin/main` and with a large **uncommitted** working tree that the app
-  depends on (`button.dart`, `select_menu`, modals, charts, `InputRow` without `LayoutBuilder`…):
-  commit it before anything else touches `core`.
+  31 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on
+  `feat/offline-lan`, whose one commit holds what the app depends on (`button.dart`, `select_menu`,
+  modals, charts, `InputRow` without `LayoutBuilder`…), over a `main` one commit ahead of `origin/main`.
+- A browser reaches a master only at the address the master serves (`https://<host>:4780`), never at
+  `flutter run -d chrome`'s; the engine serves the web build only if `build/web` was copied to
+  `lyra_node/web` next to `app.exe` or `LYRA_WEB` points at it when the master starts.
 - To run a master: `dart build cli` in `lyra_node`, then `flutter run -d windows` here (the CMake
   install copies the engine next to `app.exe`). This computer's earlier master was wiped on
   2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
