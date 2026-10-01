@@ -59,6 +59,7 @@ through `Navigator.pop(context, value)`.
 - `employee_tool/_employee_tool.dart` — `showEmployeeTool(context, icon:, title:, description:, person:, builder?)`, `EmployeeToolModal`: side panel of one employee action (from `EmployeeActions`); `builder` draws its body (permissions → `EmployeePermissions`), otherwise the placeholder.
 - `invite_employee/_invite_employee.dart` — `showInviteEmployee(context, employees:)`, `InviteEmployeeModal`: email + job title
   (the backend files the job with the invitation); **writes** through the `BusinessEmployeesService` passed in. Returns `true` if sent.
+  On a master the form gives way to the activation code (`_ActivationCode`: the code, its expiry, copy, done), shown once.
 - `branch_form/_branch_form.dart` — `showBranchForm(context, branches:, country:, branch?)`, `BranchFormModal`:
   create (no `branch`) or edit one branch whole — name, store/warehouse (`STOREFRONT`, two cards), bot orders (`ONLINE`),
   main (not drawn on the main branch), phone, legal name + tax id (empty = the company's), address, landmark, city,

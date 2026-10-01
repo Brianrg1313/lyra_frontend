@@ -8,6 +8,7 @@ import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
+import 'package:app/services/business/sources/employees_lan_source.dart';
 import 'package:app/services/pos/sources/pos_lan_source.dart';
 import 'package:app/services/money/sources/money_lan_source.dart';
 import 'package:app/services/sales/sources/sales_lan_source.dart';
@@ -106,9 +107,10 @@ void main() {
     expect(capabilities.of("finance.methods"), Capability.available);
     expect(capabilities.of("finance.methods.manage_currencies"), Capability.available);
     expect(capabilities.of("finance.export"), Capability.available);
-    // Not yet: they belong to local, but their sources don't exist.
-    expect(capabilities.of("business.employees"), Capability.hidden);
-    expect(capabilities.of("business.employees.view"), Capability.hidden);
+    expect(capabilities.of("business.employees"), Capability.available);
+    expect(capabilities.of("business.employees.view_personal"), Capability.available);
+    // The address search is the cloud's (places).
+    expect(capabilities.cloudServices, isFalse);
   });
 
   test('in hybrid a cloud area waits for the internet, a master one does not', () {
@@ -124,6 +126,7 @@ void main() {
     expect(capabilities.shows("messages"), isTrue);
     expect(capabilities.of("deliveries"), Capability.available);
     expect(capabilities.of("business.settings"), Capability.available);
+    expect(capabilities.cloudServices, isFalse);
   });
 
   test('an action is read from its area, and an unknown area is cloud only', () {
@@ -159,6 +162,7 @@ void main() {
     expect(Sources.pos, isA<PosLanSource>());
     expect(Sources.sales, isA<SalesLanSource>());
     expect(Sources.money, isA<MoneyLanSource>());
-    expect(() => Sources.employees, throwsUnsupportedError);
+    expect(Sources.employees, isA<EmployeesLanSource>());
+    expect(() => Sources.delivery, throwsUnsupportedError);
   });
 }

@@ -219,6 +219,11 @@ class LanClient {
     return tokens["mustChangePassword"] == true;
   }
 
+  /// `auth.activate` + `session.bind` (`session.md` S-8): an invited person's code and their new
+  /// password make the account active and sign it in, as [signIn] does.
+  Future<void> activate(String login, String code, String password) async =>
+    _adopt(await _raw(Ops.authActivate, {"login": login, "code": code, "password": password}) as Map<String, Object?>);
+
   /// Picks up the stored session (an app restart, a reconnect). False when there is none or it
   /// ended; then the person signs in again.
   Future<bool> resume() async {

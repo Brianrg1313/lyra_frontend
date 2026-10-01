@@ -89,6 +89,21 @@ void main() {
     expect(lan.error, "Wrong username or password.");
   });
 
+  test('an invited person activates with their code and is signed in; a wrong code says why (S-8)', () async {
+    final master = FakeMaster();
+    final lan = LanService(store: MemoryLanIdentityStore()..stored = device(), connect: (_, _) async => master.connect());
+
+    await lan.open();
+
+    expect(await lan.activate("grace", "00000000", "a long new password"), LanStatus.signedOut);
+    expect(lan.error, "That code isn't valid.");
+    expect(await lan.activate("grace", "12345678", "a long new password"), LanStatus.ready);
+    expect(
+      master.received.map((frame) => frame["op"]).where((op) => op == "auth.activate" || op == "session.bind"),
+      ["auth.activate", "auth.activate", "session.bind"]
+    );
+  });
+
   test('a master that does not answer is unreachable; a revoked device is revoked', () async {
     final down = LanService(store: MemoryLanIdentityStore()..stored = device(), connect: (_, _) async {
       throw const SocketException("down");

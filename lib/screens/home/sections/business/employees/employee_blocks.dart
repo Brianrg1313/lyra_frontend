@@ -12,6 +12,7 @@ import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/business_places_model.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
@@ -384,7 +385,8 @@ class _Job extends StatelessWidget {
           value: job.branchName,
           selected: job.branchId,
           empty: none,
-          enabled: editable,
+          // One site and no branches list where branches don't exist (a master).
+          enabled: editable && CapabilityService().shows("business.branches"),
           loadOptions: () async {
             final branches = context.read<BusinessBranchesService>();
 
@@ -589,9 +591,10 @@ class _Person extends StatelessWidget {
             lines: 2,
             enabled: editable,
             hint: text.employee_edit_address_hint,
-            // Searched where they live; the company's country until that is said.
+            // Searched where they live; the company's country until that is said. The search is
+            // the cloud's: without it the address is typed.
             placesCountry: person.country,
-            onPlace: edit.place,
+            onPlace: CapabilityService().cloudServices ? edit.place : null,
             onSave: edit.savePerson("ADDRESS")
           ),
           EmployeeTextFact(

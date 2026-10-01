@@ -88,6 +88,7 @@ class CapabilityService extends ChangeNotifier {
     "dashboard",
     "business",
     "business.statistics",
+    "business.employees",
     "business.clients",
     "business.settings",
     "inventory",
@@ -111,6 +112,15 @@ class CapabilityService extends ChangeNotifier {
 
   /// Whether the internet is reachable. Only `hybrid` reads it.
   bool get internet => _internet;
+
+  /// Whether the cloud-only services a local area's screen may lean on (the address search of
+  /// places) answer here: in `cloud`, and in `hybrid` while the internet is up. Without them the
+  /// screen falls back to what it does alone (typing the address).
+  bool get cloudServices => switch (Deployment.mode) {
+    DeploymentMode.cloud => true,
+    DeploymentMode.hybrid => _internet,
+    DeploymentMode.local => false
+  };
 
   set internet(bool value) {
     if (value == _internet) return;

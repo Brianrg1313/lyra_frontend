@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/business/business_employees_service.dart';
+import 'package:app/services/business/employee_activation_model.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -81,39 +84,49 @@ class _InviteEmployeeModalState extends State<InviteEmployeeModal> {
   /// The width of the business profile forms, opened from the same page.
   static const double _width = 400;
 
+  /// What a master answered for a new account: the form gives way to it, since the code is
+  /// shown this once.
+  EmployeeActivation? _activation;
+
   @override
   Widget build(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(minWidth: _width, maxWidth: _width),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextSmall(
-          S.of(context).employees_invite_subtitle,
-          color: ThemeColor.of(context).text.secondary
-        ),
-        SizedBox(height: AppSize.spaceM),
-        Input(
-          title: S.of(context).employees_invite_email,
-          placeholder: S.of(context).employees_invite_email_hint,
-          controller: _email,
-          autofocus: true
-        ),
-        SizedBox(height: AppSize.spaceS),
-        Input(
-          title: S.of(context).employees_invite_job,
-          placeholder: S.of(context).employees_invite_job_hint,
-          controller: _job,
-          onSubmit: _submit
-        ),
-        SizedBox(height: AppSize.spaceM),
-        Button(
-          title: S.of(context).employees_invite_send,
-          loading: _form.loading,
-          action: _submit
-        )
-      ]
-    )
+    child: _activation == null ? _fields(context) : _ActivationCode(activation: _activation!)
+  );
+
+  Widget _fields(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      TextSmall(
+        // A master has no e-mail to send: it hands over a code instead (`employees.md` E-10).
+        CapabilityService().singleCompany
+          ? S.of(context).employees_invite_subtitle_local
+          : S.of(context).employees_invite_subtitle,
+        lines: 5,
+        color: ThemeColor.of(context).text.secondary
+      ),
+      SizedBox(height: AppSize.spaceM),
+      Input(
+        title: S.of(context).employees_invite_email,
+        placeholder: S.of(context).employees_invite_email_hint,
+        controller: _email,
+        autofocus: true
+      ),
+      SizedBox(height: AppSize.spaceS),
+      Input(
+        title: S.of(context).employees_invite_job,
+        placeholder: S.of(context).employees_invite_job_hint,
+        controller: _job,
+        onSubmit: _submit
+      ),
+      SizedBox(height: AppSize.spaceM),
+      Button(
+        title: S.of(context).employees_invite_send,
+        loading: _form.loading,
+        action: _submit
+      )
+    ]
   );
 
   Future<void> _submit() async {
@@ -133,6 +146,70 @@ class _InviteEmployeeModalState extends State<InviteEmployeeModal> {
 
     // A refusal was already shown by the service; what was typed stays to be
     // corrected.
-    if (sent) Navigator.pop(context, true);
+    if (sent == null) return;
+
+    if (sent.activation != null) return setState(() => _activation = sent.activation);
+
+    Navigator.pop(context, true);
+  }
+}
+
+/// The activation code of an account a master made for the invitation (`session.md` S-8), with
+/// what to do with it: the person types it, with a password of their choosing, the first time
+/// they sign in on a device paired with the server. The master answers it only once.
+class _ActivationCode extends StatelessWidget {
+  const _ActivationCode({required this.activation});
+
+  final EmployeeActivation activation;
+
+  @override
+  Widget build(BuildContext context) {
+    final code = activation.code;
+    final expires = activation.expires;
+    final scheme = ThemeColor.of(context);
+    final text = S.of(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextSmall(text.employees_invite_code_subtitle, lines: 5, color: scheme.text.secondary),
+        SizedBox(height: AppSize.spaceM),
+        Surface(
+          color: scheme.surfaceOver,
+          padding: EdgeInsets.all(AppSize.spaceS),
+          child: Column(children: [
+            TextSmall(text.lan_activate_code_input, color: scheme.subtitle),
+            SizedBox(height: AppSize.gap),
+            TextInter(
+              code.length == 8 ? "${code.substring(0, 4)} ${code.substring(4)}" : code,
+              multiplier: 2.4,
+              bold: true,
+              selectable: true
+            ),
+            if (expires != null) ...[
+              SizedBox(height: AppSize.gap),
+              TextSmall(
+                text.employees_invite_code_expires(MaterialLocalizations.of(context).formatMediumDate(expires),
+                  TimeOfDay.fromDateTime(expires).format(context)),
+                color: scheme.subtitle,
+                textAlign: TextAlign.center,
+                lines: 2
+              )
+            ]
+          ])
+        ),
+        SizedBox(height: AppSize.spaceM),
+        Button(
+          title: text.employees_invite_code_copy,
+          action: () async {
+            await Clipboard.setData(ClipboardData(text: code));
+            if (context.mounted) FloatFlag.of(context).message(text.employees_invite_code_copied);
+          }
+        ),
+        SizedBox(height: AppSize.spaceXS),
+        MainButton(title: text.employees_invite_code_done, action: () => Navigator.pop(context, true))
+      ]
+    );
   }
 }

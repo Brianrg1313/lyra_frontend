@@ -3284,6 +3284,66 @@ class S {
     );
   }
 
+  /// `Lyra makes their account on this server and gives you a code to hand them. They use it, with a password of their own, the first time they sign in.`
+  String get employees_invite_subtitle_local {
+    return Intl.message(
+      'Lyra makes their account on this server and gives you a code to hand them. They use it, with a password of their own, the first time they sign in.',
+      name: 'employees_invite_subtitle_local',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Give this code to the person you invited. On a device connected to this server, they choose "I have an activation code" when signing in, then type their email, this code and a password of their own. It is shown only this once.`
+  String get employees_invite_code_subtitle {
+    return Intl.message(
+      'Give this code to the person you invited. On a device connected to this server, they choose "I have an activation code" when signing in, then type their email, this code and a password of their own. It is shown only this once.',
+      name: 'employees_invite_code_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Valid until {date}, {time}.`
+  String employees_invite_code_expires(String date, String time) {
+    return Intl.message(
+      'Valid until $date, $time.',
+      name: 'employees_invite_code_expires',
+      desc: '',
+      args: [date, time],
+    );
+  }
+
+  /// `Copy code`
+  String get employees_invite_code_copy {
+    return Intl.message(
+      'Copy code',
+      name: 'employees_invite_code_copy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Code copied.`
+  String get employees_invite_code_copied {
+    return Intl.message(
+      'Code copied.',
+      name: 'employees_invite_code_copied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Done`
+  String get employees_invite_code_done {
+    return Intl.message(
+      'Done',
+      name: 'employees_invite_code_done',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No job filed`
   String get employee_state_unfiled {
     return Intl.message(
@@ -18286,6 +18346,76 @@ class S {
     return Intl.message(
       'Use the username and password of your account on this server.',
       name: 'lan_sign_in_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Activate your account`
+  String get lan_activate_title {
+    return Intl.message(
+      'Activate your account',
+      name: 'lan_activate_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type your username or e-mail, the code your company gave you, and the password you want to use from now on.`
+  String get lan_activate_subtitle {
+    return Intl.message(
+      'Type your username or e-mail, the code your company gave you, and the password you want to use from now on.',
+      name: 'lan_activate_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Activation code`
+  String get lan_activate_code_input {
+    return Intl.message(
+      'Activation code',
+      name: 'lan_activate_code_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New password (10 characters or more)`
+  String get lan_activate_password_input {
+    return Intl.message(
+      'New password (10 characters or more)',
+      name: 'lan_activate_password_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Activate and sign in`
+  String get lan_activate_button {
+    return Intl.message(
+      'Activate and sign in',
+      name: 'lan_activate_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I have an activation code`
+  String get lan_activate_link {
+    return Intl.message(
+      'I have an activation code',
+      name: 'lan_activate_link',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I already have a password`
+  String get lan_activate_back {
+    return Intl.message(
+      'I already have a password',
+      name: 'lan_activate_back',
       desc: '',
       args: [],
     );

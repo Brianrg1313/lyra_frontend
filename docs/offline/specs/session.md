@@ -55,7 +55,8 @@ A person who can sign in to this master.
   one use, shown once to the admin who invited (on screen, never sent). Activating (code plus a
   new password) makes the account `active`, signs the person in and **accepts the invitation**
   (they typed a code the company gave them, which is the consent). An expired code is re-issued
-  by the admin (`employees.reissueActivation`).
+  by the admin (`employees.reissueActivation`). Five wrong codes in a row void it, and the admin
+  re-issues it too. Only the code's hash is kept, bound to its account.
 - **S-9** Changing one's own password needs the current one, ends every other session of that
   account, and re-wraps the account's sealed-key wrap (plan §6.3).
 - **S-10** An admin reset needs `business.employees.edit`, and the target may hold **no
@@ -74,7 +75,7 @@ A person who can sign in to this master.
 | `auth.identify` | none (paired device) | `login` (username or e-mail) | `{method: "password" \| "activation"}` | — |
 | `auth.signIn` | none | `login`, `password` | session tokens + `mustChangePassword` | `invalid_credentials`, `account_locked`, `account_disabled`, `rate_limited` |
 | `auth.signInPin` | none | `username`, `pin` | POS-scoped session tokens | `invalid_credentials`, `pin_disabled`, `rate_limited` |
-| `auth.activate` | none | `login`, `code`, `password` | session tokens | `invalid_code`, `code_expired`, `weak_password` |
+| `auth.activate` | none | `login`, `code`, `password` | session tokens, as `auth.signIn` | `invalid_code` (also an unknown or active login), `code_expired`, `weak_password`, `rate_limited` |
 | `auth.refresh` | none | `refreshToken` | new tokens | `session_expired` (`action: "login"`) |
 | `auth.signOut` | session | — | `{}` | — |
 | `account.changePassword` | session | `current`, `password` | `{}` | `invalid_credentials`, `weak_password` |

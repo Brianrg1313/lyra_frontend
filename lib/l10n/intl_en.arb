@@ -356,6 +356,18 @@
   "employees_invite_job": "Job title",
   "employees_invite_job_hint": "Cashier, accountant, driver…",
   "employees_invite_send": "Send invitation",
+  "employees_invite_subtitle_local": "Lyra makes their account on this server and gives you a code to hand them. They use it, with a password of their own, the first time they sign in.",
+  "employees_invite_code_subtitle": "Give this code to the person you invited. On a device connected to this server, they choose \"I have an activation code\" when signing in, then type their email, this code and a password of their own. It is shown only this once.",
+  "employees_invite_code_expires": "Valid until {date}, {time}.",
+  "@employees_invite_code_expires": {
+    "placeholders": {
+      "date": {"type": "String"},
+      "time": {"type": "String"}
+    }
+  },
+  "employees_invite_code_copy": "Copy code",
+  "employees_invite_code_copied": "Code copied.",
+  "employees_invite_code_done": "Done",
   "employee_state_unfiled": "No job filed",
   "employee_state_invited": "Invitation pending",
   "employee_state_ended": "Former",
@@ -1884,6 +1896,13 @@
   "lan_enroll": "Connect",
   "lan_sign_in_title": "Sign in",
   "lan_sign_in_subtitle": "Use the username and password of your account on this server.",
+  "lan_activate_title": "Activate your account",
+  "lan_activate_subtitle": "Type your username or e-mail, the code your company gave you, and the password you want to use from now on.",
+  "lan_activate_code_input": "Activation code",
+  "lan_activate_password_input": "New password (10 characters or more)",
+  "lan_activate_button": "Activate and sign in",
+  "lan_activate_link": "I have an activation code",
+  "lan_activate_back": "I already have a password",
   "lan_unreachable_title": "The server isn't answering",
   "lan_unreachable_master": "The server on this computer is stopped.",
   "lan_unreachable_client": "Ask someone to open Lyra on the server computer, and check this device is on the same network.",

@@ -35,7 +35,8 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
 
 - **E-1** The list answers active and invited employments, **the viewer's own card first**
   (kept even when they have no employment, with `id: null`), then by name. `total` counts active
-  ones only.
+  ones only. Without `business.employees.view` it answers that card alone (plan §5.4). An
+  invitation nobody activated yet carries the e-mail it was made for.
 - **E-2** The former list (`ended`, `declined`, `cancelled`) needs `business.employees.view` and
   answers the same card shape.
 - **E-3** The detail answers the card plus the job. Private and sealed fields are filled **only**
@@ -69,34 +70,44 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
   one. Only for `pending` accounts.
 - **E-12** `employees.edit` writes the backend-style keys the app sends (`JOB_TITLE`,
   `MANAGER_ID`, `FIRST_NAME`, `SALARY`, …). A key sent empty clears it. Private-person keys are
-  refused unless `profileEditable` (`profile_locked`) and unless the writer holds
-  `view_personal` (`forbidden`). Job keys need `business.employees.edit`.
+  refused unless `profileEditable` (`profile_locked`); they and the pay keys need the writer to
+  hold `view_personal` (`forbidden`). The op needs `business.employees.invite`: the app's tree has
+  no `edit` action under employees, and `invite` is the one that maps to the cloud's
+  `employees.manage`. A closed employment isn't edited (`employment_closed`).
 - **E-13** `profile.edit` lets a person write their **own** private data, with no company
   permission. The account is the session's, never a body field. The job is not theirs to write.
-- **E-14** `MANAGER_ID` must be an active employment of the company, and not the person
+- **E-14** `MANAGER_ID` must be an invited or active employment of the company (the list the app
+  offers), and not the person
   themselves or someone who reports to them (`manager_cycle`).
 - **E-15** `SALARY` ≥ 0 with the currency's decimals; `SALARY_CURRENCY` must be the main or an
   exchange currency; `START_DATE` ≤ `END_DATE` (`invalid_dates`). Dates are calendar days.
-- **E-16** Writes to sealed fields need the sealed key open in the writer's session
-  (`sealed_key_unavailable` otherwise, plan §6.3). Reading them is recorded in the audit log
-  **once per session per employee**, not on every read.
+- **E-16** Each sealed value is sealed on its own to the `hr` scope's public key and to the
+  person's (plan §6.3), so writing one needs the permission, not a key. Reading needs the
+  session's `hr` key or, for one's own, the person's key (a password session, not a PIN); without
+  it the detail answers `fullProfile: false`. A value written before the person had a key pair
+  (invited, never signed in) gets their copy the next time an `hr` holder reads it. Reads by an
+  `hr` holder are recorded in the audit log **once per session per employee**, not on every read.
 - **E-17** An account's e-mail is its sign-in name and is never written from here (as today).
 
 ### Ops
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `employees.list` | `business.employees.view` | — | `[card]` | — |
+| `employees.list` | session (E-1 shapes it) | — | `{employees: [card], total}` | — |
 | `employees.former` | `business.employees.view` | — | `[card]` | — |
-| `employees.detail` | `business.employees.view` (or self) | `id` | `BusinessEmployeeDetail` | `not_found` |
-| `employees.invite` | `business.employees.invite` | E-10 | `{id, activation?: {code, expires}}` | `already_employed`, `already_invited`, `invalid_field` |
+| `employees.detail` | session: `business.employees.view`, or self | `id` | `BusinessEmployeeDetail` | `not_found` |
+| `employees.invite` | `business.employees.invite` | `email` \| `username`, `jobTitle`, `firstName?`, `lastName?` | `{id, activation: {code, expires} \| null}` | `already_employed`, `already_invited`, `account_exists`, `invalid_field` |
 | `employees.reissueActivation` | `business.employees.invite` | `id` | `{code, expires}` | `not_pending` |
-| `employees.edit` | `business.employees.edit` (+ `view_personal` for person keys) | `id`, keys | `{}` | `profile_locked`, `manager_cycle`, `invalid_dates`, `sealed_key_unavailable`, `invalid_field` |
-| `profile.edit` | session | keys | `{}` | `invalid_field` |
+| `employees.edit` | `business.employees.invite` (+ `view_personal` for pay and person keys) | `id`, keys | `{}` | `employment_closed`, `profile_locked`, `manager_cycle`, `invalid_dates`, `invalid_field` |
+| `profile.edit` | session | names and private keys | `{}` | `forbidden` (a job or pay key), `invalid_field` |
 | `employees.accept` | session (the invited person) | `id` | `{}` | `not_found`, `not_invited` |
 
-`BusinessEmployeesService.invite` today sends `{EMAIL, JOB_TITLE}`. The local answer adds
-`activation`, and the invite form shows it (a small app change, see Open question 1).
+Cards and the detail use the spec's camelCase names (`lastName`, `jobTitle`, `contractStatus`);
+the app's `EmployeesLanSource` maps them onto the keys its models read. An activation code leaves
+the engine only in the answer that made it: the `commandId` ledger keeps that answer without it,
+so a replay shows `activation: null` and the admin reissues. `employees.accept` serves a rehire
+(an active account invited again). The bootstrap doesn't list that invitation as a pre-start task
+yet, so in `local` a rehire waits until it does.
 
 ---
 

@@ -11,6 +11,7 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/business_employees_service.dart';
+import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
@@ -46,10 +47,13 @@ class _Employees extends BusinessEmployeesService {
   @override
   Future<void> loadDetail(String id, {bool force = false}) async => details.add(id);
 
+  /// What an invitation answers: a master's activation code when set.
+  EmployeeActivation? activation;
+
   @override
-  Future<bool> invite(BuildContext context, {required String email, required String jobTitle}) async {
+  Future<EmployeeInvitationSent?> invite(BuildContext context, {required String email, required String jobTitle}) async {
     invites.add((email, jobTitle));
-    return true;
+    return (id: null, activation: activation);
   }
 
   /// Every write, whichever endpoint it took; [ownEdits] the ids that went
@@ -397,6 +401,39 @@ void main() {
       await tester.pump();
 
       expect(service.invites, [("rosa@mail.com", "Cashier")]);
+    });
+
+    testWidgets('a master\'s invitation gives way to its activation code, shown once (E-10)', (tester) async {
+      final service = _Employees()..activation = EmployeeActivation(code: "12345678", expires: DateTime(2026, 10, 4, 9));
+
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        home: Builder(builder: (context) {
+          AppSize.instance(context);
+
+          return Scaffold(body: Center(child: InviteEmployeeModal(employees: service)));
+        })
+      ));
+      await tester.pump();
+
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), "rosa@mail.com");
+      await tester.enterText(fields.at(1), "Cashier");
+      await tester.tap(find.text("Send invitation"));
+      await tester.pump();
+
+      expect(find.text("1234 5678"), findsOneWidget);
+      expect(find.text("Copy code"), findsOneWidget);
+      expect(find.text("Send invitation"), findsNothing);
+
+      // The tapped button's feedback.
+      await tester.pump(const Duration(milliseconds: 200));
     });
 
     testWidgets('a narrow panel drops the contract and date columns without overflowing', (tester) async {

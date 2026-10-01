@@ -45,7 +45,8 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `lan_identity_store.dart` — `LanIdentityStore` (seam): the device and the session's refresh token.
   `SecureLanIdentityStore` (OS key store via `DatabaseService`), `MemoryLanIdentityStore` (tests).
 - `lan_service.dart` — `LanService` (+ `LanStatus`), app-wide (`lanService`): `open` (on the master, starts the engine
-  first; connects; resumes the stored session), `unlock`, `enrollMaster`, `signIn`, `signOut`, `devices`,
+  first; connects; resumes the stored session), `unlock`, `enrollMaster`, `signIn`, `activate` (an invited person's code
+  and new password, `auth.activate`), `signOut`, `devices`,
   `startPairing`, `revoke`, `browserCa`, `stopServer`, `leave` (back to cloud; a browser asks again), `call(op, args)` (what
   the LAN sources run: a write gets its `commandId`; a lost master is thrown as `{message, action, code: "unreachable"}`).
   A dropped socket reconnects once (→ `revoked`, `unreachable` or where it was); leaving `ready` fires `onSessionRejected`.
@@ -65,7 +66,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   which areas the deployment mode has. `modes` mirrors every area's `modes` in `docs/app-areas.json` (a test keeps them
   equal, `action_modes` as `<area>.<action>`); `of(area)` reads the most specific declared area (undeclared = cloud only);
   on a master's devices a local area whose phase 4 release hasn't come is hidden (`_builtOnMaster`);
-  `singleCompany` (not cloud); `internet` (hybrid only). `PermissionsService.can`/`granted` ask it first.
+  `singleCompany` (not cloud); `internet` (hybrid only); `cloudServices` (cloud-only helpers such as the places search
+  answer: cloud, or hybrid online). `PermissionsService.can`/`granted` ask it first.
 
 ## business/
 
@@ -75,8 +77,13 @@ Reached through `LanService.server` (the `lan/` services own it).
   `business.site.*` in the models' keys (`profileJson`, `locationJson`), screen keys → spec fields (`profileKeys`,
   `siteKeys`), the logo as a file (`fileJson`; `setLogo` uploads then `business.setLogo`); `create` is `business.create` (the welcome's, form keys → fields); branches and e-mails
   throw (hidden on a master).
-- `sources/employees_source.dart` — `EmployeesSource`: current (+ active count), former, detail, invite, edit, edit own
-  profile. Used by `BusinessEmployeesService`. `employees_cloud_source.dart` — REST.
+- `sources/employees_source.dart` — `EmployeesSource`: current (+ active count), former, detail, invite (the id, and a
+  master's activation code), edit, edit own profile. Used by `BusinessEmployeesService`. `employees_cloud_source.dart` —
+  REST. `employees_lan_source.dart` — `EmployeesLanSource` over `LanService.call`: `employees.*` and `profile.edit`, the
+  spec's names laid out as the cloud's rows (`cardJson`, `detailJson`; absent private keys stay empty), edits with the
+  cloud's keys as they are.
+- `employee_activation_model.dart` — `EmployeeActivation` (a master's code and when it expires),
+  `EmployeeInvitationSent` (what inviting answers).
 - `sources/delivery_source.dart` — `DeliverySource`: settings, carriers, options, areas, isochrone (cloud only). Used by
   `BusinessDeliveryService`, `DeliveryAreasService`. `delivery_cloud_source.dart` — REST, and the isochrone's largest ring.
 - `business_service.dart` — `BusinessService` (+ `BusinessProfileStatus`): companies from `/init/`,
@@ -94,7 +101,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `business_employees_service.dart` — `BusinessEmployeesService` (+ `BusinessEmployeesStatus`, `EmployeeDetailStatus`):
   current + former lists (a failed former read leaves it empty; not read without `viewsAll`), `total` = active count, selection (first read opens the
   viewer), details cached per id, `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
-  and opens it), `edit` (`PUT /business/employees/`), `editOwn` (the viewer's personal keys, `PUT /profile/`). Provided by the business page. Seam `seed`.
+  and opens it; answers what was sent, a master's activation code included, or null on a refusal), `edit` (`PUT /business/employees/`), `editOwn` (the viewer's personal keys, `PUT /profile/`). Provided by the business page. Seam `seed`.
 - `business_email_model.dart` — `BusinessEmailModel`, `BusinessEmailPurpose`.
 - `business_language.dart` — `BusinessLanguage`.
 - `business_location_model.dart` — `BusinessLocationModel`: written address **and** map point, two facts

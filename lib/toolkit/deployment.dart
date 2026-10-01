@@ -12,6 +12,7 @@ import 'package:app/services/business/sources/business_cloud_source.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
 import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/services/business/sources/employees_cloud_source.dart';
+import 'package:app/services/business/sources/employees_lan_source.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/services/business/sources/delivery_cloud_source.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
@@ -103,7 +104,7 @@ abstract final class Deployment {
 abstract final class Sources {
   static SessionSource get session => _pick(const SessionCloudSource(), () => SessionLanSource(lanService));
   static BusinessSource get business => _pick(const BusinessCloudSource(), () => BusinessLanSource(lanService));
-  static EmployeesSource get employees => _pick(const EmployeesCloudSource());
+  static EmployeesSource get employees => _pick(const EmployeesCloudSource(), () => EmployeesLanSource(lanService));
   static DeliverySource get delivery => _pick(const DeliveryCloudSource());
   static InventorySource get inventory => _pick(const InventoryCloudSource(), () => InventoryLanSource(lanService));
   static StockSource get stock => _pick(const StockCloudSource(), () => StockLanSource(lanService));

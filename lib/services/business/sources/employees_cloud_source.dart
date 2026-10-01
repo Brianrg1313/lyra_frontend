@@ -1,6 +1,7 @@
 // SERVICES
 import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
+import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart';
@@ -36,14 +37,15 @@ class EmployeesCloudSource implements EmployeesSource {
   }
 
   @override
-  Future<String?> invite({required String email, required String jobTitle}) async {
+  Future<EmployeeInvitationSent> invite({required String email, required String jobTitle}) async {
     final data = await api.post(
       path: "/business/employees/invite/",
       version: "v1",
       data: {"EMAIL": email, "JOB_TITLE": jobTitle}
     );
 
-    return data is Map ? employeeText(data["id"]) : null;
+    // The cloud e-mails the person: there is no code to hand over.
+    return (id: data is Map ? employeeText(data["id"]) : null, activation: null);
   }
 
   @override

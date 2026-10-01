@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart' show BuildContext;
 // SERVICES
 import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
+import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/business/sources/employees_source.dart';
@@ -122,18 +123,19 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// not they have an account: for an email with none the backend opens one
   /// and the invitation waits there until they sign up with it.
   ///
-  /// Rereads the list and opens the new invitation. A refusal (already invited
-  /// or working here, a title it does not take) is shown in the floating flag
-  /// and answers `false`.
-  Future<bool> invite(
+  /// Rereads the list and opens the new invitation. Answers what was sent,
+  /// with the activation code a master made for a new account, which the
+  /// form shows once. A refusal (already invited or working here, a title it
+  /// does not take) is shown in the floating flag and answers `null`.
+  Future<EmployeeInvitationSent?> invite(
     BuildContext context, {
     required String email,
     required String jobTitle
   }) async {
-    String? id;
+    EmployeeInvitationSent sent;
 
     try {
-      id = await _source.invite(email: email, jobTitle: jobTitle);
+      sent = await _source.invite(email: email, jobTitle: jobTitle);
     } catch (error) {
       if (kDebugMode) print("inviteEmployee failed: $error");
 
@@ -143,14 +145,15 @@ class BusinessEmployeesService extends ChangeNotifier {
         );
       }
 
-      return false;
+      return null;
     }
 
     await load(force: true);
 
+    final id = sent.id;
     if (id != null && id.isNotEmpty) select(id);
 
-    return true;
+    return sent;
   }
 
   /// Edits one employment (`PUT /business/employees/`): [changes] are the

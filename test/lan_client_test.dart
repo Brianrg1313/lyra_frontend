@@ -235,6 +235,9 @@ class FakeMaster {
           throw const RpcError("invalid_credentials", "Wrong username or password.");
         }
         return _tokens();
+      case "auth.activate":
+        if (args["code"] != "12345678") throw const RpcError("invalid_code", "That code isn't valid.");
+        return _tokens();
       case "auth.refresh":
         return _tokens(++_refreshes);
       case "events.subscribe":

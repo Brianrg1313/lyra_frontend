@@ -73,14 +73,24 @@ export) adds the accounting export (`money.md` M-60 to M-65): sales, their lines
 receivables and stock movements for a window of calendar days, as CSV in a zip or one XLSX
 workbook, kept for the asker for an hour and audited; the overview tab offers it beside the range
 picker. Finance is complete on a master.
-**Where we left off (2026-10-01)** Paused here; read this before anything else.
-- Next: phase 4, the employees release (`specs/employees.md`, sealed fields on the keys of the
-  seventh release), then clients and deliveries, then statistics (§11). Still open from phase 3: the
-  exit check on real hardware.
-- Last finished: the sign in's "Create Master Server" sets up the owner from the e-mail and password
-  typed there, then lands on the welcome, whose create company (country, currency, language) reaches
-  `business.create`. Checked on this computer up to the modal opening; not yet seen: creating the
-  company end to end and landing on the master's home.
+Phase 4, ninth release (employees): the engine serves the staff (`employees.md`): the list shaped
+by permission, the former list, the detail with the E-4 measures, job edits, and the person's
+private profile and the job's pay sealed one value per row, to `hr` and to the person (§6.3), so
+the person reads and writes their own without holding `hr`. Inviting someone unknown makes a
+`pending` account whose activation code is answered once; the person types it with a new password
+on the LAN sign in (`auth.activate`, `session.md` S-8), which also accepts the invitation. The app
+reads it through `EmployeesLanSource`; the invite form shows the code, and the address search and
+the branch picker (cloud only) are off on a master. Left for later: re-issuing a code from the app
+(`employees.reissueActivation` is served, no button calls it), the pre-start task for a rehire
+(`employees.accept` is served), grants for other people (`permissions.*`), leaves and job endings.
+**Where we left off (2026-10-01)** Read this before anything else.
+- Next: phase 4, clients and deliveries, then statistics (§11); the permissions ops
+  (`session.md` session.permissions), without which an invited person holds no grant yet. Still
+  open from phase 3: the exit check on real hardware.
+- Last finished: the employees release. Not yet seen on screen: an invitation on a real master, its
+  code typed on a second device, and that person's own profile.
+- Not yet seen either: the sign in's "Create Master Server" creating the company end to end and
+  landing on the master's home (checked up to the welcome's modal opening).
 - Repos, all on this disk, **nothing pushed**: the app on `feat/offline-phase4-business` (no remote,
   31 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on
   `feat/offline-lan`, whose one commit holds what the app depends on (`button.dart`, `select_menu`,
@@ -93,7 +103,7 @@ picker. Finance is complete on a master.
   2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
   `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that master's 24 words; delete it
   otherwise. A fresh start offers "Create Master Server" again.
-- Gate: `flutter analyze` clean, `flutter test` 1143 passing with the 5 known failures of
+- Gate: `flutter analyze` clean, `flutter test` 1151 passing with the 5 known failures of
   `test/MODULE.md`.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
@@ -420,6 +430,10 @@ KEK  = user-scope OS vault secret  (unattended mode: default)
 - Granting that permission re-wraps SK for the new user, and needs a user who already holds SK.
   Revoking it deletes that user's wrap. A password reset through the recovery key re-wraps it.
 - Cost: reports that need salaries while no HR user is signed in can't run. That is intended.
+- A person's own private data (`employees.md` E-3, E-13) is theirs without holding SK: SK also
+  derives a key pair whose public half is stored, and each such value is sealed to it and to the
+  person's own key pair, which their password opens. Writing then needs no key at all; the
+  person's session keeps their private key beside the SKs it opened.
 
 ### 6.4 Accounts and sign in
 - `local` mode: local accounts (username or e-mail plus password, Argon2id). An optional POS

@@ -148,6 +148,14 @@ class LanService extends ChangeNotifier {
     return LanStatus.ready;
   });
 
+  /// An invited person's first sign in (`session.md` S-8): the code the company gave them and
+  /// the password they choose.
+  Future<LanStatus> activate(String login, String code, String password) => _guard(() async {
+    await _client!.activate(login, code, password);
+
+    return LanStatus.ready;
+  });
+
   Future<void> signOut() async {
     await _stopEvents();
     await _client?.signOut();
