@@ -3,10 +3,13 @@ import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
+import 'package:lyra_protocol/lyra_protocol.dart' show Catalogs;
 
 // SERVICES
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/business/business_language.dart';
 import 'package:app/services/business/business_profile_model.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -64,10 +67,59 @@ class _CreateBusinessModalState extends State<CreateBusinessModal> {
       SelectOption(value: activity.value, placeholder: activity.label(context))
   ];
 
+  /// A master's one company (the welcome of a master set up without it, `business.md` B-1): no
+  /// backend infers where it is, so the form asks for the country, the main currency and the
+  /// language, from the catalogue the engine ships. Cloud verification doesn't apply (B-6).
+  final _single = CapabilityService().singleCompany;
+
+  // Created only when drawn: in the cloud they never join the form.
+  late final _country = InputController.select(key: "COUNTRY", form: _form, obligatory: true);
+  late final _currency = InputController.select(key: "CURRENCY", form: _form, obligatory: true);
+  late final _language = InputController.select(
+    key: "LANGUAGE",
+    form: _form,
+    obligatory: true,
+    initial: BusinessLanguage.from(Localizations.localeOf(context).languageCode)?.tag ?? BusinessLanguage.en.tag
+  );
+
+  /// Remounts the currency field when the country proposes one, so it shows it.
+  int _currencyShown = 0;
+  bool _currencyPicked = false;
+
+  static final _countries = [
+    for (final row in Catalogs.countryRows)
+      SelectOption(value: row["code"] as String, placeholder: row["name"] as String)
+  ];
+
+  static final _currencies = [
+    for (final row in Catalogs.currencyRows)
+      SelectOption(
+        value: row["code"] as String,
+        placeholder: "${row["code"]} · ${row["name"]}",
+        chosen: row["code"] as String
+      )
+  ];
+
+  static final _languages = [
+    for (final language in BusinessLanguage.values) SelectOption(value: language.tag, placeholder: language.name)
+  ];
+
   @override
   void dispose() {
     _form.dispose();
     super.dispose();
+  }
+
+  /// A country proposes the money it quotes in, until a currency is picked by hand. The currency
+  /// is fixed from then on (B-5).
+  void _proposeCurrency(SelectOption country) {
+    if (_currencyPicked) return;
+
+    final currency = Catalogs.country(country.value)?["currency"] as String?;
+    if (currency == null) return;
+
+    _currency.selectedValue = currency;
+    setState(() => _currencyShown++);
   }
 
   @override
@@ -95,8 +147,38 @@ class _CreateBusinessModalState extends State<CreateBusinessModal> {
           controller: _type,
           options: _types
         ),
-        SizedBox(height: AppSize.spaceXS),
-        const CreateBusinessNotice(),
+        if (_single) ...[
+          SelectInput(
+            placeholder: S.of(context).lan_master_country,
+            title: S.of(context).lan_master_country,
+            controller: _country,
+            options: _countries,
+            emptyText: S.of(context).lan_master_no_match,
+            onSelected: _proposeCurrency
+          ),
+          InputRow(children: [
+            SelectInput(
+              key: ValueKey(_currencyShown),
+              placeholder: S.of(context).lan_master_currency,
+              title: S.of(context).lan_master_currency,
+              controller: _currency,
+              options: _currencies,
+              emptyText: S.of(context).lan_master_no_match,
+              onSelected: (_) => _currencyPicked = true
+            ),
+            SelectInput(
+              placeholder: S.of(context).lan_master_language,
+              title: S.of(context).lan_master_language,
+              controller: _language,
+              options: _languages,
+              searchable: false
+            )
+          ]),
+          TextSmall(S.of(context).lan_master_currency_note, lines: 3, color: ThemeColor.of(context).subtitle)
+        ] else ...[
+          SizedBox(height: AppSize.spaceXS),
+          const CreateBusinessNotice()
+        ],
         SizedBox(height: AppSize.spaceM),
         Button(
           title: S.of(context).create_business,

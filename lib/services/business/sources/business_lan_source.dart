@@ -147,11 +147,24 @@ class BusinessLanSource implements BusinessSource {
     await _lan.call(Ops.businessSetLogo, args: {"fileId": fileId});
   }
 
-  // A master's company is made at setup (B-1); its site is not a branches list (plan D6);
-  // e-mails are cloud only. The capability table hides every screen that calls these.
-
+  /// The welcome's "create company" on a master set up without one (`business.md` B-1): the
+  /// form's keys onto the op's fields.
   @override
-  Future<String> create(Map<String, dynamic> data) => throw UnsupportedError("A master's company is made at setup");
+  Future<String> create(Map<String, dynamic> data) async {
+    final answer = await _lan.call(Ops.businessCreate, args: {
+      "name": data["LEGAL_NAME"],
+      "activity": data["ACTIVITY_TYPE"],
+      "country": data["COUNTRY"],
+      "currency": data["CURRENCY"],
+      "language": data["LANGUAGE"],
+    });
+    if (answer is! Map || answer["id"] is! String) throw const UnreadableAnswer("business.create");
+
+    return answer["id"] as String;
+  }
+
+  // Its site is not a branches list (plan D6); e-mails are cloud only. The capability table hides
+  // every screen that calls these.
 
   @override
   Future<List<BusinessBranchModel>> branches() => throw UnsupportedError("A master has one site");

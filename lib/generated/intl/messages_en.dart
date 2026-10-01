@@ -2978,10 +2978,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "lan_locked_title": MessageLookupByLibrary.simpleMessage(
       "The server is locked",
     ),
-    "lan_master_company": MessageLookupByLibrary.simpleMessage("Your business"),
-    "lan_master_company_name": MessageLookupByLibrary.simpleMessage(
-      "Business name",
-    ),
     "lan_master_country": MessageLookupByLibrary.simpleMessage("Country"),
     "lan_master_create": MessageLookupByLibrary.simpleMessage(
       "Create the server",

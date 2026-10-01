@@ -30,7 +30,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
 Reached through `LanService.server` (the `lan/` services own it).
 
 - `local_server_service.dart` — `LocalServerService` (+ `LocalServerStatus`): `refresh` (also records the LAN port on the
-  stored device), `setUp` (answers the 24 recovery words once; enrols this app as the master device and keeps its
+  stored device), `setUp` (the owner only, no company; answers the 24 recovery words once; enrols this app as the master device and keeps its
   `LanDevice`), `enroll` (a new certificate for this app, engine stopped), `start` (attaches to a running engine that
   proved it is ours, else spawns it detached and waits), `stop`, `recover` (enrols too); `error` keeps the engine's
   refusal code. `unavailable` on web/mobile or with no executable. `usernameOf(email)`: a valid S-1 username from an
@@ -73,7 +73,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   Used by `BusinessService`, `BusinessLocationService`, `BusinessBranchesService`. `business_cloud_source.dart` — REST.
   `business_lan_source.dart` — `BusinessLanSource` over `LanService.call`: profile and location from `business.profile` /
   `business.site.*` in the models' keys (`profileJson`, `locationJson`), screen keys → spec fields (`profileKeys`,
-  `siteKeys`), the logo as a file (`fileJson`; `setLogo` uploads then `business.setLogo`); create, branches and e-mails
+  `siteKeys`), the logo as a file (`fileJson`; `setLogo` uploads then `business.setLogo`); `create` is `business.create` (the welcome's, form keys → fields); branches and e-mails
   throw (hidden on a master).
 - `sources/employees_source.dart` — `EmployeesSource`: current (+ active count), former, detail, invite, edit, edit own
   profile. Used by `BusinessEmployeesService`. `employees_cloud_source.dart` — REST.

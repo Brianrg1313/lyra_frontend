@@ -18,17 +18,18 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `welcome/_welcome.dart` — `Welcome extends PageBuilder` (`routeKey`, `path`).
 - `welcome/desktop/_body.dart` — `DesktopBody`: avatar, greeting, one `InvitationCard` per pending invitation (opens `InvitationModal`; accepted → re-`resolve()`s and always goes to `/home`), then (only
   with no company) a `WelcomeOption` to create (`CreateBusinessModal` in a `showImageModal` headed by `gradient-2.png`; on `true` re-`resolve()`s and navigates) and two
-  `WelcomeChoice`s: awaiting invitation, open jobs; a quiet sign out.
+  `WelcomeChoice`s: awaiting invitation, open jobs (not with `singleCompany`: a master's owner lands here when it has no
+  company yet); a quiet sign out.
 - `welcome/widgets/welcome_avatar.dart` — `WelcomeAvatar`: round profile picture, initial fallback.
 - `welcome/widgets/welcome_option.dart` — `WelcomeOption`: full-width main card (create a company): 120 px `gradient-1.png` band, icon + title + subtitle, action button on the right.
 - `welcome/widgets/welcome_choice.dart` — `WelcomeChoice`: compact secondary card (waiting for an invitation, open jobs), arrow or a `tag`; two in an equal-height `Row`.
 - `deployment/master/_master.dart` — `MasterSetup extends PageBuilder`.
-- `deployment/master/desktop/_body.dart` — the company (name, country and currency from `Catalogs`, the country proposing
-  its currency, language), owner form, optional passphrase, licence tick → `LocalServerService.setUp` →
-  the 24 words (`RecoveryWords`) with a required "written down" tick → `Deployment.attach(master)` → `/lan`; "use Lyra
-  another way" back to `/login`. With `owner` (the sign in's "Create Master Server") the owner's e-mail and password
-  come from there: no username or password fields, the username made from the e-mail
-  (`LocalServerService.usernameOf`), and "back" runs `onBack`.
+- `deployment/master/desktop/_body.dart` — owner form (no company: the welcome creates it), optional passphrase, licence
+  tick → `LocalServerService.setUp` → the 24 words (`RecoveryWords`) with a required "written down" tick →
+  `Deployment.attach(master)` → `/lan`; "use Lyra another way" back to `/login`. With `owner` (the sign in's "Create
+  Master Server") the owner's e-mail and password come from there: no username or password fields, the username made
+  from the e-mail (`LocalServerService.usernameOf`), the engine opened and signed in with them before `/lan` (which then
+  resolves to `/welcome`), and "back" runs `onBack`.
 - `deployment/pair/_pair.dart` — `PairDevice extends PageBuilder`: provides `LanPairingService` (searches at once, not on
   web).
 - `deployment/pair/desktop/_body.dart` — phones: "scan the QR" (`QrScanner` in a modal); found servers fill the address;

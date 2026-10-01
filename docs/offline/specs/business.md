@@ -4,8 +4,8 @@
 `business_profile_model.dart`, `business_location_*`, `business_branches_service.dart`,
 `catalog/*`, `files/*`.
 
-A master holds **one company at one site** (plan D6). The company is created at setup; it is
-never created, switched or deleted from the business screens.
+A master holds **one company at one site** (plan D6). The company is created once, at setup or
+right after it from the welcome; it is never switched or deleted from the business screens.
 
 ---
 
@@ -34,9 +34,12 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 
 ### Rules
 
-- **B-1** Setup creates the company with `name`, `country`, `currency`, `language` and
-  `timezone`, and the owner account (`session.md`, S-6). It runs once. Afterwards there is no op
-  that creates a company (the "create business" entry points are hidden in `local`, plan §7.3).
+- **B-1** The company is created with `name`, `country`, `currency`, `language`, `timezone` and
+  optionally `activity`, once. Setup makes the owner account (`session.md`, S-6) and either the
+  company with it or none: the sign in's "Create Master Server" leaves it to the welcome, which
+  creates it with `business.create`, as the cloud's welcome does. That op is the owner's alone and
+  answers `company_exists` once there is one. The business screens' "create business" entry points
+  stay hidden in `local` (plan §7.3).
 - **B-2** An edit writes one key at a time, as `BusinessService.editProfile` does today
   (`{KEY: value}`). An empty string clears an optional field. `name` can't be cleared
   (`required`).
@@ -68,6 +71,7 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
+| `business.create` | owner (`*`) | `{name, country, currency, language, timezone?, activity?}` | the company as `session.bootstrap` lists it | `required`, `invalid_field`, `forbidden`, `company_exists` |
 | `business.profile` | `business.view` | — | the profile | — |
 | `business.edit` | `business.settings.edit` | `{KEY: value}` (one key of `BusinessFields.editable`) | the profile | `required`, `invalid_field`, `invalid_timezone`, `bad_request` (not one key) |
 | `business.setLogo` | `business.settings.edit_logo` | `{fileId: id \| null}` | the profile | `invalid_file` |

@@ -50,7 +50,7 @@ through `Navigator.pop(context, value)`.
   Decide nothing (colour/empty wording passed in). **Build new panel rows from these.**
 
 ### `business/`
-- `create_business/_create_business.dart` — `CreateBusinessModal` (from `BusinessSelector`, `NoBusinessSection`, `Welcome`); pops `true` on success.
+- `create_business/_create_business.dart` — `CreateBusinessModal` (from `BusinessSelector`, `NoBusinessSection`, `Welcome`); pops `true` on success. With `singleCompany` (a master's welcome) it also asks country, main currency (proposed by the country) and language from `Catalogs`, without the notice.
 - `create_business/notice.dart` — `CreateBusinessNotice`: legal notice.
 - `edit_business_field/_edit_business_field.dart` — `EditBusinessFieldModal`: edits **one** profile datum.
 - `edit_business_field/business_field.dart` — `BusinessField`: registry of editable data (key, value, input). **Add a datum here.**

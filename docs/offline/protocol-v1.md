@@ -286,7 +286,7 @@ Grouped by spec. Arguments, answers and errors are in the spec files.
 |---|---|
 | protocol | `hello`, `engine.unlock`, `session.bind`, `device.prove`, `events.subscribe`, `events.unsubscribe` |
 | session | `auth.identify`, `auth.signIn`, `auth.signInPin`, `auth.activate`, `auth.refresh`, `auth.signOut`, `account.changePassword`, `account.setPin`, `session.bootstrap`, `permissions.of`, `permissions.set`, `permissions.requests.list`, `permissions.requests.create`, `permissions.requests.inbox`, `permissions.requests.answer`, `devices.list`, `devices.rename`, `devices.revoke`, `pairing.start`, `devices.browserCa` |
-| business | `business.profile`, `business.edit`, `business.setLogo`, `business.site.get`, `business.site.edit`, `catalog.get` |
+| business | `business.create`, `business.profile`, `business.edit`, `business.setLogo`, `business.site.get`, `business.site.edit`, `catalog.get` |
 | inventory | `inventory.tables.list`, `inventory.tables.create`, `inventory.tables.edit`, `inventory.tables.delete`, `inventory.tables.structure`, `inventory.tables.details`, `inventory.tables.normalize`, `inventory.fields.create`, `inventory.fields.edit`, `inventory.fields.delete`, `inventory.records.list`, `inventory.records.create`, `inventory.records.edit`, `inventory.records.delete`, `inventory.images.add`, `inventory.images.remove`, `inventory.import.structure`, `inventory.import.records` |
 | stock | `stock.move`, `stock.history`, `stock.summary` |
 | pos | `pos.summary`, `pos.catalog`, `pos.methods`, `pos.invoices.open`, `pos.invoices.line`, `pos.invoices.close`, `pos.invoices.cancel`, `pos.invoices.list`, `pos.outbox.sale`, `pos.snapshot` |

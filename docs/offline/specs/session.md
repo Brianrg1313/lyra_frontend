@@ -136,9 +136,11 @@ tasks and the platform catalogues. The `XLanSource` maps it onto the same `Clien
 
 ### Rules
 
-- **S-30** `businesses` has **exactly one** entry: the master's company (plan D6).
-- **S-31** `tasks` is empty in `local`: the only pre-start task today is an employment
-  invitation, and activation accepts it (S-8).
+- **S-30** `businesses` has **exactly one** entry: the master's company (plan D6). A master set up
+  without it (`business.md` B-1) answers none, no `permissions` and a `null` timezone until the
+  owner creates it.
+- **S-31** `tasks` holds only `{key: "business.none"}`, while the company doesn't exist: the app's
+  welcome creates it. There is no invitation task: activation accepts it (S-8).
 - **S-32** `catalogs` is the bundled snapshot (see `business.md`, catalogues). There is no `cdn`:
   every file is served by the master (`protocol-v1.md`, files), and the `XLanSource` resolves
   file ids to master URLs.

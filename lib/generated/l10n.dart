@@ -17796,26 +17796,6 @@ class S {
     );
   }
 
-  /// `Your business`
-  String get lan_master_company {
-    return Intl.message(
-      'Your business',
-      name: 'lan_master_company',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Business name`
-  String get lan_master_company_name {
-    return Intl.message(
-      'Business name',
-      name: 'lan_master_company_name',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Country`
   String get lan_master_country {
     return Intl.message(

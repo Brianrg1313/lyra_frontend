@@ -468,8 +468,9 @@ cloud app. `initialValidator` then:
   - No backend, a master answers → that master's sign in: e-mail and password. They pair the device
     first (the password way, §5.3) and then sign it in; no code, no admin at the master.
   - Neither, on a desktop with the engine not set up → "Create Master Server": the same e-mail and
-    password become the owner, and the setup asks only for the rest (names, company, licence, the
-    recovery words).
+    password become the owner, and the setup asks only for the rest (names, licence, the recovery
+    words). Then it signs the owner in and lands on the welcome, whose "create company" makes the
+    company (`business.create`), as in the cloud.
   - Neither, anywhere else (web, phones) → a placeholder that looks again.
 Leaving the LAN ("use Lyra another way") forgets the pairing and returns to the sign in; the master's
 engine and data stay. The first local setup shows

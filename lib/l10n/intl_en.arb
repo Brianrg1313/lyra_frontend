@@ -1833,8 +1833,6 @@
   "lan_master_owner_email": "Administrator: {email}",
   "lan_master_title": "Set up this computer as the server",
   "lan_master_subtitle": "You'll be the owner. Other people join later with invitations.",
-  "lan_master_company": "Your business",
-  "lan_master_company_name": "Business name",
   "lan_master_country": "Country",
   "lan_master_currency": "Main currency",
   "lan_master_language": "Language",

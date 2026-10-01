@@ -13,7 +13,8 @@ import 'package:app/toolkit/deployment.dart';
 ///
 /// Signing in happens on the LAN landing (`LanService`), before any service reads a source: by
 /// the time [ClientService] resolves, the connection is open and bound. So the cloud's sign-in
-/// steps and invitations have no LAN side here (S-7, S-31).
+/// steps and invitations have no LAN side here (S-7); the one task is `business.none`, a master
+/// set up without its company (S-31).
 class SessionLanSource implements SessionSource {
   const SessionLanSource(this._lan);
 
@@ -53,7 +54,10 @@ class SessionLanSource implements SessionSource {
           if (business is Map) {...business, "logo": BusinessLanSource.fileJson(business["logo"])}
       ],
       "permissions": answer["permissions"],
-      "tasks": const <Object?>[],
+      "tasks": [
+        for (final task in answer["tasks"] as List? ?? const [])
+          if (task is Map) {...task}
+      ],
       "countries": catalogs["countries"],
       "currencies": catalogs["currencies"],
     };

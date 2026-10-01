@@ -81,9 +81,40 @@ void main() {
 
       expect(await ClientService(source: SessionLanSource(master)).resolve(), "/lan");
     });
+
+    test('a master set up without its company lands on the welcome (S-31)', () async {
+      Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
+      master.answers[Ops.sessionBootstrap.name] = {
+        ..._bootstrap,
+        "businesses": const [],
+        "permissions": const {},
+        "tasks": const [{"key": "business.none"}],
+        "deployment": const {"mode": "local", "instanceId": "i1", "engine": "0.3.0", "timezone": null},
+      };
+
+      expect(await ClientService(source: SessionLanSource(master)).resolve(), "/welcome");
+    });
   });
 
   group('business.company', () {
+    test("the welcome's create company reaches business.create in the master's fields (B-1)", () async {
+      master.answers[Ops.businessCreate.name] = {"id": "c1", "name": "Lovelace Café", "currency": "USD"};
+
+      final id = await BusinessLanSource(master).create({
+        "LEGAL_NAME": "Lovelace Café",
+        "ACTIVITY_TYPE": "FOOD",
+        "COUNTRY": "VE",
+        "CURRENCY": "USD",
+        "LANGUAGE": "es",
+      });
+
+      expect(id, "c1");
+      expect(master.calls.single.$1, Ops.businessCreate.name);
+      expect(master.calls.single.$2, {
+        "name": "Lovelace Café", "activity": "FOOD", "country": "VE", "currency": "USD", "language": "es",
+      });
+    });
+
     test('the profile reaches the model in its keys', () async {
       master.answers[Ops.businessProfile.name] = _profile;
 

@@ -6,6 +6,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/services/client/employment_invitation_model.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
 import 'package:core/images.dart';
@@ -96,35 +97,39 @@ class DesktopBody extends StatelessWidget {
                   actionLabel: S.of(context).welcome_create_action,
                   action: () => _createBusiness(context)
                 ),
-                SizedBox(height: AppSize.spaceS),
-                // Same height for the two, whichever description runs longest.
-                IntrinsicHeight(child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(child: WelcomeChoice(
-                      icon: CI.mail,
-                      title: S.of(context).welcome_awaiting_title,
-                      subtitle: S.of(context).welcome_awaiting_subtitle,
-                      action: () => showModal(
-                        context: context,
-                        title: S.of(context).welcome_awaiting_modal_title,
-                        builder: (context) => const AwaitingInvitationModal()
-                      )
-                    )),
-                    SizedBox(width: AppSize.spaceS),
-                    Expanded(child: WelcomeChoice(
-                      icon: CI.employee_badge,
-                      title: S.of(context).welcome_jobs_title,
-                      subtitle: S.of(context).welcome_jobs_subtitle,
-                      tag: S.of(context).welcome_jobs_soon,
-                      action: () => showModal(
-                        context: context,
-                        title: S.of(context).welcome_jobs_modal_title,
-                        builder: (context) => const JobOpeningsModal()
-                      )
-                    ))
-                  ]
-                ))
+                // A master's one company is made here, by its owner: nobody waits for an
+                // invitation to it or looks for a job through it.
+                if (!CapabilityService().singleCompany) ...[
+                  SizedBox(height: AppSize.spaceS),
+                  // Same height for the two, whichever description runs longest.
+                  IntrinsicHeight(child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: WelcomeChoice(
+                        icon: CI.mail,
+                        title: S.of(context).welcome_awaiting_title,
+                        subtitle: S.of(context).welcome_awaiting_subtitle,
+                        action: () => showModal(
+                          context: context,
+                          title: S.of(context).welcome_awaiting_modal_title,
+                          builder: (context) => const AwaitingInvitationModal()
+                        )
+                      )),
+                      SizedBox(width: AppSize.spaceS),
+                      Expanded(child: WelcomeChoice(
+                        icon: CI.employee_badge,
+                        title: S.of(context).welcome_jobs_title,
+                        subtitle: S.of(context).welcome_jobs_subtitle,
+                        tag: S.of(context).welcome_jobs_soon,
+                        action: () => showModal(
+                          context: context,
+                          title: S.of(context).welcome_jobs_modal_title,
+                          builder: (context) => const JobOpeningsModal()
+                        )
+                      ))
+                    ]
+                  ))
+                ]
               ],
               SizedBox(height: AppSize.spaceL),
               _signOut(context)
