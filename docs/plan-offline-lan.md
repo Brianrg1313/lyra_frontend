@@ -20,7 +20,8 @@ macOS) or saves it for another computer. The web build is made with
 phase 3: the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt), which
 also covers what no test here can reach: the camera, the OS trust-store dialogs (`certutil`, `security`),
 and Firefox, which may keep its own store.
-Phase 4, first release (business): setup creates the company; the engine serves `session.bootstrap`,
+Phase 4, first release (business): setup makes only the owner, and the owner creates the company
+from the welcome (`business.create`, as in the cloud); the engine serves `session.bootstrap`,
 the company, its site and the catalogues (`business.md`); the app reads them through
 `SessionLanSource` and `BusinessLanSource`, opens the home once signed in on the LAN, and moves the
 server's devices to a `local_server` home section. Areas whose release hasn't come stay hidden on a
@@ -72,6 +73,26 @@ export) adds the accounting export (`money.md` M-60 to M-65): sales, their lines
 receivables and stock movements for a window of calendar days, as CSV in a zip or one XLSX
 workbook, kept for the asker for an hour and audited; the overview tab offers it beside the range
 picker. Finance is complete on a master.
+**Where we left off (2026-10-01)** Paused here; read this before anything else.
+- Next: phase 4, the employees release (`specs/employees.md`, sealed fields on the keys of the
+  seventh release), then clients and deliveries, then statistics (§11). Still open from phase 3: the
+  exit check on real hardware.
+- Last finished: the sign in's "Create Master Server" sets up the owner from the e-mail and password
+  typed there, then lands on the welcome, whose create company (country, currency, language) reaches
+  `business.create`. Checked on this computer up to the modal opening; not yet seen: creating the
+  company end to end and landing on the master's home.
+- Repos, all on this disk, **nothing pushed**: the app on `feat/offline-phase4-business` (no remote,
+  31 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on `main`,
+  one commit ahead of `origin/main` and with a large **uncommitted** working tree that the app
+  depends on (`button.dart`, `select_menu`, modals, charts, `InputRow` without `LayoutBuilder`…):
+  commit it before anything else touches `core`.
+- To run a master: `dart build cli` in `lyra_node`, then `flutter run -d windows` here (the CMake
+  install copies the engine next to `app.exe`). This computer's earlier master was wiped on
+  2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
+  `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that master's 24 words; delete it
+  otherwise. A fresh start offers "Create Master Server" again.
+- Gate: `flutter analyze` clean, `flutter test` 1143 passing with the 5 known failures of
+  `test/MODULE.md`.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the
