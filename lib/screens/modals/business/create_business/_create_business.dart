@@ -122,6 +122,8 @@ class _CreateBusinessModalState extends State<CreateBusinessModal> {
     setState(() => _currencyShown++);
   }
 
+  /// The fields scroll, the button stays: a master's form (country, currency, language) is taller
+  /// than a short window leaves under the modal's image, and the modal doesn't scroll its body.
   @override
   Widget build(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 380),
@@ -129,56 +131,62 @@ class _CreateBusinessModalState extends State<CreateBusinessModal> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: EdgeInsets.only(bottom: AppSize.spaceS),
-          child: TextMedium(S.of(context).create_business_subtitle)
-        ),
-        Input(
-          placeholder: S.of(context).business_legal_name_input,
-          title: S.of(context).business_legal_name_input,
-          controller: _legalName,
-          leftIcon: Icon(CI.store, color: ThemeColor.of(context).icon),
-          next: _type.focus
-        ),
-        SelectInput(
-          placeholder: S.of(context).business_type_placeholder,
-          title: S.of(context).business_type_input,
-          emptyText: S.of(context).business_type_empty,
-          controller: _type,
-          options: _types
-        ),
-        if (_single) ...[
-          SelectInput(
-            placeholder: S.of(context).lan_master_country,
-            title: S.of(context).lan_master_country,
-            controller: _country,
-            options: _countries,
-            emptyText: S.of(context).lan_master_no_match,
-            onSelected: _proposeCurrency
-          ),
-          InputRow(children: [
-            SelectInput(
-              key: ValueKey(_currencyShown),
-              placeholder: S.of(context).lan_master_currency,
-              title: S.of(context).lan_master_currency,
-              controller: _currency,
-              options: _currencies,
-              emptyText: S.of(context).lan_master_no_match,
-              onSelected: (_) => _currencyPicked = true
+        // Its bar goes in the modal's right padding.
+        Flexible(child: ScrollableWidget(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(bottom: AppSize.spaceS),
+              child: TextMedium(S.of(context).create_business_subtitle)
+            ),
+            Input(
+              placeholder: S.of(context).business_legal_name_input,
+              title: S.of(context).business_legal_name_input,
+              controller: _legalName,
+              leftIcon: Icon(CI.store, color: ThemeColor.of(context).icon),
+              next: _type.focus
             ),
             SelectInput(
-              placeholder: S.of(context).lan_master_language,
-              title: S.of(context).lan_master_language,
-              controller: _language,
-              options: _languages,
-              searchable: false
-            )
-          ]),
-          TextSmall(S.of(context).lan_master_currency_note, lines: 3, color: ThemeColor.of(context).subtitle)
-        ] else ...[
-          SizedBox(height: AppSize.spaceXS),
-          const CreateBusinessNotice()
-        ],
+              placeholder: S.of(context).business_type_placeholder,
+              title: S.of(context).business_type_input,
+              emptyText: S.of(context).business_type_empty,
+              controller: _type,
+              options: _types
+            ),
+            if (_single) ...[
+              SelectInput(
+                placeholder: S.of(context).lan_master_country,
+                title: S.of(context).lan_master_country,
+                controller: _country,
+                options: _countries,
+                emptyText: S.of(context).lan_master_no_match,
+                onSelected: _proposeCurrency
+              ),
+              InputRow(children: [
+                SelectInput(
+                  key: ValueKey(_currencyShown),
+                  placeholder: S.of(context).lan_master_currency,
+                  title: S.of(context).lan_master_currency,
+                  controller: _currency,
+                  options: _currencies,
+                  emptyText: S.of(context).lan_master_no_match,
+                  onSelected: (_) => _currencyPicked = true
+                ),
+                SelectInput(
+                  placeholder: S.of(context).lan_master_language,
+                  title: S.of(context).lan_master_language,
+                  controller: _language,
+                  options: _languages,
+                  searchable: false
+                )
+              ]),
+              TextSmall(S.of(context).lan_master_currency_note, lines: 3, color: ThemeColor.of(context).subtitle)
+            ] else ...[
+              SizedBox(height: AppSize.spaceXS),
+              const CreateBusinessNotice()
+            ]
+          ]
+        )),
         SizedBox(height: AppSize.spaceM),
         Button(
           title: S.of(context).create_business,

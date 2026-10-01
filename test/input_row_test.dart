@@ -20,9 +20,10 @@ void main() {
 
   tearDown(() => Deployment.use(DeploymentMode.cloud));
 
-  testWidgets("a master's create company lays out inside the image modal", (tester) async {
+  /// The modal as `showImageModal` lays it out, in a window [height] tall.
+  Future<void> pumpModal(WidgetTester tester, double height) async {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
-    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.physicalSize = Size(1600, height);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -46,9 +47,20 @@ void main() {
       })
     ));
     await tester.pump();
+  }
+
+  testWidgets("a master's create company lays out inside the image modal", (tester) async {
+    await pumpModal(tester, 900);
 
     expect(tester.takeException(), isNull);
     expect(find.text(S.current.lan_master_currency), findsWidgets);
     expect(tester.getSize(find.byType(InputRow)).width, greaterThan(0));
+  });
+
+  testWidgets("in a short window its fields scroll and the button stays in sight", (tester) async {
+    await pumpModal(tester, 480);
+
+    expect(tester.takeException(), isNull);
+    expect(tester.getBottomLeft(find.text(S.current.create_business).last).dy, lessThanOrEqualTo(480));
   });
 }
