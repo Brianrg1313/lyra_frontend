@@ -11,14 +11,15 @@ import 'package:app/services/lan/lan_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
+import './widgets/lan_address.dart';
 import './widgets/lan_browsers.dart';
 import './widgets/pairing_qr.dart';
 
 /// The `local_server` home section, only on a master's devices (plan §4 admin screens): this
 /// device's code and the CA it trusts; the server's devices, who is paired and online, removing
 /// one, and, on the master's own app, adding one (`pairing.start` shows the code to type on the
-/// new device and the QR a phone scans). A native device also hands out the browsers' root
-/// ([LanBrowsers]).
+/// new device and the QR a phone scans). The address a browser opens comes first ([LanAddress]);
+/// a native device also hands out the browsers' root ([LanBrowsers]).
 class LocalServerSection extends StatefulWidget {
   const LocalServerSection({super.key});
 
@@ -29,6 +30,10 @@ class LocalServerSection extends StatefulWidget {
 class _LocalServerSectionState extends State<LocalServerSection> {
   List<Map<String, Object?>>? _devices;
   Map<String, Object?>? _pairing;
+
+  /// `devices.browserCa`: the address and the browsers' root. Absent when this master doesn't
+  /// answer it yet (an older engine) or the connection dropped: both blocks then stay out.
+  Map<String, Object?>? _ca;
   Timer? _refresh;
 
   /// Devices can't be listed without `local_server.devices`: the block then stays out.
@@ -38,6 +43,9 @@ class _LocalServerSectionState extends State<LocalServerSection> {
   void initState() {
     super.initState();
     _load();
+    context.read<LanService>().browserCa().then((ca) {
+      if (mounted) setState(() => _ca = ca);
+    }, onError: (_) {});
     // Pairing happens on the other device: the list follows it while the page is open.
     _refresh = Timer.periodic(const Duration(seconds: 5), (_) => _load());
   }
@@ -76,6 +84,7 @@ class _LocalServerSectionState extends State<LocalServerSection> {
           padding: EdgeInsets.only(top: AppSize.spaceXS, bottom: AppSize.spaceM),
           child: TextMedium(s.lan_ready_subtitle, lines: 5, color: scheme.subtitle)
         ),
+        if (_ca != null) LanAddress(ca: _ca!),
         if (device != null) Surface(
           color: scheme.surface,
           padding: EdgeInsets.all(AppSize.spaceS),
@@ -99,7 +108,7 @@ class _LocalServerSectionState extends State<LocalServerSection> {
           else
             for (final item in _devices!) _DeviceRow(device: item, onRemove: () => _remove(item))
         ],
-        if (!kIsWeb) const LanBrowsers(),
+        if (!kIsWeb && _ca != null) LanBrowsers(ca: _ca!),
         SizedBox(height: AppSize.spaceM),
         Button(title: s.lan_sign_out, action: () => context.read<ClientService>().signOut(context)),
         if (lan.isMaster) ...[

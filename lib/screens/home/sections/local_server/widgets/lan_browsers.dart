@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
@@ -10,51 +9,36 @@ import 'package:lyra_protocol/lyra_protocol.dart' show Fingerprint;
 
 // SERVICES
 import 'package:app/toolkit/lan.dart';
-import 'package:app/services/lan/lan_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/pre_start/deployment/widgets/deployment_frame.dart';
+import './lan_address.dart';
 
 /// The browsers' root of the installation (plan §5.3), on a native device: a browser opens the
 /// master's web build only where it is trusted. This device's channel to the master is pinned,
 /// so what it installs or saves can't have been swapped on the network. Installed by hand, the
-/// person compares the fingerprint the OS shows with the one here.
+/// person compares the fingerprint the OS shows with the one here. The address to open is
+/// [LanAddress], at the top of the section.
 class LanBrowsers extends StatefulWidget {
-  const LanBrowsers({super.key});
+  const LanBrowsers({super.key, required this.ca});
+
+  /// `devices.browserCa`'s answer, read once by the section for this block and [LanAddress].
+  final Map<String, Object?> ca;
 
   @override
   State<LanBrowsers> createState() => _LanBrowsersState();
 }
 
 class _LanBrowsersState extends State<LanBrowsers> {
-  Map<String, Object?>? _ca;
   String? _note;
   bool _failed = false;
 
   @override
-  void initState() {
-    super.initState();
-    context.read<LanService>().browserCa().then((ca) {
-      if (mounted) setState(() => _ca = ca);
-    }, onError: (_) {
-      // Not on this master yet (an older engine) or the connection dropped: the block stays out.
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final ca = _ca;
-    if (ca == null) return const SizedBox.shrink();
-
+    final ca = widget.ca;
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
-    final addresses = (ca["addresses"] as List).cast<String>();
-    final host = ca["host"] as String?;
-    final ip = addresses.isEmpty ? null : "https://${addresses.first}:${ca["port"]}";
-    // The master's `.local` name first: it stays when the computer's address changes, and nobody
-    // has to look one up. An engine that has none yet (no company, or an older one) gives the IP.
-    final address = host == null ? ip : "https://$host:${ca["port"]}";
 
     return Padding(
       padding: EdgeInsets.only(top: AppSize.spaceM),
@@ -72,10 +56,9 @@ class _LanBrowsersState extends State<LanBrowsers> {
             SizedBox(height: AppSize.gap),
             TextSmall(s.lan_browsers_thumbprint, color: scheme.subtitle),
             TextSmall(Fingerprint.display(ca["thumbprint"] as String), lines: 2, selectable: true),
-            if (address != null) ...[
+            if (LanAddress.url(ca) != null) ...[
               SizedBox(height: AppSize.gap),
-              TextSmall(s.lan_browsers_open(address), lines: 2, selectable: true),
-              if (host != null && ip != null) TextSmall(s.lan_browsers_fallback(ip), lines: 2, selectable: true, color: scheme.subtitle)
+              TextSmall(s.lan_browsers_open, lines: 2)
             ]
           ])
         ),
@@ -90,7 +73,7 @@ class _LanBrowsersState extends State<LanBrowsers> {
     );
   }
 
-  Uint8List get _certificate => base64.decode(_ca!["certificate"] as String);
+  Uint8List get _certificate => base64.decode(widget.ca["certificate"] as String);
 
   Future<void> _install() async {
     final installed = await installBrowserCa(_certificate);

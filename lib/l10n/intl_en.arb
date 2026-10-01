@@ -1947,6 +1947,9 @@
       "address": {"type": "String"}
     }
   },
+  "lan_address_title": "Open Lyra in a browser on this network",
+  "lan_address_copy": "Copy",
+  "lan_address_copied": "Address copied",
   "lan_browsers_title": "Web browsers",
   "lan_browsers_subtitle": "A browser opens Lyra from the server only on a computer that trusts this server's certificate. Install it here, or save it and install it on the other computer.",
   "lan_browsers_fingerprint": "Certificate fingerprint (SHA-256)",
@@ -1956,12 +1959,7 @@
   "lan_browsers_not_installed": "It wasn't installed. You can save it and install it by hand.",
   "lan_browsers_save": "Save the certificate",
   "lan_browsers_saved": "Saved. When installing it on the other computer, check that the fingerprint it shows is the one above.",
-  "lan_browsers_open": "Then open {address} in the browser.",
-  "@lan_browsers_open": {
-    "placeholders": {
-      "address": {"type": "String"}
-    }
-  },
+  "lan_browsers_open": "Then open the address above in the browser.",
   "lan_browsers_fallback": "If that name doesn't open, use {address}.",
   "@lan_browsers_fallback": {
     "placeholders": {
