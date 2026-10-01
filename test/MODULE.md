@@ -1,8 +1,8 @@
 # Module: tests
 
-**Path** `test` (flat, 124 files, `<subject>_test.dart`)
+**Path** `test` (flat, 125 files, `<subject>_test.dart`)
 **Run** `flutter test` · `flutter test test/<file>_test.dart`
-**Baseline** 1141 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
+**Baseline** 1142 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
 
 Pure logic and small widgets, not whole screens. **No test may hit the network.** Each file's
 `///` header states the rule it pins and why — read it before changing the test.
@@ -33,7 +33,7 @@ read money as amounts, a payment's body reaches the master in its keys with the 
 their sheets, the account bodies reach the master in its keys (an emptied field as `null`), and
 `sealed_locked` leaves the accounts locked rather than failed; the export sends whole calendar days and the datasets
 in order, then downloads the file it answers. The engine, the real TLS and a real Chrome are tested in `lyra_node/test`. |
-| Core rules | `select_menu` `table_frozen_band` `modal_scroll` | Dropdown height cap; frozen band width includes its divider (else 1 px overflow in every table); a modal's scroll bar lives in its right padding (content inset equal both sides, one scroll holds the modal controller, draggable there). |
+| Core rules | `select_menu` `table_frozen_band` `modal_scroll` `input_row` | Dropdown height cap; an `InputRow` lays out inside `showImageModal`'s `IntrinsicWidth` (a master's create company); frozen band width includes its divider (else 1 px overflow in every table); a modal's scroll bar lives in its right padding (content inset equal both sides, one scroll holds the modal controller, draggable there). |
 
 `_scratch_create_table_smoke_test.dart` — scratch smoke test, not a contract.
 
