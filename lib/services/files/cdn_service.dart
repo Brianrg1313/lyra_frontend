@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/files/file_model.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/lan_image.dart' show LanFileImage;
 
 /// Where images are downloaded from.
 ///
@@ -62,6 +64,10 @@ class CdnService extends ChangeNotifier {
   /// which ones it has ([FileModel.variants]).
   String url(FileScope scope, String? id, {int? width}) {
     final file = id?.trim() ?? "";
+
+    // A master serves its own files, over its channel (`LanFileImage`).
+    if (Deployment.mode != DeploymentMode.cloud) return file.isEmpty ? "" : LanFileImage.address(file, width: width);
+
     final root = base(scope);
 
     if (file.isEmpty || root.isEmpty) return "";

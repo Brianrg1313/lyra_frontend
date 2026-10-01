@@ -68,6 +68,7 @@ class StockSummaryService extends ChangeNotifier {
 
   /// What the backend answers when the company has no table. It is not a
   /// missing table: it is that nothing has been imported yet.
+  /// The cloud sends it as the `message`, a master as the `code`.
   static const String _noTable = "no_primary_table";
 
   StockSummaryStatus _status = StockSummaryStatus.idle;
@@ -342,7 +343,7 @@ class StockSummaryService extends ChangeNotifier {
 
       // Without tables there is nothing to summarize, and that is not an error
       // to retry: the list above is already offering to create the first one.
-      if (error is Map && error["message"] == _noTable) {
+      if (error is Map && (error["message"] == _noTable || error["code"] == _noTable)) {
         _columns = const [];
         _total = 0;
         _status = StockSummaryStatus.missing;

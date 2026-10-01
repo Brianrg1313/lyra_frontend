@@ -87,13 +87,14 @@ class CapabilityService extends ChangeNotifier {
     "business.statistics",
     "business.clients",
     "business.settings",
+    "inventory",
     "local_server"
   };
 
-  /// Parts of a built area whose master side is still missing: the logo needs
-  /// images fetched over the master's pinned channel, which arrives with the
-  /// product images of the inventory release.
-  static const Set<String> _pendingOnMaster = {"business.settings.edit_logo"};
+  /// Parts of a built area whose master side is still missing: importing a
+  /// spreadsheet, and the re-typing of columns that only exists for imported
+  /// ones (`inventory.md` I-40 to I-47), arrive in their own release.
+  static const Set<String> _pendingOnMaster = {"inventory.import"};
 
   bool _internet = true;
 

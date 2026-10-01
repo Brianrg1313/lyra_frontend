@@ -60,8 +60,7 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
   /// loading.
   bool _busy = false;
 
-  /// Where the logo can't be changed (a master's devices, until images travel over its
-  /// channel), it is only drawn.
+  /// Where changing the logo isn't offered (`CapabilityService`), it is only drawn.
   bool get _editable => CapabilityService().shows("business.settings.edit_logo");
 
   @override

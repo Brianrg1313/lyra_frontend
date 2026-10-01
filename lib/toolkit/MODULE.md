@@ -22,15 +22,20 @@ backend, routes and theme. No UI.
 - `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`,
   `lanEnabled` (native build, or the web build a master serves, with `--dart-define=LYRA_LAN=true`), `chosen`, `restore`
   (from preferences, in `preCall`), `choose` (persists), `forget` (asks again next start), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
-  `lanService` — session and business so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
+  `lanService` — session, business, inventory and stock so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
 - `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in + `session.bind`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
   `lanPlatform`, `lanSupported`, `lanServingMaster` (web: the page's origin), `lanCanScan` (Android, iOS),
   `discoverMasters`, `openPairingSocket`, `newDeviceKey`, `signDeviceProof`, `forgetDeviceKey`, `canInstallBrowserCa`,
-  `installBrowserCa`, `saveBrowserCa`, `lanFailure`.
-- `lan_io.dart` — native transport: mutual TLS pinned to the CA (`403` → `device_revoked`), mDNS, PEM keys, the
+  `installBrowserCa`, `saveBrowserCa`, `lanFailure`; `download` / `upload` (`/f`, the session's token, refreshed once),
+  `LanFiles` (the seam).
+- `lan_io.dart` — native transport: mutual TLS pinned to the CA (`403` → `device_revoked`, and `/f`), mDNS, PEM keys, the
   browsers' root into the user trust store (Windows `certutil`, macOS `security`).
-- `lan_web.dart` — browser transport: WebSockets to the page's origin, a non-extractable WebCrypto key in IndexedDB.
+- `lan_web.dart` — browser transport: WebSockets to the page's origin, a non-extractable WebCrypto key in IndexedDB,
+  `fetch` for `/f`.
+- `lan_file.dart` — `LanFileResponse`, `LanFileUnreachable` (both transports' `fileRequest`).
+- `lan_image.dart` — `mediaImage(url)` (what screens draw an image address with), `LanFileImage` (a master's file over
+  its channel, cached by id and size; `address`, `parse`).
 - `lan_key.dart` — `LanDeviceKey` (a pairing key: signs, PEM or none, `keep`), `PemDeviceKey`.
 - `lan_found.dart` — `LanFound` (a master mDNS found), `LanPairingSocket`.
 - `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` in headers **and**

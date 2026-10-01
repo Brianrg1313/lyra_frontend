@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
@@ -401,8 +402,11 @@ class _Details extends StatelessWidget {
               SizedBox(width: column, child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TableAgentBlock(detail: detail),
-                  TableChannelsBlock(detail: detail),
+                  // Agents and channels are the cloud's (I-5): not offered, not drawn.
+                  if (CapabilityService().shows("channels")) ...[
+                    TableAgentBlock(detail: detail),
+                    TableChannelsBlock(detail: detail)
+                  ],
                   TableDatesBlock(detail: detail)
                 ]
               ))

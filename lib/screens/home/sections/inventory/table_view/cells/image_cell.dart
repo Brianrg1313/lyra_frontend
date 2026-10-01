@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
@@ -107,8 +108,8 @@ class ImageCell extends StatelessWidget {
   /// empty strips on the sides.
   Widget _picture(SheetStyle sheet, ProductImage cover) => ClipRRect(
     borderRadius: BorderRadius.circular(sheet.frameRadius),
-    child: Image.network(
-      cover.thumbnail,
+    child: Image(
+      image: mediaImage(cover.thumbnail),
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,

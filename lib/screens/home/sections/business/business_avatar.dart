@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 /// The image of a business: its logo if it has one, and otherwise the
 /// gradient avatar with the initial of its name.
@@ -34,8 +35,8 @@ class BusinessAvatar extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppSize.corner),
-      child: Image.network(
-        logo,
+      child: Image(
+        image: mediaImage(logo),
         width: size,
         height: size,
         fit: BoxFit.cover,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
@@ -171,7 +172,8 @@ class _Field extends StatelessWidget {
         open: _pickType
       )
     ),
-    _Cell(
+    // How much the cloud's agents see: no agents where the AI areas aren't offered.
+    if (CapabilityService().shows("channels")) _Cell(
       label: S.of(context).table_settings_column_visibility,
       child: SettingsSelect(
         icon: field.visibility.icon,

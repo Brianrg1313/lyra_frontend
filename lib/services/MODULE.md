@@ -66,7 +66,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   Used by `BusinessService`, `BusinessLocationService`, `BusinessBranchesService`. `business_cloud_source.dart` — REST.
   `business_lan_source.dart` — `BusinessLanSource` over `LanService.call`: profile and location from `business.profile` /
   `business.site.*` in the models' keys (`profileJson`, `locationJson`), screen keys → spec fields (`profileKeys`,
-  `siteKeys`); create, logo, branches and e-mails throw (hidden on a master).
+  `siteKeys`), the logo as a file (`fileJson`; `setLogo` uploads then `business.setLogo`); create, branches and e-mails
+  throw (hidden on a master).
 - `sources/employees_source.dart` — `EmployeesSource`: current (+ active count), former, detail, invite, edit, edit own
   profile. Used by `BusinessEmployeesService`. `employees_cloud_source.dart` — REST.
 - `sources/delivery_source.dart` — `DeliverySource`: settings, carriers, options, areas, isochrone (cloud only). Used by
@@ -209,7 +210,8 @@ See `baileys_server/MODULE.md` for the server side.
 
 ## files/
 
-- `cdn_service.dart` — `CdnService`: image base URLs from `/init/` (backend sends ids, not addresses).
+- `cdn_service.dart` — `CdnService`: image base URLs from `/init/` (backend sends ids, not addresses); on a master,
+  `lyra-file:` addresses (`LanFileImage`).
 - `file_model.dart` — `FileModel`, `FileScope`.
 - `image_file.dart` — `pickImageBytes()`, `writeTempImage(bytes)`, `discardTempImage(file)`.
 
@@ -250,9 +252,12 @@ See `baileys_server/MODULE.md` for the server side.
 
 - `sources/inventory_source.dart` — `InventorySource`: tables, structure, detail, fields, records (+ match total), images,
   import (structure, then records), normalisation (cloud only). Used by `TablesService`, `TableDetailService`, `TableViewService`.
-  `inventory_cloud_source.dart` — REST (reads the created table's id in either shape).
+  `inventory_cloud_source.dart` — REST (reads the created table's id in either shape). `inventory_lan_source.dart` —
+  `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
+  `inventory.images.add`; import and normalisation throw (hidden on a master until their release).
 - `sources/stock_source.dart` — `StockSource`: summary page, a movement (answers the balance). Used by `StockSummaryService`.
-  `stock_cloud_source.dart` — REST.
+  `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
+  `stock.move` (`operationOf`).
 - `tables/tables_service.dart` — `TablesService` (+ `TablesStatus`, `TableImportResult`,
   `TableImportStage`): list, create, rename, delete, import; listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.

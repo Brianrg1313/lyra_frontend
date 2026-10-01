@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
@@ -193,8 +194,8 @@ class SummaryPicture extends StatelessWidget {
         ? _empty(scheme)
         : ClipRRect(
             borderRadius: BorderRadius.circular(radius),
-            child: Image.network(
-              cover.thumbnail,
+            child: Image(
+              image: mediaImage(cover.thumbnail),
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,

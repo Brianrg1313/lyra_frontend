@@ -12,7 +12,7 @@ import 'package:app/services/lan/lan_service.dart';
 import 'package:app/toolkit/deployment.dart';
 
 /// [BusinessSource] over the master (`docs/offline/specs/business.md`): its one company and one
-/// site.
+/// site, and its logo.
 ///
 /// The screens send the cloud's request keys (`LEGAL_NAME`, `POSTAL_CODE`); this maps them onto
 /// the spec's fields and the answers back onto what the models read, so no model or screen
@@ -59,6 +59,11 @@ class BusinessLanSource implements BusinessSource {
     return BusinessProfileModel.fromJson(profileJson(answer));
   }
 
+  /// A master's file id as the `FileModel` json the cloud sends: its one thumbnail is the
+  /// variant (`FileSizes.thumbnail`), and `CdnService` turns it into the master's address.
+  static Map<String, Object?>? fileJson(Object? id) =>
+    id is String && id.isNotEmpty ? {"id": id, "variants": const [FileSizes.thumbnail]} : null;
+
   /// `business.profile` in the keys [BusinessProfileModel.fromJson] reads. The address is the
   /// site's, which the location page edits.
   static Map<String, dynamic> profileJson(Map answer) => {
@@ -67,7 +72,7 @@ class BusinessLanSource implements BusinessSource {
     "legal_name": answer["legalName"],
     "nickname": answer["nickname"],
     "caption": answer["caption"],
-    "logo": null,
+    "logo": fileJson(answer["logo"]),
     "activity_type": answer["activity"],
     "verification": answer["verification"],
     "tax_id": answer["taxId"],
@@ -134,15 +139,19 @@ class BusinessLanSource implements BusinessSource {
     if (changes.isNotEmpty) await _lan.call(Ops.businessSiteEdit, args: changes);
   }
 
-  // A master's company is made at setup (B-1); its logo waits for images over the master's
-  // channel; its site is not a branches list (plan D6); e-mails are cloud only. The capability
-  // table hides every screen that calls these.
+  /// The logo goes up first (`PUT /f`, purpose `logo`), then `business.setLogo` takes it (B-8).
+  @override
+  Future<void> setLogo(File file) async {
+    final fileId = await _lan.upload("logo", await file.readAsBytes());
+
+    await _lan.call(Ops.businessSetLogo, args: {"fileId": fileId});
+  }
+
+  // A master's company is made at setup (B-1); its site is not a branches list (plan D6);
+  // e-mails are cloud only. The capability table hides every screen that calls these.
 
   @override
   Future<String> create(Map<String, dynamic> data) => throw UnsupportedError("A master's company is made at setup");
-
-  @override
-  Future<void> setLogo(File file) => throw UnsupportedError("The logo on a master arrives with images");
 
   @override
   Future<List<BusinessBranchModel>> branches() => throw UnsupportedError("A master has one site");

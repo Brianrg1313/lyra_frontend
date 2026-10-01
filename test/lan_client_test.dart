@@ -110,6 +110,67 @@ void main() {
       )),
     );
   });
+
+  group('files (/f)', () {
+    late FakeMaster master;
+    late List<(String, String, String, Map<String, String>)> sent;
+    late List<LanFileResponse> answers;
+
+    LanClient client() => LanClient(device(), store: MemoryLanIdentityStore(), connect: (_, _) async => master.connect(),
+      files: (device, host, method, path, {required token, headers = const {}, body}) async {
+        sent.add((method, path, token, headers));
+        return answers.removeAt(0);
+      });
+
+    LanFileResponse json(int status, Object body) => (status: status, body: Uint8List.fromList(utf8.encode(jsonEncode(body))));
+
+    setUp(() {
+      master = FakeMaster();
+      sent = [];
+      answers = [];
+    });
+
+    test('a download carries the session token and asks for the thumbnail by size', () async {
+      final lan = client();
+      await lan.signIn("ada", "correct horse battery");
+      answers.add((status: 200, body: Uint8List.fromList([1, 2, 3])));
+
+      expect(await lan.download("f1", size: 320), [1, 2, 3]);
+      expect(sent.single.$1, "GET");
+      expect(sent.single.$2, "/f/f1?size=320");
+      expect(sent.single.$3, "access-1");
+    });
+
+    test('an upload names its purpose and answers the fileId', () async {
+      final lan = client();
+      await lan.signIn("ada", "correct horse battery");
+      answers.add(json(200, {"fileId": "f9"}));
+
+      expect(await lan.upload("product_image", Uint8List.fromList([9])), "f9");
+      expect(sent.single.$4, {"X-Lyra-Purpose": "product_image"});
+    });
+
+    test('an expired token is refreshed once; a refusal comes in the api layer shape', () async {
+      final lan = client();
+      await lan.signIn("ada", "correct horse battery");
+      answers
+        ..add(json(401, {"code": "session_expired", "message": "Sign in again.", "action": "login"}))
+        ..add((status: 200, body: Uint8List.fromList([7])))
+        ..add(json(404, {"code": "not_found", "message": "It doesn't exist or you can't see it."}));
+
+      expect(await lan.download("f1"), [7]);
+      expect(sent.map((request) => request.$3), ["access-1", "access-2"]);
+      await expectLater(lan.download("gone"), throwsA(predicate((Object? error) => error is Map && error["code"] == "not_found")));
+    });
+
+    test('a master that does not answer the file request is unreachable', () async {
+      final lan = LanClient(device(), store: MemoryLanIdentityStore(), connect: (_, _) async => master.connect(),
+        files: (device, host, method, path, {required token, headers = const {}, body}) async => throw const LanFileUnreachable());
+      await lan.signIn("ada", "correct horse battery");
+
+      await expectLater(lan.download("f1"), throwsA(isA<LanUnreachable>()));
+    });
+  });
 }
 
 LanDevice device({List<String> hosts = const ["127.0.0.1"]}) => LanDevice(

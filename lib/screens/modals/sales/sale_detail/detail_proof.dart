@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 // PACKAGES
 import 'package:url_launcher/url_launcher.dart';
@@ -183,8 +184,8 @@ class _Proof extends StatelessWidget {
       feedbackColor: scheme.line,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppSize.cornerInset(AppSize.gap)),
-        child: Image.network(
-          file.url,
+        child: Image(
+          image: mediaImage(file.url),
           fit: BoxFit.contain,
           width: double.infinity,
           height: _preview,

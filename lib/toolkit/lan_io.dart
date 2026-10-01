@@ -11,6 +11,7 @@ import 'package:multicast_dns/multicast_dns.dart';
 import 'package:app/services/lan/lan_device.dart';
 import './lan_found.dart';
 import './lan_key.dart';
+import './lan_file.dart';
 
 /// Native transport of the LAN client (`lan.dart`): `dart:io` sockets, mutual TLS pinned to
 /// the installation CA, mDNS discovery.
@@ -127,5 +128,46 @@ Future<bool> installBrowserCa(Uint8List certificate) async {
     return result.exitCode == 0;
   } finally {
     await folder.delete(recursive: true);
+  }
+}
+
+/// `GET /f/<id>` or `PUT /f` on [host] (`protocol-v1.md` §6), over the same pinned mutual TLS as
+/// `/rpc`: the session's token goes only to the master this device paired with.
+Future<LanFileResponse> fileRequest(
+  LanDevice device,
+  String host,
+  String method,
+  String path, {
+  required String token,
+  Map<String, String> headers = const {},
+  Uint8List? body,
+}) async {
+  final identity = LanIdentity(
+    caCertificate: device.caCertificate,
+    certificate: device.certificate,
+    privateKeyPem: device.privateKeyPem,
+  );
+  final client = HttpClient(context: identity.context)..connectionTimeout = const Duration(seconds: 5);
+  final address = InternetAddress.tryParse(host);
+  final authority = address?.type == InternetAddressType.IPv6 ? "[$host]" : host;
+
+  try {
+    final request = await client.openUrl(method, Uri.parse("https://$authority:${device.port}$path"));
+    request.headers.set(HttpHeaders.authorizationHeader, "Bearer $token");
+    headers.forEach(request.headers.set);
+    if (body != null) request.add(body);
+
+    final response = await request.close().timeout(const Duration(seconds: 60));
+    final bytes = await response.fold<BytesBuilder>(BytesBuilder(copy: false), (builder, chunk) => builder..add(chunk));
+
+    return (status: response.statusCode, body: bytes.takeBytes());
+  } on SocketException {
+    throw const LanFileUnreachable();
+  } on HandshakeException {
+    throw const LanFileUnreachable();
+  } on TimeoutException {
+    throw const LanFileUnreachable();
+  } finally {
+    client.close(force: true);
   }
 }

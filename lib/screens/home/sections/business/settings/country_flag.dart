@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 // SERVICES
 import 'package:app/services/catalog/country_model.dart';
@@ -38,8 +39,8 @@ class CountryFlag extends StatelessWidget {
       height: height,
       child: url.isEmpty ? null : ClipRRect(
         borderRadius: BorderRadius.circular(AppSize.gap / 2),
-        child: Image.network(
-          url,
+        child: Image(
+          image: mediaImage(url),
           width: width,
           height: height,
           fit: BoxFit.cover,

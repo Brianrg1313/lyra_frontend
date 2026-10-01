@@ -13,9 +13,11 @@ import 'package:app/services/lan/lan_identity_store.dart';
 import 'lan_web.dart' if (dart.library.io) 'lan_io.dart' as transport;
 import './lan_found.dart';
 import './lan_key.dart';
+import './lan_file.dart';
 
 export './lan_found.dart';
 export './lan_key.dart';
+export './lan_file.dart';
 
 /// This app's version as `hello` sends it (`protocol-v1.md` §4). `test/lan_client_test.dart`
 /// keeps it equal to `pubspec.yaml`.
@@ -90,20 +92,38 @@ typedef LanConnect = Future<RpcClient> Function(LanDevice device, String host);
 /// it has no key any more. A seam for tests.
 typedef LanProve = Future<Uint8List?> Function(LanDevice device, List<int> message);
 
+/// How a client sends a `/f` request to its master; a seam for tests.
+typedef LanFiles = Future<LanFileResponse> Function(
+  LanDevice device,
+  String host,
+  String method,
+  String path, {
+  required String token,
+  Map<String, String> headers,
+  Uint8List? body,
+});
+
 /// The connection of this install to its master (plan §4 `lan.dart`, `protocol-v1.md` §4): one
 /// `/rpc` socket, `hello` on every connect, the session bound to it, and its refresh.
 ///
 /// Every failure of an op is thrown as [lanFailure]'s map, like the api layer does, so a
 /// service reads LAN and cloud errors the same way.
 class LanClient {
-  LanClient(this._device, {LanIdentityStore store = const SecureLanIdentityStore(), LanConnect? connect, LanProve? prove})
-    : _store = store,
+  LanClient(
+    this._device, {
+    LanIdentityStore store = const SecureLanIdentityStore(),
+    LanConnect? connect,
+    LanProve? prove,
+    LanFiles? files,
+  }) : _store = store,
       _connect = connect ?? transport.openRpc,
-      _prove = prove ?? signDeviceProof;
+      _prove = prove ?? signDeviceProof,
+      _files = files ?? transport.fileRequest;
 
   final LanIdentityStore _store;
   final LanConnect _connect;
   final LanProve _prove;
+  final LanFiles _files;
   LanDevice _device;
   RpcClient? _rpc;
   HelloAnswer? _hello;
@@ -241,6 +261,57 @@ class LanClient {
 
       return _raw(op, args, commandId: commandId);
     }
+  }
+
+  /// Downloads file [id] (`GET /f/<id>`, `protocol-v1.md` §6); [size] asks for its thumbnail.
+  Future<Uint8List> download(String id, {int? size}) =>
+    _file("GET", "/f/${Uri.encodeComponent(id)}${size == null ? "" : "?size=$size"}");
+
+  /// Uploads [bytes] for [purpose] (`logo`, `product_image`…); answers the `fileId` an op then
+  /// references.
+  Future<String> upload(String purpose, Uint8List bytes) async {
+    final answer = jsonDecode(utf8.decode(await _file("PUT", "/f", headers: {"X-Lyra-Purpose": purpose}, body: bytes)));
+    final id = answer is Map ? answer["fileId"] : null;
+    if (id is! String) throw lanFailure(const RpcError(ErrorCodes.internal, ""));
+
+    return id;
+  }
+
+  /// A `/f` request as the signed-in session, on the address `/rpc` last answered on. A refusal
+  /// is thrown like an op's; an expired token is refreshed once.
+  Future<Uint8List> _file(String method, String path, {Map<String, String> headers = const {}, Uint8List? body}) async {
+    if (!isConnected) await connect();
+    if (_accessExpires != null && _accessExpires!.difference(DateTime.now()) < const Duration(minutes: 1)) await resume();
+
+    for (var attempt = 0; ; attempt++) {
+      final token = _accessToken;
+      if (token == null) throw lanFailure(const RpcError(ErrorCodes.sessionExpired, ""));
+
+      final LanFileResponse response;
+      try {
+        response = await _files(_device, _device.hosts.first, method, path, token: token, headers: headers, body: body);
+      } on LanFileUnreachable {
+        throw const LanUnreachable();
+      }
+
+      if (response.status == 200) return response.body;
+
+      final error = _refusal(response);
+      if (error.code == ErrorCodes.sessionExpired && attempt == 0 && await resume()) continue;
+
+      throw lanFailure(error);
+    }
+  }
+
+  static RpcError _refusal(LanFileResponse response) {
+    try {
+      final json = jsonDecode(utf8.decode(response.body));
+      if (json is Map<String, Object?>) return RpcError.fromJson(json);
+    } on FormatException {
+      // Not the master's JSON: told as a generic failure below.
+    }
+
+    return RpcError(response.status == 404 ? ErrorCodes.notFound : ErrorCodes.internal, "");
   }
 
   Future<void> close() async {

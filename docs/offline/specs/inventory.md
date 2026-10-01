@@ -24,12 +24,14 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 | `created`, `updated` | instant | |
 | `lastRecord` | instant? | when a record was last created or edited |
 | `records` | int | count of live records |
-| `importStage` | `null` / `preparing` / `loading` | I-30 |
+| `importStage` | `null` / `preparing` / `loading` | I-42, I-45 |
 
 ### Rules
 
-- **I-1** Creating a table with a `TEMPLATE` adds that template's starting fields, as
-  `TableTemplate` describes them. The templates are part of the bundled catalogues.
+- **I-1** Creating a table with a `TEMPLATE` adds that template's starting fields. The app's
+  `TableTemplate` names the codes; the fields of each are `TableTemplates` in `lyra_protocol`
+  (name, SKU, price, stock and photos, then the template's own), named in the company's language
+  (English where it has no name of its own), with the title, SKU and price in the summary.
 - **I-2** Deleting a table is soft. Its records disappear from every list and from the POS.
   Stock movements that name its products are kept (history is never deleted) and keep reading
   the product's frozen name.
@@ -148,7 +150,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `inventory.records.list` | `inventory.view` | `tableId`, `page`, `size` (≤ 200), `match?` | `{columns, rows, page, size, total}` (the `TableViewModel` shape) | `not_found` |
+| `inventory.records.list` | `inventory.view` | `tableId`, `page` (from 1), `size` (≤ 200), `match?` | `{keys, values, page, size, total}` (the `TableViewModel` shape: `keys` is `"id"` then the field ids in position order; each row is the record id then its cells) | `not_found` |
 | `inventory.records.create` | `inventory.edit_records` | `tableId`, `data` | `{id}` | `invalid_value`, `duplicate_sku` |
 | `inventory.records.edit` | `inventory.edit_records` | `tableId`, `id`, `data` | `{}` | `not_found`, `invalid_value`, `duplicate_sku`, `read_only_field` |
 | `inventory.records.delete` | `inventory.edit_records` | `tableId`, `id` | `{}` | `not_found`, `has_open_tickets` |
@@ -164,7 +166,8 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 
 ### Rules
 
-- **I-30** An `IMAGE` cell is a list of up to 8 images. Upload adds one to the end; remove takes
+- **I-30** An `IMAGE` cell is a list of up to 8 images; the images ops write the table's first
+  `IMAGE` field (a table without one answers `invalid_field`). Upload adds one to the end; remove takes
   one out by its file id. The first is the cover (what POS and the stock summary draw).
 - **I-31** Images: `png`/`jpeg`/`webp`, ≤ 10 MB. The engine stores the original and the sizes
   `ProductImage` asks for (thumbnail sizes, see that file), in the encrypted file store.
@@ -247,6 +250,14 @@ two, the table is `preparing`, and the app waits for `table/ready`.
 - Agent visibility (`visibility`) and the channel/agent blocks have no effect offline. They are
   kept so a hybrid company doesn't lose them.
 - External image addresses from imports are never fetched.
+
+## Release status
+
+The inventory release serves tables, fields, records and images (every op above except the
+three of `inventory.import` and `inventory.tables.normalize`, which arrive in their own release;
+the app hides import and re-typing on a master until then). I-4 (open tickets) arrives with the
+POS. A cell written by hand is checked by I-21: the app's date-and-time form (`2026-02-12 12:30`)
+and categories typed as `a, b` are accepted and stored as given / as a list.
 
 ## Open questions
 

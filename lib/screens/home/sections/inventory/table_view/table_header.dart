@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
@@ -124,7 +125,8 @@ class TableHeader extends StatelessWidget {
         // It goes before the settings because it is what is pressed **instead**
         // of entering them: both fix the same thing, but one asks to know which
         // column is wrong and the other does not.
-        const NormalizeButton(),
+        // Re-typing comes with importing: where that isn't offered, neither is this.
+        if (CapabilityService().shows("inventory.import")) const NormalizeButton(),
         // The table's settings: everything there is of it except its rows —how
         // many records it has, what columns it is made of, how much the model
         // sees, and which channels read it—.

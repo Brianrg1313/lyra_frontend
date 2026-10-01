@@ -186,8 +186,9 @@ The master closes the connection after `version_mismatch` (close code 4002), `se
 - Event names and payloads are the ones the app already parses (`stock/changed`,
   `invoice/*`, `sale/progress`, `table/*`), plus `business/changed`, `permissions/changed` and
   `table/changed` (`Events` in `lyra_protocol`). The `XLanSource` feeds them to the same
-  `receive(...)` seams. The engine emits `business/changed` from the business release; the app
-  subscribes with the first domain that needs a screen to follow changes live (plan §7.2).
+  `receive(...)` seams. The engine emits `business/changed` from the business release, and
+  `table/changed` and `stock/changed` from the inventory release; the app subscribes with the
+  first domain that needs a screen to follow changes live (plan §7.2).
 
 ---
 
@@ -197,7 +198,10 @@ The master closes the connection after `version_mismatch` (close code 4002), `se
   `import`, `picture`). Limits per purpose: 5 MB, 10 MB, 20 MB, 5 MB. The master checks the real
   type from the bytes, not the header (`invalid_file`). Answer: `{fileId}`. An uploaded file
   that no op references within 1 hour is deleted.
-- **Download** `GET /f/<fileId>[?size=<n>]`: `size` picks a stored thumbnail (images only).
+- **Download** `GET /f/<fileId>[?size=<n>]`: `size` picks a stored thumbnail (images only). A
+  master keeps one, 320 px wide (`FileSizes.thumbnail`), made at upload: `size` ≤ 320 answers it,
+  a larger one or an image already that small answers the original. A JPEG thumbnail stays JPEG,
+  the rest become PNG.
   Permission: the one that reads the record the file belongs to. Export files (`export.*`) are
   readable only by the account that asked for them, for 1 hour.
 - Files are stored encrypted (plan §6.2) and decrypted while streaming over TLS.

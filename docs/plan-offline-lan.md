@@ -20,9 +20,18 @@ Phase 4, first release (business): setup creates the company; the engine serves 
 the company, its site and the catalogues (`business.md`); the app reads them through
 `SessionLanSource` and `BusinessLanSource`, opens the home once signed in on the LAN, and moves the
 server's devices to a `local_server` home section. Areas whose release hasn't come stay hidden on a
-master's devices (`CapabilityService._builtOnMaster`). Left for later in this domain: the logo (images
-over the master's channel, with the inventory release), a site form (no screen writes the location
-today), the time zone database, and live events in the app.
+master's devices (`CapabilityService._builtOnMaster`). Left for later in this domain: a site form (no
+screen writes the location today), the time zone database, and live events in the app.
+Phase 4, second release (inventory and stock): the engine serves tables (templates, the primary flag),
+fields, records (checked cells, SKUs, counters, accent-free text search), product images with a
+320 px thumbnail, and the stock ledger (`stock.move`, holds, history, summary) (`inventory.md`,
+`stock.md`); the app reads them through `InventoryLanSource` and `StockLanSource`, and draws every
+image with `mediaImage`, which on a master downloads it over the pinned channel with the session's
+token (`LanFileImage`), so the company logo works there too. Left for later: importing spreadsheets
+and re-typing columns (hidden on a master), I-4 and ST-14 (with the POS), live `table/changed` /
+`stock/changed` in the app, and uploading a photo or a logo from the web build (the app hands it to
+its sources as a `dart:io` file, which a browser has none of; native devices upload, every client
+draws).
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the

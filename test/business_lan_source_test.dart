@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -105,6 +108,18 @@ void main() {
       expect(() => BusinessLanSource(master).editProfile("EMAIL", "x"), throwsUnsupportedError);
     });
 
+    test('a logo goes up as a logo upload, then business.setLogo takes it; the profile reads it back', () async {
+      final folder = await Directory.systemTemp.createTemp("lyra-logo");
+      addTearDown(() => folder.delete(recursive: true));
+
+      await BusinessLanSource(master).setLogo(File("${folder.path}/logo.png")..writeAsBytesSync([1, 2]));
+
+      expect(master.uploads, ["logo"]);
+      expect(master.calls.single.$1, Ops.businessSetLogo.name);
+      expect(master.calls.single.$2, {"fileId": "uploaded-1"});
+      expect(BusinessLanSource.profileJson({..._profile, "logo": "l1"})["logo"], {"id": "l1", "variants": [FileSizes.thumbnail]});
+    });
+
     test('every screen key is one the master takes', () {
       expect(BusinessFields.editable, containsAll(BusinessLanSource.profileKeys.values));
       expect(BusinessFields.site, containsAll(BusinessLanSource.siteKeys.values));
@@ -116,7 +131,7 @@ void main() {
     });
   });
 
-  testWidgets('on a master the profile offers no e-mails, no delete and no logo change', (tester) async {
+  testWidgets('on a master the profile offers no e-mails and no delete, but a logo change', (tester) async {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
     CountryCatalogService().seed(Catalogs.countryRows);
     CurrencyCatalogService().seed(Catalogs.currencyRows);
@@ -156,7 +171,7 @@ void main() {
     expect(find.text("Lovelace C.A."), findsOneWidget);
     expect(find.byType(ProfileEmailAdd), findsNothing);
     expect(find.byType(BusinessProfileDanger), findsNothing);
-    expect(find.descendant(of: find.byType(BusinessProfileLogo), matching: find.byIcon(CI.pen)), findsNothing);
+    expect(find.descendant(of: find.byType(BusinessProfileLogo), matching: find.byIcon(CI.pen)), findsOneWidget);
   });
 
   group('business.site', () {
@@ -216,5 +231,14 @@ class _Master extends LanService {
     calls.add((op.name, args));
 
     return answers[op.name];
+  }
+
+  final List<String> uploads = [];
+
+  @override
+  Future<String> upload(String purpose, Uint8List bytes) async {
+    uploads.add(purpose);
+
+    return "uploaded-${uploads.length}";
   }
 }

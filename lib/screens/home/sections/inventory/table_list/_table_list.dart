@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
@@ -185,8 +186,10 @@ class _InventorySectionState extends State<InventorySection> {
                 ellipsis: true
               )),
               SizedBox(width: AppSize.gap),
-              ImportButton(action: _import, loading: _importing),
-              SizedBox(width: AppSize.gap),
+              if (CapabilityService().shows("inventory.import")) ...[
+                ImportButton(action: _import, loading: _importing),
+                SizedBox(width: AppSize.gap)
+              ],
               Button(
                 width: null,
                 title: S.of(context).create_table,

@@ -136,13 +136,16 @@ The stock screen's list: one row per product of the primary table.
 
 ### Ops
 
-`stock.summary` · `inventory.view` · `page`, `size` (≤ 100), `match?` · `StockSummaryPage`.
+`stock.summary` · `inventory.view` · `page` (from 1), `size` (≤ 200: the app re-reads up to six
+pages of 30 at once), `match?` · `StockSummaryPage`. Its rows are `{keys, values}` with the record
+id first; a last `needsReview` key flags ST-14's products. A company without a primary table
+answers `no_primary_table` (as the `code`; the cloud sends it as the `message`).
 
 ### Events
 
 | Event | When | Payload |
 |---|---|---|
-| `stock/changed` | ST-15 | `{productId, table, onHand, reserved, available}` (`StockChangedModel`), delivered to sessions with `inventory.view` or `pos.view` |
+| `stock/changed` | ST-15 | `{productId, table, onHand, reserved, available}` (`StockChangedModel`), delivered to sessions with `inventory.view` (and `pos.view` from the POS release) |
 
 ---
 
@@ -150,6 +153,14 @@ The stock screen's list: one row per product of the primary table.
 
 - Offline replay may leave negative stock (ST-14). Online in the LAN, the rule is the same as
   the cloud's: refuse.
+
+## Release status
+
+The inventory release serves `stock.move`, `stock.history` and `stock.summary`, the projection,
+manual holds (ST-22) and the rebuild (`Stock.rebuild`, no screen yet). ST-14 is reached only by a
+POS outbox replay, which arrives with the POS. A discarded returned unit (the `remove` row above)
+has no way to be told apart from a shelf removal in today's `stock.move` arguments: it waits for
+open question 4.
 
 ## Open questions
 
@@ -159,3 +170,5 @@ The stock screen's list: one row per product of the primary table.
 3. ~~Expiring manual holds.~~ Decided: no expiry. In the cloud only the holds a WhatsApp bot
    places expire (a separate service releases them), and bots don't exist offline. `expires`
    stays in the data for hybrid, where a pulled-down bot hold keeps its date.
+4. Discarding a returned unit: the app has no `discard` reason and `stock.move` no way to say the
+   units come out of `returns`. Today only `add` / `return` takes from `returns`.

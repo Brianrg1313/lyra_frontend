@@ -33,6 +33,7 @@ Banned (never introduce new usages):
 | `SnackBar` `ScaffoldMessenger` | `FloatFlag` |
 | `DataTable` `Table` | `DataTableView` + `TableColumn`/`TableController`/`TableStyle` |
 | `CircularProgressIndicator` | `Loading` (raw one only for pre-existing sized inline spinners) |
+| `Image.network(url)` | `Image(image: mediaImage(url))` (`toolkit/lan_image.dart`: a master's files come over its channel) |
 | hardcoded colors | `ThemeColor.of(context).*` |
 | hardcoded paddings/sizes | `AppSize.*` |
 

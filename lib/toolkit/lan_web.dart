@@ -11,6 +11,7 @@ import 'package:web/web.dart' as web;
 import 'package:app/services/lan/lan_device.dart';
 import './lan_found.dart';
 import './lan_key.dart';
+import './lan_file.dart';
 
 /// Browser transport of the LAN client (`lan.dart`, `protocol-v1.md` §3).
 ///
@@ -213,4 +214,35 @@ final class _BrowserPairingChannel implements PairingChannel {
 
   @override
   void send(Map<String, Object?> message) => _socket.send(jsonEncode(message));
+}
+
+/// `GET /f/<id>` or `PUT /f` on the page's own origin (the master that served it), with the
+/// session's token. The browser's TLS checked the master against the installed root.
+Future<LanFileResponse> fileRequest(
+  LanDevice device,
+  String host,
+  String method,
+  String path, {
+  required String token,
+  Map<String, String> headers = const {},
+  Uint8List? body,
+}) async {
+  final sent = web.Headers()..append("Authorization", "Bearer $token");
+  headers.forEach((name, value) => sent.append(name, value));
+
+  try {
+    final response = await web.window.fetch(path.toJS, web.RequestInit(
+      method: method,
+      headers: sent,
+      body: body?.toJS,
+      credentials: "omit",
+      cache: "no-store",
+    )).toDart.timeout(const Duration(seconds: 60));
+    final bytes = (await response.arrayBuffer().toDart).toDart.asUint8List();
+
+    return (status: response.status, body: bytes);
+  } on Object {
+    // fetch rejects only when nothing answered (network, TLS); an HTTP refusal is a status.
+    throw const LanFileUnreachable();
+  }
 }

@@ -69,6 +69,7 @@ class PosCatalogService extends ChangeNotifier {
 
   /// What the backend answers when the company has no main table. It is not a
   /// failure to retry: nothing has been imported yet.
+  /// The cloud sends it as the `message`, a master as the `code`.
   static const String _noTable = "no_primary_table";
 
   PosCatalogStatus _status = PosCatalogStatus.idle;
@@ -266,7 +267,7 @@ class PosCatalogService extends ChangeNotifier {
       // retry from the counter: it is fixed by importing one. An answer that is
       // not an object ([UnreadableAnswer]) was not understood: drawing it would
       // be a grid of holes, so it is the failure it is and not an empty catalog.
-      if (error is Map && error["message"] == _noTable) {
+      if (error is Map && (error["message"] == _noTable || error["code"] == _noTable)) {
         _status = PosCatalogStatus.missing;
       } else {
         _nothing();

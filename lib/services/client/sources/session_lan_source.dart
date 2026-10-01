@@ -2,6 +2,7 @@
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
+import 'package:app/services/business/sources/business_lan_source.dart';
 import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/permissions/permission_request_model.dart';
@@ -34,7 +35,7 @@ class SessionLanSource implements SessionSource {
 
   /// `session.bootstrap` in the shape `/init` has, which is what each seed reads
   /// (`ClientService.resolve`): the person at the top level in its keys, the catalogues at the
-  /// top level. A logo id is dropped: images from the master arrive with the inventory release.
+  /// top level. A logo id becomes the `FileModel` json the cloud sends.
   static Map<String, dynamic> initFrom(Map answer) {
     final client = answer["client"] is Map ? answer["client"] as Map : const {};
     final catalogs = answer["catalogs"] is Map ? answer["catalogs"] as Map : const {};
@@ -49,7 +50,7 @@ class SessionLanSource implements SessionSource {
       "birthday": client["birthday"],
       "businesses": [
         for (final business in answer["businesses"] as List? ?? const [])
-          if (business is Map) {...business, "logo": null}
+          if (business is Map) {...business, "logo": BusinessLanSource.fileJson(business["logo"])}
       ],
       "permissions": answer["permissions"],
       "tasks": const <Object?>[],

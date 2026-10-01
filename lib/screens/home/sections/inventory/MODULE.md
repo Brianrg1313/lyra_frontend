@@ -15,7 +15,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `table_card.dart` — `TableCard`: desktop form, same rule.
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete, both forms.
 - `primary_mark.dart` — `PrimaryTableMark`: the business's primary table.
-- `import_button.dart` — `ImportButton`: opens the import modal.
+- `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
 - `sticky_bar.dart` — `StickyBar`: bar with its own scroll behaviour.
 - `stock_summary/_stock_summary.dart` — `StockSummarySection`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows).
@@ -32,7 +32,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `_table_view.dart` — `TableViewSection` (`routeKey`, resolves `:id`), `BusinessListener`; turns back if the table is still importing.
 - `table_header.dart` — `TableHeader`: back, colour, name, read/save state.
 - `header_actions.dart` — `HeaderActions`: record-load state, search.
-- `normalize_button.dart` — `NormalizeButton`: `POST .../builder/normalize/`.
+- `normalize_button.dart` — `NormalizeButton`: `TableViewService.normalize`; shown where `inventory.import` is.
 - `sheet.dart` — `Sheet`: frozen gutter band + data band.
 - `sheet_style.dart` — `SheetStyle`, `SheetTheme` (`InheritedWidget`), `SheetRowFill`: paint data resolved once per sheet.
 - `gutter.dart` — `SheetGutter`, `GutterCell`: row numbers.

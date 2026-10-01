@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 // SERVICES
 import 'package:app/services/files/file_model.dart';
@@ -26,8 +27,8 @@ class EmployeeAvatar extends StatelessWidget {
 
     final face = url.isEmpty
       ? _Initials(name: name, size: size)
-      : ClipOval(child: Image.network(
-          url,
+      : ClipOval(child: Image(
+          image: mediaImage(url),
           width: size,
           height: size,
           fit: BoxFit.cover,

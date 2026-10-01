@@ -81,15 +81,18 @@ void main() {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
     final capabilities = CapabilityService();
 
-    // Built: the business domain.
+    // Built: the business domain, inventory and stock.
     expect(capabilities.of("business"), Capability.available);
     expect(capabilities.of("business.settings"), Capability.available);
+    expect(capabilities.of("business.settings.edit_logo"), Capability.available);
+    expect(capabilities.of("inventory"), Capability.available);
+    expect(capabilities.of("inventory.move_stock"), Capability.available);
     // Not yet: they belong to local, but their sources don't exist.
     expect(capabilities.of("pos"), Capability.hidden);
     expect(capabilities.of("finance.payments"), Capability.hidden);
     expect(capabilities.of("business.employees"), Capability.hidden);
     expect(capabilities.of("business.employees.view"), Capability.hidden);
-    expect(capabilities.of("business.settings.edit_logo"), Capability.hidden);
+    expect(capabilities.of("inventory.import"), Capability.hidden);
   });
 
   test('in hybrid a cloud area waits for the internet, a master one does not', () {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 /// Shows [url] full screen, above everything, and goes back when it closes.
 ///
@@ -70,8 +71,8 @@ class ImageViewer extends StatelessWidget {
               padding: EdgeInsets.all(AppSize.spaceL),
               child: InteractiveViewer(
                 maxScale: 5,
-                child: Image.network(
-                  url,
+                child: Image(
+                  image: mediaImage(url),
                   fit: BoxFit.contain,
                   // While it downloads, the loading is seen and not a hole: the
                   // big photo can weigh a lot, and this screen is only it.

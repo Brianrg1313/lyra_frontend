@@ -50,15 +50,17 @@ enum LanStatus {
 ///
 /// App-wide (`initial_builder.dart`): the boot flow and every LAN page share one connection.
 class LanService extends ChangeNotifier {
-  LanService({LanIdentityStore? store, LocalServerService? server, LanConnect? connect, LanProve? prove})
+  LanService({LanIdentityStore? store, LocalServerService? server, LanConnect? connect, LanProve? prove, LanFiles? files})
     : _store = store ?? const SecureLanIdentityStore(),
       _server = server,
       _connect = connect,
-      _prove = prove;
+      _prove = prove,
+      _files = files;
 
   final LanIdentityStore _store;
   final LanConnect? _connect;
   final LanProve? _prove;
+  final LanFiles? _files;
   LocalServerService? _server;
   LanClient? _client;
 
@@ -96,7 +98,7 @@ class LanService extends ChangeNotifier {
     if (device == null) return _set(LanStatus.unpaired);
 
     await _drop();
-    _client = LanClient(device, store: _store, connect: _connect, prove: _prove);
+    _client = LanClient(device, store: _store, connect: _connect, prove: _prove, files: _files);
 
     return _connectAndResume();
   }
@@ -178,6 +180,25 @@ class LanService extends ChangeNotifier {
 
     try {
       return await client.call(op, args: args, commandId: op.needsCommandId ? const Uuid().v7() : null);
+    } on LanUnreachable {
+      unawaited(_connectAndResume());
+      throw _unreachable;
+    }
+  }
+
+  /// File [id] from the master (`protocol-v1.md` §6), its thumbnail with [size]: what
+  /// `LanFileImage` draws. Fails like [call].
+  Future<Uint8List> download(String id, {int? size}) => _withClient((client) => client.download(id, size: size));
+
+  /// Uploads [bytes] for [purpose]; answers the `fileId` the op that uses it references.
+  Future<String> upload(String purpose, Uint8List bytes) => _withClient((client) => client.upload(purpose, bytes));
+
+  Future<T> _withClient<T>(Future<T> Function(LanClient client) body) async {
+    final client = _client;
+    if (client == null || _status != LanStatus.ready) throw _unreachable;
+
+    try {
+      return await body(client);
     } on LanUnreachable {
       unawaited(_connectAndResume());
       throw _unreachable;
