@@ -9,6 +9,7 @@ import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
 import 'package:app/services/pos/sources/pos_lan_source.dart';
+import 'package:app/services/money/sources/money_lan_source.dart';
 import 'package:app/services/sales/sources/sales_lan_source.dart';
 
 /// Which areas each deployment mode has (`docs/plan-offline-lan.md` §2). The mode is read
@@ -71,6 +72,8 @@ void main() {
     expect(capabilities.of("messages"), Capability.hidden);
     expect(capabilities.of("deliveries"), Capability.hidden);
     expect(capabilities.of("finance.receivables"), Capability.hidden);
+    // What Lyra's assistant cost is measured in the cloud.
+    expect(capabilities.of("finance.overview.view_bot_cost"), Capability.hidden);
     expect(capabilities.of("business.branches"), Capability.hidden);
     expect(capabilities.of("business.delete"), Capability.hidden);
     expect(capabilities.of("business.settings.manage_emails"), Capability.hidden);
@@ -83,7 +86,8 @@ void main() {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
     final capabilities = CapabilityService();
 
-    // Built: the business domain, inventory (importing too), stock, the POS and the sales board.
+    // Built: the business domain, inventory (importing too), stock, the POS, the sales board and
+    // finance's summary and payments.
     expect(capabilities.of("business"), Capability.available);
     expect(capabilities.of("business.settings"), Capability.available);
     expect(capabilities.of("business.settings.edit_logo"), Capability.available);
@@ -96,8 +100,13 @@ void main() {
     expect(capabilities.of("sales.fulfil"), Capability.available);
     // Approving a payment is about conversations, which a master has none of.
     expect(capabilities.of("sales.approve"), Capability.hidden);
+    expect(capabilities.of("finance"), Capability.available);
+    expect(capabilities.of("finance.overview"), Capability.available);
+    expect(capabilities.of("finance.payments.void"), Capability.available);
     // Not yet: they belong to local, but their sources don't exist.
-    expect(capabilities.of("finance.payments"), Capability.hidden);
+    expect(capabilities.of("finance.methods"), Capability.hidden);
+    expect(capabilities.of("finance.methods.manage_currencies"), Capability.hidden);
+    expect(capabilities.of("finance.export"), Capability.hidden);
     expect(capabilities.of("business.employees"), Capability.hidden);
     expect(capabilities.of("business.employees.view"), Capability.hidden);
   });
@@ -149,6 +158,7 @@ void main() {
     expect(Sources.business, isA<BusinessLanSource>());
     expect(Sources.pos, isA<PosLanSource>());
     expect(Sources.sales, isA<SalesLanSource>());
-    expect(() => Sources.money, throwsUnsupportedError);
+    expect(Sources.money, isA<MoneyLanSource>());
+    expect(() => Sources.employees, throwsUnsupportedError);
   });
 }

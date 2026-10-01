@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/money/money_service.dart';
 
 // WIDGETS
@@ -100,7 +101,8 @@ class _FinanceOverviewTabState extends State<FinanceOverviewTab> {
   /// **Lyra's block is drawn whatever the money did**, failure and quiet day
   /// included: it is a separate read over a separate window, and a company that
   /// answers customers all month without recording a payment would otherwise be
-  /// told nothing moved while it is being charged.
+  /// told nothing moved while it is being charged. It is the cloud's measure, so
+  /// a master in `local` has none to draw.
   Widget _page(Widget money) => ScrollableWidget(
     // Stretched and not left-aligned, which is the scroll's default: Lyra's
     // block is a sheet of its own and a sheet as wide as its longest line reads
@@ -108,10 +110,12 @@ class _FinanceOverviewTabState extends State<FinanceOverviewTab> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       money,
-      SizedBox(height: AppSize.padding),
-      Separator.horizontal(),
-      SizedBox(height: AppSize.padding),
-      const MoneyBotBlock()
+      if (CapabilityService().shows("finance.overview.view_bot_cost")) ...[
+        SizedBox(height: AppSize.padding),
+        Separator.horizontal(),
+        SizedBox(height: AppSize.padding),
+        const MoneyBotBlock()
+      ]
     ]
   );
 

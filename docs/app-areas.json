@@ -244,7 +244,13 @@
           "modes": ["cloud", "local", "hybrid"],
           "routes": ["finance_overview"],
           "paths": ["/home/finance/overview"],
-          "actions": ["view", "view_bot_cost"]
+          "actions": ["view", "view_bot_cost"],
+          "action_modes": {
+            "view_bot_cost": ["cloud", "hybrid"]
+          },
+          "action_notes": {
+            "view_bot_cost": "What Lyra's assistant cost (POST /money/ai): measured in the cloud, so not in local."
+          }
         },
         {
           "key": "finance.payments",

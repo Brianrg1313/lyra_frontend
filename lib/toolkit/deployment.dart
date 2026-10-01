@@ -27,6 +27,7 @@ import 'package:app/services/sales/sources/sales_cloud_source.dart';
 import 'package:app/services/sales/sources/sales_lan_source.dart';
 import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/services/money/sources/money_cloud_source.dart';
+import 'package:app/services/money/sources/money_lan_source.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
 
 /// Where the company's data lives (`docs/plan-offline-lan.md` §7).
@@ -113,7 +114,7 @@ abstract final class Sources {
   static StockSource get stock => _pick(const StockCloudSource(), () => StockLanSource(lanService));
   static PosSource get pos => _pick(const PosCloudSource(), () => PosLanSource(lanService));
   static SalesSource get sales => _pick(const SalesCloudSource(), () => SalesLanSource(lanService));
-  static MoneySource get money => _pick(const MoneyCloudSource());
+  static MoneySource get money => _pick(const MoneyCloudSource(), () => MoneyLanSource(lanService));
 
   /// LAN sources arrive one domain per release (plan phase 4), over the one
   /// connection [lanService] holds. A domain without one yet is hidden on a

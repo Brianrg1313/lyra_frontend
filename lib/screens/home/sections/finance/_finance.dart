@@ -80,9 +80,13 @@ class _FinanceSectionState extends State<FinanceSection> {
   FinanceTab get _tab => _tabOf(Navis.currentKey.value);
 
   /// Tab that the screen [currentKey] shows. The bare section
-  /// (`/home/finance`, which is where the side bar goes) opens [FinanceTab.opening].
-  FinanceTab _tabOf(String currentKey) =>
-    FinanceTab.byRouteKey(currentKey) ?? FinanceTab.opening;
+  /// (`/home/finance`, which is where the side bar goes) opens [FinanceTab.opening],
+  /// and so does the URL of a tab the running mode doesn't have.
+  FinanceTab _tabOf(String currentKey) {
+    final tab = FinanceTab.byRouteKey(currentKey);
+
+    return tab != null && tab.isShown ? tab : FinanceTab.opening;
+  }
 
   /// Opens another tab.
   ///
@@ -147,7 +151,7 @@ class _FinanceSectionState extends State<FinanceSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionTabs<FinanceTab>(
-              tabs: FinanceTab.values,
+              tabs: FinanceTab.shown,
               active: tab,
               icon: (value) => value.icon,
               title: (context, value) => value.title(context),

@@ -65,6 +65,7 @@ class CapabilityService extends ChangeNotifier {
     "channels": _online,
     "finance": _all,
     "finance.overview": _all,
+    "finance.overview.view_bot_cost": _notLocal,
     "finance.payments": _all,
     "finance.receivables": _notLocal,
     "finance.methods": _all,
@@ -93,12 +94,15 @@ class CapabilityService extends ChangeNotifier {
     "sales",
     "sales.process",
     "sales.done",
+    "finance",
+    "finance.overview",
+    "finance.payments",
     "local_server"
   };
 
   /// Parts of a built area whose master side is still missing, hidden until
-  /// their release. None today: kept for the next domain that lands in parts.
-  static const Set<String> _pendingOnMaster = {};
+  /// their release: the accounting export comes after the rest of finance.
+  static const Set<String> _pendingOnMaster = {"finance.export"};
 
   bool _internet = true;
 

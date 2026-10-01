@@ -286,6 +286,9 @@ See `baileys_server/MODULE.md` for the server side.
 - `sources/money_source.dart` — `MoneySource` (+ `MoneyRailFields`): summary, payments (search, record, void),
   receivables, payment accounts (+ rail sheets), rails catalogue, currencies, concepts catalogue. Used by every money
   service but `MoneyBotService` (cloud only). `money_cloud_source.dart` — REST, and the catalogue row readers.
+  `money_lan_source.dart` — `MoneyLanSource`: the master's `money.*` ops (summary, payments, receivables, currencies,
+  catalogue), money from and to minor units of the main currency; the accounts (`money.methods.*`) throw until a master
+  serves them.
 Nothing here adds figures up: every total is the backend's answer.
 
 - `money_service.dart` — `MoneyService` (+ `MoneySummaryStatus`, `MoneyRange`): `GET /money`

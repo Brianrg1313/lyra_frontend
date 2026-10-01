@@ -50,6 +50,13 @@ section with attention first, answers a sale's detail, and records the handover 
 SA-35); `sale/progress` is emitted by every POS write that moves a row and by the handover, only to
 the seller's sessions and those with `sales.view_all`. The app reads it through `SalesLanSource`;
 approving a payment stays cloud only, since a master has no conversations.
+Phase 4, sixth release (finance, first part): the engine records and voids payments by hand
+(`MoneyConcepts` in `lyra_protocol`, the concept deciding the direction), pages them with the
+filter's totals, answers the summary beside the register's closed tickets, the receivables (empty
+while credit is deferred) and the exchange currencies with custom rates (`money.md` M-1 to M-53).
+The app reads it through `MoneyLanSource`; finance's tabs now follow the running mode, and the
+bot cost isn't drawn in `local`. Left for the next parts: the company's accounts (with the
+`payments` sealed key and the rails snapshot) and the accounting export.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the

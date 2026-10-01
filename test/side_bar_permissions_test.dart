@@ -76,10 +76,9 @@ void main() {
 
     expect(find.byKey(ValueKey(HomeSection.messages.key)), findsNothing);
     expect(find.byKey(ValueKey(HomeSection.channels.key)), findsNothing);
-    // Local, but its master side arrives in a later release of plan phase 4.
-    expect(find.byKey(ValueKey(HomeSection.finance.key)), findsNothing);
     // Built on a master, and this person may not open it.
     expect(_locked(tester, HomeSection.sales), isTrue);
+    expect(_locked(tester, HomeSection.finance), isTrue);
     expect(_locked(tester, HomeSection.business), isFalse);
     expect(_locked(tester, HomeSection.server), isTrue);
   });

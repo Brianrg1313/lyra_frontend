@@ -219,6 +219,26 @@ Lyra is not accounting software. It hands its data to the software that is.
 
 ---
 
+## Release status
+
+The finance release serves `money.catalog`, `money.summary`, `money.payments.*`,
+`money.receivables` and `money.currencies.*` (M-1 to M-33, M-50 to M-53). On the wire:
+- money is in minor units of the main currency, as on the ticket (`pos.md`; the app's
+  `MoneyLanSource` converts both ways); rates are not money and travel as numbers;
+- the catalogue leaves out the concepts that settle a credit ticket while credit is deferred, so
+  a `settlement` asks for `finance.receivables.collect` and then always answers `ticket_required`
+  or `not_credit`; the receivables answer an empty page;
+- a payment names a settlement kind (`unknown_method` when it names none, as the cloud refuses);
+  `accountId` answers `unknown_account` until the accounts are served;
+- a search row is flat (`counterpart` read down to a name or contact, `account` a label), as the
+  cloud's; `record` and `void` answer the whole payment, with `voided {at, by, reason}`;
+- a custom rate is required in `custom` mode (`invalid_rate`); `money.currencies.remove` of a
+  currency that isn't there is `not_found`; `in_use` arrives with the accounts.
+
+Still to come: `money.methods.*` (needs the `payments` sealed key, plan §6.3, and the rails, banks
+and document types snapshot, `business.md`), then `export.accounting`. Until then a master hides
+the methods tab (and with it the currencies block) and the export.
+
 ## Differences from cloud
 
 - No money AI (`/money/ai`). No official rate feed in `local`.

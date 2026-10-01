@@ -19,6 +19,7 @@ import 'package:core/button.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 import 'package:app/screens/modals/finance/record_payment/_record_payment.dart';
 
+import '../finance_tab.dart';
 import '../money_format.dart';
 import 'payment_filters.dart';
 import 'payments_table.dart';
@@ -63,8 +64,9 @@ class _FinancePaymentsTabState extends State<FinancePaymentsTab> {
 
       // The company's accounts are one of the panel's fields —which of them the
       // money landed in— and this tab may be the first one opened. Both reads
-      // do nothing when whoever got here first already made them.
-      context.read<MoneyMethodsService>().load();
+      // do nothing when whoever got here first already made them. Where the
+      // accounts tab isn't there yet (a master), there are none to name.
+      if (FinanceTab.methods.isShown) context.read<MoneyMethodsService>().load();
     });
   }
 
