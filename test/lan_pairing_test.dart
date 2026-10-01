@@ -106,6 +106,42 @@ void main() {
     expect(store.stored!.privateKeyPem, isEmpty);
   });
 
+  group('the password way', () {
+    LanPairingService byPassword(MemoryLanIdentityStore store, _ScriptedMaster master) =>
+      LanPairingService(store: store, open: (host, port) async => LanPairingSocket(master, () async {}));
+
+    test("an account's login and password pair: no code, the device is a local client", () async {
+      final store = MemoryLanIdentityStore();
+      final master = _ScriptedMaster.password("correct horse battery");
+
+      final failure = await byPassword(store, master)
+        .pairWithPassword(host: "192.168.1.5", port: 4780, login: "ada@lyra.app", password: "correct horse battery");
+
+      expect(failure, isNull);
+      expect(master.login, "ada@lyra.app");
+      expect(master.enrolledName, lanDeviceName);
+      expect(store.stored!.role, DeploymentRole.client);
+      expect(Deployment.mode, DeploymentMode.local);
+    });
+
+    test('a wrong password pairs nothing', () async {
+      final store = MemoryLanIdentityStore();
+
+      final failure = await byPassword(store, _ScriptedMaster.password("correct horse battery"))
+        .pairWithPassword(host: "192.168.1.5", port: 4780, login: "ada@lyra.app", password: "wrong horse battery");
+
+      expect(failure, LanPairingError.wrongCode);
+      expect(store.stored, isNull);
+    });
+
+    test('a locked account says so', () async {
+      final failure = await byPassword(MemoryLanIdentityStore(), _ScriptedMaster.password("x", locked: true))
+        .pairWithPassword(host: "192.168.1.5", port: 4780, login: "ada@lyra.app", password: "x");
+
+      expect(failure, LanPairingError.locked);
+    });
+  });
+
   test('servers found by mDNS are listed', () async {
     final pairing = service(MemoryLanIdentityStore(), _ScriptedMaster("1"));
 
@@ -119,6 +155,16 @@ void main() {
 class _ScriptedMaster implements PairingChannel {
   _ScriptedMaster(this.code, {String? seen = "", this.browser = false})
     : serverFingerprint = seen == "" ? _serverFingerprint : seen;
+
+  /// The password way: the secret is the password's digest under [salt], as the engine keeps it.
+  factory _ScriptedMaster.password(String password, {bool locked = false}) =>
+    _ScriptedMaster(salt.secretOf(password))..locked = locked;
+
+  static final salt = PasswordSalt(salt: Uint8List.fromList(List.generate(16, (i) => i)), memory: 64, iterations: 1, parallelism: 1, length: 32);
+
+  /// Answers `account_locked` to the account step.
+  bool locked = false;
+  String? login;
 
   /// A browser pairs through the page's TLS, which shows no certificate, and gets none.
   final bool browser;
@@ -153,6 +199,9 @@ class _ScriptedMaster implements PairingChannel {
   @override
   void send(Map<String, Object?> message) {
     switch (message["step"]) {
+      case "account":
+        login = message["login"] as String;
+        _toDevice.add(locked ? {"step": "failed", "code": Pairing.accountLocked} : {"step": "salt", ...salt.toJson()});
       case "start":
         _spake = Spake2.b(Spake2.passwordScalar(code, instanceId: instanceId), idA: Pairing.idDevice, idB: instanceId, aad: Pairing.aad);
         _keys = _spake!.finish(base64.decode(message["pA"] as String));

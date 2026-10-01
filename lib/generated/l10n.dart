@@ -17671,10 +17671,10 @@ class S {
     );
   }
 
-  /// `This device can't reach Lyra's servers right now. Check the internet connection and try again.`
+  /// `This device can't reach Lyra's servers, and there's no Lyra server on this network. Check the connection and try again.`
   String get auth_offline_message {
     return Intl.message(
-      'This device can\'t reach Lyra\'s servers right now. Check the internet connection and try again.',
+      'This device can\'t reach Lyra\'s servers, and there\'s no Lyra server on this network. Check the connection and try again.',
       name: 'auth_offline_message',
       desc: '',
       args: [],
@@ -17688,6 +17688,91 @@ class S {
       name: 'auth_offline_retry',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Sign in to your server`
+  String get auth_lan_title {
+    return Intl.message(
+      'Sign in to your server',
+      name: 'auth_lan_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There's no internet, but your business's Lyra server is on this network. Sign in with your account on it.`
+  String get auth_lan_subtitle {
+    return Intl.message(
+      'There\'s no internet, but your business\'s Lyra server is on this network. Sign in with your account on it.',
+      name: 'auth_lan_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Server`
+  String get auth_lan_server {
+    return Intl.message('Server', name: 'auth_lan_server', desc: '', args: []);
+  }
+
+  /// `Wrong email or password.`
+  String get auth_lan_wrong {
+    return Intl.message(
+      'Wrong email or password.',
+      name: 'auth_lan_wrong',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Too many wrong passwords. Wait 15 minutes and try again.`
+  String get auth_lan_locked {
+    return Intl.message(
+      'Too many wrong passwords. Wait 15 minutes and try again.',
+      name: 'auth_lan_locked',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create your server`
+  String get auth_create_title {
+    return Intl.message(
+      'Create your server',
+      name: 'auth_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There's no internet and no Lyra server on this network. Make this computer the server: this email and password will be its administrator.`
+  String get auth_create_subtitle {
+    return Intl.message(
+      'There\'s no internet and no Lyra server on this network. Make this computer the server: this email and password will be its administrator.',
+      name: 'auth_create_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create Master Server`
+  String get auth_create_button {
+    return Intl.message(
+      'Create Master Server',
+      name: 'auth_create_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Administrator: {email}`
+  String lan_master_owner_email(Object email) {
+    return Intl.message(
+      'Administrator: $email',
+      name: 'lan_master_owner_email',
+      desc: '',
+      args: [email],
     );
   }
 

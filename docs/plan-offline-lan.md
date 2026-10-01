@@ -8,8 +8,9 @@ process), and the app drives the engine through `LocalServerService`. Phase 3 do
 the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR, mutual TLS,
 revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages
 (in every build since 2026-10-01, no build flag; nothing is asked up front since the same day (D9): a
-device is in LAN mode while it holds a pairing, the cloud sign in shows only while the backend answers and
-a placeholder otherwise, where the way into the LAN is still to be decided, and a browser offers the LAN only on the page a master serves, which carries
+device is in LAN mode while it holds a pairing; the sign in follows the network (D13): the cloud's while the
+backend answers, a master's found by mDNS otherwise, whose e-mail and password pair the device, and with
+neither "create master server" on a computer that can be one; a browser offers the LAN only on the page a master serves, which carries
 `WebBundle.marker`): phones scan the QR, desktops type the code, and the web build the master
 serves pairs, keeps a WebCrypto key and proves itself (checked in a real Chrome,
 `lyra_node/test/browser_e2e_test.dart`). A paired native device installs the browsers' root (Windows,
@@ -301,6 +302,10 @@ client can't verify through the constrained root; every certificate the key sign
   code, valid for 5 minutes and one use only.
 - **QR**: it holds `{addresses, port, instanceId, caFingerprint, pairingToken}`. The camera sees
   the master's screen directly, so the fingerprint can't be swapped on the way.
+- **Password** (D13), the sign in of a device that has none yet: the account's e-mail (or username)
+  and password are the PAKE secret, through what the master keeps of the password (`protocol-v1.md`
+  §3). No admin and no code: any active account adds its own devices, which appear in "Devices" and
+  are revoked from there; a wrong password counts towards that account's lockout (S-4).
 - **Code**, when there's no camera: the code isn't sent. It is the shared secret of a PAKE
   exchange (SPAKE2 / CPace). That proves to both sides that no one else is in the middle, and
   it delivers the CA fingerprint authenticated. A wrong guess ends the attempt, and three
@@ -457,9 +462,15 @@ cloud app. `initialValidator` then:
   passphrase mode, then sign in.
 - client → find the master (last address, then mDNS, then the pairing screen), then sign in.
 - a browser on a master's page with no pairing → the pairing screen (its page has no cloud).
-- anything else → today's cloud path. Its sign in is drawn only while the backend answers; without
-  it a placeholder takes its place. How a device with no pairing gets into the LAN (setting up a
-  master, pairing) starts from there, still to be decided.
+- anything else → the sign in, which follows the network (D13, `NetworkScanService`): it asks the
+  backend and listens for masters on mDNS at once, and again every 15 s until the backend answers.
+  - The backend answers → today's cloud sign in, whatever is on the LAN.
+  - No backend, a master answers → that master's sign in: e-mail and password. They pair the device
+    first (the password way, §5.3) and then sign it in; no code, no admin at the master.
+  - Neither, on a desktop with the engine not set up → "Create Master Server": the same e-mail and
+    password become the owner, and the setup asks only for the rest (names, company, licence, the
+    recovery words).
+  - Neither, anywhere else (web, phones) → a placeholder that looks again.
 Leaving the LAN ("use Lyra another way") forgets the pairing and returns to the sign in; the master's
 engine and data stay. The first local setup shows
 the licence agreement (principle 7), which must be accepted. Whether a master syncs with the cloud is
@@ -694,6 +705,7 @@ The first two are in CLAUDE.md since phase 1, the next two since phase 2, the la
 | D10 | Accounts when subscribing (2026-10-01) | The backend creates a cloud account for each local user. An e-mail that already has a cloud account is settled with the administrator, never merged automatically (§9.4). |
 | D11 | Sites with a subscription and after it (2026-10-01) | Each site has its own master. Cancelling keeps every site's data on its master, each working on its own; in the cloud the main site stays and the others become inactive (§9.4). |
 | D12 | Remote access (2026-10-01) | Through the cloud with a subscription; without one, the owner's own VPN. The master never opens a port; our relay only if asked for (§9.5). |
+| D13 | Entering the LAN without a pairing (2026-10-01) | The sign in follows the network: the cloud's while the backend answers; otherwise a master found on the LAN, whose sign in pairs the device with the account's password (SPAKE2, no code: any active account adds its own devices, the admin sees and revokes them); with neither, "create master server" where the engine runs, the e-mail and password becoming the owner (§7.4). |
 
 ---
 

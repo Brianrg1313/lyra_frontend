@@ -26,7 +26,9 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 - `deployment/master/desktop/_body.dart` — the company (name, country and currency from `Catalogs`, the country proposing
   its currency, language), owner form, optional passphrase, licence tick → `LocalServerService.setUp` →
   the 24 words (`RecoveryWords`) with a required "written down" tick → `Deployment.attach(master)` → `/lan`; "use Lyra
-  another way" back to `/login`.
+  another way" back to `/login`. With `owner` (the sign in's "Create Master Server") the owner's e-mail and password
+  come from there: no username or password fields, the username made from the e-mail
+  (`LocalServerService.usernameOf`), and "back" runs `onBack`.
 - `deployment/pair/_pair.dart` — `PairDevice extends PageBuilder`: provides `LanPairingService` (searches at once, not on
   web).
 - `deployment/pair/desktop/_body.dart` — phones: "scan the QR" (`QrScanner` in a modal); found servers fill the address;

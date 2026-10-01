@@ -92,7 +92,11 @@ One JSON object per frame:
 
 ```
 master → device  {step: "hello", instanceId, protocol}
-device → master  {step: "start", secret: "code" | "token", pA}
+                 (the password way only:)
+device → master  {step: "account", login}
+master → device  {step: "salt", salt, m, t, p, length}
+               | {step: "failed", code: "account_locked" | "bad_request"}
+device → master  {step: "start", secret: "code" | "token" | "password", pA}
 master → device  {step: "reply", pB}
 device → master  {step: "enroll", confirm: cA, device: {name, platform, appVersion},
                   publicKey, proof, mac}
@@ -112,6 +116,25 @@ master → device  {step: "paired", confirm: cB, instanceId, caCertificate, serv
   when `serverFingerprint` differs from the certificate TLS showed it: that last one means the TLS
   connection ends at someone in the middle, even though the code was right.
 - A QR is checked before any secret is used: another `instanceId` in `hello` is `wrong_master`.
+
+**The password way** (plan D13) is the sign in of a device that has no pairing: the secret is the
+account's password, so no ticket, no code and no admin are involved. `login` is the username or
+the e-mail. The master answers how that account's password is hashed (`session.md` S-3: the PHC
+salt and Argon2id `m` KiB, `t`, `p`, and the digest's `length`), and the secret on both sides is
+`base64(Argon2id(password, salt, m, t, p, length))`: the device derives it, the master already
+holds it as the account's digest (`PasswordSalt.secretOf`; `lyra_node/test/crypto_test.dart` checks
+the two Argon2 libraries agree). The digest never travels and is never logged.
+- A login that can't sign in (unknown, pending, disabled) gets a decoy salt, `HMAC(key, login)`
+  with a key derived from the DEK, the same on every ask, and the exchange runs against a secret
+  nobody holds, so it fails like a wrong password and nothing tells whether the account exists.
+- A wrong password is `pairing_failed` and counts towards that account's lockout (S-4); a locked
+  account answers `account_locked` before any exchange, as its sign in does.
+- The device refuses a salt that asks for more than `m` 262144, `t` 12, `p` 4 (a master in the
+  middle could otherwise make it hash for minutes), before hashing anything.
+- The device is enrolled with `pairedBy` = that account. It then signs in with the same password
+  (§4); pairing alone opens no session.
+- The digest is password-equivalent for pairing only: whoever stole it from the (encrypted) store
+  could pair a device but not sign in, which still checks the password itself.
 
 After pairing, every `/rpc` connection uses **mutual TLS**: the client presents its device
 certificate and trusts only the installation CA it received. A revoked certificate still passes TLS

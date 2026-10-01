@@ -33,7 +33,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   stored device), `setUp` (answers the 24 recovery words once; enrols this app as the master device and keeps its
   `LanDevice`), `enroll` (a new certificate for this app, engine stopped), `start` (attaches to a running engine that
   proved it is ours, else spawns it detached and waits), `stop`, `recover` (enrols too); `error` keeps the engine's
-  refusal code. `unavailable` on web/mobile or with no executable.
+  refusal code. `unavailable` on web/mobile or with no executable. `usernameOf(email)`: a valid S-1 username from an
+  e-mail (the setup started from the sign in).
 - `node_commands.dart` — `NodeCommands` (seam), `ProcessNodeCommands`: runs `lyra_node <command>` (one JSON line out,
   secrets on stdin), `spawn` detached; finds it in `lyra_node/bin/` next to the app's executable, or `LYRA_NODE`.
 
@@ -52,7 +53,11 @@ Reached through `LanService.server` (the `lan/` services own it).
   `ConnectionService.receive`; `resync_required` → `ConnectionService.resync`.
 - `lan_pairing_service.dart` — `LanPairingService` (+ `LanPairingError`), flow-scoped (the pairing page): `search` (mDNS),
   `pair` (code exchange with a fresh key; the device becomes a `local` client), `pairScanned` (a QR: its token, each of its
-  addresses until one answers).
+  addresses until one answers), `pairWithPassword` (the sign in's: login and password are the secret, Argon2id in an
+  isolate; `locked` for a locked account).
+- `network_scan_service.dart` — `NetworkScanService` (+ `NetworkReach`), flow-scoped (the sign in): `scan` asks
+  `cloudReachable` and `discoverMasters` at once and whether this computer `canHost` (engine present, not set up);
+  online > master > none; `watch` looks again every 15 s until online, `hold` pauses it.
 
 ## capabilities/
 

@@ -20,6 +20,9 @@ enum LanPairingError {
 
   /// Nothing answered at that address.
   unreachable,
+
+  /// The password way: too many wrong passwords, the account waits (`session.md` S-4).
+  locked,
 }
 
 /// Pairs this install with a master as a client (plan §5.3): finds masters on the LAN, runs
@@ -79,7 +82,30 @@ class LanPairingService extends ChangeNotifier {
     return LanPairingError.unreachable;
   }
 
-  Future<LanPairingError?> _pair(String host, int port, {required String name, String? code, PairingOffer? offer}) async {
+  /// Pairs with the master at [host]:[port] by signing in: [login] and [password] of an account on
+  /// it are the secret (`protocol-v1.md` §3), so no code is needed. A wrong one answers
+  /// [LanPairingError.wrongCode], as a wrong password; the person signs in once paired.
+  Future<LanPairingError?> pairWithPassword({
+    required String host,
+    required int port,
+    required String login,
+    required String password,
+    String? name,
+  }) => _pair(
+    host,
+    port,
+    name: name ?? lanDeviceName,
+    password: PasswordPairing(login: login, password: password, derive: (salt, password) => compute(_secretOf, (salt, password))),
+  );
+
+  Future<LanPairingError?> _pair(
+    String host,
+    int port, {
+    required String name,
+    String? code,
+    PairingOffer? offer,
+    PasswordPairing? password,
+  }) async {
     final LanPairingSocket socket;
 
     try {
@@ -97,6 +123,7 @@ class LanPairingService extends ChangeNotifier {
         signer: key,
         code: code,
         offer: offer,
+        password: password,
       );
 
       await key.keep();
@@ -117,7 +144,11 @@ class LanPairingService extends ChangeNotifier {
 
       return null;
     } on PairingFailure catch (failure) {
-      return failure.code == PairingFailure.wrongMaster ? LanPairingError.wrongMaster : LanPairingError.wrongCode;
+      return switch (failure.code) {
+        PairingFailure.wrongMaster => LanPairingError.wrongMaster,
+        Pairing.accountLocked => LanPairingError.locked,
+        _ => LanPairingError.wrongCode
+      };
     } catch (error) {
       if (kDebugMode) print("pairing failed: $error");
       return LanPairingError.unreachable;
@@ -126,3 +157,6 @@ class LanPairingService extends ChangeNotifier {
     }
   }
 }
+
+/// Argon2id of the password in an isolate: seconds of work that would freeze the page.
+String _secretOf((PasswordSalt, String) input) => input.$1.secretOf(input.$2);

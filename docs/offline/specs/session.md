@@ -229,6 +229,10 @@ reused. It prefixes ticket codes minted by that device (`pos.md`, POS-40).
   voids the key that opens its client cache (plan §6.5). A POS outbox still on that device is
   lost unless it is replayed before the revocation (the confirmation lists pending outbox
   entries the master knows about, see `pos.md`).
+- **S-42** An active account can pair a device itself with its login and password, no code
+  (plan D13, `protocol-v1.md` §3, the password way). The device is `pairedBy` that account. A wrong
+  password counts towards the account's lockout (S-4); a locked account answers `account_locked`;
+  a login that can't sign in fails like a wrong password.
 
 ---
 

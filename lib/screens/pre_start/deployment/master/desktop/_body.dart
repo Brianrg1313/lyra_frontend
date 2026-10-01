@@ -9,6 +9,7 @@ import 'package:lyra_protocol/lyra_protocol.dart' show Catalogs;
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/business/business_language.dart';
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/local_server/local_server_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -17,7 +18,14 @@ import '../../widgets/deployment_frame.dart';
 import '../../widgets/recovery_words.dart';
 
 class DesktopBody extends StatefulWidget {
-  const DesktopBody({super.key});
+  const DesktopBody({super.key, this.owner, this.onBack});
+
+  /// The sign in's "create the server" (`AuthLan`): the e-mail and password typed there are the
+  /// owner's, so the page doesn't ask for them again.
+  final ({String email, String password})? owner;
+
+  /// Where "back" goes; the sign in by default.
+  final VoidCallback? onBack;
 
   @override
   State<DesktopBody> createState() => _DesktopBodyState();
@@ -65,6 +73,7 @@ class _DesktopBodyState extends State<DesktopBody> {
     for (final language in BusinessLanguage.values) SelectOption(value: language.tag, placeholder: language.name)
   ];
 
+  // Created only when drawn: with an [owner] they never join the form.
   late final _username = InputController(key: "USERNAME", form: _form, obligatory: true, min: 3, max: 32);
   late final _firstName = InputController(key: "FIRST_NAME", form: _form, obligatory: true, max: 64);
   late final _lastName = InputController(key: "LAST_NAME", form: _form, obligatory: true, max: 64);
@@ -121,12 +130,20 @@ class _DesktopBodyState extends State<DesktopBody> {
       SizedBox(height: AppSize.spaceM),
       TextMedium(S.of(context).lan_master_owner, bold: true),
       SizedBox(height: AppSize.spaceXS),
-      Input(placeholder: S.of(context).lan_username_input, controller: _username, next: _firstName.focus),
+      if (widget.owner case final owner?)
+        DeploymentNote(S.of(context).lan_master_owner_email(owner.email))
+      else
+        Input(placeholder: S.of(context).lan_username_input, controller: _username, next: _firstName.focus),
       InputRow(children: [
         Input(placeholder: S.of(context).first_name_input, controller: _firstName, next: _lastName.focus),
-        Input(placeholder: S.of(context).last_name_input, controller: _lastName, next: _password.focus)
+        Input(
+          placeholder: S.of(context).last_name_input,
+          controller: _lastName,
+          next: widget.owner == null ? _password.focus : null,
+          onSubmit: widget.owner == null ? null : _submit
+        )
       ]),
-      Input(placeholder: S.of(context).password_input, controller: _password, onSubmit: _submit),
+      if (widget.owner == null) Input(placeholder: S.of(context).password_input, controller: _password, onSubmit: _submit),
       DeploymentCheck(
         label: S.of(context).lan_passphrase_toggle,
         value: _usePassphrase,
@@ -143,7 +160,10 @@ class _DesktopBodyState extends State<DesktopBody> {
       SizedBox(height: AppSize.spaceS),
       MainButton(title: S.of(context).lan_master_create, loading: _form.loading, action: _submit),
       SizedBox(height: AppSize.spaceXS),
-      Button(title: S.of(context).lan_other_mode, action: () => Navis.pushAndClearStack(context, "/login"))
+      Button(
+        title: widget.onBack == null ? S.of(context).lan_other_mode : S.of(context).back,
+        action: widget.onBack ?? () => Navis.pushAndClearStack(context, "/login")
+      )
     ]
   );
 
@@ -179,9 +199,12 @@ class _DesktopBodyState extends State<DesktopBody> {
 
     final server = context.read<LanService>().server;
 
+    final owner = widget.owner;
+
     server.setUp(
-      username: _username.value,
-      password: _password.value,
+      username: owner == null ? _username.value : LocalServerService.usernameOf(owner.email),
+      password: owner?.password ?? _password.value,
+      email: owner?.email,
       firstName: _firstName.value,
       lastName: _lastName.value,
       company: (

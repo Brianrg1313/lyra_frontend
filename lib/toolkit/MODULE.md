@@ -27,7 +27,7 @@ backend, routes and theme. No UI.
   `lanService` — session, business, inventory and stock so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
 - `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in + `session.bind`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
-  `lanPlatform`, `lanSupported` (web: the `<meta name="lyra-master">` a master writes into its page), `lanServingMaster` (web: the page's origin, if a master's), `lanCanScan` (Android, iOS),
+  `lanPlatform`, `lanDeviceName` (the default name a device pairs with), `lanSupported` (web: the `<meta name="lyra-master">` a master writes into its page), `lanServingMaster` (web: the page's origin, if a master's), `lanCanScan` (Android, iOS),
   `discoverMasters`, `openPairingSocket`, `newDeviceKey`, `signDeviceProof`, `forgetDeviceKey`, `canInstallBrowserCa`,
   `installBrowserCa`, `saveBrowserCa`, `lanFailure`; `download` / `upload` (`/f`, the session's token, refreshed once),
   `LanFiles` (the seam).

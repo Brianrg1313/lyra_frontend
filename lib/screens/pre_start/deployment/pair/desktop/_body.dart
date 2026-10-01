@@ -38,12 +38,10 @@ class _DesktopBodyState extends State<DesktopBody> {
     max: 5,
     initial: "${_served?.port ?? defaultPort}"
   );
-  late final _name = InputController(key: "NAME", form: _form, obligatory: true, max: 64, initial: _defaultName);
+  late final _name = InputController(key: "NAME", form: _form, obligatory: true, max: 64, initial: lanDeviceName);
   late final _code = InputController.code(spaces: 8, form: _form);
 
   String? _error;
-
-  static String get _defaultName => "Lyra ${lanPlatform[0].toUpperCase()}${lanPlatform.substring(1)}";
 
   @override
   void dispose() {
@@ -140,7 +138,7 @@ class _DesktopBodyState extends State<DesktopBody> {
     if (_form.loading.value) return;
 
     final pairing = context.read<LanPairingService>();
-    final name = _name.value.trim().isEmpty ? _defaultName : _name.value.trim();
+    final name = _name.value.trim().isEmpty ? lanDeviceName : _name.value.trim();
 
     showModal(
       context: context,
@@ -161,7 +159,8 @@ class _DesktopBodyState extends State<DesktopBody> {
 
       _code.textController.clear();
       setState(() => _error = switch (failure) {
-        LanPairingError.wrongCode => S.of(context).lan_pair_wrong_code,
+        // `locked` is the password way's (the sign in), never a code's.
+        LanPairingError.wrongCode || LanPairingError.locked => S.of(context).lan_pair_wrong_code,
         LanPairingError.wrongMaster => S.of(context).lan_pair_wrong_master,
         LanPairingError.unreachable => S.of(context).lan_pair_unreachable
       });

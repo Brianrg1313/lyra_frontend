@@ -60,6 +60,9 @@ Future<bool> saveBrowserCa(Uint8List certificate) => saveFile(
 /// The `platform` a device says it is (`PairingDevice.platforms`).
 String get lanPlatform => kIsWeb ? "web" : defaultTargetPlatform.name.toLowerCase();
 
+/// The name a device pairs with unless the person types one; the admin renames it in "Devices".
+String get lanDeviceName => "Lyra ${lanPlatform[0].toUpperCase()}${lanPlatform.substring(1)}";
+
 Future<List<LanFound>> discoverMasters() => transport.discover();
 
 Future<LanPairingSocket> openPairingSocket(String host, int port) => transport.openPairing(host, port);

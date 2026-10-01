@@ -161,6 +161,18 @@ class LocalServerService extends ChangeNotifier {
     return words.cast<String>();
   }
 
+  /// The owner's username when the setup starts from an e-mail (the sign in's "create the
+  /// server"): its local part as `session.md` S-1 allows it. People sign in with the e-mail
+  /// anyway; the username only has to be valid, and the owner is the first account, so it can't
+  /// clash.
+  static String usernameOf(String email) {
+    var name = email.split("@").first.toLowerCase().replaceAll(RegExp(r"[^a-z0-9._-]"), "");
+    name = name.replaceFirst(RegExp(r"^[^a-z]+"), "");
+    if (name.length > 32) name = name.substring(0, 32);
+
+    return name.length < 3 ? "owner" : name;
+  }
+
   /// Certifies a new key for this app when it has none (the key store was wiped, the app was
   /// reinstalled). Needs the engine stopped; [passphrase] opens it in passphrase mode.
   Future<bool> enroll({String? passphrase}) async {
