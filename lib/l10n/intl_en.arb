@@ -1973,7 +1973,6 @@
   "hybrid_link_title": "Use this server with {company}?",
   "hybrid_link_pick_title": "Which of your companies is this server?",
   "hybrid_link_subtitle": "This computer keeps your company's information so Lyra keeps working when the internet goes down. Joining it with your company online keeps both the same, and lets you use messages and channels from here too.",
-  "hybrid_link_trust": "It's your information. Lyra only uses it to run your company, and only your team sees it.",
   "hybrid_link_join": "Join",
   "hybrid_link_later": "Not now",
   "hybrid_link_done": "Done. This server and {company} now work together.",

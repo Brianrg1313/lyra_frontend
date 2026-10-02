@@ -2320,8 +2320,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "hybrid_link_subtitle": MessageLookupByLibrary.simpleMessage(
             "This computer keeps your company\'s information so Lyra keeps working when the internet goes down. Joining it with your company online keeps both the same, and lets you use messages and channels from here too."),
         "hybrid_link_title": m75,
-        "hybrid_link_trust": MessageLookupByLibrary.simpleMessage(
-            "It\'s your information. Lyra only uses it to run your company, and only your team sees it."),
         "hybrid_password_button":
             MessageLookupByLibrary.simpleMessage("Continue"),
         "hybrid_password_later":

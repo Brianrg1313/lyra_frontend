@@ -805,7 +805,7 @@ The first two are in CLAUDE.md since phase 1, the next two since phase 2, the la
 | D15 | Where the data lives (2026-10-01) | In the cloud and on the master while within the free allowance or subscribed; past it, on the master only, with sign in and the account still served by the cloud (§9.6). |
 | D16 | Server section online (2026-10-01) | Shown in the cloud on a computer; a master made from there takes the account as owner and the cloud company's profile (§9.6). |
 | D17 | Nothing disappears (2026-10-01) | Areas the network or the master can't serve are locked, never hidden (§2). |
-| D18 | Linking a master to its cloud company (2026-10-01) | Asked once to the owner at the first online sign in on its devices, in plain words that say the information stays theirs; also from the server section (§9.6, `business.md` B-30). |
+| D18 | Linking a master to its cloud company (2026-10-01) | Asked once to the owner at the first online sign in on its devices, in plain words that say what joining does (no promise about the data: that is the privacy policy's); also from the server section (§9.6, `business.md` B-30). |
 
 ---
 

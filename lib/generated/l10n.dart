@@ -19699,16 +19699,6 @@ class S {
     );
   }
 
-  /// `It's your information. Lyra only uses it to run your company, and only your team sees it.`
-  String get hybrid_link_trust {
-    return Intl.message(
-      'It\'s your information. Lyra only uses it to run your company, and only your team sees it.',
-      name: 'hybrid_link_trust',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Join`
   String get hybrid_link_join {
     return Intl.message(

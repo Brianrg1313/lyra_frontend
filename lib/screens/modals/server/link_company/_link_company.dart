@@ -36,9 +36,9 @@ Future<void> askLinkCompany(BuildContext context, {bool force = false}) async {
 }
 
 /// The question in plain words: what joining does (the same information in both places, kept
-/// equal, so Lyra works without the internet and the online sections work here), and whose the
-/// information stays. With several companies online, which one this is, the one named like this
-/// server's first. Pops the joined company.
+/// equal, so Lyra works without the internet and the online sections work here). No promise about
+/// the data is made here: that is the privacy policy's. With several companies online, which one
+/// this is, the one named like this server's first. Pops the joined company.
 class LinkCompanyModal extends StatefulWidget {
   const LinkCompanyModal({super.key, required this.candidates});
 
@@ -77,8 +77,6 @@ class _LinkCompanyModalState extends State<LinkCompanyModal> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextMedium(s.hybrid_link_subtitle, lines: 6, color: subtitle),
-          SizedBox(height: AppSize.spaceS),
-          TextSmall(s.hybrid_link_trust, lines: 3, color: subtitle),
           SizedBox(height: AppSize.spaceM),
           if (widget.candidates.length > 1)
             SelectInput(
