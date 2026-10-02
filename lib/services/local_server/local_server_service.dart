@@ -116,7 +116,8 @@ class LocalServerService extends ChangeNotifier {
   }
 
   /// Makes this computer a master with its first owner (plan §7.4, `session.md` S-6). The company
-  /// comes after, from the welcome (`business.create`, `business.md` B-1). [passphrase] chooses passphrase mode. Answers the 24
+  /// comes after, from the welcome (`business.create`, `business.md` B-1), unless [company] brings
+  /// it (made from the cloud, plan D16). [passphrase] chooses passphrase mode. Answers the 24
   /// recovery words, **shown once**: the engine keeps no copy. Null when it was refused ([error]).
   Future<List<String>?> setUp({
     required String username,
@@ -125,6 +126,7 @@ class LocalServerService extends ChangeNotifier {
     required String lastName,
     String? email,
     String? passphrase,
+    Map<String, Object?>? company,
   }) async {
     if (!_supported) {
       _set(LocalServerStatus.unavailable);
@@ -140,6 +142,7 @@ class LocalServerService extends ChangeNotifier {
         "lastName": lastName,
         "email": ?email,
       },
+      "company": ?company,
       "device": _device(key),
       "passphrase": ?passphrase,
     }));

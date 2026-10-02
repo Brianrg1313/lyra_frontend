@@ -14,14 +14,26 @@ import '../../widgets/deployment_frame.dart';
 import '../../widgets/recovery_words.dart';
 
 class DesktopBody extends StatefulWidget {
-  const DesktopBody({super.key, this.owner, this.onBack});
+  const DesktopBody({super.key, this.owner, this.account, this.company, this.onBack, this.onDone});
 
   /// The sign in's "create the server" (`AuthLan`): the e-mail and password typed there are the
   /// owner's, so the page doesn't ask for them again.
   final ({String email, String password})? owner;
 
+  /// The server section online (plan D16): the signed-in account is the owner, its names
+  /// proposed; its password on the server is asked, since the sealed keys hang on it (§6.3).
+  final ({String email, String firstName, String lastName})? account;
+
+  /// The company the master starts with (`setup`'s `company`): the cloud company's profile and
+  /// its id (`business.md` B-30). Without it, the welcome creates it.
+  final Map<String, Object?>? company;
+
   /// Where "back" goes; the sign in by default.
   final VoidCallback? onBack;
+
+  /// Takes over once the words are confirmed, with the owner's password: the server section
+  /// signs in to it and stays online instead of going to `/lan`.
+  final Future<void> Function(String password)? onDone;
 
   @override
   State<DesktopBody> createState() => _DesktopBodyState();
@@ -44,11 +56,11 @@ class _DesktopBodyState extends State<DesktopBody> {
     customErrors: _errors(S.of(context).lan_username_input, short: S.of(context).lan_master_invalid_username)
   );
   late final _firstName = InputController(
-    key: "FIRST_NAME", form: _form, obligatory: true, max: 64,
+    key: "FIRST_NAME", form: _form, obligatory: true, max: 64, initial: widget.account?.firstName,
     customErrors: _errors(S.of(context).first_name_input)
   );
   late final _lastName = InputController(
-    key: "LAST_NAME", form: _form, obligatory: true, max: 64,
+    key: "LAST_NAME", form: _form, obligatory: true, max: 64, initial: widget.account?.lastName,
     customErrors: _errors(S.of(context).last_name_input)
   );
   late final _password = InputController(
@@ -75,6 +87,9 @@ class _DesktopBodyState extends State<DesktopBody> {
   String? _error;
   List<String>? _words;
 
+  /// The owner's e-mail when it comes from elsewhere: no username is asked then.
+  String? get _email => widget.owner?.email ?? widget.account?.email;
+
   @override
   void dispose() {
     _form.dispose();
@@ -90,8 +105,8 @@ class _DesktopBodyState extends State<DesktopBody> {
     children: [
       TextMedium(S.of(context).lan_master_owner, bold: true),
       SizedBox(height: AppSize.spaceXS),
-      if (widget.owner case final owner?)
-        DeploymentNote(S.of(context).lan_master_owner_email(owner.email))
+      if (_email case final email?)
+        DeploymentNote(S.of(context).lan_master_owner_email(email))
       else
         Input(placeholder: S.of(context).lan_username_input, controller: _username, next: _firstName.focus),
       InputRow(children: [
@@ -103,7 +118,11 @@ class _DesktopBodyState extends State<DesktopBody> {
           onSubmit: widget.owner == null ? null : _submit
         )
       ]),
-      if (widget.owner == null) Input(placeholder: S.of(context).password_input, controller: _password, onSubmit: _submit),
+      if (widget.owner == null) Input(
+        placeholder: widget.account == null ? S.of(context).password_input : S.of(context).hybrid_password_title,
+        controller: _password,
+        onSubmit: _submit
+      ),
       DeploymentCheck(
         label: S.of(context).lan_passphrase_toggle,
         value: _usePassphrase,
@@ -150,7 +169,7 @@ class _DesktopBodyState extends State<DesktopBody> {
     // Only what is drawn: `_form.validate()` would also check a passphrase typed and then
     // unticked, refusing the page over a field nobody can see.
     final drawn = [
-      if (widget.owner == null) _username,
+      if (_email == null) _username,
       _firstName,
       _lastName,
       if (widget.owner == null) _password,
@@ -168,10 +187,13 @@ class _DesktopBodyState extends State<DesktopBody> {
 
     final owner = widget.owner;
 
+    final email = _email;
+
     server.setUp(
-      username: owner == null ? _username.value : LocalServerService.usernameOf(owner.email),
+      username: email == null ? _username.value : LocalServerService.usernameOf(email),
       password: owner?.password ?? _password.value,
-      email: owner?.email,
+      email: email,
+      company: widget.company,
       firstName: _firstName.value,
       lastName: _lastName.value,
       passphrase: _usePassphrase ? _passphrase.value : null
@@ -189,6 +211,13 @@ class _DesktopBodyState extends State<DesktopBody> {
   /// `/lan` asks for them.
   Future<void> _start() async {
     if (!_wroteDown) return setState(() => _error = S.of(context).lan_recovery_required);
+
+    if (widget.onDone case final done?) {
+      _form.loading.value = true;
+      await done(_password.value);
+      if (mounted) _form.loading.value = false;
+      return;
+    }
 
     Deployment.attach(DeploymentRole.master);
 

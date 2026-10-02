@@ -84,10 +84,13 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
 (`employees.reissueActivation` is served, no button calls it), the pre-start task for a rehire
 (`employees.accept` is served), grants for other people (`permissions.*`), leaves and job endings.
 **Where we left off (2026-10-01)** Read this before anything else.
-- In progress: phase 4b, one app (§9.6, D14 to D17, the owner's call of 2026-10-01). E1 done: nothing
-  disappears (locked areas and tabs), a network failure keeps the session. Next E2: the server section
-  in the cloud, `hybrid` on a device with a master (the master's session opened with the cloud's sign
-  in), "work offline", a master made from the cloud with the company's profile; then E3, the cloud grant.
+- In progress: phase 4b, one app (§9.6, D14 to D18, the owner's call of 2026-10-01). E1 done: nothing
+  disappears (locked areas and tabs), a network failure keeps the session. E2 done in code and tests, not
+  yet seen on screen: `hybrid` (`HybridService`: the master's session opened by the online sign in, the
+  password reused or asked once; the boot resumes it), the internet watched (sections lock and open in
+  place), "work offline", the server section online (create the server here, from the cloud company,
+  linked), the link (`business.link`, asked once, D18). Next: try E2 on real hardware (a master and a
+  paired laptop, the internet pulled and back), then E3, the cloud grant (engine side + backend task doc).
 - After it: phase 4, clients and deliveries, then statistics (§11); the permissions ops
   (`session.md` session.permissions), without which an invited person holds no grant yet. Still
   open from phase 3: the exit check on real hardware.
@@ -113,7 +116,7 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
   2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
   `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that master's 24 words; delete it
   otherwise. A fresh start offers "Create Master Server" again.
-- Gate: `flutter analyze` clean, `flutter test` 1160 passing with the 5 known failures of
+- Gate: `flutter analyze` clean, `flutter test` 1171 passing with the 5 known failures of
   `test/MODULE.md`.
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
@@ -677,7 +680,9 @@ apps. What the person sees, how they sign in and what the side bar holds don't c
   allowance without a subscription it lives on the master only, and the cloud keeps serving what is
   vital (signing in, the account, the link to the master), so the data is always reachable. The
   allowance and its measure are the backend's (`docs/task-edge-sync-backend.md`).
-- **Mode on a device with a master.** A paired device (or the master) signed in online runs `hybrid`:
+- **Mode on a device with a master.** A paired device (or the master) signed in online whose master takes
+  the session runs `hybrid` (one whose master doesn't answer, away from the office, runs `cloud` until it
+  does: the server section's "try again"):
   the local domains always go to the master (one writer, principle 4; it always holds the full copy),
   the cloud-only areas to the cloud while the internet answers, locked while it doesn't. A domain whose
   master side isn't built yet reads the cloud while online. Losing the internet never signs anyone out
@@ -694,6 +699,12 @@ apps. What the person sees, how they sign in and what the side bar holds don't c
   master from there, whose owner is the signed-in account (its password asked, since the sealed keys of
   §6.3 hang on it) and whose company starts from the cloud company's profile (name, logo, country,
   currency); the rest arrives by the sync. The master stores the cloud company's id (the link).
+- **The link (D18).** A master made offline doesn't know its cloud company. At the first online sign in
+  on its devices its owner is asked once, in plain words, whether to join this server with the company
+  online (named when there is one, picked among several, the one named like the master's first); "not
+  now" is remembered and the server section offers it again. Until linked, the cloud-only areas are
+  locked with their own message (`needsLink`). The cloud-only calls carry the linked id
+  (`BusinessModel.cloudKey`); the local domains keep the master's.
 
 ---
 
@@ -794,6 +805,7 @@ The first two are in CLAUDE.md since phase 1, the next two since phase 2, the la
 | D15 | Where the data lives (2026-10-01) | In the cloud and on the master while within the free allowance or subscribed; past it, on the master only, with sign in and the account still served by the cloud (§9.6). |
 | D16 | Server section online (2026-10-01) | Shown in the cloud on a computer; a master made from there takes the account as owner and the cloud company's profile (§9.6). |
 | D17 | Nothing disappears (2026-10-01) | Areas the network or the master can't serve are locked, never hidden (§2). |
+| D18 | Linking a master to its cloud company (2026-10-01) | Asked once to the owner at the first online sign in on its devices, in plain words that say the information stays theirs; also from the server section (§9.6, `business.md` B-30). |
 
 ---
 

@@ -5,7 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/lan.dart' show lanServingMaster;
-import 'package:app/toolkit/settings/initial_builder.dart' show clientService;
+import 'package:app/toolkit/settings/initial_builder.dart' show clientService, hybridService;
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/lan/network_scan_service.dart';
@@ -38,7 +38,7 @@ class Authentication extends PageBuilder {
   final NetworkScanService Function()? scan;
 
   /// Enters with the stored cloud session: the route to open, or `/login` without one.
-  /// [ClientService.resolve] unless a test hands one.
+  /// [ClientService.resolve] (after `HybridService.resume`) unless a test hands one.
   final Future<String?> Function()? resume;
 
   @override
@@ -47,8 +47,15 @@ class Authentication extends PageBuilder {
       Provider(create: (_) => SignInService()),
       ChangeNotifierProvider(create: (_) => (scan ?? NetworkScanService.new)()..watch())
     ],
-    child: _Gate(resume: resume ?? clientService.resolve)
+    child: _Gate(resume: resume ?? _resumeSession)
   );
+}
+
+/// The kept session, on a device with a master its master's too when it answers (`hybrid`).
+Future<String?> _resumeSession() async {
+  await hybridService.resume();
+
+  return clientService.resolve();
 }
 
 class _Gate extends StatefulWidget {
@@ -103,7 +110,8 @@ class _GateState extends State<_Gate> {
 
     // The sources follow the form on screen: the cloud's identify the e-mail through the backend,
     // a master's through `LanService`. Nothing reads them before a submit.
-    if (scan.reach == NetworkReach.online) Deployment.online();
+    // A kept session resuming as `hybrid` (`HybridService.resume`) is not taken back to the cloud.
+    if (scan.reach == NetworkReach.online && Deployment.mode != DeploymentMode.hybrid) Deployment.online();
     if (scan.reach != NetworkReach.online && scan.reach != NetworkReach.searching && Deployment.paired != null) {
       Deployment.offline();
       return const _MasterGate();

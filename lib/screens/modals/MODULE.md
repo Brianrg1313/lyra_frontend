@@ -177,6 +177,14 @@ All three **return a value and write nothing** (POS services live below this nav
 - `request_permission/_request_permission.dart` — `showRequestPermission(context, requests:, permission:, section:, business:)`, `RequestPermissionModal`:
   optional note (≤ 200); **writes** through the `PermissionRequestsService` passed in. A `409` (already pending/granted) closes it. Returns `true` if sent.
 
+### `server/` (one session over the cloud and a master, plan §9.6)
+- `master_password/_master_password.dart` — `showMasterPassword(context, login:)`, `MasterPasswordModal`: the person's
+  password on this device's master, once after an online sign in that couldn't open it (`HybridService.signIn`); pops
+  whether it did; "not now".
+- `link_company/_link_company.dart` — `askLinkCompany(context, force:)`, `LinkCompanyModal`: joins the master's company
+  with its company online (`HybridService.link`), in plain words; one candidate is named in the title, several are
+  picked; asked once from the home (a "not now" is remembered), offered again from `ServerConnection` (`force`).
+
 ### `pre_start/` (welcome page)
 - `invitation/_invitation.dart` — `InvitationModal({invitation})`: invitation details + "Accept invitation" `Button` (`ClientService.acceptInvitation`), pops `true` once accepted; decline not offered yet.
 - `awaiting_invitation/_awaiting_invitation.dart` — `AwaitingInvitationModal`: tells the person to be invited by their account email.

@@ -97,12 +97,12 @@ class ConnectionService extends ChangeNotifier {
   /// [error] and the client keeps retrying on its own. It's idempotent, it
   /// can be called every time an authenticated section is entered.
   ///
-  /// Only in the cloud: on a master's devices there is no socket.io server to
-  /// reach. The master's events (`protocol-v1.md` §5) come over its own
-  /// channel, which `LanService` holds, and reach the same handlers through
-  /// [receive].
+  /// Not in `local`: a master has no socket.io server. The master's events
+  /// (`protocol-v1.md` §5) come over its own channel, which `LanService` holds,
+  /// and reach the same handlers through [receive]; in `hybrid` the cloud's
+  /// socket carries the cloud-only areas' beside it.
   Future<void> open() async {
-    if (Deployment.mode != DeploymentMode.cloud) return;
+    if (Deployment.mode == DeploymentMode.local) return;
     if (isConnected) return;
 
     final pending = _opening;

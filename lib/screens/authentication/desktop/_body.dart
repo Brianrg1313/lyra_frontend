@@ -14,6 +14,7 @@ import 'package:core/images.dart';
 import 'package:core/button.dart';
 import '../auth_brand.dart';
 import '../auth_frame.dart';
+import '../auth_hybrid.dart';
 
 class DesktopBody extends StatefulWidget {
   const DesktopBody({super.key});
@@ -197,7 +198,12 @@ class _DesktopBodyState extends State<DesktopBody> {
 
     final client = context.read<ClientService>();
 
-    context.read<SignInService>().signInWithPassword(context, _email.value, _password.value)
+    final email = _email.value.trim();
+    final password = _password.value;
+
+    context.read<SignInService>().signInWithPassword(context, _email.value, password)
+      // On a device with a master, its session too, with the same password.
+      .then((_) => mounted ? joinMaster(context, email, password: password) : null)
       // The token is already saved, but `resolve` only runs when the app
       // starts: without this, the global instance would enter the home with no
       // client loaded and the sidebar widgets would read an empty session.

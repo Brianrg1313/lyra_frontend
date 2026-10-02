@@ -49,8 +49,10 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
   final capabilities = context.watch<CapabilityService>();
 
   String? lock(HomeSection section) {
-    if (capabilities.of(section.key) == Capability.needsInternet) {
-      return S.of(context).section_needs_internet_title;
+    switch (capabilities.of(section.key)) {
+      case Capability.needsInternet: return S.of(context).section_needs_internet_title;
+      case Capability.needsLink: return S.of(context).section_needs_link_title;
+      default:
     }
 
     if (businessId == null) {
@@ -68,7 +70,7 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
     active,
     isExpanded,
     lock(section),
-    businessId != null || capabilities.of(section.key) == Capability.needsInternet
+    businessId != null || capabilities.locked(section.key)
   );
 
   /// A group whose sections are all left out loses its title too.

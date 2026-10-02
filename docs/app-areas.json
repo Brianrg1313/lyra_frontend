@@ -343,7 +343,7 @@
       "key": "local_server",
       "title": "Local server",
       "scope": "company",
-      "modes": ["local", "hybrid"],
+      "modes": ["cloud", "local", "hybrid"],
       "routes": ["local_server"],
       "paths": ["/home/business/:id/settings/local_server"],
       "actions": ["view", "devices", "backups", "stop"],

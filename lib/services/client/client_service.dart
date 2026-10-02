@@ -8,6 +8,7 @@ import 'package:app/services/client/client_model.dart';
 import 'package:app/services/client/client_task.dart';
 import 'package:app/services/client/employment_invitation_model.dart';
 import 'package:app/services/client/sources/session_source.dart';
+import 'package:app/services/client/sources/session_cloud_source.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart';
 
@@ -26,7 +27,7 @@ import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/connections/connections_service.dart';
 import 'package:app/services/connections/connection_catalog_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
-import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
+import 'package:app/toolkit/settings/initial_builder.dart' show businessService, hybridService;
 
 /// State of the authenticated client.
 ///
@@ -303,6 +304,12 @@ class ClientService extends ChangeNotifier {
             return null;
           });
 
+        // On a master's devices the session is one over two (plan §9.6): the cloud's is closed
+        // too, best effort, and dropped below either way.
+        if (Deployment.mode != DeploymentMode.cloud && await const SessionCloudSource().hasSession()) {
+          await const SessionCloudSource().signOut().timeout(const Duration(seconds: 5)).catchError((_) {});
+        }
+
         // With a cookie session only the backend can forget the credential
         // (the cookie is `HttpOnly`): leaving for `/login` anyway would look
         // signed out while the next reload walks straight back in.
@@ -314,6 +321,7 @@ class ClientService extends ChangeNotifier {
 
       await baileys.signOut();
       await _dropSession();
+      hybridService.stop();
 
       if (context.mounted) Navis.pushAndClearStack(context, "/login");
       await WidgetsBinding.instance.endOfFrame;

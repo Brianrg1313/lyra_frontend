@@ -23,7 +23,7 @@ backend, routes and theme. No UI.
 - `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`/`.paired` (the pairing's role, whichever session),
   `lanEnabled` (every native install, or the page a master serves; no build flag), `restore`
   (in `preCall`: a stored `LanDevice` is LAN mode with its role unless a cloud token is stored, anything else cloud; never chosen), `attach` (set up or
-  paired), `detach` (left the LAN), `online`/`offline` (the sign in page's network: the cloud's sources, or the paired master's), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
+  paired), `detach` (left the LAN), `online`/`offline` (the sign in page's network: the cloud's sources, or the paired master's; `offline` is also "work offline"), `hybrid` (signed in online and to the master, `HybridService`), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
   `lanService` — session, business, inventory and stock so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
 - `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in (or `activate`) + `session.bind`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
@@ -50,8 +50,8 @@ backend, routes and theme. No UI.
 - `settings/precall.dart` — `preCall()`: Hive (`DatabaseService.initialize`), `HomeService.preload`, `PreferencesService.preload`, `Deployment.restore`,
   Windows window (1024x720, hidden title bar, `window_manager`).
 - `settings/initial_builder.dart` — `initialBuilder(app)`: root `MultiProvider` + the
-  pre-tree instances `clientService`, `businessService`, `lanService`. App-wide services only.
-- `settings/initial_validator.dart` — `initialValidator()`: `local` → `/lan`; a browser on a master's page not paired yet → `/deployment/pair`; otherwise `clientService.resolve()` (session failure or pending task), then a pending deep link, else `PreferencesService().homePath` (last home page, or `/home`).
+  pre-tree instances `clientService`, `businessService`, `lanService`, `hybridService`. App-wide services only.
+- `settings/initial_validator.dart` — `initialValidator()`: `local` → `/lan`; a browser on a master's page not paired yet → `/deployment/pair`; a paired device with a cloud session → `hybridService.resume()` (`hybrid` when its master keeps the session; else the master's engine started and the cloud alone); otherwise `clientService.resolve()` (session failure or pending task), then a pending deep link, else `PreferencesService().homePath` (last home page, or `/home`).
 - `settings/translations.dart` — bridges core's strings (`hide_keyboard`, `connectionError`) to `S`.
 - `theme/dark.dart` / `theme/light.dart` — `darkScheme` / `lightScheme` (`SchemeColor`), accent `0xfffb8e00`.
 

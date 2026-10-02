@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/toolkit/deployment.dart';
+import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_pairing_service.dart';
 import 'package:app/services/lan/lan_service.dart';
@@ -49,6 +50,7 @@ void main() {
 
         return MultiProvider(providers: [
           ChangeNotifierProvider.value(value: lan),
+          ChangeNotifierProvider(create: (_) => HybridService(lan: lan, cloud: () async => true)),
           ChangeNotifierProvider(create: (_) => LanPairingService(
             store: MemoryLanIdentityStore(),
             discover: () async => const [],

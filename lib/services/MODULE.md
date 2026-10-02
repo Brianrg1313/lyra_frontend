@@ -30,7 +30,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
 Reached through `LanService.server` (the `lan/` services own it).
 
 - `local_server_service.dart` — `LocalServerService` (+ `LocalServerStatus`): `refresh` (also records the LAN port on the
-  stored device), `setUp` (the owner only, no company; answers the 24 recovery words once; enrols this app as the master device and keeps its
+  stored device), `setUp` (the owner, and the company when made from the cloud; answers the 24 recovery words once; enrols this app as the master device and keeps its
   `LanDevice`), `enroll` (a new certificate for this app, engine stopped), `start` (attaches to a running engine that
   proved it is ours, else spawns it detached and waits), `stop`, `recover` (enrols too); `error` keeps the engine's
   refusal code. `unavailable` on web/mobile or with no executable. `usernameOf(email)`: a valid S-1 username from an
@@ -59,17 +59,26 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `network_scan_service.dart` — `NetworkScanService` (+ `NetworkReach`), flow-scoped (the sign in): `scan` asks
   `cloudReachable` and `discoverMasters` at once and whether this computer `canHost` (engine present, not set up);
   online > master > none; `watch` looks again every 15 s until online, `hold` pauses it.
+- `hybrid_service.dart` — `HybridService` (+ `HybridJoin`), app-wide (`hybridService`), plan §9.6: `join(login,
+  password?)` after an online sign in on a paired device (the master's session too → `hybrid`; another person's kept
+  session signed out first; `needsPassword` → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
+  master keeps the session), `adopt` (a master just made from the cloud), `workOffline` / `workOnline` (session kept),
+  `stop` (sign out), the internet watcher (`cloudReachable` every 20 s → `CapabilityService.internet`, the socket
+  reopened when it returns); the link: `shouldAskLink`, `linkCandidates` (cloud companies with
+  `business.settings.edit`, the master's name first), `link` (`business.link`), `declineLink`; `companyFrom(profile,
+  cloudId)` (the setup's company from the cloud profile, as the engine's catalogues take it).
 
 ## capabilities/
 
-- `capability_service.dart` — `CapabilityService` singleton, `Capability` (`available`, `needsInternet`, `hidden`):
+- `capability_service.dart` — `CapabilityService` singleton, `Capability` (`available`, `needsInternet`, `needsLink`, `hidden`):
   which areas the deployment mode has. `modes` mirrors every area's `modes` in `docs/app-areas.json` (a test keeps them
   equal, `action_modes` as `<area>.<action>`); `of(area)` reads the most specific declared area (undeclared = cloud only);
   outside the cloud what the master serves is open, the rest (cloud only, or a local area whose phase 4 release hasn't
-  come, `_builtOnMaster`) is the cloud's: open in hybrid online, `needsInternet` (locked, never hidden) otherwise;
-  `shows` = works now (actions, grants), `exists` = drawn (side bar, tabs);
-  `singleCompany` (not cloud); `internet` (hybrid only); `cloudServices` (cloud-only helpers such as the places search
-  answer: cloud, or hybrid online). `PermissionsService.can`/`granted` ask it first.
+  come, `_builtOnMaster`) is the cloud's: open in hybrid online and linked, `needsLink` in hybrid unlinked,
+  `needsInternet` (locked, never hidden) otherwise; `local_server` only on a paired device or a computer
+  (`canHostMaster`); `shows` = works now (actions, grants), `exists` = drawn (side bar, tabs), `locked` = drawn locked;
+  `singleCompany` (not cloud); `internet`, `linked` (hybrid only); `modeChanged` (notifies); `cloudServices`
+  (cloud-only helpers such as the places search answer: cloud, or hybrid online and linked). `PermissionsService.can`/`granted` ask it first.
 
 ## business/
 
@@ -89,10 +98,12 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `sources/delivery_source.dart` — `DeliverySource`: settings, carriers, options, areas, isochrone (cloud only). Used by
   `BusinessDeliveryService`, `DeliveryAreasService`. `delivery_cloud_source.dart` — REST, and the isochrone's largest ring.
 - `business_service.dart` — `BusinessService` (+ `BusinessProfileStatus`): companies from `/init/`,
-  the **active** one (every change goes through `useBusiness`, then `ConnectionService().rebind()`), create, profile,
+  the **active** one (every change goes through `_use`: `useBusiness(cloudKey)`, `CapabilityService.linked`; then
+  `ConnectionService().rebind()`), `linked(cloudId)` (joined online), create, profile,
   logo (`/business/logo/`, multipart `FILE`), emails. `currency`/`currencyCode` via
   `CurrencyCatalogService`.
-- `business_model.dart` — `BusinessModel`: the light business from `/init/` (columnar table or a master's list).
+- `business_model.dart` — `BusinessModel`: the light business from `/init/` (columnar table or a master's list);
+  `cloudId` (a master's link, `business.md` B-30), `cloudKey` (what the `business_id` header carries).
 - `business_profile_model.dart` — `BusinessProfileModel`, `BusinessActivity`, `BusinessVerification`.
 - `business_employee_model.dart` — `BusinessEmployeeModel` (a row of `GET /business/employees/` or `.../former/`,
   compressed; the viewer's card forced first, kept without an id; `email` only on an invitation to an email with no account), `EmployeeState`, `EmployeeContract`, `EmployeeLeaveType`,
@@ -150,8 +161,8 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `client_service.dart` — `ClientService.resolve()`: reads `/init/` before the tree exists
   (for `initialValidator`), fills `businessService` and the catalogs, returns the landing route or `null` (the first pending task's `route` wins over the home; `employment.invitation` is skipped when the person already has a company).
   Only an answer with an `action` judges the session (dropped on `login`); no answer (no network) keeps it and returns `/login`, whose page enters with it once the backend answers.
-  `signOut(context)`: `POST /authentication/logout/` (best effort, 5 s), drops the token, clears the sidecar's
-  credentials, goes to `/login` (a master's sign in there too), then `clear()`s every session service. A new session service with a cache → add it there.
+  `signOut(context)`: the session source's sign out (best effort, 5 s; on a master's devices the cloud's too when one is
+  stored), drops the token, `hybridService.stop()`, clears the sidecar's credentials, goes to `/login` (a master's sign in there too), then `clear()`s every session service. A new session service with a cache → add it there.
   The same teardown runs when the backend rejects the session mid-use (`onSessionRejected`), without the logout call, plus a `session_expired` flag.
   With `useCookieSession` a failed logout aborts the sign out (only the backend can clear the cookie).
   `acceptInvitation(id)`: `PUT /profile/employments/` with `ACTION: accept`; throws the api error.
@@ -167,8 +178,8 @@ Reached through `LanService.server` (the `lan/` services own it).
 
 ## connection/ — the realtime link (singular)
 
-- `connection_service.dart` — `ConnectionService`: owns the `sockets` lifecycle and status; `open` does nothing outside the
-  cloud. `on(event)` listens to the cloud's socket and to the master's stream alike (`receive`, fed by `LanService`;
+- `connection_service.dart` — `ConnectionService`: owns the `sockets` lifecycle and status; `open` does nothing in
+  `local` (in `hybrid` the cloud's socket runs beside the master's stream). `on(event)` listens to the cloud's socket and to the master's stream alike (`receive`, fed by `LanService`;
   `resync` fires `onRestored`); `once`/`off`/`stream` are cloud only.
   `refresh()` forces a reconnect. `rebind()` is that reconnect after a business change (called by
   `BusinessService` on every switch/creation; the server joins rooms only in the handshake) —
@@ -237,7 +248,7 @@ See `baileys_server/MODULE.md` for the server side.
 
 - `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree, or a
   master's list with wildcards, ids of `docs/app-areas.json`). `can(id)`, `canOpen(area)`, `granted(area)` (its granted actions, `null` = all) on the active company by default; absent on the path = denied, account
-  areas (`dashboard`) always open, not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`. Cleared on sign out.
+  areas (`dashboard`) always open, `local_server` open in the cloud (this computer's, not a company's), not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`; `owns()` (created here, or a master's `*`). Cleared on sign out.
 - `permission_requests_service.dart` — `PermissionRequestsService` (+ status): `GET`/`POST /permissions/requests/` (active company), `isPending(id)`.
   Owned by `NoPermissionSection`. A `409` rereads the list and `/init` (`refreshCatalogs`) before rethrowing. Seam `seed`.
 - `permission_request_model.dart` — `PermissionRequestModel`, `PermissionRequestState` (`granted` = held now, measured on read).
@@ -252,7 +263,8 @@ See `baileys_server/MODULE.md` for the server side.
 - `preferences_service.dart` — `PreferencesService` singleton (Hive box `preferences`, `preload()` in `preCall`):
   device-wide theme/language (applied to and persisted from `AppController`); per account (`bindUser` from
   `ClientService`) the last `/home...` path (`homePath`), the last active business (`useBusiness` from
-  `BusinessService`) and per-business selections (`RememberedSelection`: `chat`, `employee`; `recall`/`remember`).
+  `BusinessService`) and per-business selections (`RememberedSelection`: `chat`, `employee`; `recall`/`remember`);
+  `linkDeclined` / `declineLink` (the "not now" to joining a server with its company online).
 
 ## inventory/ — table authoring
 

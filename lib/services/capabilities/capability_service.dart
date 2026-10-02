@@ -14,6 +14,11 @@ enum Capability {
   /// without the network (plan §9.6, D17).
   needsInternet,
 
+  /// A cloud-only area in `hybrid` while the master's company isn't linked to its cloud company
+  /// (`business.md` B-30): the internet answers, but the cloud doesn't know which company to
+  /// serve. Locked like [needsInternet], with its own message (plan D18).
+  needsLink,
+
   /// What can't exist in this mode at all (a master's accounting export in the cloud): hidden
   /// like an area without its `view`.
   hidden
@@ -80,7 +85,7 @@ class CapabilityService extends ChangeNotifier {
     "connections": _online,
     "external_services": _online,
     "pos": _all,
-    "local_server": _lan
+    "local_server": _all
   };
 
   /// The areas whose master side exists: plan phase 4 ships one domain per
@@ -110,6 +115,13 @@ class CapabilityService extends ChangeNotifier {
   };
 
   bool _internet = true;
+  bool _linked = true;
+
+  /// Whether this install is a computer that can run the engine: a native desktop build.
+  static bool get canHostMaster => Deployment.lanEnabled && !kIsWeb && switch (defaultTargetPlatform) {
+    TargetPlatform.windows || TargetPlatform.macOS || TargetPlatform.linux => true,
+    _ => false
+  };
 
   /// Whether this install sees one company only (plan principle 3, D6): a
   /// master holds one, so there is nothing to switch to or create.
@@ -123,7 +135,7 @@ class CapabilityService extends ChangeNotifier {
   /// screen falls back to what it does alone (typing the address).
   bool get cloudServices => switch (Deployment.mode) {
     DeploymentMode.cloud => true,
-    DeploymentMode.hybrid => _internet,
+    DeploymentMode.hybrid => _internet && _linked,
     DeploymentMode.local => false
   };
 
@@ -134,6 +146,22 @@ class CapabilityService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The running mode changed (`HybridService`: signed in online on a device with a master,
+  /// "work offline"): every answer may have.
+  void modeChanged() => notifyListeners();
+
+  /// Whether the company in use is known to the cloud: always in `cloud`; in `hybrid`, whether
+  /// the master's company carries its cloud company's id (`BusinessModel.cloudId`). Set by
+  /// `BusinessService` whenever the active company changes. Only `hybrid` reads it.
+  bool get linked => _linked;
+
+  set linked(bool value) {
+    if (value == _linked) return;
+
+    _linked = value;
+    notifyListeners();
+  }
+
   /// What [area] (`finance.payments`, or an action id `finance.payments.record`)
   /// is in the running mode. It is read from the most specific area declared on
   /// the path; one declared nowhere is cloud only, as the contract of
@@ -141,6 +169,12 @@ class CapabilityService extends ChangeNotifier {
   Capability of(String area) {
     final mode = Deployment.mode;
     final declared = _declared(area) ?? _online;
+
+    // The server section is wherever a master can be (plan D16): on a device paired with one,
+    // and online on any computer, where it creates one. Not in a browser or on a phone.
+    if (area.split(".").first == "local_server" && Deployment.paired == null && !canHostMaster) {
+      return Capability.hidden;
+    }
 
     if (mode == DeploymentMode.cloud) {
       return declared.contains(mode) ? Capability.available : Capability.hidden;
@@ -153,11 +187,19 @@ class CapabilityService extends ChangeNotifier {
     // which `hybrid` reads from the cloud meanwhile. Without it, locked.
     if (!declared.contains(DeploymentMode.cloud)) return Capability.hidden;
 
-    return mode == DeploymentMode.hybrid && _internet ? Capability.available : Capability.needsInternet;
+    if (mode == DeploymentMode.local || !_internet) return Capability.needsInternet;
+
+    return _linked ? Capability.available : Capability.needsLink;
   }
 
   /// Whether [area] works now: what an action, a button or a grant asks.
   bool shows(String area) => of(area) == Capability.available;
+
+  /// Whether [area] is drawn locked: part of the product, not reachable now.
+  bool locked(String area) => switch (of(area)) {
+    Capability.needsInternet || Capability.needsLink => true,
+    _ => false
+  };
 
   /// Whether [area] is drawn, open or locked: what a side bar option or a tab asks.
   bool exists(String area) => of(area) != Capability.hidden;

@@ -8,8 +8,8 @@ import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 
 /// What a home section or tab shows when the deployment mode doesn't let it open
-/// (see `homeContent`): out of the product in this mode, or locked until the
-/// internet answers. There is nothing to ask for either way, unlike
+/// (see `homeContent`): out of the product in this mode, locked until the
+/// internet answers, or until the server is joined to its company online. There is nothing to ask for either way, unlike
 /// `NoPermissionSection`.
 class UnavailableSection extends StatelessWidget {
   const UnavailableSection({super.key, required this.capability, this.surface = true});
@@ -21,17 +21,25 @@ class UnavailableSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final offline = capability == Capability.needsInternet;
+    final s = S.of(context);
 
-    final message = SectionMessage(
-        icon: offline ? CI.cloud_disconected : CI.cloud_network,
-        title: offline
-          ? S.of(context).section_needs_internet_title
-          : S.of(context).section_unavailable_title,
-        subtitle: offline
-          ? S.of(context).section_needs_internet_subtitle
-          : S.of(context).section_unavailable_subtitle
-    );
+    final message = switch (capability) {
+      Capability.needsInternet => SectionMessage(
+        icon: CI.cloud_disconected,
+        title: s.section_needs_internet_title,
+        subtitle: s.section_needs_internet_subtitle
+      ),
+      Capability.needsLink => SectionMessage(
+        icon: CI.cloud_network,
+        title: s.section_needs_link_title,
+        subtitle: s.section_needs_link_subtitle
+      ),
+      _ => SectionMessage(
+        icon: CI.cloud_network,
+        title: s.section_unavailable_title,
+        subtitle: s.section_unavailable_subtitle
+      )
+    };
 
     if (!surface) return message;
 

@@ -38,12 +38,14 @@ import 'package:app/services/database/database_service.dart';
 ///
 /// - [cloud]: today's app, the backend over the internet. A business without a computer.
 /// - [local]: one desktop of each site is the master and serves the LAN, no cloud.
-/// - [hybrid]: the master serves the LAN and syncs with the cloud (a subscription, phase 6).
+/// - [hybrid]: a device with a master signed in online too (plan §9.6): the master serves its
+///   domains, the cloud the cloud-only areas while the internet answers.
 ///
 /// It is never chosen up front: a device is in LAN mode while it is paired with a master or is
 /// one ([Deployment.restore]), unless its session is the cloud's: the sign in page offers the
-/// cloud whenever the backend answers, paired or not, and the session decides where the data
-/// comes from. Whether a master syncs is the company's subscription, not the device's.
+/// cloud whenever the backend answers, paired or not. A paired device signed in online whose
+/// master takes its session too runs [hybrid] (`HybridService`); one whose master doesn't answer
+/// (away from the office) runs [cloud]. Whether a master syncs is the company's subscription.
 enum DeploymentMode { cloud, local, hybrid }
 
 /// What this install is in a LAN deployment. Meaningless in [DeploymentMode.cloud].
@@ -122,9 +124,16 @@ abstract final class Deployment {
     _role = null;
   }
 
-  /// The sign in page goes to the master this device is paired with.
+  /// The sign in page goes to the master this device is paired with, or the person chose to
+  /// work without the internet ("work offline", the master's session kept).
   static void offline() {
     if (_paired != null) use(DeploymentMode.local, role: _paired);
+  }
+
+  /// A device with a master, signed in online and to its master (plan §9.6): the local domains
+  /// from the master, the cloud-only areas from the cloud while the internet answers.
+  static void hybrid() {
+    if (_paired != null) use(DeploymentMode.hybrid, role: _paired);
   }
 
   /// [paired] defaults to [role]: a test of a session on a master is a test of a paired device.

@@ -9,11 +9,13 @@ import 'package:app/services/client/client_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/desktop/_body.dart';
 import 'package:app/screens/home/header/_header.dart';
 import 'package:app/screens/home/sections/_sections.dart';
+import 'package:app/screens/modals/server/link_company/_link_company.dart';
 
 /// Home shell. Each section loads via its own URL (`/home/...`) but
 /// they all share this single page: when switching sections the tree is
@@ -46,10 +48,16 @@ class Home extends PageBuilder {
   /// handshake is the credential, not being on `/home`: without a loaded
   /// session the server would reject the connection and the client would keep
   /// retrying.
+  ///
+  /// On a master's devices signed in online, it is also where joining the server with its
+  /// company online is asked, once (`askLinkCompany`).
   @override
   void initialized(BuildContext context) {
     if (!context.read<ClientService>().isAuthenticated) return;
     unawaited(ConnectionService().open());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) unawaited(askLinkCompany(context));
+    });
   }
 
   /// It listens to the **active business** in addition to the open screen:
@@ -71,8 +79,10 @@ class Home extends PageBuilder {
     final businessId = context.select<BusinessService, String?>(
       (service) => service.activeId
     );
-    // A reread `/init` can grant or revoke the open section.
+    // A reread `/init` can grant or revoke the open section; the internet going or coming back,
+    // or "work offline", locks or opens it in place.
     context.watch<PermissionsService>();
+    context.watch<CapabilityService>();
 
     return ValueListenableBuilder<String>(
       valueListenable: Navis.currentKey,

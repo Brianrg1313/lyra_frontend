@@ -7,6 +7,8 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/client/client_service.dart';
+import 'package:app/toolkit/deployment.dart';
+import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 
 // WIDGETS
@@ -14,20 +16,37 @@ import 'package:core/button.dart';
 import './widgets/lan_address.dart';
 import './widgets/lan_browsers.dart';
 import './widgets/pairing_qr.dart';
+import './widgets/server_away.dart';
+import './widgets/server_connection.dart';
 
-/// The `local_server` home section, only on a master's devices (plan §4 admin screens): this
-/// device's code and the CA it trusts; the server's devices, who is paired and online, removing
-/// one, and, on the master's own app, adding one (`pairing.start` shows the code to type on the
-/// new device and the QR a phone scans). The address a browser opens comes first ([LanAddress]);
-/// a native device also hands out the browsers' root ([LanBrowsers]).
-class LocalServerSection extends StatefulWidget {
+/// The `local_server` home section, wherever a master can be (plan §4 admin screens, D16). With
+/// the server's session ([_ServerReady]); online without it, [ServerAway]: the server that
+/// doesn't answer, or creating one on this computer.
+class LocalServerSection extends StatelessWidget {
   const LocalServerSection({super.key});
 
   @override
-  State<LocalServerSection> createState() => _LocalServerSectionState();
+  Widget build(BuildContext context) {
+    final ready = context.select<LanService, bool>((lan) => lan.status == LanStatus.ready);
+    context.watch<HybridService>();
+
+    return ready && Deployment.mode != DeploymentMode.cloud ? const _ServerReady() : const ServerAway();
+  }
 }
 
-class _LocalServerSectionState extends State<LocalServerSection> {
+/// How this device works with the server ([ServerConnection]); this device's code and the CA it
+/// trusts; the server's devices, who is paired and online, removing one, and, on the master's own
+/// app, adding one (`pairing.start` shows the code to type on the new device and the QR a phone
+/// scans). The address a browser opens comes first ([LanAddress]); a native device also hands
+/// out the browsers' root ([LanBrowsers]).
+class _ServerReady extends StatefulWidget {
+  const _ServerReady();
+
+  @override
+  State<_ServerReady> createState() => _ServerReadyState();
+}
+
+class _ServerReadyState extends State<_ServerReady> {
   List<Map<String, Object?>>? _devices;
   Map<String, Object?>? _pairing;
 
@@ -79,6 +98,7 @@ class _LocalServerSectionState extends State<LocalServerSection> {
       children: [Align(alignment: Alignment.topLeft, child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const ServerConnection(),
         TextInter(s.lan_ready_title, multiplier: 1.8, bold: true, lines: 2),
         Padding(
           padding: EdgeInsets.only(top: AppSize.spaceXS, bottom: AppSize.spaceM),

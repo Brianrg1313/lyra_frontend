@@ -31,6 +31,7 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 | `verification` | always `untrusted` | nobody (B-6) |
 | `emails` | always `[]` | nobody (cloud only) |
 | `created` | instant | setup |
+| `cloudId` | the cloud company's id? | setup or `business.create` from the cloud; `business.link` (B-30) |
 
 ### Rules
 
@@ -71,10 +72,11 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `business.create` | owner (`*`) | `{name, country, currency, language, timezone?, activity?}` | the company as `session.bootstrap` lists it | `required`, `invalid_field`, `forbidden`, `company_exists` |
+| `business.create` | owner (`*`) | `{name, country, currency, language, timezone?, activity?, cloudId?}` | the company as `session.bootstrap` lists it | `required`, `invalid_field`, `forbidden`, `company_exists` |
 | `business.profile` | `business.view` | — | the profile | — |
 | `business.edit` | `business.settings.edit` | `{KEY: value}` (one key of `BusinessFields.editable`) | the profile | `required`, `invalid_field`, `invalid_timezone`, `bad_request` (not one key) |
 | `business.setLogo` | `business.settings.edit_logo` | `{fileId: id \| null}` | the profile | `invalid_file` |
+| `business.link` | owner (`*`) | `{cloudId}` | the company as `session.bootstrap` lists it | `invalid_field`, `forbidden`, `not_found` (no company), `already_linked` |
 
 The profile answer: the fields above, `created`, `verification: "untrusted"`, `emails: []`, and
 `owner` (whether the reader holds `*`, the app's owner badge). `logo` is a file id. The app's LAN
@@ -85,6 +87,28 @@ source maps the screens' keys (`LEGAL_NAME`, `DESCRIPTION`…) onto these.
 | Event | When | Payload |
 |---|---|---|
 | `business/changed` | any profile field, the logo or the site changed | `{keys: [...]}`, the changed profile keys, or `["site"]`. Clients re-read what they show. Sent to sessions holding `business.view`. |
+
+---
+
+## business.link
+
+The company of a master and the cloud's are one company in two homes (plan §9.6, D15): the master
+keeps the cloud company's id, so a device signed in online reaches the cloud-only areas (messages,
+channels) of the same company, and the edge sync (phase 6) knows what to keep equal.
+
+### Rules
+
+- **B-30** `cloudId` is set when the master is created from the cloud (setup or `business.create`
+  carry it), or later by the owner with `business.link`, which the app asks once at an online sign
+  in on a device with an unlinked master (plan D18). The bootstrap's company carries it (`cloudId`,
+  null while unlinked).
+- **B-31** It is written once. The same id again answers as the first time; another one is
+  refused (`already_linked`): the master's data would otherwise be joined to a second company.
+  Unlinking is resetting the master (B-7). The write is audited (`company.linked`), logged in the
+  oplog and announced by `business/changed {keys: ["cloudId"]}`.
+- **B-32** The engine can't check, without the internet, that the account owns that cloud company;
+  the app links only a company its cloud session lists as the owner's. The cloud grant (§9.6,
+  phase 4b E3) will carry the company id signed by the backend, checked against the link.
 
 ---
 

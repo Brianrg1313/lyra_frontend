@@ -29,7 +29,9 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
   `Deployment.attach(master)` → `/lan`; "use Lyra another way" back to `/login`. With `owner` (the sign in's "Create
   Master Server") the owner's e-mail and password come from there: no username or password fields, the username made
   from the e-mail (`LocalServerService.usernameOf`), the engine opened and signed in with them before `/lan` (which then
-  resolves to `/welcome`), and "back" runs `onBack`.
+  resolves to `/welcome`), and "back" runs `onBack`. With `account` (the server section online) the e-mail and names come
+  from the signed-in account and the password is asked; `company` goes to the setup (the cloud company's, linked), and
+  `onDone(password)` takes over after the words (`HybridService.adopt`).
 - `deployment/pair/_pair.dart` — `PairDevice extends PageBuilder`: provides `LanPairingService` (searches at once, not on
   web).
 - `deployment/pair/desktop/_body.dart` — phones: "scan the QR" (`QrScanner` in a modal); found servers fill the address;

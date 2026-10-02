@@ -15,6 +15,7 @@ import 'package:core/form.dart';
 import 'package:core/button.dart';
 import '../../auth_brand.dart';
 import '../../auth_footer.dart';
+import '../../auth_hybrid.dart';
 import '../../auth_panel.dart';
 
 class DesktopBody extends StatefulWidget {
@@ -454,6 +455,8 @@ class _DesktopBodyState extends State<DesktopBody> {
         ).then((_) => signIn.clearPending());
 
     request
+      // On a device with a master, its session too: a code isn't its password, so it is asked.
+      .then((_) => mounted && _account! ? joinMaster(context, _email!) : null)
       // The token is already saved, but `resolve` only runs when the app
       // starts: without this, the global instance would enter the home with no
       // client loaded and the sidebar widgets would read an empty session.

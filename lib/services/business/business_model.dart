@@ -34,6 +34,14 @@ class BusinessModel {
   /// hasn't declared one yet: [BusinessService.currency] resolves it.
   final String currency;
 
+  /// The cloud company a master's company is one with (`business.md` B-30), null while it
+  /// isn't linked. A cloud company has none: its [id] is the cloud's.
+  final String? cloudId;
+
+  /// What the cloud knows this company by: the `business_id` its requests carry. On a master's
+  /// devices signed in online (`hybrid`), the cloud-only areas reach the linked cloud company.
+  String get cloudKey => cloudId ?? id;
+
   const BusinessModel({
     required this.id,
     required this.name,
@@ -42,6 +50,7 @@ class BusinessModel {
     this.activity = "",
     this.profile = "",
     this.currency = "",
+    this.cloudId,
   });
 
   factory BusinessModel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +62,7 @@ class BusinessModel {
       activity: json["activity"] ?? "",
       profile: json["profile"] ?? "",
       currency: json["currency"]?.toString().trim().toUpperCase() ?? "",
+      cloudId: json["cloudId"] as String?,
     );
   }
 
@@ -91,6 +101,7 @@ class BusinessModel {
     String? activity,
     String? profile,
     String? currency,
+    String? cloudId,
   }) {
     return BusinessModel(
       id: id ?? this.id,
@@ -100,6 +111,7 @@ class BusinessModel {
       activity: activity ?? this.activity,
       profile: profile ?? this.profile,
       currency: currency ?? this.currency,
+      cloudId: cloudId ?? this.cloudId,
     );
   }
 }

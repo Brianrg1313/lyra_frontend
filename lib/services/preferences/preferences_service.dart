@@ -140,6 +140,15 @@ class PreferencesService {
     if (id != null) _write(_userKey("business"), id);
   }
 
+  /// Whether the person answered "not now" to joining the active business's server with its
+  /// company online (`HybridService.shouldAskLink`): it is asked once, then only offered from
+  /// the server section.
+  bool get linkDeclined => _business != null && _read<String>(_userKey("${_business!}/link")) == "declined";
+
+  void declineLink() {
+    if (_business != null) _write(_userKey("${_business!}/link"), "declined");
+  }
+
   // ───────────────────────────── selections ─────────────────────────────
 
   /// What was open for [selection] in the active business, or null.

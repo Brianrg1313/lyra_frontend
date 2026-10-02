@@ -47,7 +47,7 @@ enum HomeSection {
   marketing(key: "marketing", path: "/home/marketing", icon: Icons.campaign_outlined),
   report(key: "report", path: "/home/report", icon: CI.chart),
   externalServices(key: "external_services", path: "/home/external_services", icon: CI.link),
-  // Only on a master's devices (`local_server` is a LAN area).
+  // Wherever a master can be: its devices, and online any computer, which creates one (D16).
   server(key: "local_server", path: "/home/server", icon: CI.network);
 
   const HomeSection({

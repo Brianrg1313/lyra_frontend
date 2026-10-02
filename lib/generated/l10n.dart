@@ -1960,6 +1960,26 @@ class S {
     );
   }
 
+  /// `Join with your company online`
+  String get section_needs_link_title {
+    return Intl.message(
+      'Join with your company online',
+      name: 'section_needs_link_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This section works online. Join this server with your company online, in the Server section, to use it here.`
+  String get section_needs_link_subtitle {
+    return Intl.message(
+      'This section works online. Join this server with your company online, in the Server section, to use it here.',
+      name: 'section_needs_link_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Not available here`
   String get section_unavailable_title {
     return Intl.message(
@@ -19646,6 +19666,256 @@ class S {
       name: 'lan_stop_server_message',
       desc: '',
       args: [count],
+    );
+  }
+
+  /// `Use this server with {company}?`
+  String hybrid_link_title(Object company) {
+    return Intl.message(
+      'Use this server with $company?',
+      name: 'hybrid_link_title',
+      desc: '',
+      args: [company],
+    );
+  }
+
+  /// `Which of your companies is this server?`
+  String get hybrid_link_pick_title {
+    return Intl.message(
+      'Which of your companies is this server?',
+      name: 'hybrid_link_pick_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This computer keeps your company's information so Lyra keeps working when the internet goes down. Joining it with your company online keeps both the same, and lets you use messages and channels from here too.`
+  String get hybrid_link_subtitle {
+    return Intl.message(
+      'This computer keeps your company\'s information so Lyra keeps working when the internet goes down. Joining it with your company online keeps both the same, and lets you use messages and channels from here too.',
+      name: 'hybrid_link_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It's your information. Lyra only uses it to run your company, and only your team sees it.`
+  String get hybrid_link_trust {
+    return Intl.message(
+      'It\'s your information. Lyra only uses it to run your company, and only your team sees it.',
+      name: 'hybrid_link_trust',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Join`
+  String get hybrid_link_join {
+    return Intl.message(
+      'Join',
+      name: 'hybrid_link_join',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not now`
+  String get hybrid_link_later {
+    return Intl.message(
+      'Not now',
+      name: 'hybrid_link_later',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Done. This server and {company} now work together.`
+  String hybrid_link_done(Object company) {
+    return Intl.message(
+      'Done. This server and $company now work together.',
+      name: 'hybrid_link_done',
+      desc: '',
+      args: [company],
+    );
+  }
+
+  /// `Your server password`
+  String get hybrid_password_title {
+    return Intl.message(
+      'Your server password',
+      name: 'hybrid_password_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This computer works with a Lyra server. Type the password you use on it once, and you'll stay signed in here even without the internet.`
+  String get hybrid_password_subtitle {
+    return Intl.message(
+      'This computer works with a Lyra server. Type the password you use on it once, and you\'ll stay signed in here even without the internet.',
+      name: 'hybrid_password_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not now`
+  String get hybrid_password_later {
+    return Intl.message(
+      'Not now',
+      name: 'hybrid_password_later',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue`
+  String get hybrid_password_button {
+    return Intl.message(
+      'Continue',
+      name: 'hybrid_password_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Working online`
+  String get server_online_title {
+    return Intl.message(
+      'Working online',
+      name: 'server_online_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your information is on this server, and the online sections (messages, channels) work through the internet.`
+  String get server_online_subtitle {
+    return Intl.message(
+      'Your information is on this server, and the online sections (messages, channels) work through the internet.',
+      name: 'server_online_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Working offline`
+  String get server_offline_title {
+    return Intl.message(
+      'Working offline',
+      name: 'server_offline_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only this server is used. The online sections stay locked until you go back online. You stay signed in.`
+  String get server_offline_subtitle {
+    return Intl.message(
+      'Only this server is used. The online sections stay locked until you go back online. You stay signed in.',
+      name: 'server_offline_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Work offline`
+  String get server_work_offline {
+    return Intl.message(
+      'Work offline',
+      name: 'server_work_offline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Work online`
+  String get server_work_online {
+    return Intl.message(
+      'Work online',
+      name: 'server_work_online',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Join with your company online`
+  String get server_link_button {
+    return Intl.message(
+      'Join with your company online',
+      name: 'server_link_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Make this computer your server`
+  String get server_create_title {
+    return Intl.message(
+      'Make this computer your server',
+      name: 'server_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra keeps a copy of {company} on this computer, so you keep working when the internet goes down. The other devices of your place connect to it.`
+  String server_create_subtitle(Object company) {
+    return Intl.message(
+      'Lyra keeps a copy of $company on this computer, so you keep working when the internet goes down. The other devices of your place connect to it.',
+      name: 'server_create_subtitle',
+      desc: '',
+      args: [company],
+    );
+  }
+
+  /// `Create the server here`
+  String get server_create_button {
+    return Intl.message(
+      'Create the server here',
+      name: 'server_create_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only the owner of {company} can create its server.`
+  String server_create_owner_only(Object company) {
+    return Intl.message(
+      'Only the owner of $company can create its server.',
+      name: 'server_create_owner_only',
+      desc: '',
+      args: [company],
+    );
+  }
+
+  /// `Your server isn't answering`
+  String get server_away_title {
+    return Intl.message(
+      'Your server isn\'t answering',
+      name: 'server_away_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device works with a Lyra server, but it doesn't answer right now. Meanwhile you keep working online.`
+  String get server_away_subtitle {
+    return Intl.message(
+      'This device works with a Lyra server, but it doesn\'t answer right now. Meanwhile you keep working online.',
+      name: 'server_away_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra can't run the server on this computer.`
+  String get server_cannot_host {
+    return Intl.message(
+      'Lyra can\'t run the server on this computer.',
+      name: 'server_cannot_host',
+      desc: '',
+      args: [],
     );
   }
 }

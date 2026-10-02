@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:app/services/business/business_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/client/client_service.dart';
@@ -118,8 +119,7 @@ class BusinessService extends ChangeNotifier {
     _active = (last != null ? byId(last) : null)
       ?? (_businesses.isEmpty ? null : _businesses.first);
 
-    useBusiness(_active?.id);
-    PreferencesService().useBusiness(_active?.id);
+    _use();
   }
 
   /// Changes the active business. Ignores unknown identifiers.
@@ -128,8 +128,7 @@ class BusinessService extends ChangeNotifier {
     if (index == -1 || _active?.id == id) return;
 
     _active = _businesses[index];
-    useBusiness(_active!.id);
-    PreferencesService().useBusiness(_active!.id);
+    _use();
 
     // The socket's rooms were joined in its handshake, for the business that
     // was active then; the new one only travels in a new handshake.
@@ -176,8 +175,7 @@ class BusinessService extends ChangeNotifier {
     _businesses = [..._businesses, _active!];
     // Its creator owns it; `/init` would say so, but it is not reread here.
     PermissionsService().own(_active!.id);
-    useBusiness(_active!.id);
-    PreferencesService().useBusiness(_active!.id);
+    _use();
 
     // Same as a switch — and for a first business the socket may not be up at
     // all: a handshake with no business is refused, and never retried.
@@ -530,6 +528,29 @@ class BusinessService extends ChangeNotifier {
     );
   }
 
+  /// The active company was just linked to its cloud company (`HybridService.link`): its
+  /// cloud-only areas open, reaching that company, and the socket joins its rooms.
+  void linked(String cloudId) {
+    final active = _active;
+    if (active == null) return;
+
+    _active = active.copyWith(cloudId: cloudId);
+    _businesses = [for (final business in _businesses) business.id == active.id ? _active! : business];
+    _use();
+    unawaited(ConnectionService().rebind());
+
+    notifyListeners();
+  }
+
+  /// Makes [_active] the company the app talks to: its cloud key travels in the `business_id`
+  /// header (`useBusiness`), its id is remembered for the next sign in, and the cloud-only areas
+  /// of a master's devices open only once its company is linked (`CapabilityService.linked`).
+  void _use() {
+    useBusiness(_active?.cloudKey);
+    PreferencesService().useBusiness(_active?.id);
+    CapabilityService().linked = Deployment.mode != DeploymentMode.hybrid || _active?.cloudId != null;
+  }
+
   /// Discards whatever is loaded for a business: its profile.
   /// Doesn't notify: it's called by whoever is already going to
   /// notify on their own (a business change, a signup, logging out).
@@ -542,8 +563,7 @@ class BusinessService extends ChangeNotifier {
   void clear() {
     _businesses = const [];
     _active = null;
-    useBusiness(null);
-    PreferencesService().useBusiness(null);
+    _use();
     _forgetLoaded();
     notifyListeners();
   }

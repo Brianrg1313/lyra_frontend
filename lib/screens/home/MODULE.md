@@ -28,8 +28,9 @@
 ## Files
 
 - `_home.dart` — `Home extends PageBuilder`, `static const shell = "home"`. `initialized` opens the
-  socket (`ConnectionService().open()`, idempotent) when authenticated. Listens to
-  `Navis.currentKey` + `BusinessService.activeId`.
+  socket (`ConnectionService().open()`, idempotent) when authenticated, then asks once to join a master's
+  company with its company online (`askLinkCompany`). Listens to `Navis.currentKey` + `BusinessService.activeId`, and
+  rebuilds on `PermissionsService` and `CapabilityService` (the internet or "work offline" lock a section in place).
 - `desktop/_body.dart` — `DesktopBody`: side bar + header + content.
 - `desktop/side_bar/side_bar.dart` — `SideBar({section})`: groups from `HomeSection`, collapsible via `HomeService`.
 - `desktop/side_bar/options.dart` — option list; locks unmet `needsBusiness` and, with a business, sections without `<key>.view` (`PermissionsService`) — those still open, onto `NoPermissionSection`. No POS option (the POS opens from the header).

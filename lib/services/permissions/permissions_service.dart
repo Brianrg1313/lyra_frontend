@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// What the person may open and do in each company, from `/init`'s `permissions`.
@@ -66,6 +67,9 @@ class PermissionsService extends ChangeNotifier {
 
     final path = id.split(".");
     if (_accountAreas.contains(path.first)) return true;
+    // Online, the server section is this computer's, not a company's: the cloud grants nothing
+    // for it. A master's grants decide once there is one (`local_server.*`).
+    if (path.first == "local_server" && Deployment.mode == DeploymentMode.cloud) return true;
     if (!_loaded) return true;
 
     final company = business ?? businessService.activeId;
@@ -82,6 +86,15 @@ class PermissionsService extends ChangeNotifier {
     }
 
     return node == true;
+  }
+
+  /// Whether this person owns [business] (the active one by default): created it in this
+  /// session, or a master lists `*` for them. A cloud tree doesn't say it: false there.
+  bool owns({String? business}) {
+    final company = business ?? businessService.activeId;
+    if (company == null) return false;
+
+    return _owned.contains(company) || (_lists[company]?.contains("*") ?? false);
   }
 
   /// Whether [area] (`finance.payments`) can be opened: its `view`.
