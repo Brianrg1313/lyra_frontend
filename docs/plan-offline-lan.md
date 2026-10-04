@@ -1,138 +1,64 @@
 # Plan: offline / LAN mode (local master)
 
-**Status** 2026-09-30. Product decisions settled the same day (§13). Phase 0 closed (specs and
-protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: the data-source seam,
-`DeploymentMode` and `CapabilityService` are in the app, with only `cloud` reachable. Phase 2 done:
-`lyra_protocol` and `lyra_node` exist (encrypted store, keyring, oplog, audit, owner account, detached
-process), and the app drives the engine through `LocalServerService`. Phase 3 done on one computer:
-the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR, mutual TLS,
-revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages
-(in every build since 2026-10-01, no build flag; nothing is asked up front since the same day (D9): a
-device is in LAN mode while it holds a pairing; the sign in follows the network (D13): the cloud's while the
-backend answers, a master's found by mDNS otherwise, whose e-mail and password pair the device, and with
-neither "create master server" on a computer that can be one; a browser offers the LAN only on the page a master serves, which carries
-`WebBundle.marker`): phones scan the QR, desktops type the code, and the web build the master
-serves pairs, keeps a WebCrypto key and proves itself (checked in a real Chrome,
-`lyra_node/test/browser_e2e_test.dart`). A paired native device installs the browsers' root (Windows,
-macOS) or saves it for another computer. The web build is made with
-`flutter build web --release --no-web-resources-cdn`, the same as the cloud's, and served from
-`lyra_node/web` next to the engine (`LYRA_WEB` while developing); shipping it is phase 5. Still open from
-phase 3: the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt), which
-also covers what no test here can reach: the camera, the OS trust-store dialogs (`certutil`, `security`),
-and Firefox, which may keep its own store.
-Phase 4, first release (business): setup makes only the owner, and the owner creates the company
-from the welcome (`business.create`, as in the cloud); the engine serves `session.bootstrap`,
-the company, its site and the catalogues (`business.md`); the app reads them through
-`SessionLanSource` and `BusinessLanSource`, opens the home once signed in on the LAN, and moves the
-server's devices to a `local_server` home section. Areas whose release hasn't come stay hidden on a
-master's devices (`CapabilityService._builtOnMaster`). Left for later in this domain: a site form (no
-screen writes the location today), the time zone database, and live events in the app.
-Phase 4, second release (inventory and stock): the engine serves tables (templates, the primary flag),
-fields, records (checked cells, SKUs, counters, accent-free text search), product images with a
-320 px thumbnail, and the stock ledger (`stock.move`, holds, history, summary) (`inventory.md`,
-`stock.md`); the app reads them through `InventoryLanSource` and `StockLanSource`, and draws every
-image with `mediaImage`, which on a master downloads it over the pinned channel with the session's
-token (`LanFileImage`), so the company logo works there too. Left for later: I-4 and ST-14 (with the
-POS), and uploading a photo or a logo from the web build (the app hands it to its sources as a
-`dart:io` file, which a browser has none of; native devices upload, every client draws).
-Phase 4, third release (spreadsheet import): the engine reads `.xlsx` and `.csv` (I-40, I-41), types
-the columns by rules instead of a model (I-43), writes a stock column as opening balances (I-44), and
-re-types the columns nobody typed by hand (`inventory.tables.normalize`, I-47); the app's
-`InventoryLanSource` uploads the file for each step, and the app now follows the master's events
-(`LanService` subscribes, `ConnectionService.on` hands them to the same handlers as the cloud's
-socket), which is what ends an import's wait. Importing from the web build has the same `dart:io`
-gap as photos. No screen yet follows `table/changed` or `stock/changed` live on its own.
-Phase 4, fourth release (POS): the engine serves the counter's catalogue (read by field type, priced
-net of its discount), the settlement kinds (`Settlements` in `lyra_protocol`, without credit), and
-the ticket: per-device codes, lines that hold stock, money computed in minor units, close and
-cancel (`pos.md` POS-1 to POS-45), with the ticket holds of `stock.md` and I-4; "today" is computed
-with the IANA zone database the engine now carries. The app reads it through `PosLanSource`, and a
-product whose table counts no stock is sold without holds and shows no count (POS-6). Left for
-later: the POS outbox and ST-14 (plan phase 5).
-Phase 4, fifth release (sales): the engine measures each POS invoice into the cloud's stages
-(`SaleStages` and `Handover` in `lyra_protocol`, named in the company's language), pages the board by
-section with attention first, answers a sale's detail, and records the handover (`sales.md` SA-1 to
-SA-35); `sale/progress` is emitted by every POS write that moves a row and by the handover, only to
-the seller's sessions and those with `sales.view_all`. The app reads it through `SalesLanSource`;
-approving a payment stays cloud only, since a master has no conversations.
-Phase 4, sixth release (finance, first part): the engine records and voids payments by hand
-(`MoneyConcepts` in `lyra_protocol`, the concept deciding the direction), pages them with the
-filter's totals, answers the summary beside the register's closed tickets, the receivables (empty
-while credit is deferred) and the exchange currencies with custom rates (`money.md` M-1 to M-53).
-The app reads it through `MoneyLanSource`; finance's tabs now follow the running mode, and the
-bot cost isn't drawn in `local`.
-Phase 4, seventh release (finance, accounts): the sealed keys of §6.3 (`lyra_node` `SealedKeys`: an
-X25519 pair per account sealed by its password, each scope's key wrapped to its holders and to the
-recovery key, a session's keys sealed by its refresh token so a restart doesn't lock them), and the
-company's payment accounts on them (`money.md` M-40 to M-46): the rails, sheets and bank, document
-and network lists as a snapshot of the cloud's catalogue, holder, document and number sealed and
-never in clear at rest (rows, oplog, the `commandId` ledger), their reads audited. A session
-without the key answers `sealed_locked` and the app tells the person to sign in again. The
-methods tab, with the exchange currencies, now shows on a master. The eighth release (finance,
-export) adds the accounting export (`money.md` M-60 to M-65): sales, their lines, payments,
-receivables and stock movements for a window of calendar days, as CSV in a zip or one XLSX
-workbook, kept for the asker for an hour and audited; the overview tab offers it beside the range
-picker. Finance is complete on a master.
-Phase 4, ninth release (employees): the engine serves the staff (`employees.md`): the list shaped
-by permission, the former list, the detail with the E-4 measures, job edits, and the person's
-private profile and the job's pay sealed one value per row, to `hr` and to the person (§6.3), so
-the person reads and writes their own without holding `hr`. Inviting someone unknown makes a
-`pending` account whose activation code is answered once; the person types it with a new password
-on the LAN sign in (`auth.activate`, `session.md` S-8), which also accepts the invitation. The app
-reads it through `EmployeesLanSource`; the invite form shows the code, and the address search and
-the branch picker (cloud only) are off on a master. Left for later: re-issuing a code from the app
-(`employees.reissueActivation` is served, no button calls it), the pre-start task for a rehire
-(`employees.accept` is served), grants for other people (`permissions.*`), leaves and job endings.
-**Where we left off (2026-10-01)** Read this before anything else.
-- In progress: phase 6, sync (the owner's call of 2026-10-01, to test with real data). Done: §9 rewritten for
-  D15 and D18; the backend's handover `docs/task-edge-sync-backend.md`; the engine's half in `lyra_node`
-  (`EdgeSync`, run by the engine every minute while enrolled), tested against an in-memory backend
-  (`test/support/edge_cloud.dart`): enrolment with an Ed25519 key, the first link both ways, push and pull,
-  field stamps and the conflicts inbox, retries, refusals, revocation, the allowance. Not yet: the ops the app
-  calls (enrol, status, the inbox) and the server section showing the sync, which need the backend's
-  `/edge/v1/devices`; E3 (the grant); the vocabulary's next entities (POS tickets, employees, clients, files).
-- Phase 4b, one app (§9.6, D14 to D18, the owner's call of 2026-10-01). E1 done: nothing
-  disappears (locked areas and tabs), a network failure keeps the session. E2 done in code and tests, not
-  yet seen on screen: `hybrid` (`HybridService`: the master's session opened by the online sign in, the
-  password reused or asked once; the boot resumes it), the internet watched (sections lock and open in
-  place), "work offline", the server section online (create the server here, from the cloud company,
-  linked), the link (`business.link`, asked once, D18). A session signed in on the master alone (no
-  backend then) now watches the backend too and, once it answers, opens "sign in online" by itself, once (also in the server
-  section and locked sections, `showOnlineSignIn`): the same person's cloud sign in joins it as `hybrid`
-  in place (2026-10-03; before, it stayed offline until a sign out). The sign in page watches the network both ways too (2026-10-04): the internet going away swaps the cloud's form for the offline one in place, and back, at once: the backend's `/presence` socket.io namespace (no session, `alive` acknowledged; `lyra` backend `lib/models/bridge/presence.js`, not deployed yet) says it, HTTP every 15 s stays as the fallback. Next: try E2 on real hardware (a master and a
-  paired laptop, the internet pulled and back), then E3, the cloud grant (engine side; the backend's part is
-  §9 of the task doc). A Mac's Chrome needs macOS's Local Network permission to open a master by name or IP
-  (seen 2026-10-01 as `ERR_NETWORK_IO_SUSPENDED`; not retried).
-- Planned 2026-10-03, nothing built: the cloud's web finding its master (§9.7, D19) and the sturdier
-  name claim (§5.2). Three parts: the address reported over the edge channel (backend: task doc §12),
-  `/lyra/probe` with CORS and the local network preflight in `lyra_node`, the offer in the web.
-- After it: phase 4, clients and deliveries, then statistics (§11); the permissions ops
-  (`session.md` session.permissions), without which an invited person holds no grant yet. Still
-  open from phase 3: the exit check on real hardware.
-- Last finished: the employees release. Not yet seen on screen: an invitation on a real master, its
-  code typed on a second device, and that person's own profile.
-- Not yet seen either: the sign in's "Create Master Server" creating the company end to end and
-  landing on the master's home (checked up to the welcome's modal opening).
-- Repos, all on this disk, **nothing pushed**: the app on `feat/offline-phase4-business` (no remote,
-  36 commits over `main`); `lyra_protocol` and `lyra_node` on `main` (no remote); `core` on
-  `feat/offline-lan`, whose one commit holds what the app depends on (`button.dart`, `select_menu`,
-  modals, charts, `InputRow` without `LayoutBuilder`…), over a `main` one commit ahead of `origin/main`.
-- A browser reaches a master only at the address the master serves, never at `flutter run -d
-  chrome`'s: by its name, `https://<company-label>.local:4780` (§5.2; the server section shows it,
-  the IP below it), or `https://<ip>:4780`. A browser's pairing belongs to the address it was made
-  at, so one paired by IP pairs again by name. The engine serves the web build only if `lyra_node/web` is next
-  to `app.exe` or `LYRA_WEB` points at one when the master starts (a 404 otherwise): the Windows CMake
-  install copies `build/web` there, so `flutter build web --release --no-web-resources-cdn` goes
-  before `flutter run -d windows`.
-  The name was checked resolving on Windows from a live responder; not yet in a browser on another
-  device.
-- To run a master: `dart build cli` in `lyra_node`, then `flutter run -d windows` here (the CMake
-  install copies the engine next to `app.exe`). This computer's earlier master was wiped on
-  2026-10-01 (passphrase forgotten): its data and the app's secure storage were moved to
-  `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that master's 24 words; delete it
-  otherwise. A fresh start offers "Create Master Server" again.
-- Gate: `flutter analyze` clean, `flutter test` 1171 passing with the 5 known failures of
-  `test/MODULE.md`.
+## Where we are (2026-10-04) — read this first
+
+Each release's detail is in the release log (appendix A). Phases are in §11, decisions in §13.
+
+| Phase | State | Open |
+|---|---|---|
+| 0 Specs | done | the EULA waits for a lawyer |
+| 1 Data-source seam | done | — |
+| 2 Engine (`lyra_node`) | done | — |
+| 3 LAN (TLS, pairing, web build, mDNS) | done on one computer | the exit check on real hardware (a second PC, a phone, a browser, a LAN MITM attempt; the camera, the OS trust-store dialogs, Firefox) |
+| 4 Domains | business, inventory and stock, import, POS, sales, finance, employees done | clients and deliveries, then statistics; the permissions ops (`session.md`), without which an invited person holds no grant |
+| 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
+| 5 Operations | not started | — |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend) | the app's ops (enrol, status, inbox) and the server section showing the sync, both waiting on the backend's `/edge/v1/devices`; the next entities (POS tickets, employees, clients, files); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 7 Hardening | not started | — |
+
+**Next step:** try E2 on real hardware: a master and a paired laptop, the internet pulled and put back.
+Then E3 (engine side; the backend's part is §9 of `docs/task-edge-sync-backend.md`).
+
+**Built, not yet seen on screen**
+- E2: `hybrid` (the online sign in opens the master's session too), sections locking and opening in
+  place with the internet, "work offline", the server section online, the link (D18).
+- A session on the master alone offering "sign in online" by itself once the backend answers (2026-10-03).
+- The sign in page swapping the cloud's form and the offline one in place, both ways (2026-10-04),
+  through the backend's `/presence` namespace (`lyra` backend `lib/models/bridge/presence.js`, **not
+  deployed yet**; HTTP every 15 s is the fallback).
+- An invitation on a real master, its code typed on a second device, that person's own profile.
+- "Create Master Server" from the sign in, end to end to the master's home (checked up to the
+  welcome's modal).
+
+**Known issues**
+- A Mac's Chrome needs macOS's Local Network permission to open a master by name or IP (seen
+  2026-10-01 as `ERR_NETWORK_IO_SUSPENDED`; not retried).
+
+**Repos** All on this disk, **nothing pushed**, no remotes except `core`'s.
+- The app: `main` (the `feat/offline-*` branches are merged into it).
+- `lyra_protocol`, `lyra_node`: `main`.
+- `core`: `feat/offline-lan`, which holds what the app depends on; its `main` is behind it.
+
+**Running a master**
+- `dart build cli` in `lyra_node`, then `flutter run -d windows` here (the CMake install copies the
+  engine next to `app.exe`).
+- A browser reaches a master only at the address the master serves, never at `flutter run -d chrome`'s:
+  `https://<company-label>.local:4780` (§5.2; the server section shows it, the IP below) or
+  `https://<ip>:4780`. A browser's pairing belongs to the address it was made at. The engine serves
+  the web build only if `lyra_node/web` is next to `app.exe` or `LYRA_WEB` points at one (a 404
+  otherwise), so `flutter build web --release --no-web-resources-cdn` goes before
+  `flutter run -d windows`. The `.local` name was checked resolving on Windows, not yet in a browser
+  on another device.
+- This computer's earlier master was wiped on 2026-10-01 (passphrase forgotten): its data and the
+  app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
+  master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
+
+**Gate** `flutter analyze` clean; `flutter test` 1182 passing with the 5 known failures of
+`test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
+
+**Keeping this current:** at the end of each release, update the table, the next step and the
+"not yet seen" list here, and add the release's detail to appendix A. Nothing else at the top.
+
 **Scope** This app (`lyra/app`), `core`, two new Dart packages, and, for the hybrid phase only,
 a narrow new API on the backend (`backend/projects/lyra`).
 **Goal** The app works without the cloud. One desktop install (Windows, macOS or Linux) is the
@@ -923,3 +849,107 @@ The first two are in CLAUDE.md since phase 1, the next two since phase 2, the la
   phase 7 review.
 - **LAN environments** (client isolation on Wi-Fi, blocked mDNS, captive firewalls). Mitigated
   by the manual address, QR fallback and the diagnostics screen.
+
+---
+
+## Appendix A. Release log
+
+What each release built and left for later, oldest first. The status table at the top says where
+things stand.
+
+- **Phases 0 to 3** (2026-09-30 on). Product decisions settled the same day (§13). Phase 0 closed (specs and
+  protocol draft in `docs/offline/`; the EULA waits for a lawyer). Phase 1 done: the data-source seam,
+  `DeploymentMode` and `CapabilityService` are in the app, with only `cloud` reachable. Phase 2 done:
+  `lyra_protocol` and `lyra_node` exist (encrypted store, keyring, oplog, audit, owner account, detached
+  process), and the app drives the engine through `LocalServerService`. Phase 3 done on one computer:
+  the engine serves the LAN (TLS 1.3 only, installation CA, SPAKE2 pairing by code or QR, mutual TLS,
+  revocation, events, files, the web build, mDNS), and the app has the setup, pairing and LAN pages
+  (in every build since 2026-10-01, no build flag; nothing is asked up front since the same day (D9): a
+  device is in LAN mode while it holds a pairing; the sign in follows the network (D13): the cloud's while the
+  backend answers, a master's found by mDNS otherwise, whose e-mail and password pair the device, and with
+  neither "create master server" on a computer that can be one; a browser offers the LAN only on the page a master serves, which carries
+  `WebBundle.marker`): phones scan the QR, desktops type the code, and the web build the master
+  serves pairs, keeps a WebCrypto key and proves itself (checked in a real Chrome,
+  `lyra_node/test/browser_e2e_test.dart`). A paired native device installs the browsers' root (Windows,
+  macOS) or saves it for another computer. The web build is made with
+  `flutter build web --release --no-web-resources-cdn`, the same as the cloud's, and served from
+  `lyra_node/web` next to the engine (`LYRA_WEB` while developing); shipping it is phase 5. Still open from
+  phase 3: the exit check on real hardware (a second PC, a phone, a browser; a LAN MITM attempt), which
+  also covers what no test here can reach: the camera, the OS trust-store dialogs (`certutil`, `security`),
+  and Firefox, which may keep its own store.
+- Phase 4, first release (business): setup makes only the owner, and the owner creates the company
+  from the welcome (`business.create`, as in the cloud); the engine serves `session.bootstrap`,
+  the company, its site and the catalogues (`business.md`); the app reads them through
+  `SessionLanSource` and `BusinessLanSource`, opens the home once signed in on the LAN, and moves the
+  server's devices to a `local_server` home section. Areas whose release hasn't come stay hidden on a
+  master's devices (`CapabilityService._builtOnMaster`). Left for later in this domain: a site form (no
+  screen writes the location today), the time zone database, and live events in the app.
+- Phase 4, second release (inventory and stock): the engine serves tables (templates, the primary flag),
+  fields, records (checked cells, SKUs, counters, accent-free text search), product images with a
+  320 px thumbnail, and the stock ledger (`stock.move`, holds, history, summary) (`inventory.md`,
+  `stock.md`); the app reads them through `InventoryLanSource` and `StockLanSource`, and draws every
+  image with `mediaImage`, which on a master downloads it over the pinned channel with the session's
+  token (`LanFileImage`), so the company logo works there too. Left for later: I-4 and ST-14 (with the
+  POS), and uploading a photo or a logo from the web build (the app hands it to its sources as a
+  `dart:io` file, which a browser has none of; native devices upload, every client draws).
+- Phase 4, third release (spreadsheet import): the engine reads `.xlsx` and `.csv` (I-40, I-41), types
+  the columns by rules instead of a model (I-43), writes a stock column as opening balances (I-44), and
+  re-types the columns nobody typed by hand (`inventory.tables.normalize`, I-47); the app's
+  `InventoryLanSource` uploads the file for each step, and the app now follows the master's events
+  (`LanService` subscribes, `ConnectionService.on` hands them to the same handlers as the cloud's
+  socket), which is what ends an import's wait. Importing from the web build has the same `dart:io`
+  gap as photos. No screen yet follows `table/changed` or `stock/changed` live on its own.
+- Phase 4, fourth release (POS): the engine serves the counter's catalogue (read by field type, priced
+  net of its discount), the settlement kinds (`Settlements` in `lyra_protocol`, without credit), and
+  the ticket: per-device codes, lines that hold stock, money computed in minor units, close and
+  cancel (`pos.md` POS-1 to POS-45), with the ticket holds of `stock.md` and I-4; "today" is computed
+  with the IANA zone database the engine now carries. The app reads it through `PosLanSource`, and a
+  product whose table counts no stock is sold without holds and shows no count (POS-6). Left for
+  later: the POS outbox and ST-14 (plan phase 5).
+- Phase 4, fifth release (sales): the engine measures each POS invoice into the cloud's stages
+  (`SaleStages` and `Handover` in `lyra_protocol`, named in the company's language), pages the board by
+  section with attention first, answers a sale's detail, and records the handover (`sales.md` SA-1 to
+  SA-35); `sale/progress` is emitted by every POS write that moves a row and by the handover, only to
+  the seller's sessions and those with `sales.view_all`. The app reads it through `SalesLanSource`;
+  approving a payment stays cloud only, since a master has no conversations.
+- Phase 4, sixth release (finance, first part): the engine records and voids payments by hand
+  (`MoneyConcepts` in `lyra_protocol`, the concept deciding the direction), pages them with the
+  filter's totals, answers the summary beside the register's closed tickets, the receivables (empty
+  while credit is deferred) and the exchange currencies with custom rates (`money.md` M-1 to M-53).
+  The app reads it through `MoneyLanSource`; finance's tabs now follow the running mode, and the
+  bot cost isn't drawn in `local`.
+- Phase 4, seventh release (finance, accounts): the sealed keys of §6.3 (`lyra_node` `SealedKeys`: an
+  X25519 pair per account sealed by its password, each scope's key wrapped to its holders and to the
+  recovery key, a session's keys sealed by its refresh token so a restart doesn't lock them), and the
+  company's payment accounts on them (`money.md` M-40 to M-46): the rails, sheets and bank, document
+  and network lists as a snapshot of the cloud's catalogue, holder, document and number sealed and
+  never in clear at rest (rows, oplog, the `commandId` ledger), their reads audited. A session
+  without the key answers `sealed_locked` and the app tells the person to sign in again. The
+  methods tab, with the exchange currencies, now shows on a master. The eighth release (finance,
+  export) adds the accounting export (`money.md` M-60 to M-65): sales, their lines, payments,
+  receivables and stock movements for a window of calendar days, as CSV in a zip or one XLSX
+  workbook, kept for the asker for an hour and audited; the overview tab offers it beside the range
+  picker. Finance is complete on a master.
+- Phase 4, ninth release (employees): the engine serves the staff (`employees.md`): the list shaped
+  by permission, the former list, the detail with the E-4 measures, job edits, and the person's
+  private profile and the job's pay sealed one value per row, to `hr` and to the person (§6.3), so
+  the person reads and writes their own without holding `hr`. Inviting someone unknown makes a
+  `pending` account whose activation code is answered once; the person types it with a new password
+  on the LAN sign in (`auth.activate`, `session.md` S-8), which also accepts the invitation. The app
+  reads it through `EmployeesLanSource`; the invite form shows the code, and the address search and
+  the branch picker (cloud only) are off on a master. Left for later: re-issuing a code from the app
+  (`employees.reissueActivation` is served, no button calls it), the pre-start task for a rehire
+  (`employees.accept` is served), grants for other people (`permissions.*`), leaves and job endings.
+- Phase 4b, one app (§9.6, D14 to D18, from 2026-10-01). E1: nothing disappears (locked areas and
+  tabs), a network failure keeps the session. E2: `hybrid` (`HybridService`: the master's session
+  opened by the online sign in, the password reused or asked once; the boot resumes it), the internet
+  watched (sections lock and open in place; the cloud socket connecting opens them at once), "work
+  offline", the server section online (create the server there, from the cloud company, linked), the
+  link (`business.link`, asked once). A session on the master alone watches the backend and offers the
+  same person's online sign in once, which joins it as `hybrid` in place (2026-10-03). The sign in page
+  follows the internet both ways over the backend's `/presence` socket (2026-10-04).
+- Phase 6, the engine's half of the sync (the owner's call of 2026-10-01): §9 rewritten for D15 and D18, the backend's
+  handover `docs/task-edge-sync-backend.md`, and `EdgeSync` in `lyra_node`, run every minute while
+  enrolled and tested against an in-memory backend (`test/support/edge_cloud.dart`): enrolment with an
+  Ed25519 key, the first link both ways, push and pull, field stamps and the conflicts inbox, retries,
+  refusals, revocation, the allowance.
