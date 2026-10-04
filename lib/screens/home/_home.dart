@@ -10,12 +10,14 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/toolkit/settings/initial_builder.dart' show hybridService;
 
 // WIDGETS
 import 'package:app/screens/home/desktop/_body.dart';
 import 'package:app/screens/home/header/_header.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/modals/server/link_company/_link_company.dart';
+import 'package:app/screens/modals/server/online_sign_in/_online_sign_in.dart';
 
 /// Home shell. Each section loads via its own URL (`/home/...`) but
 /// they all share this single page: when switching sections the tree is
@@ -99,17 +101,55 @@ class Home extends PageBuilder {
         // `business`).
         final content = homeContent(currentKey, section, businessId);
 
-        return DeviceSelector(
+        return _OfferOnline(child: DeviceSelector(
           phone: (context) => _HomeBody(header: header!, content: content),
           desktop: (context) => DesktopBody(
             section: section,
             header: header!,
             content: content
           )
-        );
+        ));
       }
     );
   }
+}
+
+/// A session on the master alone stays offline until the same person signs in online: once the
+/// backend answers, that sign in opens by itself, once per session (`HybridService.shouldOfferOnline`),
+/// when the e-mail has an online account to sign in to ([offerOnlineSignIn]).
+/// Pressing a button nobody knows is there is not how anyone expects the internet to come back.
+class _OfferOnline extends StatefulWidget {
+  const _OfferOnline({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_OfferOnline> createState() => _OfferOnlineState();
+}
+
+class _OfferOnlineState extends State<_OfferOnline> {
+  @override
+  void initState() {
+    super.initState();
+    hybridService.addListener(_offer);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _offer());
+  }
+
+  @override
+  void dispose() {
+    hybridService.removeListener(_offer);
+    super.dispose();
+  }
+
+  void _offer() {
+    if (!mounted || !hybridService.shouldOfferOnline) return;
+
+    hybridService.offeredOnline();
+    unawaited(offerOnlineSignIn(context));
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _HomeBody extends StatelessWidget {

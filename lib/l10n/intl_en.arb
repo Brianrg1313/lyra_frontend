@@ -1920,20 +1920,34 @@
   "lan_leave": "Use Lyra another way",
   "lan_leave_title": "Stop using this server here?",
   "lan_leave_message": "This device forgets its pairing and goes back to the sign in. The server and its data stay as they are.",
-  "lan_ready_title": "Connected to the server",
-  "lan_ready_subtitle": "The devices that use this server: who is connected, adding one, removing one.",
   "lan_device_code": "This device: {code}",
   "lan_fingerprint": "Server fingerprint",
   "lan_devices": "Devices",
   "lan_devices_online": "online",
   "lan_devices_revoked": "removed",
   "lan_devices_master": "server",
+  "lan_devices_offline": "offline",
+  "lan_devices_this": "this device",
+  "lan_devices_connected": "{count} connected",
+  "@lan_devices_connected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "lan_devices_remove": "Remove",
   "lan_devices_remove_title": "Remove {name}?",
   "lan_devices_remove_message": "Its sessions end now, and it can't connect again until it's paired again.",
   "lan_add_device": "Add device",
   "lan_pairing_code": "Type this code on the new device",
-  "lan_pairing_expires": "It works for 5 minutes and for one device.",
+  "lan_pairing_expires": "It works for one device, {time} left.",
+  "@lan_pairing_expires": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "lan_pairing_expired": "This code expired. Ask for a new one to add the device.",
+  "lan_pairing_new": "New code",
+  "lan_pairing_close": "Close",
   "lan_pairing_scan": "Or, on a phone, scan this QR with Lyra.",
   "lan_scan_button": "Scan the QR on the server",
   "lan_scan_title": "Scan the server's QR",
@@ -1993,5 +2007,21 @@
   "server_create_owner_only": "Only the owner of {company} can create its server.",
   "server_away_title": "Your server isn't answering",
   "server_away_subtitle": "This device works with a Lyra server, but it doesn't answer right now. Meanwhile you keep working online.",
-  "server_cannot_host": "Lyra can't run the server on this computer."
+  "server_cannot_host": "Lyra can't run the server on this computer.",
+  "server_back_title": "The internet is back",
+  "server_back_subtitle": "You're signed in on this server only. Sign in online to open the online sections (messages, channels) here too. You stay signed in on the server.",
+  "server_sign_in_online": "Sign in online",
+  "section_needs_sign_in_subtitle": "This section works through the cloud. The internet is back: sign in online to open it.",
+  "section_needs_internet_master_subtitle": "This section works through the cloud. When the internet is back, sign in online to open it.",
+  "online_sign_in_title": "Sign in online",
+  "online_sign_in_password": "Type your Lyra password for {email}. You stay signed in on this server.",
+  "online_sign_in_code": "We sent a code to {email}. Type it to sign in online. You stay signed in on this server.",
+  "online_sign_in_button": "Sign in",
+  "online_sign_in_sign_up": "There's no online Lyra account for {email} yet. We sent a code to it: type it to create one. You stay signed in on this server.",
+  "online_sign_in_create": "Create account",
+  "online_sign_in_unsupported": "This account signs in another way, which Lyra doesn't offer here yet.",
+  "online_sign_in_failed":"You signed in online, but this server didn't take the session. Try again in a moment.",
+  "online_sign_in_done": "You're online",
+  "online_sign_in_later": "Not now",
+  "online_sign_in_close": "Close"
 }

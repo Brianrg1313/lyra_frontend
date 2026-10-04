@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:core/core.dart';
+import 'package:core/socket.dart' show SocketStatus;
 import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/business/business_profile_model.dart';
@@ -114,7 +116,12 @@ void main() {
 
   test('the internet going and coming back locks and opens the cloud areas in place', () async {
     var online = false;
-    final hybrid = HybridService(lan: _Master(signedInAs: "ada@lyra.app"), cloud: () async => online, every: const Duration(milliseconds: 10));
+    final hybrid = HybridService(
+      lan: _Master(signedInAs: "ada@lyra.app"),
+      cloud: () async => online,
+      every: const Duration(hours: 1),
+      retry: const Duration(milliseconds: 10)
+    );
     await hybrid.resume();
     await Future<void>.delayed(const Duration(milliseconds: 30));
 
@@ -129,6 +136,72 @@ void main() {
     hybrid.stop();
     expect(Deployment.mode, DeploymentMode.cloud);
     hybrid.dispose();
+  });
+
+  test('a session on the master alone looks at the backend and goes online with a sign in', () async {
+    Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
+    var online = false;
+    final master = _Master(signedInAs: "ada@lyra.app");
+    final hybrid = HybridService(lan: master, cloud: () async => online, retry: const Duration(milliseconds: 10));
+    await master.open();
+    master.changed();
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+
+    expect(hybrid.masterOnly, isTrue);
+    expect(hybrid.canGoOnline, isFalse);
+
+    online = true;
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(hybrid.canGoOnline, isTrue);
+    // The home opens the online sign in by itself once; after that it waits to be asked.
+    expect(hybrid.shouldOfferOnline, isTrue);
+    hybrid.offeredOnline();
+    expect(hybrid.shouldOfferOnline, isFalse);
+
+    // Signed out of the master, there is nothing to take online.
+    await master.signOut();
+    master.changed();
+    expect(hybrid.canGoOnline, isFalse);
+
+    await master.signIn("ada@lyra.app", "correct horse battery");
+    master.changed();
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(hybrid.canGoOnline, isTrue);
+
+    expect(await hybrid.join("ada@lyra.app"), HybridJoin.joined);
+    expect(Deployment.mode, DeploymentMode.hybrid);
+    expect(hybrid.canGoOnline, isFalse);
+    hybrid.stop();
+    hybrid.dispose();
+  });
+
+  test("the cloud's socket says it first: a drop looks at once, connecting opens the areas", () async {
+    var online = true;
+    final socket = ValueNotifier(SocketStatus.connected);
+    final hybrid = HybridService(
+      lan: _Master(signedInAs: "ada@lyra.app"),
+      cloud: () async => online,
+      socket: socket,
+      every: const Duration(hours: 1),
+      retry: const Duration(hours: 1)
+    );
+    await hybrid.resume();
+    await Future<void>.delayed(Duration.zero);
+    expect(CapabilityService().internet, isTrue);
+
+    // No turn is due for an hour: only the drop makes it look.
+    online = false;
+    socket.value = SocketStatus.reconnecting;
+    await Future<void>.delayed(Duration.zero);
+    expect(CapabilityService().internet, isFalse);
+    expect(CapabilityService().of("messages"), Capability.needsInternet);
+
+    socket.value = SocketStatus.connected;
+    expect(CapabilityService().shows("messages"), isTrue);
+
+    hybrid.stop();
+    hybrid.dispose();
+    socket.dispose();
   });
 
   test('a company not joined with its company online locks the cloud areas with their own reason', () {
@@ -189,6 +262,9 @@ class _Master extends LanService {
     signedInAs = login;
     return _now = LanStatus.ready;
   }
+
+  /// The real service notifies on every status change; this one only when told.
+  void changed() => notifyListeners();
 
   @override
   Future<void> signOut() async {

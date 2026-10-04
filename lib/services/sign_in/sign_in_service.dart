@@ -30,15 +30,15 @@ class SignInService {
   final _database = DatabaseService();
 
   /// Shows a refusal and answers null for it, except one with an `action`,
-  /// which is thrown for the page to follow.
-  Future<T?> _guard<T>(BuildContext context, Future<T> call) =>
+  /// which is thrown for the page to follow. A [quiet] one shows nothing.
+  Future<T?> _guard<T>(BuildContext context, Future<T> call, {bool quiet = false}) =>
     call.then<T?>((answer) => answer).catchError((E) {
       if (E is Map) {
         if (!context.mounted) return null;
 
         if (E["action"] != null) throw E["action"];
 
-        FloatFlag.of(context).fromError(E);
+        if (!quiet) FloatFlag.of(context).fromError(E);
       }
 
       return null;
@@ -51,8 +51,10 @@ class SignInService {
   /// When a code follows —sign in by code, or any email without an account—
   /// the same endpoint already sent it; here it is only stored which email it
   /// belongs to.
-  Future<({bool account, LoginMethod? method})> verifyEmail(BuildContext context, String email) async {
-    final answer = await _guard(context, _source.identify(email));
+  ///
+  /// A [quiet] check shows no refusal: one nobody asked for (the home offering the online sign in).
+  Future<({bool account, LoginMethod? method})> verifyEmail(BuildContext context, String email, {bool quiet = false}) async {
+    final answer = await _guard(context, _source.identify(email), quiet: quiet);
 
     if (answer == null) throw "";
 

@@ -63,8 +63,10 @@ Reached through `LanService.server` (the `lan/` services own it).
   password?)` after an online sign in on a paired device (the master's session too → `hybrid`; another person's kept
   session signed out first; `needsPassword` → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
   master keeps the session), `adopt` (a master just made from the cloud), `workOffline` / `workOnline` (session kept),
-  `stop` (sign out), the internet watcher (`cloudReachable` every 20 s → `CapabilityService.internet`, the socket
-  reopened when it returns); the link: `shouldAskLink`, `linkCandidates` (cloud companies with
+  `stop` (sign out), the internet watcher (`cloudReachable` every 10 s while it answers, every 3 s while it doesn't →
+  `CapabilityService.internet`, the socket reopened when it returns; the cloud socket connecting opens the areas at once,
+  dropping from connected looks at once); a session on the master alone (`masterOnly`, followed from `LanService`) looks at the backend
+  too, at the same pace, and `canGoOnline` says when an online sign in would join it (`shouldOfferOnline` / `offeredOnline`: offered by itself once per session); the link: `shouldAskLink`, `linkCandidates` (cloud companies with
   `business.settings.edit`, the master's name first), `link` (`business.link`), `declineLink`; `companyFrom(profile,
   cloudId)` (the setup's company from the cloud profile, as the engine's catalogues take it).
 

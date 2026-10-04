@@ -29,7 +29,7 @@
 
 - `_home.dart` — `Home extends PageBuilder`, `static const shell = "home"`. `initialized` opens the
   socket (`ConnectionService().open()`, idempotent) when authenticated, then asks once to join a master's
-  company with its company online (`askLinkCompany`). Listens to `Navis.currentKey` + `BusinessService.activeId`, and
+  company with its company online (`askLinkCompany`); `_OfferOnline` opens the online sign in once a session on the master alone can go online (`HybridService.shouldOfferOnline`). Listens to `Navis.currentKey` + `BusinessService.activeId`, and
   rebuilds on `PermissionsService` and `CapabilityService` (the internet or "work offline" lock a section in place).
 - `desktop/_body.dart` — `DesktopBody`: side bar + header + content.
 - `desktop/side_bar/side_bar.dart` — `SideBar({section})`: groups from `HomeSection`, collapsible via `HomeService`.
@@ -51,7 +51,7 @@
   business, finance and sales. **Wrap the body of any new tabbed section in it.**
 - `sections/business_listener.dart` — `mixin BusinessListener<T>`.
 - `sections/no_business.dart` — `NoBusinessSection`.
-- `sections/unavailable.dart` — `UnavailableSection({capability, surface})`: a section or tab (`surface: false`) the deployment mode lacks, or locked until the internet answers. Nothing to ask for.
+- `sections/unavailable.dart` — `UnavailableSection({capability, surface})`: a section or tab (`surface: false`) the deployment mode lacks, or locked until the internet answers; a session on the master alone offers "sign in online" (`showOnlineSignIn`) once the backend answers (`HybridService.canGoOnline`), otherwise nothing to ask for.
 - `sections/no_permission.dart` — `NoPermissionSection({permission, title, surface = true})`: shown by `homeContent` in place of a section without `<key>.view`, and by business/finance/sales in place of a tab (`surface: false`); owns a `PermissionRequestsService`, offers "Request access" unless one is pending.
 - `sections/placeholder.dart` — `SectionPlaceholder`: `dashboard services marketing report externalServices`.
 - `sections/section_message.dart` — `SectionMessage({icon, message, action?})`: full-section empty/error/loading. Use instead of ad-hoc centered columns.

@@ -18,6 +18,7 @@ import 'package:app/screens/pre_start/deployment/master/desktop/_body.dart' as m
 import 'package:app/screens/pre_start/deployment/pair/desktop/_body.dart' as pair;
 import 'package:app/screens/pre_start/lan/desktop/_body.dart' as landing;
 import 'package:app/screens/home/sections/local_server/_local_server.dart';
+import 'package:app/screens/home/sections/local_server/widgets/pairing_panel.dart';
 import 'package:app/screens/home/sections/local_server/widgets/pairing_qr.dart';
 import 'package:lyra_protocol/lyra_protocol.dart' show PairingOffer, Pairing;
 
@@ -137,7 +138,8 @@ void main() {
         await pump(tester, const LocalServerSection(), lan: lan, size: size);
 
         expect(tester.takeException(), isNull);
-        expect(find.text("Connected to the server"), findsOneWidget);
+        expect(find.text("Devices"), findsOneWidget);
+        expect(find.text("0 connected"), findsOneWidget);
         expect(find.text("This device: B"), findsOneWidget);
         // A native device hands out the browsers' root, with what the OS will show to compare.
         expect(find.text("Web browsers"), findsOneWidget);
@@ -148,6 +150,21 @@ void main() {
         expect(find.text("https://lovelace-cafe.local:4780"), findsOneWidget);
         expect(find.text("If that name doesn't open, use https://192.168.1.5:4780."), findsOneWidget);
         expect(find.text("Copy"), findsOneWidget);
+        await leave(tester);
+      });
+
+      testWidgets('a session on the server alone offers to sign in online once the backend answers', (tester) async {
+        final lan = client(FakeMaster(), refresh: "refresh-1");
+
+        await pump(tester, const LocalServerSection(), lan: lan, size: size, settle: false);
+        // Opened under the page, as the sign in does: the hybrid service follows the connection.
+        await tester.runAsync(lan.open);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text("The internet is back"), findsOneWidget);
+        expect(find.text("Sign in online"), findsOneWidget);
+        expect(find.text("Work offline"), findsNothing);
         await leave(tester);
       });
 
@@ -174,6 +191,54 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(PairingQr), findsOneWidget);
+      });
+
+      testWidgets('an open pairing shows the code and the time left, then says it expired', (tester) async {
+        final pairing = {
+          "code": "48217730",
+          "qr": PairingOffer(
+            instanceId: "i1",
+            addresses: const ["192.168.1.5"],
+            port: 4780,
+            caFingerprint: "ab" * 32,
+            token: Pairing.newToken(),
+          ).encode(),
+          "expires": DateTime.now().add(const Duration(minutes: 5)).toUtc().toIso8601String(),
+        };
+        var renewed = false;
+
+        await pump(
+          tester,
+          PairingPanel(pairing: pairing, onRenew: () => renewed = true, onClose: () {}),
+          lan: LanService(),
+          size: size,
+          settle: false
+        );
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text("4821 7730"), findsOneWidget);
+        expect(find.textContaining("It works for one device"), findsOneWidget);
+        expect(find.text("New code"), findsNothing);
+
+        await pump(
+          tester,
+          PairingPanel(
+            pairing: {...pairing, "expires": DateTime.now().subtract(const Duration(seconds: 1)).toUtc().toIso8601String()},
+            onRenew: () => renewed = true,
+            onClose: () {}
+          ),
+          lan: LanService(),
+          size: size,
+          settle: false
+        );
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        expect(find.textContaining("This code expired"), findsOneWidget);
+        await tester.tap(find.text("New code"));
+        expect(renewed, isTrue);
+        await leave(tester);
       });
 
       testWidgets('unpaired, it offers to pair', (tester) async {

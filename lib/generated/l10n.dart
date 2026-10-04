@@ -19269,26 +19269,6 @@ class S {
     );
   }
 
-  /// `Connected to the server`
-  String get lan_ready_title {
-    return Intl.message(
-      'Connected to the server',
-      name: 'lan_ready_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The devices that use this server: who is connected, adding one, removing one.`
-  String get lan_ready_subtitle {
-    return Intl.message(
-      'The devices that use this server: who is connected, adding one, removing one.',
-      name: 'lan_ready_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `This device: {code}`
   String lan_device_code(Object code) {
     return Intl.message(
@@ -19349,6 +19329,36 @@ class S {
     );
   }
 
+  /// `offline`
+  String get lan_devices_offline {
+    return Intl.message(
+      'offline',
+      name: 'lan_devices_offline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `this device`
+  String get lan_devices_this {
+    return Intl.message(
+      'this device',
+      name: 'lan_devices_this',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} connected`
+  String lan_devices_connected(int count) {
+    return Intl.message(
+      '$count connected',
+      name: 'lan_devices_connected',
+      desc: '',
+      args: [count],
+    );
+  }
+
   /// `Remove`
   String get lan_devices_remove {
     return Intl.message(
@@ -19399,11 +19409,41 @@ class S {
     );
   }
 
-  /// `It works for 5 minutes and for one device.`
-  String get lan_pairing_expires {
+  /// `It works for one device, {time} left.`
+  String lan_pairing_expires(String time) {
     return Intl.message(
-      'It works for 5 minutes and for one device.',
+      'It works for one device, $time left.',
       name: 'lan_pairing_expires',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `This code expired. Ask for a new one to add the device.`
+  String get lan_pairing_expired {
+    return Intl.message(
+      'This code expired. Ask for a new one to add the device.',
+      name: 'lan_pairing_expired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New code`
+  String get lan_pairing_new {
+    return Intl.message(
+      'New code',
+      name: 'lan_pairing_new',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close`
+  String get lan_pairing_close {
+    return Intl.message(
+      'Close',
+      name: 'lan_pairing_close',
       desc: '',
       args: [],
     );
@@ -19904,6 +19944,166 @@ class S {
     return Intl.message(
       'Lyra can\'t run the server on this computer.',
       name: 'server_cannot_host',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The internet is back`
+  String get server_back_title {
+    return Intl.message(
+      'The internet is back',
+      name: 'server_back_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You're signed in on this server only. Sign in online to open the online sections (messages, channels) here too. You stay signed in on the server.`
+  String get server_back_subtitle {
+    return Intl.message(
+      'You\'re signed in on this server only. Sign in online to open the online sections (messages, channels) here too. You stay signed in on the server.',
+      name: 'server_back_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in online`
+  String get server_sign_in_online {
+    return Intl.message(
+      'Sign in online',
+      name: 'server_sign_in_online',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This section works through the cloud. The internet is back: sign in online to open it.`
+  String get section_needs_sign_in_subtitle {
+    return Intl.message(
+      'This section works through the cloud. The internet is back: sign in online to open it.',
+      name: 'section_needs_sign_in_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This section works through the cloud. When the internet is back, sign in online to open it.`
+  String get section_needs_internet_master_subtitle {
+    return Intl.message(
+      'This section works through the cloud. When the internet is back, sign in online to open it.',
+      name: 'section_needs_internet_master_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in online`
+  String get online_sign_in_title {
+    return Intl.message(
+      'Sign in online',
+      name: 'online_sign_in_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type your Lyra password for {email}. You stay signed in on this server.`
+  String online_sign_in_password(Object email) {
+    return Intl.message(
+      'Type your Lyra password for $email. You stay signed in on this server.',
+      name: 'online_sign_in_password',
+      desc: '',
+      args: [email],
+    );
+  }
+
+  /// `We sent a code to {email}. Type it to sign in online. You stay signed in on this server.`
+  String online_sign_in_code(Object email) {
+    return Intl.message(
+      'We sent a code to $email. Type it to sign in online. You stay signed in on this server.',
+      name: 'online_sign_in_code',
+      desc: '',
+      args: [email],
+    );
+  }
+
+  /// `Sign in`
+  String get online_sign_in_button {
+    return Intl.message(
+      'Sign in',
+      name: 'online_sign_in_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There's no online Lyra account for {email} yet. We sent a code to it: type it to create one. You stay signed in on this server.`
+  String online_sign_in_sign_up(Object email) {
+    return Intl.message(
+      'There\'s no online Lyra account for $email yet. We sent a code to it: type it to create one. You stay signed in on this server.',
+      name: 'online_sign_in_sign_up',
+      desc: '',
+      args: [email],
+    );
+  }
+
+  /// `Create account`
+  String get online_sign_in_create {
+    return Intl.message(
+      'Create account',
+      name: 'online_sign_in_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This account signs in another way, which Lyra doesn't offer here yet.`
+  String get online_sign_in_unsupported {
+    return Intl.message(
+      'This account signs in another way, which Lyra doesn\'t offer here yet.',
+      name: 'online_sign_in_unsupported',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You signed in online, but this server didn't take the session. Try again in a moment.`
+  String get online_sign_in_failed {
+    return Intl.message(
+      'You signed in online, but this server didn\'t take the session. Try again in a moment.',
+      name: 'online_sign_in_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You're online`
+  String get online_sign_in_done {
+    return Intl.message(
+      'You\'re online',
+      name: 'online_sign_in_done',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not now`
+  String get online_sign_in_later {
+    return Intl.message(
+      'Not now',
+      name: 'online_sign_in_later',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close`
+  String get online_sign_in_close {
+    return Intl.message(
+      'Close',
+      name: 'online_sign_in_close',
       desc: '',
       args: [],
     );

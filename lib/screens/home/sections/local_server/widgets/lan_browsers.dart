@@ -19,7 +19,7 @@ import './lan_address.dart';
 /// master's web build only where it is trusted. This device's channel to the master is pinned,
 /// so what it installs or saves can't have been swapped on the network. Installed by hand, the
 /// person compares the fingerprint the OS shows with the one here. The address to open is
-/// [LanAddress], at the top of the section.
+/// [LanAddress], above it in the side column.
 class LanBrowsers extends StatefulWidget {
   const LanBrowsers({super.key, required this.ca});
 
@@ -40,37 +40,28 @@ class _LanBrowsersState extends State<LanBrowsers> {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
 
-    return Padding(
-      padding: EdgeInsets.only(top: AppSize.spaceM),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        TextInter(s.lan_browsers_title, multiplier: 1.4, bold: true),
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      TextMedium(s.lan_browsers_title, bold: true),
+      SizedBox(height: AppSize.gap),
+      TextSmall(s.lan_browsers_subtitle, lines: 5, color: scheme.subtitle),
+      SizedBox(height: AppSize.spaceS),
+      TextSmall(s.lan_browsers_fingerprint, color: scheme.subtitle),
+      TextSmall(Fingerprint.display(ca["fingerprint"] as String), lines: 4, selectable: true),
+      SizedBox(height: AppSize.gap),
+      TextSmall(s.lan_browsers_thumbprint, color: scheme.subtitle),
+      TextSmall(Fingerprint.display(ca["thumbprint"] as String), lines: 2, selectable: true),
+      SizedBox(height: AppSize.spaceS),
+      if (canInstallBrowserCa) ...[
+        Button(title: s.lan_browsers_install, action: _install),
         SizedBox(height: AppSize.gap),
-        TextSmall(s.lan_browsers_subtitle, lines: 4, color: scheme.subtitle),
-        SizedBox(height: AppSize.spaceXS),
-        Surface(
-          color: scheme.surface,
-          padding: EdgeInsets.all(AppSize.spaceS),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            TextSmall(s.lan_browsers_fingerprint, color: scheme.subtitle),
-            TextSmall(Fingerprint.display(ca["fingerprint"] as String), lines: 4, selectable: true),
-            SizedBox(height: AppSize.gap),
-            TextSmall(s.lan_browsers_thumbprint, color: scheme.subtitle),
-            TextSmall(Fingerprint.display(ca["thumbprint"] as String), lines: 2, selectable: true),
-            if (LanAddress.url(ca) != null) ...[
-              SizedBox(height: AppSize.gap),
-              TextSmall(s.lan_browsers_open, lines: 2)
-            ]
-          ])
-        ),
-        SizedBox(height: AppSize.spaceXS),
-        if (canInstallBrowserCa) ...[
-          Button(title: s.lan_browsers_install, action: _install),
-          SizedBox(height: AppSize.gap),
-        ],
-        Button(title: s.lan_browsers_save, action: _save),
-        if (_note != null) DeploymentNote(_note!, error: _failed)
-      ])
-    );
+      ],
+      Button(title: s.lan_browsers_save, action: _save),
+      if (LanAddress.url(ca) != null) ...[
+        SizedBox(height: AppSize.gap),
+        TextSmall(s.lan_browsers_open, lines: 2, color: scheme.subtitle)
+      ],
+      if (_note != null) DeploymentNote(_note!, error: _failed)
+    ]);
   }
 
   Uint8List get _certificate => base64.decode(widget.ca["certificate"] as String);

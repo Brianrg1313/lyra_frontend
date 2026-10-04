@@ -8,16 +8,21 @@ master's devices, and online on any computer, which creates one there (`docs/pla
 ## Files
 
 - `_local_server.dart` — `LocalServerSection`: the master's session ready (not in `cloud`) → `_ServerReady`, else
-  `ServerAway`. `_ServerReady`: `ServerConnection` first; the address browsers open (`LanAddress`); this device's code and CA fingerprint; the devices list (refreshed every
-  5 s, online / server / removed), remove (confirmed), "Add device" on the master (the code to type and `PairingQr`);
-  `LanBrowsers` on native devices (both from one `devices.browserCa` read); sign out (`ClientService.signOut`); stop the server (confirmed, counts connected
-  devices).
-- `widgets/lan_address.dart` — `LanAddress`: the web address (`.local` name, the IP below), copied with a button.
+  `ServerAway`. `_ServerReady`: `ServerConnection` across the top; two columns from 820 px (one below): the devices list
+  (refreshed every 5 s; server, online, offline, removed; "N connected"; this device marked), remove (confirmed), "Add
+  device" on the master → `PairingPanel` (closes when a new device appears); a side `Surface.over` split by rules:
+  `LanAddress`, `LanBrowsers` on native devices (both from one `devices.browserCa` read), this device's code and CA
+  fingerprint, sign out (`ClientService.signOut`), stop the server (confirmed, counts connected devices).
+- `widgets/lan_address.dart` — `LanAddress`: the web address (`.local` name, the IP below), copied with a button; unframed.
 - `widgets/lan_browsers.dart` — `LanBrowsers`: the browsers' root (`devices.browserCa`): SHA-256 and SHA-1 fingerprints,
   install on this computer (Windows, macOS) or save as `.crt`.
+- `widgets/pairing_panel.dart` — `PairingPanel`: an open pairing's code (Bebas), QR and time left counted from
+  `expires`; expired → "New code".
+- `widgets/status_dot.dart` — `StatusDot`: filled when on, outlined when off; device rows and `ServerConnection`.
 - `widgets/pairing_qr.dart` — `PairingQr`: the pairing QR painted from `package:qr`, always black on white.
-- `widgets/server_connection.dart` — `ServerConnection`: for a session opened online (`HybridService.joined`), online or
-  offline by choice, "work offline" / "work online", and the owner's "join with your company online" while unlinked.
+- `widgets/server_connection.dart` — `ServerConnection`: a bordered strip for a session opened online (`HybridService.joined`),
+  online or offline by choice (`StatusDot`), "work offline" / "work online" (reopens the cloud socket), and the owner's "join with your company online" while unlinked;
+  for a session on the master alone, "the internet is back" with "sign in online" (`showOnlineSignIn`) while `HybridService.canGoOnline`.
 - `widgets/server_away.dart` — `ServerAway`: online without the master's session: a paired device's "server isn't
   answering" + try again (`resume`, or the master password once); a computer with none, "create the server here" (the
   cloud company's owner only) → the master setup body with the account and `HybridService.companyFrom` → `adopt` →

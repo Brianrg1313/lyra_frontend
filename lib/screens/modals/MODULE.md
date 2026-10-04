@@ -184,6 +184,12 @@ All three **return a value and write nothing** (POS services live below this nav
 - `link_company/_link_company.dart` — `askLinkCompany(context, force:)`, `LinkCompanyModal`: joins the master's company
   with its company online (`HybridService.link`), in plain words; one candidate is named in the title, several are
   picked; asked once from the home (a "not now" is remembered), offered again from `ServerConnection` (`force`).
+- `online_sign_in/_online_sign_in.dart` — `showOnlineSignIn(context)`, `offerOnlineSignIn(context)`, `OnlineSignInModal`: a session on the master alone signs
+  in online as the same person (`clientService.email`, not asked): `email/verify` on opening through `SessionCloudSource`, then
+  the password or the mailed code, then `HybridService.join` → `hybrid` in place, the cloud socket opened; no online account →
+  sign up there (mailed code + names prefilled from the master's session, `SignUpService`); another method only says so and
+  closes ("close"; "not now" otherwise). The home's own offer once per session (`_OfferOnline` → `offerOnlineSignIn`) verifies
+  quietly first and opens only to sign in (password or code), never to sign up.
 
 ### `pre_start/` (welcome page)
 - `invitation/_invitation.dart` — `InvitationModal({invitation})`: invitation details + "Accept invitation" `Button` (`ClientService.acceptInvitation`), pops `true` once accepted; decline not offered yet.
