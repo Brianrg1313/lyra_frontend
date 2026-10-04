@@ -13,7 +13,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor) done | clients and deliveries, then statistics; the company's own templates have ops and endpoints but no screen |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
 | 5 Operations | not started | — |
-| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12) | the app's ops (enrol, status, inbox) and the server section showing the sync, both waiting on the backend's `/edge/v1/devices`; the next entities (POS tickets, employees, clients, files); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the backend's base (2026-10-04: enrolment, signed calls, `account` at the first link, `member` in `/changes` and `/snapshot`, the rest parked), seen with the engine against the dev backend | the app's ops (enrol, status, inbox) and the server section showing the sync; the backend applying the other entities (business, inventory, stock, money, then POS tickets, employees, clients, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
 **Next step:** clients and deliveries, then statistics, and E3 (engine side; the backend's part is
@@ -41,8 +41,9 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 
 **Repos** All on this disk, **nothing pushed**, no remotes except `core`'s.
 - The backend (`backend/projects/lyra`): the permissions catalog gained `server` and `money.export` and the
-  areas map the master's ids (2026-10-04), plus `pnpm permissions:export`; **uncommitted**, beside other
-  work in progress there.
+  areas map the master's ids (2026-10-04), plus `pnpm permissions:export`; the edge API (`lib/models/edge`,
+  `/edge/v1`, the `edge_*` tables, `EDGE_KEY` in the dev env); **uncommitted**, beside other work in
+  progress there.
 - The app: `main` (the `feat/offline-*` branches are merged into it).
 - `lyra_protocol`, `lyra_node`: `main`.
 - `core`: `feat/offline-lan`, which holds what the app depends on; its `main` is behind it.
@@ -995,3 +996,13 @@ things stand.
   upserts carry each person's permissions, so the cloud admits them with the same ones. Waits on the
   backend: `member` in `/changes` and `/snapshot`, `permissions` read from `account`
   (`task-edge-sync-backend.md` §10, §11).
+- The backend's base of the sync (2026-10-04, `lyra` backend `lib/models/edge`, uncommitted there):
+  `/edge/v1` with enrolment (the owner's session, one live master per branch, a reinstall replacing
+  its key), every master call signed (unknown, revoked, forged, replayed and clock-off refused with the
+  contract's codes), `/status`, `/commands` (each answered once per command id; `account` makes the
+  master's people cloud members with their permissions and access; every other entity parked with its
+  ids mapped, until the backend applies it), and `member` in `/changes` and `/snapshot`, appended by
+  every write to a person's document or access. The engine reports an error in the API's shape by its
+  status (`http_<status>`) instead of failing on it. Seen with the engine against the dev backend.
+  Left: applying the parked entities, the allowance's measure (always `within`), grants (§9), the
+  LAN address (§12), the app's enrolment screen.

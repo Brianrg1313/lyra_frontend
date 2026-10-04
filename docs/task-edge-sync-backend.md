@@ -5,6 +5,12 @@ for masters (`/edge/v1`), an edge-device credential, the id map, the allowance, 
 **Origin** `docs/plan-offline-lan.md` §9 (phase 6) and decisions D10, D11, D14, D15, D18, D19. A master is
 the desktop install that holds one company's site offline (`lyra_node`, the engine). Once it is
 linked to its cloud company, the two hold the same data, kept equal by this sync.
+**Built on the backend** (2026-10-04, `lib/models/edge/MODULE.md` there, not deployed): §1, §2, `/status`;
+`/commands` applying `account` and parking every other entity (accepted, ids mapped, kept in order for
+when it is served); `/changes` and `/snapshot` with `member`; the allowance always `within`. Not yet:
+the other entities, §9, §12. Checked with the engine against the dev backend: the first link, a
+permission changed in the cloud reaching the master, access taken away, revoking, replay, a forged
+signature, a clock off.
 **Frontend side** The engine syncs by itself over HTTPS (the app may be closed). The app enrols it
 and asks for grants with the person's cloud session. The engine is tested against an in-memory
 copy of this contract (`lyra_node/test/support/edge_cloud.dart`), which is the reference when this
@@ -27,16 +33,16 @@ text is unclear.
 The app calls these with the signed-in person's normal session (`Authorization`, `business_id`).
 Only the company's owner (`all`) may enrol or revoke.
 
-`POST /edge/v1/devices`
+`POST /edge/v1/devices` (the backend's convention: a client's keys are UPPERCASE)
 ```json
-{ "instance": "0192…", "name": "Front desk PC", "publicKey": "<base64, 32 bytes Ed25519>", "engineVersion": "0.1.0" }
+{ "INSTANCE": "0192…", "NAME": "Front desk PC", "PUBLIC_KEY": "<base64, 32 bytes Ed25519>", "ENGINE_VERSION": "0.1.0" }
 ```
 - The company is the request's `business_id`; it must be the one the master is linked to
   (`company.cloud_id` on the master, set by `business.link`).
-- The site is the company's main site unless the body names `site` (D11: one master per site). A site
-  that already has a live edge device: `409 {code: "site_has_master"}`. The same `instance` enrolling
+- The site is the company's main site unless the body names `SITE` (D11: one master per site). A site
+  that already has a live edge device: `409` with `action: "site_has_master"` (the API's error shape). The same `instance` enrolling
   again replaces its key and revokes the old one: that is how a reinstalled master comes back.
-- Answer:
+- Answer, in these keys (the app hands it to the engine as is):
 ```json
 {
   "device": "<edge device id>",
@@ -53,8 +59,9 @@ backend move the edge API elsewhere later.
 `DELETE /edge/v1/devices/:id`: revokes it. Its next call gets `401 {code: "edge_revoked"}` and the
 master stops syncing.
 
-`GET /edge/v1/devices`: the company's edge devices (id, name, site, last seen, revoked), for a future
-settings screen.
+`GET /edge/v1/devices`: the company's edge devices, `{keys, values}` as the API's lists
+(`id name site instance engine_version revoked last_seen date`), for a future settings screen. These
+three need the `server` permission; enrolling and revoking, `all` too.
 
 ## 2. Authentication of a master (every other `/edge/v1` call)
 
@@ -214,10 +221,17 @@ the master with a statement the backend signs, checked by the master **offline**
 
 The master's local users are sent as `account` upserts in the snapshot (e-mail, names, and
 `permissions`: the person's document on the master). For each one, the backend creates a cloud
-account with that e-mail and adds it to the company with that document (`access` false: not a
-member yet), except when the e-mail already has a cloud account: that one is answered `rejected`
-`{reason: "account_exists"}` and settled by the company's administrator, never merged. Accounts
-without an e-mail are not sent; the app asks for one before linking.
+account with that e-mail, as a company opens one for someone it hires (its owner claims it by signing
+up with the e-mail), and adds it to the company with that document and **its access**: the people
+working on the master keep working there the moment its permissions become the cloud's. A company
+template's id is the master's own and is dropped (the permissions stay); a global one is kept.
+- An e-mail of someone the company already has (the owner who links, someone already invited):
+  `accepted` with that person's id, nothing changed — the cloud's document is the one that counts.
+- Any other e-mail that has a cloud account: `rejected` `{reason: "account_exists"}`, settled by the
+  company's administrator, never merged.
+
+The answer's `cloudId` is the person's `member` id. Accounts without an e-mail are not sent; the app
+asks for one before linking.
 
 ## 11. Vocabulary (first version)
 
@@ -282,5 +296,6 @@ company, not only the owner: these fields only, for members; the full row stays 
   afterwards without losing a change.
 - A grant made for one master is refused by another master, after its expiry, and the second time.
 - A person's permissions changed in the cloud app reach the master within one sync cycle (`member`),
-  and the people a master uploads at the first link keep the permissions they had there.
+  and the people a master uploads at the first link keep the permissions they had there. **Seen on the
+  dev backend (2026-10-04)**, the cloud side played by its models.
 - A master's reported `host` shows in `GET /edge/v1/devices` for a member, and a new report replaces it.
