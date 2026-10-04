@@ -150,6 +150,19 @@ void main() {
       expect(source.reads, 2);
     });
 
+    test("on a master whose permissions are the cloud's nothing changes (P-12)", () async {
+      final source = _Source(mine: Grant.everything(), member: _member(keys: ["pos"], online: true));
+      final service = MemberPermissionsService(username: "rosa", source: source);
+      await service.load();
+
+      expect(service.readOnly, isTrue);
+      service.toggle("pos", "sell");
+      expect(service.flag("pos", "sell"), isFalse);
+      expect(service.dirty, isFalse);
+      await service.revoke();
+      expect(source.revoked, isEmpty);
+    });
+
     test('without a username it is the viewer\'s own, read-only', () async {
       final service = MemberPermissionsService(source: _Source(mine: Grant(sections: PermissionCatalog.fromKeys(["pos", "pos.sell"]))));
       await service.load();
@@ -191,6 +204,18 @@ void main() {
 
       expect(source.assigned.single.permissions, {"pos": {"access": true, "cancel": true}});
     });
+
+    testWidgets("a master's permissions that only the cloud changes say where, and offer nothing", (tester) async {
+      _size(tester);
+      final source = _Source(mine: Grant.everything(), member: _member(keys: ["pos", "pos.sell"], online: true));
+
+      await tester.pumpWidget(_app(EmployeePermissions(username: "rosa", person: "Rosa", source: source)));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining("its permissions are changed there"), findsOneWidget);
+      expect(find.text("Save"), findsNothing);
+      expect(find.text("Remove access"), findsNothing);
+    });
   });
 
   group('over a master', () {
@@ -205,6 +230,7 @@ void main() {
         "template": {"scope": "global", "id": "seller", "name": "Seller"},
         "custom": true,
         "access": true,
+        "online": true,
         "sections": PermissionCatalog.fromKeys(["pos", "pos.sell"])
       };
       final source = PermissionsLanSource(master);
@@ -214,6 +240,7 @@ void main() {
       expect(member.template?.id, "seller");
       expect(member.custom, isTrue);
       expect(member.grant.can("pos.sell"), isTrue);
+      expect(member.online, isTrue);
       expect(master.calls.single.$1, Ops.permissionsMembersDetail.name);
       expect(master.calls.single.$2, {"username": "rosa"});
 
@@ -239,13 +266,21 @@ void main() {
   });
 }
 
-PermissionMemberModel _member({required List<String> keys, bool me = false, bool owner = false, bool all = false, bool access = true}) =>
+PermissionMemberModel _member({
+  required List<String> keys,
+  bool me = false,
+  bool owner = false,
+  bool all = false,
+  bool access = true,
+  bool online = false
+}) =>
   PermissionMemberModel(
     username: "rosa",
     name: "Rosa",
     me: me,
     owner: owner,
     access: access,
+    online: online,
     grant: Grant(all: owner || all, sections: PermissionCatalog.fromKeys(keys))
   );
 

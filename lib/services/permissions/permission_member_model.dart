@@ -36,7 +36,8 @@ class PermissionMemberModel {
     this.access = false,
     required this.grant,
     this.template,
-    this.custom = false
+    this.custom = false,
+    this.online = false
   });
 
   final String username;
@@ -53,6 +54,10 @@ class PermissionMemberModel {
   /// Changed by hand after [template] was copied onto them.
   final bool custom;
 
+  /// Read from a master that syncs with the cloud: the cloud's document counts there and only the
+  /// cloud changes it (`session.md` P-12). The cloud's own answers never say so.
+  final bool online;
+
   static PermissionMemberModel? from(Object? raw) {
     if (raw is! Map || raw["username"] == null) return null;
 
@@ -67,7 +72,8 @@ class PermissionMemberModel {
       access: raw["access"] == true,
       grant: Grant(all: owner || raw["all"] == true, sections: _sections(raw["sections"])),
       template: PermissionTemplateRef.from(raw["template"]),
-      custom: raw["custom"] == true
+      custom: raw["custom"] == true,
+      online: raw["online"] == true
     );
   }
 }

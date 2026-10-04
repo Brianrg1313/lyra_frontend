@@ -13,7 +13,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor) done | clients and deliveries, then statistics; the company's own templates have ops and endpoints but no screen |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
 | 5 Operations | not started | — |
-| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend) | the app's ops (enrol, status, inbox) and the server section showing the sync, both waiting on the backend's `/edge/v1/devices`; the next entities (POS tickets, employees, clients, files); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12) | the app's ops (enrol, status, inbox) and the server section showing the sync, both waiting on the backend's `/edge/v1/devices`; the next entities (POS tickets, employees, clients, files); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
 **Next step:** clients and deliveries, then statistics, and E3 (engine side; the backend's part is
@@ -61,7 +61,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
   app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
   master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
 
-**Gate** `flutter analyze` clean; `flutter test` 1200 passing with the 5 known failures of
+**Gate** `flutter analyze` clean; `flutter test` 1202 passing with the 5 known failures of
 `test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
 
 **Keeping this current:** at the end of each release, update the table, the next step and the
@@ -618,7 +618,7 @@ credential, the allowance and the cloud grant (E3). In short:
 | Counters | stock balance | never synced as a value: recomputed from movements |
 | Editable records | products, prices, clients, employees, settings | field-level last-writer-wins by HLC; a true concurrent edit of the same field goes to a **conflicts inbox** for the owner |
 | Deletes | anything | tombstones win over an older edit; an edit newer than the delete revives it and is flagged |
-| Permissions / users | roles, grants | the cloud wins (security decisions are never made offline) |
+| Permissions / users | roles, grants | the cloud wins (security decisions are never made offline): pulled only (`member`), the master's editor read-only while it syncs (`session.md` P-12) |
 
 - Both sides apply the same rule, so they converge without asking each other: a field keeps the
   value with the newest HLC. The master keeps each field's stamp and whether it was written here.
@@ -985,3 +985,13 @@ things stand.
   `business.employees.permissions`. On a master, `permissions/changed` re-reads the bootstrap, and
   the person's own requests are listed. The area-based matrix (view/create/edit/delete per area) is
   gone.
+- Permissions in hybrid: the cloud's word wins (2026-10-04, `session.md` P-12). The edge vocabulary
+  gained `member`, pulled only: each person's document as the cloud holds it, kept by cloud account
+  id (`sync_members`, m013), laid whole onto the account it names (id map, else e-mail), applied to
+  open sessions after the cycle, audited with device `cloud`; one with no account here yet waits for
+  their admission. While the master syncs (enrolled, not revoked, within the allowance) it refuses
+  to change members and templates (`permissions_online`), answers `online`, and the app's editor
+  shows read-only with where to change them. The owner stays `all`. The first link's `account`
+  upserts carry each person's permissions, so the cloud admits them with the same ones. Waits on the
+  backend: `member` in `/changes` and `/snapshot`, `permissions` read from `account`
+  (`task-edge-sync-backend.md` §10, §11).

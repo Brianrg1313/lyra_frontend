@@ -232,6 +232,16 @@ word wins).
   (`permission_request_granted`) or already pending (`permission_request_pending`): the cloud's
   codes. The app keeps its behaviour on the last two: re-read the list and the bootstrap, then
   show the error.
+- **P-12** **The cloud's word wins** (plan §9.3). While the master syncs with its cloud company
+  (enrolled, not revoked, not past the allowance), each person's document is the cloud's: it
+  arrives by the sync (`member`, `task-edge-sync-backend.md` §11), replaces the master's whole,
+  applies to open sessions as P-8 does, and is audited with device `cloud`. A cloud member with no
+  account here yet gets it when admitted (P-5). The master changes no member or template
+  meanwhile (`permissions_online`); `permissions.get` and `permissions.members.detail` answer
+  `online: true`, and the app shows the editor read-only with where to change it. The owner stays
+  `all` whatever arrives (S-6). At the first link each person's document goes up with their
+  account, so the cloud admits them with it (§10 there). Revoked, or past the allowance, the
+  master's own editor is the way again.
 
 ### Ops
 
@@ -240,15 +250,15 @@ Members are named by `username`, as there.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `permissions.get` | session | — | `{catalog: [{key, actions}], mine: {all, template, custom, sections}}` | — |
+| `permissions.get` | session | — | `{catalog: [{key, actions}], online, mine: {all, template, custom, sections}}` | — |
 | `permissions.templates.list` | `permissions` | — | `[{id, scope, name, description, all, sections}]`, global first | — |
-| `permissions.templates.create` | `permissions.templates` | `name`, `description?`, `from?` (a template id), `permissions?` | `{id}` | `permission_template_name_taken`, `permission_template_not_found`, `permissions_invalid` |
-| `permissions.templates.edit` | `permissions.templates` | `id`, `name?`, `description?`, `permissions?` | `{id}` | `permission_template_not_found`, `permission_template_global`, `permission_template_name_taken`, `permissions_invalid` |
-| `permissions.templates.remove` | `permissions.templates` | `id` | `{id}` | `permission_template_not_found`, `permission_template_global` |
+| `permissions.templates.create` | `permissions.templates` | `name`, `description?`, `from?` (a template id), `permissions?` | `{id}` | `permission_template_name_taken`, `permission_template_not_found`, `permissions_invalid`, `permissions_online` |
+| `permissions.templates.edit` | `permissions.templates` | `id`, `name?`, `description?`, `permissions?` | `{id}` | `permission_template_not_found`, `permission_template_global`, `permission_template_name_taken`, `permissions_invalid`, `permissions_online` |
+| `permissions.templates.remove` | `permissions.templates` | `id` | `{id}` | `permission_template_not_found`, `permission_template_global`, `permissions_online` |
 | `permissions.members.list` | `permissions` | — | `[{username, name, lastName, picture, me, owner, all, template: {scope, id, name} \| null, custom}]`, the asker first | — |
-| `permissions.members.detail` | `permissions` | `username` | a member + `access`, `sections` | `permission_member_not_found` |
-| `permissions.members.assign` | `permissions.assign` | `username`, `template?`, `permissions?` | `{username}` | `permission_member_not_found`, `permissions_self`, `permissions_owner`, `escalation`, `permission_template_not_found`, `permissions_invalid` |
-| `permissions.members.revoke` | `permissions.assign` | `username` | `{username}` | `permission_member_not_found`, `permissions_self`, `permissions_owner`, `escalation` |
+| `permissions.members.detail` | `permissions` | `username` | a member + `access`, `online`, `sections` | `permission_member_not_found` |
+| `permissions.members.assign` | `permissions.assign` | `username`, `template?`, `permissions?` | `{username}` | `permission_member_not_found`, `permissions_self`, `permissions_owner`, `escalation`, `permission_template_not_found`, `permissions_invalid`, `permissions_online` |
+| `permissions.members.revoke` | `permissions.assign` | `username` | `{username}` | `permission_member_not_found`, `permissions_self`, `permissions_owner`, `escalation`, `permissions_online` |
 | `permissions.requests.list` | session | — | own requests, newest first: `[{id, permission, reason, state, created}]` | — |
 | `permissions.requests.create` | session | `permission` (an area id), `reason?` (≤ 200) | `{id}` | P-11 |
 

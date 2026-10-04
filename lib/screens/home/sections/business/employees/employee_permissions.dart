@@ -354,6 +354,7 @@ class _EmployeePermissionsState extends State<EmployeePermissions> {
 
     if (member == null) return s.permission_own_read_only;
     if (member.owner) return s.permission_owner_note;
+    if (member.online) return s.permission_online_note;
     if (member.grant.all && !_service.mine.all) return s.permission_all_locked;
     if (!member.access) return s.permission_no_access_note;
     if (picked != null) return s.permission_template_picked(permissionTemplateText(context, picked).name);

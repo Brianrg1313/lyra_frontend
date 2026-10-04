@@ -149,7 +149,8 @@ Both sides keep, per record, **the HLC of each field** (each cell of a product t
 - `delete` wins over older edits. An `upsert` newer than the delete brings the record back.
 - Facts never conflict (union by `commandId`). A `void` newer or older is applied once.
 - Stock balances are never sent: each side computes them from the movements.
-- Permissions and grants: the cloud's word wins (they don't travel in this first version).
+- Permissions: the cloud's word wins. They only come down (`member`, §11), never go up after the
+  first link (§10); the master refuses to change them while it syncs.
 - The backend keeps its own HLC per company: it stamps its own edits with it (node `cloud`), and on
   receiving a master's change it moves its clock past that stamp, so the next cloud edit sorts after
   it. A stamp more than 1 minute in the backend's future is still applied as sent: the master already
@@ -211,9 +212,10 @@ the master with a statement the backend signs, checked by the master **offline**
 
 ## 10. Accounts at the first link (D10)
 
-The master's local users are sent as `account` upserts in the snapshot (e-mail, names). For each one,
-the backend creates a cloud account with that e-mail and adds it to the company with the same role,
-except when the e-mail already has a cloud account: that one is answered `rejected`
+The master's local users are sent as `account` upserts in the snapshot (e-mail, names, and
+`permissions`: the person's document on the master). For each one, the backend creates a cloud
+account with that e-mail and adds it to the company with that document (`access` false: not a
+member yet), except when the e-mail already has a cloud account: that one is answered `rejected`
 `{reason: "account_exists"}` and settled by the company's administrator, never merged. Accounts
 without an e-mail are not sent; the app asks for one before linking.
 
@@ -233,7 +235,8 @@ is a calendar day `YYYY-MM-DD` in the company's zone. A ref is an id of the name
 | `stock_movement` | site | `append` | `product` `table` (refs) `operation` `reason` `quantity` `note` `source` `invoice` (ref, null) `at` |
 | `payment` | site | `append` `void` | `concept` `direction` `amount` `currency` `method` `reference` `counterpart` `ticket` (ref, null) `note` `date` `at`; `void`: `reason` `at` |
 | `currency` | company | `upsert` | id = ISO code; `mode` (`official` / `custom`) `custom` (rate, `1 main = rate`) `active` |
-| `account` | company | `upsert` | snapshot only, §10: `email` `firstName` `lastName` |
+| `account` | company | `upsert` | snapshot only, §10: `email` `firstName` `lastName` `permissions` (`{access, all, sections, template: {scope, id} \| null}`, the shape of `member`) |
+| `member` | company | `upsert` `delete` | **pulled only**, never pushed. id = the person's cloud account id (the `account`'s cloud id once mapped). `email` (how the master finds a person it hasn't mapped) `access` `all` `sections` (`{<section>: {access, <action>: bool}}`, the permissions catalog's keys) `template` (`{scope: "global" \| "company", id}` or null) `custom`. One per member of the company, the owner included, and per person with an active job and no access yet (`access` false). Sent whole on any change to a person's permissions or access. `delete` = out of the company |
 
 The rules behind each field are the specs in `lyra/app/docs/offline/specs/` (`business.md`,
 `inventory.md`, `stock.md`, `money.md`). Next versions add: POS tickets and their lines, the
@@ -278,4 +281,6 @@ company, not only the owner: these fields only, for members; the full row stays 
 - A revoked device gets `401 edge_revoked`; past the allowance the edge calls answer `402` and resume
   afterwards without losing a change.
 - A grant made for one master is refused by another master, after its expiry, and the second time.
+- A person's permissions changed in the cloud app reach the master within one sync cycle (`member`),
+  and the people a master uploads at the first link keep the permissions they had there.
 - A master's reported `host` shows in `GET /edge/v1/devices` for a member, and a new report replaces it.

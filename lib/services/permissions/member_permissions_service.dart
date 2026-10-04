@@ -56,11 +56,12 @@ class MemberPermissionsService extends ChangeNotifier {
   /// Whether the draft is `all`: everything, including what the catalog adds later.
   bool get all => _all;
 
-  /// Nothing can be changed: one's own, the owner's, or an `all` member for a viewer without `all`.
+  /// Nothing can be changed: one's own, the owner's, an `all` member for a viewer without `all`,
+  /// or anyone's on a master whose permissions only the cloud changes ([PermissionMemberModel.online]).
   bool get readOnly {
     final member = _member;
 
-    return member == null || member.me || member.owner || (member.grant.all && !_mine.all);
+    return member == null || member.me || member.owner || member.online || (member.grant.all && !_mine.all);
   }
 
   /// The stored flag of [section] (`access`) or one of its actions in the draft.

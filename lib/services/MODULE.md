@@ -258,8 +258,8 @@ See `baileys_server/MODULE.md` for the server side.
 - `permission_request.dart` — `requestPermissionRequest` (`REASON` only when not blank), `kPermissionReasonMax`.
 - `member_permissions_service.dart` — `MemberPermissionsService` (+ status): one person's document, the templates and the viewer's
   own grant, a draft in catalog keys (`toggle`, `apply`, `discard`, `save` sends only what changed, `revoke`), `canChange`/`canApply`
-  (escalation), `readOnly` (self, owner, `all` without `all`); no username = the viewer's own. Owned by `EmployeePermissions`.
-- `permission_member_model.dart` — `PermissionMemberModel` (+ `access`, `grant`), `PermissionTemplateModel`, `PermissionTemplateRef`,
+  (escalation), `readOnly` (self, owner, `all` without `all`, `online`); no username = the viewer's own. Owned by `EmployeePermissions`.
+- `permission_member_model.dart` — `PermissionMemberModel` (+ `access`, `grant`, `online`: a syncing master's, read-only), `PermissionTemplateModel`, `PermissionTemplateRef`,
   `permissionsMine` (`GET /permissions` → `Grant`).
 - `permission_member_request.dart` — `assignMemberRequest` (`USERNAME`, `TEMPLATE_ID?`, partial `PERMISSIONS?`).
 - `sources/permissions_source.dart` — `PermissionsSource`: `mine`, `templates`, `member(username)`, `assign`, `revoke`.

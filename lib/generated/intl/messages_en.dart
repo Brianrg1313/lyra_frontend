@@ -2962,6 +2962,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Void payments"),
         "permission_no_access_note": MessageLookupByLibrary.simpleMessage(
             "Works here but can\'t enter the business yet. Giving access lets them in with what is ticked below."),
+        "permission_online_note": MessageLookupByLibrary.simpleMessage(
+            "This business is connected online, so its permissions are changed there: from Lyra on the web or signed in online. They reach this server by themselves."),
         "permission_own_read_only": MessageLookupByLibrary.simpleMessage(
             "These are your permissions in this business. Only someone who manages the team can change them."),
         "permission_owner_note": MessageLookupByLibrary.simpleMessage(

@@ -17919,6 +17919,16 @@ class S {
     );
   }
 
+  /// `This business is connected online, so its permissions are changed there: from Lyra on the web or signed in online. They reach this server by themselves.`
+  String get permission_online_note {
+    return Intl.message(
+      'This business is connected online, so its permissions are changed there: from Lyra on the web or signed in online. They reach this server by themselves.',
+      name: 'permission_online_note',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Works here but can't enter the business yet. Giving access lets them in with what is ticked below.`
   String get permission_no_access_note {
     return Intl.message(
