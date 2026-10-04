@@ -69,6 +69,11 @@ Reached through `LanService.server` (the `lan/` services own it).
   `business.settings.edit`, the master's name first), `link` (`business.link`), `createOnline` (none to join: the master's company
   made online from its profile, `cloudCompanyFrom`, then linked), `declineLink`; `companyFrom(profile,
   cloudId)` (the setup's company from the cloud profile, as the engine's catalogues take it).
+- `sync_service.dart` — `SyncService` (+ `SyncState`), app-wide (`syncService`), `business.md` B-33 to B-36: enrols the
+  master by itself, once a session, when `hybrid` is online, linked and the person owns the company (`sync.prepare` →
+  `SyncCloudSource.enrol` → `sync.enroll`); never a revoked one; `taken` on `site_has_master`; `enrol(replace)` is the
+  owner's choice from the server section; `refresh` reads `sync.status`. A network failure retries when the internet returns.
+- `sync_cloud_source.dart` — `SyncCloudSource`: `POST /edge/v1/devices` (`edge` api) with `REPLACE` only when asked.
 
 ## capabilities/
 

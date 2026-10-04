@@ -30,6 +30,11 @@ final aries = _Aries();
 /// the session and business headers it inherits are simply ignored there.
 final scorpius = _Scorpius();
 
+/// A company's masters on the backend (`/edge/v1`, `docs/task-edge-sync-backend.md` §1): enrolling
+/// one with the owner's session. Same host, session and business header as [api]. The master's own
+/// signed calls go there too, from the engine, never through this.
+final edge = _Edge();
+
 /// `{z}/{x}/{y}` template of one tileset's tiles on [scorpius], drawn by the
 /// server with [style] (`light` or `dark`). Absolute because it is handed to
 /// the map layer, which fetches it on its own; `{r}` becomes `@2x` on
@@ -79,6 +84,7 @@ void useBusiness(String? id) {
   assets.business = id;
   aries.business = id;
   scorpius.business = id;
+  edge.business = id;
   sockets.business = id;
 }
 
@@ -195,6 +201,20 @@ class _Scorpius extends _SessionApi {
   ApiModel get dev => ApiModel(
     host: devHost,
     name: "scorpius",
+    port: 80,
+    scheme: "http",
+    tokenName: "Authorization"
+  );
+
+  @override
+  ApiModel get prod => dev;
+}
+
+class _Edge extends _SessionApi {
+  @override
+  ApiModel get dev => ApiModel(
+    host: devHost,
+    name: "edge",
     port: 80,
     scheme: "http",
     tokenName: "Authorization"

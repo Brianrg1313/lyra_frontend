@@ -42,6 +42,8 @@ Only the company's owner (`all`) may enrol or revoke.
 - The site is the company's main site unless the body names `SITE` (D11: one master per site). A site
   that already has a live edge device: `409` with `action: "site_has_master"` (the API's error shape). The same `instance` enrolling
   again replaces its key and revokes the old one: that is how a reinstalled master comes back.
+  `"REPLACE": true` revokes the site's live edge device first: the owner, told of the 409, chose this
+  master over that one (a new computer, say). The app never sends it without asking.
 - Answer, in these keys (the app hands it to the engine as is):
 ```json
 {

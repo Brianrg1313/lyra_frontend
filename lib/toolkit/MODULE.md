@@ -10,9 +10,10 @@ backend, routes and theme. No UI.
 - `api.dart` — REST clients and the business header:
   - `api` — main backend (`lyra`, port 80). `assets` — media backend (`cetus`, port 81, `ApiMode.assets`).
     `aries` — conversation desk (`aries`, port 80). `scorpius` — maps (`scorpius`, port 80; tile routes public).
+    `edge` — a company's masters (`edge`, port 80): the enrolment with the owner's session.
   - `mapTilesUrl(tileset, style)` — absolute `{z}/{x}/{y}{r}.png` template of a tileset's server-drawn tiles (`/scorpius/v1/raster`).
   - `apiOrigin` — scheme+host+port, to absolutize relative media paths.
-  - `useBusiness(String? id)` — sets the active business on `api`, `assets`, `aries`, `scorpius`, `sockets` (`business_id`
+  - `useBusiness(String? id)` — sets the active business on `api`, `assets`, `aries`, `scorpius`, `edge`, `sockets` (`business_id`
     header). Called only by `BusinessService`, which then calls `ConnectionService().rebind()`:
     the socket picks it up only in a new handshake.
   - Both extend private `_SessionApi` (token from `DatabaseService.fromSecure` in `preRequest`).

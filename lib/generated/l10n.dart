@@ -20539,6 +20539,96 @@ class S {
     );
   }
 
+  /// `Synced with your company online at {time}.`
+  String server_sync_done(Object time) {
+    return Intl.message(
+      'Synced with your company online at $time.',
+      name: 'server_sync_done',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Getting ready to sync with your company online.`
+  String get server_sync_starting {
+    return Intl.message(
+      'Getting ready to sync with your company online.',
+      name: 'server_sync_starting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't sync with your company online. It keeps trying.`
+  String get server_sync_failing {
+    return Intl.message(
+      'Couldn\'t sync with your company online. It keeps trying.',
+      name: 'server_sync_failing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Another server already syncs your company online, so this one doesn't.`
+  String get server_sync_taken {
+    return Intl.message(
+      'Another server already syncs your company online, so this one doesn\'t.',
+      name: 'server_sync_taken',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This server was unlinked from your company online. It keeps working here only.`
+  String get server_sync_revoked {
+    return Intl.message(
+      'This server was unlinked from your company online. It keeps working here only.',
+      name: 'server_sync_revoked',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use this server`
+  String get server_sync_use_this {
+    return Intl.message(
+      'Use this server',
+      name: 'server_sync_use_this',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sync again`
+  String get server_sync_link_again {
+    return Intl.message(
+      'Sync again',
+      name: 'server_sync_link_again',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sync this server instead?`
+  String get server_sync_replace_title {
+    return Intl.message(
+      'Sync this server instead?',
+      name: 'server_sync_replace_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The other server stops syncing with your company online. It keeps its information and keeps working on its own.`
+  String get server_sync_replace_message {
+    return Intl.message(
+      'The other server stops syncing with your company online. It keeps its information and keeps working on its own.',
+      name: 'server_sync_replace_message',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Make this computer your server`
   String get server_create_title {
     return Intl.message(

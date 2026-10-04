@@ -358,80 +358,82 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m143(company) =>
       "Lyra keeps a copy of ${company} on this computer, so you keep working when the internet goes down. The other devices of your place connect to it.";
 
-  static String m144(email) =>
+  static String m144(time) => "Synced with your company online at ${time}.";
+
+  static String m145(email) =>
       "We sent a code to ${email}. Enter it with your name and your account is ready.";
 
-  static String m145(count) =>
+  static String m146(count) =>
       "${Intl.plural(count, zero: 'Nothing available right now', one: '1 unit available', other: '${count} units available')}";
 
-  static String m146(max) => "Enter a whole number between 1 and ${max}";
-
-  static String m147(count) =>
-      "${Intl.plural(count, zero: 'Nothing reserved right now', one: '1 unit reserved', other: '${count} units reserved')}";
+  static String m147(max) => "Enter a whole number between 1 and ${max}";
 
   static String m148(count) =>
-      "${Intl.plural(count, one: 'One less', other: '${count} less')}";
+      "${Intl.plural(count, zero: 'Nothing reserved right now', one: '1 unit reserved', other: '${count} units reserved')}";
 
   static String m149(count) =>
-      "${Intl.plural(count, one: 'One more', other: '${count} more')}";
+      "${Intl.plural(count, one: 'One less', other: '${count} less')}";
 
   static String m150(count) =>
+      "${Intl.plural(count, one: 'One more', other: '${count} more')}";
+
+  static String m151(count) =>
       "${Intl.plural(count, zero: 'No products', one: '1 product', other: '${count} products')}";
 
-  static String m151(name) =>
+  static String m152(name) =>
       "Deleting ${name} removes its fields and everything stored in it. This can\'t be undone.";
 
-  static String m152(count) =>
+  static String m153(count) =>
       "${Intl.plural(count, zero: 'No fields', one: '1 field', other: '${count} fields')}";
 
-  static String m153(name) =>
+  static String m154(name) =>
       "Leaving the name empty deletes ${name} and everything stored in it. This can\'t be undone.";
 
-  static String m154(count) =>
+  static String m155(count) =>
       "${Intl.plural(count, one: 'visibility set on 1 column', other: 'visibility set on ${count} columns')}";
 
-  static String m155(count) =>
+  static String m156(count) =>
       "${Intl.plural(count, one: '1 column renamed', other: '${count} columns renamed')}";
 
-  static String m156(count) =>
+  static String m157(count) =>
       "${Intl.plural(count, one: '1 column retyped', other: '${count} columns retyped')}";
 
-  static String m157(count) =>
+  static String m158(count) =>
       "${Intl.plural(count, one: '1 column added to the summary', other: '${count} columns added to the summary')}";
 
-  static String m158(count) =>
+  static String m159(count) =>
       "${Intl.plural(count, zero: 'No records', one: '1 record', other: '${count} records')}";
 
-  static String m159(field) => "Add ${field}";
+  static String m160(field) => "Add ${field}";
 
-  static String m160(count) =>
+  static String m161(count) =>
       "${Intl.plural(count, zero: 'No columns', one: '1 column', other: '${count} columns')}";
 
-  static String m161(count, total) =>
+  static String m162(count, total) =>
       "Inventory summary: ${count} of ${total} columns";
 
-  static String m162(field) => "Edit ${field}";
+  static String m163(field) => "Edit ${field}";
 
-  static String m163(count) =>
+  static String m164(count) =>
       "${Intl.plural(count, one: '1 option', other: '${count} options')}";
 
-  static String m164(type, count) => "${type} · ${count}";
+  static String m165(type, count) => "${type} · ${count}";
 
-  static String m165(count) =>
+  static String m166(count) =>
       "${Intl.plural(count, one: '1 column is still plain text', other: '${count} columns are still plain text')}";
 
-  static String m166(length) => "Enter the ${length}-digit code we sent to";
+  static String m167(length) => "Enter the ${length}-digit code we sent to";
 
-  static String m167(time) => "Resend in ${time}";
+  static String m168(time) => "Resend in ${time}";
 
-  static String m168(company) =>
+  static String m169(company) =>
       "Once you accept, you join ${company}\'s team and they can see your profile.";
 
-  static String m169(job, company) => "${job} at ${company}";
+  static String m170(job, company) => "${job} at ${company}";
 
-  static String m170(company) => "${company} invited you";
+  static String m171(company) => "${company} invited you";
 
-  static String m171(name) => "Welcome, ${name}";
+  static String m172(name) => "Welcome, ${name}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -3606,6 +3608,23 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Working online"),
         "server_sign_in_online":
             MessageLookupByLibrary.simpleMessage("Sign in online"),
+        "server_sync_done": m144,
+        "server_sync_failing": MessageLookupByLibrary.simpleMessage(
+            "Couldn\'t sync with your company online. It keeps trying."),
+        "server_sync_link_again":
+            MessageLookupByLibrary.simpleMessage("Sync again"),
+        "server_sync_replace_message": MessageLookupByLibrary.simpleMessage(
+            "The other server stops syncing with your company online. It keeps its information and keeps working on its own."),
+        "server_sync_replace_title":
+            MessageLookupByLibrary.simpleMessage("Sync this server instead?"),
+        "server_sync_revoked": MessageLookupByLibrary.simpleMessage(
+            "This server was unlinked from your company online. It keeps working here only."),
+        "server_sync_starting": MessageLookupByLibrary.simpleMessage(
+            "Getting ready to sync with your company online."),
+        "server_sync_taken": MessageLookupByLibrary.simpleMessage(
+            "Another server already syncs your company online, so this one doesn\'t."),
+        "server_sync_use_this":
+            MessageLookupByLibrary.simpleMessage("Use this server"),
         "server_work_offline":
             MessageLookupByLibrary.simpleMessage("Work offline"),
         "server_work_online":
@@ -3617,7 +3636,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "sign_out": MessageLookupByLibrary.simpleMessage("Sign out"),
         "sign_out_failed": MessageLookupByLibrary.simpleMessage(
             "Could not sign out. Check your connection and try again."),
-        "sign_up_code_subtitle": m144,
+        "sign_up_code_subtitle": m145,
         "sign_up_code_title":
             MessageLookupByLibrary.simpleMessage("Create your account"),
         "sign_up_email_title":
@@ -3644,7 +3663,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Reserve units"),
         "stock_move_add_stock":
             MessageLookupByLibrary.simpleMessage("Add to stock"),
-        "stock_move_available": m145,
+        "stock_move_available": m146,
         "stock_move_dest_leave":
             MessageLookupByLibrary.simpleMessage("They leave"),
         "stock_move_dest_leave_hint": MessageLookupByLibrary.simpleMessage(
@@ -3663,7 +3682,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "stock_move_note_placeholder": MessageLookupByLibrary.simpleMessage(
             "Explain the movement for whoever audits it later"),
         "stock_move_quantity": MessageLookupByLibrary.simpleMessage("Quantity"),
-        "stock_move_quantity_error": m146,
+        "stock_move_quantity_error": m147,
         "stock_move_quantity_error_free": MessageLookupByLibrary.simpleMessage(
             "Enter a whole number greater than zero"),
         "stock_move_quantity_placeholder":
@@ -3675,11 +3694,11 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Pick one"),
         "stock_move_release_hint":
             MessageLookupByLibrary.simpleMessage("They go back on sale."),
-        "stock_move_reserved": m147,
+        "stock_move_reserved": m148,
         "stock_move_saved":
             MessageLookupByLibrary.simpleMessage("Stock updated"),
-        "stock_move_step_less": m148,
-        "stock_move_step_more": m149,
+        "stock_move_step_less": m149,
+        "stock_move_step_more": m150,
         "stock_move_take_action":
             MessageLookupByLibrary.simpleMessage("Take out"),
         "stock_move_take_hint":
@@ -3713,7 +3732,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Warranty"),
         "stock_reason_wrong_item":
             MessageLookupByLibrary.simpleMessage("Wrong item"),
-        "stock_summary_count": m150,
+        "stock_summary_count": m151,
         "stock_summary_empty_subtitle": MessageLookupByLibrary.simpleMessage(
             "The products of your main table show up here, with what\'s left of each one."),
         "stock_summary_empty_title":
@@ -3760,7 +3779,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "summary_title": MessageLookupByLibrary.simpleMessage("All set!"),
         "table_color_title": MessageLookupByLibrary.simpleMessage("Color"),
         "table_created": MessageLookupByLibrary.simpleMessage("Table created"),
-        "table_delete_message": m151,
+        "table_delete_message": m152,
         "table_delete_title":
             MessageLookupByLibrary.simpleMessage("Delete this table?"),
         "table_deleted": MessageLookupByLibrary.simpleMessage("Table deleted"),
@@ -3768,10 +3787,10 @@ class MessageLookup extends MessageLookupByLibrary {
             "What does this table contain?"),
         "table_description_title":
             MessageLookupByLibrary.simpleMessage("Description (optional)"),
-        "table_field_count": m152,
+        "table_field_count": m153,
         "table_field_delete_confirm":
             MessageLookupByLibrary.simpleMessage("Delete field"),
-        "table_field_delete_message": m153,
+        "table_field_delete_message": m154,
         "table_field_delete_title":
             MessageLookupByLibrary.simpleMessage("Delete this field?"),
         "table_field_name_placeholder":
@@ -3811,23 +3830,23 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Normalize"),
         "table_normalize_message": MessageLookupByLibrary.simpleMessage(
             "We read a sample of every column and give it the type it should have — a price that compares as a number, a date that sorts, a description the AI can search by meaning — and set how much of each one a bot may see. Columns you already typed or marked yourself are left alone."),
-        "table_normalize_narrowed": m154,
+        "table_normalize_narrowed": m155,
         "table_normalize_none": MessageLookupByLibrary.simpleMessage(
             "Every column was already right"),
-        "table_normalize_renamed": m155,
-        "table_normalize_retyped": m156,
+        "table_normalize_renamed": m156,
+        "table_normalize_retyped": m157,
         "table_normalize_running":
             MessageLookupByLibrary.simpleMessage("Normalizing this table"),
-        "table_normalize_summarized": m157,
+        "table_normalize_summarized": m158,
         "table_normalize_title":
             MessageLookupByLibrary.simpleMessage("Normalize this table?"),
         "table_options": MessageLookupByLibrary.simpleMessage("Table options"),
         "table_primary": MessageLookupByLibrary.simpleMessage("Primary"),
         "table_primary_hint": MessageLookupByLibrary.simpleMessage(
             "Your main table. The stock summary always reads this one, so it\'s the table whose columns show up below."),
-        "table_record_count": m158,
+        "table_record_count": m159,
         "table_renamed": MessageLookupByLibrary.simpleMessage("Table renamed"),
-        "table_settings_add": m159,
+        "table_settings_add": m160,
         "table_settings_agent_filterable":
             MessageLookupByLibrary.simpleMessage("Filterable columns"),
         "table_settings_agent_filterable_hint":
@@ -3877,7 +3896,7 @@ class MessageLookup extends MessageLookupByLibrary {
                 "The bots answering with this table"),
         "table_settings_channels_title":
             MessageLookupByLibrary.simpleMessage("Connected channels"),
-        "table_settings_column_count": m160,
+        "table_settings_column_count": m161,
         "table_settings_column_field":
             MessageLookupByLibrary.simpleMessage("Column"),
         "table_settings_column_options":
@@ -3904,7 +3923,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "This table has no columns yet. Write a title in the first free column of the sheet to create one"),
         "table_settings_columns_subtitle": MessageLookupByLibrary.simpleMessage(
             "What each one holds, how much of it the AI sees and which ones the inventory summary shows. All of it is changed right here"),
-        "table_settings_columns_summary_count": m161,
+        "table_settings_columns_summary_count": m162,
         "table_settings_columns_title":
             MessageLookupByLibrary.simpleMessage("Columns"),
         "table_settings_created":
@@ -3917,7 +3936,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Description"),
         "table_settings_description_empty":
             MessageLookupByLibrary.simpleMessage("No description"),
-        "table_settings_edit": m162,
+        "table_settings_edit": m163,
         "table_settings_error_subtitle": MessageLookupByLibrary.simpleMessage(
             "It may have been deleted, or it belongs to another business"),
         "table_settings_error_title": MessageLookupByLibrary.simpleMessage(
@@ -3942,7 +3961,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "What this table is called everywhere it shows up: the listing, the sheet header and whatever a bot says about it"),
         "table_settings_no_records":
             MessageLookupByLibrary.simpleMessage("No records yet"),
-        "table_settings_options": m163,
+        "table_settings_options": m164,
         "table_settings_options_empty":
             MessageLookupByLibrary.simpleMessage("No options yet"),
         "table_settings_pick_options": MessageLookupByLibrary.simpleMessage(
@@ -3969,7 +3988,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Table"),
         "table_settings_title":
             MessageLookupByLibrary.simpleMessage("Table settings"),
-        "table_settings_type_count": m164,
+        "table_settings_type_count": m165,
         "table_settings_types": MessageLookupByLibrary.simpleMessage("Types"),
         "table_settings_unavailable":
             MessageLookupByLibrary.simpleMessage("Not available"),
@@ -3983,7 +4002,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("USD, Bs., kg"),
         "table_settings_unknown":
             MessageLookupByLibrary.simpleMessage("Unknown"),
-        "table_settings_untyped": m165,
+        "table_settings_untyped": m166,
         "table_settings_untyped_hint": MessageLookupByLibrary.simpleMessage(
             "A column imported from a file is born as text. Giving it its real type is what lets the AI compare it, filter by it and quote it properly. You can change it in the Type column below"),
         "table_settings_updated":
@@ -4033,14 +4052,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "verify_code_continue_with_password":
             MessageLookupByLibrary.simpleMessage(
                 "Continue and create a password"),
-        "verify_code_inbox_subtitle": m166,
+        "verify_code_inbox_subtitle": m167,
         "verify_code_inbox_title":
             MessageLookupByLibrary.simpleMessage("Check your inbox"),
         "verify_code_not_received":
             MessageLookupByLibrary.simpleMessage("Didn\'t get it?"),
         "verify_code_password_notice": MessageLookupByLibrary.simpleMessage(
             "A password isn\'t required, but we recommend creating one. Your account will be as secure as you want it to be: we offer several ways to protect it, and you decide how far to go."),
-        "verify_code_resend_in": m167,
+        "verify_code_resend_in": m168,
         "verify_code_signing_in":
             MessageLookupByLibrary.simpleMessage("Signing you in…"),
         "verify_code_subtitle": MessageLookupByLibrary.simpleMessage(
@@ -4064,7 +4083,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Create a company"),
         "welcome_invitation_accept":
             MessageLookupByLibrary.simpleMessage("Accept invitation"),
-        "welcome_invitation_accept_notice": m168,
+        "welcome_invitation_accept_notice": m169,
         "welcome_invitation_action":
             MessageLookupByLibrary.simpleMessage("Review"),
         "welcome_invitation_branch":
@@ -4075,14 +4094,14 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Invited on"),
         "welcome_invitation_department":
             MessageLookupByLibrary.simpleMessage("Department"),
-        "welcome_invitation_job": m169,
+        "welcome_invitation_job": m170,
         "welcome_invitation_modal_title":
             MessageLookupByLibrary.simpleMessage("Invitation"),
         "welcome_invitation_role":
             MessageLookupByLibrary.simpleMessage("Position"),
         "welcome_invitation_subtitle": MessageLookupByLibrary.simpleMessage(
             "Review the invitation to join their team."),
-        "welcome_invitation_title": m170,
+        "welcome_invitation_title": m171,
         "welcome_jobs_body": MessageLookupByLibrary.simpleMessage(
             "Job openings are coming soon. You will be able to browse them and apply from here."),
         "welcome_jobs_modal_title":
@@ -4097,7 +4116,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Or start another way"),
         "welcome_subtitle": MessageLookupByLibrary.simpleMessage(
             "Lyra works around a company. Tell us how you want to start: you can change your mind later."),
-        "welcome_title": m171,
+        "welcome_title": m172,
         "write_a_description":
             MessageLookupByLibrary.simpleMessage("Optional description..."),
         "write_a_name": MessageLookupByLibrary.simpleMessage("Write a name"),

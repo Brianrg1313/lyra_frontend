@@ -14,6 +14,7 @@ import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/lan/hybrid_service.dart';
+import 'package:app/services/lan/sync_service.dart';
 import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channels_service.dart';
@@ -42,6 +43,10 @@ final lanService = LanService();
 /// Single instance of the one session over the cloud and a master (plan §9.6): the sign in
 /// opens it, the server section switches it, the boot flow resumes it.
 final hybridService = HybridService(lan: lanService, presence: CloudPresence());
+
+/// Single instance of the master's sync with the cloud: it enrols the master by itself once the
+/// owner is online and the company linked, so it follows the session wherever it is.
+final syncService = SyncService(lan: lanService, hybrid: hybridService);
 
 // Wraps the whole app before it is handed to MaterialApp.
 //
@@ -81,6 +86,7 @@ Widget initialBuilder(Widget app) => MultiProvider(
     ChangeNotifierProvider.value(value: CapabilityService()),
     ChangeNotifierProvider.value(value: lanService),
     ChangeNotifierProvider.value(value: hybridService),
+    ChangeNotifierProvider.value(value: syncService),
     // The state (the list's cache) must survive navigation between the table
     // list and the creation screen, so it lives at the app's scope and not
     // the section's.

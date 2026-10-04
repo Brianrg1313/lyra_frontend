@@ -113,6 +113,31 @@ channels) of the same company, and the edge sync (phase 6) knows what to keep eq
 
 ---
 
+## business.sync
+
+A linked master syncs with its cloud company once it is enrolled with the backend
+(`docs/task-edge-sync-backend.md` §1, plan §9.2). Nobody fills a form for it: the app does it by
+itself, on a device signed in online as the owner, the first time the company is linked and the
+internet answers.
+
+### Rules
+
+- **B-33** `sync.prepare` answers `{publicKey, instance, engine, name}`: the master's edge key (made
+  once, kept sealed until enrolled), its installation id, the engine's version and the computer's
+  name (the company's when it has none). The app sends them to `POST /edge/v1/devices` with the
+  owner's session. Only the owner prepares or enrols, as only the owner may online.
+- **B-34** `sync.enroll` takes the backend's answer as it came (`device`, `company`, `site`,
+  `edgeKey`, `allowance`, `endpoint`), checked: the endpoint https, the key 32 bytes, the company the
+  one the master is linked to (`not_linked`, `company_mismatch`). The master syncs from its next
+  cycle. Audited (`sync.enrolled`); answers `sync.status`.
+- **B-35** `sync.status` (`server`): `{enrolled: false}`, or `{enrolled, device, phase, allowance,
+  revoked, lastSync, lastError, pending, conflicts, rejected}`.
+- **B-36** The app never enrols again by itself a master the cloud revoked: unlinking it was
+  someone's decision. The server section says so and lets the owner enrol it again, which, like a
+  branch whose server is another (`site_has_master`), asks once whether this server replaces that one.
+
+---
+
 ## business.site
 
 The one site this master runs. The app has two screens that write a location: the business

@@ -13,7 +13,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor) done | clients and deliveries, then statistics; the company's own templates have ops and endpoints but no screen |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
 | 5 Operations | not started | — |
-| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the backend's base (2026-10-04: enrolment, signed calls, `account` at the first link, `member` in `/changes` and `/snapshot`, the rest parked), seen with the engine against the dev backend | the app's ops (enrol, status, inbox) and the server section showing the sync; the backend applying the other entities (business, inventory, stock, money, then POS tickets, employees, clients, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the backend's base (2026-10-04: enrolment, signed calls, `account` at the first link, `member` in `/changes` and `/snapshot`, the rest parked), seen with the engine against the dev backend; the enrolment by itself, no screen (2026-10-04) | the conflicts inbox on screen; the backend applying the other entities (business, inventory, stock, money, then POS tickets, employees, clients, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
 **Next step:** clients and deliveries, then statistics, and E3 (engine side; the backend's part is
@@ -22,6 +22,9 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 "not yet seen" list below run together once the code is done.
 
 **Built, not yet seen on screen**
+- The enrolment (2026-10-04): the owner online with the company linked enrols the master by itself; the
+  server strip's one sync line, "use this server" over another one, "sync again" after an unlink. Needs an
+  https backend (the engine refuses another endpoint), so not yet against the dev one.
 - Permissions (2026-10-04): the editor (an employee's "Permissions") on the cloud's catalog, online
   and on a master: a template, the switches, save, give and remove access; the edited person's open
   session re-reading its doors at once on a master (`permissions/changed`).
@@ -62,7 +65,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
   app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
   master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
 
-**Gate** `flutter analyze` clean; `flutter test` 1202 passing with the 5 known failures of
+**Gate** `flutter analyze` clean; `flutter test` 1208 passing with the 5 known failures of
 `test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
 
 **Keeping this current:** at the end of each release, update the table, the next step and the
@@ -1006,3 +1009,11 @@ things stand.
   status (`http_<status>`) instead of failing on it. Seen with the engine against the dev backend.
   Left: applying the parked entities, the allowance's measure (always `within`), grants (§9), the
   LAN address (§12), the app's enrolment screen.
+- The enrolment, with no screen (2026-10-04, the owner's call: "no extra steps; a screen only for what
+  is really needed"). `sync.prepare`, `sync.enroll`, `sync.status` (`business.md` B-33 to B-36):
+  `SyncService` enrols the master by itself, once a session, when `hybrid` is online, linked and the
+  person owns the company (right after the link, too); the computer's name, the main branch. Only
+  what a person must decide shows, as one line in the server strip: another server syncing the
+  branch ("use this server", confirmed, one `POST` with `REPLACE`, which the backend gained) and a
+  server someone unlinked ("sync again": never by itself). Otherwise the line says when it last
+  synced, or that it keeps trying.
