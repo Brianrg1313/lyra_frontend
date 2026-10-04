@@ -27,8 +27,8 @@ import 'auth_offline.dart';
 /// it opens is the cloud's, [Deployment.online]); it doesn't and this device is paired with a
 /// master (or is one) → that master's sign in, [AuthMaster], in the same frame and steps
 /// ([Deployment.offline]); it doesn't but a master is on the LAN → [AuthLan] signs in to it;
-/// neither → [AuthLan] creates the master on this computer, or [AuthOffline] where none can run
-/// (web, phones). A browser on a master's page has only that master: the cloud is another origin.
+/// this computer is a master already, paired or not → its sign in too; neither → [AuthLan]
+/// creates the master on this computer, or [AuthOffline] where none can run (web, phones). A browser on a master's page has only that master: the cloud is another origin.
 /// The network is watched while the page is open, both ways: the internet going away swaps the
 /// cloud's form for the offline one, and coming back swaps it again.
 ///
@@ -128,8 +128,12 @@ class _GateState extends State<_Gate> {
     // The sources follow the form on screen: the cloud's identify the e-mail through the backend,
     // a master's through `LanService`. Nothing reads them before a submit.
     // A kept session resuming as `hybrid` (`HybridService.resume`) is not taken back to the cloud.
+    final offline = scan.reach != NetworkReach.online && scan.reach != NetworkReach.searching;
     if (scan.reach == NetworkReach.online && Deployment.mode != DeploymentMode.hybrid) Deployment.online();
-    if (scan.reach != NetworkReach.online && scan.reach != NetworkReach.searching && Deployment.paired != null) {
+    // This computer is a master the app forgot (its pairing left, the key store wiped): its own
+    // master's sign in, never a dead end or a pairing with itself. `/lan` certifies the app again.
+    if (offline && Deployment.paired == null && scan.masterHere) Deployment.attach(DeploymentRole.master);
+    if (offline && Deployment.paired != null) {
       Deployment.offline();
       return const _MasterGate();
     }

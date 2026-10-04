@@ -14,6 +14,7 @@ import 'package:app/services/lan/lan_pairing_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/lan/network_scan_service.dart';
+import 'package:app/services/local_server/local_server_service.dart';
 import 'package:app/screens/authentication/_authentication.dart';
 import 'package:app/screens/authentication/auth_lan.dart';
 
@@ -59,15 +60,15 @@ void main() {
     WidgetTester tester, {
     Future<bool> Function()? cloud,
     List<LanFound> masters = const [],
-    bool canHost = false,
+    LocalServerStatus engine = LocalServerStatus.unavailable,
   }) => pump(tester, () => Authentication(resume: () async => "/login", scan: () => NetworkScanService(
     cloud: cloud ?? () async => false,
     discover: () async => masters,
-    canHost: () async => canHost
+    engine: () async => engine
   )));
 
   testWidgets('with the backend answering, the sign in as always, even with a master around', (tester) async {
-    await pumpGate(tester, cloud: () async => true, masters: [found], canHost: true);
+    await pumpGate(tester, cloud: () async => true, masters: [found], engine: LocalServerStatus.notSetUp);
 
     expect(tester.takeException(), isNull);
     expect(find.text(S.current.auth_title), findsOneWidget);
@@ -75,7 +76,7 @@ void main() {
   });
 
   testWidgets('offline with a master on the LAN, its sign in: email, password, sign in', (tester) async {
-    await pumpGate(tester, masters: [found], canHost: true);
+    await pumpGate(tester, masters: [found], engine: LocalServerStatus.notSetUp);
 
     expect(tester.takeException(), isNull);
     expect(find.text(S.current.auth_lan_title), findsOneWidget);
@@ -86,7 +87,7 @@ void main() {
   });
 
   testWidgets('offline with no master, this computer offers to be it: Create Master Server', (tester) async {
-    await pumpGate(tester, canHost: true);
+    await pumpGate(tester, engine: LocalServerStatus.notSetUp);
 
     expect(tester.takeException(), isNull);
     expect(find.text(S.current.auth_create_title), findsOneWidget);
@@ -94,7 +95,7 @@ void main() {
   });
 
   testWidgets('the email and password become the owner: the setup asks only for the rest', (tester) async {
-    await pumpGate(tester, canHost: true);
+    await pumpGate(tester, engine: LocalServerStatus.notSetUp);
 
     await tester.enterText(find.byType(TextField).at(0), "ada@lyra.app");
     await tester.enterText(find.byType(TextField).at(1), "ninechars");
@@ -119,7 +120,7 @@ void main() {
   });
 
   testWidgets('the setup says what is missing under each field, the ticked passphrase included', (tester) async {
-    await pumpGate(tester, canHost: true);
+    await pumpGate(tester, engine: LocalServerStatus.notSetUp);
     await tester.enterText(find.byType(TextField).at(0), "ada@lyra.app");
     await tester.enterText(find.byType(TextField).at(1), "correct horse battery");
     await tester.tap(find.text(S.current.auth_create_button));
@@ -155,7 +156,7 @@ void main() {
 
   testWidgets('the internet going away swaps the cloud form for the offline one, and back', (tester) async {
     var online = true;
-    await pumpGate(tester, cloud: () async => online, masters: [found], canHost: true);
+    await pumpGate(tester, cloud: () async => online, masters: [found], engine: LocalServerStatus.notSetUp);
     expect(find.text(S.current.auth_title), findsOneWidget);
 
     online = false;
@@ -179,7 +180,7 @@ void main() {
         tries++;
         return answer.future;
       },
-      scan: () => NetworkScanService(cloud: () async => true, discover: () async => const [], canHost: () async => false)
+      scan: () => NetworkScanService(cloud: () async => true, discover: () async => const [], engine: () async => LocalServerStatus.unavailable)
     ));
 
     expect(tries, 1);
@@ -201,7 +202,7 @@ void main() {
         return answers.last.future;
       },
       discover: () async => const [],
-      canHost: () async => false
+      engine: () async => LocalServerStatus.unavailable
     )));
 
     expect(find.text(S.current.auth_title), findsNothing);
@@ -227,7 +228,7 @@ void main() {
   group('signing in to a master', () {
     Future<void> pumpLan(WidgetTester tester, _Pairing pairing, {List<LanFound> masters = const [found], VoidCallback? enter}) =>
       pump(tester, () => ChangeNotifierProvider(
-        create: (_) => NetworkScanService(cloud: () async => false, discover: () async => masters, canHost: () async => false),
+        create: (_) => NetworkScanService(cloud: () async => false, discover: () async => masters, engine: () async => LocalServerStatus.unavailable),
         child: Material(child: AuthLan(masters: masters, onCreate: (_, _) {}, pairing: pairing, enter: enter))
       ));
 
@@ -274,7 +275,7 @@ void main() {
         (false, [found], NetworkReach.master),
         (false, <LanFound>[], NetworkReach.none),
       ]) {
-        final scan = NetworkScanService(cloud: () async => cloud, discover: () async => masters, canHost: () async => true);
+        final scan = NetworkScanService(cloud: () async => cloud, discover: () async => masters, engine: () async => LocalServerStatus.notSetUp);
 
         expect(scan.reach, NetworkReach.searching);
         await scan.scan();
@@ -287,7 +288,7 @@ void main() {
       final scan = NetworkScanService(
         cloud: () async => false,
         discover: () => Future.error(StateError("no multicast")),
-        canHost: () => Future.error(StateError("no engine"))
+        engine: () => Future.error(StateError("no engine"))
       );
 
       await scan.scan();
@@ -306,7 +307,7 @@ void main() {
             return online;
           },
           discover: () async => const [],
-          canHost: () async => false,
+          engine: () async => LocalServerStatus.unavailable,
           every: const Duration(seconds: 15)
         );
 
@@ -343,7 +344,7 @@ void main() {
             return online;
           },
           discover: () async => const [found],
-          canHost: () async => false,
+          engine: () async => LocalServerStatus.unavailable,
           presence: presence,
           every: const Duration(minutes: 1)
         );
@@ -380,7 +381,7 @@ void main() {
         final scan = NetworkScanService(
           cloud: () => answer.future,
           discover: () async => const [],
-          canHost: () async => false,
+          engine: () async => LocalServerStatus.unavailable,
           presence: presence
         );
 
@@ -407,7 +408,7 @@ void main() {
             discovers++;
             return const [found];
           },
-          canHost: () async => false,
+          engine: () async => LocalServerStatus.unavailable,
           every: const Duration(seconds: 15)
         );
 

@@ -57,7 +57,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   addresses until one answers), `pairWithPassword` (the sign in's: login and password are the secret, Argon2id in an
   isolate; `locked` for a locked account).
 - `network_scan_service.dart` — `NetworkScanService` (+ `NetworkReach`), flow-scoped (the sign in): `scan` asks
-  `cloudReachable` and `discoverMasters` at once and whether this computer `canHost` (engine present, not set up);
+  `cloudReachable` and `discoverMasters` at once and this computer's engine status: `canHost` (present, not set up), `masterHere` (set up);
   online > master > none; `watch` looks again every 15 s for the page's life (online, the backend alone; a miss, a full look), and with a `CloudPresence` follows the backend live (connected → online at once, a drop → a full look at once); `hold` pauses it all.
 - `hybrid_service.dart` — `HybridService` (+ `HybridJoin`), app-wide (`hybridService`), plan §9.6: `join(login,
   password?)` after an online sign in on a paired device (the master's session too → `hybrid`; another person's kept

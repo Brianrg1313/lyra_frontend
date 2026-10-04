@@ -9,6 +9,7 @@ import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/lan/network_scan_service.dart';
+import 'package:app/services/local_server/local_server_service.dart';
 import 'package:app/screens/authentication/_authentication.dart';
 
 /// A device paired with a master signs in on the one sign in page: with the backend answering,
@@ -24,7 +25,13 @@ void main() {
   setUp(() => Deployment.use(DeploymentMode.local, role: DeploymentRole.client));
   tearDown(() => Deployment.use(DeploymentMode.cloud));
 
-  Future<_Master> pump(WidgetTester tester, {bool activation = false, bool online = false, bool Function()? cloud}) async {
+  Future<_Master> pump(
+    WidgetTester tester, {
+    bool activation = false,
+    bool online = false,
+    bool Function()? cloud,
+    LocalServerStatus engine = LocalServerStatus.unavailable
+  }) async {
     tester.view.physicalSize = const Size(1600, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -46,7 +53,7 @@ void main() {
           return Authentication(resume: () async => "/login", scan: () => NetworkScanService(
             cloud: () async => cloud?.call() ?? online,
             discover: () async => const [],
-            canHost: () async => false
+            engine: () async => engine
           ));
         })
       )
@@ -83,6 +90,16 @@ void main() {
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text(S.current.auth_continue), findsOneWidget);
     expect(find.text(S.current.auth_lan_title), findsNothing);
+  });
+
+  testWidgets("a master the app forgot (its pairing left) is still this computer's sign in, never the dead end", (tester) async {
+    Deployment.use(DeploymentMode.cloud);
+    await pump(tester, engine: LocalServerStatus.stopped);
+
+    expect(tester.takeException(), isNull);
+    expect(Deployment.paired, DeploymentRole.master);
+    expect(find.text(S.current.auth_master_title), findsOneWidget);
+    expect(find.text(S.current.auth_offline_title), findsNothing);
   });
 
   testWidgets("the internet going away swaps the cloud's form for its master's, and back", (tester) async {

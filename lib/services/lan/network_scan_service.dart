@@ -39,17 +39,17 @@ class NetworkScanService extends ChangeNotifier {
   NetworkScanService({
     Future<bool> Function()? cloud,
     Future<List<LanFound>> Function()? discover,
-    Future<bool> Function()? canHost,
+    Future<LocalServerStatus> Function()? engine,
     CloudPresence? presence,
     this.every = const Duration(seconds: 15),
   }) : _presence = presence,
        _cloud = cloud ?? cloudReachable,
        _discover = discover ?? discoverMasters,
-       _canHost = canHost ?? _engineHere;
+       _engine = engine ?? _engineHere;
 
   final Future<bool> Function() _cloud;
   final Future<List<LanFound>> Function() _discover;
-  final Future<bool> Function() _canHost;
+  final Future<LocalServerStatus> Function() _engine;
   final CloudPresence? _presence;
   final Duration every;
 
@@ -61,10 +61,19 @@ class NetworkScanService extends ChangeNotifier {
   /// The masters seen on the last look; on [NetworkReach.master], at least one.
   List<LanFound> get masters => _masters;
 
-  bool _canHostHere = false;
+  LocalServerStatus _engineStatus = LocalServerStatus.unavailable;
 
   /// Whether this computer can become the master: a desktop with the engine, not set up yet.
-  bool get canHost => _canHostHere;
+  bool get canHost => _engineStatus == LocalServerStatus.notSetUp;
+
+  /// Whether this computer is a master already, its engine set up (running or not). The app can
+  /// have forgotten it (its pairing left, the key store wiped): the sign in goes to it anyway,
+  /// and `/lan` certifies the app again (`LanService.enrollMaster`).
+  bool get masterHere => switch (_engineStatus) {
+    LocalServerStatus.stopped || LocalServerStatus.starting || LocalServerStatus.locked ||
+    LocalServerStatus.ready || LocalServerStatus.stopping => true,
+    _ => false
+  };
 
   Timer? _timer;
   bool _held = false;
@@ -85,16 +94,16 @@ class NetworkScanService extends ChangeNotifier {
     _again = false;
 
     try {
-      final (online, masters, canHost) = await (
+      final (online, masters, engine) = await (
         _cloud(),
         _discover().catchError((Object _) => const <LanFound>[]),
-        _canHost().catchError((Object _) => false)
+        _engine().catchError((Object _) => LocalServerStatus.unavailable)
       ).wait;
 
       if (_disposed) return;
 
       _masters = masters;
-      _canHostHere = canHost;
+      _engineStatus = engine;
       // The socket connecting while the HTTP question was out is the newer answer.
       _reach = online || _live ? NetworkReach.online : masters.isNotEmpty ? NetworkReach.master : NetworkReach.none;
       notifyListeners();
@@ -162,7 +171,6 @@ class NetworkScanService extends ChangeNotifier {
     super.dispose();
   }
 
-  /// A computer whose engine is set up already is a master that lost its pairing: it isn't
-  /// offered a second one (the setup would refuse it anyway).
-  static Future<bool> _engineHere() async => await LocalServerService().refresh() == LocalServerStatus.notSetUp;
+  /// The engine on this computer: [LocalServerStatus.unavailable] where none can run.
+  static Future<LocalServerStatus> _engineHere() => LocalServerService().refresh();
 }
