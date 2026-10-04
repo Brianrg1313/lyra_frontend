@@ -61,17 +61,27 @@ void main() {
       expect(init["tasks"], isEmpty);
     });
 
-    test('a master\'s listed grants answer like the cloud\'s tree (P-1)', () {
+    test('a master answers the cloud\'s tree, and says who owns the company (S-34)', () async {
       Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
-      final permissions = PermissionsService()..seed({"c1": ["business.view", "business.settings.*"]});
+      master.answers[Ops.sessionBootstrap.name] = {
+        ..._bootstrap,
+        "permissions": {
+          "c1": {"business": {"view": true, "settings": {"view": true, "edit": true}}},
+        },
+        "owned": const [],
+      };
+      await ClientService(source: SessionLanSource(master)).resolve();
+      final permissions = PermissionsService();
 
       expect(permissions.canOpen("business", business: "c1"), isTrue);
       expect(permissions.can("business.settings.edit", business: "c1"), isTrue);
-      expect(permissions.granted("business.settings", business: "c1"), isNull);
-      expect(permissions.granted("business", business: "c1"), {"view"});
+      expect(permissions.granted("business.settings", business: "c1"), {"view", "edit"});
       expect(permissions.can("local_server.devices", business: "c1"), isFalse);
+      expect(permissions.owns(business: "c1"), isFalse);
 
-      permissions.seed({"c1": ["*"]});
+      master.answers[Ops.sessionBootstrap.name] = _bootstrap;
+      await ClientService(source: SessionLanSource(master)).resolve();
+      expect(permissions.owns(business: "c1"), isTrue);
       expect(permissions.can("local_server.devices", business: "c1"), isTrue);
     });
 
@@ -235,7 +245,8 @@ const _bootstrap = {
   "businesses": [
     {"id": "c1", "name": "Lovelace Café", "caption": null, "logo": null, "activity": null, "profile": null, "currency": "USD"}
   ],
-  "permissions": {"c1": ["*"]},
+  "permissions": {"c1": {"business": {"view": true}}},
+  "owned": ["c1"],
   "tasks": [],
   "catalogs": {"version": Catalogs.version, "countries": Catalogs.countryRows, "currencies": Catalogs.currencyRows},
   "deployment": {"mode": "local", "instanceId": "i1", "engine": "0.3.0", "timezone": "America/Caracas"},

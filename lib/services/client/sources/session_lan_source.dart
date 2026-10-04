@@ -51,6 +51,7 @@ class SessionLanSource implements SessionSource {
           if (business is Map) {...business, "logo": BusinessLanSource.fileJson(business["logo"])}
       ],
       "permissions": answer["permissions"],
+      "owned": answer["owned"],
       "tasks": [
         for (final task in answer["tasks"] as List? ?? const [])
           if (task is Map) {...task}

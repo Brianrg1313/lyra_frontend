@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lyra_protocol/lyra_protocol.dart' show PermissionAreas;
 
 import 'package:app/services/permissions/permissions_service.dart';
 
@@ -16,6 +20,28 @@ Map<String, dynamic> _payload() => {
 
 void main() {
   tearDown(() => PermissionsService().clear());
+
+  test("every id of docs/app-areas.json maps to the backend's keys, and nothing else does", () {
+    // An id with no line in the backend's areas.js (copied in lyra_protocol) is granted to nobody,
+    // not even the owner, online or on a master (session.md P-3).
+    final json = jsonDecode(File("docs/app-areas.json").readAsStringSync()) as Map;
+    final ids = <String>{};
+
+    void walk(List areas) {
+      for (final area in areas.cast<Map>()) {
+        if (area["scope"] != "account") {
+          for (final action in area["actions"] as List) {
+            ids.add("${area["key"]}.$action");
+          }
+        }
+        walk(area["children"] as List? ?? const []);
+      }
+    }
+
+    walk(json["areas"] as List);
+
+    expect(PermissionAreas.map.keys.toSet(), ids);
+  });
 
   test('nothing is hidden before /init brings permissions', () {
     expect(PermissionsService().isLoaded, isFalse);

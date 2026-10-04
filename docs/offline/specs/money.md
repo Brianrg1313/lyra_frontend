@@ -12,7 +12,7 @@ it is voided and written again.
 
 ## money.catalog
 
-`money.catalog` · `finance.view` · → `{concepts: {in: [...], out: [...]}, methods: [...]}`, from
+`money.catalog` · `money` · → `{concepts: {in: [...], out: [...]}, methods: [...]}`, from
 the vocabularies (`business.md`). Concepts carry `direction`, `ticket` (may name a sale) and
 `settles` (pays a credit ticket down). Settlement kinds carry `reference`, `change`, `default`
 and `credit`.
@@ -66,9 +66,9 @@ and `credit`.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `money.payments.record` | `finance.payments.record` (a `settles` concept: `finance.receivables.collect`) | `recordPaymentRequest` fields | payment | M-1…M-7 codes |
-| `money.payments.void` | `finance.payments.void` | `id`, `reason?` | payment | `not_found`, `already_voided` |
-| `money.payments.search` | `finance.payments.view` | `page`, `size` (≤ 100), `direction?`, `concept?`, `method?`, `status` (`all` / `recorded` / `voided`) | `MoneyPaymentsPage` | — |
+| `money.payments.record` | `money.charge` | `recordPaymentRequest` fields | payment | M-1…M-7 codes |
+| `money.payments.void` | `money.void` | `id`, `reason?` | payment | `not_found`, `already_voided` |
+| `money.payments.search` | `money` | `page`, `size` (≤ 100), `direction?`, `concept?`, `method?`, `status` (`all` / `recorded` / `voided`) | `MoneyPaymentsPage` | — |
 
 - **M-10** Search order: `date` newest first, then `id`. `totals` (`in`, `out`: count and total)
   are over the **whole filter**, voided payments never included, whatever `status` lists.
@@ -97,7 +97,7 @@ and `credit`.
 
 ### Ops
 
-`money.summary` · `finance.overview.view` · `from?` · `MoneySummary`. (`GET /money/` and
+`money.summary` · `money` · `from?` · `MoneySummary`. (`GET /money/` and
 `POST /money/summary/` both map to it.)
 
 ---
@@ -124,7 +124,7 @@ decided, and for hybrid, where cloud credit tickets are pulled down.
 
 ### Ops
 
-`money.receivables` · `finance.receivables.view` · `page`, `size`, `open` · `MoneyReceivablesPage`.
+`money.receivables` · `money` · `page`, `size`, `open` · `MoneyReceivablesPage`.
 
 ---
 
@@ -155,7 +155,7 @@ decided, and for hybrid, where cloud credit tickets are pulled down.
   A company keeps at most 40 active accounts (`too_many_methods`).
 - **M-44** Removing is soft (`active: false`). Payments that named it keep reading its label.
 - **M-45** `holder`, `document` and `account` are **sealed** (plan §6.3, scope `payments`): they
-  are readable only in a session whose account holds `finance.methods.view`, and unwrapped with
+  are readable only in a session whose account holds `money` (`session.md` P-9), and unwrapped with
   that person's password at sign in. A PIN session can't read them. A session without the key
   (signed in before the key existed, or a holder nobody shared it with yet) answers
   `sealed_locked` to the list and to a write that has any of them; signing in again with the
@@ -167,11 +167,11 @@ decided, and for hybrid, where cloud credit tickets are pulled down.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `money.methods.list` | `finance.methods.view` | — | `[MoneyMethod]` (by `position`) | — |
-| `money.methods.rails` | `finance.methods.view` | — | `[MoneyRail]` with `fields`, and `options` | — |
-| `money.methods.create` | `finance.methods.create` | `createMoneyMethodRequest` | method | M-40…M-43 codes |
-| `money.methods.edit` | `finance.methods.edit` | `updateMoneyMethodRequest` | method | `not_found`, M-41…M-43 codes |
-| `money.methods.remove` | `finance.methods.delete` | `id` | `{}` | `not_found` |
+| `money.methods.list` | `money` | — | `[MoneyMethod]` (by `position`) | — |
+| `money.methods.rails` | `money` | — | `[MoneyRail]` with `fields`, and `options` | — |
+| `money.methods.create` | `money.accounts` | `createMoneyMethodRequest` | method | M-40…M-43 codes |
+| `money.methods.edit` | `money.accounts` | `updateMoneyMethodRequest` | method | `not_found`, M-41…M-43 codes |
+| `money.methods.remove` | `money.accounts` | `id` | `{}` | `not_found` |
 
 ---
 
@@ -193,9 +193,9 @@ decided, and for hybrid, where cloud credit tickets are pulled down.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `money.currencies.get` | `finance.methods.view` | — | `MoneyCurrencies` | — |
-| `money.currencies.save` | `finance.methods.manage_currencies` | `saveMoneyExchangeRequest` | `MoneyCurrencies` | `unknown_currency`, `invalid_rate`, `is_main` |
-| `money.currencies.remove` | `finance.methods.manage_currencies` | `currency` | `MoneyCurrencies` | `in_use` (an account uses it) |
+| `money.currencies.get` | `money` | — | `MoneyCurrencies` | — |
+| `money.currencies.save` | `money.accounts` | `saveMoneyExchangeRequest` | `MoneyCurrencies` | `unknown_currency`, `invalid_rate`, `is_main` |
+| `money.currencies.remove` | `money.accounts` | `currency` | `MoneyCurrencies` | `in_use` (an account uses it) |
 
 ---
 
@@ -223,7 +223,7 @@ Lyra is not accounting software. It hands its data to the software that is.
 
 ### Ops
 
-`export.accounting` · `finance.export` (new permission, plan §8.5) · M-60 · `{fileId, expires}`
+`export.accounting` · `money.export` (a master's own key in the cloud's catalog, plan §8.5) · M-60 · `{fileId, expires}`
 · `invalid_range` (`from` after `to`), `too_many_rows` (more than 1 000 000 rows: narrow the
 window).
 
@@ -236,7 +236,7 @@ The finance release serves `money.catalog`, `money.summary`, `money.payments.*`,
 - money is in minor units of the main currency, as on the ticket (`pos.md`; the app's
   `MoneyLanSource` converts both ways); rates are not money and travel as numbers;
 - the catalogue leaves out the concepts that settle a credit ticket while credit is deferred, so
-  a `settlement` asks for `finance.receivables.collect` and then always answers `ticket_required`
+  a `settlement` asks for `money.charge` and then always answers `ticket_required`
   or `not_credit`; the receivables answer an empty page;
 - a payment names a settlement kind (`unknown_method` when it names none, as the cloud refuses);
   `accountId` names an active account (M-4);

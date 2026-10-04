@@ -249,9 +249,9 @@ See `baileys_server/MODULE.md` for the server side.
 
 ## permissions/
 
-- `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree, or a
-  master's list with wildcards, ids of `docs/app-areas.json`). `can(id)`, `canOpen(area)`, `granted(area)` (its granted actions, `null` = all) on the active company by default; absent on the path = denied, account
-  areas (`dashboard`) always open, `local_server` open in the cloud (this computer's, not a company's), not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`; `owns()` (created here, or a master's `*`). Cleared on sign out.
+- `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree of the
+  ids of `docs/app-areas.json`; a master answers the same tree, `session.md` S-34). `can(id)`, `canOpen(area)`, `granted(area)` (its granted actions, `null` = all) on the active company by default; absent on the path = denied, account
+  areas (`dashboard`) always open, `local_server` open in the cloud (this computer's, not a company's), not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`; `owns()` (created here, or in a master's `owned`). Cleared on sign out.
 - `permission_requests_service.dart` — `PermissionRequestsService` (+ status): `GET`/`POST /permissions/requests/` (active company), `isPending(id)`.
   Owned by `NoPermissionSection`. A `409` rereads the list and `/init` (`refreshCatalogs`) before rethrowing. Seam `seed`.
 - `permission_request_model.dart` — `PermissionRequestModel`, `PermissionRequestState` (`granted` = held now, measured on read).

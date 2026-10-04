@@ -204,9 +204,9 @@ The master closes the connection after `version_mismatch` (close code 4002), `se
 - Replay covers the last **7 days or 100 000 events**. Asking for an older `since` answers
   `resync_required`: the client re-reads what it shows, which is the `ConnectionService.onRestored`
   path the services already have.
-- **Events are filtered per session** by permission (each spec says who receives what), and by
-  data scope (`sales.view_all`, own-account events). A client never receives an event about data
-  it can't read.
+- **Events are filtered per session** by permission, a catalog key (`session.md` P-1; each spec
+  says who receives what), and by data scope (own-account events: `permissions/changed`). A client
+  never receives an event about data it can't read.
 - Event names and payloads are the ones the app already parses (`stock/changed`,
   `invoice/*`, `sale/progress`, `table/*`), plus `business/changed`, `permissions/changed` and
   `table/changed` (`Events` in `lyra_protocol`). The `XLanSource` feeds them to the same
@@ -286,7 +286,7 @@ Grouped by spec. Arguments, answers and errors are in the spec files.
 | Spec | Ops |
 |---|---|
 | protocol | `hello`, `engine.unlock`, `session.bind`, `device.prove`, `events.subscribe`, `events.unsubscribe` |
-| session | `auth.identify`, `auth.signIn`, `auth.signInPin`, `auth.activate`, `auth.refresh`, `auth.signOut`, `account.changePassword`, `account.setPin`, `session.bootstrap`, `permissions.of`, `permissions.set`, `permissions.requests.list`, `permissions.requests.create`, `permissions.requests.inbox`, `permissions.requests.answer`, `devices.list`, `devices.rename`, `devices.revoke`, `pairing.start`, `devices.browserCa` |
+| session | `auth.identify`, `auth.signIn`, `auth.signInPin`, `auth.activate`, `auth.refresh`, `auth.signOut`, `account.changePassword`, `account.setPin`, `session.bootstrap`, `permissions.get`, `permissions.templates.list`, `permissions.templates.create`, `permissions.templates.edit`, `permissions.templates.remove`, `permissions.members.list`, `permissions.members.detail`, `permissions.members.assign`, `permissions.members.revoke`, `permissions.requests.list`, `permissions.requests.create`, `devices.list`, `devices.rename`, `devices.revoke`, `pairing.start`, `devices.browserCa` |
 | business | `business.create`, `business.profile`, `business.edit`, `business.setLogo`, `business.link`, `business.site.get`, `business.site.edit`, `catalog.get` |
 | inventory | `inventory.tables.list`, `inventory.tables.create`, `inventory.tables.edit`, `inventory.tables.delete`, `inventory.tables.structure`, `inventory.tables.details`, `inventory.tables.normalize`, `inventory.fields.create`, `inventory.fields.edit`, `inventory.fields.delete`, `inventory.records.list`, `inventory.records.create`, `inventory.records.edit`, `inventory.records.delete`, `inventory.images.add`, `inventory.images.remove`, `inventory.import.structure`, `inventory.import.records` |
 | stock | `stock.move`, `stock.history`, `stock.summary` |

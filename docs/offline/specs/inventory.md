@@ -45,12 +45,12 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `inventory.tables.list` | `inventory.view` | — | `[TableLite]` | — |
-| `inventory.tables.create` | `inventory.create_table` | `title`, `description?`, `color`, `template?` | `{id}` | `invalid_field`, `unknown_template` |
-| `inventory.tables.edit` | `inventory.edit_table` | `id`, `name?`, `description?`, `primary?` | table | `not_found`, `invalid_primary` |
-| `inventory.tables.delete` | `inventory.delete_table` | `id` | `{}` | `not_found`, `has_open_tickets` (I-4) |
-| `inventory.tables.structure` | `inventory.view` | `id` | `TableStructure` (fields in the `{keys, values}` shape) | `not_found` |
-| `inventory.tables.details` | `inventory.view` | `id` | `TableDetail` | `not_found` |
+| `inventory.tables.list` | `products` | — | `[TableLite]` | — |
+| `inventory.tables.create` | `products.structure` | `title`, `description?`, `color`, `template?` | `{id}` | `invalid_field`, `unknown_template` |
+| `inventory.tables.edit` | `products.structure` | `id`, `name?`, `description?`, `primary?` | table | `not_found`, `invalid_primary` |
+| `inventory.tables.delete` | `products.structure` | `id` | `{}` | `not_found`, `has_open_tickets` (I-4) |
+| `inventory.tables.structure` | `products` | `id` | `TableStructure` (fields in the `{keys, values}` shape) | `not_found` |
+| `inventory.tables.details` | `products` | `id` | `TableDetail` | `not_found` |
 
 - **I-4** A table whose products are held by an open POS ticket can't be deleted
   (`has_open_tickets`, naming the ticket codes). Cancel or charge them first.
@@ -102,9 +102,9 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `inventory.fields.create` | `inventory.edit_columns` | `tableId`, `name`, `description?`, `type`, `position`, `options?`, `unit?` | field | `invalid_field`, `duplicate_field_type` |
-| `inventory.fields.edit` | `inventory.edit_columns` (`width` alone: `inventory.view`, see I-17) | `id`, and any of `name`, `description`, `type`, `position`, `width`, `visibility`, `summary`, `options`, `unit` | field | `not_found`, `read_only_field`, `duplicate_field_type` |
-| `inventory.fields.delete` | `inventory.edit_columns` | `id` | `{}` | `not_found` |
+| `inventory.fields.create` | `products.structure` | `tableId`, `name`, `description?`, `type`, `position`, `options?`, `unit?` | field | `invalid_field`, `duplicate_field_type` |
+| `inventory.fields.edit` | `products.structure` (`width` alone: `products`, see I-17) | `id`, and any of `name`, `description`, `type`, `position`, `width`, `visibility`, `summary`, `options`, `unit` | field | `not_found`, `read_only_field`, `duplicate_field_type` |
+| `inventory.fields.delete` | `products.structure` | `id` | `{}` | `not_found` |
 
 - **I-17** A column width is a property of the table, shared by everyone (as today). Anyone who
   can open the table may drag it.
@@ -142,7 +142,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 - **I-22** `SKU` values are unique within a table when present (`duplicate_sku`), compared
   without case and trimmed. `nextSku` keeps generating them on the client, as today.
 - **I-23** Deleting a record is soft (I-2). There is no delete op in the app today; the engine
-  has one for the POS and imports (`inventory.records.delete`), gated by `inventory.edit_records`.
+  has one for the POS and imports (`inventory.records.delete`), gated by `products.delete`.
 - **I-24** A record held by an open ticket can be edited (name, price…): the ticket keeps the
   values frozen on its line (`pos.md`, POS-12).
 
@@ -150,10 +150,10 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `inventory.records.list` | `inventory.view` | `tableId`, `page` (from 1), `size` (≤ 200), `match?` | `{keys, values, page, size, total}` (the `TableViewModel` shape: `keys` is `"id"` then the field ids in position order; each row is the record id then its cells) | `not_found` |
-| `inventory.records.create` | `inventory.edit_records` | `tableId`, `data` | `{id}` | `invalid_value`, `duplicate_sku` |
-| `inventory.records.edit` | `inventory.edit_records` | `tableId`, `id`, `data` | `{}` | `not_found`, `invalid_value`, `duplicate_sku`, `read_only_field` |
-| `inventory.records.delete` | `inventory.edit_records` | `tableId`, `id` | `{}` | `not_found`, `has_open_tickets` |
+| `inventory.records.list` | `products` | `tableId`, `page` (from 1), `size` (≤ 200), `match?` | `{keys, values, page, size, total}` (the `TableViewModel` shape: `keys` is `"id"` then the field ids in position order; each row is the record id then its cells) | `not_found` |
+| `inventory.records.create` | `products.create` | `tableId`, `data` | `{id}` | `invalid_value`, `duplicate_sku` |
+| `inventory.records.edit` | `products.edit` | `tableId`, `id`, `data` | `{}` | `not_found`, `invalid_value`, `duplicate_sku`, `read_only_field` |
+| `inventory.records.delete` | `products.delete` | `tableId`, `id` | `{}` | `not_found`, `has_open_tickets` |
 
 - **I-25** Order of `records.list`: creation order (UUIDv7), oldest first, as the sheet draws it.
 - **I-26** `match` is the text search of the README over every text-like field of the table
@@ -179,8 +179,8 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `inventory.images.add` | `inventory.edit_records` | `tableId`, `productId`, `fileId` (uploaded first, `protocol-v1.md`) | the cell | `too_many_images`, `invalid_file` |
-| `inventory.images.remove` | `inventory.edit_records` | `tableId`, `productId`, `fileId` | the cell | `not_found` |
+| `inventory.images.add` | `inventory.pictures` | `tableId`, `productId`, `fileId` (uploaded first, `protocol-v1.md`) | the cell | `too_many_images`, `invalid_file` |
+| `inventory.images.remove` | `inventory.pictures` | `tableId`, `productId`, `fileId` | the cell | `not_found` |
 
 ---
 
@@ -251,9 +251,9 @@ two, the table is `preparing`, and the app waits for `table/ready`.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `inventory.import.structure` | `inventory.import` | `fileId`, `format`, `name?`, `row` | `{id}` | `unsupported_file`, `too_large`, `empty_file` |
-| `inventory.import.records` | `inventory.import` | `fileId`, `format`, `tableId`, `row` | `{imported, withInvalidCells}` | `not_found`, `unsupported_file` |
-| `inventory.tables.normalize` | `inventory.edit_columns` | `tableId` | `TableNormalizeModel` | `not_found` |
+| `inventory.import.structure` | `products.structure` | `fileId`, `format`, `name?`, `row` | `{id}` | `unsupported_file`, `too_large`, `empty_file` |
+| `inventory.import.records` | `products.import` | `fileId`, `format`, `tableId`, `row` | `{imported, withInvalidCells}` | `not_found`, `unsupported_file` |
+| `inventory.tables.normalize` | `products.structure` | `tableId` | `TableNormalizeModel` | `not_found` |
 
 ### Events
 

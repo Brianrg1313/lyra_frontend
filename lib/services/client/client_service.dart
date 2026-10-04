@@ -189,12 +189,12 @@ class ClientService extends ChangeNotifier {
     if (cdn != null) CdnService().seed(cdn);
   }
 
-  /// Hands `/init`'s `permissions` to [PermissionsService]. Absent (an older
-  /// backend) leaves it unloaded, which hides nothing.
+  /// Hands `/init`'s `permissions` (and a master's `owned`) to [PermissionsService]. Absent
+  /// (an older backend) leaves it unloaded, which hides nothing.
   void _seedPermissions(Map clientData) {
     final permissions = clientData["permissions"];
 
-    if (permissions != null) PermissionsService().seed(permissions);
+    if (permissions != null) PermissionsService().seed(permissions, owned: clientData["owned"]);
   }
 
   /// Rereads the platform configuration with the app running.

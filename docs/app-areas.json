@@ -4,22 +4,10 @@
   "contract": {
     "permission_id": "<area key>.<action>, e.g. 'finance.payments.record'. The area key is dotted from the root area down.",
     "view_rule": "'<area>.view' opens the area (side bar option, tab or route). Without it the app hides the option and refuses the route (deep links too). A child's view requires its parent's view.",
-    "wildcards": "'*' grants everything (company owner). '<area>.*' grants every action of that area and its children.",
+    "granting": "The backend grants catalog keys (`<section>` or `<section>.<action>`, backend lib/models/permissions/catalog.js) and maps every id here to the keys its endpoints require (areas.js). A master keeps the same keys and the same map (docs/offline/specs/session.md, P-1 to P-4). There are no wildcards: the owner holds `all`.",
     "scope": "Permissions are per company: a person can work for several with different roles. Areas with scope 'account' do not depend on a company and are never filtered by it.",
-    "init_shape": {
-      "$comment": "Suggested addition to GET /init/: one entry per company in the businesses list.",
-      "businesses": [
-        {
-          "ID": "<business id>",
-          "PERMISSIONS": ["*"]
-        },
-        {
-          "ID": "<business id>",
-          "PERMISSIONS": ["messages.*", "sales.view", "sales.process.view", "sales.fulfil", "pos.*"]
-        }
-      ]
-    },
-    "backend_must_enforce": "The app only hides what is not granted; every endpoint must check the same permission ids.",
+    "init_shape": "GET /init/ answers `permissions`: per company id, the ids granted, nested and only the granted ones (`{business: {view: true, employees: {view: true, invite: true}}}`). A master answers the same, plus `owned`: the company ids the person owns.",
+    "backend_must_enforce": "The app only hides what is not granted; every endpoint, and every op of a master, checks the catalog key the id maps to. A new id here is a line in the backend's areas.js (and its copy in lyra_protocol) in the same change.",
     "modes": "Deployment modes the area exists in: 'cloud', 'local', 'hybrid'. Every area declares it (docs/plan-offline-lan.md §12); the app mirrors it in CapabilityService.modes, kept equal by test/capabilities_test.dart. An area with 'cloud' but not 'hybrid' is cloud only: hidden in local, and in hybrid open while the internet is.",
     "action_modes": "An action that exists in fewer modes than its area (deleting the company, company e-mails) declares its own, under 'action_modes'; the app reads it as the area '<area>.<action>'."
   },

@@ -10,18 +10,22 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 1 Data-source seam | done | — |
 | 2 Engine (`lyra_node`) | done | — |
 | 3 LAN (TLS, pairing, web build, mDNS) | done on one computer | the exit check on real hardware (a second PC, a phone, a browser, a LAN MITM attempt; the camera, the OS trust-store dialogs, Firefox) |
-| 4 Domains | business, inventory and stock, import, POS, sales, finance, employees done | clients and deliveries, then statistics; the permissions ops (`session.md`), without which an invited person holds no grant |
+| 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model) done | the app's permissions editor on the catalog (cloud and master); clients and deliveries, then statistics |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
 | 5 Operations | not started | — |
 | 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend) | the app's ops (enrol, status, inbox) and the server section showing the sync, both waiting on the backend's `/edge/v1/devices`; the next entities (POS tickets, employees, clients, files); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
-**Next step:** the permissions ops (`session.md` §session.permissions), so an invited person holds a
-grant; then clients and deliveries, statistics, and E3 (engine side; the backend's part is §9 of
-`docs/task-edge-sync-backend.md`). **Real hardware goes last** (owner's call, 2026-10-04): the exit
-checks of phase 3 and 4b and the "not yet seen" list below run together once the code is done.
+**Next step:** the app's permissions editor (`EmployeePermissions`) on the cloud's catalog, through
+`/permissions/members` online and `permissions.members.*` on a master; then clients and deliveries,
+statistics, and E3 (engine side; the backend's part is §9 of `docs/task-edge-sync-backend.md`).
+**Real hardware goes last** (owner's call, 2026-10-04): the exit checks of phase 3 and 4b and the
+"not yet seen" list below run together once the code is done.
 
 **Built, not yet seen on screen**
+- Permissions on a master (2026-10-04): the cloud's catalog, templates and per-person document, a
+  new member admitted with nothing, assign/revoke applied to open sessions at once. No screen calls
+  the ops yet (the editor is the next step).
 - E2: `hybrid` (the online sign in opens the master's session too), sections locking and opening in
   place with the internet, "work offline", the server section online, the link (D18).
 - A session on the master alone offering "sign in online" by itself once the backend answers (2026-10-03).
@@ -37,6 +41,9 @@ checks of phase 3 and 4b and the "not yet seen" list below run together once the
   2026-10-01 as `ERR_NETWORK_IO_SUSPENDED`; not retried).
 
 **Repos** All on this disk, **nothing pushed**, no remotes except `core`'s.
+- The backend (`backend/projects/lyra`): the permissions catalog gained `server` and `money.export` and the
+  areas map the master's ids (2026-10-04), plus `pnpm permissions:export`; **uncommitted**, beside other
+  work in progress there.
 - The app: `main` (the `feat/offline-*` branches are merged into it).
 - `lyra_protocol`, `lyra_node`: `main`.
 - `core`: `feat/offline-lan`, which holds what the app depends on; its `main` is behind it.
@@ -55,7 +62,7 @@ checks of phase 3 and 4b and the "not yet seen" list below run together once the
   app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
   master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
 
-**Gate** `flutter analyze` clean; `flutter test` 1182 passing with the 5 known failures of
+**Gate** `flutter analyze` clean; `flutter test` 1189 passing with the 5 known failures of
 `test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
 
 **Keeping this current:** at the end of each release, update the table, the next step and the
@@ -342,10 +349,11 @@ internet DNS to resolve, so it fails exactly during the outages this mode exists
 one kills its sessions at once, and its certificate goes on the engine's deny list.
 
 ### 5.4 Authorization
-- Every op is checked on the master against the signed-in user's permissions (the same ids as
-  `docs/app-areas.json`, evaluated with the same rules as `PermissionsService`). Clients hide
-  what they can't open, but the **master is the gate**. An op the user may not run fails with
-  `code: forbidden`.
+- Every op is checked on the master against the signed-in user's permissions: **the cloud's own
+  permission system** (backend `lib/models/permissions`), copied in `lyra_protocol`: the same
+  stored document, the same catalog keys per op as the cloud's routes, the same areas map for the
+  app (`session.md` session.permissions). Clients hide what they can't open, but the **master is
+  the gate**. An op the user may not run fails with `code: forbidden`.
 - Queries shape their answer by permission. For example, the employees list leaves out
   salaries unless the user has the HR permission. The data never leaves the master; it isn't
   just hidden in the UI.
@@ -394,9 +402,9 @@ KEK  = user-scope OS vault secret  (unattended mode: default)
   fields are encrypted **again** with a *sealed key* (SK).
 - SK is wrapped once per user who holds the matching permission, using a key derived from that
   user's password (Argon2id). It is also wrapped by the recovery key.
-- Two scopes, each with its own SK: `hr` (employees' private fields and salaries, held by
-  `business.employees.view_personal`) and `payments` (account holder, document and number of
-  payment methods, held by `finance.methods.view`).
+- Two scopes, each with its own SK: `hr` (employees' private fields and salaries, held by the
+  catalog key `employees`) and `payments` (account holder, document and number of payment methods,
+  held by `money`): the keys the cloud requires for those screens (`session.md` P-9).
 - So the master can read sealed fields **only while an authorised user has a session open**.
   Someone who steals the disk and breaks the OS vault still can't read salaries.
 - Granting that permission re-wraps SK for the new user, and needs a user who already holds SK.
@@ -941,7 +949,8 @@ things stand.
   reads it through `EmployeesLanSource`; the invite form shows the code, and the address search and
   the branch picker (cloud only) are off on a master. Left for later: re-issuing a code from the app
   (`employees.reissueActivation` is served, no button calls it), the pre-start task for a rehire
-  (`employees.accept` is served), grants for other people (`permissions.*`), leaves and job endings.
+  (`employees.accept` is served), leaves and job endings. Permissions for other people arrived
+  with the cloud's model on 2026-10-04 (see the permissions release).
 - Phase 4b, one app (§9.6, D14 to D18, from 2026-10-01). E1: nothing disappears (locked areas and
   tabs), a network failure keeps the session. E2: `hybrid` (`HybridService`: the master's session
   opened by the online sign in, the password reused or asked once; the boot resumes it), the internet
@@ -955,3 +964,15 @@ things stand.
   enrolled and tested against an in-memory backend (`test/support/edge_cloud.dart`): enrolment with an
   Ed25519 key, the first link both ways, push and pull, field stamps and the conflicts inbox, retries,
   refusals, revocation, the allowance.
+- Permissions, the cloud's model on the master (2026-10-04, the owner's call: "the local permissions
+  must be the backend's, never a second set"). The engine dropped its area-id grants and wildcards
+  for the backend's per-person document (`all`, catalog `sections`, `template`, `custom`); every op
+  checks the catalog key of its cloud route; the bootstrap answers the cloud's `/init` tree plus
+  `owned`; templates (the seven global ones and the company's), members (assign, revoke, self, owner
+  and escalation rules) and requests are the cloud's endpoints as ops. A job admits with nothing
+  granted. `employees` holds the `hr` key and `money` the `payments` one, shared from the assigner's
+  session or the next holder's and unwrapped when taken away. `lyra_protocol` carries the copy of
+  the backend's catalog, areas and presets, tested against `pnpm permissions:export`; the backend's
+  catalog gained `server` (the master's devices, backups, stop) and `money.export`. Consequences of
+  matching the cloud: no "own sales only" (SA-11), no separate personal-data permission (E-3), a
+  typed charge and a changed rate are `pos.sell`. Migration 12 moves an existing master over.

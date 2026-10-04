@@ -81,8 +81,8 @@ A returned unit leaves `returns` through an `add` with reason `return` (back on 
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `stock.move` | `inventory.move_stock` | `operation`, `tableId`, `productId`, `quantity`, `reason?`, `note?` | `StockBalance` | `not_found`, `untracked`, `invalid_reason`, `insufficient_stock` |
-| `stock.history` | `inventory.view` | `productId`, `cursor?`, `size?` | `{items, cursor, more}`, newest first | `not_found` |
+| `stock.move` | `inventory` (+ the operation's: `inventory.restock`, `inventory.remove`, `inventory.return`, `inventory.hold`) | `operation`, `tableId`, `productId`, `quantity`, `reason?`, `note?` | `StockBalance` | `not_found`, `untracked`, `invalid_reason`, `insufficient_stock` |
+| `stock.history` | `inventory` | `productId`, `cursor?`, `size?` | `{items, cursor, more}`, newest first | `not_found` |
 
 The five `POST /inventory/stock/{add,remove,reserve,unreserve,return}/` calls of
 `StockOperation` map onto `stock.move` with `operation`.
@@ -138,7 +138,7 @@ The stock screen's list: one row per product of the primary table.
 
 ### Ops
 
-`stock.summary` · `inventory.view` · `page` (from 1), `size` (≤ 200: the app re-reads up to six
+`stock.summary` · `inventory` · `page` (from 1), `size` (≤ 200: the app re-reads up to six
 pages of 30 at once), `match?` · `StockSummaryPage`. Its rows are `{keys, values}` with the record
 id first; a last `needsReview` key flags ST-14's products. A company without a primary table
 answers `no_primary_table` (as the `code`; the cloud sends it as the `message`).
@@ -147,7 +147,7 @@ answers `no_primary_table` (as the `code`; the cloud sends it as the `message`).
 
 | Event | When | Payload |
 |---|---|---|
-| `stock/changed` | ST-15 | `{productId, table, onHand, reserved, available}` (`StockChangedModel`), delivered to sessions with `inventory.view` (and `pos.view` from the POS release) |
+| `stock/changed` | ST-15 | `{productId, table, onHand, reserved, available}` (`StockChangedModel`), delivered to sessions with `inventory`, `products` or `pos` |
 
 ---
 
@@ -164,7 +164,7 @@ an imported stock column as opening balances (`inventory.md` I-44): one `add` / 
 movement per product, `source: import`, note "import", in the records step's transaction, with no
 `stock/changed` for each (that step's one `table/changed` tells about all of them). The POS release
 adds the ticket holds (ST-20, ST-21, ST-23; a line's hold is the `stock_holds` row with the line's
-id) and `pos.view` to `stock/changed`'s audience. ST-14 is reached only by a POS outbox replay, which
+id) and `pos` to `stock/changed`'s audience. ST-14 is reached only by a POS outbox replay, which
 arrives with the outbox (plan phase 5). A discarded returned unit (the `remove` row above)
 has no way to be told apart from a shelf removal in today's `stock.move` arguments: it waits for
 open question 4.

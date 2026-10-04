@@ -45,9 +45,10 @@ A person who can sign in to this master.
   failure and every lock goes to the audit log.
 - **S-5** A PIN is 6 digits and opens a **POS-scoped session** only (§session.session). Five
   failed PINs disable the PIN until that person signs in with their password.
-- **S-6** The first account is created at setup with the grant `*` (owner). The company always
-  keeps at least one active account holding `*`: disabling it, or removing its `*`, is refused
-  (`last_owner`).
+- **S-6** The first account is created at setup and is the **owner**: `all` (P-2), measured
+  from `meta.owner`, never from a stored document, so nothing written can lock the company out of
+  itself. Nobody changes the owner's permissions or access (`permissions_owner`), and the owner
+  account is never disabled (`last_owner`).
 - **S-7** Nobody signs up offline. Accounts are only created by an invitation (see
   `employees.md`, `employees.invite`). The app hides the sign-up branch in `local` (capability
   gate, plan §7.3).
@@ -59,9 +60,9 @@ A person who can sign in to this master.
   re-issues it too. Only the code's hash is kept, bound to its account.
 - **S-9** Changing one's own password needs the current one, ends every other session of that
   account, and re-wraps the account's sealed-key wrap (plan §6.3).
-- **S-10** An admin reset needs `business.employees.edit`, and the target may hold **no
+- **S-10** An admin reset needs `employees.manage`, and the target may hold **no
   permission the resetter lacks** (`insufficient_permissions`): otherwise a reset is a way to
-  sign in as somebody with more rights. So only a `*` holder resets another `*` holder, and
+  sign in as somebody with more rights. So only an `all` holder resets another `all` holder, and
   nobody resets their own password this way (S-9). Every reset goes to the audit log. It
   sets a temporary password with `mustChangePassword`. The account's sealed-key wrap is lost:
   a holder of the sealed key must grant it again (plan §6.3). This is said on the confirmation.
@@ -107,8 +108,8 @@ password.
 - **S-21** Access token: 15 minutes. Refresh token: rotated on every use; 30 days for a desktop
   or mobile client, 16 hours for a POS-scoped session. Reusing an already-rotated refresh token
   ends the whole session (it was stolen or copied) and goes to the audit log.
-- **S-22** A POS-scoped session (PIN) may run only the ops whose permission is under `pos.*`,
-  plus `session.bootstrap` and `auth.*`. Anything else answers `forbidden`.
+- **S-22** A POS-scoped session (PIN) may run only the ops whose permission is in the `pos`
+  section (`pos`, `pos.sell`, `pos.cancel`), plus `session.bootstrap` and `auth.*`. Anything else answers `forbidden`.
 - **S-23** Revoking a device, disabling an account or changing a password ends the affected
   sessions **at once**: the next frame on those connections answers `session_revoked` and the
   connection is closed.
@@ -128,7 +129,8 @@ tasks and the platform catalogues. The `XLanSource` maps it onto the same `Clien
 {
   "client":      { "name", "lastName", "username", "email", "sex", "picture", "birthday" },
   "businesses":  [ { "id", "name", "caption", "logo", "activity", "profile", "currency" } ],
-  "permissions": { "<businessId>": ["*"] },
+  "permissions": { "<businessId>": { "business": { "view": true }, "pos": { "view": true, "sell": true } } },
+  "owned":       ["<businessId>"],
   "tasks":       [],
   "catalogs":    { "countries": [...], "currencies": [...] },
   "deployment":  { "mode": "local", "instanceId", "engine": "1.0.0", "timezone": "America/Caracas" }
@@ -148,8 +150,10 @@ tasks and the platform catalogues. The `XLanSource` maps it onto the same `Clien
 - **S-33** `deployment` is new and only used by the capability gate and the diagnostics screen.
   The cloud answer never carries it.
 - **S-34** `client` is the account (`id`, `name`, `lastName`, `username`, `email`, `sex`,
-  `picture`, `birthday`); `permissions` lists the account's grants per company, wildcards
-  included (`["*"]`), not the cloud's nested tree; `catalogs` carries its `version`. The app's
+  `picture`, `birthday`); `permissions` is **the cloud's `/init` entry exactly**: per company,
+  the app's area ids the person holds, nested, only the granted ones (P-3). `owned` (the company
+  ids this person owns, S-6) is new beside it; the cloud doesn't send it. `catalogs` carries its
+  `version`. The app's
   LAN source lays the answer out as `/init` (the person and the catalogues at the top level), and
   `PermissionsService` reads a listed company with the P-1 rules.
 
@@ -157,44 +161,99 @@ tasks and the platform catalogues. The `XLanSource` maps it onto the same `Clien
 
 ## session.permissions
 
-Grants are the same permission ids as `docs/app-areas.json`, evaluated with the same rules as
-`PermissionsService` (`can`, `canOpen`, `granted`), but **enforced on the master** (plan §5.4).
+**The cloud's permission system, unchanged** (backend `lib/models/permissions/MODULE.md`). A
+person holds one set of permissions, in one vocabulary, whether the cloud or the master answers:
+the master stores the backend's document, checks the backend's keys and answers the backend's
+shapes. `lyra_protocol` (`permissions.dart`) carries the copy of the backend's catalog, areas
+and global templates, and its test compares that copy against the backend's export
+(`pnpm permissions:export`): a change starts in the backend and reaches the copy in the same
+change. Sync carries none of it in its first version (`task-edge-sync-backend.md`: the cloud's
+word wins).
 
 ### Data
 
-`grant { accountId, permission, grantedBy, granted }`. The list of an account's grants is what
-`permissions[businessId]` answers.
+- **Catalog** (`PermissionCatalog`): sections and their actions. A key is `<section>` (entering
+  it, reading what it shows) or `<section>.<action>` (one thing inside it).
+- **Member** `{ account, access, all, sections, template, custom, updated, updatedBy }`, one per
+  account. `access` is membership (may enter the company); `sections` is a structure normalized
+  to the catalog (`{money: {access: true, charge: true, …}}`); `template` (`{scope, id}`) is
+  where it was copied from; `custom` says it was changed by hand since. No member row, or one
+  with `sections` null, is no permission at all.
+- **Template** `{ id, name, description, all, sections }`: the global ones (`PermissionPresets`,
+  `id` = code: owner, manager, marketing, seller, auditor, billing, finance; read-only) and the
+  company's own (`id` = UUID).
+- **Request** `{ id, account, area, keys, reason, state, created }`: an area id asked for, and
+  the keys it takes (`PermissionAreas.requires`).
 
 ### Rules
 
-- **P-1** Wildcards: `*` is everything; `<area>.*` is every action of that area and its children.
-  `<area>.view` opens the area; a child's view requires the parent's view (the grant op adds the
-  parent views that are missing, as the permissions matrix already does on screen).
-- **P-2** Nobody grants what they don't hold. Only a holder of `*` grants `*`.
-- **P-3** Granting any permission needs `business.employees.permissions`. Changes apply to open sessions **at once**: the affected clients receive
-  `permissions/changed` and re-read the bootstrap.
-- **P-4** Granting `business.employees.view_personal` (or anything that implies it) re-wraps
-  the sealed key for the grantee. It needs a granter who holds the sealed key in their current
-  session. Otherwise it answers `sealed_key_unavailable` (plan §6.3).
-- **P-5** Areas that don't exist in `local` (messages, channels, connections, …) can be granted
-  (so a hybrid company keeps one set of grants), but they open nothing locally.
+- **P-1** `can(key)` is `all`, or the section's `access` **and** the action's flag:
+  `can("money.void")` is `money.access && money.void`. An action is never granted without its
+  section. A key the document doesn't mention reads `false`; `all` reads `true`, keys the
+  catalog adds later included. There are no wildcards.
+- **P-2** `all` is the owner's mark. The owner (S-6) is `all` by measurement; any other member
+  is `all` only if a holder of `all` gave it.
+- **P-3** **Areas.** The app gates by area ids (`docs/app-areas.json`); each maps to the keys
+  its ops require (`PermissionAreas.map`: one key, every key of a list, `null` every member,
+  `*` only `all`). An action's area id is granted only with its area's `view`, a `view` only
+  with its parent's. The bootstrap answers the granted ids nested (S-34).
+- **P-4** **Every op declares one catalog key** (or none: every member), as the cloud's routes
+  do, and the engine checks it before the handler (`forbidden`). An op the cloud also serves
+  takes the key of its cloud route; `server.*` and `money.export` are the master's alone.
+- **P-5** **Membership.** Activation (S-8) and `employees.accept` give `access` with no
+  permissions: the person enters and opens nothing until someone assigns them. After that,
+  access is managed here whatever the job says. A member without access signs in to no company:
+  the bootstrap lists none.
+- **P-6** **Who changes whom.** Reading members and templates needs `permissions`; changing a
+  member, `permissions.assign`; the company's own templates, `permissions.templates`. Nobody
+  changes themselves (`permissions_self`) or the owner (`permissions_owner`). Nobody gives or
+  takes what they don't hold (`escalation`): every key whose stored value an assignment or a
+  revoke changes must be one the assigner can, and `all` on either side needs `all`. A member
+  being given access for the first time needs an active job here (`permission_member_not_found`
+  otherwise).
+- **P-7** **Templates are copied.** Applying one writes its structure onto the member with
+  `template` set and `custom` false; changing single keys afterwards sets `custom` (a key changed
+  on an `all` member makes it explicit). Editing or removing a template never changes anyone:
+  removing drops only the label from those copied from it.
+- **P-8** **At once.** A write to a member applies to their open sessions on the next frame: the
+  connections' permissions are replaced and they receive `permissions/changed`, after which the
+  app re-reads the bootstrap. Revoking access does the same.
+- **P-9** **Sealed keys** (plan §6.3). `employees` holds the `hr` scope and `money` the
+  `payments` scope: they are what the cloud requires for the screens that show those fields.
+  When a member comes to hold a scope, the assigner's session wraps its key to them if it holds
+  it; otherwise the next sign in or refresh of any holder does, once the member has a key pair
+  (their first password sign in). When a member stops holding it, their wrap is deleted. Until
+  they have it the sealed fields read empty (`employees.md` E-3); nothing is refused.
+- **P-10** A request's `state` is measured on read: `granted` once the person holds the area
+  (however it was given), `pending` otherwise. Asking grants nothing; whoever answers it opens
+  the member's permissions.
+- **P-11** Refused requests: an id the app doesn't have (`permission_request_invalid`), one
+  only the owner holds (`permission_request_owner`), one already held
+  (`permission_request_granted`) or already pending (`permission_request_pending`): the cloud's
+  codes. The app keeps its behaviour on the last two: re-read the list and the bootstrap, then
+  show the error.
 
 ### Ops
 
+The cloud's endpoints (`/lyra/v1/permissions`), one op each, with the same keys and shapes.
+Members are named by `username`, as there.
+
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `permissions.of` | `business.employees.view` | `accountId` | `[permission]` | `not_found` |
-| `permissions.set` | `business.employees.permissions` | `accountId`, `permissions: [id]` (the whole set) | `[permission]` | `escalation`, `last_owner`, `sealed_key_unavailable` |
-| `permissions.requests.list` | session | — | own requests of the company | — |
-| `permissions.requests.create` | session | `permission`, `reason?` (≤ `kPermissionReasonMax`) | `{id}` | `already_requested`, `already_granted` |
-| `permissions.requests.inbox` | `business.employees.permissions` | `state?` | everyone's requests | — |
-| `permissions.requests.answer` | `business.employees.permissions` | `id`, `grant: bool` | the request | `escalation` |
+| `permissions.get` | session | — | `{catalog: [{key, actions}], mine: {all, template, custom, sections}}` | — |
+| `permissions.templates.list` | `permissions` | — | `[{id, scope, name, description, all, sections}]`, global first | — |
+| `permissions.templates.create` | `permissions.templates` | `name`, `description?`, `from?` (a template id), `permissions?` | `{id}` | `permission_template_name_taken`, `permission_template_not_found`, `permissions_invalid` |
+| `permissions.templates.edit` | `permissions.templates` | `id`, `name?`, `description?`, `permissions?` | `{id}` | `permission_template_not_found`, `permission_template_global`, `permission_template_name_taken`, `permissions_invalid` |
+| `permissions.templates.remove` | `permissions.templates` | `id` | `{id}` | `permission_template_not_found`, `permission_template_global` |
+| `permissions.members.list` | `permissions` | — | `[{username, name, lastName, picture, me, owner, all, template: {scope, id, name} \| null, custom}]`, the asker first | — |
+| `permissions.members.detail` | `permissions` | `username` | a member + `access`, `sections` | `permission_member_not_found` |
+| `permissions.members.assign` | `permissions.assign` | `username`, `template?`, `permissions?` | `{username}` | `permission_member_not_found`, `permissions_self`, `permissions_owner`, `escalation`, `permission_template_not_found`, `permissions_invalid` |
+| `permissions.members.revoke` | `permissions.assign` | `username` | `{username}` | `permission_member_not_found`, `permissions_self`, `permissions_owner`, `escalation` |
+| `permissions.requests.list` | session | — | own requests, newest first: `[{id, permission, reason, state, created}]` | — |
+| `permissions.requests.create` | session | `permission` (an area id), `reason?` (≤ 200) | `{id}` | P-11 |
 
-- **P-10** A request's `state` is measured when it is read: `granted` if the person holds the
-  permission now (however it was given), otherwise `pending` or `denied` as answered. That is
-  the rule `PermissionRequestState` already documents.
-- **P-11** `already_requested` / `already_granted` are the local equivalents of today's `409`.
-  The app keeps its behaviour: re-read the list and the bootstrap, then show the error.
+`permissions` (in templates and assign) is always partial, `{<section>: {access?, <action>?:
+bool}}`; an unknown key is refused, never dropped (`permissions_invalid` with `key`).
 
 ### Events
 

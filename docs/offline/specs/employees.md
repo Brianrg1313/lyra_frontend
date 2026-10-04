@@ -13,7 +13,7 @@ invitation creates the account too, since there's no e-mail to invite a stranger
 
 ### Data
 
-**Card** (always readable with `business.employees.view`): `id`, `accountId`, `username`,
+**Card** (always readable with `employees`): `id`, `accountId`, `username`,
 `name`, `lastName`, `picture`, `headline`, `jobTitle`, `department`, `branchId` (the site),
 `contract`, `state`, `workStatus`, `startDate`, `endedDate`.
 
@@ -35,12 +35,13 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
 
 - **E-1** The list answers active and invited employments, **the viewer's own card first**
   (kept even when they have no employment, with `id: null`), then by name. `total` counts active
-  ones only. Without `business.employees.view` it answers that card alone (plan §5.4). An
+  ones only. Without `employees` it answers that card alone (plan §5.4). An
   invitation nobody activated yet carries the e-mail it was made for.
-- **E-2** The former list (`ended`, `declined`, `cancelled`) needs `business.employees.view` and
+- **E-2** The former list (`ended`, `declined`, `cancelled`) needs `employees` and
   answers the same card shape.
 - **E-3** The detail answers the card plus the job. Private and sealed fields are filled **only**
-  when the viewer holds `business.employees.view_personal` **or** is that person
+  when the viewer holds `employees` (the cloud has no separate key for personal data, `session.md`
+  P-9) and the `hr` key **or** is that person
   (`fullProfile: true`); otherwise they're empty and `fullProfile: false`. The master leaves them
   out of the answer: they never reach a client that may not read them (plan §5.4).
 - **E-4** Measured on read, never stored, all on the company's calendar day:
@@ -70,10 +71,9 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
   one. Only for `pending` accounts.
 - **E-12** `employees.edit` writes the backend-style keys the app sends (`JOB_TITLE`,
   `MANAGER_ID`, `FIRST_NAME`, `SALARY`, …). A key sent empty clears it. Private-person keys are
-  refused unless `profileEditable` (`profile_locked`); they and the pay keys need the writer to
-  hold `view_personal` (`forbidden`). The op needs `business.employees.invite`: the app's tree has
-  no `edit` action under employees, and `invite` is the one that maps to the cloud's
-  `employees.manage`. A closed employment isn't edited (`employment_closed`).
+  refused unless `profileEditable` (`profile_locked`). The op needs `employees.manage`, the
+  cloud's key for inviting and editing a job. A closed employment isn't edited
+  (`employment_closed`).
 - **E-13** `profile.edit` lets a person write their **own** private data, with no company
   permission. The account is the session's, never a body field. The job is not theirs to write.
 - **E-14** `MANAGER_ID` must be an invited or active employment of the company (the list the app
@@ -94,11 +94,11 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
 | `employees.list` | session (E-1 shapes it) | — | `{employees: [card], total}` | — |
-| `employees.former` | `business.employees.view` | — | `[card]` | — |
-| `employees.detail` | session: `business.employees.view`, or self | `id` | `BusinessEmployeeDetail` | `not_found` |
-| `employees.invite` | `business.employees.invite` | `email` \| `username`, `jobTitle`, `firstName?`, `lastName?` | `{id, activation: {code, expires} \| null}` | `already_employed`, `already_invited`, `account_exists`, `invalid_field` |
-| `employees.reissueActivation` | `business.employees.invite` | `id` | `{code, expires}` | `not_pending` |
-| `employees.edit` | `business.employees.invite` (+ `view_personal` for pay and person keys) | `id`, keys | `{}` | `employment_closed`, `profile_locked`, `manager_cycle`, `invalid_dates`, `invalid_field` |
+| `employees.former` | `employees` | — | `[card]` | — |
+| `employees.detail` | session: `employees`, or self | `id` | `BusinessEmployeeDetail` | `not_found` |
+| `employees.invite` | `employees.manage` | `email` \| `username`, `jobTitle`, `firstName?`, `lastName?` | `{id, activation: {code, expires} \| null}` | `already_employed`, `already_invited`, `account_exists`, `invalid_field` |
+| `employees.reissueActivation` | `employees.manage` | `id` | `{code, expires}` | `not_pending` |
+| `employees.edit` | `employees.manage` | `id`, keys | `{}` | `employment_closed`, `profile_locked`, `manager_cycle`, `invalid_dates`, `invalid_field` |
 | `profile.edit` | session | names and private keys | `{}` | `forbidden` (a job or pay key), `invalid_field` |
 | `employees.accept` | session (the invited person) | `id` | `{}` | `not_found`, `not_invited` |
 
@@ -125,4 +125,5 @@ yet, so in `local` a rehire waits until it does.
 2. ~~Leaves and job endings.~~ **Decided 2026-09-30:** planned for later. Until the app has a
    writer for them they stay empty in `local`, and their spec is written when the cloud builds
    them (plan principle 9).
-3. ~~The HR permission.~~ Decided: `business.employees.view_personal` holds the `hr` key.
+3. ~~The HR permission.~~ Decided: `employees` holds the `hr` key (`session.md` P-9; it was the
+   app's `view_personal` until the master took the cloud's permissions, 2026-10-04).

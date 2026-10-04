@@ -74,8 +74,9 @@ otherwise), `mode`, `state`, `seller` (name), `chat` (`""`), `date`, `updated`.
 
 - **SA-10** `sales.list` takes `section` (required), `stage?`, `channel?`, `mine?`, `page`,
   `size`. `mine` = sold by the signed-in person (the seller of the invoice).
-- **SA-11** Without `sales.view_all`, `mine` is forced to `true` on the master, whatever the
-  client sends (plan §5.4: the master is the gate).
+- **SA-11** Whoever holds `sales` reads every sale, as the cloud's board lists them all; `mine`
+  is only a filter. (Until 2026-10-04 a master forced `mine` without the app's `sales.view_all`,
+  which the cloud never had: `session.md` P-4.)
 - **SA-12** Order: `attention` first, then `since` oldest first, then `id`. `total` counts the
   filter.
 - **SA-13** `sales.process` / `sales.done` view permissions gate each section.
@@ -104,10 +105,10 @@ otherwise), `mode`, `state`, `seller` (name), `chat` (`""`), `date`, `updated`.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `sales.list` | `sales.view` + section view | SA-10 | `SalesPage` | — |
-| `sales.catalog` | `sales.view` | — | `SaleStagesCatalog` + `channels` | — |
-| `sales.detail` | `sales.view` (SA-11 applies) | `reference`: ticket code, row id | `SaleDetailModel` | `sale_not_found` |
-| `sales.fulfil` | `sales.fulfil` | `id`, `mode?`, `state?`, `note?` | row | `not_a_ticket`, `invalid_state`, `nothing_to_change`, `sale_not_found` |
+| `sales.list` | `sales` | SA-10 | `SalesPage` | — |
+| `sales.catalog` | `sales` | — | `SaleStagesCatalog` + `channels` | — |
+| `sales.detail` | `sales` | `reference`: ticket code, row id | `SaleDetailModel` | `sale_not_found` |
+| `sales.fulfil` | `sales.fulfill` | `id`, `mode?`, `state?`, `note?` | row | `not_a_ticket`, `invalid_state`, `nothing_to_change`, `sale_not_found` |
 
 ---
 
@@ -134,8 +135,7 @@ otherwise), `mode`, `state`, `seller` (name), `chat` (`""`), `date`, `updated`.
 |---|---|---|
 | `sale/progress` | a row's stage or section changed (open, line write that changes the total, close, cancel, fulfil, a settlement on a credit ticket) | the `SaleProgressModel` shape; **every key present**, `section: null` when the row left both lists |
 
-Delivered to sessions with `sales.view`. A session without `sales.view_all` only gets its own
-sales' notices (SA-11).
+Delivered to sessions with `sales`.
 
 ---
 
@@ -149,8 +149,7 @@ The sales release serves the four ops (SA-1 to SA-35) and `sale/progress`. On th
   stock screen shows as unheld;
 - the handover written at close is the counter's reading (`stored: false`); `sales.fulfil` writes
   `stored: true`;
-- `sales.detail` and `sales.fulfil` apply SA-11 too: another person's sale is `sale_not_found`.
-  `sales.detail` takes a ticket code or an id, `sales.fulfil` only the id;
+- `sales.detail` takes a ticket code or an id, `sales.fulfil` only the id;
 - a stage with `offline: false` filters to an empty page; an unknown one is `invalid_field`.
 
 ## Differences from cloud

@@ -25,7 +25,7 @@ text is unclear.
 ## 1. Enrolment (user session)
 
 The app calls these with the signed-in person's normal session (`Authorization`, `business_id`).
-Only the company's owner (`*`) may enrol or revoke.
+Only the company's owner (`all`) may enrol or revoke.
 
 `POST /edge/v1/devices`
 ```json

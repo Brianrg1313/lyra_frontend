@@ -43,9 +43,9 @@ What the counter draws: the primary table's records, read **by field type**, not
 
 | Op | Permission | Args | Answer |
 |---|---|---|---|
-| `pos.summary` | `pos.view` | — | `{mine: {sales}, categories}` |
-| `pos.catalog` | `pos.view` | `size`, `cursor?`, `search?`, `category?` | `PosCatalogPage` (`{table, size, cursor, more, data: {keys, values}}`) |
-| `pos.methods` | `pos.view` | — | `{methods: [PosPaymentMethod], channels: ["pos"]}` from the settlement vocabulary |
+| `pos.summary` | `pos` | — | `{mine: {sales}, categories}` |
+| `pos.catalog` | `pos` | `size`, `cursor?`, `search?`, `category?` | `PosCatalogPage` (`{table, size, cursor, more, data: {keys, values}}`) |
+| `pos.methods` | `pos` | — | `{methods: [PosPaymentMethod], channels: ["pos"]}` from the settlement vocabulary |
 
 ---
 
@@ -155,14 +155,14 @@ typed-in charge, and `discount` is `null` when the product had none (POS-7).
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
 | `pos.invoices.open` | `pos.sell` | `tax?` | invoice | — |
-| `pos.invoices.line` | `pos.sell`; with `concept`: `pos.custom_amount`; with `tax` changing a rate: `pos.set_tax` | `id`, one of (`productId` \| `lineId` \| `concept`+`price`), one of (`add` \| `quantity`), `tax?` | `{invoice}` | `not_found`, `no_price`, `insufficient_stock`, `too_many_units`, `invoice_closed`, `invoice_cancelled` |
-| `pos.invoices.close` | `pos.checkout` | `id`, `method`, `reference?`, `note?` | the closed invoice | `empty_invoice`, `unknown_method`, `insufficient_stock`, `invoice_closed`, `invoice_cancelled` |
-| `pos.invoices.cancel` | `pos.cancel_ticket` | `id` | `{}` | `invoice_closed`, `invoice_cancelled` |
-| `pos.invoices.list` | `pos.view` | `mine?`, `size?` | `{invoices: [invoice]}` | — |
+| `pos.invoices.line` | `pos.sell` (a typed charge and a changed rate too: the cloud has no key of their own) | `id`, one of (`productId` \| `lineId` \| `concept`+`price`), one of (`add` \| `quantity`), `tax?` | `{invoice}` | `not_found`, `no_price`, `insufficient_stock`, `too_many_units`, `invoice_closed`, `invoice_cancelled` |
+| `pos.invoices.close` | `pos.sell` | `id`, `method`, `reference?`, `note?` | the closed invoice | `empty_invoice`, `unknown_method`, `insufficient_stock`, `invoice_closed`, `invoice_cancelled` |
+| `pos.invoices.cancel` | `pos.cancel` | `id` | `{}` | `invoice_closed`, `invoice_cancelled` |
+| `pos.invoices.list` | `pos` | `mine?`, `size?` | `{invoices: [invoice]}` | — |
 
 ### Events
 
-Delivered to sessions with `pos.view` or `sales.view`.
+Delivered to sessions with `pos` or `sales`.
 
 | Event | When | Payload |
 |---|---|---|
@@ -217,8 +217,8 @@ ticket reads it back in full (`PosInvoiceEvent`).
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `pos.outbox.sale` | `pos.checkout` of the **seller** in the entry | outbox entry | `{invoiceId, ticket, flags}` | `device_revoked`, `unknown_seller`, `bad_entry` |
-| `pos.snapshot` | `pos.view` | — | catalogue + methods + stock + version | — |
+| `pos.outbox.sale` | `pos.sell` of the **seller** in the entry | outbox entry | `{invoiceId, ticket, flags}` | `device_revoked`, `unknown_seller`, `bad_entry` |
+| `pos.snapshot` | `pos` | — | catalogue + methods + stock + version | — |
 
 ---
 

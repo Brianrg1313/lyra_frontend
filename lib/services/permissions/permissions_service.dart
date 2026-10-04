@@ -14,9 +14,10 @@ import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 /// applied the contract's rules (an action only with its area's `view`, a `view` only with its
 /// parent's). So a lookup is a walk: absent anywhere on the path is denied.
 ///
-/// A master (`docs/offline/specs/session.md`, P-1) sends a company's grants as the list it keeps
-/// instead (`["*"]`, `["sales.*", "pos.view"]`), with wildcards: `*` is everything, `<area>.*`
-/// every action of that area and its children. Both shapes answer the same questions.
+/// A master answers the same tree (`docs/offline/specs/session.md` S-34, P-3): it keeps the
+/// cloud's permissions and derives the areas with the backend's own map, so nothing here knows
+/// which one answered. It also says which companies the person owns (`owned`), which the cloud
+/// doesn't.
 ///
 /// It exists so the app hides a door instead of meeting a 403 behind it. It is not the
 /// guard: every endpoint checks the same ids.
@@ -47,11 +48,8 @@ class PermissionsService extends ChangeNotifier {
   /// Company id → its granted tree.
   Map<String, Map> _companies = const {};
 
-  /// Company id → its grants as a master lists them.
-  Map<String, Set<String>> _lists = const {};
-
-  /// Companies created in this session: their creator owns them, and an owner holds
-  /// everything, so there is no need to reread `/init` to know it.
+  /// Companies created in this session, or a master's `owned`: their owner holds everything,
+  /// so there is no need to reread `/init` to know it.
   Set<String> _owned = const {};
 
   bool _loaded = false;
@@ -76,9 +74,6 @@ class PermissionsService extends ChangeNotifier {
     if (company == null) return false;
     if (_owned.contains(company)) return true;
 
-    final list = _lists[company];
-    if (list != null) return _allows(list, id);
-
     Object? node = _companies[company];
     for (final key in path) {
       if (node is! Map) return false;
@@ -89,12 +84,12 @@ class PermissionsService extends ChangeNotifier {
   }
 
   /// Whether this person owns [business] (the active one by default): created it in this
-  /// session, or a master lists `*` for them. A cloud tree doesn't say it: false there.
+  /// session, or a master says so. A cloud tree doesn't say it: false there.
   bool owns({String? business}) {
     final company = business ?? businessService.activeId;
     if (company == null) return false;
 
-    return _owned.contains(company) || (_lists[company]?.contains("*") ?? false);
+    return _owned.contains(company);
   }
 
   /// Whether [area] (`finance.payments`) can be opened: its `view`.
@@ -110,16 +105,6 @@ class PermissionsService extends ChangeNotifier {
     if (company == null) return const {};
     if (_owned.contains(company)) return null;
 
-    final list = _lists[company];
-    if (list != null) {
-      if (_allows(list, "$area.*")) return null;
-
-      return {
-        for (final grant in list)
-          if (grant.startsWith("$area.") && !grant.substring(area.length + 1).contains(".")) grant.substring(area.length + 1)
-      };
-    }
-
     Object? node = _companies[company];
     for (final key in area.split(".")) {
       if (node is! Map) return const {};
@@ -134,36 +119,19 @@ class PermissionsService extends ChangeNotifier {
     };
   }
 
-  /// P-1 over a listed set, the rule the master enforces (`Permissions.allows` in `lyra_node`).
-  static bool _allows(Set<String> grants, String id) {
-    if (grants.contains("*") || grants.contains(id)) return true;
-
-    for (final grant in grants) {
-      if (!grant.endsWith(".*")) continue;
-
-      final area = grant.substring(0, grant.length - 2);
-      if (id == area || id.startsWith("$area.")) return true;
-    }
-
-    return false;
-  }
-
-  /// Stores `/init`'s `permissions` (a tree per company, or a master's list). A company whose
-  /// entry is neither gets nothing.
-  void seed(dynamic data) {
+  /// Stores `/init`'s `permissions` (a tree per company) and a master's [owned] company ids. A
+  /// company whose entry isn't a tree gets nothing.
+  void seed(dynamic data, {dynamic owned}) {
     if (data is! Map) return;
 
     _companies = {
       for (final entry in data.entries)
         if (entry.value is Map) entry.key.toString(): entry.value as Map
     };
-    _lists = {
-      for (final entry in data.entries)
-        if (entry.value is List) entry.key.toString(): {
-          for (final grant in entry.value as List) grant.toString()
-        }
+    _owned = {
+      if (owned is List)
+        for (final company in owned) company.toString()
     };
-    _owned = const {};
     _loaded = true;
 
     notifyListeners();
@@ -179,7 +147,6 @@ class PermissionsService extends ChangeNotifier {
   /// Forgets every grant. For session logout: the next session brings its own.
   void clear() {
     _companies = const {};
-    _lists = const {};
     _owned = const {};
     _loaded = false;
 

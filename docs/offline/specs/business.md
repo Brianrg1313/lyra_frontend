@@ -18,16 +18,16 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 | Field | Type | Written by |
 |---|---|---|
 | `id` | uuid | setup |
-| `name`, `legalName`, `nickname`, `caption` | string | `business.settings.edit` |
-| `logo` | fileId? | `business.settings.edit_logo` |
-| `activity` | code of `BusinessActivity` | `business.settings.edit` |
-| `taxId` | string | `business.settings.edit` |
-| `country` | ISO 3166-1 alpha-2 | setup; `business.settings.edit` (see B-4) |
-| `language` | code | `business.settings.edit` |
+| `name`, `legalName`, `nickname`, `caption` | string | `business.edit` |
+| `logo` | fileId? | `business.edit` |
+| `activity` | code of `BusinessActivity` | `business.edit` |
+| `taxId` | string | `business.edit` |
+| `country` | ISO 3166-1 alpha-2 | setup; `business.edit` (see B-4) |
+| `language` | code | `business.edit` |
 | `currency` | ISO 4217 | setup only (B-5) |
-| `phone`, `website` | string | `business.settings.edit` |
-| `incorporationDate` | `YYYY-MM-DD`? | `business.settings.edit` |
-| `timezone` | IANA name? | setup (proposed: the master OS zone); `business.settings.edit` (B-9) |
+| `phone`, `website` | string | `business.edit` |
+| `incorporationDate` | `YYYY-MM-DD`? | `business.edit` |
+| `timezone` | IANA name? | setup (proposed: the master OS zone); `business.edit` (B-9) |
 | `verification` | always `untrusted` | nobody (B-6) |
 | `emails` | always `[]` | nobody (cloud only) |
 | `created` | instant | setup |
@@ -58,7 +58,7 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 - **B-8** Logo: an image upload (see `protocol-v1.md`, files), at most 5 MB, `png`/`jpeg`/`webp`.
   The engine keeps the original and a 256 px square version. Replacing it keeps the old file
   until the next backup rotation, then drops it. *Built so far:* `business.setLogo` takes the
-  account's own `logo` upload and makes it readable with `business.view`; the one it replaces
+  account's own `logo` upload and makes it readable by every member; the one it replaces
   goes back to the orphan sweep (1 hour), since backups don't exist before phase 5. No 256 px
   version yet, and the app hides the logo change on a master until images are fetched over the
   master's pinned channel (the inventory release, which needs it for product images).
@@ -73,9 +73,9 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
 | `business.create` | owner (`*`) | `{name, country, currency, language, timezone?, activity?, cloudId?}` | the company as `session.bootstrap` lists it | `required`, `invalid_field`, `forbidden`, `company_exists` |
-| `business.profile` | `business.view` | — | the profile | — |
-| `business.edit` | `business.settings.edit` | `{KEY: value}` (one key of `BusinessFields.editable`) | the profile | `required`, `invalid_field`, `invalid_timezone`, `bad_request` (not one key) |
-| `business.setLogo` | `business.settings.edit_logo` | `{fileId: id \| null}` | the profile | `invalid_file` |
+| `business.profile` | `business` | — | the profile | — |
+| `business.edit` | `business.edit` | `{KEY: value}` (one key of `BusinessFields.editable`) | the profile | `required`, `invalid_field`, `invalid_timezone`, `bad_request` (not one key) |
+| `business.setLogo` | `business.edit` | `{fileId: id \| null}` | the profile | `invalid_file` |
 | `business.link` | owner (`*`) | `{cloudId}` | the company as `session.bootstrap` lists it | `invalid_field`, `forbidden`, `not_found` (no company), `already_linked` |
 
 The profile answer: the fields above, `created`, `verification: "untrusted"`, `emails: []`, and
@@ -86,7 +86,7 @@ source maps the screens' keys (`LEGAL_NAME`, `DESCRIPTION`…) onto these.
 
 | Event | When | Payload |
 |---|---|---|
-| `business/changed` | any profile field, the logo or the site changed | `{keys: [...]}`, the changed profile keys, or `["site"]`. Clients re-read what they show. Sent to sessions holding `business.view`. |
+| `business/changed` | any profile field, the logo or the site changed | `{keys: [...]}`, the changed profile keys, or `["site"]`. Clients re-read what they show. Sent to every member's sessions, as every member sees the name and logo. |
 
 ---
 
@@ -147,8 +147,8 @@ point and never stored.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `business.site.get` | `business.view` | — | the site | — |
-| `business.site.edit` | `business.settings.edit` | changed keys | the site | `invalid_point`, `invalid_field` |
+| `business.site.get` | `business` | — | the site | — |
+| `business.site.edit` | `business.edit` | changed keys | the site | `invalid_point`, `invalid_field` |
 
 `BusinessLocationService` maps `GET`/`PUT /business/location/` onto these. `BusinessBranchesService`
 is not reachable in `local`; in `hybrid` it lists the cloud's branches with the master's own site
