@@ -99,11 +99,18 @@ class LanService extends ChangeNotifier {
 
   /// Opens the session: on the master, the engine first (started, or attached to), then the
   /// connection, then the stored session if there is one.
-  Future<LanStatus> open() async {
+  ///
+  /// A master whose app lost its key is certified again on its own when the engine runs
+  /// unattended: nothing to ask the person. Only passphrase mode (the engine came up `locked`)
+  /// or a refused enroll shows the page that asks ([LanStatus.unpaired]).
+  Future<LanStatus> open() => _open(enroll: true);
+
+  Future<LanStatus> _open({required bool enroll}) async {
     _set(LanStatus.connecting);
 
+    LocalServerStatus? engine;
     if (isMaster) {
-      final engine = await server.start();
+      engine = await server.start();
 
       if (engine == LocalServerStatus.notSetUp) return _set(LanStatus.unpaired);
       if (engine != LocalServerStatus.ready && engine != LocalServerStatus.locked) {
@@ -113,7 +120,11 @@ class LanService extends ChangeNotifier {
     }
 
     final device = await _store.device();
-    if (device == null) return _set(LanStatus.unpaired);
+    if (device == null) {
+      if (enroll && engine == LocalServerStatus.ready) return enrollMaster();
+
+      return _set(LanStatus.unpaired);
+    }
 
     await _drop();
     _client = LanClient(device, store: _store, connect: _connect, prove: _prove, files: _files);
@@ -133,7 +144,7 @@ class LanService extends ChangeNotifier {
       return _set(LanStatus.unpaired);
     }
 
-    return open();
+    return _open(enroll: false);
   }
 
   /// `engine.unlock` from the master's own app.

@@ -6,6 +6,8 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/local_server/local_server_service.dart';
+import 'package:app/services/local_server/node_commands.dart';
 
 import 'lan_client_test.dart' show FakeMaster, device;
 
@@ -19,6 +21,32 @@ void main() {
     final lan = LanService(store: MemoryLanIdentityStore());
 
     expect(await lan.open(), LanStatus.unpaired);
+  });
+
+  test('a master whose app lost its key gets a new one on its own when the engine runs unattended', () async {
+    Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
+    final node = _Node("ready");
+    final store = MemoryLanIdentityStore();
+    final master = FakeMaster();
+    final lan = LanService(
+      store: store,
+      server: LocalServerService(commands: node, supported: true, store: store),
+      connect: (_, _) async => master.connect(),
+    );
+
+    expect(await lan.open(), LanStatus.signedOut);
+    expect(node.commands, contains("enroll"));
+    expect(store.stored!.role, DeploymentRole.master);
+  });
+
+  test('in passphrase mode the master asks for it instead of enrolling blind', () async {
+    Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
+    final node = _Node("locked");
+    final store = MemoryLanIdentityStore();
+    final lan = LanService(store: store, server: LocalServerService(commands: node, supported: true, store: store));
+
+    expect(await lan.open(), LanStatus.unpaired);
+    expect(node.commands, isNot(contains("enroll")));
   });
 
   test('paired and no session: signedOut; signing in makes it ready', () async {
@@ -126,4 +154,30 @@ void main() {
     expect(store.stored, isNull);
     expect(Deployment.mode, DeploymentMode.cloud);
   });
+}
+
+/// `lyra_node` answering [status] and certifying any key it is asked to.
+class _Node implements NodeCommands {
+  _Node(this.status);
+
+  final String status;
+  final List<String> commands = [];
+
+  @override
+  Future<NodeAnswer> run(List<String> command, {String? input}) async {
+    commands.add(command.first);
+
+    return (exitCode: 0, json: switch (command.first) {
+      "status" => <String, Object?>{"status": status},
+      "stop" => <String, Object?>{"stopped": true},
+      "enroll" => <String, Object?>{
+        "instanceId": "i1",
+        "device": {"deviceId": "d1", "code": "A", "certificate": "Y2VydA==", "caCertificate": "Y2E="},
+      },
+      _ => const <String, Object?>{},
+    });
+  }
+
+  @override
+  Future<void> spawn({String? passphrase}) async {}
 }

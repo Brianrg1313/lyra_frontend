@@ -45,7 +45,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `lan_identity_store.dart` — `LanIdentityStore` (seam): the device and the session's refresh token.
   `SecureLanIdentityStore` (OS key store via `DatabaseService`), `MemoryLanIdentityStore` (tests).
 - `lan_service.dart` — `LanService` (+ `LanStatus`), app-wide (`lanService`): `open` (on the master, starts the engine
-  first; connects; resumes the stored session), `unlock`, `enrollMaster`, `needsActivation` (`auth.identify`, the sign in's first step), `signIn`, `activate` (an invited person's code
+  first; a master app without its key enrolls on its own when the engine runs unattended; connects; resumes the stored session), `unlock`, `enrollMaster`, `needsActivation` (`auth.identify`, the sign in's first step), `signIn`, `activate` (an invited person's code
   and new password, `auth.activate`), `signOut`, `devices`,
   `startPairing`, `revoke`, `browserCa`, `stopServer`, `leave` (back to cloud; a browser asks again), `call(op, args)` (what
   the LAN sources run: a write gets its `commandId`; a lost master is thrown as `{message, action, code: "unreachable"}`).
