@@ -84,13 +84,28 @@ the branch picker (cloud only) are off on a master. Left for later: re-issuing a
 (`employees.reissueActivation` is served, no button calls it), the pre-start task for a rehire
 (`employees.accept` is served), grants for other people (`permissions.*`), leaves and job endings.
 **Where we left off (2026-10-01)** Read this before anything else.
-- In progress: phase 4b, one app (§9.6, D14 to D18, the owner's call of 2026-10-01). E1 done: nothing
+- In progress: phase 6, sync (the owner's call of 2026-10-01, to test with real data). Done: §9 rewritten for
+  D15 and D18; the backend's handover `docs/task-edge-sync-backend.md`; the engine's half in `lyra_node`
+  (`EdgeSync`, run by the engine every minute while enrolled), tested against an in-memory backend
+  (`test/support/edge_cloud.dart`): enrolment with an Ed25519 key, the first link both ways, push and pull,
+  field stamps and the conflicts inbox, retries, refusals, revocation, the allowance. Not yet: the ops the app
+  calls (enrol, status, the inbox) and the server section showing the sync, which need the backend's
+  `/edge/v1/devices`; E3 (the grant); the vocabulary's next entities (POS tickets, employees, clients, files).
+- Phase 4b, one app (§9.6, D14 to D18, the owner's call of 2026-10-01). E1 done: nothing
   disappears (locked areas and tabs), a network failure keeps the session. E2 done in code and tests, not
   yet seen on screen: `hybrid` (`HybridService`: the master's session opened by the online sign in, the
   password reused or asked once; the boot resumes it), the internet watched (sections lock and open in
   place), "work offline", the server section online (create the server here, from the cloud company,
-  linked), the link (`business.link`, asked once, D18). Next: try E2 on real hardware (a master and a
-  paired laptop, the internet pulled and back), then E3, the cloud grant (engine side + backend task doc).
+  linked), the link (`business.link`, asked once, D18). A session signed in on the master alone (no
+  backend then) now watches the backend too and, once it answers, opens "sign in online" by itself, once (also in the server
+  section and locked sections, `showOnlineSignIn`): the same person's cloud sign in joins it as `hybrid`
+  in place (2026-10-03; before, it stayed offline until a sign out). The sign in page watches the network both ways too (2026-10-04): the internet going away swaps the cloud's form for the offline one in place, and back, at once: the backend's `/presence` socket.io namespace (no session, `alive` acknowledged; `lyra` backend `lib/models/bridge/presence.js`, not deployed yet) says it, HTTP every 15 s stays as the fallback. Next: try E2 on real hardware (a master and a
+  paired laptop, the internet pulled and back), then E3, the cloud grant (engine side; the backend's part is
+  §9 of the task doc). A Mac's Chrome needs macOS's Local Network permission to open a master by name or IP
+  (seen 2026-10-01 as `ERR_NETWORK_IO_SUSPENDED`; not retried).
+- Planned 2026-10-03, nothing built: the cloud's web finding its master (§9.7, D19) and the sturdier
+  name claim (§5.2). Three parts: the address reported over the edge channel (backend: task doc §12),
+  `/lyra/probe` with CORS and the local network preflight in `lyra_node`, the offer in the web.
 - After it: phase 4, clients and deliveries, then statistics (§11); the permissions ops
   (`session.md` session.permissions), without which an invited person holds no grant yet. Still
   open from phase 3: the exit check on real hardware.
@@ -131,12 +146,12 @@ The mode is a fact of the company, never a choice made on the first screen (D9):
 | The company has | Mode | Cloud cost to us | Source of truth |
 |---|---|---|---|
 | No computer (phones, the web) | `cloud` | today's cost | the cloud, today's app unchanged |
-| A computer and no subscription | `local` | zero | the master of each site |
-| A computer and a subscription | `hybrid` | today's cost | the master of each site plus the cloud, reconciled by sync (§9) |
+| A computer, not linked online, or past the free allowance without a subscription | `local` | zero (sign in and the account only) | the master of each site |
+| A computer linked online, within the free allowance or subscribed (D15) | `hybrid` | today's cost | the master of each site plus the cloud, reconciled by sync (§9) |
 
 With a computer there is always a master, which keeps a full copy of its site: losing the internet
-changes nothing on the LAN. Subscribing or cancelling moves between `local` and `hybrid` without
-losing data (§9.4).
+changes nothing on the LAN. Linking, crossing the allowance, subscribing or cancelling moves between
+`local` and `hybrid` without losing data (§9.4).
 
 ---
 
@@ -329,6 +344,13 @@ lyra_node/lib/src/
   If another device on the LAN already answers it, the master takes `label-2`, `label-3`… Its
   certificate carries the name, and the browser root already allows any `.local` name. The name
   works from the moment the company is created, with no restart.
+- **Planned (2026-10-03, D19): the claim made sturdier.** Today `LanName.claim` asks once per name,
+  only at start or renewal. Two gaps: two masters starting together both hear silence and take the
+  same name; and a device that takes the name later is never noticed. Fixes: a random 0–250 ms wait
+  before the first question and three questions 250 ms apart per name (RFC 6762 §8.1); and the
+  `MdnsResponder` watching for another address answering its own name (§9), which claims again
+  (the taken name skipped), issues the transport with the new name and reports it to the cloud
+  (§9.7). The name can therefore change between starts: whoever needs it reads it, never derives it.
 - Fallbacks: a typed IP or host, or the QR from pairing, which lists every master address.
 - Discovery is only a hint. Trust comes from pairing (§5.3), so a spoofed advertisement at most
   gets a refused connection.
@@ -613,49 +635,80 @@ Lyra hands data to accounting and fiscal systems instead of being one.
 ## 9. Hybrid: edge sync with the cloud (phase 6, needs backend work)
 
 ### 9.1 Who talks to whom
-- `hybrid` is what a subscription buys a company that has computers (D9). **Every site has its own
-  master** (D11), so each keeps working through an outage.
-- The master in `hybrid` belongs to **one site** of a cloud company. It holds that site's
-  operational data (its stock, POS, tickets, payments, staff) and the company data that site
-  uses (catalogue, prices, clients, payment methods, its employees).
-- **Clients at that site use the master for local domains**, online or not. That gives one write
-  path, so a failover mid-session never switches the source of truth. Cloud-only domains (§2)
+- The sync runs whenever a master is **linked** to its cloud company (D18, `business.md` B-30) and the
+  company is within the free allowance or subscribed (D15). Past the allowance without a subscription
+  it pauses: the master keeps working alone, the cloud keeps serving the sign in, the account and the
+  link, and the sync picks up from where it stopped once the company is within it again. A master
+  never linked doesn't sync at all (`local`).
+- **Every site has its own master** (D11), so each keeps working through an outage. A master
+  belongs to **one site** of a cloud company. It holds that site's operational data (its stock,
+  POS, tickets, payments, staff) and the company data that site uses (catalogue, prices, clients,
+  payment methods, its employees).
+- **Clients at that site use the master for local domains**, online or not (§9.6). That gives one
+  write path, so a failover mid-session never switches the source of truth. Cloud-only domains (§2)
   go straight to the cloud, as today.
-- The master mirrors its oplog to the cloud and pulls cloud changes relevant to its site
-  (WhatsApp sales for that site, catalogue or price edits made elsewhere).
+- **The engine syncs, not the app.** It dials out to the cloud over HTTPS on its own, so the sync goes
+  on while the app is closed (D4: the engine outlives the window). Nothing listens: no port is
+  opened for the cloud (§9.5). The app only enrols the master (below) and shows the sync's state.
+- The master pushes its oplog and pulls the cloud's changes relevant to its site (WhatsApp sales for
+  that site, catalogue or price edits made elsewhere, a payment recorded from a phone away from the
+  office).
 
 ### 9.2 Edge contract (new, small, owned by the backend)
-- `POST /edge/v1/commands`: a batch of domain commands with `commandId` (idempotent),
-  `hlc`, `origin`. The answer is per-command: accepted with a cloud id, or rejected with a
-  reason.
-- `GET /edge/v1/changes?cursor=`: changes for this company and site, in the edge vocabulary.
-- `POST /edge/v1/snapshot`: first link of an existing local install (migrating local to hybrid),
-  or rebuild of a master.
-- Authenticated as an **edge device** of the company and site (its own credential, revocable
-  from the cloud), not as a user. TLS as for any cloud call.
-- The backend maps edge vocabulary ↔ its own model. The master keeps a `cloud_id ↔ local_id`
-  map, so neither side adopts the other's ids.
-- Handover document for the backend team: `docs/task-edge-sync-backend.md`, in the same style
-  as `task-cookie-session-backend.md`.
+The handover is `docs/task-edge-sync-backend.md`: endpoints, the vocabulary, the id map, the
+credential, the allowance and the cloud grant (E3). In short:
+- **Enrolment.** The engine makes an Ed25519 key pair for the edge; the app, signed in online as
+  the owner, registers its public key with the backend (user session) and hands the answer to the
+  engine: the edge device's id, the cloud site, and the backend's **edge key**, pinned for the
+  grants (§9.6). Revocable from the cloud; the engine never sees a person's cloud token.
+- **Authentication.** Every edge request is signed with the master's private key (method, path, time,
+  nonce, body digest). No bearer secret travels or rests anywhere.
+- `POST /edge/v1/commands`: a batch of changes in order, each with a `commandId` (idempotent), its
+  `hlc` and its origin. The answer is per change: accepted (with the cloud id of what it created),
+  or rejected with a reason, which the master keeps for review and never retries.
+- `GET /edge/v1/changes?cursor=`: what changed in the cloud for this company and site after the
+  cursor, never what this master sent (no echo).
+- `GET /edge/v1/snapshot?cursor=`: the cloud's whole state for this site, paged, to fill a new or
+  rebuilt master; the first link uploads the master's state through `/commands`.
+- **Ids.** Neither side adopts the other's. The wire speaks cloud ids, and the master's own ids as
+  `m:<id>` until the cloud has answered with one; the master keeps the `cloud_id ↔ local_id` map,
+  and the backend resolves `m:` ids it has seen from that edge device.
+- The backend maps the edge vocabulary to its own model.
 
 ### 9.3 Conflict policy per kind of data
 
 | Kind | Examples | Policy |
 |---|---|---|
-| Append-only facts | sales, tickets, payments, stock movements, audit | no conflict: union, deduplicated by `commandId` |
+| Append-only facts | sales, tickets, payments, stock movements, audit | no conflict: union, deduplicated by `commandId`; a later state (a void, a close) is a new fact about it |
 | Counters | stock balance | never synced as a value: recomputed from movements |
 | Editable records | products, prices, clients, employees, settings | field-level last-writer-wins by HLC; a true concurrent edit of the same field goes to a **conflicts inbox** for the owner |
 | Deletes | anything | tombstones win over an older edit; an edit newer than the delete revives it and is flagged |
 | Permissions / users | roles, grants | the cloud wins (security decisions are never made offline) |
 
-Clock: HLC on the master. Clients take the master's time. A master clock that is off by more
-than a threshold blocks sync and warns.
+- Both sides apply the same rule, so they converge without asking each other: a field keeps the
+  value with the newest HLC. The master keeps each field's stamp and whether it was written here.
+- **A true concurrent edit** is a field changed on the master since its last pull that the cloud
+  changed too, to another value. The newer stamp still wins on both sides; the other value goes to
+  the conflicts inbox, where the owner can put it back (a new edit, synced as any other).
+- A change the cloud refuses (a rule broken on its side) is kept with the reason and shown to the
+  owner; the master's data isn't rolled back.
+- Sealed fields (§6.3) cross only when the backend gets a way to keep them sealed: the master has
+  no key to open them while nobody is signed in. Until then they stay on the master (task doc).
 
-### 9.4 Subscribing and cancelling (D10, D11)
-- **Subscribing** links an existing `local` master: it uploads its data (`/edge/v1/snapshot`), and the
-  backend **creates a cloud account for each local user**, so everyone keeps signing in. A local
-  user whose e-mail already has a cloud account is not merged: that person settles it with their
-  administrator. Local accounts with a username and no e-mail need one before the link.
+Clock: HLC on the master. Clients take the master's time. A cloud stamp further ahead than
+`HlcClock.maxDrift` stops the sync and warns, instead of dragging every later stamp forward.
+
+### 9.4 Linking, subscribing and cancelling (D10, D11, D15, D18)
+- **Linking** a master made offline (D18) enrols it and uploads its data (its whole state as
+  `/commands`, then the oplog from there on); a master made from the cloud (D16) is enrolled when it
+  is made and downloads the cloud's (`/snapshot`). When both sides already hold data, the master's
+  is added to the cloud's: matching the same product or client on both sides is the backend's
+  (task doc, open question).
+- **Accounts.** Linking makes a cloud account for each local user (D10), so everyone keeps signing
+  in. A local user whose e-mail already has a cloud account is not merged: that person settles it
+  with their administrator. Local accounts with a username and no e-mail need one first.
+- **The allowance** (D15) is measured by the backend, which answers the enrolment and every edge
+  call with it; past it the master pauses the sync (§9.1). **Subscribing** lifts it.
 - **Cancelling** keeps every site's data: each site's master pulls its own site's data one last time,
   stops syncing and goes on as a `local` install of its own. In the cloud the main site stays the
   company's and the secondary sites become inactive. A site without a master downloads its data to a
@@ -705,6 +758,38 @@ apps. What the person sees, how they sign in and what the side bar holds don't c
   now" is remembered and the server section offers it again. Until linked, the cloud-only areas are
   locked with their own message (`needsLink`). The cloud-only calls carry the linked id
   (`BusinessModel.cloudKey`); the local domains keep the master's.
+
+### 9.7 The cloud's web finds its master (D19, planned 2026-10-03)
+A browser on the cloud's web build can't discover anything (no multicast: `lan_web.dart` `discover`
+answers nothing), but it can try a name it already knows. So the cloud tells it the name, and the
+master proves who it is.
+- **The master reports its address.** Over the edge channel (signed, §9.2), once after enrolment and
+  every time its transport is issued with another `host` or other addresses (start, renewal, a name
+  conflict, §5.2): `{instance, host, port, addresses}`. Only an enrolled master can: one never linked
+  (`local`) is invisible to the cloud's web, by design.
+- **The web asks the cloud** for its company's masters (one per site, D11) with those fields, and
+  keeps the answer in the browser, so it can still try them once the internet is gone.
+- **The web probes.** `GET https://<host>:<port>/lyra/probe`, the host first, then each address (the
+  certificate names them too), a 2 s timeout each. The engine answers `{instance}` with
+  `Access-Control-Allow-Origin` set to the cloud's web origins only (a built-in list; a development
+  origin added by `LYRA_WEB_DEV` while developing, since `flutter run -d chrome` serves from
+  `localhost`), and answers Chrome's local network preflight (`Access-Control-Allow-Private-Network:
+  true`). The instance is no secret: the installation CA, shown to anyone on the LAN in the TLS
+  handshake, already carries it.
+- **Only a match counts.** The web accepts a master only when the probed `instance` is the one the
+  cloud named. A name collision, another company's master or anything else answering that name is
+  ignored. The probe only succeeds where the browser trusts this master's browser root (§5.3), that
+  is, on a computer that has used it before; elsewhere TLS fails, which looks the same as "absent".
+- **It offers, never redirects.** A banner: "Your company's server is on this network · Open", which
+  goes to `https://<host>:<port>/`. That is another origin: no storage is shared, so the person signs
+  in again on the master's `/login` (D13), and the browser's pairing is the one made at that origin.
+- **When it probes.** A public origin calling a `.local` name or a private address makes Chrome ask
+  for local network access, so the web never probes unprompted the first time: the server section
+  online (on the web) has "Find it on this network", and losing the internet probes with the kept
+  list (the moment the master matters most). After one success the browser remembers it (per-viewer
+  `localStorage`) and probes on its own after each sign in. In development the prompt never shows
+  (`localhost` is already local), so only a deployed origin shows the real behaviour.
+- Backend side: `docs/task-edge-sync-backend.md` §12.
 
 ---
 
@@ -762,7 +847,7 @@ Sizes are relative (S < M < L < XL). Each phase ships on its own and leaves `clo
 | 4 | Domains, one per release | business (single site) → inventory and stock → POS → sales → finance and accounting export → employees (sealed fields) → clients, deliveries → statistics | XL | each domain's contract tests pass on both sources |
 | 4b | One app (§9.6) | E1 nothing disappears: locked areas, the server section in the cloud, a network failure keeps the session · E2 one session: `hybrid` on a device with a master, the master's session opened with the cloud's sign in (password), "work offline", a master made from the cloud with the company's profile · E3 the cloud grant (engine side, backend task) | L | a paired device loses and regains the internet without signing in again or losing a section |
 | 5 | Operations | backups and restore, update gating, master migration, diagnostics, POS outbox (§8.4), EULA flow, signed builds | L | disaster drill: kill the master, restore on new hardware, POS outbox replays |
-| 6 | Hybrid | backend edge API (§9.2), sync engine, conflicts inbox, offline verifier (§6.4), subscribing and cancelling with the accounts (§9.4), remote access through the cloud and the VPN address (§9.5) | XL | a week-long soak with scripted outages and no divergence |
+| 6 | Hybrid | backend edge API (§9.2), sync engine, conflicts inbox, offline verifier (§6.4), subscribing and cancelling with the accounts (§9.4), remote access through the cloud and the VPN address (§9.5), the cloud's web finding its master (§9.7) | XL | a week-long soak with scripted outages and no divergence |
 | 7 | Hardening | passphrase unlock UI polish, external security review (incl. LAN pentest), performance with 50 clients | M | review findings closed |
 
 `local` can be released after phase 5, without the cloud. `hybrid` needs phase 6. Every build already
@@ -806,6 +891,7 @@ The first two are in CLAUDE.md since phase 1, the next two since phase 2, the la
 | D16 | Server section online (2026-10-01) | Shown in the cloud on a computer; a master made from there takes the account as owner and the cloud company's profile (§9.6). |
 | D17 | Nothing disappears (2026-10-01) | Areas the network or the master can't serve are locked, never hidden (§2). |
 | D18 | Linking a master to its cloud company (2026-10-01) | Asked once to the owner at the first online sign in on its devices, in plain words that say what joining does (no promise about the data: that is the privacy policy's); also from the server section (§9.6, `business.md` B-30). |
+| D19 | The cloud's web finding a master (2026-10-03) | The enrolled master reports its `.local` name and addresses to the cloud; the web probes them and accepts only the `instance` the cloud named; it offers the master's page, never redirects; the first probe only on the person's request or when the internet goes. The name claim waits, repeats and watches for conflicts (§5.2, §9.7). |
 
 ---
 
