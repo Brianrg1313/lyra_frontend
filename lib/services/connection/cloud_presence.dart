@@ -34,9 +34,14 @@ class CloudPresence {
     _started = true;
 
     _socket.status.addListener(_status);
+    // The first holder opens it, and its status until then is the last holder's closing (a
+    // `disconnected` that says nothing of the backend): only one already open is read now.
     final holders = _holders[_socket] = (_holders[_socket] ?? 0) + 1;
-    if (holders == 1) _socket.connect().catchError((Object _) {});
-    _status();
+    if (holders == 1) {
+      _socket.connect().catchError((Object _) {});
+    } else {
+      _status();
+    }
   }
 
   void stop() {
