@@ -17889,471 +17889,491 @@ class S {
     );
   }
 
-  /// `View`
-  String get permission_access_view {
+  /// `This person created the business: they hold every permission, including the ones added later, and nobody can change them.`
+  String get permission_owner_note {
     return Intl.message(
-      'View',
-      name: 'permission_access_view',
+      'This person created the business: they hold every permission, including the ones added later, and nobody can change them.',
+      name: 'permission_owner_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `Create`
-  String get permission_access_create {
+  /// `Holds every permission, including the ones added later. Changing any of them keeps only what is ticked.`
+  String get permission_all_note {
     return Intl.message(
-      'Create',
-      name: 'permission_access_create',
+      'Holds every permission, including the ones added later. Changing any of them keeps only what is ticked.',
+      name: 'permission_all_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `Edit`
-  String get permission_access_edit {
+  /// `Holds every permission. Only someone who also holds every permission can change them.`
+  String get permission_all_locked {
     return Intl.message(
-      'Edit',
-      name: 'permission_access_edit',
+      'Holds every permission. Only someone who also holds every permission can change them.',
+      name: 'permission_all_locked',
       desc: '',
       args: [],
     );
   }
 
-  /// `Delete`
-  String get permission_access_delete {
+  /// `Works here but can't enter the business yet. Giving access lets them in with what is ticked below.`
+  String get permission_no_access_note {
     return Intl.message(
-      'Delete',
-      name: 'permission_access_delete',
+      'Works here but can\'t enter the business yet. Giving access lets them in with what is ticked below.',
+      name: 'permission_no_access_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `This area has no such action`
-  String get permission_access_unavailable {
+  /// `Start from a template`
+  String get permission_template_title {
     return Intl.message(
-      'This area has no such action',
-      name: 'permission_access_unavailable',
+      'Start from a template',
+      name: 'permission_template_title',
       desc: '',
       args: [],
     );
   }
 
-  /// `Business`
-  String get permission_business_title {
+  /// `Pick a template`
+  String get permission_template_placeholder {
     return Intl.message(
-      'Business',
-      name: 'permission_business_title',
+      'Pick a template',
+      name: 'permission_template_placeholder',
       desc: '',
       args: [],
     );
   }
 
-  /// `Open the business page. Delete removes the whole company from its settings.`
-  String get permission_business_description {
+  /// `No template matches.`
+  String get permission_template_empty {
     return Intl.message(
-      'Open the business page. Delete removes the whole company from its settings.',
-      name: 'permission_business_description',
+      'No template matches.',
+      name: 'permission_template_empty',
       desc: '',
       args: [],
     );
   }
 
-  /// `Statistics`
-  String get permission_business_statistics_title {
+  /// `From the template {name}`
+  String permission_template_from(Object name) {
     return Intl.message(
-      'Statistics',
-      name: 'permission_business_statistics_title',
+      'From the template $name',
+      name: 'permission_template_from',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `From the template {name}, with changes`
+  String permission_template_custom(Object name) {
+    return Intl.message(
+      'From the template $name, with changes',
+      name: 'permission_template_custom',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `The template {name} replaces their permissions when you save.`
+  String permission_template_picked(Object name) {
+    return Intl.message(
+      'The template $name replaces their permissions when you save.',
+      name: 'permission_template_picked',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Give access`
+  String get permission_give_access {
+    return Intl.message(
+      'Give access',
+      name: 'permission_give_access',
       desc: '',
       args: [],
     );
   }
 
-  /// `The business statistics tab: sales, clients and activity over time.`
-  String get permission_business_statistics_description {
+  /// `Discard`
+  String get permission_discard {
     return Intl.message(
-      'The business statistics tab: sales, clients and activity over time.',
-      name: 'permission_business_statistics_description',
+      'Discard',
+      name: 'permission_discard',
       desc: '',
       args: [],
     );
   }
 
-  /// `Employees`
-  String get permission_business_employees_title {
+  /// `Remove access`
+  String get permission_revoke {
     return Intl.message(
-      'Employees',
-      name: 'permission_business_employees_title',
+      'Remove access',
+      name: 'permission_revoke',
       desc: '',
       args: [],
     );
   }
 
-  /// `The team: see who works here, invite people by email and edit their job and profile.`
-  String get permission_business_employees_description {
+  /// `Remove {name}'s access?`
+  String permission_revoke_title(Object name) {
     return Intl.message(
-      'The team: see who works here, invite people by email and edit their job and profile.',
-      name: 'permission_business_employees_description',
+      'Remove $name\'s access?',
+      name: 'permission_revoke_title',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `They won't be able to enter the business. Their permissions are kept for when you give access again.`
+  String get permission_revoke_message {
+    return Intl.message(
+      'They won\'t be able to enter the business. Their permissions are kept for when you give access again.',
+      name: 'permission_revoke_message',
       desc: '',
       args: [],
     );
   }
 
-  /// `Branches`
-  String get permission_business_branches_title {
+  /// `Remove access`
+  String get permission_revoke_confirm {
     return Intl.message(
-      'Branches',
-      name: 'permission_business_branches_title',
+      'Remove access',
+      name: 'permission_revoke_confirm',
       desc: '',
       args: [],
     );
   }
 
-  /// `The company's branches: add new ones and edit their address, contact and map point.`
-  String get permission_business_branches_description {
+  /// `Permissions saved.`
+  String get permission_saved {
     return Intl.message(
-      'The company\'s branches: add new ones and edit their address, contact and map point.',
-      name: 'permission_business_branches_description',
+      'Permissions saved.',
+      name: 'permission_saved',
       desc: '',
       args: [],
     );
   }
 
-  /// `Clients`
-  String get permission_business_clients_title {
+  /// `{name} no longer has access to the business.`
+  String permission_revoked(Object name) {
     return Intl.message(
-      'Clients',
-      name: 'permission_business_clients_title',
+      '$name no longer has access to the business.',
+      name: 'permission_revoked',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `You don't hold this permission, so you can't give or take it.`
+  String get permission_locked {
+    return Intl.message(
+      'You don\'t hold this permission, so you can\'t give or take it.',
+      name: 'permission_locked',
       desc: '',
       args: [],
     );
   }
 
-  /// `The list of the company's clients.`
-  String get permission_business_clients_description {
+  /// `The permissions couldn't be loaded.`
+  String get permission_load_error {
     return Intl.message(
-      'The list of the company\'s clients.',
-      name: 'permission_business_clients_description',
+      'The permissions couldn\'t be loaded.',
+      name: 'permission_load_error',
       desc: '',
       args: [],
     );
   }
 
-  /// `Business settings`
-  String get permission_business_settings_title {
+  /// `Try again`
+  String get permission_retry {
     return Intl.message(
-      'Business settings',
-      name: 'permission_business_settings_title',
+      'Try again',
+      name: 'permission_retry',
       desc: '',
       args: [],
     );
   }
 
-  /// `The company profile: legal name, handle, activity, fiscal id, phone, website, country and logo.`
-  String get permission_business_settings_description {
+  /// `{granted} of {total} on`
+  String permission_group_count(Object granted, Object total) {
     return Intl.message(
-      'The company profile: legal name, handle, activity, fiscal id, phone, website, country and logo.',
-      name: 'permission_business_settings_description',
+      '$granted of $total on',
+      name: 'permission_group_count',
+      desc: '',
+      args: [granted, total],
+    );
+  }
+
+  /// `{action}: {section}`
+  String permission_access_cell(Object action, Object section) {
+    return Intl.message(
+      '$action: $section',
+      name: 'permission_access_cell',
+      desc: '',
+      args: [action, section],
+    );
+  }
+
+  /// `Owner`
+  String get permission_preset_owner {
+    return Intl.message(
+      'Owner',
+      name: 'permission_preset_owner',
       desc: '',
       args: [],
     );
   }
 
-  /// `Messages`
-  String get permission_messages_title {
+  /// `Every permission, including the ones added later.`
+  String get permission_preset_owner_description {
     return Intl.message(
-      'Messages',
-      name: 'permission_messages_title',
+      'Every permission, including the ones added later.',
+      name: 'permission_preset_owner_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `The conversation desk. Edit covers replying, taking over from the assistant, assigning, tags and stages.`
-  String get permission_messages_description {
+  /// `Manager`
+  String get permission_preset_manager {
     return Intl.message(
-      'The conversation desk. Edit covers replying, taking over from the assistant, assigning, tags and stages.',
-      name: 'permission_messages_description',
+      'Manager',
+      name: 'permission_preset_manager',
       desc: '',
       args: [],
     );
   }
 
-  /// `Deliveries`
-  String get permission_deliveries_title {
+  /// `Runs the whole business, except the accounts it receives money into and the templates.`
+  String get permission_preset_manager_description {
     return Intl.message(
-      'Deliveries',
-      name: 'permission_deliveries_title',
+      'Runs the whole business, except the accounts it receives money into and the templates.',
+      name: 'permission_preset_manager_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `The deliveries desk and its map. Create opens new deliveries.`
-  String get permission_deliveries_description {
+  /// `Marketing`
+  String get permission_preset_marketing {
     return Intl.message(
-      'The deliveries desk and its map. Create opens new deliveries.',
-      name: 'permission_deliveries_description',
+      'Marketing',
+      name: 'permission_preset_marketing',
       desc: '',
       args: [],
     );
   }
 
-  /// `Delivery settings`
-  String get permission_deliveries_settings_title {
+  /// `The catalog, product pictures and the sales board.`
+  String get permission_preset_marketing_description {
     return Intl.message(
-      'Delivery settings',
-      name: 'permission_deliveries_settings_title',
+      'The catalog, product pictures and the sales board.',
+      name: 'permission_preset_marketing_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `Whether the company delivers or offers pickup, the delivery note and the delivery options.`
-  String get permission_deliveries_settings_description {
+  /// `Seller`
+  String get permission_preset_seller {
     return Intl.message(
-      'Whether the company delivers or offers pickup, the delivery note and the delivery options.',
-      name: 'permission_deliveries_settings_description',
+      'Seller',
+      name: 'permission_preset_seller',
       desc: '',
       args: [],
     );
   }
 
-  /// `Delivery areas`
-  String get permission_deliveries_areas_title {
+  /// `Sells at the register, holds products and hands over orders.`
+  String get permission_preset_seller_description {
     return Intl.message(
-      'Delivery areas',
-      name: 'permission_deliveries_areas_title',
+      'Sells at the register, holds products and hands over orders.',
+      name: 'permission_preset_seller_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `The zones the company delivers to, with their fee and minimum order.`
-  String get permission_deliveries_areas_description {
+  /// `Auditor`
+  String get permission_preset_auditor {
     return Intl.message(
-      'The zones the company delivers to, with their fee and minimum order.',
-      name: 'permission_deliveries_areas_description',
+      'Auditor',
+      name: 'permission_preset_auditor',
       desc: '',
       args: [],
     );
   }
 
-  /// `Sales`
-  String get permission_sales_title {
+  /// `Sees every section without changing anything.`
+  String get permission_preset_auditor_description {
     return Intl.message(
-      'Sales',
-      name: 'permission_sales_title',
+      'Sees every section without changing anything.',
+      name: 'permission_preset_auditor_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `The live sales board. Edit covers the handover of an order and confirming a payment.`
-  String get permission_sales_description {
+  /// `Billing specialist`
+  String get permission_preset_billing {
     return Intl.message(
-      'The live sales board. Edit covers the handover of an order and confirming a payment.',
-      name: 'permission_sales_description',
+      'Billing specialist',
+      name: 'permission_preset_billing',
       desc: '',
       args: [],
     );
   }
 
-  /// `Sales in process`
-  String get permission_sales_process_title {
+  /// `Charges and cancels tickets and records the payments that settle them.`
+  String get permission_preset_billing_description {
     return Intl.message(
-      'Sales in process',
-      name: 'permission_sales_process_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The tab of sales that are still open.`
-  String get permission_sales_process_description {
-    return Intl.message(
-      'The tab of sales that are still open.',
-      name: 'permission_sales_process_description',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Finished sales`
-  String get permission_sales_done_title {
-    return Intl.message(
-      'Finished sales',
-      name: 'permission_sales_done_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The tab of sales already closed.`
-  String get permission_sales_done_description {
-    return Intl.message(
-      'The tab of sales already closed.',
-      name: 'permission_sales_done_description',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Inventory`
-  String get permission_inventory_title {
-    return Intl.message(
-      'Inventory',
-      name: 'permission_inventory_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Product tables: create, import, edit fields and records, move stock and delete tables.`
-  String get permission_inventory_description {
-    return Intl.message(
-      'Product tables: create, import, edit fields and records, move stock and delete tables.',
-      name: 'permission_inventory_description',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Channels`
-  String get permission_channels_title {
-    return Intl.message(
-      'Channels',
-      name: 'permission_channels_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The AI channels: create them, edit their role, data and credentials, turn them on or off and disconnect them.`
-  String get permission_channels_description {
-    return Intl.message(
-      'The AI channels: create them, edit their role, data and credentials, turn them on or off and disconnect them.',
-      name: 'permission_channels_description',
+      'Charges and cancels tickets and records the payments that settle them.',
+      name: 'permission_preset_billing_description',
       desc: '',
       args: [],
     );
   }
 
   /// `Finance`
-  String get permission_finance_title {
+  String get permission_preset_finance {
     return Intl.message(
       'Finance',
-      name: 'permission_finance_title',
+      name: 'permission_preset_finance',
       desc: '',
       args: [],
     );
   }
 
-  /// `Open the finance section. Each of its tabs has its own permission below.`
-  String get permission_finance_description {
+  /// `All the money: payments, voids and the business's accounts.`
+  String get permission_preset_finance_description {
     return Intl.message(
-      'Open the finance section. Each of its tabs has its own permission below.',
-      name: 'permission_finance_description',
+      'All the money: payments, voids and the business\'s accounts.',
+      name: 'permission_preset_finance_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `Overview`
-  String get permission_finance_overview_title {
+  /// `Stock`
+  String get permission_inventory_title {
     return Intl.message(
-      'Overview',
-      name: 'permission_finance_overview_title',
+      'Stock',
+      name: 'permission_inventory_title',
       desc: '',
       args: [],
     );
   }
 
-  /// `The summary of the company's money and the assistant's cost.`
-  String get permission_finance_overview_description {
+  /// `Stock balances, movements and the stock summary.`
+  String get permission_inventory_description {
     return Intl.message(
-      'The summary of the company\'s money and the assistant\'s cost.',
-      name: 'permission_finance_overview_description',
+      'Stock balances, movements and the stock summary.',
+      name: 'permission_inventory_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `Payments`
-  String get permission_finance_payments_title {
+  /// `Add stock`
+  String get permission_inventory_restock {
     return Intl.message(
-      'Payments',
-      name: 'permission_finance_payments_title',
+      'Add stock',
+      name: 'permission_inventory_restock',
       desc: '',
       args: [],
     );
   }
 
-  /// `Payments received. Create records a payment, delete voids one.`
-  String get permission_finance_payments_description {
+  /// `Remove stock`
+  String get permission_inventory_remove {
     return Intl.message(
-      'Payments received. Create records a payment, delete voids one.',
-      name: 'permission_finance_payments_description',
+      'Remove stock',
+      name: 'permission_inventory_remove',
       desc: '',
       args: [],
     );
   }
 
-  /// `Receivables`
-  String get permission_finance_receivables_title {
+  /// `Record returns`
+  String get permission_inventory_return {
     return Intl.message(
-      'Receivables',
-      name: 'permission_finance_receivables_title',
+      'Record returns',
+      name: 'permission_inventory_return',
       desc: '',
       args: [],
     );
   }
 
-  /// `What clients still owe. Edit marks an amount as collected.`
-  String get permission_finance_receivables_description {
+  /// `Hold and release units`
+  String get permission_inventory_hold {
     return Intl.message(
-      'What clients still owe. Edit marks an amount as collected.',
-      name: 'permission_finance_receivables_description',
+      'Hold and release units',
+      name: 'permission_inventory_hold',
       desc: '',
       args: [],
     );
   }
 
-  /// `Payment methods`
-  String get permission_finance_methods_title {
+  /// `Choose the summary's columns`
+  String get permission_inventory_configure {
     return Intl.message(
-      'Payment methods',
-      name: 'permission_finance_methods_title',
+      'Choose the summary\'s columns',
+      name: 'permission_inventory_configure',
       desc: '',
       args: [],
     );
   }
 
-  /// `The accounts clients pay into, plus exchange currencies and their rates.`
-  String get permission_finance_methods_description {
+  /// `Change product pictures`
+  String get permission_inventory_pictures {
     return Intl.message(
-      'The accounts clients pay into, plus exchange currencies and their rates.',
-      name: 'permission_finance_methods_description',
+      'Change product pictures',
+      name: 'permission_inventory_pictures',
       desc: '',
       args: [],
     );
   }
 
-  /// `Connections`
-  String get permission_connections_title {
+  /// `Reservations`
+  String get permission_reservations_title {
     return Intl.message(
-      'Connections',
-      name: 'permission_connections_title',
+      'Reservations',
+      name: 'permission_reservations_title',
       desc: '',
       args: [],
     );
   }
 
-  /// `Third-party accounts linked to the company.`
-  String get permission_connections_description {
+  /// `Units reserved for a client from the panel.`
+  String get permission_reservations_description {
     return Intl.message(
-      'Third-party accounts linked to the company.',
-      name: 'permission_connections_description',
+      'Units reserved for a client from the panel.',
+      name: 'permission_reservations_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create reservations`
+  String get permission_reservations_create {
+    return Intl.message(
+      'Create reservations',
+      name: 'permission_reservations_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm and cancel reservations`
+  String get permission_reservations_manage {
+    return Intl.message(
+      'Confirm and cancel reservations',
+      name: 'permission_reservations_manage',
       desc: '',
       args: [],
     );
@@ -18369,33 +18389,663 @@ class S {
     );
   }
 
-  /// `The point of sale mode. Create adds products to a ticket and charges it, delete discards a ticket.`
+  /// `The register: tickets and charges.`
   String get permission_pos_description {
     return Intl.message(
-      'The point of sale mode. Create adds products to a ticket and charges it, delete discards a ticket.',
+      'The register: tickets and charges.',
       name: 'permission_pos_description',
       desc: '',
       args: [],
     );
   }
 
-  /// `{granted} of {total} open`
-  String permission_group_count(Object granted, Object total) {
+  /// `Sell and charge tickets`
+  String get permission_pos_sell {
     return Intl.message(
-      '$granted of $total open',
-      name: 'permission_group_count',
+      'Sell and charge tickets',
+      name: 'permission_pos_sell',
       desc: '',
-      args: [granted, total],
+      args: [],
     );
   }
 
-  /// `{access}: {area}`
-  String permission_access_cell(Object access, Object area) {
+  /// `Cancel tickets`
+  String get permission_pos_cancel {
     return Intl.message(
-      '$access: $area',
-      name: 'permission_access_cell',
+      'Cancel tickets',
+      name: 'permission_pos_cancel',
       desc: '',
-      args: [access, area],
+      args: [],
+    );
+  }
+
+  /// `Sales`
+  String get permission_sales_title {
+    return Intl.message(
+      'Sales',
+      name: 'permission_sales_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The live sales board, in process and done.`
+  String get permission_sales_description {
+    return Intl.message(
+      'The live sales board, in process and done.',
+      name: 'permission_sales_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hand over orders`
+  String get permission_sales_fulfill {
+    return Intl.message(
+      'Hand over orders',
+      name: 'permission_sales_fulfill',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Finance`
+  String get permission_money_title {
+    return Intl.message(
+      'Finance',
+      name: 'permission_money_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payments, receivables and the accounts the business receives money into.`
+  String get permission_money_description {
+    return Intl.message(
+      'Payments, receivables and the accounts the business receives money into.',
+      name: 'permission_money_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Record payments and collect receivables`
+  String get permission_money_charge {
+    return Intl.message(
+      'Record payments and collect receivables',
+      name: 'permission_money_charge',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Void payments`
+  String get permission_money_void {
+    return Intl.message(
+      'Void payments',
+      name: 'permission_money_void',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage payment methods and currencies`
+  String get permission_money_accounts {
+    return Intl.message(
+      'Manage payment methods and currencies',
+      name: 'permission_money_accounts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Export the accounting`
+  String get permission_money_export {
+    return Intl.message(
+      'Export the accounting',
+      name: 'permission_money_export',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Employees`
+  String get permission_employees_title {
+    return Intl.message(
+      'Employees',
+      name: 'permission_employees_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who works here, with their personal data and salary.`
+  String get permission_employees_description {
+    return Intl.message(
+      'Who works here, with their personal data and salary.',
+      name: 'permission_employees_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invite people and edit jobs and leaves`
+  String get permission_employees_manage {
+    return Intl.message(
+      'Invite people and edit jobs and leaves',
+      name: 'permission_employees_manage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Permissions`
+  String get permission_permissions_title {
+    return Intl.message(
+      'Permissions',
+      name: 'permission_permissions_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who can enter the business and what each person can do.`
+  String get permission_permissions_description {
+    return Intl.message(
+      'Who can enter the business and what each person can do.',
+      name: 'permission_permissions_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Give and remove access and permissions`
+  String get permission_permissions_assign {
+    return Intl.message(
+      'Give and remove access and permissions',
+      name: 'permission_permissions_assign',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage the business's templates`
+  String get permission_permissions_templates {
+    return Intl.message(
+      'Manage the business\'s templates',
+      name: 'permission_permissions_templates',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Products`
+  String get permission_products_title {
+    return Intl.message(
+      'Products',
+      name: 'permission_products_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The product tables and their records.`
+  String get permission_products_description {
+    return Intl.message(
+      'The product tables and their records.',
+      name: 'permission_products_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add records`
+  String get permission_products_create {
+    return Intl.message(
+      'Add records',
+      name: 'permission_products_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit records`
+  String get permission_products_edit {
+    return Intl.message(
+      'Edit records',
+      name: 'permission_products_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete records`
+  String get permission_products_delete {
+    return Intl.message(
+      'Delete records',
+      name: 'permission_products_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import from a file`
+  String get permission_products_import {
+    return Intl.message(
+      'Import from a file',
+      name: 'permission_products_import',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create and change tables and fields`
+  String get permission_products_structure {
+    return Intl.message(
+      'Create and change tables and fields',
+      name: 'permission_products_structure',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Messages`
+  String get permission_chats_title {
+    return Intl.message(
+      'Messages',
+      name: 'permission_chats_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The conversations with clients and the clients list.`
+  String get permission_chats_description {
+    return Intl.message(
+      'The conversations with clients and the clients list.',
+      name: 'permission_chats_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reply to clients`
+  String get permission_chats_reply {
+    return Intl.message(
+      'Reply to clients',
+      name: 'permission_chats_reply',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change stages and resolve alerts`
+  String get permission_chats_manage {
+    return Intl.message(
+      'Change stages and resolve alerts',
+      name: 'permission_chats_manage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Assign conversations`
+  String get permission_chats_assign {
+    return Intl.message(
+      'Assign conversations',
+      name: 'permission_chats_assign',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pause and resume the assistant`
+  String get permission_chats_bot {
+    return Intl.message(
+      'Pause and resume the assistant',
+      name: 'permission_chats_bot',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Channels`
+  String get permission_channels_title {
+    return Intl.message(
+      'Channels',
+      name: 'permission_channels_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The AI channels that talk to clients.`
+  String get permission_channels_description {
+    return Intl.message(
+      'The AI channels that talk to clients.',
+      name: 'permission_channels_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create channels`
+  String get permission_channels_create {
+    return Intl.message(
+      'Create channels',
+      name: 'permission_channels_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit channels`
+  String get permission_channels_edit {
+    return Intl.message(
+      'Edit channels',
+      name: 'permission_channels_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete channels`
+  String get permission_channels_delete {
+    return Intl.message(
+      'Delete channels',
+      name: 'permission_channels_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Link and unlink phone numbers`
+  String get permission_channels_connect {
+    return Intl.message(
+      'Link and unlink phone numbers',
+      name: 'permission_channels_connect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Appointments`
+  String get permission_appointments_title {
+    return Intl.message(
+      'Appointments',
+      name: 'permission_appointments_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The calendar of appointments.`
+  String get permission_appointments_description {
+    return Intl.message(
+      'The calendar of appointments.',
+      name: 'permission_appointments_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Book and update appointments`
+  String get permission_appointments_book {
+    return Intl.message(
+      'Book and update appointments',
+      name: 'permission_appointments_book',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set services, hours and closures`
+  String get permission_appointments_configure {
+    return Intl.message(
+      'Set services, hours and closures',
+      name: 'permission_appointments_configure',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Knowledge`
+  String get permission_knowledge_title {
+    return Intl.message(
+      'Knowledge',
+      name: 'permission_knowledge_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the business has already answered, for the assistant to reuse.`
+  String get permission_knowledge_description {
+    return Intl.message(
+      'What the business has already answered, for the assistant to reuse.',
+      name: 'permission_knowledge_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add answers`
+  String get permission_knowledge_create {
+    return Intl.message(
+      'Add answers',
+      name: 'permission_knowledge_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit answers`
+  String get permission_knowledge_edit {
+    return Intl.message(
+      'Edit answers',
+      name: 'permission_knowledge_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete answers`
+  String get permission_knowledge_delete {
+    return Intl.message(
+      'Delete answers',
+      name: 'permission_knowledge_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Branches`
+  String get permission_branches_title {
+    return Intl.message(
+      'Branches',
+      name: 'permission_branches_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Changing the business's branches. Everyone sees the list.`
+  String get permission_branches_description {
+    return Intl.message(
+      'Changing the business\'s branches. Everyone sees the list.',
+      name: 'permission_branches_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add branches`
+  String get permission_branches_create {
+    return Intl.message(
+      'Add branches',
+      name: 'permission_branches_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit branches`
+  String get permission_branches_edit {
+    return Intl.message(
+      'Edit branches',
+      name: 'permission_branches_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete branches`
+  String get permission_branches_delete {
+    return Intl.message(
+      'Delete branches',
+      name: 'permission_branches_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries`
+  String get permission_delivery_title {
+    return Intl.message(
+      'Deliveries',
+      name: 'permission_delivery_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whether, how and where the business delivers.`
+  String get permission_delivery_description {
+    return Intl.message(
+      'Whether, how and where the business delivers.',
+      name: 'permission_delivery_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add delivery options and areas`
+  String get permission_delivery_create {
+    return Intl.message(
+      'Add delivery options and areas',
+      name: 'permission_delivery_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit delivery settings, options and areas`
+  String get permission_delivery_edit {
+    return Intl.message(
+      'Edit delivery settings, options and areas',
+      name: 'permission_delivery_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete delivery options and areas`
+  String get permission_delivery_delete {
+    return Intl.message(
+      'Delete delivery options and areas',
+      name: 'permission_delivery_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Business`
+  String get permission_business_title {
+    return Intl.message(
+      'Business',
+      name: 'permission_business_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The business's statistics and settings.`
+  String get permission_business_description {
+    return Intl.message(
+      'The business\'s statistics and settings.',
+      name: 'permission_business_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit the profile, logo and location`
+  String get permission_business_edit {
+    return Intl.message(
+      'Edit the profile, logo and location',
+      name: 'permission_business_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage the business's emails`
+  String get permission_business_emails {
+    return Intl.message(
+      'Manage the business\'s emails',
+      name: 'permission_business_emails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Local server`
+  String get permission_server_title {
+    return Intl.message(
+      'Local server',
+      name: 'permission_server_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The business's own server, for working offline.`
+  String get permission_server_description {
+    return Intl.message(
+      'The business\'s own server, for working offline.',
+      name: 'permission_server_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pair and remove devices`
+  String get permission_server_devices {
+    return Intl.message(
+      'Pair and remove devices',
+      name: 'permission_server_devices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Run and restore backups`
+  String get permission_server_backups {
+    return Intl.message(
+      'Run and restore backups',
+      name: 'permission_server_backups',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stop the server`
+  String get permission_server_stop {
+    return Intl.message(
+      'Stop the server',
+      name: 'permission_server_stop',
+      desc: '',
+      args: [],
     );
   }
 

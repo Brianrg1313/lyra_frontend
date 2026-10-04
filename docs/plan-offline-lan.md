@@ -10,22 +10,21 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 1 Data-source seam | done | — |
 | 2 Engine (`lyra_node`) | done | — |
 | 3 LAN (TLS, pairing, web build, mDNS) | done on one computer | the exit check on real hardware (a second PC, a phone, a browser, a LAN MITM attempt; the camera, the OS trust-store dialogs, Firefox) |
-| 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model) done | the app's permissions editor on the catalog (cloud and master); clients and deliveries, then statistics |
+| 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor) done | clients and deliveries, then statistics; the company's own templates have ops and endpoints but no screen |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
 | 5 Operations | not started | — |
 | 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend) | the app's ops (enrol, status, inbox) and the server section showing the sync, both waiting on the backend's `/edge/v1/devices`; the next entities (POS tickets, employees, clients, files); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
-**Next step:** the app's permissions editor (`EmployeePermissions`) on the cloud's catalog, through
-`/permissions/members` online and `permissions.members.*` on a master; then clients and deliveries,
-statistics, and E3 (engine side; the backend's part is §9 of `docs/task-edge-sync-backend.md`).
+**Next step:** clients and deliveries, then statistics, and E3 (engine side; the backend's part is
+§9 of `docs/task-edge-sync-backend.md`).
 **Real hardware goes last** (owner's call, 2026-10-04): the exit checks of phase 3 and 4b and the
 "not yet seen" list below run together once the code is done.
 
 **Built, not yet seen on screen**
-- Permissions on a master (2026-10-04): the cloud's catalog, templates and per-person document, a
-  new member admitted with nothing, assign/revoke applied to open sessions at once. No screen calls
-  the ops yet (the editor is the next step).
+- Permissions (2026-10-04): the editor (an employee's "Permissions") on the cloud's catalog, online
+  and on a master: a template, the switches, save, give and remove access; the edited person's open
+  session re-reading its doors at once on a master (`permissions/changed`).
 - E2: `hybrid` (the online sign in opens the master's session too), sections locking and opening in
   place with the internet, "work offline", the server section online, the link (D18).
 - A session on the master alone offering "sign in online" by itself once the backend answers (2026-10-03).
@@ -62,7 +61,7 @@ statistics, and E3 (engine side; the backend's part is §9 of `docs/task-edge-sy
   app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
   master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
 
-**Gate** `flutter analyze` clean; `flutter test` 1189 passing with the 5 known failures of
+**Gate** `flutter analyze` clean; `flutter test` 1200 passing with the 5 known failures of
 `test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
 
 **Keeping this current:** at the end of each release, update the table, the next step and the
@@ -976,3 +975,13 @@ things stand.
   catalog gained `server` (the master's devices, backups, stop) and `money.export`. Consequences of
   matching the cloud: no "own sales only" (SA-11), no separate personal-data permission (E-3), a
   typed charge and a changed rate are `pos.sell`. Migration 12 moves an existing master over.
+- The permissions editor on the catalog (2026-10-04). An employee's "Permissions" is the cloud's
+  per-person document, edited in the catalog's keys, through `/permissions/members` online and
+  `permissions.members.*` on a master (`Sources.permissions`): one sheet per section with its
+  actions, a template to start from (the platform's in the app's words), a draft saved as only what
+  changed, "Give access" for someone with a job and no membership, "Remove access". A key the viewer
+  doesn't hold is drawn locked and a template that would change one isn't offered (P-6). One's own
+  permissions show read-only from `permissions.get`. Someone else's open only with
+  `business.employees.permissions`. On a master, `permissions/changed` re-reads the bootstrap, and
+  the person's own requests are listed. The area-based matrix (view/create/edit/delete per area) is
+  gone.

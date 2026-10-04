@@ -80,10 +80,17 @@ class SessionLanSource implements SessionSource {
   Future<Object?> signInWithCode(String email, String code) =>
     throw UnsupportedError("No codes on a master");
 
-  /// Requests arrive with the employees release; until then only the owner, who holds
-  /// everything, uses a master.
+  /// `permissions.requests.list` answers `created` where the cloud says `created_at`.
   @override
-  Future<List<PermissionRequestModel>> permissionRequests() async => const [];
+  Future<List<PermissionRequestModel>> permissionRequests() async {
+    final answer = await _lan.call(Ops.permissionsRequestsList);
+
+    return PermissionRequestModel.listFromTable([
+      if (answer is List)
+        for (final row in answer)
+          if (row is Map) {...row, "created_at": row["created"]}
+    ]);
+  }
 
   @override
   Future<String> requestPermission(String permission, {String? reason}) async {

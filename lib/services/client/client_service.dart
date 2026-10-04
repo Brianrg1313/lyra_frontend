@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show BuildContext, WidgetsBinding;
+import 'package:lyra_protocol/lyra_protocol.dart' show Events;
 import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/client/client_model.dart';
@@ -72,6 +73,8 @@ class ClientService extends ChangeNotifier {
   ];
 
   bool get isAuthenticated => _client != null;
+
+  void Function()? _offPermissions;
 
   ClientModel get client {
     assert(_client != null, "ClientService read without a session started");
@@ -158,6 +161,10 @@ class ClientService extends ChangeNotifier {
     // open: the client retries on its own and `ConnectionService` does not
     // throw).
     unawaited(ConnectionService().open());
+
+    // Someone with `permissions.assign` changed this person's (`session.md` P-8): the tree is
+    // re-read so a door opens or closes without signing in again. Once per run.
+    _offPermissions ??= ConnectionService().on(Events.permissionsChanged, (_) => unawaited(refreshCatalogs()));
 
     for (final task in _tasks) {
       // Someone who already works at a company does not owe an answer before

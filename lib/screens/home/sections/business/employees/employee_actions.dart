@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/business/business_employee_model.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
 import 'package:app/screens/modals/business/employee_tool/_employee_tool.dart';
@@ -48,7 +50,14 @@ class EmployeeActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gap = AppSize.gap * 0.5;
-    const actions = EmployeeAction.values;
+
+    // Someone else's permissions open only for whoever may read and assign them; one's own,
+    // always.
+    final permitted = employee.me || context.watch<PermissionsService>().can("business.employees.permissions");
+    final actions = [
+      for (final action in EmployeeAction.values)
+        if (action != EmployeeAction.permissions || permitted) action
+    ];
 
     return Surface(
       color: ThemeColor.of(context).surface,
@@ -105,11 +114,11 @@ class _ActionCell extends StatelessWidget {
         description: description,
         person: employee.fullName,
         builder: switch (action) {
-          // One's own grants are shown, never changed (the backend refuses a
+          // One's own are shown, never changed (the backend refuses a
           // self-assignment too).
           EmployeeAction.permissions => (_) => employee.me
-            ? EmployeePermissions(initial: EmployeePermission.own(), readOnly: true)
-            : const EmployeePermissions(),
+            ? const EmployeePermissions()
+            : EmployeePermissions(username: employee.username, person: employee.fullName),
           _ => null
         }
       ),

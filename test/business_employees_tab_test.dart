@@ -18,7 +18,6 @@ import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/screens/home/sections/business/employees/_employees.dart';
 import 'package:app/screens/home/sections/business/employees/employee_edit.dart';
-import 'package:app/screens/home/sections/business/employees/employee_permissions.dart';
 import 'package:app/screens/modals/business/invite_employee/_invite_employee.dart';
 
 /// The employees tab is two panels: the people on the left — the viewer's own
@@ -114,7 +113,9 @@ Widget _app(BusinessEmployeesService service, {double width = 1400}) => Material
       // App-wide in the app: the country fields pick from it.
       ChangeNotifierProvider<CountryCatalogService>.value(value: CountryCatalogService()),
       // App-wide too: a phone with no code is offered the company's.
-      ChangeNotifierProvider<BusinessService>(create: (_) => BusinessService())
+      ChangeNotifierProvider<BusinessService>(create: (_) => BusinessService()),
+      // App-wide too: the actions offer someone else's permissions only with the grant.
+      ChangeNotifierProvider<PermissionsService>.value(value: PermissionsService())
     ],
     child: Builder(builder: (context) {
       AppSize.instance(context);
@@ -326,51 +327,6 @@ void main() {
       expect(find.text("1 active"), findsNothing);
       // Their own permissions, settings, activity: to look at.
       expect(find.text("Permissions"), findsOneWidget);
-    });
-
-    test("the viewer's own permissions are the /init grants, under their switches", () {
-      addTearDown(PermissionsService().clear);
-      businessService.seed({"keys": ["id", "name"], "values": [["b-1", "One"]]});
-      PermissionsService().seed({"b-1": {
-        "business": {"view": true, "employees": {"view": true, "invite": true}},
-        "messages": {"view": true, "reply": true},
-        "pos": {"view": true, "sell": true, "cancel_ticket": true}
-      }});
-
-      final own = EmployeePermission.own();
-
-      expect(own[EmployeePermission.business], {PermissionAccess.view});
-      expect(own[EmployeePermission.businessEmployees], {PermissionAccess.view, PermissionAccess.create});
-      expect(own[EmployeePermission.messages], {PermissionAccess.view, PermissionAccess.edit});
-      expect(own[EmployeePermission.pos], {PermissionAccess.view, PermissionAccess.create, PermissionAccess.delete});
-      expect(own.containsKey(EmployeePermission.finance), isFalse);
-    });
-
-    testWidgets('a read-only matrix does not toggle', (tester) async {
-      tester.view.physicalSize = const Size(1600, 1000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
-      Map<EmployeePermission, Set<PermissionAccess>>? changed;
-
-      await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: const [S.delegate, GlobalWidgetsLocalizations.delegate, GlobalMaterialLocalizations.delegate],
-        supportedLocales: S.delegate.supportedLocales,
-        home: Builder(builder: (context) {
-          AppSize.instance(context);
-
-          return Scaffold(body: EmployeePermissions(
-            initial: const {EmployeePermission.business: {PermissionAccess.view}},
-            readOnly: true,
-            onChanged: (grants) => changed = grants
-          ));
-        })
-      ));
-      await tester.pump();
-
-      expect(find.byType(FeedbackButton), findsNothing);
-      expect(find.text("These are your permissions in this business. Only someone who manages the team can change them."), findsOneWidget);
-      expect(changed, isNull);
     });
 
     // Mounted directly, like the other modal tests: `showModal` picks the

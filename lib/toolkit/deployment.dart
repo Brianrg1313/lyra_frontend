@@ -30,6 +30,9 @@ import 'package:app/services/sales/sources/sales_lan_source.dart';
 import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/services/money/sources/money_cloud_source.dart';
 import 'package:app/services/money/sources/money_lan_source.dart';
+import 'package:app/services/permissions/sources/permissions_source.dart';
+import 'package:app/services/permissions/sources/permissions_cloud_source.dart';
+import 'package:app/services/permissions/sources/permissions_lan_source.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
 import 'package:app/toolkit/api.dart' show api;
 import 'package:app/services/database/database_service.dart';
@@ -159,6 +162,7 @@ abstract final class Sources {
   static PosSource get pos => _pick(const PosCloudSource(), () => PosLanSource(lanService));
   static SalesSource get sales => _pick(const SalesCloudSource(), () => SalesLanSource(lanService));
   static MoneySource get money => _pick(const MoneyCloudSource(), () => MoneyLanSource(lanService));
+  static PermissionsSource get permissions => _pick(const PermissionsCloudSource(), () => PermissionsLanSource(lanService));
 
   /// LAN sources arrive one domain per release (plan phase 4), over the one
   /// connection [lanService] holds. A domain without one yet is the cloud's in
