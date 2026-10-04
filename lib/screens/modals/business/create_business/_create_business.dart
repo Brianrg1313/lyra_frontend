@@ -112,13 +112,18 @@ class _CreateBusinessModalState extends State<CreateBusinessModal> {
 
   /// A country proposes the money it quotes in, until a currency is picked by hand. The currency
   /// is fixed from then on (B-5).
+  ///
+  /// The text is written here, in the tap, and not by the remounted field: in its `initState` the
+  /// field it replaces is still listening to the same controller, and a write there throws.
   void _proposeCurrency(SelectOption country) {
     if (_currencyPicked) return;
 
-    final currency = Catalogs.country(country.value)?["currency"] as String?;
+    final code = Catalogs.country(country.value)?["currency"] as String?;
+    final currency = _currencies.where((option) => option.value == code).firstOrNull;
     if (currency == null) return;
 
-    _currency.selectedValue = currency;
+    _currency.selectedValue = currency.value;
+    _currency.textController.text = currency.selection;
     setState(() => _currencyShown++);
   }
 
