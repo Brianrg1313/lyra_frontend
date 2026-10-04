@@ -12,7 +12,6 @@ backend, routes and theme. No UI.
     `aries` — conversation desk (`aries`, port 80). `scorpius` — maps (`scorpius`, port 80; tile routes public).
   - `mapTilesUrl(tileset, style)` — absolute `{z}/{x}/{y}{r}.png` template of a tileset's server-drawn tiles (`/scorpius/v1/raster`).
   - `apiOrigin` — scheme+host+port, to absolutize relative media paths.
-  - `cloudReachable()` — whether the backend answers at all (any status; a failed connection or 5 s is no); the sign in asks it first.
   - `useBusiness(String? id)` — sets the active business on `api`, `assets`, `aries`, `scorpius`, `sockets` (`business_id`
     header). Called only by `BusinessService`, which then calls `ConnectionService().rebind()`:
     the socket picks it up only in a new handshake.
@@ -43,7 +42,7 @@ backend, routes and theme. No UI.
 - `save_file.dart` — `saveFile` (bytes to a file the person keeps: a save dialog natively, a download in a browser).
 - `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` in headers **and**
   `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
-  Also `presenceSocket`: the backend's `/presence` namespace, no token (`tokenName: "Presence"`), reconnects within 2 s.
+  Also `presenceSocket`: the backend's `/presence` namespace, no token (`tokenName: "Presence"`), reconnects within 2 s; the only way the app knows the backend is there (`CloudPresence`).
 - `settings/routes.dart` — the route table. Home sections, business/finance/sales tabs are generated
   from their enums; all `/home/...` share `shell: Home.shell`. Fixed segments
   (`/home/connections/new`) go **before** their `:id` sibling. `/pos` is standalone.

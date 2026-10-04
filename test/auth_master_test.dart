@@ -8,6 +8,7 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/services/local_server/local_server_service.dart';
 import 'package:app/screens/authentication/_authentication.dart';
@@ -29,7 +30,7 @@ void main() {
     WidgetTester tester, {
     bool activation = false,
     bool online = false,
-    bool Function()? cloud,
+    CloudPresence? presence,
     LocalServerStatus engine = LocalServerStatus.unavailable
   }) async {
     tester.view.physicalSize = const Size(1600, 900);
@@ -51,7 +52,7 @@ void main() {
           AppSize.instance(context);
 
           return Authentication(resume: () async => "/login", scan: () => NetworkScanService(
-            cloud: () async => cloud?.call() ?? online,
+            presence: presence ?? _Presence(online),
             discover: () async => const [],
             engine: () async => engine
           ));
@@ -103,18 +104,18 @@ void main() {
   });
 
   testWidgets("the internet going away swaps the cloud's form for its master's, and back", (tester) async {
-    var online = true;
-    await pump(tester, cloud: () => online);
+    final presence = _Presence(true);
+    await pump(tester, presence: presence);
     expect(find.text(S.current.auth_title), findsOneWidget);
 
-    online = false;
-    await tester.pump(const Duration(seconds: 15));
+    presence.live.value = false;
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text(S.current.auth_master_title), findsOneWidget);
     expect(Deployment.mode, DeploymentMode.local);
 
-    online = true;
-    await tester.pump(const Duration(seconds: 15));
+    presence.live.value = true;
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text(S.current.auth_title), findsOneWidget);
     expect(Deployment.mode, DeploymentMode.cloud);
@@ -188,4 +189,17 @@ class _Master extends LanService {
     activations.add((login, code, password));
     return LanStatus.signedOut;
   }
+}
+
+/// The backend's socket, said by the test.
+class _Presence extends CloudPresence {
+  _Presence(bool live) {
+    this.live.value = live;
+  }
+
+  @override
+  void start() {}
+
+  @override
+  void stop() {}
 }

@@ -6,13 +6,13 @@ import 'package:flutter/foundation.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
-import 'package:app/toolkit/api.dart' show cloudReachable;
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/services/business/business_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
@@ -36,52 +36,36 @@ enum HybridJoin {
 /// Signing in online there opens the person's session on the master too ([join]), so it
 /// outlives the internet, the subscription and a restart; the app then runs `hybrid`: the
 /// master's domains always from the master, the cloud-only areas from the cloud while
-/// [CapabilityService.internet] holds, which this service keeps current by looking at the
-/// backend every [every] while it answers and every [retry] while it doesn't. The cloud's socket
-/// says it first: connecting proves the backend is there, and dropping makes it look right away
-/// instead of at the next turn (a socket also drops when its handshake is refused, so a drop is a
-/// reason to look, not an answer). "Work offline" ([workOffline]) is the same session without the
-/// cloud.
+/// [CapabilityService.internet] holds, which follows the backend's [CloudPresence] (its
+/// `/presence` socket) while a session lasts: connected, the areas open; dropped, they lock at
+/// once. Nothing asks the backend on a timer. "Work offline" ([workOffline]) is the same session
+/// without the cloud.
 ///
 /// It also links the master's company to its cloud company ([link], `business.md` B-30), which
 /// the cloud-only areas need to know which company they serve.
 ///
 /// A session opened on the master alone (signed in while the backend didn't answer) has no
 /// cloud session to go back to, so nothing would ever bring it online: while it lasts the
-/// backend is looked at too, and [canGoOnline] says when an online sign in would join it.
+/// presence is followed too, and [canGoOnline] says when an online sign in would join it.
 ///
 /// App-wide (`initial_builder.dart`), like the [LanService] it works over.
 class HybridService extends ChangeNotifier {
   HybridService({
     required LanService lan,
-    Future<bool> Function()? cloud,
-    ValueListenable<SocketStatus>? socket,
-    this.every = const Duration(seconds: 10),
-    this.retry = const Duration(seconds: 3),
+    required CloudPresence presence,
     this.wait = const Duration(seconds: 6)
-  }) : _lan = lan, _cloud = cloud ?? cloudReachable, _socket = socket ?? ConnectionService().listenable {
+  }) : _lan = lan, _presence = presence {
     _lan.addListener(_follow);
-    _socketWas = _socket.value;
-    _socket.addListener(_socketChanged);
+    _presence.live.addListener(_presenceChanged);
   }
 
   final LanService _lan;
-  final Future<bool> Function() _cloud;
 
-  /// The cloud's socket status (`ConnectionService.listenable`).
-  final ValueListenable<SocketStatus> _socket;
-  late SocketStatus _socketWas;
-
-  /// How often the backend is looked at while it answers.
-  final Duration every;
-
-  /// How often it is looked at while it doesn't: its return is what someone is waiting for.
-  final Duration retry;
+  /// The backend's `/presence` socket, open while a session is followed.
+  final CloudPresence _presence;
 
   /// How long the master gets to answer before the app goes on with the cloud alone.
   final Duration wait;
-
-  Timer? _watch;
 
   /// Whether this session was opened online too: only such a session goes back online.
   bool _joined = false;
@@ -159,7 +143,7 @@ class HybridService extends ChangeNotifier {
   void workOffline() {
     if (Deployment.mode != DeploymentMode.hybrid) return;
 
-    _stopWatching();
+    _unwatch();
     Deployment.offline();
     ConnectionService().close();
     CapabilityService().modeChanged();
@@ -176,7 +160,7 @@ class HybridService extends ChangeNotifier {
   /// The session ended (sign out): nothing is watched until the next one, and the sign in page
   /// picks the mode again from the network.
   void stop() {
-    _stopWatching();
+    _unwatch();
     _joined = false;
     _backendAnswers = false;
     _offeredOnline = false;
@@ -299,71 +283,58 @@ class HybridService extends ChangeNotifier {
     _backendAnswers = false;
     Deployment.hybrid();
     CapabilityService().modeChanged();
-    _watchNow();
+    _watch();
     notifyListeners();
   }
 
-  /// Whether a look at the backend is running or scheduled.
+  /// Whether a session follows the presence.
   bool _watching = false;
 
-  /// Bumped by [_stopWatching]: a look that was on its way when watching stopped or restarted
-  /// neither writes its answer nor schedules the next one.
-  int _turn = 0;
-
-  /// Looks now, and from there on at [every] or [retry] ([_look] schedules the next turn).
-  void _watchNow() {
-    _stopWatching();
+  void _watch() {
     _watching = true;
-    unawaited(_look());
+    _presence.start();
+    _apply();
   }
 
-  /// One look at the backend for whichever session is watched: `hybrid` (the cloud-only areas
-  /// lock and open with it) or one on the master alone ([canGoOnline]).
-  Future<void> _look() async {
-    final turn = _turn;
-    final reachable = await _cloud();
-    if (turn != _turn) return;
+  /// Before [CloudPresence.stop], whose `live` going null then finds nothing watched.
+  void _unwatch() {
+    _watching = false;
+    _presence.stop();
+  }
+
+  void _presenceChanged() {
+    if (_watching) _apply();
+  }
+
+  /// What the presence says, for whichever session is followed: `hybrid` (the cloud-only areas
+  /// lock and open with it) or one on the master alone ([canGoOnline]). No answer yet changes
+  /// nothing.
+  void _apply() {
+    final live = _presence.live.value;
+    if (live == null) return;
 
     if (_joined && Deployment.mode == DeploymentMode.hybrid) {
-      final returned = reachable && !CapabilityService().internet;
-      CapabilityService().internet = reachable;
+      final returned = live && !CapabilityService().internet;
+      CapabilityService().internet = live;
 
       if (returned) unawaited(ConnectionService().open());
     } else if (masterOnly) {
-      if (reachable != _backendAnswers) {
-        _backendAnswers = reachable;
+      if (live != _backendAnswers) {
+        _backendAnswers = live;
         notifyListeners();
       }
     } else {
-      return _stopWatching();
-    }
-
-    _watch = Timer(reachable ? every : retry, () => unawaited(_look()));
-  }
-
-  /// The cloud's socket in `hybrid`: connected, the backend is there; dropped from connected,
-  /// it is looked at now rather than at the next turn.
-  void _socketChanged() {
-    final was = _socketWas;
-    final now = _socket.value;
-    _socketWas = now;
-
-    if (!_joined || Deployment.mode != DeploymentMode.hybrid) return;
-
-    if (now == SocketStatus.connected) {
-      CapabilityService().internet = true;
-    } else if (was == SocketStatus.connected && (now == SocketStatus.reconnecting || now == SocketStatus.disconnected)) {
-      _watchNow();
+      _unwatch();
     }
   }
 
-  /// The master's connection changed: a session on it alone starts looking at the backend, and
+  /// The master's connection changed: a session on it alone starts following the presence, and
   /// stops when it ends (signed out, the master lost) or joins.
   void _follow() {
     if (_joined) return;
 
     if (!masterOnly) {
-      _stopWatching();
+      if (_watching) _unwatch();
       if (_backendAnswers) {
         _backendAnswers = false;
         notifyListeners();
@@ -371,21 +342,14 @@ class HybridService extends ChangeNotifier {
       return;
     }
 
-    if (!_watching) _watchNow();
-  }
-
-  void _stopWatching() {
-    _turn++;
-    _watching = false;
-    _watch?.cancel();
-    _watch = null;
+    if (!_watching) _watch();
   }
 
   @override
   void dispose() {
     _lan.removeListener(_follow);
-    _socket.removeListener(_socketChanged);
-    _stopWatching();
+    _presence.live.removeListener(_presenceChanged);
+    _unwatch();
     super.dispose();
   }
 }

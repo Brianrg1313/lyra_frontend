@@ -1,12 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:core/core.dart';
-import 'package:core/socket.dart' show SocketStatus;
 import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_service.dart';
@@ -23,8 +22,7 @@ void main() {
     CapabilityService().linked = true;
   });
 
-  HybridService service(_Master master, {bool online = true}) =>
-    HybridService(lan: master, cloud: () async => online, every: const Duration(hours: 1));
+  HybridService service(_Master master) => HybridService(lan: master, presence: _Presence(true));
 
   group('join', () {
     test('a password sign in opens the master with the same password and runs hybrid', () async {
@@ -114,44 +112,54 @@ void main() {
     hybrid.dispose();
   });
 
-  test('the internet going and coming back locks and opens the cloud areas in place', () async {
-    var online = false;
-    final hybrid = HybridService(
-      lan: _Master(signedInAs: "ada@lyra.app"),
-      cloud: () async => online,
-      every: const Duration(hours: 1),
-      retry: const Duration(milliseconds: 10)
-    );
+  test('the internet going and coming back locks and opens the cloud areas in place, at once', () async {
+    final presence = _Presence(false);
+    final hybrid = HybridService(lan: _Master(signedInAs: "ada@lyra.app"), presence: presence);
     await hybrid.resume();
-    await Future<void>.delayed(const Duration(milliseconds: 30));
 
+    expect(presence.started, isTrue);
     expect(CapabilityService().internet, isFalse);
     expect(CapabilityService().of("messages"), Capability.needsInternet);
     expect(Deployment.mode, DeploymentMode.hybrid);
 
-    online = true;
-    await Future<void>.delayed(const Duration(milliseconds: 30));
+    presence.live.value = true;
     expect(CapabilityService().shows("messages"), isTrue);
 
+    presence.live.value = false;
+    expect(CapabilityService().of("messages"), Capability.needsInternet);
+
     hybrid.stop();
+    expect(presence.started, isFalse);
     expect(Deployment.mode, DeploymentMode.cloud);
     hybrid.dispose();
   });
 
-  test('a session on the master alone looks at the backend and goes online with a sign in', () async {
+  test('before the socket answers, the cloud areas stay as they were', () async {
+    final presence = _Presence();
+    final hybrid = HybridService(lan: _Master(signedInAs: "ada@lyra.app"), presence: presence);
+    await hybrid.resume();
+
+    expect(CapabilityService().internet, isTrue);
+
+    presence.live.value = false;
+    expect(CapabilityService().internet, isFalse);
+    hybrid.stop();
+    hybrid.dispose();
+  });
+
+  test('a session on the master alone follows the backend and goes online with a sign in', () async {
     Deployment.use(DeploymentMode.local, role: DeploymentRole.client);
-    var online = false;
+    final presence = _Presence(false);
     final master = _Master(signedInAs: "ada@lyra.app");
-    final hybrid = HybridService(lan: master, cloud: () async => online, retry: const Duration(milliseconds: 10));
+    final hybrid = HybridService(lan: master, presence: presence);
     await master.open();
     master.changed();
-    await Future<void>.delayed(const Duration(milliseconds: 30));
 
+    expect(presence.started, isTrue);
     expect(hybrid.masterOnly, isTrue);
     expect(hybrid.canGoOnline, isFalse);
 
-    online = true;
-    await Future<void>.delayed(const Duration(milliseconds: 30));
+    presence.live.value = true;
     expect(hybrid.canGoOnline, isTrue);
     // The home opens the online sign in by itself once; after that it waits to be asked.
     expect(hybrid.shouldOfferOnline, isTrue);
@@ -162,10 +170,10 @@ void main() {
     await master.signOut();
     master.changed();
     expect(hybrid.canGoOnline, isFalse);
+    expect(presence.started, isFalse);
 
     await master.signIn("ada@lyra.app", "correct horse battery");
     master.changed();
-    await Future<void>.delayed(const Duration(milliseconds: 30));
     expect(hybrid.canGoOnline, isTrue);
 
     expect(await hybrid.join("ada@lyra.app"), HybridJoin.joined);
@@ -173,35 +181,6 @@ void main() {
     expect(hybrid.canGoOnline, isFalse);
     hybrid.stop();
     hybrid.dispose();
-  });
-
-  test("the cloud's socket says it first: a drop looks at once, connecting opens the areas", () async {
-    var online = true;
-    final socket = ValueNotifier(SocketStatus.connected);
-    final hybrid = HybridService(
-      lan: _Master(signedInAs: "ada@lyra.app"),
-      cloud: () async => online,
-      socket: socket,
-      every: const Duration(hours: 1),
-      retry: const Duration(hours: 1)
-    );
-    await hybrid.resume();
-    await Future<void>.delayed(Duration.zero);
-    expect(CapabilityService().internet, isTrue);
-
-    // No turn is due for an hour: only the drop makes it look.
-    online = false;
-    socket.value = SocketStatus.reconnecting;
-    await Future<void>.delayed(Duration.zero);
-    expect(CapabilityService().internet, isFalse);
-    expect(CapabilityService().of("messages"), Capability.needsInternet);
-
-    socket.value = SocketStatus.connected;
-    expect(CapabilityService().shows("messages"), isTrue);
-
-    hybrid.stop();
-    hybrid.dispose();
-    socket.dispose();
   });
 
   test('a company not joined with its company online locks the cloud areas with their own reason', () {
@@ -278,4 +257,19 @@ class _Master extends LanService {
     Ops.sessionBootstrap => {"client": {"email": signedInAs, "username": "ada"}},
     _ => null
   };
+}
+
+/// The backend's socket, said by the test: [live] null until it answers.
+class _Presence extends CloudPresence {
+  _Presence([bool? live]) {
+    this.live.value = live;
+  }
+
+  bool started = false;
+
+  @override
+  void start() => started = true;
+
+  @override
+  void stop() => started = false;
 }

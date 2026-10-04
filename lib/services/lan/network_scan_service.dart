@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 // SERVICES
-import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/lan.dart';
 import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/local_server/local_server_service.dart';
@@ -24,33 +23,29 @@ enum NetworkReach {
 }
 
 /// Looks at the network a device without a pairing is on (plan §5.2, §7.4): whether the backend
-/// answers ([cloudReachable]) and which masters advertise `_lyra._tcp` on the LAN
-/// ([discoverMasters]), both at once. Every master answers mDNS while its engine runs, so a new
-/// device finds it without being told where it is.
+/// is there (its [CloudPresence], the `/presence` socket: nothing asks it on a timer) and which
+/// masters advertise `_lyra._tcp` on the LAN ([discoverMasters]). Every master answers mDNS while
+/// its engine runs, so a new device finds it without being told where it is.
 ///
-/// [watch] looks again every [every], both ways: a master switched on, the internet coming back or
-/// going away changes the sign in by itself. With a [CloudPresence] the backend is followed live
-/// instead of every [every]: its socket connecting is [NetworkReach.online] at once, and its drop
-/// looks at once. [hold] stops all of that while the person is doing something the change would
-/// interrupt.
+/// [watch] follows the presence (connected is [NetworkReach.online] at once, a drop the LAN's
+/// answer at once) and looks at the LAN again every [every] while offline: a master switched on
+/// changes the sign in by itself. [hold] stops all of that while the person is doing something the
+/// change would interrupt.
 ///
 /// Flow-scoped: the sign in provides it.
 class NetworkScanService extends ChangeNotifier {
   NetworkScanService({
-    Future<bool> Function()? cloud,
+    required CloudPresence presence,
     Future<List<LanFound>> Function()? discover,
     Future<LocalServerStatus> Function()? engine,
-    CloudPresence? presence,
     this.every = const Duration(seconds: 15),
   }) : _presence = presence,
-       _cloud = cloud ?? cloudReachable,
        _discover = discover ?? discoverMasters,
        _engine = engine ?? _engineHere;
 
-  final Future<bool> Function() _cloud;
   final Future<List<LanFound>> Function() _discover;
   final Future<LocalServerStatus> Function() _engine;
-  final CloudPresence? _presence;
+  final CloudPresence _presence;
   final Duration every;
 
   NetworkReach _reach = NetworkReach.searching;
@@ -81,10 +76,11 @@ class NetworkScanService extends ChangeNotifier {
   bool _again = false;
   bool _disposed = false;
 
-  bool get _live => _presence?.live.value ?? false;
+  /// Whether the LAN has been looked at once: offline, the sign in waits for it.
+  bool _lanSeen = false;
 
-  /// Looks once. The answer stays on the last one while it looks again, so the page doesn't
-  /// flicker through a loader every [every].
+  /// Looks at the LAN and this computer's engine once. The answer stays on the last one while it
+  /// looks again, so the page doesn't flicker through a loader every [every].
   Future<void> scan() async {
     if (_looking) {
       _again = true;
@@ -94,8 +90,7 @@ class NetworkScanService extends ChangeNotifier {
     _again = false;
 
     try {
-      final (online, masters, engine) = await (
-        _cloud(),
+      final (masters, engine) = await (
         _discover().catchError((Object _) => const <LanFound>[]),
         _engine().catchError((Object _) => LocalServerStatus.unavailable)
       ).wait;
@@ -104,9 +99,8 @@ class NetworkScanService extends ChangeNotifier {
 
       _masters = masters;
       _engineStatus = engine;
-      // The socket connecting while the HTTP question was out is the newer answer.
-      _reach = online || _live ? NetworkReach.online : masters.isNotEmpty ? NetworkReach.master : NetworkReach.none;
-      notifyListeners();
+      _lanSeen = true;
+      _resolve(force: true);
     } finally {
       _looking = false;
     }
@@ -114,45 +108,47 @@ class NetworkScanService extends ChangeNotifier {
     if (_again && !_disposed) await scan();
   }
 
-  /// Looks now, then every [every] for as long as the page lives.
+  /// The reach from the presence and the last look at the LAN: searching until the socket has
+  /// answered, and offline until the LAN has too.
+  void _resolve({bool force = false}) {
+    final live = _presence.live.value;
+    final reach = live == true
+      ? NetworkReach.online
+      : live == null || !_lanSeen
+        ? NetworkReach.searching
+        : _masters.isNotEmpty ? NetworkReach.master : NetworkReach.none;
+
+    if (reach == _reach && !force) return;
+    _reach = reach;
+    notifyListeners();
+  }
+
+  /// Follows the presence and looks at the LAN now, then every [every] while offline, for as long
+  /// as the page lives.
   Future<void> watch() async {
     _timer?.cancel();
     _timer = Timer.periodic(every, (_) => _tick());
-    _presence?.live.addListener(_presenceChanged);
-    _presence?.start();
+    _presence.live.addListener(_presenceChanged);
+    _presence.start();
 
     await scan();
   }
 
-  /// While online only the backend is asked (no mDNS every tick); a miss looks at everything,
-  /// which asks the backend once more, so one dropped request doesn't take the cloud's form away.
+  /// Online, the LAN doesn't change the sign in: only offline is it looked at again.
   Future<void> _tick() async {
-    if (_held || _looking) return;
-    if (_reach != NetworkReach.online) return scan();
+    if (_held || _looking || _reach == NetworkReach.online) return;
 
-    _looking = true;
-    final bool online;
-    try {
-      online = await _cloud();
-    } finally {
-      _looking = false;
-    }
-
-    if (!online && !_held && !_disposed) await scan();
+    await scan();
   }
 
-  /// The socket connected: online now, the masters as last seen. It dropped: a full look now,
-  /// whose HTTP question decides, since a backend without `/presence` never connects it.
+  /// The socket connected: online now, the masters as last seen. It dropped: offline now from
+  /// the last look at the LAN, and a new look at once, so the offline sign in it picks is current.
   void _presenceChanged() {
     if (_held || _disposed) return;
 
-    if (_live) {
-      if (_reach == NetworkReach.online) return;
-      _reach = NetworkReach.online;
-      notifyListeners();
-    } else if (_reach == NetworkReach.online) {
-      scan();
-    }
+    final dropped = _reach == NetworkReach.online && _presence.live.value == false;
+    _resolve();
+    if (dropped) unawaited(scan());
   }
 
   /// Stops looking while [held]: a sign in or a setup under way keeps the page it started on.
@@ -166,8 +162,8 @@ class NetworkScanService extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _timer?.cancel();
-    _presence?.live.removeListener(_presenceChanged);
-    _presence?.stop();
+    _presence.live.removeListener(_presenceChanged);
+    _presence.stop();
     super.dispose();
   }
 

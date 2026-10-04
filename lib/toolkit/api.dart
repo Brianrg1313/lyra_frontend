@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:http/http.dart' as http;
 import 'package:core/api.dart';
 
 // SERVICES
@@ -61,19 +60,6 @@ String get apiOrigin {
     (api.scheme == "https" && port == 443);
 
   return "${api.scheme}://${api.host}${implied ? "" : ":$port"}";
-}
-
-/// Whether our backend answers at all: any HTTP status counts, only a failed connection or
-/// [timeout] does not. "Online" means our backend, not the internet at large, so it is asked
-/// directly instead of a third party. The path is the api's own prefix, which the backend's CORS
-/// answers like any route, so a browser reads the reply too.
-Future<bool> cloudReachable({Duration timeout = const Duration(seconds: 5)}) async {
-  try {
-    await http.get(Uri.parse("$apiOrigin/${api.current.name}/v1/")).timeout(timeout);
-    return true;
-  } on Object {
-    return false;
-  }
 }
 
 /// Sets the active business on both apis and on the socket, or clears it when

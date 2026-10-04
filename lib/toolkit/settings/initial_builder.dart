@@ -6,6 +6,7 @@ import 'package:app/services/home/home_service.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
@@ -40,7 +41,7 @@ final lanService = LanService();
 
 /// Single instance of the one session over the cloud and a master (plan §9.6): the sign in
 /// opens it, the server section switches it, the boot flow resumes it.
-final hybridService = HybridService(lan: lanService);
+final hybridService = HybridService(lan: lanService, presence: CloudPresence());
 
 // Wraps the whole app before it is handed to MaterialApp.
 //

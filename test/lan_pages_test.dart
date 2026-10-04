@@ -9,6 +9,7 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/lan/hybrid_service.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_pairing_service.dart';
 import 'package:app/services/lan/lan_service.dart';
@@ -51,7 +52,7 @@ void main() {
 
         return MultiProvider(providers: [
           ChangeNotifierProvider.value(value: lan),
-          ChangeNotifierProvider(create: (_) => HybridService(lan: lan, cloud: () async => true)),
+          ChangeNotifierProvider(create: (_) => HybridService(lan: lan, presence: _Presence(true))),
           ChangeNotifierProvider(create: (_) => LanPairingService(
             store: MemoryLanIdentityStore(),
             discover: () async => const [],
@@ -260,4 +261,17 @@ class _NoNode implements NodeCommands {
 
   @override
   Future<void> spawn({String? passphrase}) async {}
+}
+
+/// The backend's socket, said by the test.
+class _Presence extends CloudPresence {
+  _Presence(bool live) {
+    this.live.value = live;
+  }
+
+  @override
+  void start() {}
+
+  @override
+  void stop() {}
 }

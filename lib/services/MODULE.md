@@ -56,17 +56,16 @@ Reached through `LanService.server` (the `lan/` services own it).
   `pair` (code exchange with a fresh key; the device becomes a `local` client), `pairScanned` (a QR: its token, each of its
   addresses until one answers), `pairWithPassword` (the sign in's: login and password are the secret, Argon2id in an
   isolate; `locked` for a locked account).
-- `network_scan_service.dart` — `NetworkScanService` (+ `NetworkReach`), flow-scoped (the sign in): `scan` asks
-  `cloudReachable` and `discoverMasters` at once and this computer's engine status: `canHost` (present, not set up), `masterHere` (set up);
-  online > master > none; `watch` looks again every 15 s for the page's life (online, the backend alone; a miss, a full look), and with a `CloudPresence` follows the backend live (connected → online at once, a drop → a full look at once); `hold` pauses it all.
+- `network_scan_service.dart` — `NetworkScanService` (+ `NetworkReach`), flow-scoped (the sign in): the backend only from its `CloudPresence`
+  (no HTTP, no timer: connected → online at once, a drop → offline at once and a LAN look); `scan` asks `discoverMasters` and this computer's engine status: `canHost` (present, not set up), `masterHere` (set up);
+  online > master > none, `searching` until the socket and the LAN have answered; `watch` looks at the LAN again every 15 s while offline; `hold` pauses it all.
 - `hybrid_service.dart` — `HybridService` (+ `HybridJoin`), app-wide (`hybridService`), plan §9.6: `join(login,
   password?)` after an online sign in on a paired device (the master's session too → `hybrid`; another person's kept
   session signed out first; `needsPassword` → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
   master keeps the session), `adopt` (a master just made from the cloud), `workOffline` / `workOnline` (session kept),
-  `stop` (sign out), the internet watcher (`cloudReachable` every 10 s while it answers, every 3 s while it doesn't →
-  `CapabilityService.internet`, the socket reopened when it returns; the cloud socket connecting opens the areas at once,
-  dropping from connected looks at once); a session on the master alone (`masterOnly`, followed from `LanService`) looks at the backend
-  too, at the same pace, and `canGoOnline` says when an online sign in would join it (`shouldOfferOnline` / `offeredOnline`: offered by itself once per session); the link: `shouldAskLink`, `linkCandidates` (cloud companies with
+  `stop` (sign out), the internet from its `CloudPresence` alone, no timer (connected/dropped →
+  `CapabilityService.internet` at once, the cloud socket reopened when it returns; no answer yet changes nothing); a session on the master alone (`masterOnly`, followed from `LanService`) follows it
+  too, and `canGoOnline` says when an online sign in would join it (`shouldOfferOnline` / `offeredOnline`: offered by itself once per session); the link: `shouldAskLink`, `linkCandidates` (cloud companies with
   `business.settings.edit`, the master's name first), `link` (`business.link`), `declineLink`; `companyFrom(profile,
   cloudId)` (the setup's company from the cloud profile, as the engine's catalogues take it).
 
@@ -180,7 +179,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 
 ## connection/ — the realtime link (singular)
 
-- `cloud_presence.dart` — `CloudPresence`: `presenceSocket` (backend `/presence`, no session) open while the sign in lives; `live` = connected and `alive` answered within 2 s, asked every 2 s.
+- `cloud_presence.dart` — `CloudPresence`: `presenceSocket` (backend `/presence`, no session) open while the sign in or a `HybridService` session holds one (the socket shared, closed with the last); `live` null until the first answer, then connected or not; socket.io reconnects on its own.
 - `connection_service.dart` — `ConnectionService`: owns the `sockets` lifecycle and status; `open` does nothing in
   `local` (in `hybrid` the cloud's socket runs beside the master's stream). `on(event)` listens to the cloud's socket and to the master's stream alike (`receive`, fed by `LanService`;
   `resync` fires `onRestored`); `once`/`off`/`stream` are cloud only.

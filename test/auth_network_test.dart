@@ -18,8 +18,9 @@ import 'package:app/services/local_server/local_server_service.dart';
 import 'package:app/screens/authentication/_authentication.dart';
 import 'package:app/screens/authentication/auth_lan.dart';
 
-/// The sign in follows the network (plan §7.4): the backend answers → the cloud's form as always;
-/// it doesn't but a master is on the LAN → that master's sign in; neither → "create master
+/// The sign in follows the network (plan §7.4): the backend's `/presence` socket is connected →
+/// the cloud's form as always;
+/// it isn't but a master is on the LAN → that master's sign in; neither → "create master
 /// server" where this computer can be one, a placeholder where it can't. Pumped wide: the test
 /// font's square glyphs overflow the auth footer's links at a narrower window.
 void main() {
@@ -58,17 +59,17 @@ void main() {
 
   Future<void> pumpGate(
     WidgetTester tester, {
-    Future<bool> Function()? cloud,
+    _Presence? presence,
     List<LanFound> masters = const [],
     LocalServerStatus engine = LocalServerStatus.unavailable,
   }) => pump(tester, () => Authentication(resume: () async => "/login", scan: () => NetworkScanService(
-    cloud: cloud ?? () async => false,
+    presence: presence ?? _Presence(false),
     discover: () async => masters,
     engine: () async => engine
   )));
 
   testWidgets('with the backend answering, the sign in as always, even with a master around', (tester) async {
-    await pumpGate(tester, cloud: () async => true, masters: [found], engine: LocalServerStatus.notSetUp);
+    await pumpGate(tester, presence: _Presence(true), masters: [found], engine: LocalServerStatus.notSetUp);
 
     expect(tester.takeException(), isNull);
     expect(find.text(S.current.auth_title), findsOneWidget);
@@ -155,18 +156,19 @@ void main() {
   });
 
   testWidgets('the internet going away swaps the cloud form for the offline one, and back', (tester) async {
-    var online = true;
-    await pumpGate(tester, cloud: () async => online, masters: [found], engine: LocalServerStatus.notSetUp);
+    final presence = _Presence(true);
+    await pumpGate(tester, presence: presence, masters: [found], engine: LocalServerStatus.notSetUp);
     expect(find.text(S.current.auth_title), findsOneWidget);
 
-    online = false;
-    await tester.pump(const Duration(seconds: 15));
+    // At once: no timer to wait for.
+    presence.live.value = false;
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text(S.current.auth_title), findsNothing);
     expect(find.text(S.current.auth_lan_title), findsOneWidget);
 
-    online = true;
-    await tester.pump(const Duration(seconds: 15));
+    presence.live.value = true;
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text(S.current.auth_title), findsOneWidget);
     expect(find.text(S.current.auth_lan_title), findsNothing);
@@ -180,7 +182,7 @@ void main() {
         tries++;
         return answer.future;
       },
-      scan: () => NetworkScanService(cloud: () async => true, discover: () async => const [], engine: () async => LocalServerStatus.unavailable)
+      scan: () => NetworkScanService(presence: _Presence(true), discover: () async => const [], engine: () async => LocalServerStatus.unavailable)
     ));
 
     expect(tries, 1);
@@ -195,29 +197,31 @@ void main() {
   });
 
   testWidgets('where no master can run (web, phones), the placeholder; "try again" looks once more', (tester) async {
-    final answers = <Completer<bool>>[];
+    final presence = _Presence();
+    var looks = 0;
     await pump(tester, () => Authentication(resume: () async => "/login", scan: () => NetworkScanService(
-      cloud: () {
-        answers.add(Completer());
-        return answers.last.future;
+      presence: presence,
+      discover: () async {
+        looks++;
+        return const [];
       },
-      discover: () async => const [],
       engine: () async => LocalServerStatus.unavailable
     )));
 
+    // The socket hasn't answered yet.
     expect(find.text(S.current.auth_title), findsNothing);
     expect(find.text(S.current.auth_offline_title), findsNothing);
 
-    answers.last.complete(false);
+    presence.live.value = false;
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text(S.current.auth_offline_title), findsOneWidget);
 
     await tester.tap(find.text(S.current.auth_offline_retry));
     await tester.pump();
-    expect(answers, hasLength(2));
+    expect(looks, 2);
 
-    answers.last.complete(true);
+    presence.live.value = true;
     await tester.pump();
     // The stored session is tried first (none here), then the form.
     await tester.pump();
@@ -228,7 +232,7 @@ void main() {
   group('signing in to a master', () {
     Future<void> pumpLan(WidgetTester tester, _Pairing pairing, {List<LanFound> masters = const [found], VoidCallback? enter}) =>
       pump(tester, () => ChangeNotifierProvider(
-        create: (_) => NetworkScanService(cloud: () async => false, discover: () async => masters, engine: () async => LocalServerStatus.unavailable),
+        create: (_) => NetworkScanService(presence: _Presence(false), discover: () async => masters, engine: () async => LocalServerStatus.unavailable),
         child: Material(child: AuthLan(masters: masters, onCreate: (_, _) {}, pairing: pairing, enter: enter))
       ));
 
@@ -270,12 +274,12 @@ void main() {
 
   group('the scan', () {
     test('the backend wins over a master; a master over nothing', () async {
-      for (final (cloud, masters, reach) in [
+      for (final (live, masters, reach) in [
         (true, [found], NetworkReach.online),
         (false, [found], NetworkReach.master),
         (false, <LanFound>[], NetworkReach.none),
       ]) {
-        final scan = NetworkScanService(cloud: () async => cloud, discover: () async => masters, engine: () async => LocalServerStatus.notSetUp);
+        final scan = NetworkScanService(presence: _Presence(live), discover: () async => masters, engine: () async => LocalServerStatus.notSetUp);
 
         expect(scan.reach, NetworkReach.searching);
         await scan.scan();
@@ -284,9 +288,21 @@ void main() {
       }
     });
 
+    test('searching until the socket has answered', () async {
+      final presence = _Presence();
+      final scan = NetworkScanService(presence: presence, discover: () async => const [found], engine: () async => LocalServerStatus.unavailable);
+
+      await scan.watch();
+      expect(scan.reach, NetworkReach.searching);
+
+      presence.live.value = false;
+      expect(scan.reach, NetworkReach.master);
+      scan.dispose();
+    });
+
     test('a discovery or engine check that fails counts as nothing found', () async {
       final scan = NetworkScanService(
-        cloud: () async => false,
+        presence: _Presence(false),
         discover: () => Future.error(StateError("no multicast")),
         engine: () => Future.error(StateError("no engine"))
       );
@@ -297,16 +313,16 @@ void main() {
       scan.dispose();
     });
 
-    test('it keeps looking, except while held', () {
+    test('offline it looks at the LAN again, except while held; online it never does', () {
       fakeAsync((async) {
         var looks = 0;
-        var online = false;
+        final presence = _Presence(false);
         final scan = NetworkScanService(
-          cloud: () async {
+          presence: presence,
+          discover: () async {
             looks++;
-            return online;
+            return const [];
           },
-          discover: () async => const [],
           engine: () async => LocalServerStatus.unavailable,
           every: const Duration(seconds: 15)
         );
@@ -323,29 +339,26 @@ void main() {
         expect(looks, 2);
 
         scan.hold(false);
-        online = true;
-        async.elapse(const Duration(seconds: 15));
-        expect((looks, scan.reach), (3, NetworkReach.online));
+        presence.live.value = true;
+        expect(scan.reach, NetworkReach.online);
 
         async.elapse(const Duration(minutes: 1));
-        expect((looks, scan.reach), (7, NetworkReach.online));
+        expect((looks, scan.reach), (2, NetworkReach.online));
         scan.dispose();
       });
     });
 
-    test("the backend's socket says it at once: connecting is online, a drop looks now", () {
+    test("the backend's socket says it at once: connecting is online, a drop is offline and looks at the LAN now", () {
       fakeAsync((async) {
-        var online = false;
-        var clouds = 0;
-        final presence = _Presence();
+        var looks = 0;
+        final presence = _Presence(false);
         final scan = NetworkScanService(
-          cloud: () async {
-            clouds++;
-            return online;
-          },
-          discover: () async => const [found],
-          engine: () async => LocalServerStatus.unavailable,
           presence: presence,
+          discover: () async {
+            looks++;
+            return const [found];
+          },
+          engine: () async => LocalServerStatus.unavailable,
           every: const Duration(minutes: 1)
         );
 
@@ -353,14 +366,13 @@ void main() {
         async.flushMicrotasks();
         expect((presence.started, scan.reach), (true, NetworkReach.master));
 
-        online = true;
         presence.live.value = true;
         expect(scan.reach, NetworkReach.online);
 
-        online = false;
         presence.live.value = false;
+        expect(scan.reach, NetworkReach.master);
         async.flushMicrotasks();
-        expect((clouds, scan.reach), (2, NetworkReach.master));
+        expect(looks, 2);
 
         // A sign in under way keeps its page; released, what the socket said counts.
         scan.hold(true);
@@ -371,60 +383,6 @@ void main() {
 
         scan.dispose();
         expect(presence.started, false);
-      });
-    });
-
-    test('a look under way when the socket connects does not take online back', () {
-      fakeAsync((async) {
-        final answer = Completer<bool>();
-        final presence = _Presence();
-        final scan = NetworkScanService(
-          cloud: () => answer.future,
-          discover: () async => const [],
-          engine: () async => LocalServerStatus.unavailable,
-          presence: presence
-        );
-
-        scan.watch();
-        presence.live.value = true;
-        answer.complete(false);
-        async.flushMicrotasks();
-        expect(scan.reach, NetworkReach.online);
-        scan.dispose();
-      });
-    });
-
-    test('online it asks only the backend; a miss looks at everything before leaving it', () {
-      fakeAsync((async) {
-        var clouds = 0;
-        var discovers = 0;
-        var online = true;
-        final scan = NetworkScanService(
-          cloud: () async {
-            clouds++;
-            return online;
-          },
-          discover: () async {
-            discovers++;
-            return const [found];
-          },
-          engine: () async => LocalServerStatus.unavailable,
-          every: const Duration(seconds: 15)
-        );
-
-        scan.watch();
-        async.elapse(const Duration(seconds: 30));
-        expect((clouds, discovers, scan.reach), (3, 1, NetworkReach.online));
-
-        online = false;
-        async.elapse(const Duration(seconds: 15));
-        // The tick's miss, then the full look's own question.
-        expect((clouds, discovers, scan.reach), (5, 2, NetworkReach.master));
-
-        online = true;
-        async.elapse(const Duration(seconds: 15));
-        expect((clouds, discovers, scan.reach), (6, 3, NetworkReach.online));
-        scan.dispose();
       });
     });
   });
@@ -450,8 +408,12 @@ class _Pairing extends LanPairingService {
   }
 }
 
-/// The backend's socket, said by the test.
+/// The backend's socket, said by the test: [live] null until it answers.
 class _Presence extends CloudPresence {
+  _Presence([bool? live]) {
+    this.live.value = live;
+  }
+
   bool started = false;
 
   @override

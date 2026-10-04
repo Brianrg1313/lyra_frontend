@@ -12,7 +12,7 @@ import 'package:app/services/preferences/preferences_service.dart';
 /// master (signing in is `/login`); a browser on a master's page that isn't paired yet can only
 /// pair; a paired device signed in online enters `hybrid` when its master takes the session
 /// (`HybridService.resume`); everything else is today's cloud path, whose sign in waits for the
-/// backend to answer (`cloudReachable`) and offers the master's when it doesn't.
+/// backend's `/presence` socket (`CloudPresence`) and offers the master's when it doesn't connect.
 Future<String?> initialValidator() async {
   if (Deployment.mode != DeploymentMode.cloud) return "/lan";
 
