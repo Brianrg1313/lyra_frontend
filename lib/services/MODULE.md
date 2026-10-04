@@ -65,8 +65,9 @@ Reached through `LanService.server` (the `lan/` services own it).
   master keeps the session), `adopt` (a master just made from the cloud), `workOffline` / `workOnline` (session kept),
   `stop` (sign out), the internet from its `CloudPresence` alone, no timer (connected/dropped →
   `CapabilityService.internet` at once, the cloud socket reopened when it returns; no answer yet changes nothing); a session on the master alone (`masterOnly`, followed from `LanService`) follows it
-  too, and `canGoOnline` says when an online sign in would join it (`shouldOfferOnline` / `offeredOnline`: offered by itself once per session); the link: `shouldAskLink`, `linkCandidates` (cloud companies with
-  `business.settings.edit`, the master's name first), `link` (`business.link`), `declineLink`; `companyFrom(profile,
+  too, and `canGoOnline` says when an online sign in would join it (`shouldOfferOnline` / `offeredOnline`: offered by itself once per session); the link: `shouldAskLink` (once a session, `askedLink`), `linkCandidates` (cloud companies with
+  `business.settings.edit`, the master's name first), `link` (`business.link`), `createOnline` (none to join: the master's company
+  made online from its profile, `cloudCompanyFrom`, then linked), `declineLink`; `companyFrom(profile,
   cloudId)` (the setup's company from the cloud profile, as the engine's catalogues take it).
 
 ## capabilities/
@@ -179,9 +180,9 @@ Reached through `LanService.server` (the `lan/` services own it).
 
 ## connection/ — the realtime link (singular)
 
-- `cloud_presence.dart` — `CloudPresence`: `presenceSocket` (backend `/presence`, no session) open while the sign in or a `HybridService` session holds one (the socket shared, closed with the last); `live` null until the first answer, then connected or not; socket.io reconnects on its own.
+- `cloud_presence.dart` — `CloudPresence`: `presenceSocket` (backend `/presence`, no session) open while the sign in or a `HybridService` session holds one (the socket shared, closed with the last); `live` null until the first answer, then connected or not (the first holder ignores the status the last one left); socket.io reconnects on its own.
 - `connection_service.dart` — `ConnectionService`: owns the `sockets` lifecycle and status; `open` does nothing in
-  `local` (in `hybrid` the cloud's socket runs beside the master's stream). `on(event)` listens to the cloud's socket and to the master's stream alike (`receive`, fed by `LanService`;
+  `local`, nor in `hybrid` while the company is unlinked (its handshake would be refused; linking opens it); in `hybrid` the cloud's socket runs beside the master's stream. `on(event)` listens to the cloud's socket and to the master's stream alike (`receive`, fed by `LanService`;
   `resync` fires `onRestored`); `once`/`off`/`stream` are cloud only.
   `refresh()` forces a reconnect. `rebind()` is that reconnect after a business change (called by
   `BusinessService` on every switch/creation; the server joins rooms only in the handshake) —

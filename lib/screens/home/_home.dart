@@ -50,16 +50,10 @@ class Home extends PageBuilder {
   /// handshake is the credential, not being on `/home`: without a loaded
   /// session the server would reject the connection and the client would keep
   /// retrying.
-  ///
-  /// On a master's devices signed in online, it is also where joining the server with its
-  /// company online is asked, once (`askLinkCompany`).
   @override
   void initialized(BuildContext context) {
     if (!context.read<ClientService>().isAuthenticated) return;
     unawaited(ConnectionService().open());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.mounted) unawaited(askLinkCompany(context));
-    });
   }
 
   /// It listens to the **active business** in addition to the open screen:
@@ -118,6 +112,10 @@ class Home extends PageBuilder {
 /// backend answers, that sign in opens by itself, once per session (`HybridService.shouldOfferOnline`),
 /// when the e-mail has an online account to sign in to ([offerOnlineSignIn]).
 /// Pressing a button nobody knows is there is not how anyone expects the internet to come back.
+///
+/// Online on a master's devices with its company not joined yet, joining it happens here too, once
+/// a session (`HybridService.shouldAskLink`, [askLinkCompany]): whenever it becomes true — the
+/// home opening, an online sign in joining the session, the internet coming back.
 class _OfferOnline extends StatefulWidget {
   const _OfferOnline({required this.child});
 
@@ -132,17 +130,23 @@ class _OfferOnlineState extends State<_OfferOnline> {
   void initState() {
     super.initState();
     hybridService.addListener(_offer);
+    CapabilityService().addListener(_offer);
     WidgetsBinding.instance.addPostFrameCallback((_) => _offer());
   }
 
   @override
   void dispose() {
     hybridService.removeListener(_offer);
+    CapabilityService().removeListener(_offer);
     super.dispose();
   }
 
   void _offer() {
-    if (!mounted || !hybridService.shouldOfferOnline) return;
+    if (!mounted) return;
+
+    if (hybridService.shouldAskLink) unawaited(askLinkCompany(context));
+
+    if (!hybridService.shouldOfferOnline) return;
 
     hybridService.offeredOnline();
     unawaited(offerOnlineSignIn(context));

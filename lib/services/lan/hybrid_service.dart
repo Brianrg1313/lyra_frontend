@@ -10,6 +10,7 @@ import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/services/business/business_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
+import 'package:app/services/business/sources/business_cloud_source.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
 import 'package:app/services/connection/cloud_presence.dart';
@@ -42,7 +43,8 @@ enum HybridJoin {
 /// without the cloud.
 ///
 /// It also links the master's company to its cloud company ([link], `business.md` B-30), which
-/// the cloud-only areas need to know which company they serve.
+/// the cloud-only areas need to know which company they serve; a master company the account has
+/// no company online for gets one made ([createOnline]).
 ///
 /// A session opened on the master alone (signed in while the backend didn't answer) has no
 /// cloud session to go back to, so nothing would ever bring it online: while it lasts the
@@ -164,15 +166,18 @@ class HybridService extends ChangeNotifier {
     _joined = false;
     _backendAnswers = false;
     _offeredOnline = false;
+    _linkAsked = false;
     if (Deployment.mode == DeploymentMode.hybrid) Deployment.online();
     CapabilityService().internet = true;
     notifyListeners();
   }
 
-  /// Whether to ask, once, to join the master's company with its cloud company: the master's
-  /// owner, online, the company not linked and no "not now" given.
+  bool _linkAsked = false;
+
+  /// Whether to ask, once a session, to join the master's company with its cloud company: the
+  /// master's owner, online, the company not linked and no "not now" given.
   bool get shouldAskLink {
-    if (Deployment.mode != DeploymentMode.hybrid || !CapabilityService().internet) return false;
+    if (_linkAsked || Deployment.mode != DeploymentMode.hybrid || !CapabilityService().internet) return false;
 
     final active = businessService.activeId == null ? null : businessService.active;
     if (active == null || active.cloudId != null) return false;
@@ -250,6 +255,39 @@ class HybridService extends ChangeNotifier {
     Deployment.online();
     CapabilityService().modeChanged();
     return false;
+  }
+
+  /// [shouldAskLink] was acted on: not again this session, whatever came of it.
+  void askedLink() => _linkAsked = true;
+
+  /// The master's company made online and joined with it (`business.md` B-30), when this account
+  /// manages no company online to join it to ([linkCandidates] empty): going online asks nothing.
+  /// The account creating it owns it, which is what B-32 asks of a link.
+  Future<BusinessModel> createOnline() async {
+    final profile = await Sources.business.profile();
+    final id = await const BusinessCloudSource().create(cloudCompanyFrom(profile));
+    final cloud = BusinessModel(id: id, name: profile.name.trim());
+
+    await link(cloud);
+    return cloud;
+  }
+
+  /// `business/create`'s body from the master's profile: the reverse of [companyFrom]. The
+  /// activity is required online, so a master without one says "other"; the currency has no
+  /// place there.
+  static Map<String, Object?> cloudCompanyFrom(BusinessProfileModel profile) {
+    final name = profile.name.trim();
+    final legalName = profile.legalName.trim();
+    final country = profile.country.trim().toUpperCase();
+    final language = profile.language.trim().toLowerCase();
+
+    return {
+      "LEGAL_NAME": legalName.length >= 2 ? legalName : name,
+      "NAME": name.length > 64 ? name.substring(0, 64) : name,
+      "ACTIVITY_TYPE": profile.activity == BusinessActivity.unknown ? BusinessActivity.other.value : profile.activity.value,
+      if (country.length == 2) "COUNTRY": country,
+      if (language.isNotEmpty) "LANGUAGE": language
+    };
   }
 
   /// "Not now" to [shouldAskLink]: the server section still offers it.

@@ -537,7 +537,8 @@ class BusinessService extends ChangeNotifier {
     _active = active.copyWith(cloudId: cloudId);
     _businesses = [for (final business in _businesses) business.id == active.id ? _active! : business];
     _use();
-    unawaited(ConnectionService().rebind());
+    // Unlinked, the cloud's socket was never opened (`ConnectionService.open`): now it can be.
+    unawaited(ConnectionService().rebind().then((_) => ConnectionService().open()));
 
     notifyListeners();
   }

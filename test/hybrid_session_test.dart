@@ -6,6 +6,7 @@ import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/connection/cloud_presence.dart';
+import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_service.dart';
@@ -204,6 +205,35 @@ void main() {
 
     final unknown = BusinessProfileModel.fromJson({"name": "Nowhere", "country": "ZZ", "currency": "USD"});
     expect(HybridService.companyFrom(unknown, "cloud-1"), isNull);
+  });
+
+  test("a master company with none online is made there from its profile", () {
+    final profile = BusinessProfileModel.fromJson({
+      "name": " Lovelace Café ", "legal_name": "Lovelace Café C.A.", "country": "ve", "currency": "usd", "language": "ES",
+      "activity_type": "FOOD"
+    });
+
+    expect(HybridService.cloudCompanyFrom(profile), {
+      "LEGAL_NAME": "Lovelace Café C.A.", "NAME": "Lovelace Café", "ACTIVITY_TYPE": "FOOD", "COUNTRY": "VE", "LANGUAGE": "es"
+    });
+
+    // The cloud requires a legal name and an activity: the name stands in, "other" for none.
+    final bare = BusinessProfileModel.fromJson({"name": "Nowhere"});
+    expect(HybridService.cloudCompanyFrom(bare), {"LEGAL_NAME": "Nowhere", "NAME": "Nowhere", "ACTIVITY_TYPE": "OTHER"});
+  });
+
+  test("an unlinked company's cloud socket isn't opened: the cloud doesn't know the company", () async {
+    Deployment.use(DeploymentMode.hybrid, role: DeploymentRole.client);
+    CapabilityService().linked = false;
+
+    var moved = 0;
+    void count() => moved++;
+    ConnectionService().addListener(count);
+
+    await ConnectionService().open();
+
+    ConnectionService().removeListener(count);
+    expect((moved, ConnectionService().isConnected), (0, false));
   });
 
   test("the server section is wherever a master can be: a paired device, any computer online", () {

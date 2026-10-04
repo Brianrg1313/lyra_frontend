@@ -28,8 +28,8 @@
 ## Files
 
 - `_home.dart` — `Home extends PageBuilder`, `static const shell = "home"`. `initialized` opens the
-  socket (`ConnectionService().open()`, idempotent) when authenticated, then asks once to join a master's
-  company with its company online (`askLinkCompany`); `_OfferOnline` opens the online sign in once a session on the master alone can go online (`HybridService.shouldOfferOnline`). Listens to `Navis.currentKey` + `BusinessService.activeId`, and
+  socket (`ConnectionService().open()`, idempotent) when authenticated; `_OfferOnline` (on `HybridService` and `CapabilityService`) joins a master's
+  company with its company online whenever `HybridService.shouldAskLink` turns true (`askLinkCompany`), and opens the online sign in once a session on the master alone can go online (`HybridService.shouldOfferOnline`). Listens to `Navis.currentKey` + `BusinessService.activeId`, and
   rebuilds on `PermissionsService` and `CapabilityService` (the internet or "work offline" lock a section in place).
 - `desktop/_body.dart` — `DesktopBody`: side bar + header + content.
 - `desktop/side_bar/side_bar.dart` — `SideBar({section})`: groups from `HomeSection`, collapsible via `HomeService`.

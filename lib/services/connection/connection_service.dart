@@ -3,6 +3,7 @@ import 'package:core/socket.dart' show SocketStatus, SocketHandler;
 
 import 'package:app/toolkit/sockets.dart';
 import 'package:app/toolkit/deployment.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // The status and the handler signature are part of this service's API:
 // whoever consumes it shouldn't have to import the package just to name them.
@@ -100,9 +101,12 @@ class ConnectionService extends ChangeNotifier {
   /// Not in `local`: a master has no socket.io server. The master's events
   /// (`protocol-v1.md` §5) come over its own channel, which `LanService` holds,
   /// and reach the same handlers through [receive]; in `hybrid` the cloud's
-  /// socket carries the cloud-only areas' beside it.
+  /// socket carries the cloud-only areas' beside it, once the master's company is linked: before,
+  /// its handshake would carry a company the cloud doesn't know and be refused (`select_business`);
+  /// linking opens it (`BusinessService.linked`).
   Future<void> open() async {
     if (Deployment.mode == DeploymentMode.local) return;
+    if (Deployment.mode == DeploymentMode.hybrid && !CapabilityService().linked) return;
     if (isConnected) return;
 
     final pending = _opening;

@@ -100,7 +100,8 @@ channels) of the same company, and the edge sync (phase 6) knows what to keep eq
 
 - **B-30** `cloudId` is set when the master is created from the cloud (setup or `business.create`
   carry it), or later by the owner with `business.link`, which the app asks once at an online sign
-  in on a device with an unlinked master (plan D18). The bootstrap's company carries it (`cloudId`,
+  in on a device with an unlinked master (plan D18); when the account manages no cloud company, the app makes
+  one from the master's profile (`business/create`) and links it without asking. The bootstrap's company carries it (`cloudId`,
   null while unlinked).
 - **B-31** It is written once. The same id again answers as the first time; another one is
   refused (`already_linked`): the master's data would otherwise be joined to a second company.

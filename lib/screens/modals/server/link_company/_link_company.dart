@@ -9,17 +9,39 @@ import 'package:app/services/business/business_model.dart';
 import 'package:core/button.dart';
 import 'package:core/form.dart';
 
-/// Asks to join this server's company with its company online (`business.md` B-30, plan D18):
-/// once, when [HybridService.shouldAskLink] says so, or whenever the server section offers it
-/// ([force]). Says nothing when the account manages no company online. A "not now" to the
+/// Joins this server's company with its company online (`business.md` B-30, plan D18): once a
+/// session, when [HybridService.shouldAskLink] says so, or whenever the server section offers it
+/// ([force]). When the account manages no company online, the server's is made there and joined
+/// without asking ([HybridService.createOnline]); otherwise which one is asked. A "not now" to the
 /// unasked question is remembered, so it isn't asked again.
 Future<void> askLinkCompany(BuildContext context, {bool force = false}) async {
-  if (!force && !hybridService.shouldAskLink) return;
-
-  final candidates = await hybridService.linkCandidates().catchError((_) => const <BusinessModel>[]);
-  if (candidates.isEmpty || !context.mounted) return;
+  if (!force) {
+    if (!hybridService.shouldAskLink) return;
+    hybridService.askedLink();
+  }
 
   final s = S.of(context);
+  final List<BusinessModel> candidates;
+  try {
+    candidates = await hybridService.linkCandidates();
+  } on Object {
+    // The question waits for the server section or the next session: nothing is made from an
+    // answer that didn't arrive.
+    return;
+  }
+
+  if (!context.mounted) return;
+
+  if (candidates.isEmpty) {
+    try {
+      final made = await hybridService.createOnline();
+      if (context.mounted) FloatFlag.of(context).message(s.hybrid_link_done(made.name));
+    } catch (e) {
+      FloatFlag.showFromError(e);
+    }
+    return;
+  }
+
   final linked = await showModal(
     context: context,
     title: candidates.length == 1 ? s.hybrid_link_title(candidates.single.name) : s.hybrid_link_pick_title,

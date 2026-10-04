@@ -183,7 +183,7 @@ All three **return a value and write nothing** (POS services live below this nav
   whether it did; "not now".
 - `link_company/_link_company.dart` — `askLinkCompany(context, force:)`, `LinkCompanyModal`: joins the master's company
   with its company online (`HybridService.link`), in plain words; one candidate is named in the title, several are
-  picked; asked once from the home (a "not now" is remembered), offered again from `ServerConnection` (`force`).
+  picked, none makes it online without asking (`HybridService.createOnline`); asked once a session from the home (a "not now" is remembered), offered again from `ServerConnection` (`force`).
 - `online_sign_in/_online_sign_in.dart` — `showOnlineSignIn(context)`, `offerOnlineSignIn(context)`, `OnlineSignInModal`: a session on the master alone signs
   in online as the same person (`clientService.email`, not asked): `email/verify` on opening through `SessionCloudSource`, then
   the password or the mailed code, then `HybridService.join` → `hybrid` in place, the cloud socket opened; no online account →
