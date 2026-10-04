@@ -16,8 +16,10 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend) | the app's ops (enrol, status, inbox) and the server section showing the sync, both waiting on the backend's `/edge/v1/devices`; the next entities (POS tickets, employees, clients, files); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
-**Next step:** try E2 on real hardware: a master and a paired laptop, the internet pulled and put back.
-Then E3 (engine side; the backend's part is §9 of `docs/task-edge-sync-backend.md`).
+**Next step:** the permissions ops (`session.md` §session.permissions), so an invited person holds a
+grant; then clients and deliveries, statistics, and E3 (engine side; the backend's part is §9 of
+`docs/task-edge-sync-backend.md`). **Real hardware goes last** (owner's call, 2026-10-04): the exit
+checks of phase 3 and 4b and the "not yet seen" list below run together once the code is done.
 
 **Built, not yet seen on screen**
 - E2: `hybrid` (the online sign in opens the master's session too), sections locking and opening in
