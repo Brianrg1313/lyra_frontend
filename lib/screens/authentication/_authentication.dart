@@ -8,6 +8,7 @@ import 'package:app/toolkit/lan.dart' show lanServingMaster;
 import 'package:app/toolkit/settings/initial_builder.dart' show clientService, hybridService;
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/services/sign_in/sign_in_service.dart';
 
@@ -28,6 +29,8 @@ import 'auth_offline.dart';
 /// ([Deployment.offline]); it doesn't but a master is on the LAN → [AuthLan] signs in to it;
 /// neither → [AuthLan] creates the master on this computer, or [AuthOffline] where none can run
 /// (web, phones). A browser on a master's page has only that master: the cloud is another origin.
+/// The network is watched while the page is open, both ways: the internet going away swaps the
+/// cloud's form for the offline one, and coming back swaps it again.
 ///
 /// A session kept through a network failure (`ClientService.resolve`) enters by itself once the
 /// backend answers: the form is only drawn when there is none, or the backend refused it.
@@ -45,11 +48,14 @@ class Authentication extends PageBuilder {
   Widget build(BuildContext context) => lanServingMaster != null ? const _MasterGate() : MultiProvider(
     providers: [
       Provider(create: (_) => SignInService()),
-      ChangeNotifierProvider(create: (_) => (scan ?? NetworkScanService.new)()..watch())
+      ChangeNotifierProvider(create: (_) => (scan ?? _scan)()..watch())
     ],
     child: _Gate(resume: resume ?? _resumeSession)
   );
 }
+
+/// The backend followed live over its `/presence` socket, the LAN every 15 s.
+NetworkScanService _scan() => NetworkScanService(presence: CloudPresence());
 
 /// The kept session, on a device with a master its master's too when it answers (`hybrid`).
 Future<String?> _resumeSession() async {
@@ -102,8 +108,19 @@ class _GateState extends State<_Gate> {
     setState(() => _owner = null);
   }
 
+  /// What the gate drew last, kept while another page covers it (`/login/code`): a swap under it
+  /// would be unseen, and a master's gate would take the whole stack to `/lan`.
+  Widget? _drawn;
+
   @override
   Widget build(BuildContext context) {
+    final covered = !(ModalRoute.of(context)?.isCurrent ?? true);
+    if (covered && _drawn != null) return _drawn!;
+
+    return _drawn = _pick(context);
+  }
+
+  Widget _pick(BuildContext context) {
     if (_owner != null) return master.DesktopBody(owner: _owner, onBack: _back);
 
     final scan = context.watch<NetworkScanService>();

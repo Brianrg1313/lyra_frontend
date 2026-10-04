@@ -4,6 +4,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/client/client_service.dart';
+import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/sign_in/login_method.dart';
 import 'package:app/services/sign_in/sign_in_service.dart';
@@ -161,10 +162,12 @@ class _DesktopBodyState extends State<DesktopBody> {
     if (!_email.validate(_email)) return;
 
     _form.loading.value = true;
+    _holdScan();
 
     final email = _email.value;
 
     context.read<SignInService>().verifyEmail(context, email)
+      .whenComplete(_releaseScan)
       .then((check) {
         if (!mounted) return;
         _form.loading.value = false;
@@ -195,6 +198,7 @@ class _DesktopBodyState extends State<DesktopBody> {
     if (!_form.validate()) return;
 
     _form.loading.value = true;
+    _holdScan();
 
     final client = context.read<ClientService>();
 
@@ -208,6 +212,7 @@ class _DesktopBodyState extends State<DesktopBody> {
       // starts: without this, the global instance would enter the home with no
       // client loaded and the sidebar widgets would read an empty session.
       .then((_) => client.resolve())
+      .whenComplete(_releaseScan)
       .then((redirect) {
         if (!mounted) return;
         _form.loading.value = false;
@@ -220,4 +225,10 @@ class _DesktopBodyState extends State<DesktopBody> {
         _password.status.setStatus(InputStatus.error, InputError.invalid);
       });
   }
+
+  /// The sign in's look of the network, held while the backend answers: the internet going away
+  /// mid-request would swap this form for the offline one with the request half answered.
+  late final _scan = context.read<NetworkScanService>();
+  void _holdScan() => _scan.hold(true);
+  void _releaseScan() => _scan.hold(false);
 }

@@ -24,7 +24,7 @@ void main() {
   setUp(() => Deployment.use(DeploymentMode.local, role: DeploymentRole.client));
   tearDown(() => Deployment.use(DeploymentMode.cloud));
 
-  Future<_Master> pump(WidgetTester tester, {bool activation = false, bool online = false}) async {
+  Future<_Master> pump(WidgetTester tester, {bool activation = false, bool online = false, bool Function()? cloud}) async {
     tester.view.physicalSize = const Size(1600, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -44,7 +44,7 @@ void main() {
           AppSize.instance(context);
 
           return Authentication(resume: () async => "/login", scan: () => NetworkScanService(
-            cloud: () async => online,
+            cloud: () async => cloud?.call() ?? online,
             discover: () async => const [],
             canHost: () async => false
           ));
@@ -83,6 +83,24 @@ void main() {
     expect(find.byType(TextField), findsOneWidget);
     expect(find.text(S.current.auth_continue), findsOneWidget);
     expect(find.text(S.current.auth_lan_title), findsNothing);
+  });
+
+  testWidgets("the internet going away swaps the cloud's form for its master's, and back", (tester) async {
+    var online = true;
+    await pump(tester, cloud: () => online);
+    expect(find.text(S.current.auth_title), findsOneWidget);
+
+    online = false;
+    await tester.pump(const Duration(seconds: 15));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text(S.current.auth_master_title), findsOneWidget);
+    expect(Deployment.mode, DeploymentMode.local);
+
+    online = true;
+    await tester.pump(const Duration(seconds: 15));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text(S.current.auth_title), findsOneWidget);
+    expect(Deployment.mode, DeploymentMode.cloud);
   });
 
   testWidgets('an account with a password is asked for it under the e-mail, and a refusal says so', (tester) async {

@@ -4,6 +4,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/lan/network_scan_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -43,6 +44,10 @@ class _AuthMasterState extends State<AuthMaster> {
   String? _error;
 
   bool get _identified => _resolved != null;
+
+  /// The sign in's look of the network, held while the master answers: the backend coming back
+  /// mid-request would swap this form for the cloud's. None on a master's own page (no cloud there).
+  late final _scan = context.read<NetworkScanService?>();
 
   @override
   void dispose() {
@@ -121,7 +126,9 @@ class _AuthMasterState extends State<AuthMaster> {
     _form.loading.value = true;
 
     final lan = context.read<LanService>();
+    _scan?.hold(true);
     final activation = await lan.needsActivation(login);
+    _scan?.hold(false);
     if (!mounted) return;
     _form.loading.value = false;
 
@@ -149,9 +156,11 @@ class _AuthMasterState extends State<AuthMaster> {
     _form.loading.value = true;
 
     final lan = context.read<LanService>();
+    _scan?.hold(true);
     final status = _activating
       ? await lan.activate(_resolved!, _code.value.trim(), _password.value)
       : await lan.signIn(_resolved!, _password.value);
+    _scan?.hold(false);
 
     if (!mounted) return;
     _form.loading.value = false;

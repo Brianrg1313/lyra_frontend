@@ -60,3 +60,33 @@ class _Sockets extends SocketAPI {
     token ??= await _database.fromSecure<String>(current.tokenName);
   }
 }
+
+/// The backend's `/presence` namespace (`model:/bridge/presence.js`): the one socket that opens
+/// without a session, which the sign in watches to know at once whether the backend is there.
+/// Its own `tokenName`, which nothing writes, so no token ever travels on it.
+final presenceSocket = _Presence();
+
+class _Presence extends SocketAPI {
+  @override
+  ApiModel get dev => ApiModel(
+    host: devHost,
+    name: "/presence",
+    port: 80,
+    scheme: "http",
+    type: ApiMode.socket,
+    tokenName: "Presence"
+  );
+
+  @override
+  ApiModel get prod => dev;
+
+  /// Its return is what the page is waiting for: retried often, never given up.
+  @override
+  Duration get reconnectionDelayMax => const Duration(seconds: 2);
+
+  @override
+  Duration get connectionTimeout => const Duration(seconds: 3);
+
+  @override
+  Future<void> preConnect() async {}
+}

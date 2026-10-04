@@ -58,7 +58,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   isolate; `locked` for a locked account).
 - `network_scan_service.dart` — `NetworkScanService` (+ `NetworkReach`), flow-scoped (the sign in): `scan` asks
   `cloudReachable` and `discoverMasters` at once and whether this computer `canHost` (engine present, not set up);
-  online > master > none; `watch` looks again every 15 s until online, `hold` pauses it.
+  online > master > none; `watch` looks again every 15 s for the page's life (online, the backend alone; a miss, a full look), and with a `CloudPresence` follows the backend live (connected → online at once, a drop → a full look at once); `hold` pauses it all.
 - `hybrid_service.dart` — `HybridService` (+ `HybridJoin`), app-wide (`hybridService`), plan §9.6: `join(login,
   password?)` after an online sign in on a paired device (the master's session too → `hybrid`; another person's kept
   session signed out first; `needsPassword` → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
@@ -178,6 +178,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 
 ## connection/ — the realtime link (singular)
 
+- `cloud_presence.dart` — `CloudPresence`: `presenceSocket` (backend `/presence`, no session) open while the sign in lives; `live` = connected and `alive` answered within 2 s, asked every 2 s.
 - `connection_service.dart` — `ConnectionService`: owns the `sockets` lifecycle and status; `open` does nothing in
   `local` (in `hybrid` the cloud's socket runs beside the master's stream). `on(event)` listens to the cloud's socket and to the master's stream alike (`receive`, fed by `LanService`;
   `resync` fires `onRestored`); `once`/`off`/`stream` are cloud only.

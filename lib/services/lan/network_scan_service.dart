@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/lan.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/local_server/local_server_service.dart';
 
 /// What a device without a pairing can reach, which decides its sign in (plan §7.4).
@@ -27,9 +28,11 @@ enum NetworkReach {
 /// ([discoverMasters]), both at once. Every master answers mDNS while its engine runs, so a new
 /// device finds it without being told where it is.
 ///
-/// While the answer isn't [NetworkReach.online], [watch] looks again every [every]: a master
-/// switched on, or the internet coming back, changes the sign in by itself. [hold] stops that
-/// while the person is doing something the change would interrupt.
+/// [watch] looks again every [every], both ways: a master switched on, the internet coming back or
+/// going away changes the sign in by itself. With a [CloudPresence] the backend is followed live
+/// instead of every [every]: its socket connecting is [NetworkReach.online] at once, and its drop
+/// looks at once. [hold] stops all of that while the person is doing something the change would
+/// interrupt.
 ///
 /// Flow-scoped: the sign in provides it.
 class NetworkScanService extends ChangeNotifier {
@@ -37,14 +40,17 @@ class NetworkScanService extends ChangeNotifier {
     Future<bool> Function()? cloud,
     Future<List<LanFound>> Function()? discover,
     Future<bool> Function()? canHost,
+    CloudPresence? presence,
     this.every = const Duration(seconds: 15),
-  }) : _cloud = cloud ?? cloudReachable,
+  }) : _presence = presence,
+       _cloud = cloud ?? cloudReachable,
        _discover = discover ?? discoverMasters,
        _canHost = canHost ?? _engineHere;
 
   final Future<bool> Function() _cloud;
   final Future<List<LanFound>> Function() _discover;
   final Future<bool> Function() _canHost;
+  final CloudPresence? _presence;
   final Duration every;
 
   NetworkReach _reach = NetworkReach.searching;
@@ -63,13 +69,20 @@ class NetworkScanService extends ChangeNotifier {
   Timer? _timer;
   bool _held = false;
   bool _looking = false;
+  bool _again = false;
   bool _disposed = false;
+
+  bool get _live => _presence?.live.value ?? false;
 
   /// Looks once. The answer stays on the last one while it looks again, so the page doesn't
   /// flicker through a loader every [every].
   Future<void> scan() async {
-    if (_looking) return;
+    if (_looking) {
+      _again = true;
+      return;
+    }
     _looking = true;
+    _again = false;
 
     try {
       final (online, masters, canHost) = await (
@@ -82,33 +95,70 @@ class NetworkScanService extends ChangeNotifier {
 
       _masters = masters;
       _canHostHere = canHost;
-      _reach = online ? NetworkReach.online : masters.isNotEmpty ? NetworkReach.master : NetworkReach.none;
+      // The socket connecting while the HTTP question was out is the newer answer.
+      _reach = online || _live ? NetworkReach.online : masters.isNotEmpty ? NetworkReach.master : NetworkReach.none;
       notifyListeners();
     } finally {
       _looking = false;
     }
+
+    if (_again && !_disposed) await scan();
   }
 
-  /// Looks now, then every [every] until the backend answers.
+  /// Looks now, then every [every] for as long as the page lives.
   Future<void> watch() async {
     _timer?.cancel();
-    _timer = Timer.periodic(every, (_) {
-      if (_held) return;
-      if (_reach == NetworkReach.online) return _timer?.cancel();
-
-      scan();
-    });
+    _timer = Timer.periodic(every, (_) => _tick());
+    _presence?.live.addListener(_presenceChanged);
+    _presence?.start();
 
     await scan();
   }
 
+  /// While online only the backend is asked (no mDNS every tick); a miss looks at everything,
+  /// which asks the backend once more, so one dropped request doesn't take the cloud's form away.
+  Future<void> _tick() async {
+    if (_held || _looking) return;
+    if (_reach != NetworkReach.online) return scan();
+
+    _looking = true;
+    final bool online;
+    try {
+      online = await _cloud();
+    } finally {
+      _looking = false;
+    }
+
+    if (!online && !_held && !_disposed) await scan();
+  }
+
+  /// The socket connected: online now, the masters as last seen. It dropped: a full look now,
+  /// whose HTTP question decides, since a backend without `/presence` never connects it.
+  void _presenceChanged() {
+    if (_held || _disposed) return;
+
+    if (_live) {
+      if (_reach == NetworkReach.online) return;
+      _reach = NetworkReach.online;
+      notifyListeners();
+    } else if (_reach == NetworkReach.online) {
+      scan();
+    }
+  }
+
   /// Stops looking while [held]: a sign in or a setup under way keeps the page it started on.
-  void hold(bool held) => _held = held;
+  /// Released, what the socket said meanwhile counts at once.
+  void hold(bool held) {
+    _held = held;
+    if (!held) _presenceChanged();
+  }
 
   @override
   void dispose() {
     _disposed = true;
     _timer?.cancel();
+    _presence?.live.removeListener(_presenceChanged);
+    _presence?.stop();
     super.dispose();
   }
 

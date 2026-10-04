@@ -12,6 +12,7 @@ import 'package:app/toolkit/lan.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_pairing_service.dart';
 import 'package:app/services/lan/lan_service.dart';
+import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/lan/network_scan_service.dart';
 import 'package:app/screens/authentication/_authentication.dart';
 import 'package:app/screens/authentication/auth_lan.dart';
@@ -152,6 +153,24 @@ void main() {
     expect(find.text(S.current.lan_master_eula_required), findsOneWidget);
   });
 
+  testWidgets('the internet going away swaps the cloud form for the offline one, and back', (tester) async {
+    var online = true;
+    await pumpGate(tester, cloud: () async => online, masters: [found], canHost: true);
+    expect(find.text(S.current.auth_title), findsOneWidget);
+
+    online = false;
+    await tester.pump(const Duration(seconds: 15));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text(S.current.auth_title), findsNothing);
+    expect(find.text(S.current.auth_lan_title), findsOneWidget);
+
+    online = true;
+    await tester.pump(const Duration(seconds: 15));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text(S.current.auth_title), findsOneWidget);
+    expect(find.text(S.current.auth_lan_title), findsNothing);
+  });
+
   testWidgets('a session kept through a network failure is tried before the form, once', (tester) async {
     final answer = Completer<String?>();
     var tries = 0;
@@ -277,7 +296,7 @@ void main() {
       scan.dispose();
     });
 
-    test('it looks again until the backend answers, except while held', () {
+    test('it keeps looking, except while held', () {
       fakeAsync((async) {
         var looks = 0;
         var online = false;
@@ -308,7 +327,102 @@ void main() {
         expect((looks, scan.reach), (3, NetworkReach.online));
 
         async.elapse(const Duration(minutes: 1));
-        expect(looks, 3);
+        expect((looks, scan.reach), (7, NetworkReach.online));
+        scan.dispose();
+      });
+    });
+
+    test("the backend's socket says it at once: connecting is online, a drop looks now", () {
+      fakeAsync((async) {
+        var online = false;
+        var clouds = 0;
+        final presence = _Presence();
+        final scan = NetworkScanService(
+          cloud: () async {
+            clouds++;
+            return online;
+          },
+          discover: () async => const [found],
+          canHost: () async => false,
+          presence: presence,
+          every: const Duration(minutes: 1)
+        );
+
+        scan.watch();
+        async.flushMicrotasks();
+        expect((presence.started, scan.reach), (true, NetworkReach.master));
+
+        online = true;
+        presence.live.value = true;
+        expect(scan.reach, NetworkReach.online);
+
+        online = false;
+        presence.live.value = false;
+        async.flushMicrotasks();
+        expect((clouds, scan.reach), (2, NetworkReach.master));
+
+        // A sign in under way keeps its page; released, what the socket said counts.
+        scan.hold(true);
+        presence.live.value = true;
+        expect(scan.reach, NetworkReach.master);
+        scan.hold(false);
+        expect(scan.reach, NetworkReach.online);
+
+        scan.dispose();
+        expect(presence.started, false);
+      });
+    });
+
+    test('a look under way when the socket connects does not take online back', () {
+      fakeAsync((async) {
+        final answer = Completer<bool>();
+        final presence = _Presence();
+        final scan = NetworkScanService(
+          cloud: () => answer.future,
+          discover: () async => const [],
+          canHost: () async => false,
+          presence: presence
+        );
+
+        scan.watch();
+        presence.live.value = true;
+        answer.complete(false);
+        async.flushMicrotasks();
+        expect(scan.reach, NetworkReach.online);
+        scan.dispose();
+      });
+    });
+
+    test('online it asks only the backend; a miss looks at everything before leaving it', () {
+      fakeAsync((async) {
+        var clouds = 0;
+        var discovers = 0;
+        var online = true;
+        final scan = NetworkScanService(
+          cloud: () async {
+            clouds++;
+            return online;
+          },
+          discover: () async {
+            discovers++;
+            return const [found];
+          },
+          canHost: () async => false,
+          every: const Duration(seconds: 15)
+        );
+
+        scan.watch();
+        async.elapse(const Duration(seconds: 30));
+        expect((clouds, discovers, scan.reach), (3, 1, NetworkReach.online));
+
+        online = false;
+        async.elapse(const Duration(seconds: 15));
+        // The tick's miss, then the full look's own question.
+        expect((clouds, discovers, scan.reach), (5, 2, NetworkReach.master));
+
+        online = true;
+        async.elapse(const Duration(seconds: 15));
+        expect((clouds, discovers, scan.reach), (6, 3, NetworkReach.online));
         scan.dispose();
       });
     });
@@ -333,4 +447,15 @@ class _Pairing extends LanPairingService {
     asked = (host, port, login, password);
     return failure;
   }
+}
+
+/// The backend's socket, said by the test.
+class _Presence extends CloudPresence {
+  bool started = false;
+
+  @override
+  void start() => started = true;
+
+  @override
+  void stop() => started = false;
 }
