@@ -177,6 +177,38 @@ class LanService extends ChangeNotifier {
     return LanStatus.ready;
   });
 
+  /// The master's install id, from its hello: what the backend's grants name it by (S-12).
+  String? get instanceId => _client?.hello?.instanceId;
+
+  /// A session opened by the cloud's grant (`session.md` S-12): signed in online, no password
+  /// asked here. Its sealed fields wait for [unseal].
+  Future<LanStatus> signInWithGrant(String grant) => _guard(() async {
+    await _client!.grant(grant);
+
+    return LanStatus.ready;
+  });
+
+  /// The password opens this session's sealed fields (S-13). Answers whether it did; the refusal
+  /// is [error]. A session that ended on the way signs out as any other.
+  Future<bool> unseal(String password) async {
+    try {
+      _error = null;
+      await _client!.unseal(password);
+      return true;
+    } on LanUnreachable {
+      _set(LanStatus.unreachable);
+    } on Map<String, Object?> catch (failure) {
+      _error = failure["message"] as String?;
+      if (failure["code"] == ErrorCodes.sessionExpired || failure["code"] == ErrorCodes.sessionRevoked) {
+        _set(LanStatus.signedOut);
+      } else {
+        notifyListeners();
+      }
+    }
+
+    return false;
+  }
+
   /// An invited person's first sign in (`session.md` S-8): the code the company gave them and
   /// the password they choose.
   Future<LanStatus> activate(String login, String code, String password) => _guard(() async {

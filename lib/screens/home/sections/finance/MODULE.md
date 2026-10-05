@@ -47,7 +47,7 @@ all seven created and provided by `_finance.dart`, none app-wide.
 
 ### methods/
 - `_methods.dart` — `FinanceMethodsTab`: two halves in one scroll — currencies, then accounts (`/money/methods`
-  CRUD). Each half loads/fails on its own; on a master the accounts may be `locked` (sealed details, sign in again). Reads rails + currencies before opening the account form (edit too).
+  CRUD). Each half loads/fails on its own; on a master the accounts may be `locked` (sealed details: "Type password" → `showUnseal`, then read again). Reads rails + currencies before opening the account form (edit too).
 - `currencies_block.dart` — `MoneyCurrenciesBlock`: main currency (read-only; falls back to `BusinessService.currencyCode` while the setup has not answered) + exchange cards (mode tag, effective rate, official beside a custom one). **The only place the app shows the company's currencies** (removed from the business profile).
 - `methods_heading.dart` — `MethodsHeading` (title, subtitle, add button) and `kMoneyCardWidth`, shared by both halves.
 - `method_card.dart` — `MoneyMethodCard`: one account, lines labelled by its rail's sheet (`fields:`), generic fallback; then currency and commission.

@@ -68,6 +68,19 @@ A person who can sign in to this master.
   a holder of the sealed key must grant it again (plan §6.3). This is said on the confirmation.
 - **S-11** A forgotten owner password is reset **on the master only**, with the recovery key.
   That also restores the owner's sealed-key wrap.
+- **S-12** A **cloud grant** (plan D14, `task-edge-sync-backend.md` §9) opens a session on a master
+  enrolled with the cloud without the person's password: someone signed in online by code, Google, or
+  with a cloud password other than the master's. The master checks it offline: signed by an edge key it
+  pinned (`kid`), for its own edge device and cloud company, version 1, issued at most 5 minutes ahead
+  of its clock, good for at most 5 minutes, not expired (30 s of skew), and its nonce never seen
+  before. A failed check is `grant_invalid`, an expired grant `grant_expired`, a second use
+  `grant_used`. The account is the active one with the grant's e-mail, without regard to case; none,
+  or one still `pending`, is `grant_no_account` (the person is invited, or activates, first); a
+  disabled one `account_disabled`. It counts towards the device's sign-in rate (S-4) and goes to the
+  audit log.
+- **S-13** A session opened by a grant holds no sealed keys: they open with the password (plan §6.3),
+  so the sealed fields answer `sealed_locked` in it. `auth.unseal` checks that session's password
+  (S-4 counts it), rotates its refresh token as `auth.refresh` does, and opens the keys in it.
 
 ### Ops
 
@@ -77,6 +90,8 @@ A person who can sign in to this master.
 | `auth.signIn` | none | `login`, `password` | session tokens + `mustChangePassword` | `invalid_credentials`, `account_locked`, `account_disabled`, `rate_limited` |
 | `auth.signInPin` | none | `username`, `pin` | POS-scoped session tokens | `invalid_credentials`, `pin_disabled`, `rate_limited` |
 | `auth.activate` | none | `login`, `code`, `password` | session tokens, as `auth.signIn` | `invalid_code` (also an unknown or active login), `code_expired`, `weak_password`, `rate_limited` |
+| `auth.grant` | none (paired device) | `grant` | session tokens + `accountId`, `mustChangePassword`, `sealed: false` | `grant_invalid`, `grant_expired`, `grant_used`, `grant_no_account`, `account_disabled`, `rate_limited` |
+| `auth.unseal` | none (paired device) | `refreshToken`, `password` | new tokens | `session_expired`, `invalid_credentials`, `account_locked`, `rate_limited` |
 | `auth.refresh` | none | `refreshToken` | new tokens | `session_expired` (`action: "login"`) |
 | `auth.signOut` | session | — | `{}` | — |
 | `account.changePassword` | session | `current`, `password` | `{}` | `invalid_credentials`, `weak_password` |

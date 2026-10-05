@@ -4453,6 +4453,16 @@ class S {
     );
   }
 
+  /// `Personal details are protected. Type your password on the server to see them.`
+  String get employee_person_sealed {
+    return Intl.message(
+      'Personal details are protected. Type your password on the server to see them.',
+      name: 'employee_person_sealed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `These are the person's own details: what you change here changes in their account too.`
   String get employee_person_editable {
     return Intl.message(
@@ -12246,11 +12256,21 @@ class S {
     );
   }
 
-  /// `Sign out and sign in again with your password to see the payment accounts.`
+  /// `Type your password on the server to see the payment accounts.`
   String get finance_methods_locked_subtitle {
     return Intl.message(
-      'Sign out and sign in again with your password to see the payment accounts.',
+      'Type your password on the server to see the payment accounts.',
       name: 'finance_methods_locked_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type password`
+  String get finance_methods_unlock {
+    return Intl.message(
+      'Type password',
+      name: 'finance_methods_unlock',
       desc: '',
       args: [],
     );
@@ -20464,6 +20484,36 @@ class S {
     return Intl.message(
       'Continue',
       name: 'hybrid_password_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Protected details`
+  String get unseal_title {
+    return Intl.message(
+      'Protected details',
+      name: 'unseal_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You signed in online, so the server opened your session without your password. Type your password on the server to see payment accounts, pay and documents.`
+  String get unseal_subtitle {
+    return Intl.message(
+      'You signed in online, so the server opened your session without your password. Type your password on the server to see payment accounts, pay and documents.',
+      name: 'unseal_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlock`
+  String get unseal_button {
+    return Intl.message(
+      'Unlock',
+      name: 'unseal_button',
       desc: '',
       args: [],
     );

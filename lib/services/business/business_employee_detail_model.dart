@@ -106,6 +106,7 @@ class BusinessEmployeeDetail {
     this.contractStatus,
     this.workStatus,
     this.fullProfile = false,
+    this.sealedLocked = false,
     this.profileEditable = false,
     this.person = const EmployeePerson(),
     this.job = const EmployeeJob(),
@@ -126,6 +127,10 @@ class BusinessEmployeeDetail {
 
   /// `visibility: full` — the private profile came with it.
   final bool fullProfile;
+
+  /// A master's session the cloud's grant opened: the profile would come whole, but its sealed
+  /// details wait for the person's password there (`session.md` S-13). Never set online.
+  final bool sealedLocked;
 
   /// The company may write the personal data: while the job is active. It
   /// writes the person's own profile, not a copy.
@@ -175,6 +180,7 @@ class BusinessEmployeeDetail {
       contractStatus: EmployeeContractStatus.from(json["contract_status"]),
       workStatus: EmployeeWorkStatus.from(json["work_status"]),
       fullProfile: employeeText(json["visibility"]).toLowerCase() == "full",
+      sealedLocked: employeeFlag(json["sealed_locked"]),
       profileEditable: employeeFlag(json["profile_editable"]),
       person: EmployeePerson.from(json["person"]),
       job: EmployeeJob.from(json["job"]),

@@ -1,6 +1,6 @@
 # Plan: offline / LAN mode (local master)
 
-## Where we are (2026-10-04) — read this first
+## Where we are (2026-10-05) — read this first
 
 Each release's detail is in the release log (appendix A). Phases are in §11, decisions in §13.
 
@@ -11,17 +11,20 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 2 Engine (`lyra_node`) | done | — |
 | 3 LAN (TLS, pairing, web build, mDNS) | done on one computer | the exit check on real hardware (a second PC, a phone, a browser, a LAN MITM attempt; the camera, the OS trust-store dialogs, Firefox) |
 | 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor), deliveries (`hybrid` only, 2026-10-04) done | statistics; clients wait for the cloud to have them (owner's call, 2026-10-04: the cloud keeps only the assistant's WhatsApp customers, and its list is a placeholder); the company's own templates have ops and endpoints but no screen |
-| 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
+| 4b One app (§9.6) | E1 done; E2 done in code and tests; E3, the cloud grant, done (2026-10-05) | E2 and E3 on real hardware |
 | 5 Operations | not started | — |
-| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8; deliveries added, not yet run against the dev backend), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, employees, clients, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8; deliveries added, not yet run against the dev backend), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, employees, clients, files), the allowance's measure; the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
-**Next step:** statistics, then E3 (engine side; the backend's part is §9 of
-`docs/task-edge-sync-backend.md`). Clients wait until the cloud has a customer list to follow.
+**Next step:** statistics. Clients wait until the cloud has a customer list to follow.
 **Real hardware goes last** (owner's call, 2026-10-04): the exit checks of phase 3 and 4b and the
 "not yet seen" list below run together once the code is done.
 
 **Built, not yet seen on screen**
+- The cloud grant (2026-10-05): an online sign in by code (or with a cloud password the master doesn't take)
+  opening the master with no password asked, and "Type password" opening the payment accounts and an
+  employee's personal details in that session. Its crypto was seen across the dev backend's models and
+  the engine; the screens and the HTTP route (`POST /edge/v1/grants`) not yet.
 - The enrolment (2026-10-04): the owner online with the company linked enrols the master by itself; the
   server strip's one sync line, "use this server" over another one, "sync again" after an unlink. Needs an
   https backend (the engine refuses another endpoint), so not yet against the dev one.
@@ -48,7 +51,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 **Repos** All on this disk, **nothing pushed**, no remotes except `core`'s.
 - The backend (`backend/projects/lyra`): the permissions catalog gained `server` and `money.export` and the
   areas map the master's ids (2026-10-04), plus `pnpm permissions:export`; the edge API (`lib/models/edge`,
-  `/edge/v1`, the `edge_*` tables, `EDGE_KEY` in the dev env) with every §11 entity (deliveries included), plus what it needed of
+  `/edge/v1`, the `edge_*` tables, `EDGE_KEY` in the dev env) with every §11 entity (deliveries included) and the grants (§9), plus what it needed of
   `Tables`, `Products` and `Inventory`; **uncommitted**, beside other work in progress there.
 - The app: `main` (the `feat/offline-*` branches are merged into it).
 - `lyra_protocol`, `lyra_node`: `main`.
@@ -68,7 +71,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
   app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
   master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
 
-**Gate** `flutter analyze` clean; `flutter test` 1215 passing with the 5 known failures of
+**Gate** `flutter analyze` clean; `flutter test` 1218 passing with the 5 known failures of
 `test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
 
 **Keeping this current:** at the end of each release, update the table, the next step and the
@@ -694,8 +697,10 @@ apps. What the person sees, how they sign in and what the side bar holds don't c
   the internet, the subscription and a restart. The master accepts a **cloud grant**: a short-lived
   statement signed by the backend's edge key (the account, this master's id, a nonce, the expiry) that
   the master checks offline against the key pinned when it was linked, single use, then maps to its own
-  account. Until the backend issues grants, the master's password opens it: the one typed online when
-  it was a password sign in, otherwise asked once after a Google or code sign in.
+  account (`session.md` S-12). A password sign in still opens it with the password, which also opens the
+  sealed fields (§6.3); a code or Google sign in, or a cloud password the master doesn't take, opens it with
+  the grant, and the sealed fields wait for the password there ("Type password", S-13). Only a master
+  that takes neither (not enrolled, the backend away) asks for its password once.
 - **The server section is everywhere a master can be (D16).** In the cloud too, on a computer: create a
   master from there, whose owner is the signed-in account (its password asked, since the sealed keys of
   §6.3 hang on it) and whose company starts from the cloud company's profile (name, logo, country,
@@ -1060,3 +1065,14 @@ things stand.
   The spec was corrected to the cloud on two points: an area's radius is kilometres in the cloud (the
   master's metres), and the cloud doesn't refuse an outline that crosses itself. Clients were left
   for later by the owner: the cloud has no customer list yet.
+- E3, the cloud grant (2026-10-05, `session.md` S-12, S-13; task §9). The backend signs a two-minute
+  statement with its edge key for any member of a live master's company (`POST /edge/v1/grants`, the master
+  named by its `instance`, no company header; `EdgeGrants`, `Edge.sign`). The engine checks it offline
+  (`CloudGrants`: a pinned key, its own device and company, the window, a nonce once in m016's
+  `grant_nonces`; the account by e-mail) and opens a session without sealed keys (`auth.grant`);
+  `auth.unseal` opens them with the password under a rotated token, and an employee's detail says
+  `sealedLocked`. The app joins with the password when it has one, the grant otherwise or when the
+  password is refused, and asks only when neither works; "Type password" on the payment accounts and an
+  employee's personal details. Seen across the real stacks: a grant issued by the dev backend's models
+  opened the engine once (and a Node-signed token verified in Dart); the backend refused a non-member
+  and an unknown master. Found on the way: `MySql.findOne` adds its own `LIMIT 1`.

@@ -229,6 +229,20 @@ class LanClient {
   Future<void> activate(String login, String code, String password) async =>
     _adopt(await _raw(Ops.authActivate, {"login": login, "code": code, "password": password}) as Map<String, Object?>);
 
+  /// `auth.grant` + `session.bind` (`session.md` S-12): the backend's signed statement opens the
+  /// session without the password. Its sealed fields wait for [unseal].
+  Future<void> grant(String grant) async =>
+    _adopt(await _raw(Ops.authGrant, {"grant": grant}) as Map<String, Object?>);
+
+  /// `auth.unseal` + `session.bind` (S-13): the password opens this session's sealed fields, under
+  /// a rotated refresh token.
+  Future<void> unseal(String password) async {
+    final refresh = await _store.refreshToken();
+    if (refresh == null) throw lanFailure(const RpcError(ErrorCodes.sessionExpired, ""));
+
+    await _adopt(await _raw(Ops.authUnseal, {"refreshToken": refresh, "password": password}) as Map<String, Object?>);
+  }
+
   /// Picks up the stored session (an app restart, a reconnect). False when there is none or it
   /// ended; then the person signs in again.
   Future<bool> resume() async {

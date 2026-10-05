@@ -1780,6 +1780,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "A person\'s own profile is visible to the company only while they work here."),
         "employee_person_owned": MessageLookupByLibrary.simpleMessage(
             "The person\'s own profile: only they can change it."),
+        "employee_person_sealed": MessageLookupByLibrary.simpleMessage(
+            "Personal details are protected. Type your password on the server to see them."),
         "employee_person_title":
             MessageLookupByLibrary.simpleMessage("Personal data"),
         "employee_record_title": MessageLookupByLibrary.simpleMessage("Record"),
@@ -2190,13 +2192,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "finance_methods_error_title": MessageLookupByLibrary.simpleMessage(
             "The payment methods could not be loaded"),
         "finance_methods_locked_subtitle": MessageLookupByLibrary.simpleMessage(
-            "Sign out and sign in again with your password to see the payment accounts."),
+            "Type your password on the server to see the payment accounts."),
         "finance_methods_locked_title": MessageLookupByLibrary.simpleMessage(
             "Account details are protected"),
         "finance_methods_subtitle": MessageLookupByLibrary.simpleMessage(
             "Each method takes money in one currency and can add its own commission to the charge."),
         "finance_methods_title":
             MessageLookupByLibrary.simpleMessage("Payment methods"),
+        "finance_methods_unlock":
+            MessageLookupByLibrary.simpleMessage("Type password"),
         "finance_more": m66,
         "finance_movements": m67,
         "finance_net": MessageLookupByLibrary.simpleMessage("Net"),
@@ -4044,6 +4048,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "trial_duration": MessageLookupByLibrary.simpleMessage("Duration"),
         "trial_period": MessageLookupByLibrary.simpleMessage("Trial period"),
         "trial_price": MessageLookupByLibrary.simpleMessage("Trial price"),
+        "unseal_button": MessageLookupByLibrary.simpleMessage("Unlock"),
+        "unseal_subtitle": MessageLookupByLibrary.simpleMessage(
+            "You signed in online, so the server opened your session without your password. Type your password on the server to see payment accounts, pay and documents."),
+        "unseal_title":
+            MessageLookupByLibrary.simpleMessage("Protected details"),
         "upcoming": MessageLookupByLibrary.simpleMessage("Upcoming"),
         "verify_code_change_email":
             MessageLookupByLibrary.simpleMessage("Change"),

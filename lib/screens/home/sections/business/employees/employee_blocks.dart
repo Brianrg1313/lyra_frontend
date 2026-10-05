@@ -18,7 +18,9 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
 import 'package:core/form.dart';
+import 'package:app/screens/modals/server/master_password/_master_password.dart';
 import 'package:app/screens/home/sections/business/settings/country_flag.dart';
 
 import './employee_card.dart';
@@ -532,6 +534,17 @@ class _Person extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = S.of(context);
 
+    // A session the cloud's grant opened on a master: the password there opens it (`session.md` S-13).
+    if (detail.sealedLocked) {
+      return EmployeeSection(
+        title: text.employee_person_title,
+        children: [
+          EmployeeNote(text: text.employee_person_sealed, lines: 3),
+          Button(title: text.finance_methods_unlock, width: null, action: () => _unseal(context))
+        ]
+      );
+    }
+
     if (!detail.fullProfile) {
       return EmployeeSection(
         title: text.employee_person_title,
@@ -705,6 +718,11 @@ class _Person extends StatelessWidget {
         ])
       ]
     );
+  }
+
+  Future<void> _unseal(BuildContext context) async {
+    final employees = context.read<BusinessEmployeesService>();
+    if (await showUnseal(context)) await employees.loadDetail(detail.id, force: true);
   }
 }
 

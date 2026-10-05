@@ -100,6 +100,7 @@ class EmployeesLanSource implements EmployeesSource {
       "contract_status": answer["contractStatus"],
       "work_status": answer["workStatus"],
       "visibility": answer["fullProfile"] == true ? "full" : "card",
+      "sealed_locked": answer["sealedLocked"] == true,
       "profile_editable": answer["profileEditable"],
       "person": {
         "username": person["username"],

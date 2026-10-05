@@ -178,9 +178,10 @@ All three **return a value and write nothing** (POS services live below this nav
   optional note (≤ 200); **writes** through the `PermissionRequestsService` passed in. A `409` (already pending/granted) closes it. Returns `true` if sent.
 
 ### `server/` (one session over the cloud and a master, plan §9.6)
-- `master_password/_master_password.dart` — `showMasterPassword(context, login:)`, `MasterPasswordModal`: the person's
-  password on this device's master, once after an online sign in that couldn't open it (`HybridService.signIn`); pops
-  whether it did; "not now".
+- `master_password/_master_password.dart` — `showMasterPassword(context, login:)`, `showUnseal(context)`,
+  `MasterPasswordModal`: the person's password on this device's master, once after an online sign in that couldn't open
+  it (`HybridService.signIn`), or to open the sealed details of a session the cloud grant opened (`LanService.unseal`);
+  pops whether it did; "not now".
 - `link_company/_link_company.dart` — `askLinkCompany(context, force:)`, `LinkCompanyModal`: joins the master's company
   with its company online (`HybridService.link`), in plain words; one candidate is named in the title, several are
   picked, none makes it online without asking (`HybridService.createOnline`); asked once a session from the home (a "not now" is remembered), offered again from `ServerConnection` (`force`).

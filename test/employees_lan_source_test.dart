@@ -75,8 +75,22 @@ void main() {
     final detail = await source.detail("e-1");
 
     expect(detail.fullProfile, isFalse);
+    expect(detail.sealedLocked, isFalse);
     expect(detail.person.phone, "");
     expect(detail.job.salary, isNull);
+  });
+
+  test("a profile a cloud grant's session can't open says so, for the password to open it (S-13)", () async {
+    master.answers[Ops.employeesDetail.name] = {
+      ..._detail,
+      "fullProfile": false,
+      "sealedLocked": true,
+      "person": {"username": "grace", "name": "Grace", "lastName": "Hopper", "picture": null},
+    };
+
+    final detail = await source.detail("e-1");
+
+    expect((detail.fullProfile, detail.sealedLocked), (false, true));
   });
 
   test('inviting answers the activation code a master made (E-10)', () async {

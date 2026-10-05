@@ -2,8 +2,8 @@
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart' show UnreadableAnswer;
 
-/// The backend's side of enrolling a master (`docs/task-edge-sync-backend.md` §1), with the
-/// owner's session. Cloud only: a master has nothing to enrol with while offline.
+/// The backend's side of enrolling a master (`docs/task-edge-sync-backend.md` §1) and of its grants (§9),
+/// with the person's session. Cloud only: a master has nothing to enrol with while offline.
 class SyncCloudSource {
   const SyncCloudSource();
 
@@ -21,5 +21,16 @@ class SyncCloudSource {
     if (answer is! Map) throw const UnreadableAnswer("edge/devices");
 
     return Map<String, Object?>.from(answer);
+  }
+
+  /// `POST /edge/v1/grants` (§9): the backend's signed statement that this person may open their
+  /// session on the master [instance] names, good for two minutes and once (`auth.grant`). Any
+  /// member of the master's company gets one, whatever company the session is on online.
+  Future<String> grant(String instance) async {
+    final answer = await edge.post(path: "/grants/", version: "v1", data: {"INSTANCE": instance});
+    final grant = answer is Map ? answer["grant"] : null;
+    if (grant is! String) throw const UnreadableAnswer("edge/grants");
+
+    return grant;
   }
 }

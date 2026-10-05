@@ -7,7 +7,7 @@ the desktop install that holds one company's site offline (`lyra_node`, the engi
 linked to its cloud company, the two hold the same data, kept equal by this sync.
 **Built on the backend** (2026-10-04, `lib/models/edge/MODULE.md` there, not deployed): §1, §2, `/status`;
 every entity of §11 pushed, pulled and in the snapshot, one entity file per section (plan §9.8); the
-allowance always `within`. Not yet: §9, §12. Checked with the engine against the dev backend: the first
+allowance always `within`; §9 grants (2026-10-05). Not yet: §12. Checked with the engine against the dev backend: the first
 link, permissions from the cloud, access taken away, revoking, replay, a forged signature, a clock off; a
 master made offline uploading its company, site, tables, products, stock, payments and currencies; the
 cloud's edits reaching it (a new column, a new product, a void); its edits and deletes reaching the
@@ -207,8 +207,12 @@ continues. Used for a master made from a cloud company (D16), a master rebuilt, 
 One session for two homes: a person signed in online on a device with a master opens their session on
 the master with a statement the backend signs, checked by the master **offline**.
 
-`POST /edge/v1/grants` (user session) `{ "device": "<edge device id>" }` → `{ "grant": "<token>" }`
-- Only for an active member of the master's company.
+`POST /edge/v1/grants` (user session, no `business_id`) `{ "INSTANCE": "<the master's instance>" }` → `{ "grant": "<token>" }`
+- The master is named by its `instance`, which the app reads from its hello before anyone is signed
+  in there; the backend finds its live edge device. The company is the device's, so the app's
+  session may be on another company online.
+- Only for an active member of the master's company (`403 no_business_access`); an unknown or revoked
+  master is `404 edge_device_not_found`, an installation without an edge key `503 edge_unavailable`.
 - `token` = `base64url(payload) "." base64url(signature)`, the signature Ed25519 over the payload's
   bytes with the key whose public half is `edgeKey` (§1). Payload, UTF-8 JSON:
 ```json
@@ -216,7 +220,8 @@ the master with a statement the backend signs, checked by the master **offline**
   "account": { "id": "<cloud user id>", "email": "ada@…" },
   "nonce": "<16 random bytes, base64url>", "iat": 1727800000, "exp": 1727800120 }
 ```
-- Lifetime 2 minutes. The master accepts each `nonce` once and maps the account by e-mail.
+- Lifetime 2 minutes. The master accepts each `nonce` once and maps the account by e-mail
+  (`session.md` S-12, S-13: `auth.grant`, and `auth.unseal` for the sealed fields a grant can't open).
 - Rotating the key: a new `kid`; the master learns new keys through `GET /edge/v1/status`
   (`edgeKeys: [{kid, publicKey}]`), signed by the transport only, so add a new key **before** using it.
 
@@ -322,7 +327,9 @@ company, not only the owner: these fields only, for members; the full row stays 
 - A batch retried after a timeout applies nothing twice.
 - A revoked device gets `401 edge_revoked`; past the allowance the edge calls answer `402` and resume
   afterwards without losing a change.
-- A grant made for one master is refused by another master, after its expiry, and the second time.
+- A grant made for one master is refused by another master, after its expiry, and the second time. **Seen
+  (2026-10-05)**: a grant issued by the dev backend's models for a master enrolled there opened that
+  master's owner once and was refused the second time; refused to a non-member and for an unknown master.
 - A person's permissions changed in the cloud app reach the master within one sync cycle (`member`),
   and the people a master uploads at the first link keep the permissions they had there. **Seen on the
   dev backend (2026-10-04)**, the cloud side played by its models.

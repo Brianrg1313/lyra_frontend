@@ -15,6 +15,7 @@ import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 import 'package:app/screens/modals/finance/exchange_currency_form/_exchange_currency_form.dart';
 import 'package:app/screens/modals/finance/payment_method_form/_payment_method_form.dart';
+import 'package:app/screens/modals/server/master_password/_master_password.dart';
 
 import 'currencies_block.dart';
 import 'method_card.dart';
@@ -117,7 +118,9 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
       child: SectionMessage(
         icon: CI.key,
         title: S.of(context).finance_methods_locked_title,
-        subtitle: S.of(context).finance_methods_locked_subtitle
+        subtitle: S.of(context).finance_methods_locked_subtitle,
+        action: _unseal,
+        actionLabel: S.of(context).finance_methods_unlock
       )
     ),
     // No account is the normal state on the first day and not a failure: a
@@ -159,6 +162,11 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
     service.currencies.main.isNotEmpty
       ? service.currencies.main
       : context.read<BusinessService>().currencyCode;
+
+  /// The password opens the session's sealed details (`session.md` S-13); the list is read again.
+  Future<void> _unseal() async {
+    if (await showUnseal(context) && mounted) await context.read<MoneyMethodsService>().retry();
+  }
 
   Future<void> _add() => _form();
 

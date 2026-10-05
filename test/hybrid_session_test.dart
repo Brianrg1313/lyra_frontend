@@ -38,7 +38,7 @@ void main() {
       hybrid.dispose();
     });
 
-    test('a code sign in, or a master password other than the cloud one, asks for it once', () async {
+    test('with no grant to be had, a code sign in or another master password asks for it once', () async {
       final master = _Master(password: "the master's own");
       final hybrid = service(master);
 
@@ -50,6 +50,45 @@ void main() {
       expect(await hybrid.signIn("ada@lyra.app", "the master's own"), isTrue);
       expect(Deployment.mode, DeploymentMode.hybrid);
       hybrid.dispose();
+    });
+
+    test("a code sign in opens the master with the cloud's grant for it, no password asked (S-12)", () async {
+      final master = _Master(instance: "inst-1");
+      final asked = <String>[];
+      final hybrid = HybridService(lan: master, presence: _Presence(true), grant: (instance) async {
+        asked.add(instance);
+        return "grant-for-$instance";
+      });
+
+      expect(await hybrid.join("ada@lyra.app"), HybridJoin.joined);
+      expect(asked, ["inst-1"]);
+      expect(master.grants, ["grant-for-inst-1"]);
+      expect(master.signIns, isEmpty);
+      expect(Deployment.mode, DeploymentMode.hybrid);
+      hybrid.dispose();
+    });
+
+    test("a cloud password the master doesn't take falls back to the grant; none to be had asks", () async {
+      final master = _Master(instance: "inst-1", password: "the master's own");
+      final hybrid = HybridService(lan: master, presence: _Presence(true), grant: (instance) async => "grant");
+
+      expect(await hybrid.join("ada@lyra.app", password: "the cloud's"), HybridJoin.joined);
+      expect(master.signIns.single.$2, "the cloud's");
+      expect(master.grants, ["grant"]);
+      hybrid.dispose();
+
+      Deployment.use(DeploymentMode.cloud, paired: DeploymentRole.client);
+      final away = _Master(instance: "inst-1");
+      final refused = HybridService(lan: away, presence: _Presence(true), grant: (instance) => Future.error({"code": 503}));
+      expect(await refused.join("ada@lyra.app"), HybridJoin.needsPassword);
+      expect(away.grants, isEmpty);
+      expect(Deployment.mode, DeploymentMode.cloud);
+      refused.dispose();
+
+      final rejecting = _Master(instance: "inst-1", takesGrants: false);
+      final rejected = HybridService(lan: rejecting, presence: _Presence(true), grant: (instance) async => "grant");
+      expect(await rejected.join("ada@lyra.app"), HybridJoin.needsPassword);
+      rejected.dispose();
     });
 
     test("a master session left by someone else is signed out, not taken", () async {
@@ -245,7 +284,8 @@ void main() {
 
 /// A paired master: [reach] when opened, signed in as [signedInAs] if anyone, taking [password].
 class _Master extends LanService {
-  _Master({this.reach = LanStatus.signedOut, this.signedInAs, this.password = "correct horse battery"})
+  _Master({this.reach = LanStatus.signedOut, this.signedInAs, this.password = "correct horse battery", this.instance,
+    this.takesGrants = true})
     : super(store: MemoryLanIdentityStore());
 
   final LanStatus reach;
@@ -253,6 +293,23 @@ class _Master extends LanService {
   String? signedInAs;
 
   final signIns = <(String, String)>[];
+  final grants = <String>[];
+
+  /// The master's instance, from its hello: null until one answered.
+  final String? instance;
+  final bool takesGrants;
+
+  @override
+  String? get instanceId => instance;
+
+  @override
+  Future<LanStatus> signInWithGrant(String grant) async {
+    if (!takesGrants) return LanStatus.signedOut;
+
+    grants.add(grant);
+    signedInAs = "ada@lyra.app";
+    return _now = LanStatus.ready;
+  }
   int signedOut = 0;
 
   LanStatus _now = LanStatus.idle;

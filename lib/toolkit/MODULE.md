@@ -25,7 +25,7 @@ backend, routes and theme. No UI.
   (in `preCall`: a stored `LanDevice` is LAN mode with its role unless a cloud token is stored, anything else cloud; never chosen), `attach` (set up or
   paired), `detach` (left the LAN), `online`/`offline` (the sign in page's network: the cloud's sources, or the paired master's; `offline` is also "work offline"), `hybrid` (signed in online and to the master, `HybridService`), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
   `lanService` — session, business, inventory and stock so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
-- `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in (or `activate`) + `session.bind`,
+- `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in (or `activate`, or a cloud `grant`) + `session.bind`, `unseal`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
   `lanPlatform`, `lanDeviceName` (the default name a device pairs with), `lanSupported` (web: the `<meta name="lyra-master">` a master writes into its page), `lanServingMaster` (web: the page's origin, if a master's), `lanCanScan` (Android, iOS),
   `discoverMasters`, `openPairingSocket`, `newDeviceKey`, `signDeviceProof`, `forgetDeviceKey`, `canInstallBrowserCa`,

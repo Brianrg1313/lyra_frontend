@@ -46,7 +46,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   `SecureLanIdentityStore` (OS key store via `DatabaseService`), `MemoryLanIdentityStore` (tests).
 - `lan_service.dart` — `LanService` (+ `LanStatus`), app-wide (`lanService`): `open` (on the master, starts the engine
   first; a master app without its key enrolls on its own when the engine runs unattended; connects; resumes the stored session), `unlock`, `enrollMaster`, `needsActivation` (`auth.identify`, the sign in's first step), `signIn`, `activate` (an invited person's code
-  and new password, `auth.activate`), `signOut`, `devices`,
+  and new password, `auth.activate`), `signInWithGrant` (the cloud grant, `auth.grant`), `unseal` (the password opens a
+  granted session's sealed fields, `auth.unseal`), `instanceId` (from the hello), `signOut`, `devices`,
   `startPairing`, `revoke`, `browserCa`, `stopServer`, `leave` (back to cloud; a browser asks again), `call(op, args)` (what
   the LAN sources run: a write gets its `commandId`; a lost master is thrown as `{message, action, code: "unreachable"}`).
   A dropped socket reconnects once (→ `revoked`, `unreachable` or where it was); leaving `ready` fires `onSessionRejected`.
@@ -61,7 +62,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   online > master > none, `searching` until the socket and the LAN have answered; `watch` looks at the LAN again every 15 s while offline; `hold` pauses it all.
 - `hybrid_service.dart` — `HybridService` (+ `HybridJoin`), app-wide (`hybridService`), plan §9.6: `join(login,
   password?)` after an online sign in on a paired device (the master's session too → `hybrid`; another person's kept
-  session signed out first; `needsPassword` → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
+  session signed out first; the password when the sign in had one, else or when refused the cloud grant
+  (`SyncCloudSource.grant`, injectable); `needsPassword` only when neither → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
   master keeps the session), `adopt` (a master just made from the cloud), `workOffline` / `workOnline` (session kept),
   `stop` (sign out), the internet from its `CloudPresence` alone, no timer (connected/dropped →
   `CapabilityService.internet` at once, the cloud socket reopened when it returns; no answer yet changes nothing); a session on the master alone (`masterOnly`, followed from `LanService`) follows it
@@ -73,7 +75,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   master by itself, once a session, when `hybrid` is online, linked and the person owns the company (`sync.prepare` →
   `SyncCloudSource.enrol` → `sync.enroll`); never a revoked one; `taken` on `site_has_master`; `enrol(replace)` is the
   owner's choice from the server section; `refresh` reads `sync.status`. A network failure retries when the internet returns.
-- `sync_cloud_source.dart` — `SyncCloudSource`: `POST /edge/v1/devices` (`edge` api) with `REPLACE` only when asked.
+- `sync_cloud_source.dart` — `SyncCloudSource`: `POST /edge/v1/devices` (`edge` api) with `REPLACE` only when asked;
+  `grant(instance)`: `POST /edge/v1/grants` (any member, no company needed).
 
 ## capabilities/
 
@@ -119,7 +122,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   compressed; the viewer's card forced first, kept without an id; `email` only on an invitation to an email with no account), `EmployeeState`, `EmployeeContract`, `EmployeeLeaveType`,
   `EmployeeWorkStatus` (`working` / `notStarted` / away + leave type), `employeeDay` (calendar day, no time zone).
 - `business_employee_detail_model.dart` — `BusinessEmployeeDetail` (`GET /business/employees/detail/:ID`): `EmployeePerson`
-  (private fields empty unless `fullProfile`), `EmployeeJob` (`salary` null ≠ 0), `EmployeeManager`, `EmployeeLeave`,
+  (private fields empty unless `fullProfile`; `sealedLocked` on a master session a cloud grant opened), `EmployeeJob` (`salary` null ≠ 0), `EmployeeManager`, `EmployeeLeave`,
   `EmployeeSpan`, `EmployeeEnding`, and the workday/period/contract-status/end-reason/document/sex enums.
 - `business_employees_service.dart` — `BusinessEmployeesService` (+ `BusinessEmployeesStatus`, `EmployeeDetailStatus`):
   current + former lists (a failed former read leaves it empty; not read without `viewsAll`), `total` = active count, selection (first read opens the
