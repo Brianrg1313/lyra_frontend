@@ -6,8 +6,10 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/permissions/permission_member_model.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/business/employees/employee_permissions.dart';
 import 'package:core/form.dart';
 import 'package:core/button.dart';
 
@@ -35,6 +37,10 @@ Future<bool> showInviteEmployee(
 /// The job title is asked too: the backend files the job with the invitation
 /// and a job cannot be without one. The rest of the job is filled in later,
 /// from the person's detail.
+///
+/// A permissions template is offered when the viewer may give permissions and
+/// the source takes one ([BusinessEmployeesService.inviteTemplates]): the person
+/// then enters already able to work, instead of waiting to be given access.
 class InviteEmployeeModal extends StatefulWidget {
   const InviteEmployeeModal({super.key, required this.employees});
 
@@ -67,6 +73,18 @@ class _InviteEmployeeModalState extends State<InviteEmployeeModal> {
     obligatory: true,
     customErrors: _errors(S.of(context).employees_invite_job)
   );
+
+  late final _template = InputController.select(key: "TEMPLATE_ID", form: _form);
+
+  List<PermissionTemplateModel> _templates = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    widget.employees.inviteTemplates().then((templates) {
+      if (mounted) setState(() => _templates = templates);
+    });
+  }
 
   Map<InputError, String> _errors(String field) => {
     InputError.empty: S.of(context).form_empty_ma(field),
@@ -120,6 +138,28 @@ class _InviteEmployeeModalState extends State<InviteEmployeeModal> {
         controller: _job,
         onSubmit: _submit
       ),
+      if (_templates.isNotEmpty) ...[
+        SizedBox(height: AppSize.spaceS),
+        SelectInput(
+          controller: _template,
+          title: S.of(context).employees_invite_permissions,
+          placeholder: S.of(context).employees_invite_permissions_hint,
+          emptyText: S.of(context).permission_template_empty,
+          options: [
+            SelectOption(
+              value: "",
+              placeholder: S.of(context).employees_invite_permissions_none,
+              subtitle: S.of(context).employees_invite_permissions_none_description
+            ),
+            for (final template in _templates)
+              SelectOption(
+                value: template.id,
+                placeholder: permissionTemplateText(context, template).name,
+                subtitle: permissionTemplateText(context, template).description
+              )
+          ]
+        )
+      ],
       SizedBox(height: AppSize.spaceM),
       Button(
         title: S.of(context).employees_invite_send,
@@ -134,10 +174,13 @@ class _InviteEmployeeModalState extends State<InviteEmployeeModal> {
 
     _form.loading.value = true;
 
+    final template = _template.selectedValue;
+
     final sent = await widget.employees.invite(
       context,
       email: _email.value.trim().toLowerCase(),
-      jobTitle: _job.value.trim()
+      jobTitle: _job.value.trim(),
+      template: template == null || template.isEmpty ? null : template
     );
 
     if (!mounted) return;

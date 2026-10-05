@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 // PACKAGES
 import 'package:provider/provider.dart';
 
+import 'package:lyra_protocol/lyra_protocol.dart';
+
 import 'package:core/core.dart';
 import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
@@ -14,6 +16,7 @@ import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
+import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/screens/home/sections/business/employees/_employees.dart';
@@ -38,7 +41,13 @@ import 'package:app/screens/modals/business/invite_employee/_invite_employee.dar
 class _Employees extends BusinessEmployeesService {
   int loads = 0;
   final List<String> details = [];
-  final List<(String, String)> invites = [];
+  final List<(String, String, String?)> invites = [];
+
+  /// What [inviteTemplates] offers; none, as for a viewer who may not give permissions.
+  List<PermissionTemplateModel> templates = const [];
+
+  @override
+  Future<List<PermissionTemplateModel>> inviteTemplates() async => templates;
 
   @override
   Future<void> load({bool force = false}) async => loads++;
@@ -50,8 +59,12 @@ class _Employees extends BusinessEmployeesService {
   EmployeeActivation? activation;
 
   @override
-  Future<EmployeeInvitationSent?> invite(BuildContext context, {required String email, required String jobTitle}) async {
-    invites.add((email, jobTitle));
+  Future<EmployeeInvitationSent?> invite(BuildContext context, {
+    required String email,
+    required String jobTitle,
+    String? template
+  }) async {
+    invites.add((email, jobTitle, template));
     return (id: null, activation: activation);
   }
 
@@ -356,7 +369,44 @@ void main() {
       await tester.tap(find.text("Send invitation"));
       await tester.pump();
 
-      expect(service.invites, [("rosa@mail.com", "Cashier")]);
+      expect(service.invites, [("rosa@mail.com", "Cashier", null)]);
+      expect(find.text("Permissions"), findsNothing);
+    });
+
+    testWidgets('the invite form sends the permissions template picked', (tester) async {
+      final service = _Employees()..templates = [
+        PermissionTemplateModel(id: "seller", scope: "global", name: "seller", grant: Grant.none()),
+        PermissionTemplateModel(id: "t-1", scope: "company", name: "Night shift", grant: Grant.none())
+      ];
+
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        home: Builder(builder: (context) {
+          AppSize.instance(context);
+
+          return Scaffold(body: Center(child: InviteEmployeeModal(employees: service)));
+        })
+      ));
+      await tester.pump();
+
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), "rosa@mail.com");
+      await tester.enterText(fields.at(1), "Cashier");
+      await tester.tap(find.byWidgetPredicate((widget) => widget is SelectInput));
+      await tester.pump();
+      await tester.tap(find.descendant(of: find.byType(SelectOptionTile), matching: find.text("Night shift")));
+      await tester.pump();
+      await tester.pump();
+      await tester.tap(find.text("Send invitation"));
+      await tester.pump();
+
+      expect(service.invites, [("rosa@mail.com", "Cashier", "t-1")]);
     });
 
     testWidgets('a master\'s invitation gives way to its activation code, shown once (E-10)', (tester) async {

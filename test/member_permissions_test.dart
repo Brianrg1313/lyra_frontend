@@ -5,6 +5,9 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
+import 'package:app/services/business/business_employees_service.dart';
+import 'package:app/services/business/sources/employees_cloud_source.dart';
+import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/permissions/member_permissions_service.dart';
@@ -173,6 +176,45 @@ void main() {
     });
   });
 
+  group('invitation templates', () {
+    final seller = PermissionTemplateModel(
+      id: "seller",
+      scope: "global",
+      name: "Seller",
+      grant: Grant(sections: PermissionPresets.byCode("seller")!.sections)
+    );
+    final finance = PermissionTemplateModel(
+      id: "finance",
+      scope: "global",
+      name: "Finance",
+      grant: Grant(sections: PermissionPresets.byCode("finance")!.sections)
+    );
+    final owner = PermissionTemplateModel(id: "owner", scope: "global", name: "Owner", grant: Grant.everything());
+
+    test('only what the viewer holds is offered, and `all` only with `all`', () async {
+      final manager = BusinessEmployeesService(
+        source: const EmployeesCloudSource(),
+        permissions: _Source(mine: Grant(sections: PermissionPresets.byCode("manager")!.sections), templates: [seller, finance, owner])
+      );
+      final everything = BusinessEmployeesService(
+        source: const EmployeesCloudSource(),
+        permissions: _Source(mine: Grant.everything(), templates: [seller, finance, owner])
+      );
+
+      expect([for (final template in await manager.inviteTemplates()) template.id], ["seller"]);
+      expect([for (final template in await everything.inviteTemplates()) template.id], ["seller", "finance", "owner"]);
+    });
+
+    test('a source whose invitation takes no template offers none', () async {
+      final service = BusinessEmployeesService(
+        source: _NoTemplates(),
+        permissions: _Source(mine: Grant.everything(), templates: [seller])
+      );
+
+      expect(await service.inviteTemplates(), isEmpty);
+    });
+  });
+
   group('EmployeePermissions', () {
     testWidgets("one's own permissions only show", (tester) async {
       _size(tester);
@@ -330,6 +372,15 @@ class _Source implements PermissionsSource {
 
   @override
   Future<void> revoke(String username) async => revoked.add(username);
+}
+
+/// A master's invitation: `employees.invite` takes no permissions.
+class _NoTemplates implements EmployeesSource {
+  @override
+  bool get invitesWithTemplate => false;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 class _Master extends LanService {

@@ -48,8 +48,15 @@ class EmployeesLanSource implements EmployeesSource {
       (throw const UnreadableAnswer("employees.detail"));
   }
 
+  /// `employees.invite` takes no permissions (E-10): a master's invited person is let in with
+  /// nothing and given access afterwards (`permissions.members.assign`).
   @override
-  Future<EmployeeInvitationSent> invite({required String email, required String jobTitle}) async {
+  bool get invitesWithTemplate => false;
+
+  @override
+  Future<EmployeeInvitationSent> invite({required String email, required String jobTitle, String? template}) async {
+    if (template != null) throw UnsupportedError("employees.invite takes no template");
+
     final answer = await _lan.call(Ops.employeesInvite, args: {"email": email, "jobTitle": jobTitle});
     if (answer is! Map) throw const UnreadableAnswer("employees.invite");
 

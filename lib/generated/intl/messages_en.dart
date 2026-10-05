@@ -1869,6 +1869,15 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Job title"),
         "employees_invite_job_hint": MessageLookupByLibrary.simpleMessage(
             "Cashier, accountant, driver…"),
+        "employees_invite_permissions":
+            MessageLookupByLibrary.simpleMessage("Permissions"),
+        "employees_invite_permissions_hint":
+            MessageLookupByLibrary.simpleMessage("Pick a template"),
+        "employees_invite_permissions_none":
+            MessageLookupByLibrary.simpleMessage("No permissions yet"),
+        "employees_invite_permissions_none_description":
+            MessageLookupByLibrary.simpleMessage(
+                "Give them access later, from their profile."),
         "employees_invite_send":
             MessageLookupByLibrary.simpleMessage("Send invitation"),
         "employees_invite_subtitle": MessageLookupByLibrary.simpleMessage(

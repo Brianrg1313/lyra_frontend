@@ -3645,6 +3645,46 @@ class S {
     );
   }
 
+  /// `Permissions`
+  String get employees_invite_permissions {
+    return Intl.message(
+      'Permissions',
+      name: 'employees_invite_permissions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a template`
+  String get employees_invite_permissions_hint {
+    return Intl.message(
+      'Pick a template',
+      name: 'employees_invite_permissions_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No permissions yet`
+  String get employees_invite_permissions_none {
+    return Intl.message(
+      'No permissions yet',
+      name: 'employees_invite_permissions_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Give them access later, from their profile.`
+  String get employees_invite_permissions_none_description {
+    return Intl.message(
+      'Give them access later, from their profile.',
+      name: 'employees_invite_permissions_none_description',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Lyra makes their account on this server and gives you a code to hand them. They use it, with a password of their own, the first time they sign in.`
   String get employees_invite_subtitle_local {
     return Intl.message(

@@ -1,11 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
+// PACKAGES
+import 'package:lyra_protocol/lyra_protocol.dart';
+
+// SERVICES
+
 // SERVICES
 import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/employee_activation_model.dart';
+import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/permissions/sources/permissions_source.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/toolkit/api.dart';
@@ -33,11 +40,14 @@ enum EmployeeDetailStatus { idle, loading, ready, error }
 /// A detail is read once per person per page and kept: switching back and
 /// forth between two employees in the list does not reread either.
 class BusinessEmployeesService extends ChangeNotifier {
-  BusinessEmployeesService({EmployeesSource? source}) : _injected = source;
+  BusinessEmployeesService({EmployeesSource? source, PermissionsSource? permissions})
+    : _injected = source, _injectedPermissions = permissions;
 
   final EmployeesSource? _injected;
+  final PermissionsSource? _injectedPermissions;
 
   EmployeesSource get _source => _injected ?? Sources.employees;
+  PermissionsSource get _permissions => _injectedPermissions ?? Sources.permissions;
 
   BusinessEmployeesStatus _status = BusinessEmployeesStatus.idle;
   List<BusinessEmployeeModel> _current = const [];
@@ -119,9 +129,34 @@ class BusinessEmployeesService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The permission templates an invitation may carry: none where the source
+  /// takes no template or the viewer may not give permissions
+  /// (`business.employees.permissions`), and only those whose every key the
+  /// viewer holds (`all` needs `all`), since the backend refuses the rest as an
+  /// escalation. A failed read answers none: the invitation goes out without.
+  Future<List<PermissionTemplateModel>> inviteTemplates() async {
+    if (!_source.invitesWithTemplate || !PermissionsService().can("business.employees.permissions")) return const [];
+
+    try {
+      final (mine, templates) = await (_permissions.mine(), _permissions.templates()).wait;
+
+      return [
+        for (final template in templates)
+          if (template.grant.all
+            ? mine.all
+            : PermissionCatalog.changes(PermissionCatalog.filled(false), template.grant.sections).every(mine.can))
+            template
+      ];
+    } catch (e) {
+      if (kDebugMode) print("invite templates: $e");
+      return const [];
+    }
+  }
+
   /// Invites a person by email (`POST /business/employees/invite`), whether or
   /// not they have an account: for an email with none the backend opens one
-  /// and the invitation waits there until they sign up with it.
+  /// and the invitation waits there until they sign up with it. [template]
+  /// (one of [inviteTemplates]) is copied onto them when they accept.
   ///
   /// Rereads the list and opens the new invitation. Answers what was sent,
   /// with the activation code a master made for a new account, which the
@@ -130,12 +165,13 @@ class BusinessEmployeesService extends ChangeNotifier {
   Future<EmployeeInvitationSent?> invite(
     BuildContext context, {
     required String email,
-    required String jobTitle
+    required String jobTitle,
+    String? template
   }) async {
     EmployeeInvitationSent sent;
 
     try {
-      sent = await _source.invite(email: email, jobTitle: jobTitle);
+      sent = await _source.invite(email: email, jobTitle: jobTitle, template: template);
     } catch (error) {
       if (kDebugMode) print("inviteEmployee failed: $error");
 

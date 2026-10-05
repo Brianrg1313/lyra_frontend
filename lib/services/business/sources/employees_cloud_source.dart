@@ -36,12 +36,17 @@ class EmployeesCloudSource implements EmployeesSource {
       (throw const UnreadableAnswer("business/employees/detail"));
   }
 
+  /// The backend stores the template with the invitation and copies it on acceptance; sending one
+  /// needs `permissions.assign` and refuses as `PUT /permissions/members/` does.
   @override
-  Future<EmployeeInvitationSent> invite({required String email, required String jobTitle}) async {
+  bool get invitesWithTemplate => true;
+
+  @override
+  Future<EmployeeInvitationSent> invite({required String email, required String jobTitle, String? template}) async {
     final data = await api.post(
       path: "/business/employees/invite/",
       version: "v1",
-      data: {"EMAIL": email, "JOB_TITLE": jobTitle}
+      data: {"EMAIL": email, "JOB_TITLE": jobTitle, "TEMPLATE_ID": ?template}
     );
 
     // The cloud e-mails the person: there is no code to hand over.
