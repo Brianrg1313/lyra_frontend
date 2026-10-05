@@ -6,11 +6,12 @@ for masters (`/edge/v1`), an edge-device credential, the id map, the allowance, 
 the desktop install that holds one company's site offline (`lyra_node`, the engine). Once it is
 linked to its cloud company, the two hold the same data, kept equal by this sync.
 **Built on the backend** (2026-10-04, `lib/models/edge/MODULE.md` there, not deployed): §1, §2, `/status`;
-`/commands` applying `account` and parking every other entity (accepted, ids mapped, kept in order for
-when it is served); `/changes` and `/snapshot` with `member`; the allowance always `within`. Not yet:
-the other entities, §9, §12. Checked with the engine against the dev backend: the first link, a
-permission changed in the cloud reaching the master, access taken away, revoking, replay, a forged
-signature, a clock off.
+every entity of §11 pushed, pulled and in the snapshot, one entity file per section (plan §9.8); the
+allowance always `within`. Not yet: §9, §12. Checked with the engine against the dev backend: the first
+link, permissions from the cloud, access taken away, revoking, replay, a forged signature, a clock off; a
+master made offline uploading its company, site, tables, products, stock, payments and currencies; the
+cloud's edits reaching it (a new column, a new product, a void); its edits and deletes reaching the
+cloud; the same cell edited on both sides; a new master rebuilt from the snapshot.
 **Frontend side** The engine syncs by itself over HTTPS (the app may be closed). The app enrols it
 and asks for grants with the person's cloud session. The engine is tested against an in-memory
 copy of this contract (`lyra_node/test/support/edge_cloud.dart`), which is the reference when this
@@ -256,7 +257,26 @@ is a calendar day `YYYY-MM-DD` in the company's zone. A ref is an id of the name
 
 The rules behind each field are the specs in `lyra/app/docs/offline/specs/` (`business.md`,
 `inventory.md`, `stock.md`, `money.md`). Next versions add: POS tickets and their lines, the
-handover, employees, clients, deliveries, files (logo, product images).
+handover, employees, clients, deliveries, files (logo, product images). A new entity is a row here
+plus one entity on each side (plan §9.8).
+
+How the backend holds what it can't hold as sent:
+- **`company`, `site`**: a value its own rules refuse (a name another company of the owner has, a
+  taken handle, an unknown zone) is left as the cloud has it, and the cloud's goes back to the
+  master with a newer stamp. The snapshot leaves out their null fields: a master linked with data
+  keeps what it has where the cloud has nothing, and uploads it right after.
+- **`product_table`**: one table is always the cloud's primary; `primary: false` alone changes
+  nothing until the master's primary table takes the flag.
+- **`product`**: picture and stock cells don't travel. A decimal sent `"22.50"` and kept as 22.5 is
+  the same value: no correction comes back.
+- **`stock_movement`, `payment`**: the cloud keeps one ledger and one money book per company until
+  they carry a branch; the cloud's own go to the master of the **main** branch only, and every
+  master's are applied. A movement is never refused for the balance. The cloud's reservation that
+  becomes a sale is two facts, a `remove` (`sale`) and an `unreserve` (`reintegration`, id
+  `<movement>:held`).
+- **`payment`**: refused (`currency`) when not in the company's main currency, which the cloud
+  stamps on every payment. `date` becomes the moment it was written down when that falls on the
+  same day in the company's zone, noon of that day otherwise.
 
 ## 12. Where a browser finds the master (plan §9.7, D19)
 

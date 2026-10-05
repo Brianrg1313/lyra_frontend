@@ -144,6 +144,11 @@ served or accepted without TLS and a verified peer, debug builds and tests inclu
 listener, no "accept any certificate" outside the `/pair` step that SPAKE2 then authenticates
 (`protocol-v1.md` §3).
 
+**Sync** — a `local` feature whose data also lives in the cloud syncs by declaring one entity in the
+same change: its row in `docs/task-edge-sync-backend.md` §11, an `EdgeEntity` in `lyra_node`, and one
+in the backend's `lib/models/edge/entities/` (plan §9.8). Ids, stamps, conflicts and the feed are the
+sync's; never sync a section by hand.
+
 **Navigation** — `Navis`, never `Navigator.pushNamed`:
 `Navis.push/pop/navigate/pushAndClearStack/back/forward`; active screen `Navis.currentKey`,
 URL args `Navis.currentArgs`. Routes live in `lib/toolkit/settings/routes.dart`; home

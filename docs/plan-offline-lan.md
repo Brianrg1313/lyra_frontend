@@ -13,11 +13,11 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor) done | clients and deliveries, then statistics; the company's own templates have ops and endpoints but no screen |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
 | 5 Operations | not started | — |
-| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the backend's base (2026-10-04: enrolment, signed calls, `account` at the first link, `member` in `/changes` and `/snapshot`, the rest parked), seen with the engine against the dev backend; the enrolment by itself, no screen (2026-10-04) | the conflicts inbox on screen; the backend applying the other entities (business, inventory, stock, money, then POS tickets, employees, clients, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, employees, clients, deliveries, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
-**Next step:** clients and deliveries, then statistics, and E3 (engine side; the backend's part is
-§9 of `docs/task-edge-sync-backend.md`).
+**Next step:** clients and deliveries (each with its edge entity, §9.8), then statistics, and E3
+(engine side; the backend's part is §9 of `docs/task-edge-sync-backend.md`).
 **Real hardware goes last** (owner's call, 2026-10-04): the exit checks of phase 3 and 4b and the
 "not yet seen" list below run together once the code is done.
 
@@ -45,8 +45,8 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 **Repos** All on this disk, **nothing pushed**, no remotes except `core`'s.
 - The backend (`backend/projects/lyra`): the permissions catalog gained `server` and `money.export` and the
   areas map the master's ids (2026-10-04), plus `pnpm permissions:export`; the edge API (`lib/models/edge`,
-  `/edge/v1`, the `edge_*` tables, `EDGE_KEY` in the dev env); **uncommitted**, beside other work in
-  progress there.
+  `/edge/v1`, the `edge_*` tables, `EDGE_KEY` in the dev env) with every §11 entity, plus what it needed of
+  `Tables`, `Products` and `Inventory`; **uncommitted**, beside other work in progress there.
 - The app: `main` (the `feat/offline-*` branches are merged into it).
 - `lyra_protocol`, `lyra_node`: `main`.
 - `core`: `feat/offline-lan`, which holds what the app depends on; its `main` is behind it.
@@ -731,6 +731,26 @@ master proves who it is.
 - Backend side: `docs/task-edge-sync-backend.md` §12.
 
 ---
+
+### 9.8 Every section syncs the same way (2026-10-04)
+
+A section whose data lives on a master and in the cloud (a calendar tomorrow, clients and deliveries
+next) syncs by declaring **one entity**, the same on both sides, and nothing more:
+
+1. Its row in `docs/task-edge-sync-backend.md` §11: name, scope (company or site), ops, fields in the
+   engine's representation (amounts in minor units, days as `YYYY-MM-DD`, instants as ISO, refs as ids).
+2. The engine's `EdgeEntity` (`lyra_node` `lib/src/sync/entities.dart`): how its tables read, what an
+   oplog entry touched, how a pulled change is written.
+3. The backend's `EdgeEntity` (`lyra` backend `lib/models/edge/entities/`, listed in `entities.js`): how
+   the cloud's data reads, what changed since a moment (or everything, for a small set), how a pushed
+   change is written through the section's own models.
+
+Ids, stamps per field, conflicts, deletes, the feed, the snapshot, the first upload and the retries are
+the sync's, written once and the same for every entity. The cloud's routes don't announce their
+writes: before every pull the backend compares each record with what the masters were last told
+(`EdgeRecords.sweep`), so a write path added later can't be forgotten. A change is stamped with when it
+was written where the record keeps that (`updated`), so an edit made in the cloud while the master was
+away doesn't beat the master's later one.
 
 ## 10. Operations
 
