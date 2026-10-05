@@ -187,7 +187,14 @@ class LocalServerService extends ChangeNotifier {
   /// ours), or starts it detached and waits for it. Answers the status it settled in; `ready`
   /// or `locked` are running.
   Future<LocalServerStatus> start({String? passphrase, Duration timeout = const Duration(seconds: 20)}) async {
-    final current = await refresh();
+    var current = await refresh();
+
+    if (isRunning && await _outdated()) {
+      // An update installed a new engine while the old one kept running (it outlives the app,
+      // plan D4): the installed one takes over, or this app would attach to an engine it wasn't
+      // shipped with until the computer restarts.
+      if (await stop()) current = LocalServerStatus.stopped;
+    }
 
     if (current == LocalServerStatus.stopped) {
       try {
@@ -239,6 +246,20 @@ class LocalServerService extends ChangeNotifier {
     }));
 
     return answer != null && await _keep(answer.json, key);
+  }
+
+  /// Whether the running engine is another version than the installed executable
+  /// (`lyra_node version`). Unknown on either side counts as current: never stop what works.
+  Future<bool> _outdated() async {
+    if (_version == null) return false;
+
+    try {
+      final installed = (await _commands.run(["version"])).json["engine"];
+
+      return installed is String && installed != _version;
+    } catch (_) {
+      return false;
+    }
   }
 
   Map<String, Object?> _device(EcKeyPair key) => {

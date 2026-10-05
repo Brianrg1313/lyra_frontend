@@ -93,6 +93,31 @@ void main() {
     expect(service.isRunning, isTrue);
   });
 
+  test('an engine left running by an older install is replaced by the installed one', () async {
+    final node = _Node()
+      ..running = "0.1.0"
+      ..statuses.addAll(["ready", "starting", "ready"])
+      ..answers["version"] = {"engine": "0.2.0"}
+      ..answers["stop"] = {"stopped": true};
+    final service = LocalServerService(commands: node, supported: true, store: MemoryLanIdentityStore());
+
+    expect(await service.start(), LocalServerStatus.ready);
+    expect(node.calls.map((call) => call.command.first), containsAllInOrder(["status", "version", "stop"]));
+    expect(node.spawned, hasLength(1));
+  });
+
+  test('an engine of the installed version is attached to, never restarted', () async {
+    final node = _Node()
+      ..running = "0.2.0"
+      ..statuses.add("ready")
+      ..answers["version"] = {"engine": "0.2.0"};
+    final service = LocalServerService(commands: node, supported: true, store: MemoryLanIdentityStore());
+
+    expect(await service.start(), LocalServerStatus.ready);
+    expect(node.calls.map((call) => call.command.first), isNot(contains("stop")));
+    expect(node.spawned, isEmpty);
+  });
+
   test('an engine that cannot prove it is ours is left alone', () async {
     final node = _Node()..statuses.add("unverified");
     final service = LocalServerService(commands: node, supported: true, store: MemoryLanIdentityStore());
@@ -115,13 +140,16 @@ class _Node implements NodeCommands {
   final List<String> statuses = [];
   final List<String?> spawned = [];
 
+  /// The running engine's version, as `status` reports it.
+  String? running;
+
   @override
   Future<NodeAnswer> run(List<String> command, {String? input}) async {
     calls.add((command: command, input: input));
 
     if (command.first == "status") {
       final status = statuses.length > 1 ? statuses.removeAt(0) : statuses.single;
-      return (exitCode: 0, json: <String, Object?>{"status": status});
+      return (exitCode: 0, json: <String, Object?>{"status": status, "version": ?running});
     }
 
     final json = answers[command.first] ?? const {};

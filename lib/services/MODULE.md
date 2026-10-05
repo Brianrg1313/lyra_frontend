@@ -32,7 +32,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `local_server_service.dart` — `LocalServerService` (+ `LocalServerStatus`): `refresh` (also records the LAN port on the
   stored device), `setUp` (the owner, and the company when made from the cloud; answers the 24 recovery words once; enrols this app as the master device and keeps its
   `LanDevice`), `enroll` (a new certificate for this app, engine stopped), `start` (attaches to a running engine that
-  proved it is ours, else spawns it detached and waits), `stop`, `recover` (enrols too); `error` keeps the engine's
+  proved it is ours, restarted when it is not the installed version; else spawns it detached and waits), `stop`, `recover` (enrols too); `error` keeps the engine's
   refusal code. `unavailable` on web/mobile or with no executable. `usernameOf(email)`: a valid S-1 username from an
   e-mail (the setup started from the sign in).
 - `node_commands.dart` — `NodeCommands` (seam), `ProcessNodeCommands`: runs `lyra_node <command>` (one JSON line out,

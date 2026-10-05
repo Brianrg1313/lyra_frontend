@@ -189,6 +189,12 @@ left out.
 - **The engine never starts by itself.** There is no OS service, no auto-start at boot or login,
   and no scheduled task. After a reboot, the server is down until someone opens the app on the
   master.
+- **Replacing the engine's files never needs the user to end a process.** Since it outlives the
+  app, a build or an update finds it running, and Windows refuses to overwrite a running
+  executable. The build stops it cleanly first (`lyra_node stop`, in `windows/CMakeLists.txt`),
+  or moves its files aside when it doesn't stop; the installers (phase 5) must do the same.
+  Opening the app restarts an engine whose version isn't the installed one
+  (`LocalServerService.start`).
 - The engine runs as the signed-in OS user, so the user-scope OS vault (DPAPI, Keychain,
   libsecret) is available (§6.2). Signing out of the OS or shutting down ends it, and clients
   see "server unavailable" (and the POS outbox takes over, §8.4).

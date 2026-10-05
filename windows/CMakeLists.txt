@@ -98,6 +98,41 @@ install(DIRECTORY "${NATIVE_ASSETS_DIR}"
 # can't become a master, and an offline sign in only shows the "no connection" placeholder.
 set(LYRA_NODE_BUNDLE "${CMAKE_CURRENT_SOURCE_DIR}/../../../packages/lyra_node/build/cli/windows_x64/bundle")
 if(EXISTS "${LYRA_NODE_BUNDLE}/bin/lyra_node.exe")
+  # The engine outlives the app (plan D4), and Windows refuses to overwrite a running executable
+  # or a library it loaded: a rebuild after closing the app would fail on them. When a file
+  # changed, the installed engine is asked to stop cleanly first (`lyra_node stop`); the app
+  # starts the new one when it opens. One that doesn't stop is moved aside (Windows lets a
+  # running image be renamed), so the copy never fails; the `.old` files go on the next install.
+  install(CODE "
+    set(engine_dir \"${CMAKE_INSTALL_PREFIX}/lyra_node\")
+    file(GLOB stale \"\${engine_dir}/bin/*.old\" \"\${engine_dir}/lib/*.old\")
+    foreach(file IN LISTS stale)
+      execute_process(COMMAND \"${CMAKE_COMMAND}\" -E rm -f \"\${file}\" RESULT_VARIABLE ignored ERROR_QUIET)
+    endforeach()
+
+    set(changed FALSE)
+    foreach(part bin/lyra_node.exe lib/sqlcipher.dll)
+      if(EXISTS \"\${engine_dir}/\${part}\")
+        execute_process(COMMAND \"${CMAKE_COMMAND}\" -E compare_files \"\${engine_dir}/\${part}\" \"${LYRA_NODE_BUNDLE}/\${part}\" RESULT_VARIABLE differs)
+        if(differs)
+          set(changed TRUE)
+        endif()
+      endif()
+    endforeach()
+
+    if(changed)
+      execute_process(COMMAND \"\${engine_dir}/bin/lyra_node.exe\" stop TIMEOUT 30 OUTPUT_VARIABLE answer ERROR_QUIET)
+      if(NOT answer MATCHES \"\\\"stopped\\\":true\")
+        message(WARNING \"lyra_node didn't stop (\${answer}): its files are moved aside\")
+        string(TIMESTAMP moved \"%Y%m%d%H%M%S\")
+        foreach(part bin/lyra_node.exe lib/sqlcipher.dll)
+          if(EXISTS \"\${engine_dir}/\${part}\")
+            file(RENAME \"\${engine_dir}/\${part}\" \"\${engine_dir}/\${part}.\${moved}.old\")
+          endif()
+        endforeach()
+      endif()
+    endif()
+  " COMPONENT Runtime)
   install(DIRECTORY "${LYRA_NODE_BUNDLE}/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/lyra_node"
     COMPONENT Runtime)
