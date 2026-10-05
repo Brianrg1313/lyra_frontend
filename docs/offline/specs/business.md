@@ -39,7 +39,9 @@ The fields of `BusinessProfileModel`, minus what needs the internet:
   optionally `activity`, once. Setup makes the owner account (`session.md`, S-6) and either the
   company with it or none: the sign in's "Create Master Server" leaves it to the welcome, which
   creates it with `business.create`, as the cloud's welcome does. That op is the owner's alone and
-  answers `company_exists` once there is one. The business screens' "create business" entry points
+  answers `company_exists` once there is one. Either way the creator's job is filed with it,
+  as the cloud's `Business.fileOwner` does: `active` from the company's today, titled `Dueño` /
+  `Owner` / `Proprietário` by the company's language (`Business.ownerTitles`). The business screens' "create business" entry points
   stay hidden in `local` (plan §7.3).
 - **B-2** An edit writes one key at a time, as `BusinessService.editProfile` does today
   (`{KEY: value}`). An empty string clears an optional field. `name` can't be cleared

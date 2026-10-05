@@ -34,7 +34,7 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
 ### Rules: reading
 
 - **E-1** The list answers active and invited employments, **the viewer's own card first**
-  (kept even when they have no employment, with `id: null`), then by name. `total` counts active
+  (kept even when they have no employment, with `id: null`; the owner has one from B-1), then by name. `total` counts active
   ones only. Without `employees` it answers that card alone (plan §5.4). An
   invitation nobody activated yet carries the e-mail it was made for.
 - **E-2** The former list (`ended`, `declined`, `cancelled`) needs `employees` and
