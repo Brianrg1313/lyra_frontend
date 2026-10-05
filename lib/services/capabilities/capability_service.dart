@@ -111,6 +111,9 @@ class CapabilityService extends ChangeNotifier {
     "finance.payments",
     "finance.methods",
     "finance.export",
+    "deliveries",
+    "deliveries.settings",
+    "deliveries.areas",
     "local_server"
   };
 
@@ -180,8 +183,9 @@ class CapabilityService extends ChangeNotifier {
       return declared.contains(mode) ? Capability.available : Capability.hidden;
     }
 
-    // What the master serves: always there, whatever the internet.
-    if (declared.contains(DeploymentMode.local) && _builtLocally(area)) return Capability.available;
+    // What the master serves: always there, whatever the internet. An area kept on the master for
+    // `hybrid` alone (deliveries) is the master's there, and locked in `local` like a cloud one.
+    if (declared.contains(mode) && _builtLocally(area)) return Capability.available;
 
     // The rest is the cloud's: a cloud-only area, or one whose master side isn't built yet,
     // which `hybrid` reads from the cloud meanwhile. Without it, locked.

@@ -5,7 +5,7 @@
 messages): a header, then pending deliveries (1/3) and a map (2/3). Sub-pages `settings/` (`/home/deliveries/settings`):
 how the company delivers, and `area/` (`/home/deliveries/area`, opened from settings): where, drawn on the map (both moved from the business page).
 **Services** `BusinessLocationService` (`lib/services/business`), `MapTilesService` (`lib/services/maps`) — created and provided by `_deliveries.dart`. `BusinessDeliveryService` — created and provided by `settings/_settings.dart`. `DeliveryAreasService` + its own location/tiles services — created and provided by `area/_area.dart`.
-**Backend** `GET /business/location/` (map center), `/business/delivery/{,options,providers}/` (settings), `/business/delivery/areas/` (areas), `POST /scorpius/v1/isochrone` (travel-time outline), `/scorpius/v1` (tilesets, server-drawn raster tiles). No deliveries endpoint yet: the list is a placeholder.
+**Backend** `GET /business/location/` (map center), `/business/delivery/{,options,providers}/` (settings), `/business/delivery/areas/` (areas); in `hybrid` the settings and areas are the master's (`delivery.*`, `DeliveryLanSource`), `POST /scorpius/v1/isochrone` (travel-time outline), `/scorpius/v1` (tilesets, server-drawn raster tiles). No deliveries endpoint yet: the list is a placeholder.
 **Packages** `flutter_map` + `latlong2` (raster `TileLayer`, light/dark by the app's brightness).
 
 ## Files

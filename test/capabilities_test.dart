@@ -8,6 +8,7 @@ import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
+import 'package:app/services/business/sources/delivery_lan_source.dart';
 import 'package:app/services/business/sources/employees_lan_source.dart';
 import 'package:app/services/pos/sources/pos_lan_source.dart';
 import 'package:app/services/money/sources/money_lan_source.dart';
@@ -126,8 +127,10 @@ void main() {
     expect(capabilities.of("messages"), Capability.needsInternet);
     expect(capabilities.exists("messages"), isTrue);
     expect(capabilities.shows("messages"), isFalse);
-    // Read from the cloud until the master serves it.
-    expect(capabilities.of("deliveries"), Capability.needsInternet);
+    // Kept on the master for hybrid alone: served with or without the internet.
+    expect(capabilities.of("deliveries"), Capability.available);
+    expect(capabilities.of("deliveries.areas.edit"), Capability.available);
+    expect(capabilities.of("finance.receivables"), Capability.needsInternet);
     expect(capabilities.of("business.settings"), Capability.available);
     expect(capabilities.of("inventory"), Capability.available);
     expect(capabilities.cloudServices, isFalse);
@@ -156,14 +159,14 @@ void main() {
     expect(PermissionsService().can("local_server.devices", business: "b-1"), isTrue);
   });
 
-  test("in hybrid a domain the master does not serve yet is the cloud's", () {
+  test("in hybrid the master's domains are read from it, deliveries included", () {
     Deployment.use(DeploymentMode.hybrid, role: DeploymentRole.client);
 
     expect(Sources.business, isA<BusinessLanSource>());
-    expect(Sources.delivery, isNotNull);
+    expect(Sources.delivery, isA<DeliveryLanSource>());
   });
 
-  test('outside the cloud only the built domains have a source', () {
+  test('outside the cloud every domain reads the master', () {
     expect(Sources.money, isNotNull);
 
     Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
@@ -174,6 +177,7 @@ void main() {
     expect(Sources.sales, isA<SalesLanSource>());
     expect(Sources.money, isA<MoneyLanSource>());
     expect(Sources.employees, isA<EmployeesLanSource>());
-    expect(() => Sources.delivery, throwsUnsupportedError);
+    // Locked in local (the section asks for the internet), the same source in hybrid.
+    expect(Sources.delivery, isA<DeliveryLanSource>());
   });
 }

@@ -10,14 +10,14 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 1 Data-source seam | done | — |
 | 2 Engine (`lyra_node`) | done | — |
 | 3 LAN (TLS, pairing, web build, mDNS) | done on one computer | the exit check on real hardware (a second PC, a phone, a browser, a LAN MITM attempt; the camera, the OS trust-store dialogs, Firefox) |
-| 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor) done | clients and deliveries, then statistics; the company's own templates have ops and endpoints but no screen |
+| 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor), deliveries (`hybrid` only, 2026-10-04) done | statistics; clients wait for the cloud to have them (owner's call, 2026-10-04: the cloud keeps only the assistant's WhatsApp customers, and its list is a placeholder); the company's own templates have ops and endpoints but no screen |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests | E2 on real hardware; E3, the cloud grant |
 | 5 Operations | not started | — |
-| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, employees, clients, deliveries, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8; deliveries added, not yet run against the dev backend), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, employees, clients, files), the allowance's measure, grants (§9 of the task); the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
-**Next step:** clients and deliveries (each with its edge entity, §9.8), then statistics, and E3
-(engine side; the backend's part is §9 of `docs/task-edge-sync-backend.md`).
+**Next step:** statistics, then E3 (engine side; the backend's part is §9 of
+`docs/task-edge-sync-backend.md`). Clients wait until the cloud has a customer list to follow.
 **Real hardware goes last** (owner's call, 2026-10-04): the exit checks of phase 3 and 4b and the
 "not yet seen" list below run together once the code is done.
 
@@ -37,6 +37,9 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 - An invitation on a real master, its code typed on a second device, that person's own profile.
 - "Create Master Server" from the sign in, end to end to the master's home (checked up to the
   welcome's modal).
+- Deliveries in `hybrid` (2026-10-04): the settings and the areas read and edited on the master, with
+  and without the internet (the map's tiles and the travel-time outline need it), and syncing both ways
+  through the dev backend (`company`'s four delivery fields, `delivery_option`, `delivery_area`).
 
 **Known issues**
 - A Mac's Chrome needs macOS's Local Network permission to open a master by name or IP (seen
@@ -45,7 +48,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 **Repos** All on this disk, **nothing pushed**, no remotes except `core`'s.
 - The backend (`backend/projects/lyra`): the permissions catalog gained `server` and `money.export` and the
   areas map the master's ids (2026-10-04), plus `pnpm permissions:export`; the edge API (`lib/models/edge`,
-  `/edge/v1`, the `edge_*` tables, `EDGE_KEY` in the dev env) with every §11 entity, plus what it needed of
+  `/edge/v1`, the `edge_*` tables, `EDGE_KEY` in the dev env) with every §11 entity (deliveries included), plus what it needed of
   `Tables`, `Products` and `Inventory`; **uncommitted**, beside other work in progress there.
 - The app: `main` (the `feat/offline-*` branches are merged into it).
 - `lyra_protocol`, `lyra_node`: `main`.
@@ -65,7 +68,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
   app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
   master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
 
-**Gate** `flutter analyze` clean; `flutter test` 1208 passing with the 5 known failures of
+**Gate** `flutter analyze` clean; `flutter test` 1215 passing with the 5 known failures of
 `test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
 
 **Keeping this current:** at the end of each release, update the table, the next step and the
@@ -135,7 +138,7 @@ changes nothing on the LAN. Linking, crossing the allowance, subscribing or canc
 | Business profile, logo, settings | yes | yes | Logo in the encrypted file store. |
 | Branches | the site only | the master's site only | The site is edited as the business location. No list, no creation. Manual lat/lng; no place search. |
 | Employees, contracts, leaves, salaries | yes | the site's staff | Sealed fields (§6.3). Invitations: the owner creates the local user directly. |
-| Clients | follows the cloud | follows the cloud | A placeholder in the app today; specified when it is built (principle 9). |
+| Clients | follows the cloud | follows the cloud | A placeholder in the app today, and in the cloud (its list answers empty); specified when the cloud has one (principle 9, owner's call 2026-10-04). |
 | Statistics | follows the cloud | follows the cloud | Same. The master will compute them from its own data. |
 | Inventory tables, records, images | yes | yes | Plain CSV/XLSX import. No AI normalisation or embeddings. |
 | Stock, movements, summary | yes | the site's stock | Stock is stored as deltas (§9.3). |
@@ -149,7 +152,7 @@ changes nothing on the LAN. Linking, crossing the allowance, subscribing or canc
 | Currencies: official rates | last known | last known | Custom rates work as today. |
 | Money AI (`/money/ai`) | — | — | Cloud only. |
 | Messages (aries), channels, connections, Baileys | — | — | Cloud only. |
-| Deliveries: settings, areas | — | yes | Hidden in `local`: only AI channels read them today. In hybrid they are kept and edited on the master (`docs/offline/specs/deliveries.md`). |
+| Deliveries: settings, areas | — | yes | Locked in `local`: only AI channels read them today. In hybrid they are kept and edited on the master, and sync (`docs/offline/specs/deliveries.md`). |
 | Deliveries: map tiles, isochrone, route | — | — | Cloud only. An offline tile pack is future work (§14). |
 | Business e-mails, verification | — | — | Cloud only. |
 | Permission requests | yes | yes | Handled by the local owner or admin. |
@@ -1043,3 +1046,17 @@ things stand.
   branch ("use this server", confirmed, one `POST` with `REPLACE`, which the backend gained) and a
   server someone unlinked ("sync again": never by itself). Otherwise the line says when it last
   synced, or that it keeps trying.
+- Deliveries, for `hybrid` (2026-10-04, `deliveries.md`). The engine keeps the settings on the
+  company (m015: `delivers`, `pickup`, `meeting_point`, `delivery_notes`) and the options and areas in
+  tables of their own, with the cloud's rules: a carrier from the cloud's catalogue of the company's
+  country (`Carriers`, a snapshot of 2026-09), the reach and its zones, the times, the cloud's text
+  rules, 20 options and 20 areas, an area as a circle or a 3-to-250-point outline. Money in minor
+  units, a radius in metres, a point in millionths. The permissions are the cloud's (`delivery`,
+  `.create`, `.edit`, `.delete`). It syncs as four fields of `company` and two entities,
+  `delivery_option` and `delivery_area`, on both sides (the backend writes through `Delivery` and
+  `DeliveryAreas`; not yet run against the dev backend). In the app, `DeliveryLanSource` serves the
+  three `deliveries` areas in `hybrid`, with or without the internet (`CapabilityService`: an area
+  declared for `hybrid` and built on the master is the master's there); they stay locked in `local`.
+  The spec was corrected to the cloud on two points: an area's radius is kilometres in the cloud (the
+  master's metres), and the cloud doesn't refuse an outline that crosses itself. Clients were left
+  for later by the owner: the cloud has no customer list yet.

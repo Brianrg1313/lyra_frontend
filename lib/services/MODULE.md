@@ -104,6 +104,9 @@ Reached through `LanService.server` (the `lan/` services own it).
   `EmployeeInvitationSent` (what inviting answers).
 - `sources/delivery_source.dart` — `DeliverySource`: settings, carriers, options, areas, isochrone (cloud only). Used by
   `BusinessDeliveryService`, `DeliveryAreasService`. `delivery_cloud_source.dart` — REST, and the isochrone's largest ring.
+  `delivery_lan_source.dart` — `DeliveryLanSource` (`hybrid` only): `delivery.*` laid out as the cloud's rows
+  (`settingsJson`, `areasJson`: amounts, kilometres), cloud bodies → the master's keys and units (`args`: minor units,
+  metres, outline pairs); the isochrone is the cloud's while `cloudServices`.
 - `business_service.dart` — `BusinessService` (+ `BusinessProfileStatus`): companies from `/init/`,
   the **active** one (every change goes through `_use`: `useBusiness(cloudKey)`, `CapabilityService.linked`; then
   `ConnectionService().rebind()`), `linked(cloudId)` (joined online), create, profile,

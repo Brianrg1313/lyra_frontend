@@ -244,7 +244,7 @@ is a calendar day `YYYY-MM-DD` in the company's zone. A ref is an id of the name
 
 | entity | scope | ops | fields |
 |---|---|---|---|
-| `company` | company | `upsert` | `name` `legalName` `nickname` `caption` `activity` `taxId` `country` `language` `currency` `phone` `website` `incorporationDate` `timezone` |
+| `company` | company | `upsert` | `name` `legalName` `nickname` `caption` `activity` `taxId` `country` `language` `currency` `phone` `website` `incorporationDate` `timezone`; the delivery settings, which live on the company on both sides: `delivers` `pickup` (true, false or null: "has not said") `meetingPoint` `deliveryNotes` |
 | `site` | site | `upsert` | `name` `legalName` `taxId` `phone` `address` `landmark` `city` `region` `postalCode` `latitude` `longitude` (both in millionths of a degree, or both null) `storefront` `online` |
 | `product_table` | company | `upsert` `delete` | `name` `description` `color` `primary` (at most one table: setting it takes it from the others, on each side by itself) |
 | `product_field` | company | `upsert` `delete` | `table` (ref) `name` `description` `type` `position` `width` `options` `unit` `visibility` `summary`. What a field change does to others travels as changes of its own: the other fields' `position`, and each product's cell after a new `type` |
@@ -253,11 +253,13 @@ is a calendar day `YYYY-MM-DD` in the company's zone. A ref is an id of the name
 | `payment` | site | `append` `void` | `concept` `direction` `amount` `currency` `method` `reference` `counterpart` `ticket` (ref, null) `note` `date` `at`; `void`: `reason` `at` |
 | `currency` | company | `upsert` | id = ISO code; `mode` (`official` / `custom`) `custom` (rate, `1 main = rate`) `active` |
 | `account` | company | `upsert` | snapshot only, §10: `email` `firstName` `lastName` `permissions` (`{access, all, sections, template: {scope, id} \| null}`, the shape of `member`) |
+| `delivery_option` | company | `upsert` `delete` | `mode` (`own` / `platform` / `courier`) `provider` (a carrier code, null) `label` `coverage` (`local` / `national` / `international`) `radius` (metres, null) `zones` (`[{name, fee}]`, null when none) `fee` `freeFrom` `etaMin` `etaMax` (minutes) `notes` `position` |
+| `delivery_area` | company | `upsert` `delete` | `name` `kind` (`radius` / `polygon`) `latitude` `longitude` (millionths of a degree, a radius area's center) `radius` (metres) `polygon` (`[[latitude, longitude]]` in millionths, open, null when none) `fee` `minimum` `active` `position` |
 | `member` | company | `upsert` `delete` | **pulled only**, never pushed. id = the person's cloud account id (the `account`'s cloud id once mapped). `email` (how the master finds a person it hasn't mapped) `access` `all` `sections` (`{<section>: {access, <action>: bool}}`, the permissions catalog's keys) `template` (`{scope: "global" \| "company", id}` or null) `custom`. One per member of the company, the owner included, and per person with an active job and no access yet (`access` false). Sent whole on any change to a person's permissions or access. `delete` = out of the company |
 
 The rules behind each field are the specs in `lyra/app/docs/offline/specs/` (`business.md`,
-`inventory.md`, `stock.md`, `money.md`). Next versions add: POS tickets and their lines, the
-handover, employees, clients, deliveries, files (logo, product images). A new entity is a row here
+`inventory.md`, `stock.md`, `money.md`, `deliveries.md`). Next versions add: POS tickets and their lines,
+the handover, employees, clients, files (logo, product images). A new entity is a row here
 plus one entity on each side (plan §9.8).
 
 How the backend holds what it can't hold as sent:
@@ -274,6 +276,10 @@ How the backend holds what it can't hold as sent:
   master's are applied. A movement is never refused for the balance. The cloud's reservation that
   becomes a sale is two facts, a `remove` (`sale`) and an `unreserve` (`reintegration`, id
   `<movement>:held`).
+- **`delivery_option`, `delivery_area`**: written through the delivery screen's models (`Delivery`,
+  `DeliveryAreas`), so a carrier not offered in the company's country, a 21st option or area, or a shape
+  they refuse is `rejected` with their reason (`provider`, `limit`, `polygon`, …). Amounts are kept with two
+  decimals and a radius in kilometres with two, which the master already rounds to.
 - **`payment`**: refused (`currency`) when not in the company's main currency, which the cloud
   stamps on every payment. `date` becomes the moment it was written down when that falls on the
   same day in the company's zone, noon of that day otherwise.
