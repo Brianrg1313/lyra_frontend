@@ -283,9 +283,10 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 
 - `badge_model.dart` — `BadgeModel` (one badge: key, kind, count, level, anchors, dismissible, title l10n key, data),
   `BadgeKind` (`count`/`alert`/`news`), `BadgeLevel` (`max`), `BadgeAnchor` (a place's count/level/keys; `counts` = a number,
-  else a dot), `BadgeState` (`fromJson` of the compressed table, `anchor`, `union`: several anchors, each badge once).
-- `badge_place.dart` — `BadgePlace`: **every place in the app that draws a badge → the anchors it reads** (side bar
-  entries via `section(key)`, tabs, header, account, the two channel-form fields). Move a dot here. `sidebar.business` is not read.
+  else a dot), `BadgeState` (`fromJson` of the compressed table, `anchor`, `union`: several anchors and/or badge keys, each badge once).
+- `badge_place.dart` — `BadgePlace`: **every place in the app that draws a badge → the anchors (or badge keys) it reads** (side bar
+  entries via `section(key)`, tabs, header, the two channel-form fields, the profile's country and logo by key). Move a dot here.
+  `sidebar.business` and `topbar.account` are not read.
 - `badges_service.dart` — `BadgesService` singleton (`.value` provider): `seed(data, business:)` (`/init`'s, kept only
   when measured for the active company, else read), `refresh` (`GET /badges/`), `seen(keys)` (dismissible only,
   optimistic, `POST /badges/seen/`), `discover(place)` (its `news` seen), `at(place)`, `clear`. Rereads on

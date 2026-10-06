@@ -15,7 +15,7 @@ import 'package:core/button.dart';
 import 'package:app/screens/home/badges/badge_mark.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 
-import './pending_title.dart';
+import 'package:app/screens/home/badges/badge_title.dart';
 
 /// Opens the list of everything pending in the active company and answers the badge the person
 /// chose to open, or `null`. [opens] says which ones lead somewhere: the caller navigates.
@@ -97,7 +97,7 @@ class _PendingRow extends StatelessWidget {
             decoration: BoxDecoration(color: badgeColor(context, badge.level), shape: BoxShape.circle)
           ),
           SizedBox(width: AppSize.spaceS),
-          Expanded(child: TextMedium(pendingTitle(context, badge))),
+          Expanded(child: TextMedium(badgeTitle(context, badge))),
           if (badge.kind == BadgeKind.count) Padding(
             padding: EdgeInsets.only(left: AppSize.gap),
             child: TextMedium("${badge.count}", bold: true)

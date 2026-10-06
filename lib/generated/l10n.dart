@@ -20959,6 +20959,36 @@ class S {
     );
   }
 
+  /// `Connected to the server`
+  String get connection_live_online {
+    return Intl.message(
+      'Connected to the server',
+      name: 'connection_live_online',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connecting to the server`
+  String get connection_live_connecting {
+    return Intl.message(
+      'Connecting to the server',
+      name: 'connection_live_connecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No connection to the server`
+  String get connection_live_offline {
+    return Intl.message(
+      'No connection to the server',
+      name: 'connection_live_offline',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Nothing pending`
   String get badges_empty {
     return Intl.message(

@@ -12,6 +12,7 @@ import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 
 import 'package:app/screens/home/badges/badge_mark.dart';
+import 'package:app/screens/home/badges/badge_notes.dart';
 import 'package:app/screens/home/badges/badge_route.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
 
@@ -98,6 +99,23 @@ void main() {
     expect(finance.level, BadgeLevel.warning);
   });
 
+  test("a field finer than any anchor reads its badges by key", () {
+    final state = BadgeState.fromJson({
+      ..._state(),
+      "badges": {
+        "keys": ["key", "kind", "count", "level", "scope", "anchors", "dismissible", "title"],
+        "values": [
+          ["setup.country", "alert", 1, "warning", "business", ["sidebar.business", "business.profile"], false, "badge_setup_country"],
+          ["setup.logo", "alert", 1, "info", "business", ["sidebar.business", "business.profile"], true, "badge_setup_logo"]
+        ]
+      }
+    });
+
+    expect(state.union(BadgePlace.countryField.anchors, keys: BadgePlace.countryField.keys).badges, ["setup.country"]);
+    expect(state.union(BadgePlace.logoField.anchors, keys: BadgePlace.logoField.keys).badges, ["setup.logo"]);
+    expect(state.union(BadgePlace.businessSettings.anchors).badges, hasLength(2));
+  });
+
   test("/init's badges are kept only when they were measured for the active company", () async {
     BadgesService().seed(_state(), business: "b-1");
 
@@ -178,6 +196,25 @@ void main() {
     expect(find.descendant(of: find.byKey(const ValueKey("chats")), matching: find.text("2")), findsOneWidget);
     expect(find.descendant(of: find.byKey(const ValueKey("methods")), matching: find.byType(Container)), findsOneWidget);
     expect(find.descendant(of: find.byKey(const ValueKey("methods")), matching: find.text("1")), findsNothing);
+    expect(find.descendant(of: find.byKey(const ValueKey("pos")), matching: find.byType(Container)), findsNothing);
+  });
+
+  testWidgets("a page says in words what its place has pending, and nothing when clear", (tester) async {
+    BadgesService().seed(_state(), business: "b-1");
+
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: const [S.delegate],
+      home: Builder(builder: (context) {
+        AppSize.instance(context);
+        return const Column(children: [
+          BadgeNotes(key: ValueKey("methods"), place: BadgePlace.financeMethods),
+          BadgeNotes(key: ValueKey("pos"), place: BadgePlace.pos)
+        ]);
+      })
+    ));
+    await tester.pump();
+
+    expect(find.descendant(of: find.byKey(const ValueKey("methods")), matching: find.text(S.current.badge_setup_payments)), findsOneWidget);
     expect(find.descendant(of: find.byKey(const ValueKey("pos")), matching: find.byType(Container)), findsNothing);
   });
 }

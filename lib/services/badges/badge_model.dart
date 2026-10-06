@@ -182,21 +182,25 @@ class BadgeState {
   /// Several anchors read as one place, each badge counted **once**: a badge anchored to two of
   /// them (`setup.payments` on `sidebar.business` and `business.payments`) is one fact, and adding
   /// the two rollups would draw 2 for it.
-  BadgeAnchor union(Iterable<String> names) {
+  ///
+  /// [keys] adds badges by their own key, for a place finer than any anchor the backend names (the
+  /// country field is one row of `business.profile`).
+  BadgeAnchor union(Iterable<String> names, {Iterable<String> keys = const []}) {
     final wanted = names.toSet();
+    final named = keys.toSet();
     var count = 0;
     var level = BadgeLevel.none;
-    final keys = <String>[];
+    final found = <String>[];
 
     for (final badge in badges) {
-      if (!badge.anchors.any(wanted.contains)) continue;
+      if (!named.contains(badge.key) && !badge.anchors.any(wanted.contains)) continue;
 
       count += badge.count;
       level = level.max(badge.level);
-      keys.add(badge.key);
+      found.add(badge.key);
     }
 
-    return BadgeAnchor(count: count, level: level, badges: keys);
+    return BadgeAnchor(count: count, level: level, badges: found);
   }
 
   /// Reads the answer. Badges travel as the compressed table (`Response.parse`) or as plain

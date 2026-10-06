@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/business/business_service.dart';
 
 // WIDGETS
@@ -36,7 +37,8 @@ class ProfileSelectField extends StatefulWidget {
     required this.icon,
     required this.label,
     required this.field,
-    this.description
+    this.description,
+    this.badge
   });
 
   final IconData icon;
@@ -47,6 +49,9 @@ class ProfileSelectField extends StatefulWidget {
   final BusinessField field;
 
   final String? description;
+
+  /// See [ProfileFieldFrame.badge].
+  final BadgePlace? badge;
 
   @override
   State<ProfileSelectField> createState() => _ProfileSelectFieldState();
@@ -98,6 +103,7 @@ class _ProfileSelectFieldState extends State<ProfileSelectField> {
     icon: widget.icon,
     label: widget.label,
     description: widget.description,
+    badge: widget.badge,
     child: ConstrainedBox(
       // The dropdown doesn't stretch with the column: it's a list of short
       // options (a language, a currency code) and a field the width of the

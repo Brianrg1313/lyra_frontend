@@ -96,7 +96,7 @@ class BadgesService extends ChangeNotifier {
   BadgeState get state => _state;
 
   /// What [place] draws: its anchors read as one, each badge counted once.
-  BadgeAnchor at(BadgePlace place) => _state.union(place.anchors);
+  BadgeAnchor at(BadgePlace place) => _state.union(place.anchors, keys: place.keys);
 
   /// Every badge standing, in the backend's order.
   List<BadgeModel> get badges => _state.badges;

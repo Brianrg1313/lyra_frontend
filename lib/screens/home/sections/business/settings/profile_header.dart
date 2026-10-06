@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/business/business_profile_model.dart';
+
+// WIDGETS
+import 'package:app/screens/home/badges/badge_mark.dart';
 
 import 'profile_logo.dart';
 import 'profile_tag.dart';
@@ -40,7 +44,8 @@ class BusinessProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      BusinessProfileLogo(profile: profile),
+      // Dot over the corner when the company has no logo yet (`setup.logo`).
+      BadgeCorner(place: BadgePlace.logoField, dot: true, child: BusinessProfileLogo(profile: profile)),
       SizedBox(width: AppSize.padding),
       // The text takes all the width that's left over: the logo measures the
       // same always, and what breaks into several rows is the name.

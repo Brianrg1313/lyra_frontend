@@ -6,15 +6,19 @@ import 'package:app/services/badges/badge_model.dart';
 import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/badges/badges_service.dart';
 
-/// The colour of a badge level. Info is the app's own colour; a warning and a critical are the
-/// state colours the charts already use, so "needs attention" reads the same everywhere.
+/// The colour of a badge level: blue for information, yellow for a warning, red for what is
+/// critical — the state colours the charts already use, so "needs attention" reads the same
+/// everywhere.
+///
+/// Info is not the app's own colour: `primary` is white in the dark theme, and a white dot only
+/// says "something", never what kind of something. The charts' first series is blue in both.
 Color badgeColor(BuildContext context, BadgeLevel level) {
-  final scheme = ThemeColor.of(context);
+  final chart = ThemeColor.of(context).chart;
 
   return switch (level) {
-    BadgeLevel.critical => scheme.chart.critical,
-    BadgeLevel.warning => scheme.chart.warning,
-    _ => scheme.primary
+    BadgeLevel.critical => chart.critical,
+    BadgeLevel.warning => chart.warning,
+    _ => chart.at(0)
   };
 }
 

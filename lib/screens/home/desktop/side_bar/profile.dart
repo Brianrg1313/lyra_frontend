@@ -6,10 +6,8 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/client/client_service.dart';
-import 'package:app/services/badges/badge_place.dart';
 
-// WIDGETS
-import 'package:app/screens/home/badges/badge_mark.dart';
+import 'connection_dot.dart';
 
 class ProfileCard extends StatelessWidget {
   const ProfileCard({
@@ -34,8 +32,8 @@ class ProfileCard extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // What is the person's own and not the company's (the terms) marks their picture.
-        BadgeCorner(place: BadgePlace.account, dot: true, child: Container(
+        // The connection's state hangs off the picture's bottom-right corner.
+        Stack(clipBehavior: Clip.none, children: [Container(
           width: AppSize.action,
           height: AppSize.action,
           decoration: BoxDecoration(
@@ -59,7 +57,8 @@ class ProfileCard extends StatelessWidget {
                   fit: BoxFit.cover)
               : null
           )
-        )),
+        ),
+        Positioned(right: -AppSize.gap / 2, bottom: -AppSize.gap / 2, child: const ConnectionDot())]),
         // The spacing goes inside the Expanded so it can shrink to 0 while
         // the side bar animates its width; as a fixed SizedBox it would cause
         // overflow during the first frames of the expansion.

@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/money/money_currencies_service.dart';
 import 'package:app/services/money/money_currency_model.dart';
@@ -12,6 +13,7 @@ import 'package:app/services/money/money_method_model.dart';
 import 'package:app/services/money/money_methods_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/badges/badge_notes.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 import 'package:app/screens/modals/finance/exchange_currency_form/_exchange_currency_form.dart';
 import 'package:app/screens/modals/finance/payment_method_form/_payment_method_form.dart';
@@ -73,6 +75,10 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
     return ScrollableWidget(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        BadgeNotes(
+          place: BadgePlace.financeMethods,
+          padding: EdgeInsets.only(bottom: AppSize.spaceM)
+        ),
         MoneyCurrenciesBlock(
           service: currencies,
           onAdd: _addCurrency,

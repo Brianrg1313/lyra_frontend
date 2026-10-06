@@ -68,7 +68,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 - `SectionMessage` (`lib/screens/home/sections/section_message.dart`) — full-section empty/error/loading.
 - `SettingsBlock` `SettingsRow` `SettingsTag`… (`lib/screens/modals/shared/settings/settings_block.dart`) — read-only panel rows.
 - `BusinessListener` (`lib/screens/home/sections/business_listener.dart`) — sub-page reacting to a business switch.
-- `BadgeMark` `BadgeCorner` (`lib/screens/home/badges/badge_mark.dart`) — what a place has pending; places in `BadgePlace` (`lib/services/badges/badge_place.dart`).
+- `BadgeMark` `BadgeCorner` (`lib/screens/home/badges/badge_mark.dart`) — what a place has pending; `BadgeNotes` (`badge_notes.dart`) says it in words; places in `BadgePlace` (`lib/services/badges/badge_place.dart`).
 
 ---
 

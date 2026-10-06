@@ -1380,6 +1380,12 @@ class MessageLookup extends MessageLookupByLibrary {
             "How you\'ll recognize this account in your list"),
         "connection_identity_title":
             MessageLookupByLibrary.simpleMessage("Account"),
+        "connection_live_connecting":
+            MessageLookupByLibrary.simpleMessage("Connecting to the server"),
+        "connection_live_offline":
+            MessageLookupByLibrary.simpleMessage("No connection to the server"),
+        "connection_live_online":
+            MessageLookupByLibrary.simpleMessage("Connected to the server"),
         "connection_missing_title": MessageLookupByLibrary.simpleMessage(
             "This account isn\'t ready yet"),
         "connection_name_input": MessageLookupByLibrary.simpleMessage("Name"),

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// SERVICES
+import 'package:app/services/badges/badge_place.dart';
+
 // WIDGETS
+import 'package:app/screens/home/badges/badge_mark.dart';
 import 'package:app/screens/modals/business/edit_business_field/_edit_business_field.dart';
 import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
@@ -32,7 +36,8 @@ class ProfileFieldFrame extends StatelessWidget {
     required this.child,
     this.description,
     this.note,
-    this.action
+    this.action,
+    this.badge
   });
 
   /// What the datum is recognized by at a glance, without reading its name. It's
@@ -59,6 +64,10 @@ class ProfileFieldFrame extends StatelessWidget {
   /// that the names measure the same in every row and the button column
   /// doesn't wander on its own.
   final Widget? action;
+
+  /// The badges this one datum answers (no country yet), drawn next to its name: the settings
+  /// tab is long, and the dot on its tab only says that *something* in it is missing.
+  final BadgePlace? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +115,10 @@ class ProfileFieldFrame extends StatelessWidget {
         padding: EdgeInsets.only(top: AppSize.gap / 2),
         child: Row(children: [
           Flexible(child: TextMedium(label, bold: true, ellipsis: true)),
+          if (badge != null) Padding(
+            padding: EdgeInsets.only(left: AppSize.gap),
+            child: BadgeMark(place: badge!, dot: true)
+          ),
           if (note != null) ...[
             SizedBox(width: AppSize.gap),
             TextSmall(note!, color: scheme.primary)

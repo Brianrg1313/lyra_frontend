@@ -7,7 +7,7 @@ import 'package:app/services/badges/badge_model.dart';
 /// The line a badge says, from the l10n key the backend names it by (`title`). `S` has no lookup
 /// by name, so each key the catalog sends is listed here; one the app does not know yet still
 /// says that something needs attention instead of showing a key.
-String pendingTitle(BuildContext context, BadgeModel badge) {
+String badgeTitle(BuildContext context, BadgeModel badge) {
   final text = S.of(context);
 
   return switch (badge.title) {

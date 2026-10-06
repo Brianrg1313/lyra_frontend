@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/business/business_language.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/business/business_profile_model.dart';
@@ -118,6 +119,7 @@ class BusinessProfileDetails extends StatelessWidget {
       icon: CI.globe_shopping,
       label: S.of(context).business_location_country,
       description: S.of(context).business_location_country_note,
+      badge: BadgePlace.countryField,
       field: BusinessField.select(
         key: "COUNTRY",
         value: profile.country,

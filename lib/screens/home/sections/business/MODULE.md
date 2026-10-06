@@ -39,8 +39,8 @@
 
 ### settings/ — the profile (read-only sheet; **every edit opens a modal** in `lib/screens/modals/business`)
 
-- `_settings.dart` — `BusinessSettingsTab`: assembles the sheet.
-- `profile_header.dart` — `BusinessProfileHeader`: logo, name, legal status, ownership.
+- `_settings.dart` — `BusinessSettingsTab`: assembles the sheet, `BadgeNotes(businessSettings)` on top.
+- `profile_header.dart` — `BusinessProfileHeader`: logo (`BadgePlace.logoField` dot), name, legal status, ownership.
 - `profile_logo.dart` — `BusinessProfileLogo`: pick + crop + upload (through `BusinessSource.setLogo`); only drawn
   where `business.settings.edit_logo` isn't shown (`CapabilityService`).
 - `profile_details.dart` — `BusinessProfileDetails`: all loaded data, grouped; the e-mails block and the danger zone only
@@ -53,8 +53,8 @@
 - `profile_id.dart` — `BusinessProfileId`: hidden id, reveal + copy.
 - `profile_danger.dart` — `BusinessProfileDanger`: delete the business.
 - `profile_block.dart` — `ProfileBlock`, `ProfileFieldList`: a group over a surface.
-- `profile_field.dart` — `ProfileFieldFrame`, `ProfileField`, `ProfileTextAction`, `ProfileAction`: row primitives.
-- `profile_select.dart` — `ProfileSelectField`: `SelectInput` row edited in place (sector, language). No currency here: it lives in the finance section (payment methods tab).
+- `profile_field.dart` — `ProfileFieldFrame` (`badge`: a dot after the name), `ProfileField`, `ProfileTextAction`, `ProfileAction`: row primitives.
+- `profile_select.dart` — `ProfileSelectField`: `SelectInput` row edited in place (sector, language; the country with `BadgePlace.countryField`). No currency here: it lives in the finance section (payment methods tab).
 - `profile_tag.dart` — `ProfileTag`: state chip.
 - `country_flag.dart` — `CountryFlag`.
 

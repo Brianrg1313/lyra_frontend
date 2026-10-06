@@ -181,7 +181,6 @@ All three **return a value and write nothing** (POS services live below this nav
 - `pending/_pending.dart` — `showPendingPanel(context, opens:)`, `PendingModal`: every badge standing, loudest first (live);
   a row that `opens` returns its `BadgeModel` (the header navigates); dismissible ones (not the terms: no terms page yet)
   get "Dismiss" / "Mark as read" (`BadgesService.seen`). Returns the chosen badge or `null`.
-- `pending/pending_title.dart` — `pendingTitle(context, badge)`: the badge's `title` l10n key → `S`; an unknown one → `badge_unknown`.
 
 ### `server/` (one session over the cloud and a master, plan §9.6)
 - `master_password/_master_password.dart` — `showMasterPassword(context, login:)`, `showUnseal(context)`,

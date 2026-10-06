@@ -5,9 +5,11 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/business/business_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/badges/badge_notes.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 
 import 'profile_details.dart';
@@ -58,7 +60,14 @@ class BusinessSettingsTab extends StatelessWidget {
       ),
       BusinessProfileStatus.ready when profile != null => ScrollableWidget(
         showBar: false,
-        children: [BusinessProfileDetails(profile: profile)]
+        children: [
+          // What is missing here, in words, before the sheet: the tab's dot led here.
+          BadgeNotes(
+            place: BadgePlace.businessSettings,
+            padding: EdgeInsets.fromLTRB(AppSize.padding, AppSize.padding, AppSize.padding, 0)
+          ),
+          BusinessProfileDetails(profile: profile)
+        ]
       ),
       _ => const Center(child: Loading())
     };
