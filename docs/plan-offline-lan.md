@@ -1,6 +1,6 @@
 # Plan: offline / LAN mode (local master)
 
-## Where we are (2026-10-05) — read this first
+## Where we are (2026-10-06) — read this first
 
 Each release's detail is in the release log (appendix A). Phases are in §11, decisions in §13.
 
@@ -13,7 +13,7 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 4 Domains | business, inventory and stock, import, POS, sales, finance, employees, permissions (the cloud's model and the app's editor), deliveries (`hybrid` only, 2026-10-04) done | statistics; clients wait for the cloud to have them (owner's call, 2026-10-04: the cloud keeps only the assistant's WhatsApp customers, and its list is a placeholder); the company's own templates have ops and endpoints but no screen |
 | 4b One app (§9.6) | E1 done; E2 done in code and tests; E3, the cloud grant, done (2026-10-05) | E2 and E3 on real hardware |
 | 5 Operations | not started | — |
-| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8; deliveries added, not yet run against the dev backend), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, employees, clients, files), the allowance's measure; the cloud's web finding its master (§9.7, D19, planned, nothing built) |
+| 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8; deliveries added, not yet run against the dev backend; employees 2026-10-06, a link from before an entity uploads its records once), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, clients, files), the allowance's measure; the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
 **Next step:** statistics. Clients wait until the cloud has a customer list to follow.
@@ -43,6 +43,10 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 - Deliveries in `hybrid` (2026-10-04): the settings and the areas read and edited on the master, with
   and without the internet (the map's tiles and the travel-time outline need it), and syncing both ways
   through the dev backend (`company`'s four delivery fields, `delivery_option`, `delivery_area`).
+- Jobs syncing (2026-10-06, `employee`): an invitation made on a linked master listed in the invited
+  person's cloud account (the business selector, when they already work somewhere) and accepted there,
+  the master then letting them in by the cloud's grant; a master linked before uploading the invitations
+  it already had. Needs the engine rebuilt next to the app: an older one refuses the pulled jobs.
 
 **Known issues**
 - A Mac's Chrome needs macOS's Local Network permission to open a master by name or IP (seen
@@ -1076,3 +1080,11 @@ things stand.
   employee's personal details. Seen across the real stacks: a grant issued by the dev backend's models
   opened the engine once (and a Node-signed token verified in Dart); the backend refused a non-member
   and an unknown master. Found on the way: `MySql.findOne` adds its own `LIMIT 1`.
+- Jobs sync (2026-10-06, `employees.md` E-20 to E-23; task §11 `employee`). Found when a linked master's
+  invitation never reached the invited person: invitations lived only in the engine. One entity on both sides
+  (`EmployeeEdge`): the job's clear keys and the person's e-mail, each side finding or opening its own account;
+  the owner's job filed on both sides before the link mapped, not doubled; a state only moves forward; a job
+  the cloud says started activates the master's `pending` account for the grant. `sync_link.uploaded` (m017):
+  a live link uploads once the records of an entity a later version added. The app's business selector lists
+  the pending invitations of someone who already works somewhere. Tested on the engine against `EdgeCloud`;
+  the backend's half only linted.

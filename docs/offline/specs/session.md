@@ -75,7 +75,8 @@ A person who can sign in to this master.
   of its clock, good for at most 5 minutes, not expired (30 s of skew), and its nonce never seen
   before. A failed check is `grant_invalid`, an expired grant `grant_expired`, a second use
   `grant_used`. The account is the active one with the grant's e-mail, without regard to case; none,
-  or one still `pending`, is `grant_no_account` (the person is invited, or activates, first); a
+  or one still `pending`, is `grant_no_account` (the person is invited, or activates, first, or accepts
+  in the cloud: a job the cloud says started activates the account, `employees.md` E-21); a
   disabled one `account_disabled`. It counts towards the device's sign-in rate (S-4) and goes to the
   audit log.
 - **S-13** A session opened by a grant holds no sealed keys: they open with the password (plan §6.3),

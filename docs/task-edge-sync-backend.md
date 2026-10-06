@@ -261,11 +261,14 @@ is a calendar day `YYYY-MM-DD` in the company's zone. A ref is an id of the name
 | `delivery_option` | company | `upsert` `delete` | `mode` (`own` / `platform` / `courier`) `provider` (a carrier code, null) `label` `coverage` (`local` / `national` / `international`) `radius` (metres, null) `zones` (`[{name, fee}]`, null when none) `fee` `freeFrom` `etaMin` `etaMax` (minutes) `notes` `position` |
 | `delivery_area` | company | `upsert` `delete` | `name` `kind` (`radius` / `polygon`) `latitude` `longitude` (millionths of a degree, a radius area's center) `radius` (metres) `polygon` (`[[latitude, longitude]]` in millionths, open, null when none) `fee` `minimum` `active` `position` |
 | `member` | company | `upsert` `delete` | **pulled only**, never pushed. id = the person's cloud account id (the `account`'s cloud id once mapped). `email` (how the master finds a person it hasn't mapped) `access` `all` `sections` (`{<section>: {access, <action>: bool}}`, the permissions catalog's keys) `template` (`{scope: "global" \| "company", id}` or null) `custom`. One per member of the company, the owner included, and per person with an active job and no access yet (`access` false). Sent whole on any change to a person's permissions or access. `delete` = out of the company |
+| `employee` | company | `upsert` | a job (`employees.md`). `email` (the person: how each side finds its account; one is opened when there is none, `pending` on the master, as an invitation opens one in the cloud) `firstName` `lastName` (only for that opening: the account's, never written to one that exists) `jobTitle` `department` `code` `contract` `workday` `startDate` `endDate` `workEmail` `workPhone` `state` (`invited` / `active` / `ended` / `declined` / `cancelled`) `responded` (instant) `endedDate` `endReason` `endNote`. No sealed field (pay, notes, the private person), no `manager`, no branch. A job without an e-mail doesn't travel. No delete: a job closes by its `state` |
 
 The rules behind each field are the specs in `lyra/app/docs/offline/specs/` (`business.md`,
-`inventory.md`, `stock.md`, `money.md`, `deliveries.md`). Next versions add: POS tickets and their lines,
-the handover, employees, clients, files (logo, product images). A new entity is a row here
-plus one entity on each side (plan §9.8).
+`inventory.md`, `stock.md`, `money.md`, `deliveries.md`, `employees.md`). Next versions add: POS tickets and
+their lines, the handover, clients, files (logo, product images). A new entity is a row here
+plus one entity on each side (plan §9.8). A master linked before an entity existed uploads that entity's
+records once by itself (`sync_link.uploaded`); an engine older than an entity refuses its pulled changes
+as `unknown_entity` and doesn't see them again, so the engine is updated with the backend.
 
 How the backend holds what it can't hold as sent:
 - **`company`, `site`**: a value its own rules refuse (a name another company of the owner has, a
@@ -285,6 +288,13 @@ How the backend holds what it can't hold as sent:
   `DeliveryAreas`), so a carrier not offered in the company's country, a 21st option or area, or a shape
   they refuse is `rejected` with their reason (`provider`, `limit`, `polygon`, …). Amounts are kept with two
   decimals and a radius in kilometres with two, which the master already rounds to.
+- **`employee`**: a new one is filed as an invitation (`Employees.invite`: an e-mail with no account gets one
+  opened), or mapped onto the person's open job when they have one (the owner's, filed on both sides before the
+  link); the master does the same. A `state` only moves forward on both sides (a rehire is a new job): one that
+  would move it back is not applied, and the side's own goes back. Starting a job admits the person, ending it
+  revokes them, which `member` carries. On the master a job the cloud says started makes a `pending` account
+  `active` without a password: the person accepted in the cloud and opens the master with the grant (§9).
+  A job edit the cloud's rules refuse (a closed job, an invalid field) is `rejected` or left as the cloud has it.
 - **`payment`**: refused (`currency`) when not in the company's main currency, which the cloud
   stamps on every payment. `date` becomes the moment it was written down when that falls on the
   same day in the company's zone, noon of that day otherwise.

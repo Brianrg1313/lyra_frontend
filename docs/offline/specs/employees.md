@@ -116,10 +116,24 @@ yet, so in `local` a rehire waits until it does.
 
 ---
 
+## employees.sync (a master linked to the cloud)
+
+- **E-20** Jobs sync as the `employee` entity (`task-edge-sync-backend.md` §11): an invitation made on
+  the master reaches the person's cloud account, which lists it as any invitation (`employment.invitation`),
+  and their answer comes back. Its activation code still works here: either answer counts, whichever
+  comes first.
+- **E-21** A job the cloud says started makes the person's `pending` account `active` with no password
+  (`session.md` S-12: they open the master with the cloud's grant) and admits them (P-5).
+- **E-22** A job's `state` only moves forward (`invited` → `active` → `ended` / `declined` /
+  `cancelled`): a pulled state that would move it back is dropped. A rehire is a new job.
+- **E-23** Sealed fields (pay, notes, the private person) and `manager` don't travel.
+
+---
+
 ## Differences from cloud
 
 - An invitation offline creates the account and hands over an activation code, instead of
-  sending an e-mail.
+  sending an e-mail. Linked to the cloud, it also reaches the person's cloud account (E-20).
 - Salaries and private data are **sealed** on the master (plan §6.3): they can't be read while no
   one who may read them is signed in, which also rules out any unattended report on them.
 
