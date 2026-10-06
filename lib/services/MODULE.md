@@ -63,7 +63,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `hybrid_service.dart` — `HybridService` (+ `HybridJoin`), app-wide (`hybridService`), plan §9.6: `join(login,
   password?)` after an online sign in on a paired device (the master's session too → `hybrid`; another person's kept
   session signed out first; the password when the sign in had one, else or when refused the cloud grant
-  (`SyncCloudSource.grant`, injectable); `needsPassword` only when neither → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
+  (`SyncCloudSource.grant`, injectable); `needsPassword` only when neither and the login used a password there from this device (`hasPassword`, injectable), else `noPassword`: nothing asked → `signIn` once), `resume` (boot and the kept session: `hybrid` when the
   master keeps the session), `adopt` (a master just made from the cloud), `workOffline` / `workOnline` (session kept),
   `stop` (sign out), the internet from its `CloudPresence` alone, no timer (connected/dropped →
   `CapabilityService.internet` at once, the cloud socket reopened when it returns; no answer yet changes nothing); a session on the master alone (`masterOnly`, followed from `LanService`) follows it
@@ -303,7 +303,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   device-wide theme/language (applied to and persisted from `AppController`); per account (`bindUser` from
   `ClientService`) the last `/home...` path (`homePath`), the last active business (`useBusiness` from
   `BusinessService`) and per-business selections (`RememberedSelection`: `chat`, `employee`; `recall`/`remember`);
-  `linkDeclined` / `declineLink` (the "not now" to joining a server with its company online).
+  `linkDeclined` / `declineLink` (the "not now" to joining a server with its company online); device-wide per master
+  instance, `hasMasterPassword` / `rememberMasterPassword` (written by `LanService.signIn`/`activate`).
 
 ## inventory/ — table authoring
 

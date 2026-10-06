@@ -149,6 +149,19 @@ class PreferencesService {
     if (_business != null) _write(_userKey("${_business!}/link"), "declined");
   }
 
+  // ───────────────────────────── master passwords ─────────────────────
+
+  /// Whether [login] signed in to the master [instance] with a password from this device. A
+  /// computer with a master is shared by accounts of other companies, and by its own people who
+  /// never made a password there: asking them for one after an online sign in reads as a password
+  /// they never created (`HybridService.join`). Device-wide: the master is this device's, not an
+  /// account's; keyed by instance so a master set up again starts empty.
+  bool hasMasterPassword(String instance, String login) => _read<String>(_masterKey(instance, login)) != null;
+
+  void rememberMasterPassword(String instance, String login) => _write(_masterKey(instance, login), "password");
+
+  String _masterKey(String instance, String login) => "master/$instance/${login.trim().toLowerCase()}";
+
   // ───────────────────────────── selections ─────────────────────────────
 
   /// What was open for [selection] in the active business, or null.

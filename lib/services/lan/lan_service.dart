@@ -13,6 +13,7 @@ import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/lan.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/local_server/local_server_service.dart';
+import 'package:app/services/preferences/preferences_service.dart';
 import './lan_device.dart';
 import './lan_identity_store.dart';
 
@@ -173,6 +174,7 @@ class LanService extends ChangeNotifier {
 
   Future<LanStatus> signIn(String login, String password) => _guard(() async {
     await _client!.signIn(login, password);
+    _passwordUsed(login);
 
     return LanStatus.ready;
   });
@@ -213,9 +215,17 @@ class LanService extends ChangeNotifier {
   /// the password they choose.
   Future<LanStatus> activate(String login, String code, String password) => _guard(() async {
     await _client!.activate(login, code, password);
+    _passwordUsed(login);
 
     return LanStatus.ready;
   });
+
+  /// [login] has a password on this master and knows it: only then is it asked for after an online
+  /// sign in the master couldn't open by itself (`HybridService.join`).
+  void _passwordUsed(String login) {
+    final instance = instanceId;
+    if (instance != null) PreferencesService().rememberMasterPassword(instance, login);
+  }
 
   Future<void> signOut() async {
     await _stopEvents();

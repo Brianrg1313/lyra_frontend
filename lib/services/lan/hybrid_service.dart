@@ -26,8 +26,14 @@ enum HybridJoin {
   joined,
 
   /// The master answered but took neither the password nor the cloud's grant (none to be had: the
-  /// backend didn't answer, or the master isn't enrolled): asked once, [HybridService.signIn].
+  /// backend didn't answer, or the master isn't enrolled), and the person has signed in there with a
+  /// password from this device before: asked once, [HybridService.signIn].
   needsPassword,
+
+  /// As [needsPassword], but nobody here ever saw this person's password on the master: another
+  /// company's account on a shared computer, or one of its people who never made one. Nothing is
+  /// asked; the app runs `cloud`, and the server section still offers the master's sign in.
+  noPassword,
 
   /// No master here, or it doesn't answer (away from the office): the app runs `cloud`.
   unavailable
@@ -57,8 +63,10 @@ class HybridService extends ChangeNotifier {
     required LanService lan,
     required CloudPresence presence,
     Future<String> Function(String instance)? grant,
+    bool Function(String instance, String login)? hasPassword,
     this.wait = const Duration(seconds: 6)
-  }) : _lan = lan, _presence = presence, _grant = grant ?? const SyncCloudSource().grant {
+  }) : _lan = lan, _presence = presence, _grant = grant ?? const SyncCloudSource().grant,
+       _hasPassword = hasPassword ?? PreferencesService().hasMasterPassword {
     _lan.addListener(_follow);
     _presence.live.addListener(_presenceChanged);
   }
@@ -70,6 +78,10 @@ class HybridService extends ChangeNotifier {
 
   /// The backend's grant for the master an instance names (`session.md` S-12).
   final Future<String> Function(String instance) _grant;
+
+  /// Whether a login signed in to a master with a password from this device
+  /// ([PreferencesService.hasMasterPassword]).
+  final bool Function(String instance, String login) _hasPassword;
 
   /// How long the master gets to answer before the app goes on with the cloud alone.
   final Duration wait;
@@ -116,7 +128,8 @@ class HybridService extends ChangeNotifier {
   /// An online sign in just succeeded as [login] (an e-mail): the master's session for the same
   /// person. [password], when the sign in was by password, opens it with its sealed fields; without
   /// it, or when the master's password is another, the cloud's grant opens it without them
-  /// (`session.md` S-12, S-13). Only a master that takes neither asks for its password.
+  /// (`session.md` S-12, S-13). Only a master that takes neither asks for its password, and only of
+  /// someone who has used one there from this device ([HybridJoin.noPassword] otherwise).
   Future<HybridJoin> join(String login, {String? password}) async {
     if (Deployment.paired == null) return HybridJoin.unavailable;
 
@@ -136,7 +149,10 @@ class HybridService extends ChangeNotifier {
     if (status != LanStatus.signedOut) return HybridJoin.unavailable;
     if (password != null && await signIn(login, password)) return HybridJoin.joined;
 
-    return await _signInWithGrant() ? HybridJoin.joined : HybridJoin.needsPassword;
+    if (await _signInWithGrant()) return HybridJoin.joined;
+
+    final instance = _lan.instanceId;
+    return instance != null && _hasPassword(instance, login) ? HybridJoin.needsPassword : HybridJoin.noPassword;
   }
 
   /// The cloud's grant for this master, redeemed there. False when there is none to be had (no

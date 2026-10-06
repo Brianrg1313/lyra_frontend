@@ -23,7 +23,9 @@ void main() {
     CapabilityService().linked = true;
   });
 
-  HybridService service(_Master master) => HybridService(lan: master, presence: _Presence(true));
+  /// [master]'s people have all signed in there with a password from this device.
+  HybridService service(_Master master) =>
+    HybridService(lan: master, presence: _Presence(true), hasPassword: (instance, login) => true);
 
   group('join', () {
     test('a password sign in opens the master with the same password and runs hybrid', () async {
@@ -39,7 +41,7 @@ void main() {
     });
 
     test('with no grant to be had, a code sign in or another master password asks for it once', () async {
-      final master = _Master(password: "the master's own");
+      final master = _Master(instance: "inst-1", password: "the master's own");
       final hybrid = service(master);
 
       expect(await hybrid.join("ada@lyra.app"), HybridJoin.needsPassword);
@@ -79,20 +81,40 @@ void main() {
 
       Deployment.use(DeploymentMode.cloud, paired: DeploymentRole.client);
       final away = _Master(instance: "inst-1");
-      final refused = HybridService(lan: away, presence: _Presence(true), grant: (instance) => Future.error({"code": 503}));
+      final refused = HybridService(lan: away, presence: _Presence(true), grant: (instance) => Future.error({"code": 503}),
+        hasPassword: (instance, login) => true);
       expect(await refused.join("ada@lyra.app"), HybridJoin.needsPassword);
       expect(away.grants, isEmpty);
       expect(Deployment.mode, DeploymentMode.cloud);
       refused.dispose();
 
       final rejecting = _Master(instance: "inst-1", takesGrants: false);
-      final rejected = HybridService(lan: rejecting, presence: _Presence(true), grant: (instance) async => "grant");
+      final rejected = HybridService(lan: rejecting, presence: _Presence(true), grant: (instance) async => "grant",
+        hasPassword: (instance, login) => true);
       expect(await rejected.join("ada@lyra.app"), HybridJoin.needsPassword);
       rejected.dispose();
     });
 
+    test("nobody who never used a password on this master is asked for one: another company's account", () async {
+      final master = _Master(instance: "inst-1", signedInAs: "grace@lyra.app");
+      final known = <(String, String)>[];
+      final hybrid = HybridService(lan: master, presence: _Presence(true), grant: (instance) => Future.error({"code": 403}),
+        hasPassword: (instance, login) {
+          known.add((instance, login));
+          return login == "grace@lyra.app";
+        });
+
+      expect(await hybrid.join("ada@lyra.app"), HybridJoin.noPassword);
+      expect(await hybrid.join("ada@lyra.app", password: "ada's cloud password"), HybridJoin.noPassword);
+      expect(known, [("inst-1", "ada@lyra.app"), ("inst-1", "ada@lyra.app")]);
+      expect(Deployment.mode, DeploymentMode.cloud);
+
+      expect(await hybrid.join("grace@lyra.app"), HybridJoin.needsPassword);
+      hybrid.dispose();
+    });
+
     test("a master session left by someone else is signed out, not taken", () async {
-      final master = _Master(signedInAs: "grace@lyra.app");
+      final master = _Master(instance: "inst-1", signedInAs: "grace@lyra.app");
       final hybrid = service(master);
 
       expect(await hybrid.join("ada@lyra.app"), HybridJoin.needsPassword);
