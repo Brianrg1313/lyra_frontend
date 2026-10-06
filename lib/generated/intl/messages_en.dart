@@ -459,16 +459,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "account_history_title":
             MessageLookupByLibrary.simpleMessage("Work history"),
         "account_language": MessageLookupByLibrary.simpleMessage("Language"),
-        "account_methods_apple": MessageLookupByLibrary.simpleMessage("Apple"),
         "account_methods_email": MessageLookupByLibrary.simpleMessage("Email"),
         "account_methods_email_hint": MessageLookupByLibrary.simpleMessage(
             "Your sign-in address. It is changed from your account, not from a company."),
-        "account_methods_google":
-            MessageLookupByLibrary.simpleMessage("Google"),
+        "account_methods_linked":
+            MessageLookupByLibrary.simpleMessage("Google, Apple or Microsoft"),
         "account_methods_linked_hint": MessageLookupByLibrary.simpleMessage(
             "Sign in with this account instead of your email."),
-        "account_methods_microsoft":
-            MessageLookupByLibrary.simpleMessage("Microsoft"),
         "account_methods_subtitle": MessageLookupByLibrary.simpleMessage(
             "The ways you can enter your account."),
         "account_methods_title":
@@ -507,6 +504,14 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Create a password"),
         "account_password_unknown": MessageLookupByLibrary.simpleMessage(
             "Sign in with a password instead of an emailed code"),
+        "account_posture_app": MessageLookupByLibrary.simpleMessage(
+            "Signing in asks for a second step: a code from your authenticator app."),
+        "account_posture_email": MessageLookupByLibrary.simpleMessage(
+            "Signing in asks for a second step: a code sent to your email."),
+        "account_posture_off": MessageLookupByLibrary.simpleMessage(
+            "Signing in asks for one step only. Add a second one, so your password or your email alone isn\'t enough to get in."),
+        "account_posture_turn_on": MessageLookupByLibrary.simpleMessage(
+            "Turn on two-step verification"),
         "account_preferences_subtitle": MessageLookupByLibrary.simpleMessage(
             "How Lyra looks and speaks on this device."),
         "account_preferences_title":

@@ -9,6 +9,7 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/toolkit/deployment.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/own_header.dart';
 import 'package:app/screens/home/sections/business/employees/own_settings/own_history.dart';
 import 'package:app/screens/home/sections/business/employees/own_settings/own_security.dart';
 import 'package:app/screens/home/sections/business/employees/own_settings/own_sessions.dart';
@@ -45,6 +46,7 @@ void main() {
         child: Builder(builder: (context) {
           AppSize.instance(context);
           return const Material(child: SingleChildScrollView(child: SizedBox(width: 480, child: Column(children: [
+            OwnHeader(),
             OwnSecurity(),
             OwnSignInMethods(),
             OwnSessions(),
@@ -66,5 +68,6 @@ void main() {
     expect(find.text("Needs the internet: it lives in your online account."), findsNWidgets(3));
     expect(find.text("Coming soon"), findsWidgets);
     expect(find.text("Sign out"), findsOneWidget);
+    expect(find.text("Turn on two-step verification"), findsNothing);
   });
 }

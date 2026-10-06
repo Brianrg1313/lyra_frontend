@@ -37,7 +37,9 @@ class OwnSessions extends StatelessWidget {
             )
           ])
         ),
-        OwnSoon(icon: CI.network, label: s.account_sessions_others, hint: s.account_sessions_others_hint)
+        OwnSoonList(rows: [
+          OwnSoon(icon: CI.network, label: s.account_sessions_others, hint: s.account_sessions_others_hint)
+        ])
       ])
     );
   }

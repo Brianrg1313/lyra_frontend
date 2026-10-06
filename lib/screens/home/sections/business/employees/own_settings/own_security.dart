@@ -132,8 +132,10 @@ class _SecurityRows extends StatelessWidget {
             ]
           )
         ),
-      OwnSoon(icon: CI.sms, label: s.account_sms, hint: s.account_sms_hint),
-      OwnSoon(icon: CI.mail, label: s.account_recovery_emails, hint: s.account_recovery_emails_hint)
+      OwnSoonList(rows: [
+        OwnSoon(icon: CI.sms, label: s.account_sms, hint: s.account_sms_hint),
+        OwnSoon(icon: CI.mail, label: s.account_recovery_emails, hint: s.account_recovery_emails_hint)
+      ])
     ]);
   }
 
@@ -210,9 +212,14 @@ class OwnSignInMethods extends StatelessWidget {
           hint: s.account_methods_email_hint,
           selectable: true
         ),
-        OwnSoon(icon: CI.google, label: s.account_methods_google, hint: s.account_methods_linked_hint),
-        OwnSoon(icon: CI.apple, label: s.account_methods_apple, hint: s.account_methods_linked_hint),
-        OwnSoon(icon: CI.microsoft, label: s.account_methods_microsoft, hint: s.account_methods_linked_hint)
+        OwnSoonList(rows: [
+          OwnSoon(
+            icon: CI.link,
+            label: s.account_methods_linked,
+            hint: s.account_methods_linked_hint,
+            marks: const [CI.google, CI.apple, CI.microsoft]
+          )
+        ])
       ])
     );
   }

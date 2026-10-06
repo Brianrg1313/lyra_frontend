@@ -4983,6 +4983,46 @@ class S {
     );
   }
 
+  /// `Signing in asks for a second step: a code from your authenticator app.`
+  String get account_posture_app {
+    return Intl.message(
+      'Signing in asks for a second step: a code from your authenticator app.',
+      name: 'account_posture_app',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Signing in asks for a second step: a code sent to your email.`
+  String get account_posture_email {
+    return Intl.message(
+      'Signing in asks for a second step: a code sent to your email.',
+      name: 'account_posture_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Signing in asks for one step only. Add a second one, so your password or your email alone isn't enough to get in.`
+  String get account_posture_off {
+    return Intl.message(
+      'Signing in asks for one step only. Add a second one, so your password or your email alone isn\'t enough to get in.',
+      name: 'account_posture_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on two-step verification`
+  String get account_posture_turn_on {
+    return Intl.message(
+      'Turn on two-step verification',
+      name: 'account_posture_turn_on',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Security`
   String get account_security_title {
     return Intl.message(
@@ -5296,31 +5336,11 @@ class S {
     );
   }
 
-  /// `Google`
-  String get account_methods_google {
+  /// `Google, Apple or Microsoft`
+  String get account_methods_linked {
     return Intl.message(
-      'Google',
-      name: 'account_methods_google',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Apple`
-  String get account_methods_apple {
-    return Intl.message(
-      'Apple',
-      name: 'account_methods_apple',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Microsoft`
-  String get account_methods_microsoft {
-    return Intl.message(
-      'Microsoft',
-      name: 'account_methods_microsoft',
+      'Google, Apple or Microsoft',
+      name: 'account_methods_linked',
       desc: '',
       args: [],
     );

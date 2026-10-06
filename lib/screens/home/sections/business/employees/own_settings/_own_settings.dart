@@ -8,6 +8,7 @@ import 'package:app/services/account/account_security_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
+import './own_header.dart';
 import './own_history.dart';
 import './own_preferences.dart';
 import './own_security.dart';
@@ -15,9 +16,9 @@ import './own_sessions.dart';
 import './own_soon.dart';
 
 /// The person's own settings, from the settings action of their own card: what is theirs and no
-/// administrator manages — this device's language and look, how they sign in, where they are
-/// signed in, their notices, their privacy and their work history. Rows without a backend yet
-/// are named and marked "coming soon".
+/// administrator manages — how they sign in, where they are signed in, this device's language
+/// and look, their work history, their notices and their privacy. Rows without a backend yet
+/// are named, drawn quieter and marked "coming soon" once per block.
 ///
 /// It owns its services: they are the account's, read when the panel opens and dropped with it.
 class OwnSettings extends StatefulWidget {
@@ -56,14 +57,16 @@ class _OwnSettingsState extends State<OwnSettings> {
     child: ScrollableWidget(
       padding: EdgeInsets.only(bottom: AppSize.padding),
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      // What works first, the blocks with nothing working yet last.
       children: const [
-        OwnPreferences(),
+        OwnHeader(),
         OwnSecurity(),
         OwnSignInMethods(),
         OwnSessions(),
+        OwnPreferences(),
+        OwnHistory(),
         OwnNotifications(),
-        OwnPrivacy(),
-        OwnHistory()
+        OwnPrivacy()
       ]
     )
   );

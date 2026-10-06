@@ -37,12 +37,13 @@
 
 ### employees/own_settings/ — the viewer's own account (app area `account`), in the settings action's side panel; `SettingsBlock` rows
 
-- `_own_settings.dart` — `OwnSettings`: owns `AccountSecurityService` and `AccountHistoryService` (read on opening only where `account.security` / `account.history` show), one scroll of the blocks below.
+- `_own_settings.dart` — `OwnSettings`: owns `AccountSecurityService` and `AccountHistoryService` (read on opening only where `account.security` / `account.history` show), one scroll: header, then the working blocks, then the ones with nothing working yet.
+- `own_header.dart` — `OwnHeader`: picture, name, email, and one sentence on the sign in's steps (warning tint and a "turn on" action without a second step; only where `account.security` shows).
 - `own_preferences.dart` — `OwnPreferences`: language and appearance of this device (`PreferencesService`), every mode.
 - `own_security.dart` — `OwnSecurity`: first password (`showCreatePassword`), second factor (on, change, off: `showTwoFactorSetup`, `showTwoFactorProof`), recovery codes left / new set (app only), SMS and recovery e-mails soon; `OwnSignInMethods`: the sign-in e-mail, Google/Apple/Microsoft soon.
 - `own_sessions.dart` — `OwnSessions`: this device (platform, sign out), other devices soon.
 - `own_history.dart` — `OwnHistory`: every company worked for (logo, role, contract, since/range, tenure, state tag).
-- `own_soon.dart` — `OwnSoon` (a row with no backend yet: "coming soon" tag), `OwnOffline` (a cloud row without the cloud), `OwnLink` (a row's text action), `OwnNotifications`, `OwnPrivacy` (all rows soon).
+- `own_soon.dart` — `OwnSoon` (a muted line with no backend yet), `OwnSoonList` (them under one "coming soon"), `OwnSoonTag`, `OwnOffline` (a cloud row without the cloud), `OwnLink` (a row's text action), `OwnNotifications`, `OwnPrivacy` (all rows soon, the tag in the title).
 
 ### settings/ — the profile (read-only sheet; **every edit opens a modal** in `lib/screens/modals/business`)
 
