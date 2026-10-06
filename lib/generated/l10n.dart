@@ -1520,6 +1520,16 @@ class S {
     );
   }
 
+  /// `Your profile`
+  String get side_bar_profile {
+    return Intl.message(
+      'Your profile',
+      name: 'side_bar_profile',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Your session ended. Sign in again to continue.`
   String get session_expired {
     return Intl.message(

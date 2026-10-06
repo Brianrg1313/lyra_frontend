@@ -41,7 +41,30 @@ enum EmployeeDetailStatus { idle, loading, ready, error }
 /// forth between two employees in the list does not reread either.
 class BusinessEmployeesService extends ChangeNotifier {
   BusinessEmployeesService({EmployeesSource? source, PermissionsSource? permissions})
-    : _injected = source, _injectedPermissions = permissions;
+    : _injected = source, _injectedPermissions = permissions {
+    _live.add(this);
+  }
+
+  /// Every page's list alive now: [openOwn] reaches the one already mounted.
+  static final Set<BusinessEmployeesService> _live = {};
+
+  /// Asked by [openOwn] and not yet honoured: the next list to be ready opens
+  /// the viewer's card instead of the remembered person.
+  static bool _ownRequested = false;
+
+  /// Opens the viewer's own card, asked from outside the page (the side bar's
+  /// profile card). Static because whoever asks has no page to read the
+  /// service from: a mounted list switches now, and a page about to mount
+  /// opens on it at its first read.
+  static void openOwn() {
+    _ownRequested = true;
+
+    for (final service in _live) {
+      if (service._status == BusinessEmployeesStatus.ready && service._current.isNotEmpty) {
+        service._selectOwn();
+      }
+    }
+  }
 
   final EmployeesSource? _injected;
   final PermissionsSource? _injectedPermissions;
@@ -289,7 +312,9 @@ class BusinessEmployeesService extends ChangeNotifier {
 
     final keys = {for (final employee in [...current, ...former]) employee.key};
 
-    if (!keys.contains(_selected)) {
+    if (_ownRequested && current.isNotEmpty) {
+      _selectOwn();
+    } else if (!keys.contains(_selected)) {
       // First read: whoever was open when the tab was last left, while they
       // are still listed; otherwise the viewer's own card.
       final last = PreferencesService().recall(RememberedSelection.employee);
@@ -338,6 +363,14 @@ class BusinessEmployeesService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The viewer's card is the first of [current] (`listFrom` puts it there).
+  void _selectOwn() {
+    _ownRequested = false;
+
+    final own = _current.firstWhere((employee) => employee.me, orElse: () => _current.first);
+    select(own.key);
+  }
+
   /// A read can answer after the page that asked for it is gone (a business
   /// switch remounts it), and notifying a disposed notifier throws.
   @override
@@ -348,6 +381,7 @@ class BusinessEmployeesService extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _live.remove(this);
     super.dispose();
   }
 }

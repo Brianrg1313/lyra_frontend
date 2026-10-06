@@ -3685,6 +3685,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "session_expired": MessageLookupByLibrary.simpleMessage(
             "Your session ended. Sign in again to continue."),
         "shop": MessageLookupByLibrary.simpleMessage("Shop"),
+        "side_bar_profile":
+            MessageLookupByLibrary.simpleMessage("Your profile"),
         "sign_out": MessageLookupByLibrary.simpleMessage("Sign out"),
         "sign_out_failed": MessageLookupByLibrary.simpleMessage(
             "Could not sign out. Check your connection and try again."),

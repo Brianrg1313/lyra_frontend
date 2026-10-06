@@ -268,6 +268,27 @@ void main() {
     });
   });
 
+  // Before the tab's tests: those leave their services alive, and a live one
+  // takes the request.
+  group('own card', () {
+    test('the side bar\'s profile opens the viewer\'s card, now or at the first read', () {
+      final open = _Employees()..seed(current: [_me, _luis], total: 1);
+
+      open.select("e-2");
+      BusinessEmployeesService.openOwn();
+      expect(open.selectedKey, "e-1");
+
+      // Asked with no page mounted: the remembered person gives way at the
+      // next one's first read.
+      open.dispose();
+      BusinessEmployeesService.openOwn();
+      final later = _Employees();
+      addTearDown(later.dispose);
+      later.seed(current: [_luis, _me], total: 1);
+      expect(later.selectedKey, "e-1");
+    });
+  });
+
   group('tab', () {
     testWidgets('asks for the people when it opens', (tester) async {
       final service = _Employees();
