@@ -56,12 +56,8 @@ class SummaryLayout {
   /// How much the title row occupies, with its air and without the bottom line.
   ///
   /// The header **plants itself at this height** instead of measuring what its
-  /// letters occupy. It's the opposite of normal, and it's because of how it
-  /// sticks to the top: the sliver that holds it needs the number before
-  /// drawing anything (see `StickyBar`), and guessing the height of a text row
-  /// is guessing the font. A number that imposes itself is the same with
-  /// anything; one that's estimated comes up short with the first font that has
-  /// taller rows, and the header comes out squashed with nothing warning.
+  /// letters occupy: a number that imposes itself is the same with any font, so
+  /// the header never comes out squashed over the rows.
   static double get headerTitles => AppSize.text * 1.4 + headerPadding.vertical;
 
   /// How much the whole header measures: the title row and the line that

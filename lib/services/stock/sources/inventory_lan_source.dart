@@ -6,6 +6,7 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 // SERVICES
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/product_image.dart';
+import 'package:app/services/inventory/table_template_model.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
@@ -37,6 +38,10 @@ class InventoryLanSource implements InventorySource {
 
     return parts.first + parts.skip(1).map((part) => part.isEmpty ? "" : part[0].toUpperCase() + part.substring(1)).join();
   }
+
+  /// The engine has no catalogue: a master's company starts blank or from a file.
+  @override
+  Future<List<TableTemplateModel>> templates() async => const [];
 
   @override
   Future<List<TableLiteModel>> tables() async {

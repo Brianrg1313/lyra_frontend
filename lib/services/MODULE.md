@@ -315,7 +315,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `preferences_service.dart` — `PreferencesService` singleton (Hive box `preferences`, `preload()` in `preCall`):
   device-wide theme/language (applied to and persisted from `AppController`); per account (`bindUser` from
   `ClientService`) the last `/home...` path (`homePath`), the last active business (`useBusiness` from
-  `BusinessService`) and per-business selections (`RememberedSelection`: `chat`, `employee`; `recall`/`remember`);
+  `BusinessService`), per-business selections (`RememberedSelection`: `chat`, `employee`, `table`; `recall`/`remember`)
+  and how inventory tables open (`InventoryView`, `inventoryView` / `useInventoryView`);
   `linkDeclined` / `declineLink` (the "not now" to joining a server with its company online); device-wide per master
   instance, `hasMasterPassword` / `rememberMasterPassword` (written by `LanService.signIn`/`activate`).
 
@@ -324,7 +325,9 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `table_request.dart` / `table_field_request.dart` / `table_record_request.dart` — table / column / row bodies.
 - `table_field_type.dart` — `TableFieldType`.
 - `table_field_options.dart` — `OPTIONS`/`CATEGORIES` rules (`sameFieldOption`, `fieldLabelsOf`, `fieldLabelsText`, `fieldLabelsValue`).
-- `table_template.dart` — `TableTemplate`: starting categories.
+- `table_template.dart` — `TableTemplate`: the create modal's category codes.
+- `table_template_model.dart` — `TableTemplateModel`, `TableTemplateField`: a starting table of `GET .../builder/templates/`.
+- `table_templates_service.dart` — `TableTemplatesService` (+ status): the templates for the company's activity; owned by the inventory section's empty state.
 - `import_file.dart` — `ImportFormat`, `importExtensions` (the cloud's `kImportExtensions`, a master's
   `kLocalImportExtensions`: `.xlsx`, `.xlsm`, `.csv`), `importFormatOf`, `pickImportFile()`, `importTableName(path)`.
 - `import_source.dart` — `ImportSource`, `ImportSourceGroup`.
@@ -334,13 +337,13 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 
 ## stock/ — reading and moving inventory
 
-- `sources/inventory_source.dart` — `InventorySource`: tables, structure, detail, fields, records (+ match total), images,
-  import (structure, then records), normalisation (cloud only). Used by `TablesService`, `TableDetailService`, `TableViewService`.
+- `sources/inventory_source.dart` — `InventorySource`: tables, templates (cloud only; a master answers none), structure, detail,
+  fields, records (+ match total), images, import (structure, then records), normalisation (cloud only). Used by `TablesService`, `TableDetailService`, `TableViewService`.
   `inventory_cloud_source.dart` — REST (reads the created table's id in either shape). `inventory_lan_source.dart` —
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
   `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
   `inventory.tables.normalize`.
-- `sources/stock_source.dart` — `StockSource`: summary page, a movement (answers the balance). Used by `StockSummaryService`.
+- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary), a movement (answers the balance). Used by `StockSummaryService`.
   `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
   `stock.move` (`operationOf`).
 - `tables/tables_service.dart` — `TablesService` (+ `TablesStatus`, `TableImportResult`,
@@ -355,7 +358,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_view_model.dart` — `TableViewModel`, `TableColumnModel`, `TableRowModel`.
 - `tables/table_normalize_model.dart` — `POST .../builder/normalize/` result.
 - `tables/table_normalizing_model.dart` / `table_ready_model.dart` — `table/normalizing` / `table/ready` notices.
-- `summary/stock_summary_service.dart` — `StockSummaryService`: `POST /inventory/stock/summary/`.
+- `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`).
 - `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow`, `StockSummaryColumn`.
 - `movements/stock_movement_model.dart` — `StockMovement`, `StockBalance`, `StockOperation`, `StockReason`.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move

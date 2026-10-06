@@ -36,13 +36,17 @@ class TableLiteModel {
   /// is what shows up below.
   final bool primary;
 
+  /// Flutter ARGB literal (`0xFF2196F3`) the table is tinted with, or empty.
+  final String color;
+
   const TableLiteModel({
     required this.id,
     required this.title,
     this.description = "",
     this.fields = 0,
     this.records,
-    this.primary = false
+    this.primary = false,
+    this.color = ""
   });
 
   /// Reads a row. Keys are checked in both conventions the backend can send
@@ -62,7 +66,8 @@ class TableLiteModel {
     ),
     primary: _primary(
       json["PRIMARY"] ?? json["primary"] ?? json["is_primary"]
-    )
+    ),
+    color: (json["COLOR"] ?? json["color"])?.toString() ?? ""
   );
 
   /// Whether the row comes marked as the primary one.
@@ -106,7 +111,8 @@ class TableLiteModel {
       description: description ?? this.description,
       fields: fields,
       records: records,
-      primary: primary
+      primary: primary,
+      color: color
     );
 
   /// Decodes the list's response without locking to a single format: it

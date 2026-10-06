@@ -11,8 +11,8 @@ import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/business_listener.dart';
 import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 
 import 'sheet.dart';
 import 'table_header.dart';
@@ -25,10 +25,8 @@ import 'state/sheet_hover.dart';
 import 'state/sheet_metrics.dart';
 import 'state/sheet_widths.dart';
 
-/// View of a table and its data as a spreadsheet. It is a
-/// sub-page of the `inventory` section (`parents: ["inventory"]`): it opens when
-/// tapping a row in the table listing and shares the home shell, so the sidebar
-/// option stays highlighted.
+/// View of a table and its data as a spreadsheet: the inventory section's view of
+/// the open table while its cells switch is on (`InventorySection`), keyed by the table.
 ///
 /// The grid imitates Excel, not a data table: **the cells already exist**.
 /// There is no need to request a new row to load something; below the records
@@ -96,11 +94,6 @@ import 'state/sheet_widths.dart';
 /// on its own: confirmation is requested first, because it takes the column and
 /// everything loaded in it.
 ///
-/// Which table is resolved from the id in the URL (`/home/inventory/:id`), not
-/// by constructor: the sub-page reuses the shell's single page and the
-/// `Navigator` does not rebuild the tree when navigating, so the id is read from
-/// [Navis.currentArgs].
-///
 /// The table opens in two phases (see [TableViewService]) and the sheet shows
 /// them for what they are:
 /// - **The structure** (`GET /inventory/products/builder/structure/<id>`) is what is awaited with a
@@ -139,9 +132,8 @@ import 'state/sheet_widths.dart';
 /// ([_onImport]). Until both things happen, the top bar says what is going on.
 ///
 /// What does **not** happen anymore is getting here in the middle of that. A
-/// table that is still being imported is not opened: the listing does not let
-/// the click through ([TableCard]) and this screen turns around on the way in,
-/// because a sheet with untyped columns and no rows is read as an import that
+/// table that is still being imported is not mounted: the section shows its import
+/// instead, because a sheet with untyped columns and no rows is read as an import that
 /// failed and answered by importing the file again.
 ///
 /// ---
@@ -183,18 +175,28 @@ import 'state/sheet_widths.dart';
 /// being viewed), which must restart every time you enter and be discarded on
 /// exit.
 class TableViewSection extends StatefulWidget {
-  const TableViewSection({super.key});
+  const TableViewSection({
+    super.key,
+    required this.tableId,
+    required this.parts,
+    this.status = const []
+  });
 
-  /// Route key of this sub-page. It is the single source: both the route
-  /// table and the shell use it to decide when to show it.
+  /// Route key of a table's link (`/home/inventory/:id`): the section opening on that
+  /// table. Both the route table and the shell use it.
   static const String routeKey = "inventory_table_view";
+
+  final String tableId;
+  final InventoryBarParts parts;
+
+  /// What the section adds to the bar's status (an upload in flight).
+  final List<Widget> status;
 
   @override
   State<TableViewSection> createState() => _TableViewSectionState();
 }
 
-class _TableViewSectionState extends State<TableViewSection>
-    with BusinessListener<TableViewSection> {
+class _TableViewSectionState extends State<TableViewSection> {
   // Owned by the screen: it is created on entry and released on exit, without
   // going through an app provider, because its state (the open chunks) must not
   // survive navigation.
@@ -225,8 +227,7 @@ class _TableViewSectionState extends State<TableViewSection>
   void initState() {
     super.initState();
 
-    // The id lives in the URL.
-    _tableId = Navis.currentArgs?["id"] ?? "";
+    _tableId = widget.tableId;
 
     _tables = context.read<TablesService>();
     _stage = _tables.importStage(_tableId);
@@ -254,36 +255,9 @@ class _TableViewSectionState extends State<TableViewSection>
     // The load is deferred to the first frame so as not to notify while the
     // tree mounts, like the rest of the sections.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      // A table that is still being imported is not opened: its columns are
-      // untyped and its rows are not up yet, so the sheet would show an
-      // import that looks failed instead of one that is halfway. The listing
-      // stops the click that gets here ([TableCard]), and this stops the
-      // link that skips it — a URL typed by hand, a table left open in
-      // another tab.
-      if (_stage != null) {
-        FloatFlag.of(context).message(S.of(context).import_table_busy);
-
-        Navis.push(context, "/home/inventory");
-        return;
-      }
-
-      _service.open(_tableId, query: _query.value);
+      if (mounted) _service.open(_tableId, query: _query.value);
     });
   }
-
-  /// The open table belongs to the previously active business: its id means
-  /// nothing in the one just chosen, so staying would be requesting a table
-  /// this business does not have. We go back to the listing, which is the only
-  /// thing that can be shown for the new business.
-  ///
-  /// Navigation happens on the spot —without waiting for the next frame— so the
-  /// screen leaves before the shell remounts it: otherwise, it would request
-  /// that table's structure against the new business just to show an error.
-  @override
-  void onBusinessChanged(String businessId) =>
-    Navis.push(context, "/home/inventory");
 
   /// This table's import finished uploading its rows: it must be re-read in
   /// full.
@@ -325,7 +299,7 @@ class _TableViewSectionState extends State<TableViewSection>
     // [HomeHeader]), and that notice arrives while this is still mounted:
     // without the guard, leaving a table while searching would re-request it in
     // full only to unmount it right after.
-    if (Navis.currentKey.value != TableViewSection.routeKey) return;
+    if (!const {"inventory", TableViewSection.routeKey}.contains(Navis.currentKey.value)) return;
 
     _controller.reset();
     _service.search(_query.value);
@@ -356,7 +330,7 @@ class _TableViewSectionState extends State<TableViewSection>
       ChangeNotifierProvider<SheetDates>.value(value: _controller.dates)
     ],
     child: Surface(child: Column(children: [
-      TableHeader(tableId: _tableId),
+      TableHeader(tableId: _tableId, parts: widget.parts, status: widget.status),
       Separator.horizontal(),
       const Expanded(child: _Body())
     ]))

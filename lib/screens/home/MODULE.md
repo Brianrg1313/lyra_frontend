@@ -10,7 +10,7 @@
   `Navis.currentKey` / `Navis.currentArgs`.
 - Content is keyed by the active business (`KeyedSubtree(key: ValueKey(businessId))`): a switch
   **remounts** the section, so sections just load in `initState`.
-- Sub-pages bound to an id of the previous business (`/home/inventory/:id`) use the
+- Sub-pages bound to an id of the previous business (`/home/channels/:id`) use the
   `BusinessListener` mixin to navigate away.
 - **Const-section trap**: `_screen` returns sections as `const`; a canonicalized const is skipped by
   `Element.updateChild`, so a tabbed section must listen to `Navis.currentKey` itself

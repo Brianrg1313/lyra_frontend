@@ -14,17 +14,15 @@ import 'package:app/toolkit/deployment.dart';
 /// there is no inventory to summarize. It is distinguished from [empty] —which
 /// is a table without products— and from [error] because what should be shown
 /// is different: with [missing] the summary is simply not drawn, which is what
-/// the tables list is for, offering to create the first one.
+/// the section offers instead: the templates to create the first one.
 enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 
 /// The company's stock summary: what there is, how it looks and how much is
 /// left.
 ///
-/// **The table is not chosen.** A company sells a catalog and imports sheets
-/// around it, so the backend always answers for the table the company marked as
-/// primary (`tables`.`primary`, the first one created unless changed) and, by
-/// the way, says which one it was ([table]). That is why this service receives
-/// no id: it just asks and that is it.
+/// **One table per service.** The inventory section shows the table picked in its header
+/// and creates one service for it ([tableId]); without one the backend answers for the
+/// company's primary table. Either way it says which one it read ([table]).
 ///
 /// It is not another way of listing a table, and that is why it is not
 /// `TableViewService`: the sheet shows all the columns the company ever
@@ -32,8 +30,7 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// this shows the handful that is read at a glance, in the order the company
 /// arranged them, and with the inventory numbers next to each row.
 ///
-/// **The rows accumulate.** The summary lives below the tables grid, in the
-/// same scroll, so there are no pages or buttons: the first page is read when
+/// **The rows accumulate.** There are no pages or buttons: the first page is read when
 /// opening the section and the next one is requested when the list is about to
 /// run out of rows ([more]). How many there are in total is said by the
 /// response ([total]), which is what allows knowing when to stop asking.
@@ -49,15 +46,17 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// it. The shell remounts the section when changing company, so there is
 /// nothing to invalidate on its own account.
 class StockSummaryService extends ChangeNotifier {
-  StockSummaryService({StockSource? source}) : _injected = source;
+  StockSummaryService({StockSource? source, this.tableId = ""}) : _injected = source;
 
   final StockSource? _injected;
+
+  /// The table summarized; empty asks for the company's primary one.
+  final String tableId;
 
   StockSource get _source => _injected ?? Sources.stock;
 
   /// How many rows are read at a time. The backend accepts up to 200, but this
-  /// is a summary that starts below a grid: what matters is that the first page
-  /// arrives fast, and scrolling down requests the following ones.
+  /// is a summary: what matters is that the first page arrives fast, and scrolling down requests the following ones.
   static const int _pageSize = 30;
 
   /// How many pages at most are requested together again when the columns
@@ -196,8 +195,7 @@ class StockSummaryService extends ChangeNotifier {
   /// there.
   ///
   /// It does nothing if the table that was touched is not the one being
-  /// summarized —the backend summarizes the company's primary one and this
-  /// sheet opens over any— nor if the summary has not been drawn yet: what is
+  /// summarized, nor if the summary has not been drawn yet: what is
   /// about to come already brings the new columns.
   Future<void> syncColumns(String tableId) {
     if (tableId.isEmpty || tableId != _table) return Future.value();
@@ -329,7 +327,7 @@ class StockSummaryService extends ChangeNotifier {
     final StockSummaryPage result;
 
     try {
-      result = await _source.summary(page: page, size: size, match: _query);
+      result = await _source.summary(page: page, size: size, match: _query, tableId: tableId);
     } catch (error) {
       if (kDebugMode) print("loadStockSummary failed: $error");
 
@@ -342,7 +340,7 @@ class StockSummaryService extends ChangeNotifier {
       _reading = false;
 
       // Without tables there is nothing to summarize, and that is not an error
-      // to retry: the list above is already offering to create the first one.
+      // to retry: the section is already offering to create the first one.
       if (error is Map && (error["message"] == _noTable || error["code"] == _noTable)) {
         _columns = const [];
         _total = 0;

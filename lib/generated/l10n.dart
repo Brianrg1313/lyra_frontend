@@ -1450,6 +1450,106 @@ class S {
     );
   }
 
+  /// `Switch table`
+  String get inventory_table_selector {
+    return Intl.message(
+      'Switch table',
+      name: 'inventory_table_selector',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search tables`
+  String get inventory_table_search {
+    return Intl.message(
+      'Search tables',
+      name: 'inventory_table_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show the summary`
+  String get inventory_view_summary {
+    return Intl.message(
+      'Show the summary',
+      name: 'inventory_view_summary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show every cell`
+  String get inventory_view_sheet {
+    return Intl.message(
+      'Show every cell',
+      name: 'inventory_view_sheet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start your inventory`
+  String get inventory_start_title {
+    return Intl.message(
+      'Start your inventory',
+      name: 'inventory_start_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a table made for your kind of business, or start one from scratch. You can change its columns any time.`
+  String get inventory_start_subtitle {
+    return Intl.message(
+      'Pick a table made for your kind of business, or start one from scratch. You can change its columns any time.',
+      name: 'inventory_start_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Blank table`
+  String get inventory_start_blank {
+    return Intl.message(
+      'Blank table',
+      name: 'inventory_start_blank',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name it and write its columns yourself.`
+  String get inventory_start_blank_hint {
+    return Intl.message(
+      'Name it and write its columns yourself.',
+      name: 'inventory_start_blank_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The suggested tables couldn't load.`
+  String get inventory_templates_error {
+    return Intl.message(
+      'The suggested tables couldn\'t load.',
+      name: 'inventory_templates_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{columns} and {count} more`
+  String inventory_template_columns_more(Object columns, Object count) {
+    return Intl.message(
+      '$columns and $count more',
+      name: 'inventory_template_columns_more',
+      desc: '',
+      args: [columns, count],
+    );
+  }
+
   /// `Services`
   String get services {
     return Intl.message(
@@ -4973,6 +5073,36 @@ class S {
     );
   }
 
+  /// `Inventory tables open as`
+  String get account_inventory_view {
+    return Intl.message(
+      'Inventory tables open as',
+      name: 'account_inventory_view',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Summary`
+  String get account_inventory_view_summary {
+    return Intl.message(
+      'Summary',
+      name: 'account_inventory_view_summary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cells`
+  String get account_inventory_view_sheet {
+    return Intl.message(
+      'Cells',
+      name: 'account_inventory_view_sheet',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Same as the system`
   String get account_theme_system {
     return Intl.message(
@@ -6916,6 +7046,16 @@ class S {
     );
   }
 
+  /// `Uploading file…`
+  String get import_table_uploading {
+    return Intl.message(
+      'Uploading file…',
+      name: 'import_table_uploading',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `This table is still being imported. It opens once its columns and rows are in`
   String get import_table_busy {
     return Intl.message(
@@ -7347,16 +7487,6 @@ class S {
     return Intl.message(
       'Primary',
       name: 'table_primary',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Your main table. The stock summary always reads this one, so it's the table whose columns show up below.`
-  String get table_primary_hint {
-    return Intl.message(
-      'Your main table. The stock summary always reads this one, so it\'s the table whose columns show up below.',
-      name: 'table_primary_hint',
       desc: '',
       args: [],
     );
@@ -11969,10 +12099,10 @@ class S {
     );
   }
 
-  /// `The products of your main table show up here, with what's left of each one.`
+  /// `This table's products show up here, with what's left of each one.`
   String get stock_summary_empty_subtitle {
     return Intl.message(
-      'The products of your main table show up here, with what\'s left of each one.',
+      'This table\'s products show up here, with what\'s left of each one.',
       name: 'stock_summary_empty_subtitle',
       desc: '',
       args: [],

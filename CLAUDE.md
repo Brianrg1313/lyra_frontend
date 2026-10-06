@@ -84,7 +84,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 | services | `lib/services` | State and backend access: `ChangeNotifier` services, models, request bodies. No widgets. | `lib/services/MODULE.md` |
 | home | `lib/screens/home` | Main shell: side bar, header, section router. Every `/home/...` route renders this one page. | `lib/screens/home/MODULE.md` |
 | business section | `lib/screens/home/sections/business` | Business page and its tabs (statistics, employees, branches, clients, settings/profile). | `.../business/MODULE.md` |
-| inventory section | `lib/screens/home/sections/inventory` | Product tables: list + stock summary, and the spreadsheet view of one table. | `.../inventory/MODULE.md` |
+| inventory section | `lib/screens/home/sections/inventory` | Product tables, one at a time (selector in the bar): stock summary or spreadsheet (cells switch); templates when there is none. | `.../inventory/MODULE.md` |
 | channels section | `lib/screens/home/sections/channels` | AI channels: grid, edit page, form blocks shared with the create/detail panels. | `.../channels/MODULE.md` |
 | connections section | `lib/screens/home/sections/connections` | Third-party accounts: list and create/edit form. | `.../connections/MODULE.md` |
 | messages section | `lib/screens/home/sections/messages` | Conversation desk (`/aries/v1`): inbox (1/3) and open chat (2/3), live via sockets. | `.../messages/MODULE.md` |

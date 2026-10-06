@@ -1,23 +1,30 @@
 # Module: inventory section
 
 **Path** `lib/screens/home/sections/inventory`
-**Role** Product tables. Two screens: the section (`/home/inventory` — table list + stock
-summary) and one table's spreadsheet (`/home/inventory/:id`, `parents: ["inventory"]`).
+**Role** Product tables, one open at a time (`/home/inventory`; a table's link
+`/home/inventory/:id`, `parents: ["inventory"]`, opens the same section on it). The bar's title is the
+table selector; the cells switch shows the open table as its stock summary or as the spreadsheet.
+No table → templates by the company's activity, a blank table, the import.
 **Services** `TablesService`, `TableViewService`, `TableDetailService`, `StockSummaryService`
-(`lib/services/stock`) + `lib/services/inventory` (field types, imports, SKUs, dates, images).
+(`lib/services/stock`) + `lib/services/inventory` (field types, imports, SKUs, dates, images,
+`TableTemplatesService`). `PreferencesService`: the open table per company
+(`RememberedSelection.table`) and the view per account (`inventoryView`).
 **Modals** `lib/screens/modals/inventory` (`create_table create_field import_table rename_table
 edit_table_details table_settings stock_movement`) + `modals/shared` (`image_viewer crop_image`).
 
 ## table_list/ — the section
 
-- `_table_list.dart` — `InventorySection`: tables on top, stock summary below. `BusinessListener`.
-- `table_row.dart` — `TableListRow`: narrow form. Refuses to open an importing table (`TablesService.importStage`).
-- `table_card.dart` — `TableCard`: desktop form, same rule.
-- `table_options.dart` — `TableOptionsButton`: rename / settings / delete, both forms.
-- `primary_mark.dart` — `PrimaryTableMark`: the business's primary table.
+- `_table_list.dart` — `InventorySection`: resolves the open table (link → remembered → primary → first), builds the
+  bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table; an importing table shows its stage
+  instead (`TablesService.importStage`); no table → `InventoryStart`. Create (named in the selector, or the modal) and
+  import live here.
+- `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view (selector, controls, the view's status and actions).
+- `table_selector.dart` — `TableSelector` (`showSelectMenu`: tables, import, create by name), `TableDot`.
+- `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`).
+- `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
+- `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
-- `sticky_bar.dart` — `StickyBar`: bar with its own scroll behaviour.
-- `stock_summary/_stock_summary.dart` — `StockSummarySection`.
+- `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts})`: owns that table's `StockSummaryService`, fixed column header over a `ListView`; header search → `MATCH`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows).
 - `stock_summary/summary_row.dart` — `SummaryHeader`, `SummaryProductRow`, `SummaryLine`.
 - `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`.
@@ -25,12 +32,12 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 
 ## table_view/ — the spreadsheet
 
-`TableViewSection` owns a `SheetController`, which owns all state below. Rendering is split so a
+`TableViewSection({tableId, parts})` owns a `SheetController`, which owns all state below. Rendering is split so a
 cell rebuild never rebuilds the sheet. Row 1 is the *fields* row (cursor index `-1`); body rows
 from 0. The last column is a *free column*: typing a title creates a field.
 
-- `_table_view.dart` — `TableViewSection` (`routeKey`, resolves `:id`), `BusinessListener`; turns back if the table is still importing.
-- `table_header.dart` — `TableHeader`: back, colour, name, read/save state.
+- `_table_view.dart` — `TableViewSection` (`routeKey`: a table's link, which the shell maps to `InventorySection`).
+- `table_header.dart` — `TableHeader`: the section's `InventoryBar` with the import stage, read/save state, normalize.
 - `header_actions.dart` — `HeaderActions`: record-load state, search.
 - `normalize_button.dart` — `NormalizeButton`: `TableViewService.normalize`; shown where `inventory.import` is.
 - `sheet.dart` — `Sheet`: frozen gutter band + data band.

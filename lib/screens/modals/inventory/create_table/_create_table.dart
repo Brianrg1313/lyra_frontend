@@ -20,8 +20,8 @@ import 'package:core/button.dart';
 /// neither knows nor creates columns on its own.
 ///
 /// It is a modal and not a screen because the form is short and fixed-size.
-/// It is opened from the table list ([InventorySection]) and, when it closes,
-/// the list reloads to show the new table.
+/// It is opened from the inventory section ([InventorySection]), which, when it
+/// closes with the new table's id, reloads the tables and opens that one.
 class CreateTableModal extends StatefulWidget {
   const CreateTableModal({super.key});
 
@@ -126,11 +126,12 @@ class _CreateTableModalState extends State<CreateTableModal> {
     _form.loading.value = true;
 
     context.read<TablesService>().create(context, _payload())
-      .then((_) {
+      .then((id) {
         if (!mounted) return;
         _form.loading.value = false;
         FloatFlag.of(context).message(S.of(context).table_created);
-        Navigator.pop(context);
+        // The id goes back to whoever opened it, which opens the new table.
+        Navigator.pop(context, id);
       })
       .catchError((_) {
         // The error was already shown in the service; here the button is

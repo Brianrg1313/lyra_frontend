@@ -15,8 +15,8 @@ import 'package:app/services/business/business_service.dart';
 /// its data again in its `initState` without listening to anything on its own.
 ///
 /// This mixin is for what a fresh mount does not fix: the **sub-pages tied to
-/// an id** (`/home/inventory/:id`, `/home/business/:id`). That id belongs to
-/// the previous business —a table the new business does not have—, so
+/// an id** (`/home/channels/:id`, `/home/business/:id`). That id belongs to
+/// the previous business —a channel the new business does not have—, so
 /// remounting them with the same id would ask for something that no longer
 /// exists. What belongs there is to go where the new business does have
 /// something to show.
@@ -25,7 +25,7 @@ import 'package:app/services/business/business_service.dart';
 /// class _State extends State<Screen> with BusinessListener<Screen> {
 ///   @override
 ///   void onBusinessChanged(String businessId) =>
-///     Navis.push(context, "/home/inventory");
+///     Navis.push(context, "/home/channels");
 /// }
 /// ```
 mixin BusinessListener<T extends StatefulWidget> on State<T> {

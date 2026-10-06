@@ -201,7 +201,11 @@
       "routes": ["inventory", "inventory_table_view"],
       "paths": ["/home/inventory", "/home/inventory/:id"],
       "actions": ["view", "create_table", "import", "edit_table", "delete_table", "edit_columns", "edit_records", "move_stock"],
+      "action_modes": {
+        "templates": ["cloud"]
+      },
       "action_notes": {
+        "templates": "Starting tables by the company's activity, offered while it has no table (the backend's catalogue; a master has none).",
         "edit_table": "Rename, colour, header data and agent settings of a table.",
         "edit_columns": "Create, rename, retype, reorder and delete fields.",
         "edit_records": "Write cells and rows in the spreadsheet.",

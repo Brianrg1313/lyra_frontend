@@ -5,6 +5,7 @@ import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/page_switcher.dart';
 import 'package:app/screens/home/sections/business/_business_detail.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
+import 'package:app/screens/home/sections/channels/form/_channel_form.dart';
 import 'package:app/screens/home/sections/inventory/table_list/_table_list.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 
@@ -56,9 +57,10 @@ void main() {
       childOf(HomeSection.inventory.key, HomeSection.inventory),
       isA<InventorySection>()
     );
+    // A table's link opens the section itself, on that table.
     expect(
       childOf(TableViewSection.routeKey, HomeSection.inventory),
-      isA<TableViewSection>()
+      isA<InventorySection>()
     );
     expect(
       childOf(BusinessDetailSection.routeKey, HomeSection.business),
@@ -79,15 +81,19 @@ void main() {
   test('pages of one section animate, sections and tabs do not', () {
     // A sub-page is a new page id inside the same switcher: that is the swap
     // that fades.
-    final list = _switcherOf(HomeSection.inventory.key, HomeSection.inventory);
-    final table = _switcherOf(TableViewSection.routeKey, HomeSection.inventory);
+    final list = _switcherOf(HomeSection.channels.key, HomeSection.channels);
+    final form = _switcherOf(ChannelFormSection.editRouteKey, HomeSection.channels);
 
-    expect(list.key, table.key);
-    expect(list.id, isNot(table.id));
+    expect(list.key, form.key);
+    expect(list.id, isNot(form.id));
 
     // Another section is another switcher, which mounts without animating.
-    final channels = _switcherOf(HomeSection.channels.key, HomeSection.channels);
-    expect(channels.key, isNot(list.key));
+    final inventory = _switcherOf(HomeSection.inventory.key, HomeSection.inventory);
+    expect(inventory.key, isNot(list.key));
+
+    // A table's link is the inventory section itself: nothing to swap, so the
+    // open table and the view keep their state.
+    expect(_switcherOf(TableViewSection.routeKey, HomeSection.inventory).id, inventory.id);
 
     // The tabs of the business are one page for the shell: the section animates
     // its own body, below the tab bar.

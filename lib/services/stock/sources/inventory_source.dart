@@ -2,6 +2,7 @@ import 'dart:io';
 
 // SERVICES
 import 'package:app/services/inventory/import_file.dart';
+import 'package:app/services/inventory/table_template_model.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
@@ -19,6 +20,10 @@ import 'package:app/services/stock/tables/table_view_model.dart';
 /// delete takes ids.
 abstract interface class InventorySource {
   Future<List<TableLiteModel>> tables();
+
+  /// The starting tables offered to the company's activity. Cloud only: a master has no
+  /// catalogue and answers none.
+  Future<List<TableTemplateModel>> templates();
 
   /// Creates a table's structure; answers its id.
   Future<String> createTable(Map<String, dynamic> request);

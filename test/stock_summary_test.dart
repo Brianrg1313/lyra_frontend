@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,9 +8,12 @@ import 'package:provider/provider.dart';
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/catalog/currency_model.dart';
+import 'package:app/services/home/home_service.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
-import 'package:app/services/stock/summary/stock_summary_service.dart';
+import 'package:app/services/stock/movements/stock_movement_model.dart';
+import 'package:app/services/stock/sources/stock_source.dart';
+import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_layout.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_row.dart';
@@ -332,14 +337,13 @@ void main() {
       expect(scheme.table.even, isNot(scheme.table.background));
     });
 
-    testWidgets('los titulos entran en el alto que el encabezado declara',
+    testWidgets('the titles fit in the height the header declares',
       (tester) async {
         final page = StockSummaryPage.fromResponse(_response());
 
-        // Lo que arma el panel para clavarlo arriba: el encabezado y la linea,
-        // adentro del alto que declara. El sliver lo aprieta contra ese numero,
-        // asi que un encabezado que pida mas sale recortado —o aplastado, que
-        // es lo mismo pero sin que nada avise—.
+        // What the view pins on top of the rows: the header and its line, inside
+        // the height it declares. A header asking for more comes out clipped —or
+        // squashed, which is the same with nothing warning—.
         await tester.pumpWidget(_app((context) => SizedBox(
           height: SummaryLayout.headerHeight,
           child: Column(children: [
@@ -354,40 +358,64 @@ void main() {
 
         expect(tester.takeException(), isNull);
 
-        // Y lo ocupa entero: la linea de abajo es el uno que lo separa de la
-        // primera fila.
+        // And fills it: the bottom line is the one pixel between it and the
+        // first row.
         expect(
           tester.getSize(find.byType(SummaryHeader)).height,
           SummaryLayout.headerHeight - 1
         );
 
-        // La columna de la foto guarda su ancho aunque el encabezado no ponga
-        // nada en ella: es lo que hace que cada titulo caiga sobre su columna.
-        // Lo que no guarda es su alto, que estiraria el encabezado al de una
-        // fila.
+        // The picture column keeps its width though the header puts nothing in
+        // it, which is what lands each title over its column; not its height,
+        // which would stretch the header to a row's.
         expect(SummaryLayout.headerHeight, lessThan(SummaryLayout.rowHeight));
       }
     );
 
-    testWidgets('el panel entra en el scroll de la seccion', (tester) async {
-      final service = StockSummaryService();
-      addTearDown(service.dispose);
+    testWidgets('the view reads the table it is given, under the section bar',
+      (tester) async {
+        final source = _Source();
+        final home = HomeService();
+        addTearDown(home.dispose);
 
-      await tester.pumpWidget(_app((context) =>
-        ChangeNotifierProvider<StockSummaryService>.value(
-          value: service,
-          child: const CustomScrollView(slivers: [StockSummarySection()])
-        )
-      ));
+        await tester.pumpWidget(_app((context) =>
+          ChangeNotifierProvider<HomeService>.value(
+            value: home,
+            child: SizedBox(
+              height: 600,
+              child: StockSummarySection(
+                tableId: "t-2",
+                source: source,
+                parts: const InventoryBarParts(selector: Text("Prices"), controls: [])
+              )
+            )
+          )
+        ));
 
-      await tester.pump();
+        // The read is deferred to the first frame and its page never comes: the
+        // wait is what is drawn.
+        await tester.pump();
 
-      // Es una tira de slivers y no un widget con su propio scroll: lo que se
-      // prueba aca es que se pueda meter en el mismo desplazamiento que la
-      // grilla de tablas sin que el viewport lo rechace.
-      expect(tester.takeException(), isNull);
-      expect(find.text("Stock summary"), findsOneWidget);
-      expect(find.byType(Loading), findsOneWidget);
-    });
+        expect(tester.takeException(), isNull);
+        expect(source.tables, ["t-2"]);
+        expect(find.text("Prices"), findsOneWidget);
+        expect(find.byType(Loading), findsOneWidget);
+      }
+    );
   });
+}
+
+/// A summary source whose pages never come, noting which table each read asked for.
+class _Source implements StockSource {
+  final tables = <String>[];
+
+  @override
+  Future<StockSummaryPage> summary({required int page, required int size, String match = "", String tableId = ""}) {
+    tables.add(tableId);
+    return Completer<StockSummaryPage>().future;
+  }
+
+  @override
+  Future<StockBalance> move(StockMovement movement, {required String tableId, required String productId}) =>
+    Completer<StockBalance>().future;
 }

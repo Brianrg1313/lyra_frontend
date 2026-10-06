@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:flutter/material.dart' show Locale, ThemeMode;
 import 'package:app/toolkit/toolkit.dart';
 
@@ -12,8 +13,15 @@ enum RememberedSelection {
   chat,
 
   /// The person open in the employees tab (`BusinessEmployeesService.selectedKey`).
-  employee
+  employee,
+
+  /// The product table open in the inventory section (its header's selector).
+  table
 }
+
+/// How the inventory section shows the open table: the stock summary (photo, the
+/// columns chosen for it and the stock numbers) or every cell of it as a sheet.
+enum InventoryView { summary, sheet }
 
 /// The user's preferences, persisted on the device (Hive box `preferences`),
 /// so the app opens as it was left.
@@ -91,6 +99,8 @@ class PreferencesService {
   void bindUser(String? username) {
     _user = (username == null || username.isEmpty) ? null : username;
     if (_user == null) _business = null;
+
+    _inventoryView.value = _storedInventoryView;
   }
 
   // ───────────────────────────── theme and language ─────────────────────
@@ -148,6 +158,24 @@ class PreferencesService {
   void declineLink() {
     if (_business != null) _write(_userKey("${_business!}/link"), "declined");
   }
+
+  // ───────────────────────────── inventory view ─────────────────────
+
+  final _inventoryView = ValueNotifier<InventoryView>(InventoryView.summary);
+
+  /// Whether the account reads its tables as the stock summary or as the sheet. Per account
+  /// and not per business: it is how this person likes to work, whatever the company. A
+  /// listenable because it is switched from two places (the inventory header and one's own
+  /// preferences) and both draw it.
+  ValueListenable<InventoryView> get inventoryView => _inventoryView;
+
+  void useInventoryView(InventoryView view) {
+    _inventoryView.value = view;
+    _write(_userKey("inventory_view"), view.name);
+  }
+
+  InventoryView get _storedInventoryView =>
+    InventoryView.values.asNameMap()[_read<String>(_userKey("inventory_view"))] ?? InventoryView.summary;
 
   // ───────────────────────────── master passwords ─────────────────────
 

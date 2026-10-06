@@ -89,7 +89,8 @@ enum OwnSection {
     ],
     preferences => [
       OwnSetting(this, CI.globe_shopping, s.account_language),
-      OwnSetting(this, CI.brightness, s.account_theme)
+      OwnSetting(this, CI.brightness, s.account_theme),
+      OwnSetting(this, CI.documents_excel, s.account_inventory_view)
     ],
     history => [],
     notifications => [

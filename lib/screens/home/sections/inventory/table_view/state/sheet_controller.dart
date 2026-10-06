@@ -1525,8 +1525,6 @@ class SheetController {
     _queueDraft(drafts.at(index));
   }
 
-  void back(BuildContext context) => Navis.push(context, "/home/inventory");
-
   // ---- Reactions -----------------------------------------------------------
 
   /// Gained or lost a column: the widths have to know which is the current

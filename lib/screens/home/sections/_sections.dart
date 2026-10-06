@@ -217,9 +217,9 @@ enum HomeSection {
 /// Keeping it would be mixing two businesses on the same screen.
 ///
 /// The only thing this does not fix are the sub-pages tied to an id of the
-/// previous business (`/home/inventory/:id`): remounting them would request a
-/// table that the new business does not have. Those listen to the change and
-/// move on their own, see [BusinessListener].
+/// previous business: remounting them would request something the new business
+/// does not have. Those listen to the change and move on their own, see
+/// [BusinessListener].
 ///
 /// Without [businessId] there is no active business (a newly registered
 /// customer, or one that has not created theirs yet) and the sections that
@@ -244,8 +244,7 @@ enum HomeSection {
 /// without the internet ([CapabilityService]), shows [UnavailableSection]: the
 /// side bar leaves it out, but a URL still gets here.
 ///
-/// Moving between the pages of one section (the inventory list and a table,
-/// the channels and one channel's form) goes through a [PageSwitcher]; moving
+/// Moving between the pages of one section (the channels and one channel's form) goes through a [PageSwitcher]; moving
 /// to another section does not animate. The switcher is keyed by [section], so
 /// a new section mounts a new one and shows its page as is. Its page identity
 /// is the screen's key, or its type when unkeyed: a tabbed section is one
@@ -322,7 +321,9 @@ Widget _screen(String currentKey, HomeSection section, String? businessId) {
   }
 
   return switch (currentKey) {
-    TableViewSection.routeKey => const TableViewSection(),
+    // A table's link opens the section itself, on that table: the same const widget as
+    // the bare section, so moving between the two keeps its state.
+    TableViewSection.routeKey => const InventorySection(),
     // Keyed by id: without it, going from one channel's edit page straight to
     // another's would reuse the previous `State`, which already read the id
     // from the URL in its `initState` and would keep editing the first one.

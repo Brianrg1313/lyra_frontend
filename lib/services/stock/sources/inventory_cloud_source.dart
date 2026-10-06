@@ -5,6 +5,7 @@ import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_request.dart';
+import 'package:app/services/inventory/table_template_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
@@ -30,6 +31,14 @@ class InventoryCloudSource implements InventorySource {
     if (data == null) throw const UnreadableAnswer("builder/list");
 
     return TableLiteModel.fromResponse(data);
+  }
+
+  @override
+  Future<List<TableTemplateModel>> templates() async {
+    final data = await api.get(path: "/inventory/products/builder/templates/", version: "v1");
+    if (data is! Map) throw const UnreadableAnswer("builder/templates");
+
+    return TableTemplateModel.listFrom(data["templates"]);
   }
 
   @override

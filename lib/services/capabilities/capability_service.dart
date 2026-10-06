@@ -74,6 +74,7 @@ class CapabilityService extends ChangeNotifier {
     "sales.process": _all,
     "sales.done": _all,
     "inventory": _all,
+    "inventory.templates": _online,
     "services": _online,
     "channels": _online,
     "finance": _all,

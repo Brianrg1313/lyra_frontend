@@ -9,8 +9,10 @@ import 'package:app/services/preferences/preferences_service.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
-/// Language and appearance. They are this device's (`PreferencesService`), not the account's:
-/// the same person may want a dark till and a light office. Work in every mode.
+/// Language and appearance, and how inventory tables open. Language and appearance are this
+/// device's (`PreferencesService`), not the account's: the same person may want a dark till and a
+/// light office. The inventory view is the account's on this device, the same choice as the
+/// inventory section's cells switch. Work in every mode.
 class OwnPreferences extends StatelessWidget {
   const OwnPreferences({super.key});
 
@@ -36,6 +38,17 @@ class OwnPreferences extends StatelessWidget {
           builder: (context, _, _) => SettingsSelect(
             label: _themeLabel(context, PreferencesService().theme),
             open: _pickTheme
+          )
+        )
+      ),
+      SettingsRow(
+        icon: CI.documents_excel,
+        label: s.account_inventory_view,
+        child: ValueListenableBuilder<InventoryView>(
+          valueListenable: PreferencesService().inventoryView,
+          builder: (context, view, _) => SettingsSelect(
+            label: _viewLabel(context, view),
+            open: (anchor) => _pickView(anchor, view)
           )
         )
       )
@@ -73,6 +86,27 @@ class OwnPreferences extends StatelessWidget {
 
     PreferencesService().theme = ThemeMode.values.byName(picked.value);
   }
+
+  Future<void> _pickView(BuildContext anchor, InventoryView current) async {
+    final picked = await showSelectMenu(
+      context: anchor,
+      selected: current.name,
+      dense: true,
+      options: [
+        for (final view in InventoryView.values)
+          SelectOption(value: view.name, placeholder: _viewLabel(anchor, view))
+      ]
+    );
+
+    if (picked == null) return;
+
+    PreferencesService().useInventoryView(InventoryView.values.byName(picked.value));
+  }
+
+  static String _viewLabel(BuildContext context, InventoryView view) => switch (view) {
+    InventoryView.summary => S.of(context).account_inventory_view_summary,
+    InventoryView.sheet => S.of(context).account_inventory_view_sheet
+  };
 
   static String _themeLabel(BuildContext context, ThemeMode mode) => switch (mode) {
     ThemeMode.system => S.of(context).account_theme_system,
