@@ -149,6 +149,15 @@ void main() {
       expect(() => BusinessLanSource(master).editProfile("EMAIL", "x"), throwsUnsupportedError);
     });
 
+    test("the branches are the cloud's: never asked of the master, and closed without the internet", () async {
+      Deployment.use(DeploymentMode.local, role: DeploymentRole.master);
+
+      expect(() => BusinessLanSource(master).branches(), throwsUnsupportedError);
+      expect(() => BusinessLanSource(master).createBranch({"NAME": "Norte"}), throwsUnsupportedError);
+      expect(() => BusinessLanSource(master).editBranch({"ID": "b-1"}), throwsUnsupportedError);
+      expect(master.calls, isEmpty);
+    });
+
     test('a logo goes up as a logo upload, then business.setLogo takes it; the profile reads it back', () async {
       final folder = await Directory.systemTemp.createTemp("lyra-logo");
       addTearDown(() => folder.delete(recursive: true));

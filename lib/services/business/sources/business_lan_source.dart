@@ -7,7 +7,9 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_location_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
+import 'package:app/services/business/sources/business_cloud_source.dart';
 import 'package:app/services/business/sources/business_source.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/toolkit/deployment.dart';
 
@@ -16,8 +18,8 @@ import 'package:app/toolkit/deployment.dart';
 ///
 /// The screens send the cloud's request keys (`LEGAL_NAME`, `POSTAL_CODE`); this maps them onto
 /// the spec's fields and the answers back onto what the models read, so no model or screen
-/// changes (plan principle 8). What doesn't exist on a master (creating a company, branches,
-/// e-mails) is closed by `CapabilityService` before a screen can call it.
+/// changes (plan principle 8). What doesn't exist on a master (creating a company, e-mails) is
+/// closed by `CapabilityService` before a screen can call it; the branches are the cloud's.
 class BusinessLanSource implements BusinessSource {
   const BusinessLanSource(this._lan);
 
@@ -163,17 +165,25 @@ class BusinessLanSource implements BusinessSource {
     return answer["id"] as String;
   }
 
-  // Its site is not a branches list (plan D6); e-mails are cloud only. The capability table hides
-  // every screen that calls these.
+  // Its site is not a branches list (plan D6): the branches are the cloud's, so in `hybrid` they are
+  // read and written there while it answers (`business.branches` is open in `hybrid`). In `local` the
+  // capability table hides the tab. E-mails are cloud only and hidden in both.
 
   @override
-  Future<List<BusinessBranchModel>> branches() => throw UnsupportedError("A master has one site");
+  Future<List<BusinessBranchModel>> branches() => _cloud.branches();
 
   @override
-  Future<void> createBranch(Map<String, dynamic> request) => throw UnsupportedError("A master has one site");
+  Future<void> createBranch(Map<String, dynamic> request) => _cloud.createBranch(request);
 
   @override
-  Future<void> editBranch(Map<String, dynamic> request) => throw UnsupportedError("A master has one site");
+  Future<void> editBranch(Map<String, dynamic> request) => _cloud.editBranch(request);
+
+  /// The cloud, for what a master doesn't hold, while the internet is up.
+  BusinessCloudSource get _cloud {
+    if (!CapabilityService().cloudServices) throw UnsupportedError("A master has one site");
+
+    return const BusinessCloudSource();
+  }
 
   @override
   Future<void> addEmail(Map<String, dynamic> data) => throw UnsupportedError("E-mails are cloud only");
