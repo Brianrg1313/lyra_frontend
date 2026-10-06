@@ -34,6 +34,7 @@ Banned (never introduce new usages):
 | `DataTable` `Table` | `DataTableView` + `TableColumn`/`TableController`/`TableStyle` |
 | `CircularProgressIndicator` | `Loading` (raw one only for pre-existing sized inline spinners) |
 | `Image.network(url)` | `Image(image: mediaImage(url))` (`toolkit/lan_image.dart`: a master's files come over its channel) |
+| initials circles, `DecorationImage` avatars, `NetworkImage` | `ProfilePicture(kind: ProfileKind.user/employee/business/customer)` |
 | hardcoded colors | `ThemeColor.of(context).*` |
 | hardcoded paddings/sizes | `AppSize.*` |
 
@@ -46,7 +47,7 @@ the single import for screens; never import `package:core/core.dart` directly.
   `Surface` (`.over/.line/.glass/.gradient`) `Separator` (`.horizontal/.vertical`)
   `TextSmall` `TextMedium` `TextLarge` `TextInter` `TextFont` `Loading` `AnimatedNumber`
   `FeedbackButton` `FocusableWidget` `ScrollableWidget` `HideKeyboard` `IsKeyboardVisible`
-  `ColorPicker` `ColorPickerField` `ColorPickerController` `DataTableView` `TableColumn`
+  `ColorPicker` `ColorPickerField` `ColorPickerController` `ProfilePicture` `ProfileKind` `DataTableView` `TableColumn`
   `TableController` `TableStyle` `ChartView` `ChartSeries` `ChartFormat` `StatTile`
   `Sparkline` `Navis` `ScreenRoute` `RouteAnimation` `ThemeColor` `SchemeColor` `AppSize`
   `AppController` `Responsive` `DeviceSelector` `CI` (icon font) `Str` `FloatFlag`

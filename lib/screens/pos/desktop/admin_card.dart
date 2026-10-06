@@ -29,7 +29,6 @@ class PosAdminCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final client = context.watch<ClientService>();
     final pos = context.watch<PosService>();
-    final picture = client.picture;
 
     return Padding(
       padding: EdgeInsets.all(AppSize.padding),
@@ -40,26 +39,11 @@ class PosAdminCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: _avatarSize,
-                height: _avatarSize,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppSize.cornerInset(AppSize.gap)),
-                  border: Border(
-                    top: BorderSide(color: Colors.white.withAlpha(40)),
-                    left: BorderSide(color: Colors.white.withAlpha(40))
-                  ),
-                  // The gradient shows while the picture loads and also if
-                  // there is none, just like in the side bar card.
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.white.withAlpha(50), Colors.white.withAlpha(0)]
-                  ),
-                  image: picture != null && picture.isNotEmpty
-                    ? DecorationImage(image: NetworkImage(picture), fit: BoxFit.cover)
-                    : null
-                )
+              ProfilePicture(
+                kind: ProfileKind.user,
+                url: client.picture,
+                size: _avatarSize,
+                label: client.fullName
               ),
               SizedBox(width: AppSize.gap),
               Expanded(child: Column(

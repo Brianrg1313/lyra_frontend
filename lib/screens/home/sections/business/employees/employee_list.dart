@@ -14,7 +14,6 @@ import 'package:core/button.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 import 'package:app/screens/modals/business/invite_employee/_invite_employee.dart';
 
-import './employee_avatar.dart';
 import './employee_format.dart';
 
 /// The left panel: everyone who works here, with where each one stands, and
@@ -240,10 +239,13 @@ class EmployeeTile extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: AppSize.spaceXS),
         child: Row(children: [
-          EmployeeAvatar(
-            name: employee.fullName,
-            picture: employee.picture,
-            size: AppSize.action
+          ProfilePicture(
+            kind: ProfileKind.employee,
+            // A thumbnail covering twice the side: sharp on a dense screen without
+            // downloading the original for a row.
+            url: (employee.picture)?.sized((AppSize.action * 2).round()),
+            size: AppSize.action,
+            label: employee.fullName
           ),
           SizedBox(width: AppSize.spaceXS),
           Expanded(flex: 4, child: Column(

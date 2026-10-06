@@ -11,7 +11,6 @@ import 'package:app/services/capabilities/capability_service.dart';
 // WIDGETS
 import 'package:core/images.dart';
 import 'package:app/screens/pre_start/welcome/_welcome.dart';
-import 'package:app/screens/pre_start/welcome/widgets/welcome_avatar.dart';
 import 'package:app/screens/pre_start/welcome/widgets/welcome_option.dart';
 import 'package:app/screens/pre_start/welcome/widgets/welcome_choice.dart';
 import 'package:app/screens/pre_start/welcome/widgets/invitation_card.dart';
@@ -54,7 +53,12 @@ class DesktopBody extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              WelcomeAvatar(picture: client.picture, name: client.client.name),
+              ProfilePicture(
+                kind: ProfileKind.user,
+                url: client.picture,
+                size: AppSize.picture * 2,
+                label: client.client.name
+              ),
               SizedBox(height: AppSize.spaceM),
               TextInter(
                 S.of(context).welcome_title(client.client.name),

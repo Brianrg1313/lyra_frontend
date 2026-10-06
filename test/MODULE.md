@@ -2,7 +2,7 @@
 
 **Path** `test` (flat, 133 files, `<subject>_test.dart`)
 **Run** `flutter test` · `flutter test test/<file>_test.dart`
-**Baseline** 1237 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
+**Baseline** 1239 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
 
 Pure logic and small widgets, not whole screens. **No test may hit the network.** Each file's
 `///` header states the rule it pins and why — read it before changing the test.
@@ -38,7 +38,7 @@ detail reach the cloud's models (a withheld profile is absent keys, not empty va
 a master's activation code (a template travels as `template`) and the form gives way to it, edits travel with the cloud's keys, an invited
 person activates with their code on the LAN sign in, and on a master the address search (places) is off
 and the site is no branch to pick. The deliveries release: the settings and the areas reach the cloud's models with amounts and kilometres, and the screens' bodies reach the master in its keys with money in minor units, a radius in metres and an outline as pairs. The engine, the real TLS and a real Chrome are tested in `lyra_node/test`. |
-| Core rules | `select_menu` `table_frozen_band` `modal_scroll` `input_row` | Dropdown height cap; an `InputRow` lays out inside `showImageModal`'s `IntrinsicWidth` (a master's create company), whose fields scroll in a short window with the button in sight; frozen band width includes its divider (else 1 px overflow in every table); a modal's scroll bar lives in its right padding (content inset equal both sides, one scroll holds the modal controller, draggable there). |
+| Core rules | `select_menu` `table_frozen_band` `modal_scroll` `input_row` `profile_picture` | Dropdown height cap; an `InputRow` lays out inside `showImageModal`'s `IntrinsicWidth` (a master's create company), whose fields scroll in a short window with the button in sight; frozen band width includes its divider (else 1 px overflow in every table); a modal's scroll bar lives in its right padding (content inset equal both sides, one scroll holds the modal controller, draggable there). A profile picture without an image draws its kind's icon (never initials), falls back to it when the photo fails, and decodes at most 2x its side. |
 
 `_scratch_create_table_smoke_test.dart` — scratch smoke test, not a contract.
 

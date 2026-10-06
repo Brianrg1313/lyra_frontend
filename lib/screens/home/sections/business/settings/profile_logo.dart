@@ -13,7 +13,6 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/files/image_file.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/business/business_avatar.dart';
 import 'package:app/screens/modals/shared/crop_image/_crop_image.dart';
 
 /// The company's face: its logo, and from where it's changed.
@@ -78,12 +77,13 @@ class _BusinessProfileLogoState extends State<BusinessProfileLogo> {
   Widget _image(BuildContext context, BusinessProfileModel profile) => Stack(
     alignment: Alignment.center,
     children: [
-      BusinessAvatar(
-        name: profile.name,
+      ProfilePicture(
+        kind: ProfileKind.business,
         // The version that covers the side it's drawn with, not the original:
         // the logo is uploaded up to 10 MB and here it fits in a small square.
         url: profile.logo?.sized(_size.round()),
-        size: _size
+        size: _size,
+        label: profile.name
       ),
       if (_busy) Container(
         width: _size,

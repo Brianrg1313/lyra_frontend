@@ -5,7 +5,6 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/client/employment_invitation_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/business/business_avatar.dart';
 
 /// A pending invitation: which company sent it and, when it says, for what
 /// position. Only drawn while `/init` lists the `employment.invitation` task.
@@ -34,10 +33,11 @@ class InvitationCard extends StatelessWidget {
       action: action,
       padding: EdgeInsets.all(AppSize.spaceM),
       child: Row(children: [
-        BusinessAvatar(
-          name: company,
+        ProfilePicture(
+          kind: ProfileKind.business,
           url: invitation.businessLogo?.thumbnail,
-          size: AppSize.action * 1.5
+          size: AppSize.action * 1.5,
+          label: company
         ),
         SizedBox(width: AppSize.spaceM),
         Expanded(child: Column(

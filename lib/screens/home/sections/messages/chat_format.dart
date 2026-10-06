@@ -50,22 +50,4 @@ String chatWaitLabel(BuildContext context, DateTime? since) {
   return S.of(context).messages_wait_days(hours ~/ 24);
 }
 
-/// Up to two initials of a name, or the last two digits of a number.
-String chatInitials(String title) {
-  final words = title.trim().split(RegExp(r"\s+")).where((w) => w.isNotEmpty).toList();
-
-  if (words.isEmpty) return "";
-
-  final letters = words
-    .map((word) => word.characters.first)
-    .where((char) => RegExp(r"\p{L}", unicode: true).hasMatch(char))
-    .take(2)
-    .join();
-
-  if (letters.isNotEmpty) return letters.toUpperCase();
-
-  final digits = title.replaceAll(RegExp(r"\D"), "");
-  return digits.length <= 2 ? digits : digits.substring(digits.length - 2);
-}
-
 String _locale(BuildContext context) => Localizations.localeOf(context).toString();

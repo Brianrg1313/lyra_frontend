@@ -25,38 +25,17 @@ class ProfileCard extends StatelessWidget {
     // with a transition can still be painted then.
     if (!client.isAuthenticated) return const SizedBox.shrink();
 
-    final picture = client.picture;
-
     return Padding(
     padding: EdgeInsets.all(AppSize.spaceXS),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // The connection's state hangs off the picture's bottom-right corner.
-        Stack(clipBehavior: Clip.none, children: [Container(
-          width: AppSize.action,
-          height: AppSize.action,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSize.action),
-            border: Border(
-              top: BorderSide(color: Colors.white.withAlpha(40)),
-              left: BorderSide(color: Colors.white.withAlpha(40))
-            ),
-            // The gradient stays in the background: it shows while the image
-            // loads and also when the client has no picture.
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withAlpha(50),
-                Colors.white.withAlpha(0)
-              ]),
-            image: picture != null && picture.isNotEmpty
-              ? DecorationImage(
-                  image: NetworkImage(picture),
-                  fit: BoxFit.cover)
-              : null
-          )
+        Stack(clipBehavior: Clip.none, children: [ProfilePicture(
+          kind: ProfileKind.user,
+          url: client.picture,
+          size: AppSize.action,
+          label: client.fullName
         ),
         Positioned(right: -AppSize.gap / 2, bottom: -AppSize.gap / 2, child: const ConnectionDot())]),
         // The spacing goes inside the Expanded so it can shrink to 0 while

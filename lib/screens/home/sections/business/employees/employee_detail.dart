@@ -15,7 +15,6 @@ import 'package:app/screens/home/sections/section_message.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 import './employee_actions.dart';
-import './employee_avatar.dart';
 import './employee_blocks.dart';
 import './employee_card.dart';
 import './employee_format.dart';
@@ -187,10 +186,13 @@ class _Header extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              EmployeeAvatar(
-                name: name,
-                picture: person?.picture ?? employee.picture,
-                size: AppSize.action * 2.6
+              ProfilePicture(
+                kind: ProfileKind.employee,
+                // A thumbnail covering twice the side: sharp on a dense screen without
+                // downloading the original.
+                url: (person?.picture ?? employee.picture)?.sized((AppSize.action * 2.6 * 2).round()),
+                size: AppSize.action * 2.6,
+                label: name
               ),
               SizedBox(width: AppSize.spaceS),
               Flexible(child: Column(

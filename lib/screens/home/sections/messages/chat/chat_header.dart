@@ -15,7 +15,6 @@ import 'package:core/button.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/modals/messages/chat_usage/_chat_usage.dart';
 
-import '../chat_avatar.dart';
 import '../chat_format.dart';
 import '../chat_stage_tag.dart';
 import '../chat_tag.dart';
@@ -45,7 +44,7 @@ class ChatHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            ChatAvatar(title: detail.title),
+            ProfilePicture(kind: ProfileKind.customer, size: AppSize.action, label: detail.title),
             SizedBox(width: AppSize.spaceXS),
             Expanded(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

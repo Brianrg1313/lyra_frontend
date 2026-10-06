@@ -20,7 +20,6 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
   with no company) a `WelcomeOption` to create (`CreateBusinessModal` in a `showImageModal` headed by `gradient-2.png`; on `true` re-`resolve()`s and navigates) and two
   `WelcomeChoice`s: awaiting invitation, open jobs (not with `singleCompany`: a master's owner lands here when it has no
   company yet); a quiet sign out.
-- `welcome/widgets/welcome_avatar.dart` — `WelcomeAvatar`: round profile picture, initial fallback.
 - `welcome/widgets/welcome_option.dart` — `WelcomeOption`: full-width main card (create a company): 120 px `gradient-1.png` band, icon + title + subtitle, action button on the right.
 - `welcome/widgets/welcome_choice.dart` — `WelcomeChoice`: compact secondary card (waiting for an invitation, open jobs), arrow or a `tag`; two in an equal-height `Row`.
 - `deployment/master/_master.dart` — `MasterSetup extends PageBuilder`.

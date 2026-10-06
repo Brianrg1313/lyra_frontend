@@ -4,7 +4,6 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/chats/chat_model.dart';
 
-import '../chat_avatar.dart';
 import '../chat_format.dart';
 import '../chat_stage_tag.dart';
 import '../chat_tag.dart';
@@ -47,7 +46,7 @@ class InboxTile extends StatelessWidget {
         color: selected ? scheme.surfaceOver : scheme.surface,
         feedbackColor: scheme.line,
         child: Row(children: [
-          ChatAvatar(title: chat.title),
+          ProfilePicture(kind: ProfileKind.customer, size: AppSize.action, label: chat.title),
           SizedBox(width: AppSize.spaceXS),
           Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

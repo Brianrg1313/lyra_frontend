@@ -23,10 +23,9 @@
 ## Files
 
 - `_messages.dart` — `MessagesSection`: creates/provides `ChatsService`, loads it, forwards header search; `Row` of `InboxPanel` (flex 1) and `_OpenChat` (flex 2).
-- `chat_format.dart` — `chatTimeLabel`, `chatDateLabel`, `chatWaitLabel`, `chatInitials`.
+- `chat_format.dart` — `chatTimeLabel`, `chatDateLabel`, `chatWaitLabel`.
 - `chat_stage_tag.dart` — `ChatStageTag`, `chatStageColor` (same hues as `saleStageColor` for shared codes), `chatWaitingColor`.
 - `chat_tag.dart` — `ChatTags` (wrap), `ChatTagChip` (bold = work for a person; tooltip since + tickets), `chatTagsBeside` (drops the tag that repeats the stage), `chatTagColor` (stage hue for shared meanings, else level).
-- `chat_avatar.dart` — `ChatAvatar`: initials circle.
 - `inbox/_inbox.dart` — `InboxPanel`: title + count, filters, pending banner, paged list (auto "more" near the end).
 - `inbox/inbox_filters.dart` — `InboxFilters` (chips per `ChatsFilter` with summary counts), `inboxFilterTitle`.
 - `inbox/inbox_tile.dart` — `InboxTile`: avatar, name, last activity, stage + tag chips, attention (only when no tag names it)/paused/unanswered marks.

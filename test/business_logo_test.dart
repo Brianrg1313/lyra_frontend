@@ -6,7 +6,6 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/files/file_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
-import 'package:app/screens/home/sections/business/business_avatar.dart';
 import 'package:app/screens/home/sections/business/settings/profile_logo.dart';
 
 BusinessProfileModel _profile({FileModel? logo}) => BusinessProfileModel(
@@ -52,7 +51,7 @@ void main() {
 
     // La empresa sin logo se dibuja con su avatar, que es lo mismo que se ve
     // en el listado: no hay un hueco esperando una foto.
-    expect(find.byType(BusinessAvatar), findsOneWidget);
+    expect(find.byType(ProfilePicture), findsOneWidget);
 
     // La foto no lleva texto encima: lo que se puede hacer con ella lo dice su
     // boton, que es lo que leen el tooltip y el lector de pantalla.

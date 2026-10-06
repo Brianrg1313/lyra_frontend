@@ -17,7 +17,6 @@
 - `business_tab.dart` — `enum BusinessTab { statistics, employees, branches, clients, settings }`:
   `key icon routeKey path(businessId) area granted ownsSurface badge` (settings: the profile's setup), `initial = statistics`, `opening`. Add a tab here.
 - `detail_header.dart` — `BusinessDetailHeader`: thin wrapper over `SectionTabs`.
-- `business_avatar.dart` — `BusinessAvatar`: logo or gradient initial.
 - `statistics/_statistics.dart` — `BusinessStatisticsTab` (default).
 - `branches/_branches.dart` — `BusinessBranchesTab`: heading + add button, card grid of `BusinessBranchesService.branches`; add and a card tap open `showBranchForm` (create / edit).
 - `clients/_clients.dart` — `BusinessClientsTab`.
@@ -34,7 +33,6 @@
 - `employee_edit_phone.dart` — `EmployeePhoneFact`: country code select + digits (trunk `0` dropped, length per `PhonePlan`), sent as `+<code><number>`; widens its tile while open.
 - `employee_edit_date.dart` — `EmployeeDateFact`: day and year typed, month chosen, optional `validate`, sent as `yyyy-MM-dd`; widens its tile while open.
 - `employee_card.dart` — detail shapes: `EmployeeSection`, `EmployeeFacts` (one sheet per group, a 2-column grid of `EmployeeTile` cells; a tile widens to the whole row with `EmployeeWiden`), `EmployeeSearch` (the panel's search: filters tiles by label/value, sections by title), `EmployeeFactFrame`/`EmployeeFactValue` (a tile's inside; `accent` tints the open one), `EmployeeHover`/`EmployeeHint` (edit/copy/unfold hints shown only under the pointer, always without a mouse), `EmployeeFact` (read-only, copyable tile), `EmployeeEvent` (calendar leaf), `EmployeeNote`, `EmployeeQuickAction`, `employeeCopy`.
-- `employee_avatar.dart` — `EmployeeAvatar`: profile picture or initials.
 - `employee_format.dart` — labels for every backend word (state, work status, contract, workday, period, leave, ending, document, sex), `employeePresence` (tag + color), day/range/span labels.
 
 ### settings/ — the profile (read-only sheet; **every edit opens a modal** in `lib/screens/modals/business`)

@@ -14,7 +14,6 @@ import 'package:app/services/business/business_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form/style.dart';
-import 'package:app/screens/home/sections/business/business_avatar.dart';
 import 'package:app/screens/modals/business/create_business/_create_business.dart';
 
 /// Active business and business switch. It lives in the header and not in the
@@ -115,18 +114,18 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     ]
   );
 
-  /// The face of the business: its logo, and if it has not uploaded one yet the
-  /// initial of its name. It is the same widget used to draw it in its record
-  /// ([BusinessAvatar]), drawn at the height of a row: a business is recognized
-  /// by the same image no matter where it is looked at.
+  /// The face of the business: its logo, or the company icon while it has none.
+  /// It is the same [ProfilePicture] drawn in its record, at the height of a row:
+  /// a business is recognized by the same image no matter where it is looked at.
   ///
   /// It asks for the thumbnail and not the whole file: here it takes as much as
   /// an icon takes, and the original is the one the business uploaded, with
   /// whatever weight it has.
-  Widget _avatar(BusinessModel business) => BusinessAvatar(
-    name: business.name,
+  Widget _avatar(BusinessModel business) => ProfilePicture(
+    kind: ProfileKind.business,
     url: business.logo?.thumbnail,
-    size: AppSize.action - AppSize.spaceXS
+    size: AppSize.action - AppSize.spaceXS,
+    label: business.name
   );
 
   // -- Dropdown --

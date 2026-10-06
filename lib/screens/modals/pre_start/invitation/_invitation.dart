@@ -8,7 +8,6 @@ import 'package:app/services/client/employment_invitation_model.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/business/business_avatar.dart';
 import 'package:app/screens/home/sections/business/employees/employee_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
@@ -42,10 +41,11 @@ class _InvitationModalState extends State<InvitationModal> {
       padding: EdgeInsets.only(bottom: AppSize.padding),
       children: [
         Row(children: [
-          BusinessAvatar(
-            name: invitation.businessName,
+          ProfilePicture(
+            kind: ProfileKind.business,
             url: invitation.businessLogo?.thumbnail,
-            size: AppSize.action
+            size: AppSize.action,
+            label: invitation.businessName
           ),
           SizedBox(width: AppSize.spaceS),
           Expanded(child: TextLarge(
