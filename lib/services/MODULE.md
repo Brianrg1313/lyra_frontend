@@ -23,7 +23,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
   A service takes `{XSource? source}` for tests and otherwise reads `Sources.<x>`
   (`lib/toolkit/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
   domains (chats, channels, connections, maps, baileys, places, money AI, sign up, business
-  e-mails) are not split.
+  e-mails, badges) are not split.
 
 ## local_server/ — the master's engine (`lyra_node`), desktop only
 
@@ -277,6 +277,21 @@ See `baileys_server/MODULE.md` for the server side.
 - `sources/permissions_cloud_source.dart` — `PermissionsCloudSource`: `/permissions/`, `/permissions/templates/`, `/permissions/members/`.
 - `sources/permissions_lan_source.dart` — `PermissionsLanSource`: `permissions.get`, `.templates.list`, `.members.detail/assign/revoke`.
 
+## badges/ — what is pending, from `/init` and the socket
+
+Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Cloud only (a master measures none: no dots).
+
+- `badge_model.dart` — `BadgeModel` (one badge: key, kind, count, level, anchors, dismissible, title l10n key, data),
+  `BadgeKind` (`count`/`alert`/`news`), `BadgeLevel` (`max`), `BadgeAnchor` (a place's count/level/keys; `counts` = a number,
+  else a dot), `BadgeState` (`fromJson` of the compressed table, `anchor`, `union`: several anchors, each badge once).
+- `badge_place.dart` — `BadgePlace`: **every place in the app that draws a badge → the anchors it reads** (side bar
+  entries via `section(key)`, tabs, header, account, the two channel-form fields). Move a dot here. `sidebar.business` is not read.
+- `badges_service.dart` — `BadgesService` singleton (`.value` provider): `seed(data, business:)` (`/init`'s, kept only
+  when measured for the active company, else read), `refresh` (`GET /badges/`), `seen(keys)` (dismissible only,
+  optimistic, `POST /badges/seen/`), `discover(place)` (its `news` seen), `at(place)`, `clear`. Rereads on
+  `badges/changed` / `badges/reset` (gathered 300 ms), `onRestored`, and a company switch (old dots dropped at once).
+  Reads are REST, never `badges/get`: after a switch the socket still answers for the previous company. Seam `transport`.
+
 ## home/
 
 - `home_service.dart` — `HomeService`: side bar state (Hive) and `searchQuery`; `preload()` in `preCall`.
@@ -475,7 +490,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 
 ## Backend endpoint index
 
-`/init/` · `/permissions/requests/` · `/authentication/email/{verify,sign_in/password,sign_in/code,sign_up/code,sign_up/names}/` · `/authentication/logout/` · `/business/{create,profile,logo,emails,emails/verify,payments}/`
+`/init/` · `/badges/{,seen/}` · `/permissions/requests/` · `/authentication/email/{verify,sign_in/password,sign_in/code,sign_up/code,sign_up/names}/` · `/authentication/logout/` · `/business/{create,profile,logo,emails,emails/verify,payments}/`
 `/business/employees/{,former/,detail/$id}`
 `/business/location/{,search,place}/` · `/business/delivery/{,options,providers}/`
 `/channels/{,providers/,detail/$id}` · `/connections/{,providers/,detail/$id}`

@@ -7,6 +7,8 @@ import 'package:core/button.dart';
 
 // SERVICES
 import 'package:app/services/money/money_methods_service.dart';
+import 'package:app/services/badges/badge_place.dart';
+import 'package:app/screens/home/badges/badge_mark.dart';
 
 import '../widgets/form_block.dart';
 import '../widgets/option_card.dart';
@@ -51,7 +53,8 @@ class PaymentPicker extends StatelessWidget {
           actionLabel: S.of(context).finance_retry
         ),
         MoneyMethodsStatus.empty => _Note(
-          text: S.of(context).channel_payments_empty
+          text: S.of(context).channel_payments_empty,
+          badge: BadgePlace.paymentMethodField
         ),
         MoneyMethodsStatus.ready => ValueListenableBuilder<Set<String>>(
           valueListenable: controller.methods,
@@ -87,11 +90,14 @@ class PaymentPicker extends StatelessWidget {
 /// What is said in place of the grid: there is nothing to choose from yet, or
 /// the accounts could not be read.
 class _Note extends StatelessWidget {
-  const _Note({required this.text, this.action, this.actionLabel});
+  const _Note({required this.text, this.action, this.actionLabel, this.badge});
 
   final String text;
   final void Function()? action;
   final String? actionLabel;
+
+  /// The company-wide alert behind an empty list (no way of being paid), on the icon.
+  final BadgePlace? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +109,13 @@ class _Note extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          Icon(CI.info, size: AppSize.text * 1.2, color: scheme.icon),
+          if (badge != null) BadgeCorner(
+            place: badge!,
+            dot: true,
+            outside: true,
+            child: Icon(CI.info, size: AppSize.text * 1.2, color: scheme.icon)
+          )
+          else Icon(CI.info, size: AppSize.text * 1.2, color: scheme.icon),
           SizedBox(width: AppSize.spaceS),
           Expanded(child: TextSmall(
             text,

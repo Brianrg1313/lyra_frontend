@@ -11,6 +11,7 @@ import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/lan/hybrid_service.dart';
@@ -81,6 +82,9 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // What the person may open in each company, from the same response:
     // the side bar and the buttons watch it to hide what would be a 403.
     ChangeNotifierProvider.value(value: PermissionsService()),
+    // What is pending in the active company, from the same response and then
+    // the socket: the side bar, the tabs and the header draw its dots.
+    ChangeNotifierProvider.value(value: BadgesService()),
     // Which areas the deployment mode has: the side bar leaves out the ones
     // it doesn't, and in hybrid it changes with the internet.
     ChangeNotifierProvider.value(value: CapabilityService()),

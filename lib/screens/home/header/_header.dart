@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -7,15 +9,21 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/badges/badge_model.dart';
+import 'package:app/services/badges/badge_place.dart';
+import 'package:app/services/badges/badges_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/business_listener.dart';
+import 'package:app/screens/home/badges/badge_mark.dart';
+import 'package:app/screens/home/badges/badge_route.dart';
+import 'package:app/screens/modals/home/pending/_pending.dart';
 
 import './business_selector.dart';
 
 /// Top bar of the home: the app search, the active business and the accesses
-/// that belong to no particular section (notifications and inbox).
+/// that belong to no particular section (what is pending, and the inbox).
 ///
 /// Like the side bar it is fixed: it is built once in the shell and is not
 /// remounted when the section changes, so it keeps its state (what was typed,
@@ -147,13 +155,17 @@ class _HomeHeaderState extends State<HomeHeader>
         _HeaderAction(
           icon: CI.cashbox,
           isLocked: !hasBusiness,
+          badge: BadgePlace.pos,
           message: S.of(context).pos_mode,
           action: () => context.read<HomeService>().goToPos(context)
         ),
+        // The bell's number is the unseen notifications; what it opens is everything pending,
+        // the side bar's dots included, each leading to the page that clears it.
         _HeaderAction(
           icon: CI.notification,
-          message: S.of(context).notifications,
-          action: _soon
+          badge: BadgePlace.bell,
+          message: S.of(context).badges_title,
+          action: _pending
         ),
         _HeaderAction(
           icon: CI.mail,
@@ -164,7 +176,25 @@ class _HomeHeaderState extends State<HomeHeader>
     );
   }
 
-  // Neither panel exists yet. A message is shown instead of leaving the button
+  /// Opens the pending list and goes where the chosen badge is cleared. A section marked new is
+  /// found by opening it.
+  Future<void> _pending() async {
+    final business = context.read<BusinessService>().activeId;
+    final badge = await showPendingPanel(
+      context,
+      opens: (badge) => badgeRoute(badge, business: business) != null
+    );
+
+    if (badge == null || !mounted) return;
+
+    final route = badgeRoute(badge, business: business);
+    if (route == null) return;
+
+    if (badge.kind == BadgeKind.news) unawaited(BadgesService().seen([badge.key]));
+    Navis.push(context, route);
+  }
+
+  // The inbox does not exist yet. A message is shown instead of leaving the button
   // silent: a button that does nothing when tapped reads as the app failing.
   void _soon() => FloatFlag.of(context).message(S.of(context).coming_soon);
 }
@@ -175,7 +205,8 @@ class _HeaderAction extends StatelessWidget {
     required this.icon,
     required this.message,
     required this.action,
-    this.isLocked = false
+    this.isLocked = false,
+    this.badge
   });
 
   final IconData icon;
@@ -195,10 +226,16 @@ class _HeaderAction extends StatelessWidget {
   /// then says why it cannot be entered.
   final bool isLocked;
 
+  /// What it has pending, on its corner.
+  final BadgePlace? badge;
+
   @override
-  Widget build(BuildContext context) => isLocked
-    ? Opacity(opacity: 0.4, child: _action(context))
-    : _action(context);
+  Widget build(BuildContext context) {
+    if (isLocked) return Opacity(opacity: 0.4, child: _action(context));
+    if (badge == null) return _action(context);
+
+    return BadgeCorner(place: badge!, child: _action(context));
+  }
 
   Widget _action(BuildContext context) => FeedbackButton(
     // Without an action there is no reason to respond to the mouse either: the

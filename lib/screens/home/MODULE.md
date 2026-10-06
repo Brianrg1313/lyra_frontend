@@ -33,10 +33,14 @@
   rebuilds on `PermissionsService` and `CapabilityService` (the internet or "work offline" lock a section in place).
 - `desktop/_body.dart` — `DesktopBody`: side bar + header + content.
 - `desktop/side_bar/side_bar.dart` — `SideBar({section})`: groups from `HomeSection`, collapsible via `HomeService`.
-- `desktop/side_bar/options.dart` — option list; locks unmet `needsBusiness` and, with a business, sections without `<key>.view` (`PermissionsService`) — those still open, onto `NoPermissionSection`. No POS option (the POS opens from the header).
-- `desktop/side_bar/option.dart` — `Option({icon, title, action, isExpanded, isActive, lockedMessage})` (`lockedMessage` non-null = locked, shown as tooltip; `opensLocked` = still clickable).
-- `desktop/side_bar/profile.dart` — `ProfileCard`. `desktop/side_bar/sign_out.dart` — `SignOut`: calls `ClientService.signOut`.
-- `header/_header.dart` — `HomeHeader`: search (`HomeService.searchQuery`, cleared on screen change), business selector, inbox.
+- `desktop/side_bar/options.dart` — option list (each with `BadgePlace.section`; opening one `discover`s its news); locks unmet `needsBusiness` and, with a business, sections without `<key>.view` (`PermissionsService`) — those still open, onto `NoPermissionSection`. No POS option (the POS opens from the header).
+- `desktop/side_bar/option.dart` — `Option({icon, title, action, isExpanded, isActive, lockedMessage, badge})` (`lockedMessage` non-null = locked, shown as tooltip; `opensLocked` = still clickable; `badge` = its `BadgePlace`, a mark after the title or a dot on the icon when collapsed, none when locked).
+- `desktop/side_bar/profile.dart` — `ProfileCard` (the account's dot, `BadgePlace.account`, on the picture). `desktop/side_bar/sign_out.dart` — `SignOut`: calls `ClientService.signOut`.
+- `header/_header.dart` — `HomeHeader`: search (`HomeService.searchQuery`, cleared on screen change), business selector, POS (`BadgePlace.pos`),
+  the bell (`BadgePlace.bell`; opens `showPendingPanel`, then goes to `badgeRoute`), inbox (coming soon).
+- `badges/badge_mark.dart` — `BadgeMark({place, dot})` (a number when the place counts things, a dot for alerts/news, nothing
+  when clear; listens to the `BadgesService` singleton, no provider needed), `BadgeCorner({place, child, dot, outside})`, `badgeColor(level)`.
+- `badges/badge_route.dart` — `badgeRoute(badge, business:)`: the app page that clears a badge, by its most specific anchor; `null` = none yet.
 - `header/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation; with
   `CapabilityService.singleCompany` only shows the one company.
 - `sections/_sections.dart` — **section registry**: `enum HomeSection` (`key path icon`; `dashboard
@@ -44,7 +48,7 @@
   server`), groups `.home` (dashboard, business, messages, deliveries, sales; untitled) `.products`
   `.reports` (finance first) `.connectionGroups` (with `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
   `needsBusiness`, `build()`; `homeContent(currentKey, section, businessId)` (incl. sub-pages).
-- `sections/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?})` (locked = lock icon, still opens): tab bar used
+- `sections/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?, badge?})` (locked = lock icon, still opens; `badge` = a tab's `BadgePlace`, a dot after its title): tab bar used
   by business, finance and sales. **Reuse it for any new tabbed section.**
 - `sections/page_switcher.dart` — `PageSwitcher({id, child})`: ~300 ms fade-through between the pages of one section.
   Wraps `homeContent` (keyed by section, so switching sections does not animate) and the tab bodies of

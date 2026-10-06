@@ -15,7 +15,7 @@
 
 - `_business_detail.dart` — `BusinessDetailSection`: resolves `:id`, loads the profile, tab bar + active tab (`NoPermissionSection` when not granted, see home module).
 - `business_tab.dart` — `enum BusinessTab { statistics, employees, branches, clients, settings }`:
-  `key icon routeKey path(businessId) area granted ownsSurface`, `initial = statistics`, `opening`. Add a tab here.
+  `key icon routeKey path(businessId) area granted ownsSurface badge` (settings: the profile's setup), `initial = statistics`, `opening`. Add a tab here.
 - `detail_header.dart` — `BusinessDetailHeader`: thin wrapper over `SectionTabs`.
 - `business_avatar.dart` — `BusinessAvatar`: logo or gradient initial.
 - `statistics/_statistics.dart` — `BusinessStatisticsTab` (default).

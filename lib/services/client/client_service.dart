@@ -21,6 +21,7 @@ import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/channels/channels_service.dart';
@@ -46,8 +47,9 @@ import 'package:app/toolkit/settings/initial_builder.dart' show businessService,
 /// downloaded from—. This service is the only one that reads that endpoint, so
 /// it is the one that hands each block to whoever manages it: [BusinessService]
 /// the companies, [CountryCatalogService] and [CurrencyCatalogService] the
-/// catalogs, [CdnService] the image bases and [PermissionsService] what the
-/// person may do in each company. None is stored here.
+/// catalogs, [CdnService] the image bases, [PermissionsService] what the
+/// person may do in each company and [BadgesService] what is pending in the
+/// one the request named. None is stored here.
 class ClientService extends ChangeNotifier {
   ClientService({SessionSource? source}) : _injected = source {
     onSessionRejected = _expire;
@@ -99,6 +101,8 @@ class ClientService extends ChangeNotifier {
 
     String? page;
     var unreachable = false;
+    // The company `/init`'s `badges` are measured for: the `business_id` header it carries.
+    final asked = api.business;
     final Map<String, dynamic>? clientData = await _source.bootstrap().then<Map<String, dynamic>?>((data) => data).catchError((E) {
       if (kDebugMode) {
         print(E);
@@ -150,6 +154,7 @@ class ClientService extends ChangeNotifier {
     // block the session brought is handed to it.
     businessService.seed(clientData["businesses"]);
     _seedPermissions(clientData);
+    BadgesService().seed(clientData["badges"], business: asked);
 
     _tasks = ClientTask.listFromJson(clientData["tasks"]);
     update(client);
@@ -225,6 +230,7 @@ class ClientService extends ChangeNotifier {
   Future<void> refreshCatalogs() async {
     if (!isAuthenticated) return;
 
+    final asked = api.business;
     final data = await _source.bootstrap().then<Map<String, dynamic>?>((data) => data).catchError((E) {
       if (kDebugMode) {
         print("refreshCatalogs failed: $E");
@@ -238,6 +244,8 @@ class ClientService extends ChangeNotifier {
     // Grants change mid-session (a role edited by an admin); seeding them
     // does not touch the active company.
     _seedPermissions(data);
+    // A grant that changed is also a badge that may now be visible, or no longer.
+    BadgesService().seed(data["badges"], business: asked);
   }
 
   /// Accepts an invitation: the job becomes active and the company can read
@@ -346,6 +354,7 @@ class ClientService extends ChangeNotifier {
       CurrencyCatalogService().clear();
       CdnService().clear();
       PermissionsService().clear();
+      BadgesService().clear();
       clear();
     } finally {
       _signingOut = false;

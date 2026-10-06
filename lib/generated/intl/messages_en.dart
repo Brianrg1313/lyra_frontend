@@ -493,6 +493,39 @@ class MessageLookup extends MessageLookupByLibrary {
         "auth_title": MessageLookupByLibrary.simpleMessage(
             "Sign in or create your account"),
         "back": MessageLookupByLibrary.simpleMessage("Back"),
+        "badge_appointments_upcoming": MessageLookupByLibrary.simpleMessage(
+            "Appointments today and tomorrow"),
+        "badge_chats_attention": MessageLookupByLibrary.simpleMessage(
+            "Conversations waiting for a person"),
+        "badge_legal_terms": MessageLookupByLibrary.simpleMessage(
+            "New terms and conditions to accept"),
+        "badge_money_receivables":
+            MessageLookupByLibrary.simpleMessage("Sales on credit still owed"),
+        "badge_news_money":
+            MessageLookupByLibrary.simpleMessage("New: Finance"),
+        "badge_notifications_unseen":
+            MessageLookupByLibrary.simpleMessage("Unseen notifications"),
+        "badge_pos_invoices":
+            MessageLookupByLibrary.simpleMessage("Tickets left open on a till"),
+        "badge_reservations_pending": MessageLookupByLibrary.simpleMessage(
+            "Holds a customer is waiting on"),
+        "badge_setup_catalog":
+            MessageLookupByLibrary.simpleMessage("Create your product catalog"),
+        "badge_setup_channels": MessageLookupByLibrary.simpleMessage(
+            "Connect a channel for your assistant"),
+        "badge_setup_country":
+            MessageLookupByLibrary.simpleMessage("Set the company\'s country"),
+        "badge_setup_logo":
+            MessageLookupByLibrary.simpleMessage("Add your company\'s logo"),
+        "badge_setup_payments":
+            MessageLookupByLibrary.simpleMessage("Add a way to get paid"),
+        "badge_unknown": MessageLookupByLibrary.simpleMessage(
+            "Something needs your attention"),
+        "badges_dismiss": MessageLookupByLibrary.simpleMessage("Dismiss"),
+        "badges_empty": MessageLookupByLibrary.simpleMessage("Nothing pending"),
+        "badges_mark_read":
+            MessageLookupByLibrary.simpleMessage("Mark as read"),
+        "badges_title": MessageLookupByLibrary.simpleMessage("Pending"),
         "baileys_pairing_connected":
             MessageLookupByLibrary.simpleMessage("WhatsApp linked"),
         "baileys_pairing_error": m1,

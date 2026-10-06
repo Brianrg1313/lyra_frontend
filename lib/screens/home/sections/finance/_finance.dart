@@ -166,7 +166,8 @@ class _FinanceSectionState extends State<FinanceSection> {
               icon: (value) => value.icon,
               title: (context, value) => value.title(context),
               onTab: _openTab,
-              isLocked: (value) => !PermissionsService().canOpen(value.area)
+              isLocked: (value) => !PermissionsService().canOpen(value.area),
+              badge: (value) => value.badge
             ),
             SizedBox(height: AppSize.gap),
             Expanded(child: Surface(

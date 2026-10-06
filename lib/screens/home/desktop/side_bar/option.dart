@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// SERVICES
+import 'package:app/services/badges/badge_place.dart';
+
+// WIDGETS
+import 'package:app/screens/home/badges/badge_mark.dart';
+
 class Option extends StatelessWidget {
   const Option({
     required this.icon,
@@ -10,7 +16,7 @@ class Option extends StatelessWidget {
     this.isActive = false,
     this.lockedMessage,
     this.opensLocked = false,
-    this.badge = 0,
+    this.badge,
     super.key
   });
 
@@ -40,7 +46,9 @@ class Option extends StatelessWidget {
 
   bool get _isDisabled => isLocked && !opensLocked;
 
-  final int badge;
+  /// What it has pending (`BadgesService`): a number or a dot after the title, a dot on the
+  /// icon while the bar is collapsed.
+  final BadgePlace? badge;
 
   /// The whole set —indicator, icon, text and counter— is dimmed so nothing
   /// in this option competes with the ones that can be opened. It is the only
@@ -111,16 +119,7 @@ class Option extends StatelessWidget {
           )
         : ThemeColor.of(context).navBar,
       child: Row(children: [
-        SizedBox(
-          width: AppSize.action,
-          height: AppSize.action,
-          child: Center(child: Icon(
-            icon,
-            color: isActive
-              ? ThemeColor.of(context).primary
-              : ThemeColor.of(context).text.secondary
-          ))
-        ),
+        _icon(context),
         if (isExpanded) ...[
           Expanded(child: TextMedium(title, ellipsis: true)),
           // The lock goes where the counter would: they are mutually
@@ -134,21 +133,31 @@ class Option extends StatelessWidget {
               color: ThemeColor.of(context).text.secondary
             )
           )
-          else if (badge > 0) Container(
-            margin: EdgeInsets.only(right: AppSize.spaceXS),
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSize.gap,
-              vertical: AppSize.gap / 2
-            ),
-            decoration: BoxDecoration(
-              color: ThemeColor.of(context).primary,
-              borderRadius: BorderRadius.circular(AppSize.corner)
-            ),
-            child: TextSmall("$badge", color: Colors.white)
+          else if (badge != null) Padding(
+            padding: EdgeInsets.only(right: AppSize.spaceXS),
+            child: BadgeMark(place: badge!)
           )
         ]
       ])
     )),
     SizedBox(width: AppSize.padding)
   ]);
+
+  /// Collapsed, the icon is all there is: what is pending goes on it as a dot.
+  Widget _icon(BuildContext context) {
+    final icon = SizedBox(
+      width: AppSize.action,
+      height: AppSize.action,
+      child: Center(child: Icon(
+        this.icon,
+        color: isActive
+          ? ThemeColor.of(context).primary
+          : ThemeColor.of(context).text.secondary
+      ))
+    );
+
+    if (isExpanded || isLocked || badge == null) return icon;
+
+    return BadgeCorner(place: badge!, dot: true, child: icon);
+  }
 }

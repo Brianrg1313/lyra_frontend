@@ -20948,6 +20948,186 @@ class S {
       args: [],
     );
   }
+
+  /// `Pending`
+  String get badges_title {
+    return Intl.message(
+      'Pending',
+      name: 'badges_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing pending`
+  String get badges_empty {
+    return Intl.message(
+      'Nothing pending',
+      name: 'badges_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dismiss`
+  String get badges_dismiss {
+    return Intl.message(
+      'Dismiss',
+      name: 'badges_dismiss',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark as read`
+  String get badges_mark_read {
+    return Intl.message(
+      'Mark as read',
+      name: 'badges_mark_read',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something needs your attention`
+  String get badge_unknown {
+    return Intl.message(
+      'Something needs your attention',
+      name: 'badge_unknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Conversations waiting for a person`
+  String get badge_chats_attention {
+    return Intl.message(
+      'Conversations waiting for a person',
+      name: 'badge_chats_attention',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Appointments today and tomorrow`
+  String get badge_appointments_upcoming {
+    return Intl.message(
+      'Appointments today and tomorrow',
+      name: 'badge_appointments_upcoming',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holds a customer is waiting on`
+  String get badge_reservations_pending {
+    return Intl.message(
+      'Holds a customer is waiting on',
+      name: 'badge_reservations_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tickets left open on a till`
+  String get badge_pos_invoices {
+    return Intl.message(
+      'Tickets left open on a till',
+      name: 'badge_pos_invoices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales on credit still owed`
+  String get badge_money_receivables {
+    return Intl.message(
+      'Sales on credit still owed',
+      name: 'badge_money_receivables',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unseen notifications`
+  String get badge_notifications_unseen {
+    return Intl.message(
+      'Unseen notifications',
+      name: 'badge_notifications_unseen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set the company's country`
+  String get badge_setup_country {
+    return Intl.message(
+      'Set the company\'s country',
+      name: 'badge_setup_country',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a way to get paid`
+  String get badge_setup_payments {
+    return Intl.message(
+      'Add a way to get paid',
+      name: 'badge_setup_payments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create your product catalog`
+  String get badge_setup_catalog {
+    return Intl.message(
+      'Create your product catalog',
+      name: 'badge_setup_catalog',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect a channel for your assistant`
+  String get badge_setup_channels {
+    return Intl.message(
+      'Connect a channel for your assistant',
+      name: 'badge_setup_channels',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add your company's logo`
+  String get badge_setup_logo {
+    return Intl.message(
+      'Add your company\'s logo',
+      name: 'badge_setup_logo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New terms and conditions to accept`
+  String get badge_legal_terms {
+    return Intl.message(
+      'New terms and conditions to accept',
+      name: 'badge_legal_terms',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New: Finance`
+  String get badge_news_money {
+    return Intl.message(
+      'New: Finance',
+      name: 'badge_news_money',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

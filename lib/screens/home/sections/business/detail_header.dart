@@ -40,6 +40,7 @@ class BusinessDetailHeader extends StatelessWidget {
     icon: (value) => value.icon,
     title: (context, value) => value.title(context),
     onTab: onTab,
-    isLocked: (value) => !value.granted
+    isLocked: (value) => !value.granted,
+    badge: (value) => value.badge
   );
 }

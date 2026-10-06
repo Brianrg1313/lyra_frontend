@@ -2,7 +2,7 @@
 
 **Path** `lib/screens/modals`
 **Role** Every dialog and side panel. Modals are **not routes**: not in `routes.dart`, no URL change.
-**Layout** One folder per opening section (`business/ channels/ inventory/ sales/ finance/ messages/ pos/ pre_start/ permissions/`),
+**Layout** One folder per opening section (`business/ channels/ inventory/ sales/ finance/ messages/ pos/ pre_start/ permissions/ home/`),
 `shared/` for modals opened by more than one. One folder per modal, entry `_<name>.dart`,
 parts beside it. A modal moves to `shared/` only once a second section opens it.
 
@@ -176,6 +176,12 @@ All three **return a value and write nothing** (POS services live below this nav
 ### `permissions/`
 - `request_permission/_request_permission.dart` — `showRequestPermission(context, requests:, permission:, section:, business:)`, `RequestPermissionModal`:
   optional note (≤ 200); **writes** through the `PermissionRequestsService` passed in. A `409` (already pending/granted) closes it. Returns `true` if sent.
+
+### `home/` (the shell's header)
+- `pending/_pending.dart` — `showPendingPanel(context, opens:)`, `PendingModal`: every badge standing, loudest first (live);
+  a row that `opens` returns its `BadgeModel` (the header navigates); dismissible ones (not the terms: no terms page yet)
+  get "Dismiss" / "Mark as read" (`BadgesService.seen`). Returns the chosen badge or `null`.
+- `pending/pending_title.dart` — `pendingTitle(context, badge)`: the badge's `title` l10n key → `S`; an unknown one → `badge_unknown`.
 
 ### `server/` (one session over the cloud and a master, plan §9.6)
 - `master_password/_master_password.dart` — `showMasterPassword(context, login:)`, `showUnseal(context)`,

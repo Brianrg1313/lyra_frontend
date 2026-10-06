@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// SERVICES
+import 'package:app/services/badges/badge_place.dart';
+
+// WIDGETS
+import 'package:app/screens/home/badges/badge_mark.dart';
+
 /// The tab bar of a section whose page is split into tabs.
 ///
 /// It lives up here and not inside one of them because two sections already
@@ -28,7 +34,8 @@ class SectionTabs<T> extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.onTab,
-    this.isLocked
+    this.isLocked,
+    this.badge
   });
 
   /// Every tab of the section, in the order they are drawn.
@@ -47,6 +54,9 @@ class SectionTabs<T> extends StatelessWidget {
   /// open, onto the "no access" message that offers to ask for them.
   final bool Function(T tab)? isLocked;
 
+  /// Where a tab's pending things are read (`BadgesService`), drawn as a dot after its title.
+  final BadgePlace? Function(T tab)? badge;
+
   /// The tabs scroll instead of shrinking: there are four or five with icon and
   /// text, and in a narrow window they would come in cut off or squeezed until
   /// unreadable. By scrolling them, the one being looked at is seen whole.
@@ -58,6 +68,7 @@ class SectionTabs<T> extends StatelessWidget {
         icon: isLocked?.call(tab) == true ? Icons.lock_outline : icon(tab),
         title: title(context, tab),
         isActive: tab == active,
+        badge: badge?.call(tab),
         action: () => onTab(tab)
       )
     ])
@@ -76,13 +87,15 @@ class _Tab extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.isActive,
-    required this.action
+    required this.action,
+    this.badge
   });
 
   final IconData icon;
   final String title;
   final bool isActive;
   final void Function() action;
+  final BadgePlace? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +123,10 @@ class _Tab extends StatelessWidget {
             bold: isActive,
             multiplier: 0.95,
             color: isActive ? scheme.text.primary : scheme.text.secondary
+          ),
+          if (badge != null) Padding(
+            padding: EdgeInsets.only(left: AppSize.gap),
+            child: BadgeMark(place: badge!, dot: true)
           )
         ]
       )

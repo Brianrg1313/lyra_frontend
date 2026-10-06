@@ -68,6 +68,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 - `SectionMessage` (`lib/screens/home/sections/section_message.dart`) — full-section empty/error/loading.
 - `SettingsBlock` `SettingsRow` `SettingsTag`… (`lib/screens/modals/shared/settings/settings_block.dart`) — read-only panel rows.
 - `BusinessListener` (`lib/screens/home/sections/business_listener.dart`) — sub-page reacting to a business switch.
+- `BadgeMark` `BadgeCorner` (`lib/screens/home/badges/badge_mark.dart`) — what a place has pending; places in `BadgePlace` (`lib/services/badges/badge_place.dart`).
 
 ---
 
@@ -129,8 +130,8 @@ provided by their screen. Load states: `enum XStatus { idle, loading, ready, emp
 **Backend access** — a service reads and writes through its domain's source
 (`lib/services/<domain>/sources/`: `XSource` returns models, `XCloudSource` holds the REST
 calls), resolved by `Sources` in `lib/toolkit/deployment.dart`. **Never `api.*` from a service.**
-Only cloud-only services (chats, channels, connections, maps, Baileys, places, money AI, sign up)
-call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
+Only cloud-only services (chats, channels, connections, maps, Baileys, places, money AI, sign up,
+badges) call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
 
 **Deployment modes** — every area of `docs/app-areas.json` declares `modes`, and
 `CapabilityService.modes` carries the same entry (`test/capabilities_test.dart` enforces it). A new

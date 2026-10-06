@@ -7,6 +7,8 @@ import 'package:app/services/home/home_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/badges/badge_place.dart';
+import 'package:app/services/badges/badges_service.dart';
 
 import 'package:app/screens/home/sections/_sections.dart';
 
@@ -107,7 +109,14 @@ Widget _option(
   isActive: section == active,
   lockedMessage: lockedMessage,
   opensLocked: opensLocked,
-  action: () => context.read<HomeService>().goTo(context, section)
+  badge: BadgePlace.section(section.key),
+  action: () {
+    context.read<HomeService>().goTo(context, section);
+
+    // A section marked new has been found.
+    final place = BadgePlace.section(section.key);
+    if (place != null) BadgesService().discover(place);
+  }
 );
 
 class Sp extends StatelessWidget {

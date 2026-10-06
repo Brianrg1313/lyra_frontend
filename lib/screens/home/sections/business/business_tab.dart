@@ -4,6 +4,7 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/badges/badge_place.dart';
 
 import './branches/_branches.dart';
 import './clients/_clients.dart';
@@ -97,6 +98,9 @@ enum BusinessTab {
     clients => S.of(context).business_tab_clients,
     settings => S.of(context).business_tab_settings
   };
+
+  /// Where its pending things are read: the profile's setup (country, logo) on the settings.
+  BadgePlace? get badge => this == settings ? BadgePlace.businessSettings : null;
 
   /// Whether the tab draws its own surface. Split-panel tabs do, so they can
   /// inset a panel inside it; the page skips its single surface for them.

@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:app/services/channels/channel_agent_role.dart';
 import 'package:app/services/channels/channel_data_source.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
+import 'package:app/services/badges/badge_place.dart';
+import 'package:app/screens/home/badges/badge_mark.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -108,10 +110,16 @@ class _TableSelect extends StatelessWidget {
       return Padding(
         padding: EdgeInsets.only(top: AppSize.spaceXS),
         child: Row(children: [
-          Icon(
-            CI.info,
-            size: AppSize.text * 1.2,
-            color: ThemeColor.of(context).icon
+          // The company-wide alert behind it (no catalog yet), on the icon.
+          BadgeCorner(
+            place: BadgePlace.tableField,
+            dot: true,
+            outside: true,
+            child: Icon(
+              CI.info,
+              size: AppSize.text * 1.2,
+              color: ThemeColor.of(context).icon
+            )
           ),
           SizedBox(width: AppSize.spaceS),
           Expanded(child: TextSmall(

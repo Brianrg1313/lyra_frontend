@@ -4,6 +4,7 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/badges/badge_place.dart';
 
 import './methods/_methods.dart';
 import './overview/_overview.dart';
@@ -96,6 +97,13 @@ enum FinanceTab {
     payments => S.of(context).finance_tab_payments,
     receivables => S.of(context).finance_tab_receivables,
     methods => S.of(context).finance_tab_methods
+  };
+
+  /// Where its pending things are read: what is owed, and no way of being paid yet.
+  BadgePlace? get badge => switch (this) {
+    receivables => BadgePlace.financeReceivables,
+    methods => BadgePlace.financeMethods,
+    _ => null
   };
 
   /// Body of the tab. It goes inside the page's surface, so **none brings its
