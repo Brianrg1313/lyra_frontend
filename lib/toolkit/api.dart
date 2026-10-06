@@ -14,7 +14,7 @@ export 'package:core/float_flag/controller.dart';
 /// server: the socket kept its own copy, the PC's address changed, and the
 /// REST calls followed while the socket went on retrying an address nobody
 /// answers, with no error on screen (no new chats, stages or tickets live).
-const devHost = "192.168.1.103";
+const devHost = "192.168.1.100";
 
 final api = _Api();
 final assets = _Assets();
