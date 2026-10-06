@@ -35,15 +35,16 @@
 - `employee_card.dart` — detail shapes: `EmployeeSection`, `EmployeeFacts` (one sheet per group, a 2-column grid of `EmployeeTile` cells; a tile widens to the whole row with `EmployeeWiden`), `EmployeeSearch` (the panel's search: filters tiles by label/value, sections by title), `EmployeeFactFrame`/`EmployeeFactValue` (a tile's inside; `accent` tints the open one), `EmployeeHover`/`EmployeeHint` (edit/copy/unfold hints shown only under the pointer, always without a mouse), `EmployeeFact` (read-only, copyable tile), `EmployeeEvent` (calendar leaf), `EmployeeNote`, `EmployeeQuickAction`, `employeeCopy`.
 - `employee_format.dart` — labels for every backend word (state, work status, contract, workday, period, leave, ending, document, sex), `employeePresence` (tag + color), day/range/span labels.
 
-### employees/own_settings/ — the viewer's own account (app area `account`), in the settings action's side panel; `SettingsBlock` rows
+### employees/own_settings/ — the viewer's own account (app area `account`), in the settings action's side panel; an index whose subsections open stacked side panels
 
-- `_own_settings.dart` — `OwnSettings`: owns `AccountSecurityService` and `AccountHistoryService` (read on opening only where `account.security` / `account.history` show), one scroll: header, then the working blocks, then the ones with nothing working yet.
+- `_own_settings.dart` — `OwnSettings`: owns `AccountSecurityService` and `AccountHistoryService` (read on opening only where `account.security` / `account.history` show); header, a search over every subsection's rows (`OwnSetting.matches`), and the index of `OwnSection`s (working ones, then the ones with nothing working yet, tagged).
 - `own_header.dart` — `OwnHeader`: picture, name, email, and one sentence on the sign in's steps (warning tint and a "turn on" action without a second step; only where `account.security` shows).
+- `own_section.dart` — `OwnSection` (icon, title, subtitle, body, searchable `settings`, `open`: a stacked `showSideModal` re-providing the index's services), `OwnSetting` (one searchable row, `fold`), `OwnSectionPage` (lead line and the body over one surface).
 - `own_preferences.dart` — `OwnPreferences`: language and appearance of this device (`PreferencesService`), every mode.
 - `own_security.dart` — `OwnSecurity`: first password (`showCreatePassword`), second factor (on, change, off: `showTwoFactorSetup`, `showTwoFactorProof`), recovery codes left / new set (app only), SMS and recovery e-mails soon; `OwnSignInMethods`: the sign-in e-mail, Google/Apple/Microsoft soon.
 - `own_sessions.dart` — `OwnSessions`: this device (platform, sign out), other devices soon.
 - `own_history.dart` — `OwnHistory`: every company worked for (logo, role, contract, since/range, tenure, state tag).
-- `own_soon.dart` — `OwnSoon` (a muted line with no backend yet), `OwnSoonList` (them under one "coming soon"), `OwnSoonTag`, `OwnOffline` (a cloud row without the cloud), `OwnLink` (a row's text action), `OwnNotifications`, `OwnPrivacy` (all rows soon, the tag in the title).
+- `own_soon.dart` — `OwnSoon` (a muted line with no backend yet), `OwnSoonList` (them under one "coming soon"), `OwnSoonTag`, `OwnOffline` (a cloud row without the cloud), `OwnLink` (a row's text action), `OwnNotifications`, `OwnPrivacy` (all rows soon, the tag on the page's lead line).
 
 ### settings/ — the profile (read-only sheet; **every edit opens a modal** in `lib/screens/modals/business`)
 

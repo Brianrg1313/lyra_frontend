@@ -50,7 +50,7 @@ class OwnSoon extends StatelessWidget {
 }
 
 /// The [OwnSoon] rows of a block, close together under one "coming soon". [caption] is false
-/// where the block's title already carries the tag (a block with nothing working yet).
+/// where the panel's lead line already carries the tag (a subsection with nothing working yet).
 class OwnSoonList extends StatelessWidget {
   const OwnSoonList({super.key, required this.rows, this.caption = true});
 
@@ -106,16 +106,11 @@ class OwnNotifications extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context);
 
-    return SettingsBlock(
-      title: s.account_notifications_title,
-      subtitle: s.account_notifications_subtitle,
-      action: const OwnSoonTag(),
-      child: OwnSoonList(caption: false, rows: [
-        OwnSoon(icon: CI.notification, label: s.account_notifications_app, hint: s.account_notifications_app_hint),
-        OwnSoon(icon: CI.mail, label: s.account_notifications_email, hint: s.account_notifications_email_hint),
-        OwnSoon(icon: CI.shop_mobile, label: s.account_notifications_push, hint: s.account_notifications_push_hint)
-      ])
-    );
+    return OwnSoonList(caption: false, rows: [
+      OwnSoon(icon: CI.notification, label: s.account_notifications_app, hint: s.account_notifications_app_hint),
+      OwnSoon(icon: CI.mail, label: s.account_notifications_email, hint: s.account_notifications_email_hint),
+      OwnSoon(icon: CI.shop_mobile, label: s.account_notifications_push, hint: s.account_notifications_push_hint)
+    ]);
   }
 }
 
@@ -128,15 +123,10 @@ class OwnPrivacy extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context);
 
-    return SettingsBlock(
-      title: s.account_privacy_title,
-      subtitle: s.account_privacy_subtitle,
-      action: const OwnSoonTag(),
-      child: OwnSoonList(caption: false, rows: [
-        OwnSoon(icon: CI.eye_hidden, label: s.account_privacy_details, hint: s.account_privacy_details_hint),
-        OwnSoon(icon: CI.employee_badge, label: s.account_privacy_presence, hint: s.account_privacy_presence_hint)
-      ])
-    );
+    return OwnSoonList(caption: false, rows: [
+      OwnSoon(icon: CI.eye_hidden, label: s.account_privacy_details, hint: s.account_privacy_details_hint),
+      OwnSoon(icon: CI.employee_badge, label: s.account_privacy_presence, hint: s.account_privacy_presence_hint)
+    ]);
   }
 }
 

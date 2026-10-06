@@ -19,31 +19,27 @@ class OwnPreferences extends StatelessWidget {
     final s = S.of(context);
     final language = Localizations.localeOf(context).languageCode;
 
-    return SettingsBlock(
-      title: s.account_preferences_title,
-      subtitle: s.account_preferences_subtitle,
-      child: SettingsList(rows: [
-        SettingsRow(
-          icon: CI.globe_shopping,
-          label: s.account_language,
-          child: SettingsSelect(
-            label: BusinessLanguage.label(language),
-            open: (anchor) => _pickLanguage(anchor, language)
-          )
-        ),
-        SettingsRow(
-          icon: CI.brightness,
-          label: s.account_theme,
-          child: ValueListenableBuilder<ThemeMode?>(
-            valueListenable: AppController().theme,
-            builder: (context, _, _) => SettingsSelect(
-              label: _themeLabel(context, PreferencesService().theme),
-              open: _pickTheme
-            )
+    return SettingsList(rows: [
+      SettingsRow(
+        icon: CI.globe_shopping,
+        label: s.account_language,
+        child: SettingsSelect(
+          label: BusinessLanguage.label(language),
+          open: (anchor) => _pickLanguage(anchor, language)
+        )
+      ),
+      SettingsRow(
+        icon: CI.brightness,
+        label: s.account_theme,
+        child: ValueListenableBuilder<ThemeMode?>(
+          valueListenable: AppController().theme,
+          builder: (context, _, _) => SettingsSelect(
+            label: _themeLabel(context, PreferencesService().theme),
+            open: _pickTheme
           )
         )
-      ])
-    );
+      )
+    ]);
   }
 
   Future<void> _pickLanguage(BuildContext anchor, String current) async {

@@ -4913,6 +4913,26 @@ class S {
     );
   }
 
+  /// `Search settings`
+  String get account_search {
+    return Intl.message(
+      'Search settings',
+      name: 'account_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing in your settings matches “{query}”.`
+  String account_search_empty(Object query) {
+    return Intl.message(
+      'Nothing in your settings matches “$query”.',
+      name: 'account_search_empty',
+      desc: '',
+      args: [query],
+    );
+  }
+
   /// `Preferences`
   String get account_preferences_title {
     return Intl.message(

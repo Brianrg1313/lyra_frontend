@@ -17,7 +17,7 @@ Future<void> showEmployeeTool(
   required String person,
   WidgetBuilder? builder
 }) async {
-  final width = math.min(AppSize.action * 12, MediaQuery.of(context).size.width * .55);
+  final width = employeeToolWidth(context);
 
   await showSideModal(
     context: context,
@@ -27,6 +27,11 @@ Future<void> showEmployeeTool(
     builder: builder ?? (context) => EmployeeToolModal(icon: icon, description: description)
   );
 }
+
+/// The width of an employee's panel, and of the panels opened from it: a stacked one as wide as
+/// the one it covers leaves the older's quarter showing evenly.
+double employeeToolWidth(BuildContext context) =>
+  math.min(AppSize.action * 12, MediaQuery.of(context).size.width * .55);
 
 /// Placeholder until each panel has its backend: says what it will hold.
 class EmployeeToolModal extends StatelessWidget {

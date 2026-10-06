@@ -25,30 +25,22 @@ class OwnHistory extends StatelessWidget {
     final scheme = ThemeColor.of(context);
 
     if (!CapabilityService().shows("account.history")) {
-      return SettingsBlock(
-        title: s.account_history_title,
-        subtitle: s.account_history_subtitle,
-        child: OwnOffline(icon: CI.shop, label: s.account_history_title)
-      );
+      return OwnOffline(icon: CI.shop, label: s.account_history_title);
     }
 
     final service = context.watch<AccountHistoryService>();
 
-    return SettingsBlock(
-      title: s.account_history_title,
-      subtitle: s.account_history_subtitle,
-      child: switch (service.status) {
-        AccountHistoryStatus.ready => SettingsList(rows: [
-          for (final job in service.jobs) _Job(job: job)
-        ]),
-        AccountHistoryStatus.empty => TextSmall(s.account_history_empty, color: scheme.text.secondary),
-        AccountHistoryStatus.error => Row(children: [
-          Expanded(child: TextSmall(s.account_history_error, lines: 2, color: scheme.text.secondary)),
-          OwnLink(label: s.account_retry, action: service.load)
-        ]),
-        _ => Center(child: SizedBox.square(dimension: AppSize.text * 1.4, child: Loading(color: scheme.primary)))
-      }
-    );
+    return switch (service.status) {
+      AccountHistoryStatus.ready => SettingsList(rows: [
+        for (final job in service.jobs) _Job(job: job)
+      ]),
+      AccountHistoryStatus.empty => TextSmall(s.account_history_empty, color: scheme.text.secondary),
+      AccountHistoryStatus.error => Row(children: [
+        Expanded(child: TextSmall(s.account_history_error, lines: 2, color: scheme.text.secondary)),
+        OwnLink(label: s.account_retry, action: service.load)
+      ]),
+      _ => Center(child: SizedBox.square(dimension: AppSize.text * 1.4, child: Loading(color: scheme.primary)))
+    };
   }
 }
 

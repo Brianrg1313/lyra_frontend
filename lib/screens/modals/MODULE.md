@@ -56,7 +56,7 @@ through `Navigator.pop(context, value)`.
 - `edit_business_field/business_field.dart` — `BusinessField`: registry of editable data (key, value, input). **Add a datum here.**
 - `edit_business_email/_edit_business_email.dart` — `EditBusinessEmailModal`: create/edit an address.
 - `verify_business_email/_verify_business_email.dart` — `VerifyBusinessEmailModal`.
-- `employee_tool/_employee_tool.dart` — `showEmployeeTool(context, icon:, title:, description:, person:, builder?)`, `EmployeeToolModal`: side panel of one employee action (from `EmployeeActions`); `builder` draws its body (permissions → `EmployeePermissions`, one's own settings → `OwnSettings`), otherwise the placeholder.
+- `employee_tool/_employee_tool.dart` — `showEmployeeTool(context, icon:, title:, description:, person:, builder?)`, `EmployeeToolModal`: side panel of one employee action (from `EmployeeActions`); `builder` draws its body (permissions → `EmployeePermissions`, one's own settings → `OwnSettings`), otherwise the placeholder; `employeeToolWidth`, shared by the panels stacked on it.
 - `two_factor/_two_factor.dart` — `showTwoFactorSetup(context, service:, email:)` (method, then its step; the factor in force proven last), `TwoFactorChoiceModal`; re-exports `showTwoFactorProof`, `showRecoveryCodes`. Opened from `OwnSecurity`; every write goes through the passed `AccountSecurityService`.
 - `two_factor/two_factor_app.dart` — `TwoFactorAppModal`: staged secret as QR (`PairingQr`) and grouped key, the app's first code → pops the recovery codes.
 - `two_factor/two_factor_email.dart` — `TwoFactorEmailModal`: mails the code on opening (resend), takes it back → pops `true`.

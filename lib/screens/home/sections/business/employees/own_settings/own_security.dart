@@ -25,16 +25,12 @@ class OwnSecurity extends StatelessWidget {
     final s = S.of(context);
     final online = CapabilityService().shows("account.security");
 
-    return SettingsBlock(
-      title: s.account_security_title,
-      subtitle: s.account_security_subtitle,
-      child: !online
-        ? SettingsList(rows: [
-            OwnOffline(icon: CI.key, label: s.account_password),
-            OwnOffline(icon: CI.safe_password, label: s.account_two_factor)
-          ])
-        : const _SecurityRows()
-    );
+    return !online
+      ? SettingsList(rows: [
+          OwnOffline(icon: CI.key, label: s.account_password),
+          OwnOffline(icon: CI.safe_password, label: s.account_two_factor)
+        ])
+      : const _SecurityRows();
   }
 }
 
@@ -201,26 +197,22 @@ class OwnSignInMethods extends StatelessWidget {
     final s = S.of(context);
     final client = context.watch<ClientService>();
 
-    return SettingsBlock(
-      title: s.account_methods_title,
-      subtitle: s.account_methods_subtitle,
-      child: SettingsList(rows: [
-        SettingsValue(
-          icon: CI.mail,
-          label: s.account_methods_email,
-          value: client.isAuthenticated ? client.client.email : "",
-          hint: s.account_methods_email_hint,
-          selectable: true
-        ),
-        OwnSoonList(rows: [
-          OwnSoon(
-            icon: CI.link,
-            label: s.account_methods_linked,
-            hint: s.account_methods_linked_hint,
-            marks: const [CI.google, CI.apple, CI.microsoft]
-          )
-        ])
+    return SettingsList(rows: [
+      SettingsValue(
+        icon: CI.mail,
+        label: s.account_methods_email,
+        value: client.isAuthenticated ? client.client.email : "",
+        hint: s.account_methods_email_hint,
+        selectable: true
+      ),
+      OwnSoonList(rows: [
+        OwnSoon(
+          icon: CI.link,
+          label: s.account_methods_linked,
+          hint: s.account_methods_linked_hint,
+          marks: const [CI.google, CI.apple, CI.microsoft]
+        )
       ])
-    );
+    ]);
   }
 }

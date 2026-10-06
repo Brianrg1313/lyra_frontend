@@ -490,6 +490,8 @@
   "account_soon": "Coming soon",
   "account_needs_internet": "Needs the internet: it lives in your online account.",
   "account_retry": "Try again",
+  "account_search": "Search settings",
+  "account_search_empty": "Nothing in your settings matches “{query}”.",
   "account_preferences_title": "Preferences",
   "account_preferences_subtitle": "How Lyra looks and speaks on this device.",
   "account_language": "Language",
