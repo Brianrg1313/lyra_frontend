@@ -67,6 +67,11 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
     carries the **activation code** (`session.md`, S-8) for the admin to hand over. The code is
     shown once.
   - Already active or invited here → `already_employed` / `already_invited`.
+  - Optionally `template` and/or `permissions` (partial), as the cloud's `TEMPLATE_ID` /
+    `PERMISSIONS`: they need `permissions.assign` too (`forbidden`) and are checked and refused as
+    `permissions.members.assign` (`session.md` P-6, P-7, P-12), in the same write, so a refusal
+    invites nobody. They are kept with the access the person already had, none for someone new,
+    and accepting the job (activation or `employees.accept`, P-5) lets them in with them.
 - **E-11** `employees.reissueActivation` (same permission) voids the old code and answers a new
   one. Only for `pending` accounts.
 - **E-12** `employees.edit` writes the backend-style keys the app sends (`JOB_TITLE`,
@@ -96,7 +101,7 @@ Vocabularies are the app's enums: `EmployeeContract`, `EmployeeWorkday`, `Employ
 | `employees.list` | session (E-1 shapes it) | — | `{employees: [card], total}` | — |
 | `employees.former` | `employees` | — | `[card]` | — |
 | `employees.detail` | session: `employees`, or self | `id` | `BusinessEmployeeDetail` | `not_found` |
-| `employees.invite` | `employees.manage` | `email` \| `username`, `jobTitle`, `firstName?`, `lastName?` | `{id, activation: {code, expires} \| null}` | `already_employed`, `already_invited`, `account_exists`, `invalid_field` |
+| `employees.invite` | `employees.manage` (+ `permissions.assign` with `template`/`permissions`) | `email` \| `username`, `jobTitle`, `firstName?`, `lastName?`, `template?`, `permissions?` | `{id, activation: {code, expires} \| null}` | `already_employed`, `already_invited`, `account_exists`, `invalid_field`, `forbidden`, `permission_template_not_found`, `permissions_invalid`, `permissions_self`, `escalation`, `permissions_online` |
 | `employees.reissueActivation` | `employees.manage` | `id` | `{code, expires}` | `not_pending` |
 | `employees.edit` | `employees.manage` | `id`, keys | `{}` | `employment_closed`, `profile_locked`, `manager_cycle`, `invalid_dates`, `invalid_field` |
 | `profile.edit` | session | names and private keys | `{}` | `forbidden` (a job or pay key), `invalid_field` |

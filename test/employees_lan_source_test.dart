@@ -109,6 +109,9 @@ void main() {
 
     master.answers[Ops.employeesInvite.name] = {"id": "e-10", "activation": null};
     expect((await source.invite(email: "x@mail.com", jobTitle: "Cook")).activation, isNull);
+
+    await source.invite(email: "y@mail.com", jobTitle: "Cook", template: "seller");
+    expect(master.calls.last.$2, {"email": "y@mail.com", "jobTitle": "Cook", "template": "seller"});
   });
 
   test('edits travel with the cloud\'s keys: the company\'s on the job, one\'s own as a profile (E-12, E-13)', () async {

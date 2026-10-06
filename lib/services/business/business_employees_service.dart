@@ -129,16 +129,18 @@ class BusinessEmployeesService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The permission templates an invitation may carry: none where the source
-  /// takes no template or the viewer may not give permissions
-  /// (`business.employees.permissions`), and only those whose every key the
-  /// viewer holds (`all` needs `all`), since the backend refuses the rest as an
-  /// escalation. A failed read answers none: the invitation goes out without.
+  /// The permission templates an invitation may carry: none where the viewer
+  /// may not give permissions (`business.employees.permissions`) or only the
+  /// cloud changes them (a syncing master, P-12), and only those whose every
+  /// key the viewer holds (`all` needs `all`), since the cloud and the master
+  /// refuse the rest as an escalation. A failed read answers none: the
+  /// invitation goes out without.
   Future<List<PermissionTemplateModel>> inviteTemplates() async {
-    if (!_source.invitesWithTemplate || !PermissionsService().can("business.employees.permissions")) return const [];
+    if (!PermissionsService().can("business.employees.permissions")) return const [];
 
     try {
-      final (mine, templates) = await (_permissions.mine(), _permissions.templates()).wait;
+      final (online, mine, templates) = await (_permissions.online(), _permissions.mine(), _permissions.templates()).wait;
+      if (online) return const [];
 
       return [
         for (final template in templates)

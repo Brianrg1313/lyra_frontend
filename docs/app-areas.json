@@ -54,7 +54,7 @@
           "actions": ["view", "view_personal", "invite", "permissions"],
           "action_notes": {
             "view_personal": "Full profile: personal data, emergency contact, pay, notes.",
-            "invite": "Invite a person by email with a job title; with `permissions`, also a permissions template, in the cloud only (a master's employees.invite takes none).",
+            "invite": "Invite a person by email with a job title; with `permissions`, also a permissions template (not while a master syncs: P-12).",
             "permissions": "Grant and revoke other people's permissions, and answer permission requests."
           }
         },

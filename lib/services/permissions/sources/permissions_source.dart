@@ -11,6 +11,10 @@ abstract interface class PermissionsSource {
   /// The viewer's own permissions in the active company.
   Future<Grant> mine();
 
+  /// Whether only the cloud changes permissions here: a master that syncs with its cloud company
+  /// (`session.md` P-12). Never the cloud's own.
+  Future<bool> online();
+
   /// Every template the company may apply, the platform's first.
   Future<List<PermissionTemplateModel>> templates();
 

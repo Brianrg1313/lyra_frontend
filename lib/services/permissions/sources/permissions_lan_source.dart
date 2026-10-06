@@ -20,6 +20,13 @@ class PermissionsLanSource implements PermissionsSource {
   Future<Grant> mine() async => permissionsMine(await _lan.call(Ops.permissionsGet));
 
   @override
+  Future<bool> online() async {
+    final answer = await _lan.call(Ops.permissionsGet);
+
+    return answer is Map && answer["online"] == true;
+  }
+
+  @override
   Future<List<PermissionTemplateModel>> templates() async =>
     PermissionTemplateModel.listFrom(await _lan.call(Ops.permissionsTemplatesList));
 

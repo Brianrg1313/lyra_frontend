@@ -16,11 +16,9 @@ abstract interface class EmployeesSource {
 
   Future<BusinessEmployeeDetail> detail(String id);
 
-  /// Whether [invite] takes a permissions [template]: the person then enters already able to work.
-  bool get invitesWithTemplate;
-
-  /// Invites [email] as [jobTitle], with the permissions of [template] when given; answers the new
-  /// employment's id, when known, and on a master the activation code of the account it made.
+  /// Invites [email] as [jobTitle], with the permissions of [template] when given (they enter
+  /// already able to work); answers the new employment's id, when known, and on a master the
+  /// activation code of the account it made.
   Future<EmployeeInvitationSent> invite({required String email, required String jobTitle, String? template});
 
   /// Writes [changes] (backend-style keys) on employment [id].

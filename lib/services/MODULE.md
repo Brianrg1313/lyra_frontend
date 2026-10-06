@@ -99,7 +99,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   `siteKeys`), the logo as a file (`fileJson`; `setLogo` uploads then `business.setLogo`); `create` is `business.create` (the welcome's, form keys → fields); branches and e-mails
   throw (hidden on a master).
 - `sources/employees_source.dart` — `EmployeesSource`: current (+ active count), former, detail, invite (the id, and a
-  master's activation code; a permissions template only where `invitesWithTemplate`: the cloud's `TEMPLATE_ID`, not a master's), edit, edit own profile. Used by `BusinessEmployeesService`. `employees_cloud_source.dart` —
+  master's activation code; a permissions template: the cloud's `TEMPLATE_ID`, a master's `template`), edit, edit own profile. Used by `BusinessEmployeesService`. `employees_cloud_source.dart` —
   REST. `employees_lan_source.dart` — `EmployeesLanSource` over `LanService.call`: `employees.*` and `profile.edit`, the
   spec's names laid out as the cloud's rows (`cardJson`, `detailJson`; absent private keys stay empty), edits with the
   cloud's keys as they are.
@@ -126,7 +126,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   `EmployeeSpan`, `EmployeeEnding`, and the workday/period/contract-status/end-reason/document/sex enums.
 - `business_employees_service.dart` — `BusinessEmployeesService` (+ `BusinessEmployeesStatus`, `EmployeeDetailStatus`):
   current + former lists (a failed former read leaves it empty; not read without `viewsAll`), `total` = active count, selection (first read opens the
-  viewer), details cached per id, `inviteTemplates` (the templates an invitation may carry: the viewer's keys only, none without `business.employees.permissions`), `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
+  viewer), details cached per id, `inviteTemplates` (the templates an invitation may carry: the viewer's keys only, none without `business.employees.permissions` or while `PermissionsSource.online`), `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
   and opens it; answers what was sent, a master's activation code included, or null on a refusal), `edit` (`PUT /business/employees/`), `editOwn` (the viewer's personal keys, `PUT /profile/`). Provided by the business page. Seam `seed`.
 - `business_email_model.dart` — `BusinessEmailModel`, `BusinessEmailPurpose`.
 - `business_language.dart` — `BusinessLanguage`.

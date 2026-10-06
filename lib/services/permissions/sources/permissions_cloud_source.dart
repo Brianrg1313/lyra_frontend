@@ -16,6 +16,9 @@ class PermissionsCloudSource implements PermissionsSource {
   Future<Grant> mine() async => permissionsMine(await api.get(path: "/permissions/", version: "v1"));
 
   @override
+  Future<bool> online() async => false;
+
+  @override
   Future<List<PermissionTemplateModel>> templates() async =>
     PermissionTemplateModel.listFrom(await api.get(path: "/permissions/templates/", version: "v1"));
 

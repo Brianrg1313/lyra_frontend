@@ -7,7 +7,6 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/sources/employees_cloud_source.dart';
-import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/permissions/member_permissions_service.dart';
@@ -205,10 +204,10 @@ void main() {
       expect([for (final template in await everything.inviteTemplates()) template.id], ["seller", "finance", "owner"]);
     });
 
-    test('a source whose invitation takes no template offers none', () async {
+    test('a master whose permissions only the cloud changes offers none (P-12)', () async {
       final service = BusinessEmployeesService(
-        source: _NoTemplates(),
-        permissions: _Source(mine: Grant.everything(), templates: [seller])
+        source: const EmployeesCloudSource(),
+        permissions: _Source(mine: Grant.everything(), templates: [seller], online: true)
       );
 
       expect(await service.inviteTemplates(), isEmpty);
@@ -343,8 +342,17 @@ Widget _app(Widget child) => MaterialApp(
 );
 
 class _Source implements PermissionsSource {
-  _Source({required Grant mine, PermissionMemberModel? member, List<PermissionTemplateModel> templates = const []})
-    : _mine = mine, _member = member, _templates = templates;
+  _Source({
+    required Grant mine,
+    PermissionMemberModel? member,
+    List<PermissionTemplateModel> templates = const [],
+    bool online = false
+  }) : _mine = mine, _member = member, _templates = templates, _online = online;
+
+  final bool _online;
+
+  @override
+  Future<bool> online() async => _online;
 
   final Grant _mine;
   final PermissionMemberModel? _member;
@@ -372,15 +380,6 @@ class _Source implements PermissionsSource {
 
   @override
   Future<void> revoke(String username) async => revoked.add(username);
-}
-
-/// A master's invitation: `employees.invite` takes no permissions.
-class _NoTemplates implements EmployeesSource {
-  @override
-  bool get invitesWithTemplate => false;
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 class _Master extends LanService {
