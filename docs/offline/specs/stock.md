@@ -120,7 +120,8 @@ invoice|manual, id}, created, expires? }`.
 
 ## stock.summary
 
-The stock screen's list: one row per product of the primary table.
+The stock screen's list: one row per product of the table asked for (`tableId`), or of the
+primary table without one.
 
 ### Answer (`StockSummaryPage`)
 
@@ -135,11 +136,13 @@ The stock screen's list: one row per product of the primary table.
 - **ST-32** The fixed columns' `name` is `null`, so the app puts its own translated label.
 - **ST-33** `match` is the README text search over the summary's text fields. Order: products
   with `needsReview` first, then by title, then by id.
+- **ST-34** `tableId` summarises that table (the inventory section's open one); a deleted or
+  unknown one is `not_found`. The cloud takes it as `TABLE_ID`.
 
 ### Ops
 
 `stock.summary` · `inventory` · `page` (from 1), `size` (≤ 200: the app re-reads up to six
-pages of 30 at once), `match?` · `StockSummaryPage`. Its rows are `{keys, values}` with the record
+pages of 30 at once), `match?`, `tableId?` · `StockSummaryPage`. Its rows are `{keys, values}` with the record
 id first; a last `needsReview` key flags ST-14's products. A company without a primary table
 answers `no_primary_table` (as the `code`; the cloud sends it as the `message`).
 

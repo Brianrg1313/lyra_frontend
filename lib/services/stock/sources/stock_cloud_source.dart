@@ -9,14 +9,15 @@ class StockCloudSource implements StockSource {
   const StockCloudSource();
 
   @override
-  Future<StockSummaryPage> summary({required int page, required int size, String match = ""}) async =>
+  Future<StockSummaryPage> summary({required int page, required int size, String match = "", String tableId = ""}) async =>
     StockSummaryPage.fromResponse(await api.post(
       path: "/inventory/stock/summary/",
       version: "v1",
       data: {
         "PAGE": page,
         "SIZE": size,
-        if (match.isNotEmpty) "MATCH": match
+        if (match.isNotEmpty) "MATCH": match,
+        if (tableId.isNotEmpty) "TABLE_ID": tableId
       }
     ));
 

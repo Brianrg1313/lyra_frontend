@@ -25,11 +25,12 @@ class StockLanSource implements StockSource {
   };
 
   @override
-  Future<StockSummaryPage> summary({required int page, required int size, String match = ""}) async {
+  Future<StockSummaryPage> summary({required int page, required int size, String match = "", String tableId = ""}) async {
     final answer = await _lan.call(Ops.stockSummary, args: {
       "page": page,
       "size": size,
-      if (match.isNotEmpty) "match": match
+      if (match.isNotEmpty) "match": match,
+      if (tableId.isNotEmpty) "tableId": tableId
     });
     if (answer is! Map) throw const UnreadableAnswer("stock.summary");
 
