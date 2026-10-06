@@ -1114,6 +1114,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Manager"),
         "business_rank_seller": MessageLookupByLibrary.simpleMessage("Seller"),
         "business_rank_unknown": MessageLookupByLibrary.simpleMessage("Member"),
+        "business_selector_invitation":
+            MessageLookupByLibrary.simpleMessage("Invited you · Review"),
         "business_state_closed": MessageLookupByLibrary.simpleMessage("Closed"),
         "business_state_inquiries":
             MessageLookupByLibrary.simpleMessage("Inquiries only"),

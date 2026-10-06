@@ -10,11 +10,17 @@ import 'package:provider/provider.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/business/business_model.dart';
+import 'package:app/services/badges/badge_model.dart';
+import 'package:app/services/client/client_service.dart';
+import 'package:app/services/client/employment_invitation_model.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form/style.dart';
+import 'package:app/screens/home/badges/badge_mark.dart';
+import 'package:app/screens/pre_start/welcome/_welcome.dart';
 import 'package:app/screens/modals/business/create_business/_create_business.dart';
+import 'package:app/screens/modals/pre_start/invitation/_invitation.dart';
 
 /// Active business and business switch. It lives in the header and not in the
 /// side bar because what is chosen here rules over everything that is seen:
@@ -23,6 +29,10 @@ import 'package:app/screens/modals/business/create_business/_create_business.dar
 /// It is sized by its content: it takes as much as the name of the active
 /// business takes. Whoever places it ([HomeHeader]) only gives it a cap, so a
 /// long name does not eat the whole bar.
+///
+/// It is also where someone who already works at a company finds the other
+/// companies' invitations: `ClientService.resolve` lets them into the home
+/// without answering, and nothing else in the home lists them.
 class BusinessSelector extends StatefulWidget {
   const BusinessSelector({super.key});
 
@@ -46,6 +56,7 @@ class _BusinessSelectorState extends State<BusinessSelector> {
   @override
   Widget build(BuildContext context) {
     final service = context.watch<BusinessService>();
+    context.watch<ClientService>();
 
     return service.hasBusiness
       ? _selectBusiness(context, service)
@@ -55,6 +66,11 @@ class _BusinessSelectorState extends State<BusinessSelector> {
   /// A master's device sees its one company: nothing to switch to or create,
   /// so the anchor only shows it.
   bool get _single => CapabilityService().singleCompany;
+
+  /// The invitations waiting for an answer. Never on a master's devices: its
+  /// one company is the only one there is.
+  List<EmploymentInvitation> _invitations(BuildContext context) =>
+    _single ? const [] : context.read<ClientService>().invitations;
 
   // -- Anchor --
 
@@ -102,14 +118,22 @@ class _BusinessSelectorState extends State<BusinessSelector> {
       )),
       if (_single) SizedBox(width: AppSize.spaceXS) else SizedBox(
         width: AppSize.button,
-        child: AnimatedRotation(
-          turns: _showing ? 0.5 : 0,
-          duration: const Duration(milliseconds: 150),
-          child: Icon(
-            CI.arrow_down,
-            color: ThemeColor.of(context).text.secondary
+        child: Stack(alignment: Alignment.center, children: [
+          AnimatedRotation(
+            turns: _showing ? 0.5 : 0,
+            duration: const Duration(milliseconds: 150),
+            child: Icon(
+              CI.arrow_down,
+              color: ThemeColor.of(context).text.secondary
+            )
+          ),
+          // An invitation is only listed inside: the dot says to look.
+          if (_invitations(context).isNotEmpty) Positioned(
+            top: AppSize.gap,
+            right: AppSize.gap,
+            child: _dot(context)
           )
-        )
+        ])
       )
     ]
   );
@@ -128,10 +152,22 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     label: business.name
   );
 
+  /// The same dot [BadgeMark] draws for news.
+  Widget _dot(BuildContext context) => Container(
+    width: AppSize.gap * 1.6,
+    height: AppSize.gap * 1.6,
+    decoration: BoxDecoration(
+      color: badgeColor(context, BadgeLevel.info),
+      shape: BoxShape.circle
+    )
+  );
+
   // -- Dropdown --
 
   Widget _dropdown(BuildContext context, BusinessService service) {
-    final geometry = _geometry(service);
+    final invitations = _invitations(context);
+    final count = service.businesses.length;
+    final geometry = _geometry(service, invitations.length);
     if (geometry == null) return const SizedBox.shrink();
 
     return Stack(children: [
@@ -157,15 +193,13 @@ class _BusinessSelectorState extends State<BusinessSelector> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    for (int i = 0; i < service.businesses.length; i++)
+                    for (int i = 0; i < count; i++)
                       _option(context, service, service.businesses[i], i),
-                    Separator.horizontal(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: AppSize.padding,
-                        vertical: AppSize.gap
-                      )
-                    ),
-                    _createOption(context, service.businesses.length)
+                    _separator(),
+                    for (int i = 0; i < invitations.length; i++)
+                      _invitationOption(context, invitations[i], count + i),
+                    if (invitations.isNotEmpty) _separator(),
+                    _createOption(context, count + invitations.length)
                   ])
               )
             )
@@ -214,6 +248,75 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     );
   }
 
+  Widget _separator() => Separator.horizontal(
+    margin: EdgeInsets.symmetric(
+      horizontal: AppSize.padding,
+      vertical: AppSize.gap
+    )
+  );
+
+  /// A company that invited the person, drawn like the ones they work at: once
+  /// accepted it is one more to switch to. [overlay] as in [_createOption].
+  Widget _invitationOption(BuildContext overlay, EmploymentInvitation invitation, int index) => _Hoverable(
+    index: index,
+    highlighted: _highlighted,
+    onHover: (value) => setState(() => _highlighted = value),
+    onTap: () {
+      _close();
+      _reviewInvitation(context, invitation);
+    },
+    child: Row(children: [
+      ProfilePicture(
+        kind: ProfileKind.business,
+        url: invitation.businessLogo?.thumbnail,
+        size: AppSize.action - AppSize.spaceXS,
+        label: invitation.businessName
+      ),
+      Expanded(child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: AppSize.spaceXS),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextMedium(invitation.businessName, ellipsis: true),
+            TextSmall(S.of(overlay).business_selector_invitation, ellipsis: true)
+          ])
+      )),
+      _dot(overlay)
+    ])
+  );
+
+  /// Accepting re-reads `/init`, as the welcome does, for the company the
+  /// person now works at, and switches to it: they picked it just now.
+  Future<void> _reviewInvitation(BuildContext context, EmploymentInvitation invitation) async {
+    final accepted = await showModal(
+      context: context,
+      title: S.of(context).welcome_invitation_modal_title,
+      builder: (context) => InvitationModal(invitation: invitation)
+    );
+
+    if (accepted != true || !context.mounted) return;
+
+    final businesses = context.read<BusinessService>();
+    final route = await context.read<ClientService>().resolve();
+    if (!context.mounted) return;
+
+    // The session failed while re-reading, or another task now comes first.
+    // Other invitations still pending stay here, not on the welcome.
+    if (route != null && route != Welcome.path) {
+      Navis.pushAndClearStack(context, route);
+      return;
+    }
+
+    for (final business in businesses.businesses) {
+      if (business.cloudKey == invitation.businessId) {
+        businesses.selectBusiness(business.id);
+        break;
+      }
+    }
+  }
+
   /// [overlay] only serves to paint: when pressed the dropdown closes and that
   /// context is left unmounted, so the modal is opened with the selector's one.
   Widget _createOption(BuildContext overlay, int index) => _Hoverable(
@@ -236,7 +339,7 @@ class _BusinessSelectorState extends State<BusinessSelector> {
 
   /// Recalculated on each build of the overlay, so the dropdown reacts to
   /// window size changes.
-  _DropdownGeometry? _geometry(BusinessService service) {
+  _DropdownGeometry? _geometry(BusinessService service, int invitations) {
     final box = _anchor.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || !box.hasSize) return null;
 
@@ -249,10 +352,11 @@ class _BusinessSelectorState extends State<BusinessSelector> {
     final below = (media.size.height - margin) - bottom - AppSize.gap;
     final above = top - (media.padding.top + margin) - AppSize.gap;
 
-    // Businesses + separator + the create option.
+    // Businesses + separator + invitations (+ their separator) + the create option.
+    final separators = invitations > 0 ? 2 : 1;
     final desired = (AppSize.gap * 2)
-      + (_optionHeight * (service.businesses.length + 1))
-      + (AppSize.gap * 2) + 1;
+      + (_optionHeight * (service.businesses.length + invitations + 1))
+      + ((AppSize.gap * 2) + 1) * separators;
 
     // It goes down unless it does not fit and there is more room up; in the
     // header the anchor is at the top, so it almost always goes down.

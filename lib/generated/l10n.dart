@@ -740,6 +740,16 @@ class S {
     );
   }
 
+  /// `Invited you · Review`
+  String get business_selector_invitation {
+    return Intl.message(
+      'Invited you · Review',
+      name: 'business_selector_invitation',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Write a name`
   String get write_a_name {
     return Intl.message(

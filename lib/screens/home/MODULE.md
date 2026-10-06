@@ -43,8 +43,9 @@
 - `badges/badge_notes.dart` — `BadgeNotes({place, padding})`: what a place has pending in words, one tinted line per badge, on top of the page the dot leads to.
 - `badges/badge_title.dart` — `badgeTitle(context, badge)`: the badge's `title` l10n key → `S`; an unknown one → `badge_unknown`.
 - `badges/badge_route.dart` — `badgeRoute(badge, business:)`: the app page that clears a badge, by its most specific anchor; `null` = none yet.
-- `header/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation; with
-  `CapabilityService.singleCompany` only shows the one company.
+- `header/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation; lists the
+  pending invitations (`ClientService.invitations`, a dot on the anchor) and opens `InvitationModal` (accepted →
+  re-`resolve()`s and switches to it); with `CapabilityService.singleCompany` only shows the one company.
 - `sections/_sections.dart` — **section registry**: `enum HomeSection` (`key path icon`; `dashboard
   business inventory services channels connections messages deliveries sales finance marketing report externalServices
   server`), groups `.home` (dashboard, business, messages, deliveries, sales; untitled) `.products`

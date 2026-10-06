@@ -68,6 +68,7 @@
   "write_here": "Write here...",
   "select_a_service": "Select a service",
   "create_business": "Create business",
+  "business_selector_invitation": "Invited you · Review",
   "write_a_name": "Write a name",
   "billing_day": "Day",
   "amount": "Amount",
