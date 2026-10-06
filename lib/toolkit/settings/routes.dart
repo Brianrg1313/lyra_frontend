@@ -6,6 +6,7 @@ import 'package:app/screens/authentication/_authentication.dart';
 import 'package:app/screens/authentication/code/_code.dart';
 import 'package:app/screens/home/_home.dart';
 import 'package:app/screens/pos/_pos.dart';
+import 'package:app/screens/pre_start/two_factor/_two_factor.dart';
 import 'package:app/screens/pre_start/welcome/_welcome.dart';
 import 'package:app/screens/pre_start/deployment/master/_master.dart';
 import 'package:app/screens/pre_start/deployment/pair/_pair.dart';
@@ -53,6 +54,12 @@ final List<ScreenRoute> routes = [
   ),
   // Pre-start tasks (`/init`'s `tasks`, see `ClientTask`): standalone pages
   // shown instead of the home until the task is done.
+  ScreenRoute(
+    animation: _animation,
+    key: TwoFactorCheck.routeKey,
+    url: TwoFactorCheck.path,
+    page: (_) => const TwoFactorCheck()
+  ),
   ScreenRoute(
     animation: _animation,
     key: Welcome.routeKey,

@@ -8,6 +8,7 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 
 | key | url | task |
 |---|---|---|
+| `two_factor` | `/two_factor` | `security.two_factor` (exclusive: `/init` holds everything else back) |
 | `welcome` | `/welcome` | `business.none`, `employment.invitation` |
 | `deployment_master` | `/deployment/master` | making this computer the server (`parents: ["login"]`, offered by the sign in) |
 | `deployment_pair` | `/deployment/pair` | pairing with a server (`parents: ["login"]`; a browser on a master's page starts here) |
@@ -15,6 +16,10 @@ deployment and LAN pages (`docs/plan-offline-lan.md` §7.4). Standalone routes, 
 
 ## Files
 
+- `two_factor/_two_factor.dart` — `TwoFactorCheck extends PageBuilder` (`routeKey`, `path`).
+- `two_factor/desktop/_body.dart` — `DesktopBody`: the sign in's frame; the method from `ClientService.tasks` (none → back to `/`);
+  6-digit code submitted once full, or a recovery code (app); a new code (email, `two_factor/code`); sign out; `two_factor/verify` →
+  `resolve()` again → its redirect or the home.
 - `welcome/_welcome.dart` — `Welcome extends PageBuilder` (`routeKey`, `path`).
 - `welcome/desktop/_body.dart` — `DesktopBody`: avatar, greeting, one `InvitationCard` per pending invitation (opens `InvitationModal`; accepted → re-`resolve()`s and always goes to `/home`), then (only
   with no company) a `WelcomeOption` to create (`CreateBusinessModal` in a `showImageModal` headed by `gradient-2.png`; on `true` re-`resolve()`s and navigates) and two

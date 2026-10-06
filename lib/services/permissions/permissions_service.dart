@@ -43,7 +43,7 @@ class PermissionsService extends ChangeNotifier {
 
   /// Areas of scope `account`: they do not depend on a company, so the backend does not
   /// send them and they are never filtered.
-  static const Set<String> _accountAreas = {"dashboard"};
+  static const Set<String> _accountAreas = {"dashboard", "account"};
 
   /// Company id → its granted tree.
   Map<String, Map> _companies = const {};

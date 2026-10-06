@@ -19,7 +19,7 @@ master's devices, and online on any computer, which creates one there (`docs/pla
 - `widgets/pairing_panel.dart` — `PairingPanel`: an open pairing's code (Bebas), QR and time left counted from
   `expires`; expired → "New code".
 - `widgets/status_dot.dart` — `StatusDot`: filled when on, outlined when off; device rows and `ServerConnection`.
-- `widgets/pairing_qr.dart` — `PairingQr`: the pairing QR painted from `package:qr`, always black on white.
+- `widgets/pairing_qr.dart` — `PairingQr`: the pairing QR painted from `package:qr`, always black on white. Also draws the authenticator app's QR (`modals/business/two_factor`).
 - `widgets/server_connection.dart` — `ServerConnection`: a bordered strip for a session opened online (`HybridService.joined`),
   online or offline by choice (`StatusDot`), "work offline" / "work online" (reopens the cloud socket), and the owner's "join with your company online" while unlinked;
   for a session on the master alone, "the internet is back" with "sign in online" (`showOnlineSignIn`) while `HybridService.canGoOnline`.

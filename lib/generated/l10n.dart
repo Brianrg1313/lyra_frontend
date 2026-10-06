@@ -4873,6 +4873,1159 @@ class S {
     );
   }
 
+  /// `Your account: language, security, devices, notifications, privacy and the companies you worked for.`
+  String get employee_action_settings_own_description {
+    return Intl.message(
+      'Your account: language, security, devices, notifications, privacy and the companies you worked for.',
+      name: 'employee_action_settings_own_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coming soon`
+  String get account_soon {
+    return Intl.message(
+      'Coming soon',
+      name: 'account_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Needs the internet: it lives in your online account.`
+  String get account_needs_internet {
+    return Intl.message(
+      'Needs the internet: it lives in your online account.',
+      name: 'account_needs_internet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get account_retry {
+    return Intl.message(
+      'Try again',
+      name: 'account_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Preferences`
+  String get account_preferences_title {
+    return Intl.message(
+      'Preferences',
+      name: 'account_preferences_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How Lyra looks and speaks on this device.`
+  String get account_preferences_subtitle {
+    return Intl.message(
+      'How Lyra looks and speaks on this device.',
+      name: 'account_preferences_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Language`
+  String get account_language {
+    return Intl.message(
+      'Language',
+      name: 'account_language',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Appearance`
+  String get account_theme {
+    return Intl.message(
+      'Appearance',
+      name: 'account_theme',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Same as the system`
+  String get account_theme_system {
+    return Intl.message(
+      'Same as the system',
+      name: 'account_theme_system',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Light`
+  String get account_theme_light {
+    return Intl.message(
+      'Light',
+      name: 'account_theme_light',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dark`
+  String get account_theme_dark {
+    return Intl.message(
+      'Dark',
+      name: 'account_theme_dark',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Security`
+  String get account_security_title {
+    return Intl.message(
+      'Security',
+      name: 'account_security_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How you prove it's you when you sign in.`
+  String get account_security_subtitle {
+    return Intl.message(
+      'How you prove it\'s you when you sign in.',
+      name: 'account_security_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't read your security settings.`
+  String get account_security_error {
+    return Intl.message(
+      'Couldn\'t read your security settings.',
+      name: 'account_security_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password`
+  String get account_password {
+    return Intl.message(
+      'Password',
+      name: 'account_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your account has a password`
+  String get account_password_set {
+    return Intl.message(
+      'Your account has a password',
+      name: 'account_password_set',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in with a password instead of an emailed code`
+  String get account_password_unknown {
+    return Intl.message(
+      'Sign in with a password instead of an emailed code',
+      name: 'account_password_unknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create password`
+  String get account_password_create {
+    return Intl.message(
+      'Create password',
+      name: 'account_password_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Changing a password you already have is coming soon.`
+  String get account_password_change_soon {
+    return Intl.message(
+      'Changing a password you already have is coming soon.',
+      name: 'account_password_change_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create a password`
+  String get account_password_title {
+    return Intl.message(
+      'Create a password',
+      name: 'account_password_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From now on you'll sign in with your email and this password, instead of a code sent to your email.`
+  String get account_password_subtitle {
+    return Intl.message(
+      'From now on you\'ll sign in with your email and this password, instead of a code sent to your email.',
+      name: 'account_password_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password created`
+  String get account_password_created {
+    return Intl.message(
+      'Password created',
+      name: 'account_password_created',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Two-step verification`
+  String get account_two_factor {
+    return Intl.message(
+      'Two-step verification',
+      name: 'account_two_factor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Off`
+  String get account_two_factor_off {
+    return Intl.message(
+      'Off',
+      name: 'account_two_factor_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On: authenticator app`
+  String get account_two_factor_app {
+    return Intl.message(
+      'On: authenticator app',
+      name: 'account_two_factor_app',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On: code by email`
+  String get account_two_factor_email {
+    return Intl.message(
+      'On: code by email',
+      name: 'account_two_factor_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `After your password or code, Lyra asks for a second code.`
+  String get account_two_factor_hint {
+    return Intl.message(
+      'After your password or code, Lyra asks for a second code.',
+      name: 'account_two_factor_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on`
+  String get account_two_factor_turn_on {
+    return Intl.message(
+      'Turn on',
+      name: 'account_two_factor_turn_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change method`
+  String get account_two_factor_change {
+    return Intl.message(
+      'Change method',
+      name: 'account_two_factor_change',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn off`
+  String get account_two_factor_turn_off {
+    return Intl.message(
+      'Turn off',
+      name: 'account_two_factor_turn_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recovery codes`
+  String get account_recovery_codes {
+    return Intl.message(
+      'Recovery codes',
+      name: 'account_recovery_codes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =0{None left} =1{1 code left} other{{count} codes left}}`
+  String account_recovery_left(num count) {
+    return Intl.plural(
+      count,
+      zero: 'None left',
+      one: '1 code left',
+      other: '$count codes left',
+      name: 'account_recovery_left',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Each one signs you in once, if you can't use your authenticator app.`
+  String get account_recovery_hint {
+    return Intl.message(
+      'Each one signs you in once, if you can\'t use your authenticator app.',
+      name: 'account_recovery_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Make new codes`
+  String get account_recovery_new {
+    return Intl.message(
+      'Make new codes',
+      name: 'account_recovery_new',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Text message (SMS)`
+  String get account_sms {
+    return Intl.message(
+      'Text message (SMS)',
+      name: 'account_sms',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A code sent to your phone as a second step.`
+  String get account_sms_hint {
+    return Intl.message(
+      'A code sent to your phone as a second step.',
+      name: 'account_sms_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recovery emails`
+  String get account_recovery_emails {
+    return Intl.message(
+      'Recovery emails',
+      name: 'account_recovery_emails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other addresses to get back into your account.`
+  String get account_recovery_emails_hint {
+    return Intl.message(
+      'Other addresses to get back into your account.',
+      name: 'account_recovery_emails_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign-in methods`
+  String get account_methods_title {
+    return Intl.message(
+      'Sign-in methods',
+      name: 'account_methods_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The ways you can enter your account.`
+  String get account_methods_subtitle {
+    return Intl.message(
+      'The ways you can enter your account.',
+      name: 'account_methods_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email`
+  String get account_methods_email {
+    return Intl.message(
+      'Email',
+      name: 'account_methods_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your sign-in address. It is changed from your account, not from a company.`
+  String get account_methods_email_hint {
+    return Intl.message(
+      'Your sign-in address. It is changed from your account, not from a company.',
+      name: 'account_methods_email_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Google`
+  String get account_methods_google {
+    return Intl.message(
+      'Google',
+      name: 'account_methods_google',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Apple`
+  String get account_methods_apple {
+    return Intl.message(
+      'Apple',
+      name: 'account_methods_apple',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Microsoft`
+  String get account_methods_microsoft {
+    return Intl.message(
+      'Microsoft',
+      name: 'account_methods_microsoft',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in with this account instead of your email.`
+  String get account_methods_linked_hint {
+    return Intl.message(
+      'Sign in with this account instead of your email.',
+      name: 'account_methods_linked_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Devices and sessions`
+  String get account_sessions_title {
+    return Intl.message(
+      'Devices and sessions',
+      name: 'account_sessions_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where your account is signed in.`
+  String get account_sessions_subtitle {
+    return Intl.message(
+      'Where your account is signed in.',
+      name: 'account_sessions_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device`
+  String get account_sessions_this {
+    return Intl.message(
+      'This device',
+      name: 'account_sessions_this',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Signed in now.`
+  String get account_sessions_this_hint {
+    return Intl.message(
+      'Signed in now.',
+      name: 'account_sessions_this_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other devices`
+  String get account_sessions_others {
+    return Intl.message(
+      'Other devices',
+      name: 'account_sessions_others',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `See the sessions open elsewhere and close them.`
+  String get account_sessions_others_hint {
+    return Intl.message(
+      'See the sessions open elsewhere and close them.',
+      name: 'account_sessions_others_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Windows`
+  String get account_sessions_platform_windows {
+    return Intl.message(
+      'Windows',
+      name: 'account_sessions_platform_windows',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `macOS`
+  String get account_sessions_platform_macos {
+    return Intl.message(
+      'macOS',
+      name: 'account_sessions_platform_macos',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Linux`
+  String get account_sessions_platform_linux {
+    return Intl.message(
+      'Linux',
+      name: 'account_sessions_platform_linux',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Android`
+  String get account_sessions_platform_android {
+    return Intl.message(
+      'Android',
+      name: 'account_sessions_platform_android',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `iPhone or iPad`
+  String get account_sessions_platform_ios {
+    return Intl.message(
+      'iPhone or iPad',
+      name: 'account_sessions_platform_ios',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Web browser`
+  String get account_sessions_platform_web {
+    return Intl.message(
+      'Web browser',
+      name: 'account_sessions_platform_web',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notifications`
+  String get account_notifications_title {
+    return Intl.message(
+      'Notifications',
+      name: 'account_notifications_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What Lyra tells you, and where.`
+  String get account_notifications_subtitle {
+    return Intl.message(
+      'What Lyra tells you, and where.',
+      name: 'account_notifications_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In the app`
+  String get account_notifications_app {
+    return Intl.message(
+      'In the app',
+      name: 'account_notifications_app',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Alerts and notices while you use Lyra.`
+  String get account_notifications_app_hint {
+    return Intl.message(
+      'Alerts and notices while you use Lyra.',
+      name: 'account_notifications_app_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By email`
+  String get account_notifications_email {
+    return Intl.message(
+      'By email',
+      name: 'account_notifications_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Summaries and notices sent to your email.`
+  String get account_notifications_email_hint {
+    return Intl.message(
+      'Summaries and notices sent to your email.',
+      name: 'account_notifications_email_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On your phone`
+  String get account_notifications_push {
+    return Intl.message(
+      'On your phone',
+      name: 'account_notifications_push',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notices on your phone, even with Lyra closed.`
+  String get account_notifications_push_hint {
+    return Intl.message(
+      'Notices on your phone, even with Lyra closed.',
+      name: 'account_notifications_push_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy`
+  String get account_privacy_title {
+    return Intl.message(
+      'Privacy',
+      name: 'account_privacy_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your optional personal details, and who in your company can see them.`
+  String get account_privacy_subtitle {
+    return Intl.message(
+      'Your optional personal details, and who in your company can see them.',
+      name: 'account_privacy_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Optional personal details`
+  String get account_privacy_details {
+    return Intl.message(
+      'Optional personal details',
+      name: 'account_privacy_details',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose which of the optional details you added your company's human resources can see.`
+  String get account_privacy_details_hint {
+    return Intl.message(
+      'Choose which of the optional details you added your company\'s human resources can see.',
+      name: 'account_privacy_details_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your status`
+  String get account_privacy_presence {
+    return Intl.message(
+      'Your status',
+      name: 'account_privacy_presence',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose whether your team sees if you're working, away or off today.`
+  String get account_privacy_presence_hint {
+    return Intl.message(
+      'Choose whether your team sees if you\'re working, away or off today.',
+      name: 'account_privacy_presence_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Work history`
+  String get account_history_title {
+    return Intl.message(
+      'Work history',
+      name: 'account_history_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The companies you work or worked for.`
+  String get account_history_subtitle {
+    return Intl.message(
+      'The companies you work or worked for.',
+      name: 'account_history_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No companies yet.`
+  String get account_history_empty {
+    return Intl.message(
+      'No companies yet.',
+      name: 'account_history_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't load your work history.`
+  String get account_history_error {
+    return Intl.message(
+      'Couldn\'t load your work history.',
+      name: 'account_history_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current`
+  String get account_history_current {
+    return Intl.message(
+      'Current',
+      name: 'account_history_current',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Since {date}`
+  String account_history_since(Object date) {
+    return Intl.message(
+      'Since $date',
+      name: 'account_history_since',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Two-step verification`
+  String get two_factor_choose_title {
+    return Intl.message(
+      'Two-step verification',
+      name: 'two_factor_choose_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose how Lyra asks for your second code.`
+  String get two_factor_choose_subtitle {
+    return Intl.message(
+      'Choose how Lyra asks for your second code.',
+      name: 'two_factor_choose_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authenticator app`
+  String get two_factor_choose_app {
+    return Intl.message(
+      'Authenticator app',
+      name: 'two_factor_choose_app',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A code from an app on your phone. Works without signal, and comes with recovery codes.`
+  String get two_factor_choose_app_hint {
+    return Intl.message(
+      'A code from an app on your phone. Works without signal, and comes with recovery codes.',
+      name: 'two_factor_choose_app_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Code by email`
+  String get two_factor_choose_email {
+    return Intl.message(
+      'Code by email',
+      name: 'two_factor_choose_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A code sent to your sign-in email each time you sign in.`
+  String get two_factor_choose_email_hint {
+    return Intl.message(
+      'A code sent to your sign-in email each time you sign in.',
+      name: 'two_factor_choose_email_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In use`
+  String get two_factor_choose_current {
+    return Intl.message(
+      'In use',
+      name: 'two_factor_choose_current',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan this code with an authenticator app.`
+  String get two_factor_app_scan {
+    return Intl.message(
+      'Scan this code with an authenticator app.',
+      name: 'two_factor_app_scan',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Or type this key in the app`
+  String get two_factor_app_manual {
+    return Intl.message(
+      'Or type this key in the app',
+      name: 'two_factor_app_manual',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy key`
+  String get two_factor_app_copy {
+    return Intl.message(
+      'Copy key',
+      name: 'two_factor_app_copy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Then type the 6-digit code the app shows.`
+  String get two_factor_app_code {
+    return Intl.message(
+      'Then type the 6-digit code the app shows.',
+      name: 'two_factor_app_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We sent a 6-digit code to {email}. Type it to turn it on.`
+  String two_factor_email_sent(Object email) {
+    return Intl.message(
+      'We sent a 6-digit code to $email. Type it to turn it on.',
+      name: 'two_factor_email_sent',
+      desc: '',
+      args: [email],
+    );
+  }
+
+  /// `Send a new code`
+  String get two_factor_resend {
+    return Intl.message(
+      'Send a new code',
+      name: 'two_factor_resend',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on`
+  String get two_factor_turn_on {
+    return Intl.message(
+      'Turn on',
+      name: 'two_factor_turn_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm it's you`
+  String get two_factor_proof_title {
+    return Intl.message(
+      'Confirm it\'s you',
+      name: 'two_factor_proof_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type the code your authenticator app shows now.`
+  String get two_factor_proof_app {
+    return Intl.message(
+      'Type the code your authenticator app shows now.',
+      name: 'two_factor_proof_app',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We sent a 6-digit code to your email. Type it to continue.`
+  String get two_factor_proof_email {
+    return Intl.message(
+      'We sent a 6-digit code to your email. Type it to continue.',
+      name: 'two_factor_proof_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use a recovery code`
+  String get two_factor_use_recovery {
+    return Intl.message(
+      'Use a recovery code',
+      name: 'two_factor_use_recovery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use a code instead`
+  String get two_factor_use_code {
+    return Intl.message(
+      'Use a code instead',
+      name: 'two_factor_use_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recovery code`
+  String get two_factor_recovery_input {
+    return Intl.message(
+      'Recovery code',
+      name: 'two_factor_recovery_input',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue`
+  String get two_factor_continue {
+    return Intl.message(
+      'Continue',
+      name: 'two_factor_continue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your recovery codes`
+  String get two_factor_codes_title {
+    return Intl.message(
+      'Your recovery codes',
+      name: 'two_factor_codes_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Keep them somewhere safe. Each one signs you in once if you can't use your app, and this is the only time they are shown.`
+  String get two_factor_codes_subtitle {
+    return Intl.message(
+      'Keep them somewhere safe. Each one signs you in once if you can\'t use your app, and this is the only time they are shown.',
+      name: 'two_factor_codes_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy all`
+  String get two_factor_codes_copy {
+    return Intl.message(
+      'Copy all',
+      name: 'two_factor_codes_copy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copied`
+  String get two_factor_codes_copied {
+    return Intl.message(
+      'Copied',
+      name: 'two_factor_codes_copied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I saved them`
+  String get two_factor_codes_done {
+    return Intl.message(
+      'I saved them',
+      name: 'two_factor_codes_done',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn off two-step verification?`
+  String get two_factor_off_title {
+    return Intl.message(
+      'Turn off two-step verification?',
+      name: 'two_factor_off_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Signing in will ask only for your password or emailed code.`
+  String get two_factor_off_body {
+    return Intl.message(
+      'Signing in will ask only for your password or emailed code.',
+      name: 'two_factor_off_body',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Two-step verification is on`
+  String get two_factor_turned_on {
+    return Intl.message(
+      'Two-step verification is on',
+      name: 'two_factor_turned_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Two-step verification is off`
+  String get two_factor_turned_off {
+    return Intl.message(
+      'Two-step verification is off',
+      name: 'two_factor_turned_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New recovery codes made. The old ones no longer work.`
+  String get two_factor_codes_renewed {
+    return Intl.message(
+      'New recovery codes made. The old ones no longer work.',
+      name: 'two_factor_codes_renewed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Two-step verification`
+  String get two_factor_check_title {
+    return Intl.message(
+      'Two-step verification',
+      name: 'two_factor_check_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type the 6-digit code your authenticator app shows.`
+  String get two_factor_check_app {
+    return Intl.message(
+      'Type the 6-digit code your authenticator app shows.',
+      name: 'two_factor_check_app',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type the 6-digit code we sent to your email.`
+  String get two_factor_check_email {
+    return Intl.message(
+      'Type the 6-digit code we sent to your email.',
+      name: 'two_factor_check_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type one of the recovery codes you saved when you turned it on.`
+  String get two_factor_check_recovery {
+    return Intl.message(
+      'Type one of the recovery codes you saved when you turned it on.',
+      name: 'two_factor_check_recovery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checking…`
+  String get two_factor_check_verifying {
+    return Intl.message(
+      'Checking…',
+      name: 'two_factor_check_verifying',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We sent a new code.`
+  String get two_factor_check_sent {
+    return Intl.message(
+      'We sent a new code.',
+      name: 'two_factor_check_sent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Day`
   String get employee_edit_day {
     return Intl.message(

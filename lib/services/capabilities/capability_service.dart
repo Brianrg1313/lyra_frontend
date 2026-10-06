@@ -54,6 +54,9 @@ class CapabilityService extends ChangeNotifier {
   /// in `hybrid` open while the internet is.
   static const Map<String, Set<DeploymentMode>> modes = {
     "dashboard": _all,
+    "account": _all,
+    "account.security": _online,
+    "account.history": _online,
     "business": _all,
     "business.delete": _online,
     "business.statistics": _all,
@@ -96,6 +99,7 @@ class CapabilityService extends ChangeNotifier {
   /// accounting export). Goes away when phase 4 ends.
   static const Set<String> _builtOnMaster = {
     "dashboard",
+    "account",
     "business",
     "business.statistics",
     "business.employees",

@@ -23,7 +23,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
   A service takes `{XSource? source}` for tests and otherwise reads `Sources.<x>`
   (`lib/toolkit/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
   domains (chats, channels, connections, maps, baileys, places, money AI, sign up, business
-  e-mails, badges) are not split.
+  e-mails, badges, account) are not split.
 
 ## local_server/ — the master's engine (`lyra_node`), desktop only
 
@@ -187,7 +187,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   the master; sign in goes through `LanService` (`AuthMaster`), so identify/sign in/invitations throw; requests through `permissions.requests.*`.
 - `client_model.dart` — `ClientModel`.
 - `employment_invitation_model.dart` — `EmploymentInvitation`: one invitation of the `employment.invitation` task.
-- `client_task.dart` — `ClientTask` (`invitations`), `ClientTaskKey` (backend key → pre-start route; `null` = no screen yet): `/init`'s `tasks`.
+- `client_task.dart` — `ClientTask` (`invitations`, `method`), `ClientTaskKey` (backend key → pre-start route; `null` = no screen yet): `/init`'s `tasks`.
+  `security.two_factor` is exclusive: `resolve` returns `/two_factor` before seeding anything (that `/init` carries nothing else).
 
 ## connection/ — the realtime link (singular)
 
@@ -262,7 +263,7 @@ See `baileys_server/MODULE.md` for the server side.
 
 - `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree of the
   ids of `docs/app-areas.json`; a master answers the same tree, `session.md` S-34). `can(id)`, `canOpen(area)`, `granted(area)` (its granted actions, `null` = all) on the active company by default; absent on the path = denied, account
-  areas (`dashboard`) always open, `local_server` open in the cloud (this computer's, not a company's), not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`; `owns()` (created here, or in a master's `owned`). Cleared on sign out.
+  areas (`dashboard`, `account`) always open, `local_server` open in the cloud (this computer's, not a company's), not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`; `owns()` (created here, or in a master's `owned`). Cleared on sign out.
 - `permission_requests_service.dart` — `PermissionRequestsService` (+ status): `GET`/`POST /permissions/requests/` (active company), `isPending(id)`.
   Owned by `NoPermissionSection`. A `409` rereads the list and `/init` (`refreshCatalogs`) before rethrowing. Seam `seed`.
 - `permission_request_model.dart` — `PermissionRequestModel`, `PermissionRequestState` (`granted` = held now, measured on read).
@@ -292,6 +293,18 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   optimistic, `POST /badges/seen/`), `discover(place)` (its `news` seen), `at(place)`, `clear`. Rereads on
   `badges/changed` / `badges/reset` (gathered 300 ms), `onRestored`, and a company switch (old dots dropped at once).
   Reads are REST, never `badges/get`: after a switch the socket still answers for the previous company. Seam `transport`.
+
+## account/ — the signed-in person's own account (cloud only, `api` direct; owned by `OwnSettings`)
+
+- `two_factor_model.dart` — `TwoFactorMethod` (`app`/`email`), `TwoFactorStatus` (`recoveryLeft` only for the app),
+  `TwoFactorEnrollment` (secret + `otpauth` uri, `groupedSecret`), `TwoFactorProof` (`code`|`recovery`; `body(codeKey:)`:
+  `CODE`, or `CURRENT_CODE` beside a new factor's own), `recoveryCodesFrom`.
+- `account_security_service.dart` — `AccountSecurityService` (+ `AccountSecurityStatus`): `GET /authentication/two_factor`,
+  `stageApp`/`enableApp` (→ recovery codes), `stageEmail`/`enableEmail`, `disable`, `regenerate`, static `sendCode`
+  (`two_factor/code`) and `verify` (`two_factor/verify`, the sign in's task); `createPassword` (`email/sign_up/password`,
+  the first one only; 409 → `hasPassword`). Writes rethrow the backend's error.
+- `employment_record_model.dart` — `EmploymentRecord`: a row of `GET /profile/employments` (compressed, company nested).
+- `account_history_service.dart` — `AccountHistoryService` (+ status): the work history. Seam `seed`.
 
 ## home/
 
@@ -492,7 +505,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 
 ## Backend endpoint index
 
-`/init/` · `/badges/{,seen/}` · `/permissions/requests/` · `/authentication/email/{verify,sign_in/password,sign_in/code,sign_up/code,sign_up/names}/` · `/authentication/logout/` · `/business/{create,profile,logo,emails,emails/verify,payments}/`
+`/init/` · `/badges/{,seen/}` · `/profile/employments/` · `/authentication/two_factor/{,app,email,code,recovery,verify}/` · `/authentication/email/sign_up/password/` · `/permissions/requests/` · `/authentication/email/{verify,sign_in/password,sign_in/code,sign_up/code,sign_up/names}/` · `/authentication/logout/` · `/business/{create,profile,logo,emails,emails/verify,payments}/`
 `/business/employees/{,former/,detail/$id}`
 `/business/location/{,search,place}/` · `/business/delivery/{,options,providers}/`
 `/channels/{,providers/,detail/$id}` · `/connections/{,providers/,detail/$id}`

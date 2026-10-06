@@ -11,6 +11,7 @@ import 'package:app/screens/modals/business/employee_tool/_employee_tool.dart';
 
 import './employee_card.dart';
 import './employee_permissions.dart';
+import './own_settings/_own_settings.dart';
 
 /// The panels about the person that are not data of their card: each opens
 /// beside the detail instead of growing it.
@@ -31,9 +32,12 @@ enum EmployeeAction {
     sales => S.of(context).employee_action_sales
   };
 
-  String description(BuildContext context) => switch (this) {
+  /// [own]: the viewer's card, where the settings are their own account's, not their job's.
+  String description(BuildContext context, {bool own = false}) => switch (this) {
     permissions => S.of(context).employee_action_permissions_description,
-    settings => S.of(context).employee_action_settings_description,
+    settings => own
+      ? S.of(context).employee_action_settings_own_description
+      : S.of(context).employee_action_settings_description,
     activity => S.of(context).employee_action_activity_description,
     sales => S.of(context).employee_action_sales_description
   };
@@ -103,7 +107,7 @@ class _ActionCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
     final label = action.label(context);
-    final description = action.description(context);
+    final description = action.description(context, own: employee.me);
     final box = AppSize.text * 2.2;
 
     return FeedbackButton(
@@ -119,6 +123,8 @@ class _ActionCell extends StatelessWidget {
           EmployeeAction.permissions => (_) => employee.me
             ? const EmployeePermissions()
             : EmployeePermissions(username: employee.username, person: employee.fullName),
+          // One's own account; someone else's job settings have no backend yet.
+          EmployeeAction.settings when employee.me => (_) => const OwnSettings(),
           _ => null
         }
       ),

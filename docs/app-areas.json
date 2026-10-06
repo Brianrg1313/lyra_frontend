@@ -23,6 +23,24 @@
       "status": "placeholder"
     },
     {
+      "key": "account",
+      "title": "My account",
+      "modes": ["cloud", "local", "hybrid"],
+      "scope": "account",
+      "routes": [],
+      "paths": [],
+      "actions": ["view", "security", "history"],
+      "action_notes": {
+        "view": "The person's own settings, from their card in the employees tab: language and theme (this device).",
+        "security": "Password and second factor (authenticator app, email code, recovery codes).",
+        "history": "The companies they worked for (GET /profile/employments)."
+      },
+      "action_modes": {
+        "security": ["cloud"],
+        "history": ["cloud"]
+      }
+    },
+    {
       "key": "business",
       "title": "Business",
       "modes": ["cloud", "local", "hybrid"],
@@ -345,7 +363,7 @@
   ],
   "always_open": {
     "$comment": "Never gated: they come before a company exists or are the person's own.",
-    "routes": ["splash", "login", "auth_code", "welcome"],
+    "routes": ["splash", "login", "auth_code", "two_factor", "welcome"],
     "actions": ["business.create", "invitation.accept"]
   }
 }

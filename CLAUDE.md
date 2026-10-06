@@ -132,7 +132,7 @@ provided by their screen. Load states: `enum XStatus { idle, loading, ready, emp
 (`lib/services/<domain>/sources/`: `XSource` returns models, `XCloudSource` holds the REST
 calls), resolved by `Sources` in `lib/toolkit/deployment.dart`. **Never `api.*` from a service.**
 Only cloud-only services (chats, channels, connections, maps, Baileys, places, money AI, sign up,
-badges) call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
+badges, the person's own account) call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
 
 **Deployment modes** — every area of `docs/app-areas.json` declares `modes`, and
 `CapabilityService.modes` carries the same entry (`test/capabilities_test.dart` enforces it). A new

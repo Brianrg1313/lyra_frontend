@@ -5,7 +5,8 @@ import 'package:app/services/client/employment_invitation_model.dart';
 /// `user/tasks.js`). The backend orders them; the app works the first one it
 /// has a screen for.
 enum ClientTaskKey {
-  twoFactor("security.two_factor"),
+  /// Exclusive: while it is pending `/init` answers nothing else.
+  twoFactor("security.two_factor", route: "/two_factor"),
   /// Same page as [businessNone]: the backend sends one or the other (an
   /// invitation means no `business.none`), and both are "no company yet".
   invitation("employment.invitation", route: "/welcome"),
@@ -34,6 +35,9 @@ class ClientTask {
   final Map<String, dynamic> data;
 
   const ClientTask({required this.key, this.data = const {}});
+
+  /// Only on [ClientTaskKey.twoFactor]: the factor the session owes (`app` or `email`).
+  String? get method => data["method"]?.toString();
 
   /// Only on [ClientTaskKey.invitation]; empty on any other task.
   List<EmploymentInvitation> get invitations =>

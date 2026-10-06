@@ -138,6 +138,15 @@ class ClientService extends ChangeNotifier {
       return signIn;
     }
 
+    // A session that owes its second factor gets the task and nothing else: no profile, no
+    // companies, and no socket would take it. Seeding that empty answer would bind a nameless
+    // account; the page of the task calls this again once the factor is passed.
+    final tasks = ClientTask.listFromJson(clientData["tasks"]);
+    if (tasks.any((task) => task.key == ClientTaskKey.twoFactor)) {
+      _tasks = tasks;
+      return ClientTaskKey.twoFactor.route;
+    }
+
     // The platform configuration goes first: it is with it that the data that
     // comes later is read (in which currency each company invoices, in which
     // country it operates, where its logo is downloaded from), so by the time
@@ -156,7 +165,7 @@ class ClientService extends ChangeNotifier {
     _seedPermissions(clientData);
     BadgesService().seed(clientData["badges"], business: asked);
 
-    _tasks = ClientTask.listFromJson(clientData["tasks"]);
+    _tasks = tasks;
     update(client);
 
     // The session was confirmed by the backend: only here does the socket have
