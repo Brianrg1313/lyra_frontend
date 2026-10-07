@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -7,13 +6,15 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/files/image_file.dart';
 
 // WIDGETS
 import 'package:app/screens/modals/shared/crop_image/_crop_image.dart';
+
+import './profile_header.dart';
 
 /// The company's face: its logo, and from where it's changed.
 ///

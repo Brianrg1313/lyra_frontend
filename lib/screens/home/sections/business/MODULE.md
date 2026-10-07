@@ -19,6 +19,8 @@
 - `detail_header.dart` — `BusinessDetailHeader`: thin wrapper over `SectionTabs`.
 - `statistics/_statistics.dart` — `BusinessStatisticsTab` (default).
 - `branches/_branches.dart` — `BusinessBranchesTab`: heading + add button, card grid of `BusinessBranchesService.branches`; add and a card tap open `showBranchForm` (create / edit).
+- `branches/branches_heading.dart` — `BranchesHeading({onAdd})`: title, subtitle, add button (none when the list failed).
+- `branches/branch_card.dart` — `BranchCard` (`grid`: the grid's delegate): icon, name, main tag, kind, address, phone.
 - `clients/_clients.dart` — `BusinessClientsTab`.
 
 ### employees/ — one `Surface`: the people (left, 3/5) and the selected one's detail (right, 2/5, inset `Surface.line` over `surfaceOver`)
@@ -94,12 +96,12 @@
 - `profile_identity.dart` — `BusinessProfileIdentity`: legal name, handle, activity, fiscal id, incorporation.
 - `profile_incorporation.dart` — `BusinessProfileIncorporation`: year typed, month selected, day typed.
 - `profile_phone.dart` — `BusinessProfilePhone`: country code + number.
-- `profile_emails.dart` — `ProfileEmailField`, `ProfileEmailAdd`.
+- `profile_email_field.dart` — `ProfileEmailField`. `profile_email_add.dart` — `ProfileEmailAdd`.
 - `profile_website.dart` — `BusinessProfileWebsite`: the only external link (`url_launcher`).
 - `profile_id.dart` — `BusinessProfileId`: hidden id, reveal + copy.
 - `profile_danger.dart` — `BusinessProfileDanger`: delete the business.
-- `profile_block.dart` — `ProfileBlock`, `ProfileFieldList`: a group over a surface.
-- `profile_field.dart` — `ProfileFieldFrame` (`badge`: a dot after the name), `ProfileField`, `ProfileTextAction`, `ProfileAction`: row primitives.
+- `profile_block.dart` — `ProfileBlock`: a group over a surface. `profile_field_list.dart` — `ProfileFieldList`: its rows.
+- Row primitives: `profile_field_frame.dart` — `ProfileFieldFrame` (`badge`: a dot after the name); `profile_field.dart` — `ProfileField`; `profile_text_action.dart` — `ProfileTextAction`; `profile_action.dart` — `ProfileAction`.
 - `profile_select.dart` — `ProfileSelectField`: `SelectInput` row edited in place (sector, language; the country with `BadgePlace.countryField`). No currency here: it lives in the finance section (payment methods tab).
 - `profile_tag.dart` — `ProfileTag`: state chip.
 - `country_flag.dart` — `CountryFlag`.

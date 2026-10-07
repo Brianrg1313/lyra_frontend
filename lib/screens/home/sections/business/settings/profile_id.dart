@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:app/toolkit/toolkit.dart';
 
-import 'profile_field.dart';
+import './profile_action.dart';
+import './profile_field_frame.dart';
 
 /// The company identifier: hidden, with what to unhide it and what to copy
 /// it with.

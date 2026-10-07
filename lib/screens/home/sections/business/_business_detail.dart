@@ -7,20 +7,20 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/business/business_branches_service.dart';
 import 'package:app/services/business/business_employees_service.dart';
-import 'package:app/services/business/business_service.dart';
 import 'package:app/services/business/business_model.dart';
-import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/services/business/business_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/business_listener.dart';
 import 'package:app/screens/home/sections/_section/no_permission.dart';
-import 'package:app/screens/home/sections/_section/unavailable.dart';
 import 'package:app/screens/home/sections/_section/page_switcher.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/_section/unavailable.dart';
 
-import 'business_tab.dart';
-import 'detail_header.dart';
+import './business_tab.dart';
+import './detail_header.dart';
 
 /// The business: it is the content of the `business` section of the home.
 ///

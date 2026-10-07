@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/toolkit/lan_image.dart';
 
 // SERVICES
 import 'package:app/services/catalog/country_model.dart';
+import 'package:app/toolkit/lan_image.dart';
 
 /// A country's flag, the size of a row.
 ///

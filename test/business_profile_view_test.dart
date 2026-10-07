@@ -12,8 +12,6 @@ import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/screens/home/sections/business/settings/profile_details.dart';
-import 'package:app/screens/home/sections/business/settings/profile_field.dart';
-import 'package:app/screens/home/sections/business/settings/profile_emails.dart';
 import 'package:app/screens/home/sections/business/settings/profile_header.dart';
 import 'package:app/screens/home/sections/business/settings/profile_identity.dart';
 import 'package:app/screens/home/sections/business/settings/profile_tag.dart';
@@ -22,6 +20,9 @@ import 'package:app/screens/home/sections/business/settings/profile_incorporatio
 import 'package:app/screens/home/sections/business/settings/profile_logo.dart';
 import 'package:app/screens/home/sections/business/settings/profile_phone.dart';
 import 'package:app/screens/home/sections/business/settings/profile_website.dart';
+import 'package:app/screens/home/sections/business/settings/profile_email_field.dart';
+import 'package:app/screens/home/sections/business/settings/profile_action.dart';
+import 'package:app/screens/home/sections/business/settings/profile_text_action.dart';
 
 /// Una empresa con todo cargado: es la unica forma de ver todas las filas de la
 /// ficha a la vez, porque un dato que no esta no se dibuja.

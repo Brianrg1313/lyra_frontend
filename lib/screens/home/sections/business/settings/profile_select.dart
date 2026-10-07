@@ -12,7 +12,7 @@ import 'package:app/services/business/business_service.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
-import 'profile_field.dart';
+import './profile_field_frame.dart';
 
 /// A profile datum chosen from a closed list —the sector, the language, the
 /// currency—, with the dropdown in the place of the value.

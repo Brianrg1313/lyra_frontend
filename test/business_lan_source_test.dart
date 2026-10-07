@@ -11,7 +11,6 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/screens/home/sections/business/settings/profile_danger.dart';
 import 'package:app/screens/home/sections/business/settings/profile_details.dart';
-import 'package:app/screens/home/sections/business/settings/profile_emails.dart';
 import 'package:app/screens/home/sections/business/settings/profile_logo.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
@@ -26,6 +25,7 @@ import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/deployment.dart';
+import 'package:app/screens/home/sections/business/settings/profile_email_add.dart';
 
 /// The business release of plan phase 4 on the app's side: what the master answers
 /// (`docs/offline/specs/business.md`, `session.md` session.bootstrap, as `lyra_node` sends it)

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_tabs.dart';
 
-import 'business_tab.dart';
+import './business_tab.dart';
 
 /// Tab bar of a business's page.
 ///

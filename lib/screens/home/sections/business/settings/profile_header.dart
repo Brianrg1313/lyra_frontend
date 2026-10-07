@@ -8,8 +8,9 @@ import 'package:app/services/business/business_profile_model.dart';
 // WIDGETS
 import 'package:app/screens/home/badges/badge_mark.dart';
 
-import 'profile_logo.dart';
-import 'profile_tag.dart';
+import './profile_identity.dart';
+import './profile_logo.dart';
+import './profile_tag.dart';
 
 /// Whose everything that follows is: the company logo and, beside it, its name
 /// up large with what legal status it's in and whether it belongs to whoever is

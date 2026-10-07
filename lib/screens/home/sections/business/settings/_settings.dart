@@ -12,7 +12,7 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/screens/home/badges/badge_notes.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 
-import 'profile_details.dart';
+import './profile_details.dart';
 
 /// Settings tab: how the company is configured. Today that's its profile
 /// —who it is, how it operates, how it's contacted— which is what

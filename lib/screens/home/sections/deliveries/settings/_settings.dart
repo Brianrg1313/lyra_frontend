@@ -7,7 +7,9 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/business/business_delivery_service.dart';
 
-import '../sub_page.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/deliveries/sub_page.dart';
+
 import './settings_body.dart';
 
 /// **Delivery settings**: sub-page of the `deliveries` section

@@ -8,10 +8,11 @@ import 'package:app/services/business/business_profile_model.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
-import 'profile_block.dart';
-import 'profile_field.dart';
-import 'profile_incorporation.dart';
-import 'profile_select.dart';
+import './profile_block.dart';
+import './profile_field.dart';
+import './profile_header.dart';
+import './profile_incorporation.dart';
+import './profile_select.dart';
 
 /// Who the company is on paper: its legal name, its handle, what it does,
 /// which fiscal identifier it answers with and since when it exists.

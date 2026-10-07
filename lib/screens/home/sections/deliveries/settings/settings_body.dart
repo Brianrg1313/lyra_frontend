@@ -11,14 +11,13 @@ import 'package:app/services/business/business_delivery_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/deliveries/area/_area.dart';
 import 'package:app/screens/modals/deliveries/delivery_option/_delivery_option.dart';
 import 'package:app/screens/modals/deliveries/edit_delivery_notes/_edit_delivery_notes.dart';
 
-import '../area/_area.dart';
-
-import 'delivery_format.dart';
-import 'delivery_options.dart';
-import 'delivery_settings.dart';
+import './delivery_format.dart';
+import './delivery_options.dart';
+import './delivery_settings.dart';
 
 /// Body of the delivery settings: whether, how and where the company delivers
 /// (`/business/delivery/`).

@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
-import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/badges/badge_place.dart';
+import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 
-import './branches/_branches.dart';
-import './clients/_clients.dart';
-import './employees/_employees.dart';
-import './settings/_settings.dart';
-import './statistics/_statistics.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/business/branches/_branches.dart';
+import 'package:app/screens/home/sections/business/clients/_clients.dart';
+import 'package:app/screens/home/sections/business/employees/_employees.dart';
+import 'package:app/screens/home/sections/business/settings/_settings.dart';
+import 'package:app/screens/home/sections/business/statistics/_statistics.dart';
 
 /// The parts of a business that can be looked at from its page.
 ///

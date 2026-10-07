@@ -11,8 +11,10 @@ import 'package:app/services/catalog/country_catalog_service.dart';
 // WIDGETS
 import 'package:core/form.dart';
 
-import 'country_flag.dart';
-import 'profile_field.dart';
+import './country_flag.dart';
+import './profile_field_frame.dart';
+import './profile_select.dart';
+import './profile_text_action.dart';
 
 /// The company's phone: the country code is chosen and the number is typed.
 ///

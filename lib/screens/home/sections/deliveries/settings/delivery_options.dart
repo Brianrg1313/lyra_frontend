@@ -7,8 +7,9 @@ import 'package:app/services/business/business_delivery_model.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/business/settings/profile_block.dart';
 import 'package:app/screens/home/sections/business/settings/profile_field.dart';
+import 'package:app/screens/home/sections/business/settings/profile_text_action.dart';
 
-import 'delivery_option_field.dart';
+import './delivery_option_field.dart';
 
 /// The ways the company delivers, one row each, with adding in the block's
 /// title — adding belongs to the list, not to any of its rows.

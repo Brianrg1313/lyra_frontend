@@ -9,7 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:app/screens/modals/business/edit_business_field/_edit_business_field.dart';
 import 'package:app/screens/modals/business/edit_business_field/business_field.dart';
 
-import 'profile_field.dart';
+import './profile_action.dart';
+import './profile_field_frame.dart';
 
 /// The company's site: the only profile row that **leads elsewhere**.
 ///
