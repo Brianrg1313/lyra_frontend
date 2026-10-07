@@ -65,6 +65,8 @@
 - `sections/_section/filter_chip.dart` — `SectionFilterChip({title, isActive, action, icon?, leading?, trailing?})`: one control of a
   filter bar (sales, payments), label cut at a fixed width. `sections/_section/filter_menu_chip.dart` — `SectionMenuChip`: one that
   opens `showSelectMenu` under itself (`emptyText`, `maxOptions`).
+- `sections/_section/form/form_block.dart` — `FormBlock` (title, explanation, content), `form/option_card.dart` — `OptionCard`
+  (`multiple`: a check instead of a dot), `form/option_grid.dart` — `OptionGrid`: the blocks of the channel and connection forms.
 - `sections/_section/more_button.dart` — `SectionMoreButton({label, retryLabel, failed, onMore, onRetry})`: the "load more" at the
   end of a paged table (payments, receivables, sales).
 - `sections/_section/section_message.dart` — `SectionMessage({icon, message, action?})`: full-section empty/error/loading. Use instead of ad-hoc centered columns.

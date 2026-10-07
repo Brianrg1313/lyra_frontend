@@ -1,22 +1,20 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/home/home_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/connections/connection_catalog_service.dart';
-import 'package:app/services/connections/connection_lite_model.dart';
 import 'package:app/services/connections/connections_service.dart';
+import 'package:app/services/home/home_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/_section/section_message.dart';
 
-import 'connection_row.dart';
+import './connections_body.dart';
 
 /// Connections: this is the content of the `connections` section of the home.
 ///
@@ -104,7 +102,7 @@ class _ConnectionsSectionState extends State<ConnectionsSection> {
       Separator.horizontal(
         margin: EdgeInsets.symmetric(vertical: AppSize.spaceXS)
       ),
-      Expanded(child: _Body(
+      Expanded(child: ConnectionsBody(
         query: _query,
         onCreate: _create,
         onRetry: () => _load(force: true)
@@ -117,90 +115,4 @@ class _ConnectionsSectionState extends State<ConnectionsSection> {
   /// console, in another window, and a modal closes with a single click
   /// outside.
   void _create() => Navis.push(context, "/home/connections/new");
-}
-
-/// The body of the list: the only thing that listens to [ConnectionsService],
-/// so loading, failing, or bringing the accounts doesn't rebuild the bar on
-/// top.
-class _Body extends StatelessWidget {
-  const _Body({
-    required this.query,
-    required this.onCreate,
-    required this.onRetry
-  });
-
-  final ValueListenable<String> query;
-  final void Function() onCreate;
-  final void Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final service = context.watch<ConnectionsService>();
-
-    return switch (service.status) {
-      ConnectionsStatus.loading || ConnectionsStatus.idle =>
-        const Center(child: Loading()),
-      ConnectionsStatus.error => SectionMessage(
-        icon: CI.info,
-        title: S.of(context).connections_error_title,
-        subtitle: S.of(context).connections_error_subtitle,
-        action: onRetry,
-        actionLabel: S.of(context).connections_retry
-      ),
-      ConnectionsStatus.empty => SectionMessage(
-        icon: CI.cloud_disconected,
-        title: S.of(context).connections_empty_title,
-        subtitle: S.of(context).connections_empty_subtitle,
-        action: onCreate,
-        actionLabel: S.of(context).create_connection,
-        actionIcon: CI.plus
-      ),
-      ConnectionsStatus.ready => _List(
-        connections: service.connections,
-        query: query
-      )
-    };
-  }
-}
-
-/// The filtered list. It listens only to the search box: typing into it
-/// touches neither the bar nor the service, it only re-filters these rows.
-///
-/// The filter looks at the name and the description: an account is searched by
-/// what the company called it ("Main account"), which is what's remembered, and
-/// not by the service's code.
-class _List extends StatelessWidget {
-  const _List({required this.connections, required this.query});
-
-  final List<ConnectionLiteModel> connections;
-  final ValueListenable<String> query;
-
-  @override
-  Widget build(BuildContext context) => ValueListenableBuilder<String>(
-    valueListenable: query,
-    builder: (context, value, _) {
-      final filtered = value.isEmpty
-        ? connections
-        : connections.where((connection) =>
-            connection.name.toLowerCase().contains(value) ||
-            connection.description.toLowerCase().contains(value)
-          ).toList();
-
-      if (filtered.isEmpty) {
-        return SectionMessage(
-          icon: CI.search,
-          title: S.of(context).connections_search_empty
-        );
-      }
-
-      return ListView.separated(
-        padding: EdgeInsets.zero,
-        itemCount: filtered.length,
-        separatorBuilder: (_, _) => SizedBox(height: AppSize.gap),
-        itemBuilder: (context, index) => ConnectionListRow(
-          connection: filtered[index]
-        )
-      );
-    }
-  );
 }

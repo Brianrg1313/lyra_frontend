@@ -1,22 +1,24 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// PACKAGES
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
 // SERVICES
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/sync_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/modals/server/link_company/_link_company.dart';
 import 'package:app/screens/modals/server/online_sign_in/_online_sign_in.dart';
+
 import './status_dot.dart';
 
 /// How this device works with its server, for a session opened online (plan §9.6): online

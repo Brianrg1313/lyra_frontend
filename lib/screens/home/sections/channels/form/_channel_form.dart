@@ -16,15 +16,14 @@ import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:core/button.dart';
 import 'package:app/screens/home/sections/_section/business_listener.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
-
-import 'blocks/agent_picker.dart';
-import 'blocks/credentials_block.dart';
-import 'blocks/data_picker.dart';
-import 'blocks/payment_picker.dart';
-import 'blocks/provider_picker.dart';
-import 'blocks/tools_picker.dart';
-import 'widgets/missing_banner.dart';
-import 'state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/blocks/agent_picker.dart';
+import 'package:app/screens/home/sections/channels/form/blocks/credentials_block.dart';
+import 'package:app/screens/home/sections/channels/form/blocks/data_picker.dart';
+import 'package:app/screens/home/sections/channels/form/blocks/payment_picker.dart';
+import 'package:app/screens/home/sections/channels/form/blocks/provider_picker.dart';
+import 'package:app/screens/home/sections/channels/form/blocks/tools_picker.dart';
+import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/missing_banner.dart';
 
 /// Editing an already-connected channel. It is a sub-page of the `channels`
 /// section (`parents: ["channels"]`): it opens from the table settings panel

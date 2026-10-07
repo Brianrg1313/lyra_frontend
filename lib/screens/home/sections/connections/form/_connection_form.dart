@@ -10,16 +10,15 @@ import 'package:app/services/connections/connection_provider_model.dart';
 import 'package:app/services/connections/connections_service.dart';
 
 // WIDGETS
-import 'package:core/form.dart';
 import 'package:core/button.dart';
+import 'package:core/form.dart';
 import 'package:app/screens/home/sections/_section/business_listener.dart';
+import 'package:app/screens/home/sections/_section/form/form_block.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
-
-import 'blocks/credentials_block.dart';
-import 'blocks/provider_picker.dart';
-import 'widgets/form_block.dart';
-import 'widgets/missing_banner.dart';
-import 'state/connection_form_controller.dart';
+import 'package:app/screens/home/sections/connections/form/blocks/credentials_block.dart';
+import 'package:app/screens/home/sections/connections/form/blocks/provider_picker.dart';
+import 'package:app/screens/home/sections/connections/form/state/connection_form_controller.dart';
+import 'package:app/screens/home/sections/connections/form/widgets/missing_banner.dart';
 
 /// Creation and editing of a connection. It's a sub-page of the `connections`
 /// section (`parents: ["connections"]`): it opens from the list and shares the

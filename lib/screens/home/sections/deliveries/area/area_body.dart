@@ -13,12 +13,11 @@ import 'package:app/services/business/delivery_areas_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
-
-import '../deliveries_map.dart';
-import './state/area_editor.dart';
-import './widgets/area_editor_panel.dart';
-import './widgets/area_layers.dart';
-import './widgets/area_list.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
+import 'package:app/screens/home/sections/deliveries/area/widgets/area_editor_panel.dart';
+import 'package:app/screens/home/sections/deliveries/area/widgets/area_layers.dart';
+import 'package:app/screens/home/sections/deliveries/area/widgets/area_list.dart';
+import 'package:app/screens/home/sections/deliveries/deliveries_map.dart';
 
 /// Body of the delivery area: a panel on the left (one third) and the map on
 /// the right (two thirds), like the deliveries desk.

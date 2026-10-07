@@ -8,10 +8,11 @@ import 'package:provider/provider.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channel_provider_model.dart';
 
-import '../widgets/form_block.dart';
-import '../widgets/option_card.dart';
-import '../widgets/option_grid.dart';
-import '../state/channel_form_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/_section/form/form_block.dart';
+import 'package:app/screens/home/sections/_section/form/option_card.dart';
+import 'package:app/screens/home/sections/_section/form/option_grid.dart';
+import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
 
 /// What network is connected: the form's first block, and the one that
 /// decides everything that comes after —the credential fields come from the

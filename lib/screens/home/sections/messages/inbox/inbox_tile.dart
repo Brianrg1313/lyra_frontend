@@ -4,9 +4,12 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/chats/chat_model.dart';
 
-import '../chat_format.dart';
-import '../chat_stage_tag.dart';
-import '../chat_tag.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/messages/chat_format.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_stage_color.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_stage_tag.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_tag_chip.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_tag_color.dart';
 
 /// One conversation of the inbox: who, when, where it stands and every tag
 /// beside the stage, and the marks that ask for a person (unanswered,

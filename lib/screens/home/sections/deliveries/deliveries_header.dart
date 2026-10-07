@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
-import './settings/_settings.dart';
+import 'package:app/screens/home/sections/deliveries/settings/_settings.dart';
 
 /// Bar above the two panels: the section title and its actions.
 ///

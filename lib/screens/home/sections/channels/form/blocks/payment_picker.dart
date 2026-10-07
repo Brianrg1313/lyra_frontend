@@ -3,17 +3,17 @@ import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
-import 'package:core/button.dart';
 
 // SERVICES
-import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/services/badges/badge_place.dart';
-import 'package:app/screens/home/badges/badge_mark.dart';
+import 'package:app/services/money/money_methods_service.dart';
 
-import '../widgets/form_block.dart';
-import '../widgets/option_card.dart';
-import '../widgets/option_grid.dart';
-import '../state/channel_form_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/_section/form/form_block.dart';
+import 'package:app/screens/home/sections/_section/form/option_card.dart';
+import 'package:app/screens/home/sections/_section/form/option_grid.dart';
+import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/payment_picker_note.dart';
 
 /// Which of the company's accounts this channel may tell a customer to pay
 /// into.
@@ -47,12 +47,12 @@ class PaymentPicker extends StatelessWidget {
         // The accounts are their own read, so failing to get them takes this
         // block down and nothing else: the rest of the channel is still
         // editable and saving it leaves the selection as it was.
-        MoneyMethodsStatus.error => _Note(
+        MoneyMethodsStatus.error => PaymentPickerNote(
           text: S.of(context).channel_payments_error,
           action: service.retry,
           actionLabel: S.of(context).finance_retry
         ),
-        MoneyMethodsStatus.empty => _Note(
+        MoneyMethodsStatus.empty => PaymentPickerNote(
           text: S.of(context).channel_payments_empty,
           badge: BadgePlace.paymentMethodField
         ),
@@ -85,50 +85,4 @@ class PaymentPicker extends StatelessWidget {
 
   /// Settlement kind of the accounts money is handed over in person for.
   static const String _cash = "cash";
-}
-
-/// What is said in place of the grid: there is nothing to choose from yet, or
-/// the accounts could not be read.
-class _Note extends StatelessWidget {
-  const _Note({required this.text, this.action, this.actionLabel, this.badge});
-
-  final String text;
-  final void Function()? action;
-  final String? actionLabel;
-
-  /// The company-wide alert behind an empty list (no way of being paid), on the icon.
-  final BadgePlace? badge;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-    final retry = action;
-    final label = actionLabel;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(children: [
-          if (badge != null) BadgeCorner(
-            place: badge!,
-            dot: true,
-            outside: true,
-            child: Icon(CI.info, size: AppSize.text * 1.2, color: scheme.icon)
-          )
-          else Icon(CI.info, size: AppSize.text * 1.2, color: scheme.icon),
-          SizedBox(width: AppSize.spaceS),
-          Expanded(child: TextSmall(
-            text,
-            lines: 3,
-            ellipsis: true,
-            color: scheme.text.secondary
-          ))
-        ]),
-        if (retry != null && label != null) ...[
-          SizedBox(height: AppSize.spaceXS),
-          Button(width: null, title: label, action: retry)
-        ]
-      ]
-    );
-  }
 }

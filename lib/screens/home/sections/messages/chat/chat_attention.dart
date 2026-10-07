@@ -9,8 +9,9 @@ import 'package:app/services/chats/chat_detail_model.dart';
 import 'package:app/services/chats/chat_model.dart';
 import 'package:app/services/chats/chat_thread_service.dart';
 
-import '../chat_format.dart';
-import '../chat_stage_tag.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/messages/chat_format.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_stage_color.dart';
 
 /// The most urgent attention mark of the open conversation: what happened, the
 /// text for the team (never shown to the customer), and "mark as resolved"

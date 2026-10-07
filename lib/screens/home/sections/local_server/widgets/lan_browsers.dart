@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -13,6 +12,7 @@ import 'package:app/toolkit/lan.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/pre_start/deployment/widgets/deployment_frame.dart';
+
 import './lan_address.dart';
 
 /// The browsers' root of the installation (plan §5.3), on a native device: a browser opens the

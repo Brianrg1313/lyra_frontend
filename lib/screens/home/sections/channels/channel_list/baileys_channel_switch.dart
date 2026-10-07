@@ -10,6 +10,7 @@ import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/baileys/baileys_session_status.dart';
 import 'package:app/services/channels/channel_lite_model.dart';
 
+// WIDGETS
 import 'package:app/screens/modals/channels/baileys_pairing/_baileys_pairing.dart';
 
 /// The switch of a WhatsApp Personal channel's card.

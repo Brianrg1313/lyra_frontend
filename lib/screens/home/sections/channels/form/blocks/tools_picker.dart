@@ -4,10 +4,11 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/channels/channel_tools.dart';
 
-import '../widgets/form_block.dart';
-import '../widgets/option_card.dart';
-import '../widgets/option_grid.dart';
-import '../state/channel_form_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/_section/form/form_block.dart';
+import 'package:app/screens/home/sections/_section/form/option_card.dart';
+import 'package:app/screens/home/sections/_section/form/option_grid.dart';
+import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
 
 /// What the model can process and produce, besides text: voice, images, video
 /// and documents.

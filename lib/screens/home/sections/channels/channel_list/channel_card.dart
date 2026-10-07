@@ -7,14 +7,13 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channel_lite_model.dart';
-import 'package:app/services/channels/channel_provider_model.dart';
-import 'package:app/services/channels/channels_service.dart';
 
 // WIDGETS
 import 'package:app/screens/modals/channels/channel_detail/_channel_detail.dart';
 
-import 'baileys_channel_switch.dart';
-import 'channel_state_tag.dart';
+import './channel_card_sources.dart';
+import './channel_enabled_switch.dart';
+import './channel_state_tag.dart';
 
 /// Card of a channel, as it looks in the grid.
 ///
@@ -117,7 +116,7 @@ class ChannelCard extends StatelessWidget {
               ]
             )),
             SizedBox(width: AppSize.gap),
-            _EnabledSwitch(channel: channel)
+            ChannelEnabledSwitch(channel: channel)
           ]),
           SizedBox(height: AppSize.gap),
           // Only shown when it needs saying: a channel that is whole does not
@@ -126,7 +125,7 @@ class ChannelCard extends StatelessWidget {
             ChannelStateTag(channel: channel),
             SizedBox(height: AppSize.gap)
           ],
-          _Sources(channel: channel)
+          ChannelCardSources(channel: channel)
         ]
       )
     );
@@ -148,124 +147,4 @@ class ChannelCard extends StatelessWidget {
     channel: channel,
     label: label
   );
-}
-
-/// What the channel answers from, at the foot of its card.
-///
-/// The tables are **named**, each on its own surface: a channel carries no
-/// name of its own any more, so the table is the only thing on the card
-/// written by the company, and a count ("1 table") threw away the one word
-/// that told two cards apart. The surface is what makes them read as things
-/// and not as a sentence — a channel can hold more than one.
-///
-/// With no source it says exactly that, in words and not as an empty row:
-/// that a channel reads from nothing is the single most important thing this
-/// card can report, because it is what makes an agent invent prices.
-class _Sources extends StatelessWidget {
-  const _Sources({required this.channel});
-
-  final ChannelLiteModel channel;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    if (channel.tables.isEmpty) {
-      return Row(children: [
-        Icon(CI.list, size: AppSize.text, color: scheme.text.secondary),
-        SizedBox(width: AppSize.gap * 0.5),
-        Expanded(child: TextSmall(
-          S.of(context).channel_source_none,
-          ellipsis: true,
-          color: scheme.text.secondary
-        ))
-      ]);
-    }
-
-    // Every tag is flexible and none of them wraps: the card's height is
-    // fixed so that every row of the grid measures the same, so what does not
-    // fit is cut inside its own surface instead of pushing a second line the
-    // card has no room for.
-    return Row(children: [
-      for (final (index, table) in channel.tables.indexed) ...[
-        if (index > 0) SizedBox(width: AppSize.gap * 0.5),
-        Flexible(child: Surface(
-          color: scheme.surface,
-          radius: AppSize.cornerInset(AppSize.spaceXS),
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSize.gap,
-            vertical: AppSize.gap * 0.4
-          ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(CI.list, size: AppSize.text, color: scheme.text.secondary),
-            SizedBox(width: AppSize.gap * 0.5),
-            Flexible(child: TextSmall(table.name, ellipsis: true))
-          ])
-        ))
-      ]
-    ]);
-  }
-}
-
-/// The company's switch, where the card's options button used to be: pausing
-/// a channel does not lose its configuration, and is reversible with the same
-/// click.
-///
-/// It sits inside the card's own [FeedbackButton] but is not swallowed by its
-/// tap: Flutter resolves nested gesture regions from the inside out, so the
-/// switch's own recognizer wins over the card's and opening the panel never
-/// fires when the switch is what was pressed.
-///
-/// WhatsApp Personal has no `ENABLED` of its own worth flipping here — the
-/// thing to turn on and off is the `baileys_server` session itself — so this
-/// delegates to [BaileysChannelSwitch] for that one provider instead of
-/// branching internally: the two controls share nothing but their position
-/// on the card.
-class _EnabledSwitch extends StatelessWidget {
-  const _EnabledSwitch({required this.channel});
-
-  final ChannelLiteModel channel;
-
-  @override
-  Widget build(BuildContext context) {
-    if (channel.provider == ChannelProviderModel.whatsappPersonalCode) {
-      return BaileysChannelSwitch(channel: channel);
-    }
-
-    return _channelToggle(context);
-  }
-
-  Widget _channelToggle(BuildContext context) => Tooltip(
-    message: channel.enabled
-      ? S.of(context).channel_pause
-      : S.of(context).channel_resume,
-    child: Switch(
-      value: channel.enabled,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      activeThumbColor: ThemeColor.of(context).primary,
-      onChanged: (_) => _toggle(context)
-    )
-  );
-
-  /// Pauses or resumes the channel. Nothing is asked: it is reversible with
-  /// the same click and not a piece of data is lost, the configuration stays
-  /// intact.
-  Future<void> _toggle(BuildContext context) async {
-    // The message is built before: the service fixes the card on the spot
-    // and this context may repaint while the change is in transit.
-    final message = channel.enabled
-      ? S.of(context).channel_paused
-      : S.of(context).channel_resumed;
-
-    final changed = await context.read<ChannelsService>().toggle(
-      context,
-      channel
-    );
-
-    // If it failed, the service already brought the card back to how it was
-    // and showed the error.
-    if (!changed) return;
-
-    FloatFlag.of().message(message);
-  }
 }

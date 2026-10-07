@@ -6,13 +6,13 @@ import 'package:provider/provider.dart';
 
 import 'package:app/generated/l10n.dart';
 import 'package:app/screens/home/sections/_sections.dart';
-import 'package:app/screens/home/sections/messages/chat_tag.dart';
 import 'package:app/screens/home/sections/messages/inbox/_inbox.dart';
 import 'package:app/services/chats/chat_event.dart';
 import 'package:app/services/chats/chat_model.dart';
 import 'package:app/services/chats/chat_request.dart';
 import 'package:app/services/chats/chats_service.dart';
 import 'package:app/toolkit/settings/routes.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_tag_color.dart';
 
 /// What the messages inbox runs on: rows decoded **by key name** from the
 /// compressed `keys`/`values` list, the write bodies exactly as `/aries/v1`

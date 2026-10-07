@@ -12,11 +12,12 @@ import 'package:app/services/business/delivery_areas_service.dart';
 import 'package:app/services/maps/map_tiles_service.dart';
 
 // WIDGETS
-import '../sub_page.dart';
-import '../settings/_settings.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
+import 'package:app/screens/home/sections/deliveries/area/widgets/add_area_button.dart';
+import 'package:app/screens/home/sections/deliveries/settings/_settings.dart';
+import 'package:app/screens/home/sections/deliveries/sub_page.dart';
+
 import './area_body.dart';
-import './state/area_editor.dart';
-import './widgets/add_area_button.dart';
 
 /// **Delivery area**: sub-page of the `deliveries` section
 /// (`/home/deliveries/area`), opened from the delivery settings, beside

@@ -4,10 +4,11 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/channels/channel_agent_role.dart';
 
-import '../widgets/form_block.dart';
-import '../widgets/option_card.dart';
-import '../widgets/option_grid.dart';
-import '../state/channel_form_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/_section/form/form_block.dart';
+import 'package:app/screens/home/sections/_section/form/option_card.dart';
+import 'package:app/screens/home/sections/_section/form/option_grid.dart';
+import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
 
 /// What the agent answering the channel does: sell, give support or handle
 /// things in general.

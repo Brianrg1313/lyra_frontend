@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+import './option_grid.dart';
+
 /// A selectable option of a channel's form: its icon, what it is and a line
 /// about what it is for.
 ///

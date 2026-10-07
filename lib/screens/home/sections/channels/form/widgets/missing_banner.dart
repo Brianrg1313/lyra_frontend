@@ -4,7 +4,8 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/channels/channel_provider_model.dart';
 
-import '../state/channel_form_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
 
 /// What a channel is missing to be able to work, above its form.
 ///

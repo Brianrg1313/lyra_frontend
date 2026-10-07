@@ -19,8 +19,9 @@ Channels have no name/description: a card is identified by network and data sour
 
 - `_channels.dart` — `ChannelsSection`: header ("connect channel") over `ChannelGrid`.
 - `channel_list/_channel_list.dart` — `ChannelGrid`: loading/error/empty + grid.
+- `channel_list/channel_grid_view.dart` — `ChannelGridView`: the grid; asks `BaileysService` for the WhatsApp Personal channels' state when the set changes.
 - `channel_list/channel_card.dart` — `ChannelCard`: icon + network, scope, pending tag, tables it
-  answers from **by name** (`_Sources`), enable switch. Tap → `showChannelDetail`.
+  answers from **by name** (`ChannelCardSources`, `channel_card_sources.dart`), enable switch (`ChannelEnabledSwitch`, `channel_enabled_switch.dart`). Tap → `showChannelDetail`.
 - `channel_list/channel_state_tag.dart` — `ChannelStateTag`.
 - `channel_list/baileys_channel_switch.dart` — `BaileysChannelSwitch`: switch for WhatsApp
   Personal; starts/stops the `baileys_server` session (`BaileysService`) instead of `ENABLED`;
@@ -35,15 +36,15 @@ Channels have no name/description: a card is identified by network and data sour
   `isEdited`); `settle()`, `revert()`.
 - `blocks/provider_picker.dart` — `ProviderPicker`: first block. On create: configurable,
   single-scope providers only (no scope picker yet → no Facebook/Instagram); WhatsApp Personal first.
-- `blocks/credentials_block.dart` — `CredentialsBlock`: provider fields; for WhatsApp Personal a notice pointing to the switch.
+- `blocks/credentials_block.dart` — `CredentialsBlock`: provider fields (`widgets/channel_credential_field.dart` — `ChannelCredentialField`); for WhatsApp Personal a notice pointing to the switch.
 - `blocks/agent_picker.dart` — `AgentPicker`: seller / support / agent (3 of the backend's 6 `ROLE`s; others fall back to `general`).
 - `blocks/data_picker.dart` — `DataPicker`: `ChannelDataSource` filtered by role
   (`allowedFor`); a role change corrects the source (`_syncSource`). No tables → the `field.table` dot on its note.
 - `blocks/payment_picker.dart` — `PaymentPicker`: multi-select over `MoneyMethodsService.methods`
   (none is valid). Each host provides its own `MoneyMethodsService`. No accounts → points to finance, with the `field.payment_method` dot.
 - `blocks/tools_picker.dart` — `ToolsPicker`: `ChannelTool` (voice, image, video, documents).
-- `widgets/form_block.dart` — `FormBlock`: title + explanation + content.
-- `widgets/option_card.dart` — `OptionCard`. `widgets/option_grid.dart` — `OptionGrid`.
+- `FormBlock`, `OptionCard`, `OptionGrid`: shared with connections, in `sections/_section/form/` (home module).
+- `widgets/data_table_select.dart` — `DataTableSelect` (the data picker's table select); `widgets/payment_picker_note.dart` — `PaymentPickerNote`.
 - `widgets/missing_banner.dart` — `MissingBanner`: what the channel still needs.
 
 ## Note

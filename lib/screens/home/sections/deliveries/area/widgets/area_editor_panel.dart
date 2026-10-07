@@ -14,9 +14,10 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/settings/delivery_format.dart';
 
-import '../state/area_editor.dart';
+import './area_tool_chip.dart';
 
 /// Left panel while an area is shaped: how it is being made, the tools of
 /// that way, and what the area is called and costs.
@@ -213,7 +214,7 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
       spacing: AppSize.gap,
       runSpacing: AppSize.gap,
       children: [
-        for (final km in const [1.0, 2.0, 3.0, 5.0, 10.0, 20.0]) _Chip(
+        for (final km in const [1.0, 2.0, 3.0, 5.0, 10.0, 20.0]) AreaToolChip(
           label: S.of(context).deliveries_area_km(deliveryNumber(km)),
           chosen: _editor.radius == km,
           action: () => _radius.textController.text = deliveryNumber(km)
@@ -237,17 +238,17 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
         spacing: AppSize.gap,
         runSpacing: AppSize.gap,
         children: [
-          _Chip(
+          AreaToolChip(
             icon: CI.arrow_left,
             label: S.of(context).deliveries_area_undo,
             action: _editor.canUndo ? _editor.undo : null
           ),
-          _Chip(
+          AreaToolChip(
             icon: CI.delete,
             label: S.of(context).deliveries_area_remove_point,
             action: _editor.selected == null ? null : _editor.removeSelected
           ),
-          _Chip(
+          AreaToolChip(
             icon: CI.trash,
             label: S.of(context).deliveries_area_clear,
             action: points.isEmpty ? null : _editor.clearPoints
@@ -410,45 +411,3 @@ IconData _methodIcon(AreaMethod method) => switch (method) {
   AreaMethod.draw => CI.pen,
   AreaMethod.travel => CI.delivery
 };
-
-/// A small action of the tools, faded while there is nothing for it to do.
-class _Chip extends StatelessWidget {
-  const _Chip({
-    required this.label,
-    required this.action,
-    this.icon,
-    this.chosen = false
-  });
-
-  final String label;
-  final void Function()? action;
-  final IconData? icon;
-  final bool chosen;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-    final color = action == null
-      ? scheme.text.secondary.withValues(alpha: 0.5)
-      : chosen ? scheme.primary : scheme.text.primary;
-
-    return FeedbackButton(
-      action: action ?? () {},
-      height: AppSize.button * 0.8,
-      padding: EdgeInsets.symmetric(horizontal: AppSize.gap),
-      radius: AppSize.cornerInset(AppSize.spaceXS),
-      color: chosen ? scheme.primary.withValues(alpha: 0.12) : scheme.surfaceOver,
-      feedbackColor: scheme.line,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: AppSize.text * 0.9, color: color),
-            SizedBox(width: AppSize.gap * 0.5)
-          ],
-          TextSmall(label, color: color)
-        ]
-      )
-    );
-  }
-}

@@ -3,8 +3,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-
-import '../state/area_editor.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
 /// "Add area", in the page's header. It unfolds the three ways an area is
 /// made, each with what it is for, since the right one depends on how the

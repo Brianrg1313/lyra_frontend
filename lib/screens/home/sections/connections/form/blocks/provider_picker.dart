@@ -8,10 +8,11 @@ import 'package:provider/provider.dart';
 import 'package:app/services/connections/connection_catalog_service.dart';
 import 'package:app/services/connections/connection_provider_model.dart';
 
-import '../widgets/form_block.dart';
-import '../widgets/option_card.dart';
-import '../widgets/option_grid.dart';
-import '../state/connection_form_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/_section/form/form_block.dart';
+import 'package:app/screens/home/sections/_section/form/option_card.dart';
+import 'package:app/screens/home/sections/_section/form/option_grid.dart';
+import 'package:app/screens/home/sections/connections/form/state/connection_form_controller.dart';
 
 /// Which service the account belongs to: the form's first block, and the one
 /// that decides everything that comes after —the credential fields come from

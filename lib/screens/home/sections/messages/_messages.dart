@@ -1,7 +1,6 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
@@ -13,9 +12,8 @@ import 'package:app/services/home/home_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
-
-import './chat/_chat.dart';
-import './inbox/_inbox.dart';
+import 'package:app/screens/home/sections/messages/chat/_chat.dart';
+import 'package:app/screens/home/sections/messages/inbox/_inbox.dart';
 
 /// **The conversation desk**: the content of the `messages` section.
 ///

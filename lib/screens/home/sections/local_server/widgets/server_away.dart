@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// PACKAGES
+import 'package:provider/provider.dart';
+
 // SERVICES
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/settings/initial_builder.dart' show clientService, hybridService;
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/local_server/local_server_service.dart';
+import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/settings/initial_builder.dart' show clientService, hybridService;
 
 // WIDGETS
 import 'package:core/button.dart';

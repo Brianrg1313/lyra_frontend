@@ -24,13 +24,14 @@
 
 - `_messages.dart` — `MessagesSection`: creates/provides `ChatsService`, loads it, forwards header search; `Row` of `InboxPanel` (flex 1) and `_OpenChat` (flex 2).
 - `chat_format.dart` — `chatTimeLabel`, `chatDateLabel`, `chatWaitLabel`.
-- `chat_stage_tag.dart` — `ChatStageTag`, `chatStageColor` (same hues as `saleStageColor` for shared codes), `chatWaitingColor`.
-- `chat_tag.dart` — `ChatTags` (wrap), `ChatTagChip` (bold = work for a person; tooltip since + tickets), `chatTagsBeside` (drops the tag that repeats the stage), `chatTagColor` (stage hue for shared meanings, else level).
-- `inbox/_inbox.dart` — `InboxPanel`: title + count, filters, pending banner, paged list (auto "more" near the end).
-- `inbox/inbox_filters.dart` — `InboxFilters` (chips per `ChatsFilter` with summary counts), `inboxFilterTitle`.
+- `tags/chat_stage_tag.dart` — `ChatStageTag`. `tags/chat_stage_color.dart` — `chatStageColor` (same hues as `saleStageColor` for shared codes), `chatWaitingColor`.
+- `tags/chat_tags.dart` — `ChatTags` (wrap). `tags/chat_tag_chip.dart` — `ChatTagChip` (bold = work for a person; tooltip since + tickets).
+- `tags/chat_tag_color.dart` — `chatTagsBeside` (drops the tag that repeats the stage), `chatTagColor` (stage hue for shared meanings, else level).
+- `inbox/_inbox.dart` — `InboxPanel`: title + count, filters, pending banner, list. `inbox/inbox_list.dart` — `InboxList`: paged list (auto "more" near the end).
+- `inbox/inbox_filters.dart` — `InboxFilters` (chips per `ChatsFilter` with summary counts), `inboxFilterTitle`. `inbox/inbox_filter_chip.dart` — `InboxFilterChip`.
 - `inbox/inbox_tile.dart` — `InboxTile`: avatar, name, last activity, stage + tag chips, attention (only when no tag names it)/paused/unanswered marks.
 - `chat/_chat.dart` — `ChatPanel({id})`: owns `ChatThreadService`; header, attention bar, messages, composer.
-- `chat/chat_header.dart` — `ChatHeader`: identity + stage, tags, take over (duration menu) / return to assistant, assign (`team`), options menu (mark read, sold with confirmation, ended, undo, AI cost → `showChatUsage`, earlier sessions); `_BotLine` who answers + assignee.
+- `chat/chat_header.dart` — `ChatHeader`: identity + stage, tags, take over (duration menu) / return to assistant, assign (`team`), options menu (mark read, sold with confirmation, ended, undo, AI cost → `showChatUsage`, earlier sessions); `widgets/chat_bot_line.dart` — `ChatBotLine`: who answers + assignee; `widgets/chat_handover_button.dart` — `ChatHandoverButton`.
 - `chat/chat_attention.dart` — `ChatAttentionBar`, `chatAttentionTitle`: most urgent mark, team-only detail, resolve button for `pending`.
 - `chat/message_list.dart` — `MessageList`: reversed `ListView`, loads older (`BEFORE`) near the top, groups runs by author.
 - `chat/message_bubble.dart` — `MessageBubble`: side by direction, fill by author, image (`FileModel` → `showImageViewer`), audio mark, ticks/queued/failed.

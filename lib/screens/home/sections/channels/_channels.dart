@@ -3,7 +3,6 @@ import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
-import 'package:core/button.dart';
 
 // SERVICES
 import 'package:app/services/business/business_service.dart';
@@ -11,9 +10,9 @@ import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channels_service.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
+import 'package:app/screens/home/sections/channels/channel_list/_channel_list.dart';
 import 'package:app/screens/modals/channels/create_channel/_create_channel.dart';
-
-import 'channel_list/_channel_list.dart';
 
 /// Channels: the content of the home's `channels` section.
 ///

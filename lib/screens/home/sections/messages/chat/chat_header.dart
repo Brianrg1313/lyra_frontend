@@ -5,19 +5,18 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/chats/chat_detail_model.dart';
 import 'package:app/services/chats/chat_request.dart';
 import 'package:app/services/chats/chat_thread_service.dart';
 import 'package:app/services/chats/chats_service.dart';
 
 // WIDGETS
-import 'package:core/button.dart';
 import 'package:core/form.dart';
+import 'package:app/screens/home/sections/messages/chat/widgets/chat_bot_line.dart';
+import 'package:app/screens/home/sections/messages/chat/widgets/chat_handover_button.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_stage_tag.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_tag_color.dart';
+import 'package:app/screens/home/sections/messages/tags/chat_tags.dart';
 import 'package:app/screens/modals/messages/chat_usage/_chat_usage.dart';
-
-import '../chat_format.dart';
-import '../chat_stage_tag.dart';
-import '../chat_tag.dart';
 
 /// Who the customer is, where the conversation stands and what else is true
 /// about it (tags, with since when and from which tickets), who answers it,
@@ -62,7 +61,7 @@ class ChatHeader extends StatelessWidget {
               ]
             )),
             SizedBox(width: AppSize.gap),
-            const _HandoverButton(),
+            const ChatHandoverButton(),
             SizedBox(width: AppSize.gap),
             _IconAction(
               icon: CI.employee,
@@ -80,7 +79,7 @@ class ChatHeader extends StatelessWidget {
             ChatTags(tags: tags)
           ],
           SizedBox(height: AppSize.gap),
-          _BotLine(detail: detail)
+          ChatBotLine(detail: detail)
         ]
       )
     );
@@ -169,59 +168,6 @@ class ChatHeader extends StatelessWidget {
   }
 }
 
-/// Take over (pause the assistant, with a duration) or return to the assistant.
-class _HandoverButton extends StatelessWidget {
-  const _HandoverButton();
-
-  @override
-  Widget build(BuildContext context) {
-    final thread = context.watch<ChatThreadService>();
-    final bot = thread.detail!.bot;
-    final scheme = ThemeColor.of(context);
-
-    if (!bot.enabled) return const SizedBox.shrink();
-
-    if (bot.isPausedAt(DateTime.now())) {
-      return Button(
-        width: null,
-        title: S.of(context).messages_return,
-        leftIcon: Icon(CI.message_ai, size: AppSize.text * 1.2, color: scheme.button.text),
-        action: thread.resume
-      );
-    }
-
-    // [Button] and not [MainButton]: the main one always fills its width, and
-    // this sits in a row next to the title.
-    return Builder(builder: (context) => Button(
-      width: null,
-      title: S.of(context).messages_take,
-      leftIcon: Icon(CI.user, size: AppSize.text * 1.2, color: scheme.button.text),
-      action: () => _take(context)
-    ));
-  }
-
-  Future<void> _take(BuildContext context) async {
-    final thread = context.read<ChatThreadService>();
-
-    final picked = await showSelectMenu(
-      context: context,
-      dense: true,
-      options: [
-        SelectOption(value: "30", placeholder: S.of(context).messages_take_30m),
-        SelectOption(value: "120", placeholder: S.of(context).messages_take_2h),
-        SelectOption(value: "1440", placeholder: S.of(context).messages_take_24h),
-        SelectOption(value: "0", placeholder: S.of(context).messages_take_manual)
-      ]
-    );
-
-    if (picked == null) return;
-
-    final minutes = int.tryParse(picked.value) ?? 0;
-
-    await thread.pause(minutes: minutes > 0 ? minutes : null);
-  }
-}
-
 /// An icon button whose menu anchors to itself.
 class _IconAction extends StatelessWidget {
   const _IconAction({required this.icon, required this.message, required this.action});
@@ -239,51 +185,4 @@ class _IconAction extends StatelessWidget {
     radius: AppSize.cornerInset(AppSize.gap),
     child: Center(child: Icon(icon, size: AppSize.text * 1.4, color: ThemeColor.of(context).icon))
   ));
-}
-
-/// Who answers right now, and who the conversation is assigned to.
-class _BotLine extends StatelessWidget {
-  const _BotLine({required this.detail});
-
-  final ChatDetailModel detail;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-    final bot = detail.bot;
-    final paused = bot.isPausedAt(DateTime.now());
-
-    final String state;
-    Color color = scheme.text.secondary;
-
-    if (!bot.enabled) {
-      state = S.of(context).messages_bot_disabled;
-      color = scheme.chart.warning;
-    } else if (paused) {
-      final by = bot.by == null
-        ? S.of(context).messages_bot_paused
-        : S.of(context).messages_bot_paused_by(bot.by!.label);
-      final until = bot.until == null
-        ? ""
-        : " ${S.of(context).messages_bot_until(chatDateLabel(context, bot.until))}";
-      final reason = bot.reason.isEmpty ? "" : " · ${bot.reason}";
-
-      state = "$by$until$reason";
-      color = scheme.primary;
-    } else {
-      state = S.of(context).messages_bot_active;
-    }
-
-    final assignee = detail.assignee == null
-      ? S.of(context).messages_unassigned
-      : S.of(context).messages_assigned_to(detail.assignee!.label);
-
-    return Row(children: [
-      Icon(paused ? CI.user : CI.message_ai, size: AppSize.text, color: color),
-      SizedBox(width: AppSize.gap),
-      Flexible(child: TextSmall(state, ellipsis: true, color: color)),
-      TextSmall("  ·  ", color: scheme.text.secondary),
-      Flexible(child: TextSmall(assignee, ellipsis: true, color: scheme.text.secondary))
-    ]);
-  }
 }

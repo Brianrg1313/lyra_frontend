@@ -14,14 +14,17 @@ Content of the `connections` home section plus its create/edit sub-page.
 
 ## Files
 
-- `_connections.dart` — `ConnectionsSection`: the list.
+- `_connections.dart` — `ConnectionsSection`: the list. `connections_body.dart` — `ConnectionsBody` (the only listener of
+  `ConnectionsService`: loading, error, empty, list); `connections_list.dart` — `ConnectionsList` (re-filtered by the search only).
 - `connection_row.dart` — `ConnectionListRow`: service icon, given name + state, owning service.
+  `connection_options_button.dart` — `ConnectionOptionsButton` (the row's menu).
 - `connection_state_tag.dart` — `ConnectionStateTag`.
 - `form/_connection_form.dart` — `ConnectionFormSection` (create + edit). Catalog-driven.
 - `form/state/connection_form_controller.dart` — `ConnectionFormController` + `ConnectionFormStatus`.
 - `form/blocks/provider_picker.dart` — `ProviderPicker`: first block, decides the rest.
-- `form/blocks/credentials_block.dart` — `CredentialsBlock`: `ConnectionProviderField` / `ConnectionFieldType`.
-- `form/widgets/form_block.dart` · `option_card.dart` · `option_grid.dart` · `missing_banner.dart` — `FormBlock`, `OptionCard`, `OptionGrid`, `MissingBanner`.
+- `form/blocks/credentials_block.dart` — `CredentialsBlock`: `ConnectionProviderField` / `ConnectionFieldType`
+  (`form/widgets/connection_credential_field.dart` — `ConnectionCredentialField`).
+- `form/widgets/missing_banner.dart` — `MissingBanner`. `FormBlock`, `OptionCard`, `OptionGrid`: shared with channels, in `sections/_section/form/` (home module).
 
 ## Note
 

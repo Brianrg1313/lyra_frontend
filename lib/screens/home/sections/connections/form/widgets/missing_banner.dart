@@ -4,7 +4,8 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/connections/connection_provider_model.dart';
 
-import '../state/connection_form_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/connections/form/state/connection_form_controller.dart';
 
 /// What an account is missing to be able to work, above its form.
 ///

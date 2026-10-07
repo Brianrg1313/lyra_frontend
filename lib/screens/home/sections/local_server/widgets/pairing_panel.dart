@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
+
 import './pairing_qr.dart';
 
 /// An open pairing (`pairing.start`: `{qr, code, expires}`): the code to type on the new device,

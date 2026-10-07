@@ -13,11 +13,12 @@ how the company delivers, and `area/` (`/home/deliveries/area`, opened from sett
 - `_deliveries.dart` — `DeliveriesSection`: header over a two-panel row; loads the business location and the maps, owns the `MapController`.
 - `deliveries_header.dart` — `DeliveriesHeader`: title + New delivery (coming soon) + Settings (opens `DeliverySettingsSection.path`).
 - `pending_list.dart` — `PendingDeliveriesPanel`: coming-soon `SectionMessage` until the endpoint exists.
-- `deliveries_map.dart` — `DeliveriesMap({controller, layers, overlays, onTap, center, zoomButtons})`: server-drawn map of the tileset holding the business point (or `center`, read on mount), centered on it and marking the business point (tileset center without one), OSM attribution; loading / error + retry / no maps on the server → coming soon. `layers` go under the business mark, `overlays` over it. `zoomButtons`: +/- buttons, mouse-wheel zoom off.
+- `deliveries_map.dart` — `DeliveriesMap({controller, layers, overlays, onTap, center, zoomButtons})`: server-drawn map of the tileset holding the business point (or `center`, read on mount), centered on it and marking the business point (tileset center without one), OSM attribution; loading / error + retry / no maps on the server → coming soon. `layers` go under the business mark, `overlays` over it. `zoomButtons`: +/- buttons (`widgets/map_zoom_buttons.dart` — `MapZoomButtons`), mouse-wheel zoom off.
 - `sub_page.dart` — `DeliveriesSubPage({title, backPath, backLabel, child, actions})`: frame of every sub-page (back arrow + title + actions, line, body on one surface).
 - `settings/_settings.dart` — `DeliverySettingsSection` (`routeKey = "deliveries_settings"`, `path`, `parents: ["deliveries"]`): `DeliveriesSubPage` over the body; owns `BusinessDeliveryService`.
 - `settings/settings_body.dart` — `DeliverySettingsBody`: reads `BusinessDeliveryService`; owns every write the blocks and panels ask for.
-- `settings/delivery_settings.dart` — `DeliverySettingsBlock`: the two three-state flags (`SettingsSelect` + `showSelectMenu`), the delivery note, "Select delivery area" beside the delivers flag (`onArea`), and fixed/flexible areas (`meeting`, two-state, `onMeeting`).
+- `settings/delivery_settings.dart` — `DeliverySettingsBlock`: the two three-state flags (`SettingsSelect` + `showSelectMenu`), the delivery note, "Select delivery area" beside the delivers flag (`onArea`), and fixed/flexible areas (`meeting`, two-state, `onMeeting`). Its rows: `settings/delivery_flag_field.dart` — `DeliveryFlagField`,
+  `settings/delivery_meeting_field.dart` — `DeliveryMeetingField`, `settings/delivery_area_button.dart` — `DeliveryAreaButton`.
 - `settings/delivery_options.dart` — `DeliveryOptionsBlock`: the options, adding in the block title, the "turned off" notice. `limit = 20`.
 - `settings/delivery_option_field.dart` — `DeliveryOptionField`: one option, its mode/reach line and its figures as `SettingsTag`s.
 - `settings/delivery_format.dart` — `deliveryOptionName` `deliveryAmount` `deliveryFeeLabel` `deliveryEtaLabel`
@@ -26,9 +27,10 @@ how the company delivers, and `area/` (`/home/deliveries/area`, opened from sett
 - `area/area_body.dart` — `DeliveryAreaBody`: loading / error + retry; left panel (list or editor, 1/3) + `DeliveriesMap` (2/3) with the area layers; remove asks first.
 - `area/state/area_editor.dart` — `AreaEditor` (`ChangeNotifier`) + `AreaMethod {radius, draw, travel}`: looking (map tap = probe) or shaping (tap moves the center / adds a point); points, drag, insert, remove, undo; fits the map.
 - `area/widgets/add_area_button.dart` — `AddAreaButton`: header button, `showSelectMenu` of the three methods.
-- `area/widgets/area_list.dart` — `AreaList`: probe result, empty state, one tile per area (colour, shape + km², fee/minimum/paused tags, edit/pause/remove).
-- `area/widgets/area_editor_panel.dart` — `AreaEditorPanel` (keyed by `AreaEditor.session`): method tools (km + presets / point tools / travel mode + minutes → outline), name, fee, minimum; builds the request and saves.
-- `area/widgets/area_layers.dart` — `areaColor`, `areaLayers` (saved areas, paused dashed; the draft), `areaOverlays` (handles, probe pin), `AreaHandle` (drag over the map).
+- `area/widgets/area_list.dart` — `AreaList`: probe result (`area_probe.dart` — `AreaProbe`), empty state, one `AreaTile` per area
+  (`area_tile.dart`: colour, shape + km², fee/minimum/paused tags, edit/pause/remove).
+- `area/widgets/area_editor_panel.dart` — `AreaEditorPanel` (keyed by `AreaEditor.session`): method tools (km + presets / point tools / travel mode + minutes → outline), name, fee, minimum; builds the request and saves. `area/widgets/area_tool_chip.dart` — `AreaToolChip` (a small tool action).
+- `area/widgets/area_layers.dart` — `areaColor`, `areaLayers` (saved areas, paused dashed; the draft), `areaOverlays` (handles, probe pin). `area/widgets/area_handle.dart` — `AreaHandle` (drag over the map), `AreaHandleDot`.
 
 ## Conventions
 

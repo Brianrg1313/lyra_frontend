@@ -3,9 +3,9 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/channels/channel_detail_model.dart';
+import 'package:app/screens/home/sections/_section/form/form_block.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/channels/form/widgets/form_block.dart';
 
 /// The two facts about a channel that are read and never written: which
 /// account on the network it is attached to, and its own id.

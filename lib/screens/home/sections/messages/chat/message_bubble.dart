@@ -5,9 +5,8 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/chats/chat_message_model.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/messages/chat_format.dart';
 import 'package:app/screens/modals/shared/image_viewer/_image_viewer.dart';
-
-import '../chat_format.dart';
 
 /// One message. The customer's lean left; the company's lean right, tinted by
 /// who wrote them: a person from the desk in the accent colour, the assistant

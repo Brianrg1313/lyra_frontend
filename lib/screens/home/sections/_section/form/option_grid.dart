@@ -1,9 +1,8 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-import 'option_card.dart';
+import './option_card.dart';
 
 /// Arranges the options of a block in the columns that fit in the available
 /// width.

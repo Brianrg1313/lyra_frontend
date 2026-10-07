@@ -7,8 +7,9 @@ master's devices, and online on any computer, which creates one there (`docs/pla
 
 ## Files
 
-- `_local_server.dart` — `LocalServerSection`: the master's session ready (not in `cloud`) → `_ServerReady`, else
-  `ServerAway`. `_ServerReady`: `ServerConnection` across the top; two columns from 820 px (one below): the devices list
+- `_local_server.dart` — `LocalServerSection`: the master's session ready (not in `cloud`) → `ServerReady`, else
+  `ServerAway`.
+- `server_ready.dart` — `ServerReady`: `ServerConnection` across the top; two columns from 820 px (one below): the devices list
   (refreshed every 5 s; server, online, offline, removed; "N connected"; this device marked), remove (confirmed), "Add
   device" on the master → `PairingPanel` (closes when a new device appears); a side `Surface.over` split by rules:
   `LanAddress`, `LanBrowsers` on native devices (both from one `devices.browserCa` read), this device's code and CA
@@ -19,6 +20,7 @@ master's devices, and online on any computer, which creates one there (`docs/pla
 - `widgets/pairing_panel.dart` — `PairingPanel`: an open pairing's code (Bebas), QR and time left counted from
   `expires`; expired → "New code".
 - `widgets/status_dot.dart` — `StatusDot`: filled when on, outlined when off; device rows and `ServerConnection`.
+- `widgets/server_device_row.dart` — `ServerDeviceRow`: one device of the list.
 - `widgets/pairing_qr.dart` — `PairingQr`: the pairing QR painted from `package:qr`, always black on white. Also draws the authenticator app's QR (`modals/business/two_factor`).
 - `widgets/server_connection.dart` — `ServerConnection`: a bordered strip for a session opened online (`HybridService.joined`),
   online or offline by choice (`StatusDot`), "work offline" / "work online" (reopens the cloud socket), and the owner's "join with your company online" while unlinked;

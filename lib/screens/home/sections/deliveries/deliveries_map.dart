@@ -7,13 +7,14 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/toolkit/api.dart';
 import 'package:app/services/business/business_location_model.dart';
 import 'package:app/services/business/business_location_service.dart';
 import 'package:app/services/maps/map_tiles_service.dart';
+import 'package:app/toolkit/api.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/deliveries/widgets/map_zoom_buttons.dart';
 
 /// Right panel: the map the deliveries are followed on.
 ///
@@ -145,7 +146,7 @@ class DeliveriesMap extends StatelessWidget {
             alignment: Alignment.bottomLeft,
             child: Padding(
               padding: EdgeInsets.all(AppSize.spaceS),
-              child: const _ZoomButtons()
+              child: const MapZoomButtons()
             )
           ),
           // OSM's license (ODbL) requires the credit on the map. Drawn by hand:
@@ -161,46 +162,6 @@ class DeliveriesMap extends StatelessWidget {
             )
           )
         ]
-      )
-    );
-  }
-}
-
-/// The map's +/- pair, one step of zoom each, kept within the map's limits.
-/// A child of the map, so it reads the camera and controller from it.
-class _ZoomButtons extends StatelessWidget {
-  const _ZoomButtons();
-
-  void _zoom(BuildContext context, double step) {
-    final camera = MapCamera.of(context);
-
-    MapController.of(context).move(camera.center, camera.clampZoom(camera.zoom + step));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    Widget button(IconData icon, String message, double step) => FeedbackButton(
-      action: () => _zoom(context, step),
-      message: message,
-      width: AppSize.action,
-      height: AppSize.action,
-      child: Center(child: Icon(icon, color: scheme.text.primary))
-    );
-
-    return Surface(
-      radius: AppSize.corner,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSize.corner),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            button(Icons.add, S.of(context).deliveries_map_zoom_in, 1),
-            SizedBox(width: AppSize.action, child: Separator.horizontal(color: scheme.line)),
-            button(Icons.remove, S.of(context).deliveries_map_zoom_out, -1)
-          ]
-        )
       )
     );
   }
