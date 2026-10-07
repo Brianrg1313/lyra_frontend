@@ -25,8 +25,8 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts})`: owns that table's `StockSummaryService`, fixed column header over a `ListView`; header search → `MATCH`.
-- `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows).
-- `stock_summary/summary_row.dart` — `SummaryHeader`, `SummaryProductRow`, `SummaryLine`.
+- `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest.
+- `stock_summary/summary_row.dart` — `SummaryHeader` (a title click orders by its column), `SummaryProductRow`, `SummaryLine`.
 - `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`.
 - `stock_summary/summary_value.dart` — `SummaryValue`, `SummaryNumber`, `SummaryPicture`.
 

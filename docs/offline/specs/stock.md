@@ -133,16 +133,23 @@ primary table without one.
 - **ST-30** `stock` is `available` and `reserved` is `reserved` (ST-1: `null` for untracked
   products). `performance` is always `null` (not measured, same as the cloud today).
 - **ST-31** `image` is the cover image already resolved (`{id, url}`), as the app reads it.
-- **ST-32** The fixed columns' `name` is `null`, so the app puts its own translated label.
+- **ST-32** The fixed columns' `name` is `null`, so the app puts its own translated label; `stock`
+  carries the table's stock column's name when there is one, as in the cloud.
 - **ST-33** `match` is the README text search over the summary's text fields. Order: products
   with `needsReview` first, then by title, then by id.
 - **ST-34** `tableId` summarises that table (the inventory section's open one); a deleted or
   unknown one is `not_found`. The cloud takes it as `TABLE_ID`.
+- **ST-35** `sort {field, dir?}` orders by one of the table's fields (not the image) or by `stock`,
+  ascending unless `dir` is `desc`; it replaces ST-33's order (ties by id). `stock` is accepted only
+  on a table with a stock column (the cloud sorts the mirrored column), so the app offers it only
+  when `stock` carries a name (ST-32); `reserved` and `performance` are refused (`invalid_field`).
+  Numeric fields compare as numbers; empty values go last both ways. The cloud takes it as
+  `SORT: {FIELD, DIR}`.
 
 ### Ops
 
 `stock.summary` · `inventory` · `page` (from 1), `size` (≤ 200: the app re-reads up to six
-pages of 30 at once), `match?`, `tableId?` · `StockSummaryPage`. Its rows are `{keys, values}` with the record
+pages of 30 at once), `match?`, `tableId?`, `sort?` · `StockSummaryPage`. Its rows are `{keys, values}` with the record
 id first; a last `needsReview` key flags ST-14's products. A company without a primary table
 answers `no_primary_table` (as the `code`; the cloud sends it as the `message`).
 

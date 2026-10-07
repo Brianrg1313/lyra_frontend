@@ -9,7 +9,13 @@ class StockCloudSource implements StockSource {
   const StockCloudSource();
 
   @override
-  Future<StockSummaryPage> summary({required int page, required int size, String match = "", String tableId = ""}) async =>
+  Future<StockSummaryPage> summary({
+    required int page,
+    required int size,
+    String match = "",
+    String tableId = "",
+    StockSummarySort? sort
+  }) async =>
     StockSummaryPage.fromResponse(await api.post(
       path: "/inventory/stock/summary/",
       version: "v1",
@@ -17,7 +23,8 @@ class StockCloudSource implements StockSource {
         "PAGE": page,
         "SIZE": size,
         if (match.isNotEmpty) "MATCH": match,
-        if (tableId.isNotEmpty) "TABLE_ID": tableId
+        if (tableId.isNotEmpty) "TABLE_ID": tableId,
+        if (sort != null) "SORT": {"FIELD": sort.key, "DIR": sort.descending ? "desc" : "asc"}
       }
     ));
 

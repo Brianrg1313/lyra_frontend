@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 
@@ -85,6 +87,13 @@ class StockSummaryColumn {
   /// comparing top to bottom, not for reading.
   bool get isNumber => isStock || isReserved || isPerformance;
 
+  /// Whether the summary can be ordered by it (`stock.md` ST-35): any of the company's
+  /// columns but the photo, and `stock` only when a stock column of the table is behind
+  /// it — which is what its [name] says (ST-32): the backend orders by what the record
+  /// stores, and only that column mirrors the balance into it. `reserved` and
+  /// `performance` have nothing stored to order by.
+  bool get sortable => isStock ? name.isNotEmpty : !isImage && !isNumber;
+
   factory StockSummaryColumn.fromJson(Map json) {
     final key = (json["key"] ?? json["KEY"] ?? "").toString();
     final name = (json["name"] ?? json["NAME"])?.toString() ?? "";
@@ -117,6 +126,31 @@ class StockSummaryColumn {
   static List<String> _options(dynamic raw) => raw is List
     ? [for (final option in raw) option.toString()]
     : const [];
+}
+
+/// What the summary is ordered by: one column, one way (`stock.md` ST-35). Without one
+/// the backend's own order holds.
+@immutable
+class StockSummarySort {
+  const StockSummarySort(this.key, {this.descending = false});
+
+  /// The column's [StockSummaryColumn.key].
+  final String key;
+
+  final bool descending;
+
+  /// What a click on [column]'s title leaves: the same column the other way, or another
+  /// column from its smallest value up.
+  StockSummarySort next(String column) => column == key
+    ? StockSummarySort(key, descending: !descending)
+    : StockSummarySort(column);
+
+  @override
+  bool operator ==(Object other) =>
+    other is StockSummarySort && other.key == key && other.descending == descending;
+
+  @override
+  int get hashCode => Object.hash(key, descending);
 }
 
 /// A row of the summary: a product.

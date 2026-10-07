@@ -343,7 +343,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
   `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
   `inventory.tables.normalize`.
-- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary), a movement (answers the balance). Used by `StockSummaryService`.
+- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance). Used by `StockSummaryService`.
   `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
   `stock.move` (`operationOf`).
 - `tables/tables_service.dart` — `TablesService` (+ `TablesStatus`, `TableImportResult`,
@@ -358,8 +358,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_view_model.dart` — `TableViewModel`, `TableColumnModel`, `TableRowModel`.
 - `tables/table_normalize_model.dart` — `POST .../builder/normalize/` result.
 - `tables/table_normalizing_model.dart` / `table_ready_model.dart` — `table/normalizing` / `table/ready` notices.
-- `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`).
-- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow`, `StockSummaryColumn`.
+- `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`).
+- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow`, `StockSummaryColumn` (`sortable`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement`, `StockBalance`, `StockOperation`, `StockReason`.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move
   (sale, restock, another till's hold), carries the balance after it.

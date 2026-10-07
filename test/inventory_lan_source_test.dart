@@ -27,6 +27,7 @@ import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/sources/inventory_lan_source.dart';
 import 'package:app/services/stock/sources/stock_lan_source.dart';
+import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/lan_image.dart';
@@ -225,6 +226,14 @@ void main() {
       expect(row.id, "r1");
       expect(row.cover?.id, "0192f0aa-0000-7000-8000-000000000001");
       expect((row.stock, row.reserved), (4, 1));
+    });
+
+    test("the summary's order reaches the master as sort (ST-35)", () async {
+      master.answers[Ops.stockSummary.name] = {"table": "t1", "total": 0, "columns": [], "data": {"keys": ["id"], "values": []}};
+
+      await StockLanSource(master).summary(page: 1, size: 30, sort: const StockSummarySort("f-price", descending: true));
+
+      expect(master.calls.single.$2, {"page": 1, "size": 30, "sort": {"field": "f-price", "dir": "desc"}});
     });
 
     test('a master without a main table says so by code, and the summary reads it as missing', () async {

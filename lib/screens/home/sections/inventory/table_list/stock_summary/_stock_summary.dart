@@ -191,7 +191,11 @@ class _Body extends StatelessWidget {
         SizedBox(
           height: SummaryLayout.headerHeight,
           child: Column(children: [
-            Expanded(child: SummaryHeader(layout: layout)),
+            Expanded(child: SummaryHeader(
+              layout: layout,
+              sort: service.sort,
+              onSort: service.sortBy
+            )),
             Separator.horizontal()
           ])
         ),

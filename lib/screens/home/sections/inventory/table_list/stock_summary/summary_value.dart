@@ -13,6 +13,8 @@ import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 
+import 'summary_layout.dart';
+
 /// What's written in a summary cell that isn't the photo nor one of the three
 /// numbers: a company column.
 ///
@@ -58,12 +60,17 @@ class SummaryValue extends StatelessWidget {
       : raw?.toString().trim() ?? "";
 
     if (value.isEmpty) {
-      return TextSmall("—", color: scheme.text.secondary);
+      return TextSmall(
+        "—",
+        textAlign: SummaryLayout.alignsRight(column) ? TextAlign.right : null,
+        color: scheme.text.secondary
+      );
     }
 
     return TextSmall(
       _written(context, value),
       ellipsis: true,
+      textAlign: SummaryLayout.alignsRight(column) ? TextAlign.right : null,
       // The text the AI indexes by meaning goes with the brand color, just
       // like in the spreadsheet (see [SheetStyle.semanticValue]): it's the only
       // thing of the row you can search for by describing it. The rest go with

@@ -19,39 +19,56 @@ import 'summary_value.dart';
 /// expects to read. The only ones this app writes are those without any column
 /// behind them —reserved and performance, which the inventory carries and not
 /// the table—, and that's why the backend sends them blank.
+///
+/// **A title orders its column** ([onSort]): a click from the smallest value up,
+/// the next one the other way. The column the rows are ordered by ([sort]) says
+/// so with an arrow beside its title. Columns with nothing to order by
+/// ([StockSummaryColumn.sortable]) are plain titles.
 class SummaryHeader extends StatelessWidget {
-  const SummaryHeader({super.key, required this.layout});
+  const SummaryHeader({
+    super.key,
+    required this.layout,
+    this.sort,
+    this.onSort
+  });
 
   final SummaryLayout layout;
 
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
+  /// The order the rows are in, or null for the backend's own.
+  final StockSummarySort? sort;
 
-    return SizedBox(
-      height: SummaryLayout.headerTitles,
-      child: SummaryLine(
-        padding: SummaryLayout.headerPadding,
-        layout: layout,
-        field: (column) => TextSmall(
-          column.name,
-          ellipsis: true,
-          color: scheme.text.secondary
-        ),
-        number: (column) => TextSmall(
-          _label(context, column),
-          ellipsis: true,
-          // The two counters that are touched carry the figure in the middle,
-          // between their buttons, so their title does too: leaned to the right
-          // it would sit on the add button and not on what it names.
-          textAlign: column.isStock || column.isReserved
-            ? TextAlign.center
-            : TextAlign.right,
-          color: scheme.text.secondary
-        )
+  /// Orders by the column of that key; null leaves every title still.
+  final ValueChanged<String>? onSort;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: SummaryLayout.headerTitles,
+    child: SummaryLine(
+      padding: SummaryLayout.headerPadding,
+      layout: layout,
+      field: (column) => _title(
+        column,
+        column.name,
+        SummaryLayout.alignsRight(column) ? TextAlign.right : TextAlign.left
+      ),
+      number: (column) => _title(
+        column,
+        _label(context, column),
+        // The two counters that are touched carry the figure in the middle,
+        // between their buttons, so their title does too: leaned to the right
+        // it would sit on the add button and not on what it names.
+        column.isStock || column.isReserved ? TextAlign.center : TextAlign.right
       )
+    )
+  );
+
+  Widget _title(StockSummaryColumn column, String label, TextAlign align) =>
+    _SortTitle(
+      label: label,
+      align: align,
+      descending: sort?.key == column.key ? sort!.descending : null,
+      onTap: onSort == null || !column.sortable ? null : () => onSort!(column.key)
     );
-  }
 
   /// What a numbers column is called: what the company wrote, or what that
   /// column is when there's nothing of its own behind it.
@@ -65,6 +82,66 @@ class SummaryHeader extends StatelessWidget {
         S.of(context).stock_summary_performance,
       _ => ""
     };
+  }
+}
+
+/// A column's title in the header, which orders the column when it can ([onTap]).
+///
+/// The arrow goes **beside** the title and not in place of anything: it says which
+/// way the rows go (up: smallest first) and is the only mark of which column they
+/// are ordered by. A long title gives way to it, not the other way round.
+class _SortTitle extends StatelessWidget {
+  const _SortTitle({
+    required this.label,
+    required this.align,
+    this.descending,
+    this.onTap
+  });
+
+  final String label;
+  final TextAlign align;
+
+  /// Which way the rows go by this column, or null if they aren't ordered by it.
+  final bool? descending;
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final active = descending != null;
+
+    final title = Row(
+      mainAxisAlignment: switch (align) {
+        TextAlign.right => MainAxisAlignment.end,
+        TextAlign.center => MainAxisAlignment.center,
+        _ => MainAxisAlignment.start
+      },
+      children: [
+        Flexible(child: TextSmall(
+          label,
+          ellipsis: true,
+          textAlign: align,
+          color: active ? scheme.text.primary : scheme.text.secondary
+        )),
+        if (active) ...[
+          SizedBox(width: AppSize.spaceXS),
+          Icon(
+            descending! ? CI.arrow_down : CI.arrow_top,
+            size: AppSize.text * 0.8,
+            color: scheme.text.primary
+          )
+        ]
+      ]
+    );
+
+    if (onTap == null) return title;
+
+    return FocusableWidget(
+      action: onTap,
+      mouseCursor: SystemMouseCursors.click,
+      child: title
+    );
   }
 }
 
@@ -180,9 +257,9 @@ class SummaryProductRow extends StatelessWidget {
 /// products: if both weren't drawn with the same distribution, each title would
 /// land over the wrong column.
 ///
-/// The middle columns share the leftover width in proportion to how wide they
-/// were left in the spreadsheet ([SummaryLayout.flexOf]); the photo and the
-/// numbers measure their own.
+/// The text columns share the leftover width in proportion to how wide they
+/// were left in the spreadsheet ([SummaryLayout.flexOf]); the photo, the numbers
+/// and the short columns ([SummaryLayout.widthOf]) measure their own.
 class SummaryLine extends StatelessWidget {
   const SummaryLine({
     super.key,
@@ -224,19 +301,17 @@ class SummaryLine extends StatelessWidget {
           ),
           gap
         ],
-        // A table can have no column in the summary (none chosen yet, or the
-        // only ones it has are the photo and stock): the hole is filled by the
+        for (final column in layout.fields) ...[
+          if (SummaryLayout.widthOf(column) case final width?)
+            SizedBox(width: width, child: field(column))
+          else
+            Expanded(flex: SummaryLayout.flexOf(column), child: field(column)),
+          gap
+        ],
+        // A table can have no text column in the summary (none chosen yet, or
+        // only short ones like a price and a code): the leftover is filled by the
         // air, so the numbers don't shift to the middle.
-        if (layout.fields.isEmpty)
-          const Spacer()
-        else
-          for (final column in layout.fields) ...[
-            Expanded(
-              flex: SummaryLayout.flexOf(column),
-              child: field(column)
-            ),
-            gap
-          ],
+        if (!layout.hasFlexible) const Spacer(),
         for (final column in layout.numbers) ...[
           SizedBox(width: SummaryLayout.numberWidth, child: number(column)),
           if (column != layout.numbers.last) gap

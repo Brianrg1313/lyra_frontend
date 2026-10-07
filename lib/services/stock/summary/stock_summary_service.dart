@@ -42,6 +42,11 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// another response —and almost always incomplete— as soon as the table goes
 /// past a few pages.
 ///
+/// **A column's title orders it** ([sortBy]), and through the backend as well (`SORT`,
+/// `stock.md` ST-35): sorting the rows read would be ordering the first pages, not the
+/// table. The order outlives a search and a reread; it is dropped only when its column
+/// leaves the summary or the backend refuses it.
+///
 /// It is ephemeral: owned by the inventory section and discarded when leaving
 /// it. The shell remounts the section when changing company, so there is
 /// nothing to invalidate on its own account.
@@ -98,6 +103,11 @@ class StockSummaryService extends ChangeNotifier {
   /// What was written in the search box, already normalized.
   String _query = "";
 
+  StockSummarySort? _sort;
+
+  /// What the backend refuses a sort with: the cloud's `message`, a master's `code`.
+  static const Set<String> _refusedSort = {"invalid_search", "invalid_field"};
+
   StockSummaryStatus get status => _status;
 
   /// The table the backend summarized. Empty while no response has arrived. It
@@ -112,6 +122,9 @@ class StockSummaryService extends ChangeNotifier {
   int get total => _total;
 
   bool get isSearching => _query.isNotEmpty;
+
+  /// The order the rows come in, or null for the backend's own.
+  StockSummarySort? get sort => _sort;
 
   /// Whether there is anything left to read. Decided by the total and not by
   /// the last page: a full page does not mean there is another one behind it.
@@ -177,6 +190,19 @@ class StockSummaryService extends ChangeNotifier {
     if (query == _query) return Future.value();
 
     _query = query;
+
+    return _read(1, reset: true);
+  }
+
+  /// Orders the summary by the column [key]: from its smallest value up, or the other way
+  /// if it already was ordered by it (`StockSummarySort.next`).
+  ///
+  /// Back to the first page, like [search]: the rows read are in the old order.
+  Future<void> sortBy(String key) {
+    final column = _columns.where((column) => column.key == key).firstOrNull;
+    if (column == null || !column.sortable) return Future.value();
+
+    _sort = _sort?.next(key) ?? StockSummarySort(key);
 
     return _read(1, reset: true);
   }
@@ -327,7 +353,13 @@ class StockSummaryService extends ChangeNotifier {
     final StockSummaryPage result;
 
     try {
-      result = await _source.summary(page: page, size: size, match: _query, tableId: tableId);
+      result = await _source.summary(
+        page: page,
+        size: size,
+        match: _query,
+        tableId: tableId,
+        sort: _sort
+      );
     } catch (error) {
       if (kDebugMode) print("loadStockSummary failed: $error");
 
@@ -338,6 +370,14 @@ class StockSummaryService extends ChangeNotifier {
       if (generation != _generation) return;
 
       _reading = false;
+
+      // A sort the backend no longer takes (its column stopped being one it can order
+      // by) would fail every retry the same way: it is dropped and the summary read in
+      // its own order, which is what there is to show.
+      if (_sort != null && error is Map && (_refusedSort.contains(error["message"]) || _refusedSort.contains(error["code"]))) {
+        _sort = null;
+        return _read(1, reset: true, quiet: quiet);
+      }
 
       // Without tables there is nothing to summarize, and that is not an error
       // to retry: the section is already offering to create the first one.
@@ -368,6 +408,15 @@ class StockSummaryService extends ChangeNotifier {
     _table = result.table;
     _columns = result.columns;
     _total = result.total;
+
+    // The column it was ordered by left the summary (turned off in the table's
+    // settings): the rows still come in its order, but no title would say so, so
+    // they are read again in the backend's own.
+    final sort = _sort;
+    if (sort != null && !_columns.any((column) => column.key == sort.key && column.sortable)) {
+      _sort = null;
+      return _read(1, reset: true, quiet: quiet);
+    }
 
     // The reread underneath brought in a single request the pages that were
     // already there, so the count stays at those and the next batch still is

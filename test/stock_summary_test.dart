@@ -11,6 +11,7 @@ import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
+import 'package:app/services/stock/summary/stock_summary_service.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
@@ -197,6 +198,160 @@ void main() {
     test('una respuesta sin columnas no es un resumen vacio', () {
       expect(StockSummaryPage.fromResponse(null).isEmpty, isTrue);
       expect(StockSummaryPage.fromResponse(_response()).isEmpty, isFalse);
+    });
+  });
+
+  group('the order', () {
+    const name = "11111111-1111-4111-8111-111111111111";
+    const price = "22222222-2222-4222-8222-222222222222";
+
+    test("the company's columns and a named stock order it; the rest don't", () {
+      final columns = StockSummaryPage.fromResponse(_response()).columns;
+
+      // image, name, price, stock ("Cantidad": a stock column behind it), reserved, performance.
+      expect(columns.map((column) => column.sortable), [false, true, true, true, false, false]);
+
+      // Without a stock column behind it the backend has nothing stored to order by.
+      expect(const StockSummaryColumn(key: StockSummaryColumn.stockKey, fixed: true).sortable, isFalse);
+    });
+
+    test('a click orders up, the next one down, another column starts up', () {
+      const up = StockSummarySort(price);
+
+      expect(up.next(price), const StockSummarySort(price, descending: true));
+      expect(up.next(price).next(price), up);
+      expect(up.next(price).next(name), const StockSummarySort(name));
+    });
+
+    test('the order travels to the source and back to the first page', () async {
+      final source = _Source(answer: _response());
+      final service = StockSummaryService(source: source);
+      addTearDown(service.dispose);
+
+      await service.load();
+      await service.sortBy(price);
+      await service.sortBy(price);
+      await service.sortBy(StockSummaryColumn.reservedKey);
+
+      // The reserved count has nothing to order by: that click reads nothing.
+      expect(source.sorts, [
+        null,
+        const StockSummarySort(price),
+        const StockSummarySort(price, descending: true)
+      ]);
+      expect(service.sort, const StockSummarySort(price, descending: true));
+      expect(service.status, StockSummaryStatus.ready);
+    });
+
+    test('a search keeps the order', () async {
+      final source = _Source(answer: _response());
+      final service = StockSummaryService(source: source);
+      addTearDown(service.dispose);
+
+      await service.load();
+      await service.sortBy(name);
+      await service.search("yerba");
+
+      expect(source.sorts.last, const StockSummarySort(name));
+    });
+
+    test('an order the backend refuses is dropped, not retried forever', () async {
+      final source = _Source(answer: _response(), refuseSort: true);
+      final service = StockSummaryService(source: source);
+      addTearDown(service.dispose);
+
+      await service.load();
+      await service.sortBy(price);
+
+      expect(source.sorts, [null, const StockSummarySort(price), null]);
+      expect(service.sort, isNull);
+      expect(service.status, StockSummaryStatus.ready);
+    });
+
+    testWidgets('a title orders its column and the ordered one carries the arrow', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1400, 900);
+      addTearDown(tester.view.reset);
+
+      final page = StockSummaryPage.fromResponse(_response());
+      final taps = <String>[];
+
+      await tester.pumpWidget(_app((context) => SizedBox(
+        height: SummaryLayout.headerTitles,
+        child: SummaryHeader(
+          layout: SummaryLayout.of(context, page.columns),
+          sort: const StockSummarySort(price, descending: true),
+          onSort: taps.add
+        )
+      )));
+
+      await tester.tap(find.text("Nombre"));
+      await tester.tap(find.text("Precio"));
+      await tester.tap(find.text("Reserved"));
+
+      expect(taps, [name, price]);
+      expect(find.byIcon(CI.arrow_down), findsOneWidget);
+      expect(find.byIcon(CI.arrow_top), findsNothing);
+    });
+  });
+
+  group('the widths', () {
+    testWidgets('a price and a code measure their values; the text takes the rest', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1400, 900);
+      addTearDown(tester.view.reset);
+
+      final response = _response();
+      (response["columns"] as List).insert(3, {
+        "key": "33333333-3333-4333-8333-333333333333",
+        "name": "SKU",
+        "type": "sku",
+        "width": 300,
+        "options": [],
+        "fixed": false
+      });
+
+      final page = StockSummaryPage.fromResponse(response);
+
+      await tester.pumpWidget(_app((context) => SummaryHeader(
+        layout: SummaryLayout.of(context, page.columns)
+      )));
+
+      double widthOf(String title, Type box) => tester.getSize(find.ancestor(
+        of: find.text(title),
+        matching: find.byType(box)
+      ).first).width;
+
+      final priceWidth = widthOf("Precio", SizedBox);
+      final skuWidth = widthOf("SKU", SizedBox);
+
+      // The sheet's width no longer decides theirs: the code was dragged to 300 there.
+      expect(priceWidth, SummaryLayout.widthOf(page.columns[2]));
+      expect(skuWidth, SummaryLayout.widthOf(page.columns[3]));
+      expect(priceWidth, lessThan(skuWidth));
+
+      // And the name, the only text, is wider than both.
+      expect(widthOf("Nombre", Expanded), greaterThan(skuWidth));
+    });
+
+    testWidgets('without a text column the numbers stay at the right end', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1400, 900);
+      addTearDown(tester.view.reset);
+
+      final response = _response();
+      (response["columns"] as List).removeAt(1);
+      final page = StockSummaryPage.fromResponse(response);
+
+      await tester.pumpWidget(_app((context) => SummaryHeader(
+        layout: SummaryLayout.of(context, page.columns)
+      )));
+
+      expect(tester.takeException(), isNull);
+
+      final header = tester.getRect(find.byType(SummaryHeader));
+      final last = tester.getRect(find.text("Performance"));
+      expect(last.right, closeTo(header.right - SummaryLayout.headerPadding.right, 1));
     });
   });
 
@@ -405,14 +560,35 @@ void main() {
   });
 }
 
-/// A summary source whose pages never come, noting which table each read asked for.
+/// A summary source noting which table and order each read asked for. Its pages never
+/// come unless it is given an [answer]; [refuseSort] refuses any ordered read the way the
+/// cloud does.
 class _Source implements StockSource {
+  _Source({this.answer, this.refuseSort = false});
+
+  final Map<String, dynamic>? answer;
+  final bool refuseSort;
+
   final tables = <String>[];
+  final sorts = <StockSummarySort?>[];
 
   @override
-  Future<StockSummaryPage> summary({required int page, required int size, String match = "", String tableId = ""}) {
+  Future<StockSummaryPage> summary({
+    required int page,
+    required int size,
+    String match = "",
+    String tableId = "",
+    StockSummarySort? sort
+  }) async {
     tables.add(tableId);
-    return Completer<StockSummaryPage>().future;
+    sorts.add(sort);
+
+    if (sort != null && refuseSort) throw {"message": "invalid_search", "action": null};
+
+    final answer = this.answer;
+    if (answer == null) return Completer<StockSummaryPage>().future;
+
+    return StockSummaryPage.fromResponse(answer);
   }
 
   @override

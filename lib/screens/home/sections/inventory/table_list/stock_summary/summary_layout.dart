@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 
 /// How the width of a stock summary row is distributed.
@@ -10,9 +11,10 @@ import 'package:app/services/stock/summary/stock_summary_model.dart';
 /// the three numbers— but here it isn't drawn as a spreadsheet: it's a list
 /// below the tables grid, on the same scroll, so it can't have its own
 /// horizontal scroll nor draggable columns. What it does is **distribute
-/// whatever width there is**: the photo and the numbers measure what they
-/// measure and the middle columns take the rest, each in proportion to how wide
-/// they were left in the spreadsheet.
+/// whatever width there is**: the photo, the numbers and the short columns
+/// ([widthOf]: a price, a code, a date) measure what their values measure, and the
+/// texts take the rest, each in proportion to how wide they were left in the
+/// spreadsheet.
 ///
 /// That's also why **columns are left over**. A table can have ten columns in
 /// the summary and on a phone not even two fit: the first ones are shown, which
@@ -86,7 +88,51 @@ class SummaryLayout {
   /// The air between one column and the next.
   static double get gap => AppSize.spaceS;
 
-  /// How much a column takes of the middle of the leftover width.
+  /// The width of a column whose values have a length of their own, or null for a text,
+  /// which takes its share of what is left ([flexOf]).
+  ///
+  /// A price is two to twelve figures with its symbol, a code a dozen characters and a
+  /// date always the same: given a share like a name's, they were drawn as a few figures
+  /// lost in a wide column while the name beside them was being cut. Measured in the
+  /// text's size, so they keep fitting what they hold at any font size; a value longer
+  /// than its column (a twenty-character code) is cut like any other.
+  static double? widthOf(StockSummaryColumn column) => switch (column.type) {
+    TableFieldType.boolean => AppSize.text * 4.5,
+    TableFieldType.number ||
+    TableFieldType.decimal ||
+    TableFieldType.counter ||
+    TableFieldType.discount ||
+    TableFieldType.percentage => AppSize.text * 6,
+    TableFieldType.price ||
+    TableFieldType.currency ||
+    TableFieldType.measure => AppSize.text * 8,
+    TableFieldType.date => AppSize.text * 7.5,
+    TableFieldType.datetime => AppSize.text * 9.5,
+    TableFieldType.sku ||
+    TableFieldType.barcode ||
+    TableFieldType.phone => AppSize.text * 10,
+    _ => null
+  };
+
+  /// Whether a column's values are figures, which go against the right edge of their
+  /// column (the header's title too) so they compare top to bottom unit under unit.
+  static bool alignsRight(StockSummaryColumn column) => switch (column.type) {
+    TableFieldType.number ||
+    TableFieldType.decimal ||
+    TableFieldType.counter ||
+    TableFieldType.discount ||
+    TableFieldType.percentage ||
+    TableFieldType.price ||
+    TableFieldType.currency ||
+    TableFieldType.measure => true,
+    _ => false
+  };
+
+  /// Whether any of [fields] takes a share of the leftover width. Without one the
+  /// leftover is air before the numbers, so they don't shift to the middle.
+  bool get hasFlexible => fields.any((column) => widthOf(column) == null);
+
+  /// How much a text column takes of the middle of the leftover width.
   ///
   /// It's the width it was left at in the spreadsheet, which already says which
   /// is a description and which a code. A column nobody touched is worth what a
