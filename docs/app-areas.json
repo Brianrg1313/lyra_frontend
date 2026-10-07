@@ -237,6 +237,20 @@
       }
     },
     {
+      "key": "knowledge",
+      "title": "Frequent questions",
+      "modes": ["cloud"],
+      "scope": "company",
+      "routes": ["knowledge"],
+      "paths": ["/home/knowledge"],
+      "actions": ["view", "create", "edit", "delete"],
+      "action_notes": {
+        "create": "Write a question, with or without its answer.",
+        "edit": "Answer the questions Lyra left, change an answer, its branch, dates and products, turn it on or off.",
+        "delete": "Retire a question for good."
+      }
+    },
+    {
       "key": "finance",
       "title": "Finance",
       "modes": ["cloud", "local", "hybrid"],

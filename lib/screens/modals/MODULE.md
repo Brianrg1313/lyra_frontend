@@ -2,7 +2,7 @@
 
 **Path** `lib/screens/modals`
 **Role** Every dialog and side panel. Modals are **not routes**: not in `routes.dart`, no URL change.
-**Layout** One folder per opening section (`business/ channels/ inventory/ sales/ finance/ messages/ pos/ pre_start/ permissions/ home/`),
+**Layout** One folder per opening section (`business/ channels/ knowledge/ inventory/ sales/ finance/ messages/ pos/ pre_start/ permissions/ home/`),
 `shared/` for modals opened by more than one. One folder per modal, entry `_<name>.dart`,
 parts beside it. A modal moves to `shared/` only once a second section opens it.
 
@@ -95,6 +95,12 @@ through `Navigator.pop(context, value)`.
 - `channel_detail/edit_bar.dart` — `ChannelEditBar`: confirm/cancel pair, absent until something differs.
 - `baileys_pairing/_baileys_pairing.dart` — `showBaileysPairing(context, channelId:, initial:)`,
   `BaileysPairingModal`: QR; opened by `BaileysChannelSwitch` on `qr_pending`, closes on connect.
+
+### `knowledge/` (from the knowledge section)
+- `knowledge_form/_knowledge_form.dart` — `showKnowledgeForm(context, entry?, branches, branchesFailed)` → `KnowledgeDraft?`, `KnowledgeFormModal`: question, context (`Input(lines: 7)`), tags, branch (only with a choice), dates (checked as real days, first ≤ last), products. Writes nothing.
+- `knowledge_form/knowledge_product_picker.dart` — `KnowledgeProductPicker`: picked products as chips + its own `KnowledgeProductSearch` (max 20).
+- `knowledge_form/knowledge_snippets.dart` — `KnowledgeSnippets`: lines appended to the context (hours, deadline, spots, agent confirms).
+- `knowledge_form/knowledge_lyra_notice.dart` — `KnowledgeLyraNotice`: head of a question Lyra left (asked by a customer, how many times).
 
 ### `inventory/`
 - `create_table/_create_table.dart` — `CreateTableModal`: title, description, colour.

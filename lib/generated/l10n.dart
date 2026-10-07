@@ -22491,6 +22491,824 @@ class S {
       args: [],
     );
   }
+
+  /// `Frequent questions`
+  String get knowledge {
+    return Intl.message(
+      'Frequent questions',
+      name: 'knowledge',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What Lyra knows to answer when customers ask how the business works`
+  String get knowledge_subtitle {
+    return Intl.message(
+      'What Lyra knows to answer when customers ask how the business works',
+      name: 'knowledge_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New question`
+  String get knowledge_create {
+    return Intl.message(
+      'New question',
+      name: 'knowledge_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The questions could not be loaded`
+  String get knowledge_error_title {
+    return Intl.message(
+      'The questions could not be loaded',
+      name: 'knowledge_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the connection and try again`
+  String get knowledge_error_subtitle {
+    return Intl.message(
+      'Check the connection and try again',
+      name: 'knowledge_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get knowledge_retry {
+    return Intl.message(
+      'Try again',
+      name: 'knowledge_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No frequent questions yet`
+  String get knowledge_empty_title {
+    return Intl.message(
+      'No frequent questions yet',
+      name: 'knowledge_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write the questions customers ask and what Lyra should know to answer them: warranties, wholesale, hours, deadlines. The questions Lyra could not answer also land here.`
+  String get knowledge_empty_subtitle {
+    return Intl.message(
+      'Write the questions customers ask and what Lyra should know to answer them: warranties, wholesale, hours, deadlines. The questions Lyra could not answer also land here.',
+      name: 'knowledge_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No question matches your search`
+  String get knowledge_search_empty {
+    return Intl.message(
+      'No question matches your search',
+      name: 'knowledge_search_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No question here`
+  String get knowledge_filter_empty {
+    return Intl.message(
+      'No question here',
+      name: 'knowledge_filter_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All`
+  String get knowledge_filter_all {
+    return Intl.message(
+      'All',
+      name: 'knowledge_filter_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To answer`
+  String get knowledge_filter_pending {
+    return Intl.message(
+      'To answer',
+      name: 'knowledge_filter_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In use`
+  String get knowledge_filter_active {
+    return Intl.message(
+      'In use',
+      name: 'knowledge_filter_active',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not in use`
+  String get knowledge_filter_inactive {
+    return Intl.message(
+      'Not in use',
+      name: 'knowledge_filter_inactive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All branches`
+  String get knowledge_filter_branch_all {
+    return Intl.message(
+      'All branches',
+      name: 'knowledge_filter_branch_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whole company`
+  String get knowledge_filter_branch_company {
+    return Intl.message(
+      'Whole company',
+      name: 'knowledge_filter_branch_company',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No branches`
+  String get knowledge_filter_branch_empty {
+    return Intl.message(
+      'No branches',
+      name: 'knowledge_filter_branch_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{1 question is waiting for its context. Lyra does not use a question until it has one.} other{{count} questions are waiting for their context. Lyra does not use a question until it has one.}}`
+  String knowledge_pending_banner(num count) {
+    return Intl.plural(
+      count,
+      one:
+          '1 question is waiting for its context. Lyra does not use a question until it has one.',
+      other:
+          '$count questions are waiting for their context. Lyra does not use a question until it has one.',
+      name: 'knowledge_pending_banner',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Show them`
+  String get knowledge_pending_show {
+    return Intl.message(
+      'Show them',
+      name: 'knowledge_pending_show',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To answer`
+  String get knowledge_state_pending {
+    return Intl.message(
+      'To answer',
+      name: 'knowledge_state_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Off`
+  String get knowledge_state_off {
+    return Intl.message(
+      'Off',
+      name: 'knowledge_state_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Starts {date}`
+  String knowledge_state_scheduled(Object date) {
+    return Intl.message(
+      'Starts $date',
+      name: 'knowledge_state_scheduled',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Ended {date}`
+  String knowledge_state_expired(Object date) {
+    return Intl.message(
+      'Ended $date',
+      name: 'knowledge_state_expired',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `In use`
+  String get knowledge_state_active {
+    return Intl.message(
+      'In use',
+      name: 'knowledge_state_active',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No context yet: Lyra does not use it`
+  String get knowledge_row_no_answer {
+    return Intl.message(
+      'No context yet: Lyra does not use it',
+      name: 'knowledge_row_no_answer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Asked by a customer`
+  String get knowledge_row_from_lyra {
+    return Intl.message(
+      'Asked by a customer',
+      name: 'knowledge_row_from_lyra',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{asked once} other{asked {count} times}}`
+  String knowledge_row_asks(num count) {
+    return Intl.plural(
+      count,
+      one: 'asked once',
+      other: 'asked $count times',
+      name: 'knowledge_row_asks',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Whole company`
+  String get knowledge_row_company {
+    return Intl.message(
+      'Whole company',
+      name: 'knowledge_row_company',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From {date}`
+  String knowledge_row_from(Object date) {
+    return Intl.message(
+      'From $date',
+      name: 'knowledge_row_from',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Until {date}`
+  String knowledge_row_until(Object date) {
+    return Intl.message(
+      'Until $date',
+      name: 'knowledge_row_until',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `{count, plural, =1{1 product} other{{count} products}}`
+  String knowledge_row_products(num count) {
+    return Intl.plural(
+      count,
+      one: '1 product',
+      other: '$count products',
+      name: 'knowledge_row_products',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Options`
+  String get knowledge_options {
+    return Intl.message(
+      'Options',
+      name: 'knowledge_options',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stop using`
+  String get knowledge_turn_off {
+    return Intl.message(
+      'Stop using',
+      name: 'knowledge_turn_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use again`
+  String get knowledge_turn_on {
+    return Intl.message(
+      'Use again',
+      name: 'knowledge_turn_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra no longer uses this answer`
+  String get knowledge_turned_off {
+    return Intl.message(
+      'Lyra no longer uses this answer',
+      name: 'knowledge_turned_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra uses this answer again`
+  String get knowledge_turned_on {
+    return Intl.message(
+      'Lyra uses this answer again',
+      name: 'knowledge_turned_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete question`
+  String get knowledge_delete {
+    return Intl.message(
+      'Delete question',
+      name: 'knowledge_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete this question?`
+  String get knowledge_delete_title {
+    return Intl.message(
+      'Delete this question?',
+      name: 'knowledge_delete_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `“{question}” and its context are deleted. To stop Lyra using it while you rewrite it, use “Stop using” instead.`
+  String knowledge_delete_message(Object question) {
+    return Intl.message(
+      '“$question” and its context are deleted. To stop Lyra using it while you rewrite it, use “Stop using” instead.',
+      name: 'knowledge_delete_message',
+      desc: '',
+      args: [question],
+    );
+  }
+
+  /// `Question deleted`
+  String get knowledge_deleted {
+    return Intl.message(
+      'Question deleted',
+      name: 'knowledge_deleted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Question saved`
+  String get knowledge_saved {
+    return Intl.message(
+      'Question saved',
+      name: 'knowledge_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New question`
+  String get knowledge_form_create_title {
+    return Intl.message(
+      'New question',
+      name: 'knowledge_form_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit question`
+  String get knowledge_form_edit_title {
+    return Intl.message(
+      'Edit question',
+      name: 'knowledge_form_edit_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Answer question`
+  String get knowledge_form_answer_title {
+    return Intl.message(
+      'Answer question',
+      name: 'knowledge_form_answer_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra looks this up when a customer asks something similar, and answers in her own words with what the context says — nothing it does not say.`
+  String get knowledge_form_subtitle {
+    return Intl.message(
+      'Lyra looks this up when a customer asks something similar, and answers in her own words with what the context says — nothing it does not say.',
+      name: 'knowledge_form_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A customer asked this and Lyra could not answer it. Write what she should know about it.`
+  String get knowledge_form_from_lyra {
+    return Intl.message(
+      'A customer asked this and Lyra could not answer it. Write what she should know about it.',
+      name: 'knowledge_form_from_lyra',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Question`
+  String get knowledge_form_question {
+    return Intl.message(
+      'Question',
+      name: 'knowledge_form_question',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `As a customer asks it: Do you sell wholesale?`
+  String get knowledge_form_question_hint {
+    return Intl.message(
+      'As a customer asks it: Do you sell wholesale?',
+      name: 'knowledge_form_question_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write the question`
+  String get knowledge_form_question_empty {
+    return Intl.message(
+      'Write the question',
+      name: 'knowledge_form_question_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Context for Lyra`
+  String get knowledge_form_answer {
+    return Intl.message(
+      'Context for Lyra',
+      name: 'knowledge_form_answer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Yes, from a dozen units. New customers pay in advance. Not every product applies: an agent confirms it first.`
+  String get knowledge_form_answer_hint {
+    return Intl.message(
+      'Yes, from a dozen units. New customers pay in advance. Not every product applies: an agent confirms it first.',
+      name: 'knowledge_form_answer_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not the reply itself: what Lyra needs to know about the topic. Leave it empty to keep the question waiting.`
+  String get knowledge_form_answer_note {
+    return Intl.message(
+      'Not the reply itself: what Lyra needs to know about the topic. Leave it empty to keep the question waiting.',
+      name: 'knowledge_form_answer_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a line`
+  String get knowledge_form_snippets {
+    return Intl.message(
+      'Add a line',
+      name: 'knowledge_form_snippets',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hours`
+  String get knowledge_snippet_hours {
+    return Intl.message(
+      'Hours',
+      name: 'knowledge_snippet_hours',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hours: Monday to Friday from 9:00 to 18:00, Saturday from 9:00 to 13:00.`
+  String get knowledge_snippet_hours_text {
+    return Intl.message(
+      'Hours: Monday to Friday from 9:00 to 18:00, Saturday from 9:00 to 13:00.',
+      name: 'knowledge_snippet_hours_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deadline`
+  String get knowledge_snippet_deadline {
+    return Intl.message(
+      'Deadline',
+      name: 'knowledge_snippet_deadline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deadline: requests are taken until [date].`
+  String get knowledge_snippet_deadline_text {
+    return Intl.message(
+      'Deadline: requests are taken until [date].',
+      name: 'knowledge_snippet_deadline_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Spots`
+  String get knowledge_snippet_spots {
+    return Intl.message(
+      'Spots',
+      name: 'knowledge_snippet_spots',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Spots: [number] available; once they run out, an agent confirms availability.`
+  String get knowledge_snippet_spots_text {
+    return Intl.message(
+      'Spots: [number] available; once they run out, an agent confirms availability.',
+      name: 'knowledge_snippet_spots_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Agent confirms`
+  String get knowledge_snippet_agent {
+    return Intl.message(
+      'Agent confirms',
+      name: 'knowledge_snippet_agent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Before confirming it to the customer, an agent has to check it.`
+  String get knowledge_snippet_agent_text {
+    return Intl.message(
+      'Before confirming it to the customer, an agent has to check it.',
+      name: 'knowledge_snippet_agent_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other words customers use`
+  String get knowledge_form_tags {
+    return Intl.message(
+      'Other words customers use',
+      name: 'knowledge_form_tags',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `wholesale, bulk, dozen`
+  String get knowledge_form_tags_hint {
+    return Intl.message(
+      'wholesale, bulk, dozen',
+      name: 'knowledge_form_tags_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra finds the question by its words and these. Separate them with commas.`
+  String get knowledge_form_tags_note {
+    return Intl.message(
+      'Lyra finds the question by its words and these. Separate them with commas.',
+      name: 'knowledge_form_tags_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Branch`
+  String get knowledge_form_branch {
+    return Intl.message(
+      'Branch',
+      name: 'knowledge_form_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whole company`
+  String get knowledge_form_branch_company {
+    return Intl.message(
+      'Whole company',
+      name: 'knowledge_form_branch_company',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It holds for every branch`
+  String get knowledge_form_branch_company_note {
+    return Intl.message(
+      'It holds for every branch',
+      name: 'knowledge_form_branch_company_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The branches could not be loaded: it is saved for the whole company`
+  String get knowledge_form_branches_error {
+    return Intl.message(
+      'The branches could not be loaded: it is saved for the whole company',
+      name: 'knowledge_form_branches_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing to choose`
+  String get knowledge_form_select_empty {
+    return Intl.message(
+      'Nothing to choose',
+      name: 'knowledge_form_select_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In use between`
+  String get knowledge_form_dates {
+    return Intl.message(
+      'In use between',
+      name: 'knowledge_form_dates',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outside these days Lyra does not use it: a promotion, an enrolment that closes. Year first: 2026-12-31.`
+  String get knowledge_form_dates_note {
+    return Intl.message(
+      'Outside these days Lyra does not use it: a promotion, an enrolment that closes. Year first: 2026-12-31.',
+      name: 'knowledge_form_dates_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From`
+  String get knowledge_form_from {
+    return Intl.message(
+      'From',
+      name: 'knowledge_form_from',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Until`
+  String get knowledge_form_until {
+    return Intl.message(
+      'Until',
+      name: 'knowledge_form_until',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write real dates, the first one before the last`
+  String get knowledge_form_dates_invalid {
+    return Intl.message(
+      'Write real dates, the first one before the last',
+      name: 'knowledge_form_dates_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Products or services`
+  String get knowledge_form_products {
+    return Intl.message(
+      'Products or services',
+      name: 'knowledge_form_products',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When the question is about specific products`
+  String get knowledge_form_products_note {
+    return Intl.message(
+      'When the question is about specific products',
+      name: 'knowledge_form_products_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search by name or code`
+  String get knowledge_form_products_search {
+    return Intl.message(
+      'Search by name or code',
+      name: 'knowledge_form_products_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No product matches`
+  String get knowledge_form_products_empty {
+    return Intl.message(
+      'No product matches',
+      name: 'knowledge_form_products_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The products could not be searched`
+  String get knowledge_form_products_error {
+    return Intl.message(
+      'The products could not be searched',
+      name: 'knowledge_form_products_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Up to 20 products`
+  String get knowledge_form_products_max {
+    return Intl.message(
+      'Up to 20 products',
+      name: 'knowledge_form_products_max',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `optional`
+  String get knowledge_form_optional {
+    return Intl.message(
+      'optional',
+      name: 'knowledge_form_optional',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -23,6 +23,7 @@ import './finance/_finance.dart';
 import './local_server/_local_server.dart';
 import './inventory/table_list/_table_list.dart';
 import './inventory/table_view/_table_view.dart';
+import './knowledge/_knowledge.dart';
 import './messages/_messages.dart';
 import './sales/_sales.dart';
 
@@ -39,6 +40,7 @@ enum HomeSection {
   inventory(key: "inventory", path: "/home/inventory", icon: CI.shop),
   services(key: "services", path: "/home/services", icon: CI.task_list),
   channels(key: "channels", path: "/home/channels", icon: CI.ia),
+  knowledge(key: "knowledge", path: "/home/knowledge", icon: CI.help),
   connections(key: "connections", path: "/home/connections", icon: CI.cloud_connected),
   messages(key: "messages", path: "/home/messages", icon: CI.chat),
   deliveries(key: "deliveries", path: "/home/deliveries", icon: CI.delivery),
@@ -82,10 +84,15 @@ enum HomeSection {
   ];
 
   /// Product group of the side bar.
+  ///
+  /// [knowledge] follows [channels]: the channels decide where Lyra answers,
+  /// the frequent questions what she knows when a customer asks how the
+  /// business works.
   static const List<HomeSection> products = [
     inventory,
     services,
-    channels
+    channels,
+    knowledge
   ];
 
   /// Report group of the side bar.
@@ -136,6 +143,7 @@ enum HomeSection {
     inventory => S.of(context).inventory,
     services => S.of(context).services,
     channels => S.of(context).channels,
+    knowledge => S.of(context).knowledge,
     connections => S.of(context).connections,
     messages => S.of(context).messages,
     deliveries => S.of(context).deliveries,
@@ -178,6 +186,7 @@ enum HomeSection {
   Widget build() => switch (this) {
     inventory => const InventorySection(),
     channels => const ChannelsSection(),
+    knowledge => const KnowledgeSection(),
     connections => const ConnectionsSection(),
     // The money page is built here and not by [homeContent], unlike the
     // business's: its tabs carry no id —every money endpoint answers for the

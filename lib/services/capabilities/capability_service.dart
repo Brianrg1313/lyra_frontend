@@ -77,6 +77,7 @@ class CapabilityService extends ChangeNotifier {
     "inventory.templates": _online,
     "services": _online,
     "channels": _online,
+    "knowledge": _online,
     "finance": _all,
     "finance.overview": _all,
     "finance.overview.view_bot_cost": _notLocal,

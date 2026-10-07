@@ -88,6 +88,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 | business section | `lib/screens/home/sections/business` | Business page and its tabs (statistics, employees, branches, clients, settings/profile). | `.../business/MODULE.md` |
 | inventory section | `lib/screens/home/sections/inventory` | Product tables, one at a time (selector in the bar): stock summary or spreadsheet (cells switch); templates when there is none. | `.../inventory/MODULE.md` |
 | channels section | `lib/screens/home/sections/channels` | AI channels: grid, edit page, form blocks shared with the create/detail panels. | `.../channels/MODULE.md` |
+| knowledge section | `lib/screens/home/sections/knowledge` | Frequent questions Lyra looks up: the company's context per question (branch, products, dates), and the questions Lyra left waiting for one. Cloud only. | `.../knowledge/MODULE.md` |
 | connections section | `lib/screens/home/sections/connections` | Third-party accounts: list and create/edit form. | `.../connections/MODULE.md` |
 | messages section | `lib/screens/home/sections/messages` | Conversation desk (`/aries/v1`): inbox (1/3) and open chat (2/3), live via sockets. | `.../messages/MODULE.md` |
 | deliveries section | `lib/screens/home/sections/deliveries` | Deliveries desk, below messages in the side bar: pending list (placeholder, no endpoint yet) and a map drawn by the self-hosted tile server (`/scorpius`); settings and delivery-area sub-pages. | `.../deliveries/MODULE.md` |

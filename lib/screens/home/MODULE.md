@@ -47,8 +47,8 @@
   pending invitations (`ClientService.invitations`, a dot on the anchor) and opens `InvitationModal` (accepted →
   re-`resolve()`s and switches to it); with `CapabilityService.singleCompany` only shows the one company.
 - `sections/_sections.dart` — **section registry**: `enum HomeSection` (`key path icon`; `dashboard
-  business inventory services channels connections messages deliveries sales finance marketing report externalServices
-  server`), groups `.home` (dashboard, business, messages, deliveries, sales; untitled) `.products`
+  business inventory services channels knowledge connections messages deliveries sales finance marketing report externalServices
+  server`), groups `.home` (dashboard, business, messages, deliveries, sales; untitled) `.products` (inventory, services, channels, knowledge)
   `.reports` (finance first) `.connectionGroups` (with `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
   `needsBusiness`, `build()`; `homeContent(currentKey, section, businessId)` (incl. sub-pages).
 - `sections/_section/` — widgets shared by every section (none is a section itself).
@@ -73,7 +73,7 @@
 
 ## Sections with their own module
 
-`sections/{business,inventory,channels,connections,messages,deliveries,sales,finance,local_server}/MODULE.md`.
+`sections/{business,inventory,channels,knowledge,connections,messages,deliveries,sales,finance,local_server}/MODULE.md`.
 
 ## Adding a section
 

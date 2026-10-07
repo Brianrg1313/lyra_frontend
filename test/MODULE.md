@@ -2,7 +2,7 @@
 
 **Path** `test` (flat, 136 files, `<subject>_test.dart`)
 **Run** `flutter test` · `flutter test test/<file>_test.dart`
-**Baseline** 1257 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
+**Baseline** 1262 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
 
 Pure logic and small widgets, not whole screens. **No test may hit the network.** Each file's
 `///` header states the rule it pins and why — read it before changing the test.
@@ -22,6 +22,7 @@ Pure logic and small widgets, not whole screens. **No test may hit the network.*
 | Badges | `badges` | `/init`'s badges kept only for the company they were measured for; a place reads its anchors (or a field its badge keys) with each badge once; `badges/changed`/`reset` are a reread, a burst one read; a switch drops the old dots at once; only dismissible keys are sent as seen, leaving at once; opening a section sees its news; a badge opens the tab that fixes it; a counting place shows a number, alerts a dot, a clear one nothing; `BadgeNotes` says them in words. Seam `BadgesService.transport`. |
 | Routing & shell | `navis_links` `navis_shell` `home_sections_routing` `home_business_scope` `side_bar_permissions` `tab_permissions` `business_listener` `home_service_persistence` `pos_page` `connection_rebind` | URLs per section/tab, business scoping, side bar locks sections without their `view` (per company; none = only `needsBusiness`) and those the network can't serve, with that reason, tabs locked and opening on the first granted one, rebind only when a connection was opened. |
 | Channels | `channel_card_sources` `channel_form_dirty` `channel_form_select_label` `channel_edit_bar` `channel_detail_panel` `channel_payment_methods` | Card names its tables; `dirty` is a comparison; select gets its label (no mid-build write); unlink only for WhatsApp Personal; `PAYMENT_METHODS` always travels. |
+| Knowledge | `knowledge` | `/knowledge` read from its compressed list (a product without an id dropped); the write bodies carry the whole scope, empty clearing it; tags split on commas without repeats; questions waiting go first, most asked on top; the filters and the branch narrow the list (whole company = no branch). |
 | POS | `pos_catalog` `pos_invoice` `pos_ticket` `pos_ticket_sync` `pos_amount_modal` | Invoice → panel, totals from the ticket rate, external charge/cancel/unhold. Seams `PosInvoiceService.seed`/`.receive`. |
 | Sales | `sales_board` `sales_search` `sales_filters` `sales_detail` `sales_detail_panel` `sales_proof` `sales_approve` `sales_money_layout` `sales_items_panel` | Tabs = `SECTION`; nulls kept; `sale/progress` effects; detail parse nulls; proof from file; approval by conversation; money grid; items virtualized. Seams `SalesService.seed`/`.receive`. |
 | Messages | `messages_inbox` `messages_thread` | Rows by key name; tag codes and catalog; request bodies; socket events on rows (top, handover, stage, tags, attended, pending past page 1); inbox panel at a third of the width with tag chips; messages deduped by id, ticks forward only, rekey, detail marks and tags, `chat/tags` on the open chat, detail `usage` (null ≠ zero). Seams `ChatsService`/`ChatThreadService` `.seed`/`.receive`. |

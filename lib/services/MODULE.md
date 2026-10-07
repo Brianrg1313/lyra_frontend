@@ -22,7 +22,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
   error or `UnreadableAnswer`) and `<x>_cloud_source.dart` (the REST calls, `const`, stateless).
   A service takes `{XSource? source}` for tests and otherwise reads `Sources.<x>`
   (`lib/toolkit/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
-  domains (chats, channels, connections, maps, baileys, places, money AI, sign up, business
+  domains (chats, channels, connections, knowledge, maps, baileys, places, money AI, sign up, business
   e-mails, badges, account) are not split.
 
 ## local_server/ — the master's engine (`lyra_node`), desktop only
@@ -226,6 +226,16 @@ Reached through `LanService.server` (the `lan/` services own it).
   `channel_tools.dart` — `ChannelTool`.
 - `channel_request.dart` — create/update bodies. `TABLES`, `TOOLS`, `PAYMENT_METHODS` always travel
   and replace the whole selection (empty = none).
+
+## knowledge/ — frequent questions (knowledge section; cloud only, `api` direct)
+
+- `knowledge_service.dart` — `KnowledgeService` (+ `KnowledgeStatus`): `GET /knowledge/`, `create`/`edit`/`remove` (reread after
+  each write: `state` and product names are the backend's), `toggle` (row flipped at once, reverted on failure), `pending`.
+- `knowledge_entry_model.dart` — `KnowledgeEntry` (`fromResponse`: the compressed list), `KnowledgeState`, `KnowledgeSource`,
+  `KnowledgeBranch`, `KnowledgeProduct` (`{id, table, name}`, equal by id).
+- `knowledge_request.dart` — `KnowledgeDraft`, `createKnowledgeRequest`, `editKnowledgeRequest` (the whole scope always travels,
+  empty = clear), `toggleKnowledgeRequest`, `deleteKnowledgeRequest`, `splitKnowledgeTags`.
+- `knowledge_product_search.dart` — `KnowledgeProductSearch`: `POST /knowledge/products/` (`SEARCH`), only the latest answer counts.
 
 ## baileys/ — WhatsApp Personal sidecar link
 
@@ -511,7 +521,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/init/` · `/badges/{,seen/}` · `/profile/employments/` · `/authentication/two_factor/{,app,email,code,recovery,verify}/` · `/authentication/email/sign_up/password/` · `/permissions/requests/` · `/authentication/email/{verify,sign_in/password,sign_in/code,sign_up/code,sign_up/names}/` · `/authentication/logout/` · `/business/{create,profile,logo,emails,emails/verify,payments}/`
 `/business/employees/{,former/,detail/$id}`
 `/business/location/{,search,place}/` · `/business/delivery/{,options,providers}/`
-`/channels/{,providers/,detail/$id}` · `/connections/{,providers/,detail/$id}`
+`/channels/{,providers/,detail/$id}` · `/connections/{,providers/,detail/$id}` · `/knowledge/{,products/}`
 `/inventory/products/builder/{list,structure,details,fields,normalize}/` ·
 `/inventory/products/records/{list,manage,images}/` · `/inventory/products/import/{structure,records}/$format/` ·
 `/inventory/stock/summary/`
