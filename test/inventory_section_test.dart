@@ -135,6 +135,18 @@ void main() {
     expect(find.text("Depósito"), findsNothing);
   });
 
+  testWidgets("the bar ends in the open table's settings and create", (tester) async {
+    await _open(tester, HomeSection.inventory.path);
+
+    expect(find.byIcon(CI.setting), findsOneWidget);
+    expect(find.text(S.current.create_table), findsOneWidget);
+
+    // Create is the last thing on the right.
+    final settings = tester.getCenter(find.byIcon(CI.setting)).dx;
+    final create = tester.getCenter(find.text(S.current.create_table)).dx;
+    expect(create, greaterThan(settings));
+  });
+
   testWidgets("a table's link opens that table", (tester) async {
     await _open(tester, "/home/inventory/$_second");
 

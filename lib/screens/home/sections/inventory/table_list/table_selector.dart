@@ -10,19 +10,13 @@ import 'package:core/form.dart';
 
 /// The open table, in the place of the section's title, and the switch to another: the
 /// same anchor as the header's business selector, unfolding the company's tables.
-///
-/// Creating and importing live at the end of that list, as creating a company does in
-/// the business selector: they are a new table, and the list is where tables are chosen.
-/// Creating is written in the list itself (the name, Enter), which is all a table needs to
-/// exist; its columns are written in the sheet.
+/// Creating and importing are the bar's own buttons, not options of this list.
 class TableSelector extends StatelessWidget {
   const TableSelector({
     super.key,
     required this.tables,
     required this.table,
     required this.onSelect,
-    required this.onCreate,
-    this.onImport,
     this.stageOf
   });
 
@@ -33,18 +27,8 @@ class TableSelector extends StatelessWidget {
 
   final void Function(TableLiteModel table) onSelect;
 
-  /// Creates a blank table named as typed; answers its id, or null if it was not created
-  /// (the service already said why).
-  final Future<String?> Function(String name) onCreate;
-
-  /// Null where importing isn't offered (`inventory.import`).
-  final void Function()? onImport;
-
   /// What a table's import is up to, to say it in its row.
   final TableImportStage? Function(String tableId)? stageOf;
-
-  /// The import option's value: never a table id (those are uuids).
-  static const _import = "\u0000import";
 
   @override
   Widget build(BuildContext context) {
@@ -85,34 +69,15 @@ class TableSelector extends StatelessWidget {
           placeholder: option.title,
           leading: TableDot(color: option.color),
           subtitle: _subtitle(s, option)
-        ),
-        if (onImport != null) SelectOption(
-          value: _import,
-          placeholder: s.import_table,
-          icon: Icons.file_upload_outlined
         )
-      ],
-      createText: s.create_table,
-      createPlaceholder: s.table_title_placeholder,
-      onCreate: (name) async {
-        final id = await onCreate(name);
-        return id == null ? null : SelectOption(value: id, placeholder: name);
-      }
+      ]
     );
 
     if (picked == null) return;
 
-    if (picked.value == _import) {
-      onImport?.call();
-      return;
-    }
-
     for (final option in tables) {
       if (option.id == picked.value) return onSelect(option);
     }
-
-    // Just created: not in the list yet, which reloads behind.
-    onSelect(TableLiteModel(id: picked.value, title: picked.placeholder));
   }
 
   /// What tells a table apart in the list: an import still running, then being the

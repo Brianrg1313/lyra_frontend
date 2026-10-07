@@ -2663,8 +2663,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Table created. Its columns and rows are still loading"),
         "import_table_unsupported": MessageLookupByLibrary.simpleMessage(
             "Only spreadsheet and CSV files can be imported"),
-        "import_table_uploading":
-            MessageLookupByLibrary.simpleMessage("Uploading file…"),
         "inbox": MessageLookupByLibrary.simpleMessage("Inbox"),
         "inventory": MessageLookupByLibrary.simpleMessage("Inventory"),
         "inventory_start_blank":

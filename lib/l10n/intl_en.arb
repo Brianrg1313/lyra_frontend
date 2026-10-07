@@ -703,7 +703,6 @@
   "import_table_started": "Table created. Its columns and rows are still loading",
   "import_table_partial": "The table was created, but its rows could not be imported",
   "import_table_unsupported": "Only spreadsheet and CSV files can be imported",
-  "import_table_uploading": "Uploading file…",
   "import_table_busy": "This table is still being imported. It opens once its columns and rows are in",
   "import_table_preparing": "Setting up columns",
   "import_table_loading": "Loading rows",

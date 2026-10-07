@@ -7046,16 +7046,6 @@ class S {
     );
   }
 
-  /// `Uploading file…`
-  String get import_table_uploading {
-    return Intl.message(
-      'Uploading file…',
-      name: 'import_table_uploading',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `This table is still being imported. It opens once its columns and rows are in`
   String get import_table_busy {
     return Intl.message(

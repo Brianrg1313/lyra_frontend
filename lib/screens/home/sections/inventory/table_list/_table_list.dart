@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/capabilities/capability_service.dart';
@@ -10,17 +9,19 @@ import 'package:provider/provider.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/import_source.dart';
-import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
+import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 
+import 'import_button.dart';
 import 'inventory_bar.dart';
 import 'inventory_start.dart';
 import 'stock_summary/_stock_summary.dart';
@@ -32,8 +33,8 @@ import 'view_toggle.dart';
 /// time**.
 ///
 /// The bar's title is the open table ([TableSelector]): picking another one switches
-/// the whole section to it, and creating or importing one is at the end of that list.
-/// Next to it, the cells switch ([InventoryViewToggle]) shows the open table as its
+/// the whole section to it. The bar's right end carries the open table's settings, the
+/// import and create, whatever the view. Next to the selector, the cells switch ([InventoryViewToggle]) shows the open table as its
 /// stock summary ([StockSummarySection]: photo, the columns chosen for it and what's
 /// left) or as every cell of it ([TableViewSection], the sheet). Both are the account's
 /// choices and are remembered (`PreferencesService`): which table, per company, and
@@ -61,13 +62,10 @@ class _InventorySectionState extends State<InventorySection> {
   /// resolved against the list on each build ([_open]).
   String? _picked;
 
-  /// `true` while the file is being picked and the table created with it. What
-  /// follows —the backend typing the columns, the rows going up— shows on the table.
+  /// `true` while the file is being picked and the table created with it; the import
+  /// button shows it. What follows —the backend typing the columns, the rows going
+  /// up— shows on the table.
   final _importing = ValueNotifier<bool>(false);
-
-  /// A blank table's colour: the create request asks for one and the name is all
-  /// that's asked when it is created from the selector.
-  static const _color = "0xFFF87171";
 
   @override
   void initState() {
@@ -120,28 +118,6 @@ class _InventorySectionState extends State<InventorySection> {
     // what the app reopens on: back to the section's own path.
     if (Navis.currentKey.value == TableViewSection.routeKey) {
       Navis.push(context, "/home/inventory");
-    }
-  }
-
-  /// A blank table named in the selector. The list reloads behind and the new table
-  /// opens at once.
-  Future<String?> _createNamed(String name) async {
-    try {
-      final id = await context.read<TablesService>().create(context, createTableRequest(
-        title: name,
-        description: "",
-        color: _color
-      ));
-
-      if (mounted) {
-        FloatFlag.of(context).message(S.of(context).table_created);
-        _load();
-      }
-
-      return id;
-    } catch (_) {
-      // The service already showed why.
-      return null;
     }
   }
 
@@ -264,21 +240,27 @@ class _InventorySectionState extends State<InventorySection> {
         tables: tables,
         table: table,
         onSelect: (table) => _select(table.id),
-        onCreate: _createNamed,
-        onImport: _importAction,
         stageOf: service.importStage
       ),
       controls: [
         TableOptionsButton(table: table),
         const InventoryViewToggle()
+      ],
+      actions: [
+        _SettingsButton(tableId: table.id),
+        if (_importAction != null) ImportButton(action: _import, loading: _importing),
+        Button(
+          width: null,
+          title: S.of(context).create_table,
+          leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
+          action: _createWithModal
+        )
       ]
     );
 
-    final status = [_Uploading(busy: _importing)];
-
     if (stage != null) {
       return Surface(child: Column(children: [
-        InventoryBar(parts: parts, status: status),
+        InventoryBar(parts: parts),
         Separator.horizontal(),
         Expanded(child: SectionMessage(
           icon: CI.documents_excel,
@@ -297,48 +279,32 @@ class _InventorySectionState extends State<InventorySection> {
         InventoryView.summary => StockSummarySection(
           key: ValueKey("summary_${table.id}"),
           tableId: table.id,
-          parts: parts,
-          status: status
+          parts: parts
         ),
         InventoryView.sheet => TableViewSection(
           key: ValueKey("sheet_${table.id}"),
           tableId: table.id,
-          parts: parts,
-          status: status
+          parts: parts
         )
       }
     );
   }
 }
 
-/// A file being picked and uploaded to become a table: the only part of an import that
-/// isn't shown on the table itself, which doesn't exist yet.
-class _Uploading extends StatelessWidget {
-  const _Uploading({required this.busy});
+/// The open table's settings: everything there is of it except its rows. They open to
+/// the side ([showTableSettings]), so the table stays in view next to them.
+class _SettingsButton extends StatelessWidget {
+  const _SettingsButton({required this.tableId});
 
-  final ValueListenable<bool> busy;
+  final String tableId;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-    valueListenable: busy,
-    builder: (context, busy, _) => !busy ? const SizedBox.shrink() : Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: AppSize.text * 0.8,
-          height: AppSize.text * 0.8,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: ThemeColor.of(context).text.secondary
-          )
-        ),
-        SizedBox(width: AppSize.gap),
-        Flexible(child: TextSmall(
-          S.of(context).import_table_uploading,
-          color: ThemeColor.of(context).text.secondary,
-          ellipsis: true
-        ))
-      ]
-    )
+  Widget build(BuildContext context) => FeedbackButton(
+    action: () => showTableSettings(context, tableId),
+    width: AppSize.action,
+    height: AppSize.action,
+    message: S.of(context).table_settings_title,
+    feedbackColor: ThemeColor.of(context).surfaceFeedback,
+    child: Center(child: Icon(CI.setting, color: ThemeColor.of(context).text.primary))
   );
 }

@@ -16,10 +16,10 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 
 - `_table_list.dart` — `InventorySection`: resolves the open table (link → remembered → primary → first), builds the
   bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table; an importing table shows its stage
-  instead (`TablesService.importStage`); no table → `InventoryStart`. Create (named in the selector, or the modal) and
-  import live here.
-- `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view (selector, controls, the view's status and actions).
-- `table_selector.dart` — `TableSelector` (`showSelectMenu`: tables, import, create by name), `TableDot`.
+  instead (`TablesService.importStage`); no table → `InventoryStart`. The bar's right end: settings, import, create (modal); their flows
+  live here.
+- `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view (selector, controls, the view's status and actions, then the section's actions).
+- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables), `TableDot`.
 - `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`).
 - `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table.
