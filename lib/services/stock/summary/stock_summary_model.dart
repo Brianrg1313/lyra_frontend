@@ -139,11 +139,15 @@ class StockSummarySort {
 
   final bool descending;
 
-  /// What a click on [column]'s title leaves: the same column the other way, or another
-  /// column from its smallest value up.
-  StockSummarySort next(String column) => column == key
-    ? StockSummarySort(key, descending: !descending)
-    : StockSummarySort(column);
+  /// What a click on [column]'s title leaves after [current]: three steps per column,
+  /// from its largest value down, then from its smallest up, then no order (the
+  /// backend's own, as if it had never been ordered). Another column starts over from
+  /// the first step.
+  static StockSummarySort? after(StockSummarySort? current, String column) {
+    if (current == null || current.key != column) return StockSummarySort(column, descending: true);
+    if (current.descending) return StockSummarySort(column);
+    return null;
+  }
 
   @override
   bool operator ==(Object other) =>

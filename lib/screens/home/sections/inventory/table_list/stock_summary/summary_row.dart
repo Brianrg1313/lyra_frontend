@@ -20,8 +20,9 @@ import 'summary_value.dart';
 /// behind them —reserved and performance, which the inventory carries and not
 /// the table—, and that's why the backend sends them blank.
 ///
-/// **A title orders its column** ([onSort]): a click from the smallest value up,
-/// the next one the other way. The column the rows are ordered by ([sort]) says
+/// **A title orders its column** ([onSort]): a click from the largest value down,
+/// the next one from the smallest up, a third one back to no order (the most
+/// expensive is what's looked for first). The column the rows are ordered by ([sort]) says
 /// so with an arrow beside its title. Columns with nothing to order by
 /// ([StockSummaryColumn.sortable]) are plain titles.
 class SummaryHeader extends StatelessWidget {
@@ -192,7 +193,7 @@ class SummaryProductRow extends StatelessWidget {
       // neighbors. It's the same zebra as the spreadsheet (see `SheetStyle`):
       // opening a product's table shouldn't change the list's look.
       height: SummaryLayout.rowHeight,
-      padding: EdgeInsets.symmetric(horizontal: AppSize.gap),
+      padding: SummaryLayout.rowPadding,
       decoration: BoxDecoration(
         color: zebra ? scheme.table.even : scheme.table.background,
         borderRadius: BorderRadius.circular(AppSize.corner)

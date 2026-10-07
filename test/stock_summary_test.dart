@@ -215,12 +215,16 @@ void main() {
       expect(const StockSummaryColumn(key: StockSummaryColumn.stockKey, fixed: true).sortable, isFalse);
     });
 
-    test('a click orders up, the next one down, another column starts up', () {
+    test('a click orders down, the next one up, a third one drops the order', () {
+      const down = StockSummarySort(price, descending: true);
       const up = StockSummarySort(price);
 
-      expect(up.next(price), const StockSummarySort(price, descending: true));
-      expect(up.next(price).next(price), up);
-      expect(up.next(price).next(name), const StockSummarySort(name));
+      expect(StockSummarySort.after(null, price), down);
+      expect(StockSummarySort.after(down, price), up);
+      expect(StockSummarySort.after(up, price), isNull);
+
+      // Another column starts over, whichever step the last one was on.
+      expect(StockSummarySort.after(up, name), const StockSummarySort(name, descending: true));
     });
 
     test('the order travels to the source and back to the first page', () async {
@@ -236,10 +240,16 @@ void main() {
       // The reserved count has nothing to order by: that click reads nothing.
       expect(source.sorts, [
         null,
-        const StockSummarySort(price),
-        const StockSummarySort(price, descending: true)
+        const StockSummarySort(price, descending: true),
+        const StockSummarySort(price)
       ]);
-      expect(service.sort, const StockSummarySort(price, descending: true));
+      expect(service.sort, const StockSummarySort(price));
+
+      // The third click reads the summary in the backend's own order again.
+      await service.sortBy(price);
+
+      expect(source.sorts.last, isNull);
+      expect(service.sort, isNull);
       expect(service.status, StockSummaryStatus.ready);
     });
 
@@ -252,7 +262,7 @@ void main() {
       await service.sortBy(name);
       await service.search("yerba");
 
-      expect(source.sorts.last, const StockSummarySort(name));
+      expect(source.sorts.last, const StockSummarySort(name, descending: true));
     });
 
     test('an order the backend refuses is dropped, not retried forever', () async {
@@ -263,7 +273,7 @@ void main() {
       await service.load();
       await service.sortBy(price);
 
-      expect(source.sorts, [null, const StockSummarySort(price), null]);
+      expect(source.sorts, [null, const StockSummarySort(price, descending: true), null]);
       expect(service.sort, isNull);
       expect(service.status, StockSummaryStatus.ready);
     });
@@ -332,6 +342,77 @@ void main() {
 
       // And the name, the only text, is wider than both.
       expect(widthOf("Nombre", Expanded), greaterThan(skuWidth));
+    });
+
+    testWidgets("short columns that don't fit are left out, not overflowed", (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1400, 900);
+      addTearDown(tester.view.reset);
+
+      final response = _response();
+      for (final (index, title) in ["SKU", "Barcode", "Phone"].indexed) {
+        (response["columns"] as List).insert(3 + index, {
+          "key": "3333333$index-3333-4333-8333-333333333333",
+          "name": title,
+          "type": "sku",
+          "options": [],
+          "fixed": false
+        });
+      }
+
+      final page = StockSummaryPage.fromResponse(response);
+      // Wide enough for the photo, the name, the price, a code and the three numbers; the
+      // second code (the fourth column the desktop shows) doesn't fit.
+      late SummaryLayout layout;
+
+      await tester.pumpWidget(_app((context) {
+        final all = SummaryLayout.of(context, page.columns);
+        final width = SummaryLayout.imageSize + SummaryLayout.minFlexible
+          + SummaryLayout.widthOf(page.columns[2])! + SummaryLayout.widthOf(page.columns[3])!
+          + SummaryLayout.gap * 4 + SummaryLayout.numberWidth * 3 + SummaryLayout.gap * 2;
+
+        expect(all.fields, hasLength(4));
+        layout = SummaryLayout.of(context, page.columns, width: width);
+
+        return Center(child: SizedBox(
+          width: width + SummaryLayout.headerPadding.horizontal,
+          child: SummaryHeader(layout: layout)
+        ));
+      }));
+
+      expect(tester.takeException(), isNull);
+      // The table's last column goes first; every number stays.
+      expect(layout.fields.map((column) => column.name), ["Nombre", "Precio", "SKU"]);
+      expect(layout.numbers, hasLength(3));
+      expect(find.text("Barcode"), findsNothing);
+    });
+
+    testWidgets('a narrower list leaves out the last numbers, then the photo', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1400, 900);
+      addTearDown(tester.view.reset);
+
+      final page = StockSummaryPage.fromResponse(_response());
+      final layouts = <SummaryLayout>[];
+
+      await tester.pumpWidget(_app((context) {
+        final image = SummaryLayout.imageSize + SummaryLayout.gap;
+
+        layouts
+          ..clear()
+          ..add(SummaryLayout.of(context, page.columns, width: image + SummaryLayout.numberWidth * 2 + SummaryLayout.gap))
+          ..add(SummaryLayout.of(context, page.columns, width: SummaryLayout.numberWidth));
+
+        return const SizedBox();
+      }));
+
+      // No text fits: the table's columns go, then performance, and stock stays.
+      expect(layouts[0].fields, isEmpty);
+      expect(layouts[0].numbers.map((column) => column.key), [StockSummaryColumn.stockKey, StockSummaryColumn.reservedKey]);
+      expect(layouts[0].image, isNotNull);
+
+      expect(layouts[1].numbers.map((column) => column.key), [StockSummaryColumn.stockKey]);
+      expect(layouts[1].image, isNull);
     });
 
     testWidgets('without a text column the numbers stay at the right end', (tester) async {

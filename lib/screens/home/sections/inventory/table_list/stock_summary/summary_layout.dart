@@ -50,10 +50,16 @@ class SummaryLayout {
   /// and the rows passing below, and with just the air of a small-text row it
   /// looks like too thin a strip. The bottom one is the one that needs
   /// enlarging: it's what separates it from the first row.
+  ///
+  /// Its sides are a row's ([rowPadding]): with less width than the rows, the
+  /// header ran out of room before them and its titles sat off their columns.
   static EdgeInsets get headerPadding => EdgeInsets.fromLTRB(
-    AppSize.spaceS, AppSize.gap,
-    AppSize.spaceS, AppSize.spaceXS
+    rowPadding.left, AppSize.gap,
+    rowPadding.right, AppSize.spaceXS
   );
+
+  /// The air on the sides of a row, and of the header ([headerPadding]).
+  static EdgeInsets get rowPadding => EdgeInsets.symmetric(horizontal: AppSize.gap);
 
   /// How much the title row occupies, with its air and without the bottom line.
   ///
@@ -128,6 +134,10 @@ class SummaryLayout {
     _ => false
   };
 
+  /// The least a text column is drawn at: under it a name says nothing, and the
+  /// column is better left out ([SummaryLayout.of]).
+  static double get minFlexible => AppSize.text * 6;
+
   /// Whether any of [fields] takes a share of the leftover width. Without one the
   /// leftover is air before the numbers, so they don't shift to the middle.
   bool get hasFlexible => fields.any((column) => widthOf(column) == null);
@@ -141,8 +151,15 @@ class SummaryLayout {
   static int flexOf(StockSummaryColumn column) =>
     (column.width ?? 160).round().clamp(80, 320);
 
-  /// Distributes [columns] according to the window's width.
-  factory SummaryLayout.of(BuildContext context, List<StockSummaryColumn> columns) {
+  /// Distributes [columns] according to the window's width, and to [width] (what a
+  /// row has inside its [rowPadding]) when given.
+  ///
+  /// The window says how many columns are worth showing; [width] which of those
+  /// fit. The short columns measure what they measure, so a few codes and prices
+  /// can ask for more than there is: the last of the table's columns are left out
+  /// first, then the last numbers (stock stays), then the photo. Shrinking them
+  /// instead would cut every value to fit none.
+  factory SummaryLayout.of(BuildContext context, List<StockSummaryColumn> columns, {double? width}) {
     final device = Responsive.of(context);
 
     StockSummaryColumn? image;
@@ -167,10 +184,56 @@ class SummaryLayout {
         ? (2, 2)
         : (4, 3);
 
-    return SummaryLayout._(
+    final layout = SummaryLayout._(
       image: image,
       fields: fields.take(maxFields).toList(),
       numbers: numbers.take(maxNumbers).toList()
     );
+
+    return width == null ? layout : layout._fitting(width);
+  }
+
+  /// What the line asks for at the least: the fixed columns at their width, the
+  /// texts at [minFlexible], and the air between them all.
+  double get _least {
+    var least = 0.0;
+
+    if (image != null) least += imageSize + gap;
+    for (final column in fields) {
+      least += (widthOf(column) ?? minFlexible) + gap;
+    }
+
+    least += numbers.length * numberWidth;
+    if (numbers.length > 1) least += (numbers.length - 1) * gap;
+
+    return least;
+  }
+
+  /// This layout without the columns that don't fit in [width], in the order
+  /// [SummaryLayout.of] says.
+  SummaryLayout _fitting(double width) {
+    var fitted = this;
+
+    while (fitted._least > width) {
+      if (fitted.fields.isNotEmpty) {
+        fitted = SummaryLayout._(
+          image: fitted.image,
+          fields: fitted.fields.sublist(0, fitted.fields.length - 1),
+          numbers: fitted.numbers
+        );
+      } else if (fitted.numbers.length > 1) {
+        fitted = SummaryLayout._(
+          image: fitted.image,
+          fields: fitted.fields,
+          numbers: fitted.numbers.sublist(0, fitted.numbers.length - 1)
+        );
+      } else if (fitted.image != null) {
+        fitted = SummaryLayout._(image: null, fields: fitted.fields, numbers: fitted.numbers);
+      } else {
+        break;
+      }
+    }
+
+    return fitted;
   }
 }

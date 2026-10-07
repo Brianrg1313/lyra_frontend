@@ -144,7 +144,7 @@ primary table without one.
   on a table with a stock column (the cloud sorts the mirrored column), so the app offers it only
   when `stock` carries a name (ST-32); `reserved` and `performance` are refused (`invalid_field`).
   Numeric fields compare as numbers; empty values go last both ways. The cloud takes it as
-  `SORT: {FIELD, DIR}`.
+  `SORT: {FIELD, DIR}`. A title's clicks cycle `desc` → `asc` → no `sort`.
 
 ### Ops
 

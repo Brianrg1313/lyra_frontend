@@ -2,7 +2,7 @@
 
 **Path** `test` (flat, 136 files, `<subject>_test.dart`)
 **Run** `flutter test` · `flutter test test/<file>_test.dart`
-**Baseline** 1255 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
+**Baseline** 1257 tests, **5 known failures** (bottom). `flutter analyze` must be clean (see `CLAUDE.md`).
 
 Pure logic and small widgets, not whole screens. **No test may hit the network.** Each file's
 `///` header states the rule it pins and why — read it before changing the test.

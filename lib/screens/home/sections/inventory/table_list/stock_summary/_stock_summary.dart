@@ -180,45 +180,55 @@ class _Body extends StatelessWidget {
   /// The column distribution is computed once and goes down to all rows: it's
   /// the same for the header and for each product, and recomputing it per row
   /// would be repeating the same count hundreds of times per frame.
+  ///
+  /// It's measured on the list's width, so the header and every row leave out the
+  /// same columns when they don't all fit (see [SummaryLayout.of]).
   Widget _list(BuildContext context, StockSummaryService service) {
-    final layout = SummaryLayout.of(context, service.columns);
     final currency = _currency(context);
     final rows = service.rows;
 
     return Padding(
       padding: EdgeInsets.only(left: AppSize.padding, right: AppSize.spaceXS),
-      child: Column(children: [
-        SizedBox(
-          height: SummaryLayout.headerHeight,
-          child: Column(children: [
-            Expanded(child: SummaryHeader(
-              layout: layout,
-              sort: service.sort,
-              onSort: service.sortBy
-            )),
-            Separator.horizontal()
-          ])
-        ),
-        Expanded(child: ListView.builder(
-          itemCount: rows.length + 1,
-          itemBuilder: (context, index) {
-            if (index == rows.length) return _Footer(service: service);
+      child: LayoutBuilder(builder: (context, constraints) {
+        final layout = SummaryLayout.of(
+          context,
+          service.columns,
+          width: constraints.maxWidth - SummaryLayout.rowPadding.horizontal
+        );
 
-            // The next stretch is requested while the end of the current one is
-            // drawn. The service makes sure asking too much does nothing.
-            if (index >= rows.length - _lookahead) service.more();
+        return Column(children: [
+          SizedBox(
+            height: SummaryLayout.headerHeight,
+            child: Column(children: [
+              Expanded(child: SummaryHeader(
+                layout: layout,
+                sort: service.sort,
+                onSort: service.sortBy
+              )),
+              Separator.horizontal()
+            ])
+          ),
+          Expanded(child: ListView.builder(
+            itemCount: rows.length + 1,
+            itemBuilder: (context, index) {
+              if (index == rows.length) return _Footer(service: service);
 
-            return SummaryProductRow(
-              row: rows[index],
-              layout: layout,
-              currency: currency,
-              // The zebra alternates by position in the list, just like in the
-              // spreadsheet: the odd ones are the painted ones.
-              zebra: index.isOdd
-            );
-          }
-        ))
-      ])
+              // The next stretch is requested while the end of the current one is
+              // drawn. The service makes sure asking too much does nothing.
+              if (index >= rows.length - _lookahead) service.more();
+
+              return SummaryProductRow(
+                row: rows[index],
+                layout: layout,
+                currency: currency,
+                // The zebra alternates by position in the list, just like in the
+                // spreadsheet: the odd ones are the painted ones.
+                zebra: index.isOdd
+              );
+            }
+          ))
+        ]);
+      })
     );
   }
 

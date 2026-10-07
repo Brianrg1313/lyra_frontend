@@ -44,8 +44,8 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 ///
 /// **A column's title orders it** ([sortBy]), and through the backend as well (`SORT`,
 /// `stock.md` ST-35): sorting the rows read would be ordering the first pages, not the
-/// table. The order outlives a search and a reread; it is dropped only when its column
-/// leaves the summary or the backend refuses it.
+/// table. The order outlives a search and a reread; it is dropped by a third click on its
+/// title, or when its column leaves the summary or the backend refuses it.
 ///
 /// It is ephemeral: owned by the inventory section and discarded when leaving
 /// it. The shell remounts the section when changing company, so there is
@@ -194,15 +194,15 @@ class StockSummaryService extends ChangeNotifier {
     return _read(1, reset: true);
   }
 
-  /// Orders the summary by the column [key]: from its smallest value up, or the other way
-  /// if it already was ordered by it (`StockSummarySort.next`).
+  /// Orders the summary by the column [key]: from its largest value down, then from its
+  /// smallest up, then back to the backend's own order (`StockSummarySort.after`).
   ///
   /// Back to the first page, like [search]: the rows read are in the old order.
   Future<void> sortBy(String key) {
     final column = _columns.where((column) => column.key == key).firstOrNull;
     if (column == null || !column.sortable) return Future.value();
 
-    _sort = _sort?.next(key) ?? StockSummarySort(key);
+    _sort = StockSummarySort.after(_sort, key);
 
     return _read(1, reset: true);
   }
