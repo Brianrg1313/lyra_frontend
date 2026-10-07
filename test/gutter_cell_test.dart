@@ -45,12 +45,12 @@ Future<void> _gutter(WidgetTester tester, SheetDrafts drafts) =>
             rowHeight: _kRowHeight,
             gutterWidth: _kGutterWidth
           ),
-          child: Scaffold(body: Align(
+          child: const Scaffold(body: Align(
             alignment: Alignment.topLeft,
             child: SizedBox(
               width: _kGutterWidth,
               height: _kRowHeight,
-              child: const GutterCell(index: 0)
+              child: GutterCell(index: 0)
             )
           ))
         )

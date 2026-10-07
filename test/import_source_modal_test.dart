@@ -128,10 +128,10 @@ void main() {
     // Como lo monta [showModal] en escritorio: una caja que mide lo que mide lo
     // que tiene adentro, sin alto que repartir. La lista se corta sola.
     await tester.pumpWidget(_app(
-      child: Center(child: SingleChildScrollView(
+      child: const Center(child: SingleChildScrollView(
         child: IntrinsicWidth(child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [ImportTableModal()]
+          children: [ImportTableModal()]
         ))
       )),
       onPop: (_) {}

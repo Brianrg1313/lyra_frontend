@@ -50,7 +50,7 @@ class _Socket extends SocketAPI {
   int disconnects = 0;
 
   @override
-  ApiModel get dev => ApiModel(host: "localhost", name: "/presence", port: 80, scheme: "http", type: ApiMode.socket, tokenName: "Presence");
+  ApiModel get dev => const ApiModel(host: "localhost", name: "/presence", port: 80, scheme: "http", type: ApiMode.socket, tokenName: "Presence");
 
   @override
   ApiModel get prod => dev;

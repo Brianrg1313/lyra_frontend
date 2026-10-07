@@ -139,7 +139,7 @@ class _HomeHeaderState extends State<HomeHeader>
         Expanded(child: Align(
           alignment: Alignment.center,
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: HomeHeader._searchWidth),
+            constraints: const BoxConstraints(maxWidth: HomeHeader._searchWidth),
             child: SearchInput(
               controller: _search,
               placeholder: S.of(context).search_in_app,

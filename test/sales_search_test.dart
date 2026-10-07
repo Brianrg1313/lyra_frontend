@@ -151,10 +151,10 @@ Future<void> _pump(
       child: Builder(builder: (context) {
         AppSize.instance(context);
 
-        return Scaffold(body: Center(child: SizedBox(
+        return const Scaffold(body: Center(child: SizedBox(
           width: 900,
           height: 600,
-          child: const SalesBoard(section: SaleSection.process)
+          child: SalesBoard(section: SaleSection.process)
         )));
       })
     )

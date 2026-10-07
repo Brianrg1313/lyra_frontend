@@ -2,6 +2,6 @@ import 'dart:ui' show Color;
 import 'package:core/kit/theme_color.dart';
 
 final darkScheme = SchemeColor.dark(
-  primary: Color(0xFFffffff),
-  accent: Color(0xfffb8e00)
+  primary: const Color(0xFFffffff),
+  accent: const Color(0xfffb8e00)
 );

@@ -170,7 +170,7 @@ abstract class _SessionApi extends RestAPI {
 
 class _Api extends _SessionApi {
   @override
-  ApiModel get dev => ApiModel(
+  ApiModel get dev => const ApiModel(
     host: devHost,
     name: "lyra",
     port: 80,
@@ -184,7 +184,7 @@ class _Api extends _SessionApi {
 
 class _Aries extends _SessionApi {
   @override
-  ApiModel get dev => ApiModel(
+  ApiModel get dev => const ApiModel(
     host: devHost,
     name: "aries",
     port: 80,
@@ -198,7 +198,7 @@ class _Aries extends _SessionApi {
 
 class _Scorpius extends _SessionApi {
   @override
-  ApiModel get dev => ApiModel(
+  ApiModel get dev => const ApiModel(
     host: devHost,
     name: "scorpius",
     port: 80,
@@ -212,7 +212,7 @@ class _Scorpius extends _SessionApi {
 
 class _Edge extends _SessionApi {
   @override
-  ApiModel get dev => ApiModel(
+  ApiModel get dev => const ApiModel(
     host: devHost,
     name: "edge",
     port: 80,
@@ -226,7 +226,7 @@ class _Edge extends _SessionApi {
 
 class _Assets extends _SessionApi {
   @override
-  ApiModel get dev => ApiModel(
+  ApiModel get dev => const ApiModel(
     host: devHost,
     name: "cetus",
     port: 81,

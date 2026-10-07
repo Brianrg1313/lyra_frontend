@@ -416,7 +416,7 @@ class _BusinessSelectorState extends State<BusinessSelector> {
   void _openCreateModal(BuildContext context) => showModal(
     context: context,
     title: S.of(context).create_business,
-    builder: (BuildContext context) => CreateBusinessModal()
+    builder: (BuildContext context) => const CreateBusinessModal()
   );
 }
 

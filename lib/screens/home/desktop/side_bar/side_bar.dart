@@ -31,7 +31,7 @@ class SideBar extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       child: Surface(
         padding: EdgeInsets.all(AppSize.gap),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             color: ThemeColor.of(context).navBar,
             border: Border.all(color: ThemeColor.of(context).line),

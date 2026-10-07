@@ -424,7 +424,7 @@ void main() {
   });
 
   testWidgets('sin correos el bloque igual deja cargar el primero', (tester) async {
-    await tester.pumpWidget(_app(1000, profile: BusinessProfileModel(
+    await tester.pumpWidget(_app(1000, profile: const BusinessProfileModel(
       id: _id,
       name: "Acme"
     )));
@@ -564,7 +564,7 @@ void main() {
   });
 
   testWidgets('el sitio se puede cargar aunque la empresa no tenga ninguno', (tester) async {
-    await tester.pumpWidget(_app(1000, profile: BusinessProfileModel(
+    await tester.pumpWidget(_app(1000, profile: const BusinessProfileModel(
       id: _id,
       name: "Acme"
     )));

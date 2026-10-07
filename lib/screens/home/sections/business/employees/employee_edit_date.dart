@@ -180,7 +180,7 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
     _month.selectedValue = _chosen == 0 ? "" : "$_chosen";
 
     setState(() => _editing = true);
-    EmployeeWiden(true).dispatch(context);
+    const EmployeeWiden(true).dispatch(context);
   }
 
   /// The press is read before the focus moves, so a month list still open
@@ -190,7 +190,7 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
   }
 
   void _close() {
-    EmployeeWiden(false).dispatch(context);
+    const EmployeeWiden(false).dispatch(context);
     setState(() => _editing = false);
   }
 

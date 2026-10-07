@@ -410,7 +410,7 @@ void main() {
     });
 
     test('las opciones se vacian con una lista vacia, no con null', () {
-      final field = const TableDetailFieldModel(
+      const field = TableDetailFieldModel(
         id: "f1",
         name: "Color",
         type: TableFieldType.options,

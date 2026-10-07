@@ -34,7 +34,7 @@ Widget _app() => ChangeNotifierProvider<BusinessService>(
     home: Builder(builder: (context) {
       AppSize.instance(context);
 
-      return Scaffold(body: Center(child: SingleChildScrollView(
+      return const Scaffold(body: Center(child: SingleChildScrollView(
         child: VerifyBusinessEmailModal(email: _email)
       )));
     })

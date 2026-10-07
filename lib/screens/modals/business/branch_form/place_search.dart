@@ -161,7 +161,7 @@ class _PlaceSearchState extends State<PlaceSearch> {
       overlayChildBuilder: _dropdown,
       child: CompositedTransformTarget(
         link: _link,
-        child: child != null ? KeyedSubtree(key: _anchor, child: child) : Container(
+        child: child != null ? KeyedSubtree(key: _anchor, child: child) : DecoratedBox(
           key: _anchor,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSize.corner),

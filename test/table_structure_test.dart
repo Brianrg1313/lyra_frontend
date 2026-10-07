@@ -240,8 +240,8 @@ void main() {
     test('una pagina sin encabezados se respeta por posicion', () {
       // Sin FIELD_ID con que emparejar, el orden en que vinieron los valores es
       // lo unico que se puede suponer.
-      final page = TableViewModel(rows: [
-        const TableRowModel(["Malbec", "Un vino", 1500])
+      final page = const TableViewModel(rows: [
+        TableRowModel(["Malbec", "Un vino", 1500])
       ]).alignedTo(fields);
 
       expect(page.columns, hasLength(6));

@@ -337,7 +337,7 @@ class _Step extends StatelessWidget {
         radius: AppSize.corner,
         color: scheme.input.fill,
         feedbackColor: scheme.input.focus,
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSize.corner),
             border: Border.all(color: scheme.input.border)

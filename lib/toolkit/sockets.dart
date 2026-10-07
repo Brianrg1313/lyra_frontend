@@ -30,7 +30,7 @@ class _Sockets extends SocketAPI {
   /// (`io.on("connection")`, no `io.of(...)` anywhere), so anything else here
   /// gets the handshake rejected with "Invalid namespace".
   @override
-  ApiModel get dev => ApiModel(
+  ApiModel get dev => const ApiModel(
     host: devHost,
     name: "/",
     port: 80,
@@ -68,7 +68,7 @@ final presenceSocket = _Presence();
 
 class _Presence extends SocketAPI {
   @override
-  ApiModel get dev => ApiModel(
+  ApiModel get dev => const ApiModel(
     host: devHost,
     name: "/presence",
     port: 80,

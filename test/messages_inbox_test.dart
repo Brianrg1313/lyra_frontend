@@ -235,7 +235,7 @@ void main() {
     });
 
     test('a tags event replaces the whole set', () {
-      service.seed([ChatModel(id: "a", tags: const ["question", "reserved"])]);
+      service.seed([const ChatModel(id: "a", tags: ["question", "reserved"])]);
 
       service.receive(ChatEvent.tags, {
         "id": "a",
@@ -273,13 +273,13 @@ void main() {
       final service = ChatsService()
         ..seed([
           row("a", answered: false).flagged(ChatWaiting.failure),
-          ChatModel(
+          const ChatModel(
             id: "b",
             contact: "584126766990",
             name: "A customer with a very long WhatsApp profile name 🌸🌸",
-            stage: const ChatStage(stage: "verifying", label: "Verificando el pago", attention: true),
-            bot: const ChatBot(paused: true, active: false),
-            tags: const ["question", "reserved", "unpaid", "preparing"]
+            stage: ChatStage(stage: "verifying", label: "Verificando el pago", attention: true),
+            bot: ChatBot(paused: true, active: false),
+            tags: ["question", "reserved", "unpaid", "preparing"]
           )
         ], total: 2)
         ..seedTags(const [

@@ -161,13 +161,13 @@ void main() {
       home: Builder(builder: (context) {
         AppSize.instance(context);
 
-        return Center(child: SizedBox(width: 1200, child: InventoryBar(
-          parts: const InventoryBarParts(
+        return const Center(child: SizedBox(width: 1200, child: InventoryBar(
+          parts: InventoryBarParts(
             selector: SizedBox(width: 120),
             controls: [SizedBox(width: 40)],
             actions: [SizedBox(width: 300)]
           ),
-          status: const [SizedBox(key: Key("count"), width: 80)]
+          status: [SizedBox(key: Key("count"), width: 80)]
         )));
       })
     ));

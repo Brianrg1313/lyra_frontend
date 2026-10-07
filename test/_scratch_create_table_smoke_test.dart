@@ -21,7 +21,7 @@ void main() {
       supportedLocales: S.delegate.supportedLocales,
       home: Builder(builder: (context) {
         AppSize.instance(context);
-        return Scaffold(
+        return const Scaffold(
           body: Center(child: SingleChildScrollView(child: CreateTableModal()))
         );
       })

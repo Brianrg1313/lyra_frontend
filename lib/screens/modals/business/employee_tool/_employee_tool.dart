@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 /// Opens one of an employee's panels (permissions, settings, activity, sales)
 /// beside the detail. The caller names it: the modal decides nothing about which one.

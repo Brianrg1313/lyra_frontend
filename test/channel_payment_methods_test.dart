@@ -123,7 +123,7 @@ void main() {
 
 /// A provider with a single scope and no fields, which is all the payload
 /// needs: what is being read here is the accounts, not the credentials.
-final ChannelProviderModel _schema = const ChannelProviderModel(
+const ChannelProviderModel _schema = ChannelProviderModel(
   provider: "whatsapp",
   name: "WhatsApp",
   category: "messaging",

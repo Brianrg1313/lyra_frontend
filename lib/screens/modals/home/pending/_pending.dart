@@ -13,7 +13,7 @@ import 'package:app/services/badges/badges_service.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/home/badges/badge_mark.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import 'package:app/screens/home/badges/badge_title.dart';
 

@@ -3,5 +3,5 @@ import 'package:core/kit/theme_color.dart';
 
 
 final lightScheme = SchemeColor.light(
-  primary: Color(0xfffb8e00)
+  primary: const Color(0xfffb8e00)
 );

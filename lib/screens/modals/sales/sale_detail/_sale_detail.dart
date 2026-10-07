@@ -10,7 +10,7 @@ import 'package:app/services/sales/sales_catalog_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import 'detail_handover.dart';
 import 'detail_identity.dart';

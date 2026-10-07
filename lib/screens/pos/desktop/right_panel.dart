@@ -9,7 +9,7 @@ import 'package:app/services/pos/pos_invoice_event.dart';
 import 'package:app/services/pos/pos_invoice_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import './pos_currency.dart';
 import './ticket_footer.dart';

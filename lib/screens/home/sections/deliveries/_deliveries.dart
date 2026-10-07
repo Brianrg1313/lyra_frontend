@@ -67,7 +67,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        DeliveriesHeader(),
+        const DeliveriesHeader(),
         SizedBox(height: AppSize.gap),
         Expanded(child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
