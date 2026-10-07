@@ -16,7 +16,6 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
-import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
 import 'package:app/screens/home/sections/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
@@ -33,8 +32,9 @@ import 'view_toggle.dart';
 /// time**.
 ///
 /// The bar's title is the open table ([TableSelector]): picking another one switches
-/// the whole section to it. The bar's right end carries the open table's settings, the
-/// import and create, whatever the view. Next to the selector, the cells switch ([InventoryViewToggle]) shows the open table as its
+/// the whole section to it. The bar's right end carries the open table's options
+/// ([TableOptionsButton]: rename, settings, delete), the import and create, whatever the
+/// view. Next to the selector, the cells switch ([InventoryViewToggle]) shows the open table as its
 /// stock summary ([StockSummarySection]: photo, the columns chosen for it and what's
 /// left) or as every cell of it ([TableViewSection], the sheet). Both are the account's
 /// choices and are remembered (`PreferencesService`): which table, per company, and
@@ -242,12 +242,9 @@ class _InventorySectionState extends State<InventorySection> {
         onSelect: (table) => _select(table.id),
         stageOf: service.importStage
       ),
-      controls: [
-        TableOptionsButton(table: table),
-        const InventoryViewToggle()
-      ],
+      controls: const [InventoryViewToggle()],
       actions: [
-        _SettingsButton(tableId: table.id),
+        TableOptionsButton(table: table),
         if (_importAction != null) ImportButton(action: _import, loading: _importing),
         Button(
           width: null,
@@ -289,22 +286,4 @@ class _InventorySectionState extends State<InventorySection> {
       }
     );
   }
-}
-
-/// The open table's settings: everything there is of it except its rows. They open to
-/// the side ([showTableSettings]), so the table stays in view next to them.
-class _SettingsButton extends StatelessWidget {
-  const _SettingsButton({required this.tableId});
-
-  final String tableId;
-
-  @override
-  Widget build(BuildContext context) => FeedbackButton(
-    action: () => showTableSettings(context, tableId),
-    width: AppSize.action,
-    height: AppSize.action,
-    message: S.of(context).table_settings_title,
-    feedbackColor: ThemeColor.of(context).surfaceFeedback,
-    child: Center(child: Icon(CI.setting, color: ThemeColor.of(context).text.primary))
-  );
 }

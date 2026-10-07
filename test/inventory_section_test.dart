@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
+import 'package:core/button.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/inventory/table_template_model.dart';
@@ -15,6 +16,7 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/inventory/table_list/_table_list.dart';
+import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_start.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
@@ -135,16 +137,43 @@ void main() {
     expect(find.text("Depósito"), findsNothing);
   });
 
-  testWidgets("the bar ends in the open table's settings and create", (tester) async {
+  testWidgets("the bar ends in the open table's options and create, against the edge", (tester) async {
     await _open(tester, HomeSection.inventory.path);
 
-    expect(find.byIcon(CI.setting), findsOneWidget);
-    expect(find.text(S.current.create_table), findsOneWidget);
+    // The options menu carries the settings: no gear of its own.
+    expect(find.byIcon(CI.setting), findsNothing);
+    expect(find.byIcon(CI.dots_horizontal), findsOneWidget);
 
-    // Create is the last thing on the right.
-    final settings = tester.getCenter(find.byIcon(CI.setting)).dx;
-    final create = tester.getCenter(find.text(S.current.create_table)).dx;
-    expect(create, greaterThan(settings));
+    final options = tester.getCenter(find.byIcon(CI.dots_horizontal)).dx;
+    final create = find.ancestor(
+      of: find.text(S.current.create_table),
+      matching: find.byType(Button)
+    ).first;
+
+    expect(tester.getCenter(create).dx, greaterThan(options));
+    // Only the bar's padding is left after create.
+    final bar = tester.getTopRight(find.byType(InventoryBar)).dx;
+    expect(tester.getTopRight(create).dx, closeTo(bar - AppSize.gap, 1));
+  });
+
+  testWidgets("the bar's status sits in its middle", (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(builder: (context) {
+        AppSize.instance(context);
+
+        return Center(child: SizedBox(width: 1200, child: InventoryBar(
+          parts: const InventoryBarParts(
+            selector: SizedBox(width: 120),
+            controls: [SizedBox(width: 40)],
+            actions: [SizedBox(width: 300)]
+          ),
+          status: const [SizedBox(key: Key("count"), width: 80)]
+        )));
+      })
+    ));
+
+    final bar = tester.getRect(find.byType(InventoryBar));
+    expect(tester.getCenter(find.byKey(const Key("count"))).dx, closeTo(bar.center.dx, 1));
   });
 
   testWidgets("a table's link opens that table", (tester) async {

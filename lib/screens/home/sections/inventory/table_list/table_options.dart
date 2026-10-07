@@ -13,8 +13,9 @@ import 'package:core/form.dart';
 import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
 import 'package:app/screens/modals/inventory/rename_table/_rename_table.dart';
 
-/// The open table's options, next to the inventory section's table selector, with
-/// the dropdown it deploys (anchored to the button, which is why it is its own widget).
+/// The open table's options, first of the inventory bar's actions (before import and
+/// create), with the dropdown it deploys (anchored to the button, which is why it is its
+/// own widget).
 ///
 /// It offers the three things that can be done to a table without opening it:
 ///
