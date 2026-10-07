@@ -10,8 +10,8 @@ import 'package:app/services/stock/summary/stock_summary_service.dart';
 // WIDGETS
 import 'package:app/screens/modals/inventory/stock_movement/_stock_movement.dart';
 
-import 'summary_layout.dart';
-import 'summary_value.dart';
+import './summary_layout.dart';
+import './summary_number.dart';
 
 /// One of the two summary numbers, with what's done with it on its sides: take
 /// on the left, the figure in the middle, add on the right.

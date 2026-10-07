@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 
-import 'date_cell.dart';
-import 'image_cell.dart';
-import 'listed_cell.dart';
-import 'price_cell.dart';
-import 'sku_cell.dart';
-import 'unit_cell.dart';
+import './date_cell.dart';
+import './image_cell.dart';
+import './listed_cell.dart';
+import './price_cell.dart';
+import './sku_cell.dart';
+import './unit_cell.dart';
 
 export 'date_cell.dart';
 export 'image_cell.dart';

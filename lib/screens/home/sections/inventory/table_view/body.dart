@@ -6,9 +6,11 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/stock/tables/table_view_service.dart';
 
-import 'record_row.dart';
-import 'state/sheet_columns.dart';
-import 'state/sheet_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_shape.dart';
+
+import './record_row.dart';
 
 /// The body of the sheet: the records and, below, the blank rows that are
 /// written.

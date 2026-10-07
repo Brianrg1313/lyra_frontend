@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/toolkit/lan_image.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
@@ -13,7 +12,7 @@ import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 
-import 'summary_layout.dart';
+import './summary_layout.dart';
 
 /// What's written in a summary cell that isn't the photo nor one of the three
 /// numbers: a company column.
@@ -110,111 +109,4 @@ class SummaryValue extends StatelessWidget {
 
     return date.short(Localizations.localeOf(context).toString());
   }
-}
-
-/// One of the three numbers that close a row: what's left, what's set aside,
-/// and how well it sells.
-///
-/// They're right-aligned and bold because they're for **comparing top to
-/// bottom**: the column is read as a strip of figures and the units land one
-/// below the other.
-///
-/// Null and zero are opposite answers and look different. Zero is "nothing is
-/// left" and is painted red, which is the only thing of this list you have to
-/// look at today; null is "no one is counting it" —the table has no stock
-/// column, or the indicator isn't measured yet— and is seen as a dimmed dash,
-/// which isn't an alarm.
-class SummaryNumber extends StatelessWidget {
-  const SummaryNumber({
-    super.key,
-    required this.value,
-    this.alert = false,
-    this.align = TextAlign.right
-  });
-
-  /// The number, or null when nothing is being counted.
-  final int? value;
-
-  /// If this column's zero is something to warn about. It is in stock —zero is
-  /// that nothing is left to sell— and not in reserved, where zero is normal.
-  final bool alert;
-
-  /// Which side of its column the figure rests on.
-  ///
-  /// To the right when the column is just the number, which is how a strip of
-  /// figures is compared top to bottom; to the middle when it carries buttons
-  /// on its sides (see `SummaryStepper`), where the right edge is no longer the
-  /// column's edge but a button's.
-  final TextAlign align;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-    final amount = value;
-
-    if (amount == null) {
-      return TextSmall(
-        "—",
-        color: scheme.text.secondary,
-        textAlign: align
-      );
-    }
-
-    return TextMedium(
-      amount.toString(),
-      multiplier: 0.9,
-      bold: true,
-      ellipsis: true,
-      textAlign: align,
-      color: alert && amount <= 0 ? scheme.snackBar.error : null
-    );
-  }
-}
-
-/// The product's thumbnail, which is how a person recognizes it.
-///
-/// The thumbnail is drawn and not the photo: the backend renders a 320px one on
-/// upload ([kProductImageWidth]) and this measures what an icon measures.
-/// Asking for the big one would be downloading megabytes per row to draw a
-/// little square.
-///
-/// A product without a photo —or a photo that no longer resolves— doesn't leave
-/// a hole: the same box with the section's icon is seen, so the strip of photos
-/// stays an even strip.
-class SummaryPicture extends StatelessWidget {
-  const SummaryPicture({super.key, required this.row});
-
-  final StockSummaryRow row;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-    final cover = row.cover;
-    final radius = AppSize.cornerInset(AppSize.gap);
-
-    return Surface(
-      width: double.infinity,
-      height: double.infinity,
-      radius: radius,
-      color: scheme.surface,
-      child: cover == null
-        ? _empty(scheme)
-        : ClipRRect(
-            borderRadius: BorderRadius.circular(radius),
-            child: Image(
-              image: mediaImage(cover.thumbnail),
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              errorBuilder: (context, error, stack) => _empty(scheme)
-            )
-          )
-    );
-  }
-
-  Widget _empty(SchemeColor scheme) => Center(child: Icon(
-    CI.shop,
-    size: AppSize.text * 1.1,
-    color: scheme.text.secondary
-  ));
 }

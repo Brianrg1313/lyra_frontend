@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 
-import 'sheet_cursor.dart';
+import './sheet_cell.dart';
 
 /// What a key asks of the spreadsheet.
 ///

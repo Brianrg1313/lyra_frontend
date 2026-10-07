@@ -7,8 +7,10 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/stock/tables/table_structure_model.dart';
 
-import 'sheet_style.dart';
-import 'state/sheet_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
+
+import './sheet_theme.dart';
 
 /// Arrow on the right edge of a field's cell: unfolds the types and changes
 /// that column's.

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-import '../sheet_style.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/sheet_style.dart';
+import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart';
 
 /// The cell of a field that picks from a list: one option (`OPTIONS`) or several
 /// (`CATEGORIES`).

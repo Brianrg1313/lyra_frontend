@@ -8,7 +8,6 @@ import 'package:core/kit/icons.dart';
 import 'package:core/kit/theme_color.dart';
 import 'package:core/widgets/buttons/feedback.dart';
 
-import 'package:app/screens/home/sections/inventory/table_view/gutter.dart';
 import 'package:app/screens/home/sections/inventory/table_view/sheet_style.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_drafts.dart';
@@ -17,6 +16,8 @@ import 'package:app/services/stock/tables/table_view_service.dart';
 
 import 'package:app/toolkit/theme/dark.dart';
 import 'package:app/toolkit/theme/light.dart';
+import 'package:app/screens/home/sections/inventory/table_view/gutter_cell.dart';
+import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart';
 
 const double _kRowHeight = 32;
 const double _kGutterWidth = 40;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+import './sheet_row_fill.dart';
+
 /// Everything the cells need to paint themselves, resolved **only once** per
 /// sheet.
 ///
@@ -230,43 +232,4 @@ class SheetStyle {
     BoxDecoration(color: scheme.table.over, border: _line);
   late final BoxDecoration _gutterSelected =
     BoxDecoration(color: scheme.table.rowSelected, border: _line);
-}
-
-/// What a row's background is painted with.
-///
-/// They are the three states a whole row can be in, and they are here —and not
-/// as two loose booleans in each cell— because they are mutually exclusive and
-/// have an order: the cursor beats the mouse. A row where you are standing and
-/// over which the pointer is hovering looks like the row where you are standing;
-/// if it were the other way, passing the mouse over the sheet would cover the
-/// only trace of where one had been.
-enum SheetRowFill {
-  /// The usual background: the zebra, which alternates by position.
-  plain,
-
-  /// The row the mouse is over (`table.over`).
-  over,
-
-  /// The row where the cursor is (`table.rowSelected`).
-  selected
-}
-
-/// Passes the [SheetStyle] down to all the cells.
-///
-/// It is an [InheritedWidget] and not a provider because it never changes while
-/// the sheet is open: it is only redone if the theme changes, and then
-/// `SchemeColor` is another instance. Comparing by identity is enough and is the
-/// cheapest there is.
-class SheetTheme extends InheritedWidget {
-  const SheetTheme({super.key, required this.style, required super.child});
-
-  final SheetStyle style;
-
-  static SheetStyle of(BuildContext context) =>
-    context.dependOnInheritedWidgetOfExactType<SheetTheme>()!.style;
-
-  @override
-  bool updateShouldNotify(SheetTheme old) =>
-    !identical(old.style.scheme, style.scheme) ||
-    old.style.rowHeight != style.rowHeight;
 }

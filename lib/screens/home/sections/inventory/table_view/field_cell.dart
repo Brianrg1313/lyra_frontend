@@ -7,13 +7,16 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/inventory/table_field_type.dart';
 
-import 'cell_editor.dart';
-import 'sheet_style.dart';
-import 'type_arrow.dart';
-import 'state/sheet_columns.dart';
-import 'state/sheet_controller.dart';
-import 'state/sheet_cursor.dart';
-import 'state/sheet_widths.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cell.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_columns.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
+
+import './cell_editor.dart';
+import './sheet_theme.dart';
+import './type_arrow.dart';
 
 /// A field's cell: row 1 of the sheet.
 ///

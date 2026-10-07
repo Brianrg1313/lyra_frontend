@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'sheet_order.dart';
+import './sheet_order.dart';
 
 /// The drag of a column, while it lasts.
 ///

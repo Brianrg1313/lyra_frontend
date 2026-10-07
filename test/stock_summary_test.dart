@@ -17,8 +17,10 @@ import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_layout.dart';
-import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_row.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_value.dart';
+import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_header.dart';
+import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_line.dart';
+import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_product_row.dart';
 
 /// Una respuesta de `POST /inventory/stock/summary/` como la arma el backend:
 /// las columnas por separado y las filas comprimidas en `{keys, values}`, con el

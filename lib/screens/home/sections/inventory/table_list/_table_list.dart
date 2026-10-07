@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/services/capabilities/capability_service.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/import_source.dart';
 import 'package:app/services/preferences/preferences_service.dart';
-import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
+import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
+import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
-import 'package:app/screens/home/sections/_section/section_message.dart';
-import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 
-import 'import_button.dart';
-import 'inventory_bar.dart';
-import 'inventory_start.dart';
-import 'stock_summary/_stock_summary.dart';
-import 'table_options.dart';
-import 'table_selector.dart';
-import 'view_toggle.dart';
+import './import_button.dart';
+import './inventory_bar.dart';
+import './inventory_start.dart';
+import './table_options.dart';
+import './table_selector.dart';
+import './view_toggle.dart';
 
 /// Inventory: the content of the `inventory` section of the home, **one table at a
 /// time**.

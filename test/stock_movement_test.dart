@@ -11,12 +11,12 @@ import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_layout.dart';
-import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_row.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_stepper.dart';
 import 'package:app/screens/modals/inventory/stock_movement/_stock_movement.dart';
 import 'package:app/screens/modals/inventory/stock_movement/movement_option.dart';
 import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart';
 import 'package:app/screens/modals/inventory/stock_movement/quantity_field.dart';
+import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_product_row.dart';
 
 const String _table = "550e8400-e29b-41d4-a716-446655440000";
 const String _product = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";

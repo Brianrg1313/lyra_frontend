@@ -1,81 +1,13 @@
 import 'package:flutter/foundation.dart';
 
+// SERVICES
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
-import 'free_column.dart';
-import 'sheet_order.dart';
-
-/// The **shape** of the spreadsheet: how many columns there are, which one
-/// goes in each place, and where what's shown in it comes from.
-///
-/// They're two parallel lists, as long as there are columns, and both are
-/// needed because the order in which columns are **seen** and the order in
-/// which **data** sits stopped being the same once they can be dragged:
-///
-/// - [keys] is how the width of each column is remembered (its FIELD_ID, or
-///   its place if it isn't a field yet). It goes in the order in which columns
-///   are seen.
-/// - [slots] says, for each column, which position of the row its value sits
-///   at. Records arrive aligned to the fields **exactly as the structure
-///   provides them** and stay there: moving a column doesn't touch a single
-///   datum read, it only changes where it's looked up.
-///
-/// It's a single thing and not two because it's what the spreadsheet listens
-/// to in order to know if it has to rebuild the grid: while it's the same
-/// instance, the columns are the same, sit in the same place, and read from
-/// the same side.
-class SheetShape {
-  const SheetShape(this.keys, this.slots);
-
-  static const SheetShape empty = SheetShape([], []);
-
-  /// Width key of each column, in the order in which they're seen.
-  final List<String> keys;
-
-  /// Position inside the row from which each column's value comes.
-  final List<int> slots;
-
-  int get length => keys.length;
-}
-
-/// A column of the spreadsheet: either a field of the table ([field]), or one
-/// of the free columns at the end ([free]), which doesn't exist in the
-/// backend yet.
-///
-/// Both are painted the same —a column is a column— and the only thing that
-/// changes is that the free one has nowhere to store data until it gets a
-/// title and is created.
-class SheetColumn {
-  const SheetColumn._(this.field, this.free);
-
-  const SheetColumn.field(TableFieldModel field) : this._(field, null);
-  const SheetColumn.free(FreeColumn free) : this._(null, free);
-
-  final TableFieldModel? field;
-  final FreeColumn? free;
-
-  bool get isField => field != null;
-
-  String get name => field?.name ?? free!.name;
-  String get id => field?.id ?? "";
-
-  /// Code of the field's type, or empty (which reads as text) if the column
-  /// isn't a field yet.
-  String get type => field?.type ?? "";
-
-  /// The options of a list field. Empty in every other type and in a free
-  /// column, which isn't yet a field they'd belong to.
-  List<String> get options => field?.options ?? const [];
-
-  /// The symbol with which the field's numbers are written (the currency of a
-  /// price, the magnitude of a measure). Empty in types that don't carry one
-  /// and in a free column.
-  String get unit => field?.unit ?? "";
-
-  /// `true` while the creation of this column is being sent.
-  bool get creating => free?.creating ?? false;
-}
+import './free_column.dart';
+import './sheet_column.dart';
+import './sheet_order.dart';
+import './sheet_shape.dart';
 
 /// The columns of the spreadsheet and the state of the changes that are
 /// traveling.

@@ -19,16 +19,18 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
   instead (`TablesService.importStage`); no table → `InventoryStart`. The bar's right end: table options (⋯), import, create (modal);
   their flows live here.
 - `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view: selector and controls left, the view's status centred, the view's then the section's actions against the right edge.
-- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables), `TableDot`.
+- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables); `table_dot.dart` — `TableDot`.
 - `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`).
 - `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
+- `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts})`: owns that table's `StockSummaryService`, fixed column header over a `ListView`; header search → `MATCH`.
+- `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
-- `stock_summary/summary_row.dart` — `SummaryHeader` (a title click orders by its column), `SummaryProductRow`, `SummaryLine`.
+- `stock_summary/summary_header.dart` — `SummaryHeader` (a title click orders by its column); `stock_summary/summary_product_row.dart` — `SummaryProductRow`; `stock_summary/summary_line.dart` — `SummaryLine`.
 - `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`.
-- `stock_summary/summary_value.dart` — `SummaryValue`, `SummaryNumber`, `SummaryPicture`.
+- `stock_summary/summary_value.dart` — `SummaryValue`; `summary_number.dart` — `SummaryNumber`; `summary_picture.dart` — `SummaryPicture`.
 
 ## table_view/ — the spreadsheet
 
@@ -37,26 +39,28 @@ cell rebuild never rebuilds the sheet. Row 1 is the *fields* row (cursor index `
 from 0. The last column is a *free column*: typing a title creates a field.
 
 - `_table_view.dart` — `TableViewSection` (`routeKey`: a table's link, which the shell maps to `InventorySection`).
+- `table_view_body.dart` — `TableViewBody`: loading / error / the sheet, by the structure's status only.
 - `table_header.dart` — `TableHeader`: the section's `InventoryBar` with the import stage, read/save state, normalize.
 - `header_actions.dart` — `HeaderActions`: record-load state, search.
 - `normalize_button.dart` — `NormalizeButton`: `TableViewService.normalize`; shown where `inventory.import` is.
 - `sheet.dart` — `Sheet`: frozen gutter band + data band.
-- `sheet_style.dart` — `SheetStyle`, `SheetTheme` (`InheritedWidget`), `SheetRowFill`: paint data resolved once per sheet.
-- `gutter.dart` — `SheetGutter`, `GutterCell`: row numbers.
+- `sheet_style.dart` — `SheetStyle`: paint data resolved once per sheet; `sheet_theme.dart` — `SheetTheme` (`InheritedWidget`); `sheet_row_fill.dart` — `SheetRowFill`.
+- `gutter.dart` — `SheetGutter`: row numbers; `gutter_cell.dart` — `GutterCell`.
 - `body.dart` — `SheetBody`: records + blank rows being written.
 - `fields_row.dart` / `field_cell.dart` — row 1 and its cells.
 - `type_arrow.dart` — `TypeArrow`: field-type menu, changes a column's type.
 - `record_row.dart` — `RecordRow`; `cell.dart` — `SheetCellView`.
 - `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).
-- `column_drag.dart` — `ColumnDrag`: carried column, ghost, drop line.
+- `column_drag.dart` — `ColumnDrag`: carried column, drop line; `column_drag_ghost.dart` — `ColumnDragGhost`.
 - `cells/_cells.dart` — dispatch by `TableFieldType`; `date_cell` `image_cell` `listed_cell`
   (`OPTIONS`/`CATEGORIES`) `price_cell` `sku_cell` `unit_cell` (number + unit/percent).
 - `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
-  `uploading`, editor, serialized write queues (columns, rows).
-- `state/sheet_columns.dart` — `SheetColumns`, `SheetColumn`, `SheetShape`.
-- `state/sheet_cursor.dart` — `SheetCursor`, `SheetCell`, `SheetCellState`.
-- `state/sheet_drafts.dart` — `SheetDrafts`, `SheetDraft`: unsaved rows.
+  `uploading`, editor, serialized write queues (columns, rows). Its writes are `part`s in `state/controller/`, extensions on it
+  (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks`): import the controller alone.
+- `state/sheet_columns.dart` — `SheetColumns`; `state/sheet_column.dart` — `SheetColumn`; `state/sheet_shape.dart` — `SheetShape`.
+- `state/sheet_cursor.dart` — `SheetCursor`; `state/sheet_cell.dart` — `SheetCell`, `SheetCellState`, `kFieldsRow`.
+- `state/sheet_drafts.dart` — `SheetDrafts`: unsaved rows; `state/sheet_draft.dart` — `SheetDraft`.
 - `state/sheet_widths.dart` — `SheetWidths`; `state/sheet_metrics.dart` — `SheetMetrics` (row height, visible range, scroll-to-cell).
 - `state/sheet_order.dart` — `fieldsInOrder`, `slotsOf`, `movedOrder`, `dropEdgeAt`.
 - `state/sheet_drag.dart` — `SheetDrag`; `state/sheet_hover.dart` — `SheetHover`; `state/sheet_dates.dart` — `SheetDates`.

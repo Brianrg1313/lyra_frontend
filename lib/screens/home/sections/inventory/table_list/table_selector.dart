@@ -8,6 +8,8 @@ import 'package:app/services/stock/tables/tables_service.dart';
 // WIDGETS
 import 'package:core/form.dart';
 
+import './table_dot.dart';
+
 /// The open table, in the place of the section's title, and the switch to another: the
 /// same anchor as the header's business selector, unfolding the company's tables.
 /// Creating and importing are the bar's own buttons, not options of this list.
@@ -95,27 +97,5 @@ class TableSelector extends StatelessWidget {
     if (option.primary) return s.table_primary;
 
     return option.description.isEmpty ? null : option.description;
-  }
-}
-
-/// A table's colour, as a dot: an adornment, so a colour that doesn't read is no dot.
-class TableDot extends StatelessWidget {
-  const TableDot({super.key, required this.color});
-
-  /// Flutter ARGB literal (`0xFF2196F3`).
-  final String color;
-
-  @override
-  Widget build(BuildContext context) {
-    final parsed = int.tryParse(color);
-
-    return Container(
-      width: AppSize.text * 0.75,
-      height: AppSize.text * 0.75,
-      decoration: BoxDecoration(
-        color: parsed == null ? ThemeColor.of(context).text.secondary : Color(parsed),
-        shape: BoxShape.circle
-      )
-    );
   }
 }

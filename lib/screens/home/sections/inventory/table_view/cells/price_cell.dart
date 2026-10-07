@@ -8,7 +8,8 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
 
-import '../sheet_style.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart';
 
 /// The cell of a money field —a price or any other amount—, out of
 /// editing.

@@ -5,9 +5,9 @@ import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_metrics.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cell.dart';
 
 /// Una tabla con dos columnas y sin un solo registro: todas sus filas son de
 /// las que se escriben. El alta no sale a la red, se anota.

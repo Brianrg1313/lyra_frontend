@@ -7,10 +7,13 @@ import 'package:provider/provider.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
-import 'cell.dart';
-import 'state/sheet_columns.dart';
-import 'state/sheet_drafts.dart';
-import 'state/sheet_hover.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_draft.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_drafts.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_hover.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_shape.dart';
+
+import './cell.dart';
 
 /// A row of the sheet body.
 ///

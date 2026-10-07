@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
@@ -7,23 +7,22 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/home/home_service.dart';
-import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
+import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_columns.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_dates.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_drafts.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_hover.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_metrics.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
 
-import 'sheet.dart';
-import 'table_header.dart';
-import 'state/sheet_columns.dart';
-import 'state/sheet_controller.dart';
-import 'state/sheet_cursor.dart';
-import 'state/sheet_dates.dart';
-import 'state/sheet_drafts.dart';
-import 'state/sheet_hover.dart';
-import 'state/sheet_metrics.dart';
-import 'state/sheet_widths.dart';
+import './table_header.dart';
+import './table_view_body.dart';
 
 /// View of a table and its data as a spreadsheet: the inventory section's view of
 /// the open table while its cells switch is on (`InventorySection`), keyed by the table.
@@ -332,39 +331,7 @@ class _TableViewSectionState extends State<TableViewSection> {
     child: Surface(child: Column(children: [
       TableHeader(tableId: _tableId, parts: widget.parts, status: widget.status),
       Separator.horizontal(),
-      const Expanded(child: _Body())
+      const Expanded(child: TableViewBody())
     ]))
   );
-}
-
-/// What is shown depends only on the **first** phase: the structure is what
-/// says which the columns are, and without them there is no sheet to draw.
-///
-/// Once it arrives, the grid stays still: reading the records and everything
-/// that comes after (saving a row, adding a column) is announced in the top
-/// bar, without covering what was being written. A table with no fields is not
-/// a dead end either: the empty sheet is shown, which already brings its free
-/// columns to write the first title over.
-class _Body extends StatelessWidget {
-  const _Body();
-
-  @override
-  Widget build(BuildContext context) {
-    final status = context.select<TableViewService, TableStructureStatus>(
-      (service) => service.structureStatus
-    );
-
-    return switch (status) {
-      TableStructureStatus.idle || TableStructureStatus.loading =>
-        const Center(child: Loading()),
-      TableStructureStatus.error => SectionMessage(
-        icon: CI.info,
-        title: S.of(context).product_table_view_error_title,
-        subtitle: S.of(context).product_table_view_error_subtitle,
-        action: context.read<TableViewService>().retry,
-        actionLabel: S.of(context).product_tables_retry
-      ),
-      TableStructureStatus.ready => const Sheet()
-    };
-  }
 }

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/services/capabilities/capability_service.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 
-import 'header_actions.dart';
-import 'normalize_button.dart';
+import './header_actions.dart';
+import './normalize_button.dart';
 
 /// The section's bar over the sheet: the table selector and its controls (the
 /// section's), then what this sheet is doing —an import still landing, a read, a

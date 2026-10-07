@@ -7,15 +7,19 @@ import 'package:provider/provider.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 
-import 'cell_editor.dart';
-import 'cells/_cells.dart';
-import 'sheet_style.dart';
-import 'state/sheet_columns.dart';
-import 'state/sheet_controller.dart';
-import 'state/sheet_cursor.dart';
-import 'state/sheet_hover.dart';
-import 'state/sheet_drafts.dart';
-import 'state/sheet_widths.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/cells/_cells.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cell.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_columns.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_draft.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_hover.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
+
+import './cell_editor.dart';
+import './sheet_row_fill.dart';
+import './sheet_theme.dart';
 
 /// A cell of the sheet body.
 ///

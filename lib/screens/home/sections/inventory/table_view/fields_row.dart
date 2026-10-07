@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'field_cell.dart';
-import 'sheet_style.dart';
-import 'state/sheet_columns.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_shape.dart';
+
+import './field_cell.dart';
+import './sheet_theme.dart';
 
 /// Row 1 of the sheet: the table's fields.
 ///

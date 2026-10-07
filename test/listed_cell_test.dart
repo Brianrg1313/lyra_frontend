@@ -11,6 +11,7 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_style.dart'
 
 import 'package:app/toolkit/theme/dark.dart';
 import 'package:app/toolkit/theme/light.dart';
+import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart';
 
 /// Alto de una fila de la planilla. Es chico a proposito: es contra esto que se
 /// mide si el marco de la celda deja aire y sigue entrando.

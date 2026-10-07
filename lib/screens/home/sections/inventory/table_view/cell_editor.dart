@@ -7,8 +7,10 @@ import 'package:provider/provider.dart';
 import 'package:app/services/inventory/product_date.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 
-import 'sheet_style.dart';
-import 'state/sheet_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
+
+import './sheet_theme.dart';
 
 /// The editor of the active cell.
 ///

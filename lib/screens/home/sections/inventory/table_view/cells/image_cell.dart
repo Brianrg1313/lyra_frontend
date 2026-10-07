@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/toolkit/lan_image.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/inventory/product_image.dart';
+import 'package:app/toolkit/lan_image.dart';
 
-import '../sheet_style.dart';
-import '../state/sheet_controller.dart';
-import '../state/sheet_cursor.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/sheet_style.dart';
+import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cell.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
 
 /// The cell of an image-type field.
 ///

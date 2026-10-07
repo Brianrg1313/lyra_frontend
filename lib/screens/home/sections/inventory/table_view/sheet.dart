@@ -6,13 +6,17 @@ import 'package:app/toolkit/toolkit.dart';
 // PACKAGES
 import 'package:provider/provider.dart';
 
-import 'body.dart';
-import 'column_drag.dart';
-import 'fields_row.dart';
-import 'gutter.dart';
-import 'sheet_style.dart';
-import 'state/sheet_columns.dart';
-import 'state/sheet_controller.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_columns.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_shape.dart';
+
+import './body.dart';
+import './column_drag.dart';
+import './fields_row.dart';
+import './gutter.dart';
+import './sheet_style.dart';
+import './sheet_theme.dart';
 
 /// The sheet: the frozen band of row numbers and, next to it, the data one with
 /// the fields row on top and the records below.

@@ -10,8 +10,8 @@ import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
 import 'package:app/screens/modals/inventory/rename_table/_rename_table.dart';
+import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
 
 /// The open table's options, first of the inventory bar's actions (before import and
 /// create), with the dropdown it deploys (anchored to the button, which is why it is its

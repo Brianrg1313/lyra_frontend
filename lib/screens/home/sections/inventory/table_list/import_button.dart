@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 /// Secondary action of the list bar: import an already existing table.

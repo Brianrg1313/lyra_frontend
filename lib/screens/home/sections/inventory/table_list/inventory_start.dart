@@ -1,20 +1,22 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/services/capabilities/capability_service.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/inventory/table_template_model.dart';
 import 'package:app/services/inventory/table_templates_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
-import 'import_button.dart';
-import 'table_selector.dart';
+import 'package:app/screens/home/sections/inventory/table_list/widgets/inventory_blank_card.dart';
+import 'package:app/screens/home/sections/inventory/table_list/widgets/inventory_template_card.dart';
+
+import './import_button.dart';
 
 /// What the inventory section shows a company with no table: the starting tables
 /// offered to its activity (`GET .../builder/templates/`), a blank one, and the import.
@@ -135,13 +137,13 @@ class _InventoryStartState extends State<InventoryStart> {
       if (status == TableTemplatesStatus.ready)
         for (final template in _templates.templates) ValueListenableBuilder<String?>(
           valueListenable: _creating,
-          builder: (context, creating, _) => _TemplateCard(
+          builder: (context, creating, _) => InventoryTemplateCard(
             template: template,
             loading: creating == template.id,
             action: creating == null ? () => _create(template) : null
           )
         ),
-      _BlankCard(action: widget.onBlank)
+      InventoryBlankCard(action: widget.onBlank)
     ];
 
     return Column(
@@ -190,103 +192,4 @@ class _InventoryStartState extends State<InventoryStart> {
       ]
     );
   }
-}
-
-/// One starting table: its colour, name, what it's for, and the columns it comes with.
-class _TemplateCard extends StatelessWidget {
-  const _TemplateCard({required this.template, required this.loading, required this.action});
-
-  final TableTemplateModel template;
-  final bool loading;
-  final void Function()? action;
-
-  /// How many columns the card names before "and N more".
-  static const _shown = 5;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-    final names = template.fields.map((field) => field.name).toList();
-    final extra = names.length - _shown;
-
-    return _Card(
-      action: action,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            TableDot(color: template.color),
-            SizedBox(width: AppSize.gap),
-            Expanded(child: TextMedium(template.name, bold: true, ellipsis: true)),
-            if (loading) SizedBox(
-              width: AppSize.text,
-              height: AppSize.text,
-              child: CircularProgressIndicator(strokeWidth: 2, color: scheme.text.secondary)
-            )
-          ]),
-          if (template.description.isNotEmpty) ...[
-            SizedBox(height: AppSize.gap),
-            TextSmall(template.description, color: scheme.text.secondary, lines: 2, ellipsis: true)
-          ],
-          if (names.isNotEmpty) ...[
-            SizedBox(height: AppSize.spaceS),
-            TextSmall(
-              extra > 0
-                ? S.of(context).inventory_template_columns_more(names.take(_shown).join(" · "), extra)
-                : names.join(" · "),
-              lines: 2,
-              ellipsis: true
-            )
-          ]
-        ]
-      )
-    );
-  }
-}
-
-/// A table with no columns, named in the create modal.
-class _BlankCard extends StatelessWidget {
-  const _BlankCard({required this.action});
-
-  final void Function() action;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return _Card(
-      action: action,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(CI.plus, size: AppSize.text, color: scheme.icon),
-            SizedBox(width: AppSize.gap),
-            Expanded(child: TextMedium(S.of(context).inventory_start_blank, bold: true, ellipsis: true))
-          ]),
-          SizedBox(height: AppSize.gap),
-          TextSmall(S.of(context).inventory_start_blank_hint, color: scheme.text.secondary, lines: 2, ellipsis: true)
-        ]
-      )
-    );
-  }
-}
-
-class _Card extends StatelessWidget {
-  const _Card({required this.action, required this.child});
-
-  final void Function()? action;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => FeedbackButton(
-    action: action,
-    color: ThemeColor.of(context).surfaceOver,
-    radius: AppSize.corner,
-    padding: EdgeInsets.all(AppSize.spaceS),
-    child: SizedBox(
-      height: AppSize.action * 2.4,
-      child: Align(alignment: Alignment.topLeft, child: child)
-    )
-  );
 }

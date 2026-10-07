@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_keys.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cell.dart';
 
 /// Lo que pide una tecla estando fuera del editor (recorriendo la planilla).
 SheetKeyIntent? _key(LogicalKeyboardKey key, {bool shift = false}) =>
