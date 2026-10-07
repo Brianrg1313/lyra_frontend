@@ -11,10 +11,13 @@ import 'package:app/services/catalog/phone_plan.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_edit_button.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_edit_frame.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_fact_frame.dart';
 import 'package:app/screens/home/sections/business/settings/country_flag.dart';
 
-import './employee_card.dart';
-import './employee_edit.dart';
+import './_employee_facts.dart';
+import './employee_fact.dart';
 
 /// A phone edited like the company's own (`BusinessProfilePhone`): the
 /// country code is chosen, with its flag, and only the digits of the number

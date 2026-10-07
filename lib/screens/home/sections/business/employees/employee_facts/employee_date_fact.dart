@@ -7,9 +7,12 @@ import 'package:intl/intl.dart' show DateFormat;
 
 // WIDGETS
 import 'package:core/form.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_edit_button.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_edit_frame.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_fact_frame.dart';
 
-import './employee_card.dart';
-import './employee_edit.dart';
+import './_employee_facts.dart';
+import './employee_fact.dart';
 
 /// A day edited in its three parts: the day and the year typed as digits and
 /// the month chosen by name. Typed whole, the order of a date is a guess

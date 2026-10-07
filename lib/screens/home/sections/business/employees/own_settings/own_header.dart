@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
+
+// PACKAGES
+import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/account/account_security_service.dart';
@@ -9,9 +11,8 @@ import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/client/client_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/business/employees/own_settings/widgets/own_link.dart';
 import 'package:app/screens/modals/business/two_factor/_two_factor.dart';
-
-import './own_soon.dart';
 
 /// Whose account this is, and how its sign in is guarded, said in one sentence. It is the one
 /// thing the panel opens on: an account with a single step is told so, with the way to add the

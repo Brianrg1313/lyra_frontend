@@ -9,9 +9,9 @@ import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/permissions/permission_member_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/business/employees/employee_permissions.dart';
-import 'package:core/form.dart';
 import 'package:core/button.dart';
+import 'package:core/form.dart';
+import 'package:app/screens/home/sections/business/employees/employee_permissions/permission_template_text.dart';
 
 /// Opens the invitation form over the employees tab. Answers `true` when the
 /// invitation went out; the service has already reread the list and opened

@@ -13,7 +13,8 @@ import 'package:app/services/permissions/member_permissions_service.dart';
 import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/sources/permissions_lan_source.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
-import 'package:app/screens/home/sections/business/employees/employee_permissions.dart';
+import 'package:app/screens/home/sections/business/employees/employee_permissions/_employee_permissions.dart';
+import 'package:app/screens/home/sections/business/employees/employee_permissions/permission_section.dart';
 
 /// The permissions editor on the cloud's catalog (`docs/offline/specs/session.md`
 /// session.permissions): the draft keeps the backend's rules, a save sends only what changed, and

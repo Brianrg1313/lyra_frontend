@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
+
+// PACKAGES
+import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/account/account_history_service.dart';
@@ -9,10 +11,10 @@ import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/business/employees/employee_format.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/widgets/own_link.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/widgets/own_offline.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
-
-import '../employee_format.dart';
-import './own_soon.dart';
 
 /// Every company the person worked for, the current ones first, over [AccountHistoryService]
 /// (provided by `OwnSettings`). Theirs, kept after each job; read from the cloud.

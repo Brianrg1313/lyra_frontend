@@ -1,15 +1,18 @@
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:app/toolkit/toolkit.dart';
+
+// PACKAGES
+import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/client/client_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/business/employees/own_settings/widgets/own_link.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/widgets/own_soon.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/widgets/own_soon_list.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
-
-import './own_soon.dart';
 
 /// Where the account is signed in. This device is known and can be signed out of; the backend
 /// does not list the other sessions yet.

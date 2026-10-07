@@ -12,10 +12,12 @@ import 'package:app/services/client/client_service.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/screens/home/sections/business/employees/own_settings/_own_settings.dart';
 import 'package:app/screens/home/sections/business/employees/own_settings/own_history.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_section.dart';
 import 'package:app/screens/home/sections/business/employees/own_settings/own_security.dart';
 import 'package:app/screens/home/sections/business/employees/own_settings/own_sessions.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_soon.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/own_notifications.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/own_privacy.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/own_setting.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/own_sign_in_methods.dart';
 
 /// The person's own settings (their card's settings action): an index of subsections, each
 /// opening its own panel, and a search through every row of them. Security and the work

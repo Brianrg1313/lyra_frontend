@@ -20,7 +20,7 @@ import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/screens/home/sections/business/employees/_employees.dart';
-import 'package:app/screens/home/sections/business/employees/employee_edit.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_edit_frame.dart';
 import 'package:app/screens/modals/business/invite_employee/_invite_employee.dart';
 
 /// The employees tab is two panels: the people on the left — the viewer's own

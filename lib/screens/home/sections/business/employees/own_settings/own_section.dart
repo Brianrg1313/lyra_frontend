@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
+
+// PACKAGES
+import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/account/account_history_service.dart';
 import 'package:app/services/account/account_security_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/business/employees/own_settings/widgets/own_section_page.dart';
 import 'package:app/screens/modals/business/employee_tool/_employee_tool.dart';
 
 import './own_history.dart';
+import './own_notifications.dart';
 import './own_preferences.dart';
+import './own_privacy.dart';
 import './own_security.dart';
 import './own_sessions.dart';
-import './own_soon.dart';
+import './own_setting.dart';
+import './own_sign_in_methods.dart';
 
 /// The subsections of one's own settings. Each is a row of the panel's index and opens its own
 /// side panel over it; [settings] are what the index's search finds it by.
@@ -123,69 +129,6 @@ enum OwnSection {
         ],
         child: OwnSectionPage(section: this)
       )
-    );
-  }
-}
-
-/// One row of a subsection, as the search finds it.
-class OwnSetting {
-  const OwnSetting(this.section, this.icon, this.label, [this.hint]);
-
-  final OwnSection section;
-  final IconData icon;
-  final String label;
-  final String? hint;
-
-  /// Whether each of [words] (already [fold]ed) is in its label, its hint or its subsection's
-  /// title, in any order: "step two" finds "Two-step verification".
-  bool matches(List<String> words, String sectionTitle) {
-    final text = fold("$label ${hint ?? ""} $sectionTitle");
-    return words.every(text.contains);
-  }
-
-  /// Lower case without accents or hyphens, so a typed "codigo" or "two step" finds its row
-  /// whichever language the copy is in.
-  static String fold(String text) {
-    const from = "áàäâéèëêíìïîóòöôúùüûñç-";
-    const to = "aaaaeeeeiiiioooouuuunc ";
-
-    final lower = text.toLowerCase();
-    final buffer = StringBuffer();
-    for (final char in lower.split("")) {
-      final at = from.indexOf(char);
-      buffer.write(at < 0 ? char : to[at]);
-    }
-    return buffer.toString();
-  }
-}
-
-/// A subsection in its own panel: what it is for in one line, then its rows over one surface.
-class OwnSectionPage extends StatelessWidget {
-  const OwnSectionPage({super.key, required this.section});
-
-  final OwnSection section;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = S.of(context);
-
-    return ScrollableWidget(
-      padding: EdgeInsets.only(bottom: AppSize.padding),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(children: [
-          Expanded(child: TextSmall(section.subtitle(s), lines: 3, color: ThemeColor.of(context).text.secondary)),
-          if (section.soon) ...[
-            SizedBox(width: AppSize.spaceXS),
-            const OwnSoonTag()
-          ]
-        ]),
-        SizedBox(height: AppSize.spaceS),
-        Surface.over(
-          padding: EdgeInsets.all(AppSize.spaceS),
-          child: section.body
-        )
-      ]
     );
   }
 }

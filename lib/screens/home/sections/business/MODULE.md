@@ -24,27 +24,64 @@
 ### employees/ — one `Surface`: the people (left, 3/5) and the selected one's detail (right, 2/5, inset `Surface.line` over `surfaceOver`)
 
 - `_employees.dart` — `BusinessEmployeesTab`: loads `BusinessEmployeesService`; list + detail keyed by the selected person.
-- `employee_list.dart` — `EmployeeList`, `EmployeeTile`, `EmployeeGroup`, `EmployeeRollGroup`: heading with the invite button (`showInviteEmployee`) and a bar of today's split, current people grouped by where they are today (working, away, starting later, waiting to accept; viewer first in its group, marked "You"), then former; the selected row filled with the detail's color; contract/since columns only when wide, a tag only on a leave.
-- `employee_detail.dart` — `EmployeeDetailPanel`: hero header (presence wash, quick copy actions) from the list row at once, blocks after `GET /business/employees/detail/:ID`, with a search box and `EmployeeActions` above them; the viewer's unfiled card has no detail.
-- `employee_actions.dart` — `EmployeeAction` (permissions, settings, activity, sales: icon, label, description), `EmployeeActions`: one sheet under the search, a 2-column grid (1 when narrow), each opens `showEmployeeTool`; permissions: the viewer's own read-only, someone else's only with `business.employees.permissions`; settings: on the viewer's card their own account (`OwnSettings`), on another's the placeholder.
-- `employee_permissions.dart` — `PermissionSection` (every section of `PermissionCatalog`: icon, title, description, action titles), `permissionTemplateText` (a global template in the app's words), `EmployeePermissions` (`username`, none = one's own): note, template picker, search, one sheet per section (its switch, its actions threaded under it, locked keys the viewer lacks), footer (cancel/save, give access, remove access); over `MemberPermissionsService`.
-- `employee_blocks.dart` — `employeeBlocks(context, detail, {own})`: personal data first (full profile only; `sealedLocked` → "Type password" → `showUnseal`, then the detail again), tenure tiles (time in job, in company, contract), away today, ending, work contact, job + pay, emergency, upcoming absences, record, notes; `EmployeeEditor`: what is editable and the per-key save (`save` job keys, `savePerson` personal keys); the checks (names, work email, birthday, start/end order).
-- `employee_edit.dart` — `EmployeeTextFact` (typed in the tile; the check (shown only once changed) or Enter saves, never blur; Escape or a press outside the tile (`TapRegion`, ignored while its own dropdown is open) cancels; with `onPlace` an address searched with `PlaceSearch`), `EmployeeSelectFact` (`showSelectMenu` under the tile; clearable, creatable, lazy `loadOptions`), shared `EmployeeEditButton` (closed tile), `EmployeeEditFrame` (open tile + `EmployeeConfirm` check), `EmployeeSaving`.
-- `employee_edit_phone.dart` — `EmployeePhoneFact`: country code select + digits (trunk `0` dropped, length per `PhonePlan`), sent as `+<code><number>`; widens its tile while open.
-- `employee_edit_date.dart` — `EmployeeDateFact`: day and year typed, month chosen, optional `validate`, sent as `yyyy-MM-dd`; widens its tile while open.
-- `employee_card.dart` — detail shapes: `EmployeeSection`, `EmployeeFacts` (one sheet per group, a 2-column grid of `EmployeeTile` cells; a tile widens to the whole row with `EmployeeWiden`), `EmployeeSearch` (the panel's search: filters tiles by label/value, sections by title), `EmployeeFactFrame`/`EmployeeFactValue` (a tile's inside; `accent` tints the open one), `EmployeeHover`/`EmployeeHint` (edit/copy/unfold hints shown only under the pointer, always without a mouse), `EmployeeFact` (read-only, copyable tile), `EmployeeEvent` (calendar leaf), `EmployeeNote`, `EmployeeQuickAction`, `employeeCopy`.
 - `employee_format.dart` — labels for every backend word (state, work status, contract, workday, period, leave, ending, document, sex), `employeePresence` (tag + color), day/range/span labels.
+
+#### employees/employee_list/ — the left panel
+
+- `_employee_list.dart` — `EmployeeList`: heading, column names when wide, current people then former (`_GroupTitle`); the selected row filled with the detail's color.
+- `employee_list_heading.dart` — `EmployeeListHeading`: title, counts (only with the view), invite button (`showInviteEmployee`).
+- `employee_list_columns.dart` — `EmployeeListColumns`: names the wide rows' columns once.
+- `employee_row.dart` — `EmployeeRow` (`statusWidth`): picture, name ("You" on the viewer's), job, contract and since only when wide, presence tag.
+
+#### employees/employee_detail/ — the right panel
+
+- `_employee_detail.dart` — `EmployeeDetailPanel`: header from the list row at once, blocks after `GET /business/employees/detail/:ID`, a search box (only the blocks listen to it) and `EmployeeActions` above them; the viewer's unfiled card has no detail.
+- `employee_detail_header.dart` — `EmployeeDetailHeader`: presence wash, picture, name, quick copy actions, tags, job, headline.
+- `employee_quick_action.dart` — `EmployeeQuickAction`: a header's square copy button.
+- `employee_action.dart` — `enum EmployeeAction` (permissions, settings, activity, sales: icon, label, description).
+- `employee_actions.dart` — `EmployeeActions`: one sheet under the search, a 2-column grid (1 when narrow), each opens `showEmployeeTool`; permissions: the viewer's own read-only, someone else's only with `business.employees.permissions`; settings: on the viewer's card their own account (`OwnSettings`), on another's the placeholder.
+- `blocks/_blocks.dart` — `employeeBlocks(context, detail, {own})`: the blocks in order — person (full profile only; `sealedLocked` → "Type password" → `showUnseal`, then the detail again), tenure, away today, ending, work contact, job + pay, emergency, upcoming absences, record, notes.
+- `blocks/employee_editor.dart` — `EmployeeEditor`: what is editable and the per-key save (`save` job keys, `savePerson` personal keys, `place`).
+- `blocks/employee_block_values.dart` — the checks (names, work email, amount, birthday) and the blocks' shared values (company country, digit formatters, options in use, countries).
+- `blocks/employee_<name>_block.dart` — one per block: `EmployeePersonBlock` `EmployeeTenureBlock` `EmployeeLeaveNowBlock` `EmployeeEndingBlock` `EmployeeWorkContactBlock` `EmployeeJobBlock` `EmployeeEmergencyBlock` `EmployeeUpcomingBlock` `EmployeeRecordBlock` `EmployeeNotesBlock`.
+
+#### employees/employee_facts/ — the detail's shapes (sheets of tiles)
+
+- `_employee_facts.dart` — `EmployeeFacts` (one sheet per group, a 2-column grid; a tile widens to the whole row with `EmployeeWiden`), `EmployeeTile` (the interface every tile implements: `label value wide`).
+- `employee_section.dart` — `EmployeeSection`: a titled group, filtered by the search.
+- `employee_search.dart` — `EmployeeSearch`: the panel's search (filters tiles by label/value, sections by title; case and accents ignored).
+- `employee_fact.dart` — `EmployeeFact`: read-only, copyable tile. `employee_copy.dart` — `employeeCopy`.
+- `employee_event.dart` — `EmployeeEvent` (calendar leaf). `employee_note.dart` — `EmployeeNote`.
+- `employee_text_fact.dart` — `EmployeeTextFact` (typed in the tile; the check (shown only once changed) or Enter saves, never blur; Escape or a press outside the tile (`TapRegion`, ignored while its own dropdown is open) cancels; with `onPlace` an address searched with `PlaceSearch`).
+- `employee_select_fact.dart` — `EmployeeSelectFact` (`showSelectMenu` under the tile; clearable, creatable, lazy `loadOptions`).
+- `employee_phone_fact.dart` — `EmployeePhoneFact`: country code select + digits (trunk `0` dropped, length per `PhonePlan`), sent as `+<code><number>`; widens its tile while open.
+- `employee_date_fact.dart` — `EmployeeDateFact`: day and year typed, month chosen, optional `validate`, sent as `yyyy-MM-dd`; widens its tile while open.
+- `widgets/employee_fact_frame.dart` — `EmployeeFactFrame` (a tile's inside; `accent` tints the open one; the shared paddings, radii and icon sizes). `widgets/employee_fact_value.dart` — `EmployeeFactValue`.
+- `widgets/employee_hover.dart` — `EmployeeHover`; `widgets/employee_hint.dart` — `EmployeeHint` (edit/copy/unfold hints shown only under the pointer, always without a mouse).
+- `widgets/employee_edit_button.dart` — `EmployeeEditButton` (closed typed tile). `widgets/employee_edit_frame.dart` — `EmployeeEditFrame` (open tile). `widgets/employee_confirm.dart` — `EmployeeConfirm` (the check). `widgets/employee_saving.dart` — `EmployeeSaving`.
+
+#### employees/employee_permissions/ — one person's permissions (side panel of the permissions action)
+
+- `_employee_permissions.dart` — `EmployeePermissions` (`username`, none = one's own): note, template picker, search, one sheet per section, footer (cancel/save, give access, remove access); over `MemberPermissionsService`.
+- `permission_section.dart` — `enum PermissionSection` (every section of `PermissionCatalog`: icon, title, description, action titles).
+- `permission_template_text.dart` — `permissionTemplateText` (a global template in the app's words).
+- `permission_sheet.dart` — `PermissionSheet`: a section's switch and its actions threaded under it (locked keys the viewer lacks). `permission_cell.dart` — `PermissionCell` (one switch). `permission_thread.dart` — `PermissionThread`. `permission_grid.dart` — `PermissionGrid` (sizes shared by the rows).
 
 ### employees/own_settings/ — the viewer's own account (app area `account`), in the settings action's side panel; an index whose subsections open stacked side panels
 
-- `_own_settings.dart` — `OwnSettings`: owns `AccountSecurityService` and `AccountHistoryService` (read on opening only where `account.security` / `account.history` show); header, a search over every subsection's rows (`OwnSetting.matches`), and the index of `OwnSection`s (working ones, then the ones with nothing working yet, tagged).
+- `_own_settings.dart` — `OwnSettings`: owns `AccountSecurityService` and `AccountHistoryService` (read on opening only where `account.security` / `account.history` show); header, a search over every subsection's rows (`OwnSetting.matches`), and the index (`OwnIndex`) or what the search found (`OwnResults`).
 - `own_header.dart` — `OwnHeader`: picture, name, email, and one sentence on the sign in's steps (warning tint and a "turn on" action without a second step; only where `account.security` shows).
-- `own_section.dart` — `OwnSection` (icon, title, subtitle, body, searchable `settings`, `open`: a stacked `showSideModal` re-providing the index's services), `OwnSetting` (one searchable row, `fold`), `OwnSectionPage` (lead line and the body over one surface).
+- `own_section.dart` — `enum OwnSection` (icon, title, subtitle, body, searchable `settings`, `open`: a stacked `showSideModal` re-providing the index's services). `own_setting.dart` — `OwnSetting` (one searchable row, `fold`).
 - `own_preferences.dart` — `OwnPreferences`: language and appearance of this device, and how inventory tables open (`PreferencesService`), every mode.
-- `own_security.dart` — `OwnSecurity`: first password (`showCreatePassword`), second factor (on, change, off: `showTwoFactorSetup`, `showTwoFactorProof`), recovery codes left / new set (app only), SMS and recovery e-mails soon; `OwnSignInMethods`: the sign-in e-mail, Google/Apple/Microsoft soon.
+- `own_security.dart` — `OwnSecurity`: first password (`showCreatePassword`), second factor (on, change, off: `showTwoFactorSetup`, `showTwoFactorProof`), recovery codes left / new set (app only), SMS and recovery e-mails soon.
+- `own_sign_in_methods.dart` — `OwnSignInMethods`: the sign-in e-mail, Google/Apple/Microsoft soon.
 - `own_sessions.dart` — `OwnSessions`: this device (platform, sign out), other devices soon.
 - `own_history.dart` — `OwnHistory`: every company worked for (logo, role, contract, since/range, tenure, state tag).
-- `own_soon.dart` — `OwnSoon` (a muted line with no backend yet), `OwnSoonList` (them under one "coming soon"), `OwnSoonTag`, `OwnOffline` (a cloud row without the cloud), `OwnLink` (a row's text action), `OwnNotifications`, `OwnPrivacy` (all rows soon, the tag on the page's lead line).
+- `own_notifications.dart` — `OwnNotifications`; `own_privacy.dart` — `OwnPrivacy` (all rows soon, the tag on the page's lead line).
+- `widgets/own_index.dart` — `OwnIndex` (working subsections, then the ones with nothing working yet). `widgets/own_results.dart` — `OwnResults`. `widgets/own_group.dart` — `OwnGroup` (rows over one surface).
+- `widgets/own_section_row.dart` — `OwnSectionRow`; `widgets/own_setting_row.dart` — `OwnSettingRow`; `widgets/own_row_tap.dart` — `OwnRowTap`; `widgets/own_arrow.dart` — `OwnArrow`.
+- `widgets/own_section_page.dart` — `OwnSectionPage` (lead line and the body over one surface).
+- `widgets/own_soon.dart` — `OwnSoon` (a muted line with no backend yet); `widgets/own_soon_list.dart` — `OwnSoonList` (them under one "coming soon"); `widgets/own_soon_tag.dart` — `OwnSoonTag`; `widgets/own_offline.dart` — `OwnOffline` (a cloud row without the cloud); `widgets/own_link.dart` — `OwnLink` (a row's text action).
 
 ### settings/ — the profile (read-only sheet; **every edit opens a modal** in `lib/screens/modals/business`)
 

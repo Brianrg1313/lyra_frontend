@@ -1,47 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
+
+// PACKAGES
+import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/business/employees/employee_facts/_employee_facts.dart';
+import 'package:app/screens/home/sections/business/employees/employee_facts/widgets/employee_fact_frame.dart';
+import 'package:app/screens/home/sections/business/employees/employee_permissions/_employee_permissions.dart';
+import 'package:app/screens/home/sections/business/employees/own_settings/_own_settings.dart';
 import 'package:app/screens/modals/business/employee_tool/_employee_tool.dart';
 
-import './employee_card.dart';
-import './employee_permissions.dart';
-import './own_settings/_own_settings.dart';
-
-/// The panels about the person that are not data of their card: each opens
-/// beside the detail instead of growing it.
-enum EmployeeAction {
-  permissions(CI.safe_user),
-  settings(CI.setting),
-  activity(CI.task_list),
-  sales(CI.sale);
-
-  const EmployeeAction(this.icon);
-
-  final IconData icon;
-
-  String label(BuildContext context) => switch (this) {
-    permissions => S.of(context).employee_action_permissions,
-    settings => S.of(context).employee_action_settings,
-    activity => S.of(context).employee_action_activity,
-    sales => S.of(context).employee_action_sales
-  };
-
-  /// [own]: the viewer's card, where the settings are their own account's, not their job's.
-  String description(BuildContext context, {bool own = false}) => switch (this) {
-    permissions => S.of(context).employee_action_permissions_description,
-    settings => own
-      ? S.of(context).employee_action_settings_own_description
-      : S.of(context).employee_action_settings_description,
-    activity => S.of(context).employee_action_activity_description,
-    sales => S.of(context).employee_action_sales_description
-  };
-}
+import './employee_action.dart';
 
 /// One sheet under the search, a grid of [EmployeeAction] cells: drawn like
 /// the blocks below it so it reads as part of the card, not as a toolbar.
