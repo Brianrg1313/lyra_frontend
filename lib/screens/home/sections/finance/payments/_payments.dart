@@ -15,14 +15,16 @@ import 'package:app/services/money/money_receivables_service.dart';
 import 'package:app/services/money/money_service.dart';
 
 // WIDGETS
-import 'package:core/button.dart';
+import 'package:app/screens/home/sections/_section/more_button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/finance/finance_tab.dart';
+import 'package:app/screens/home/sections/finance/money_format.dart';
+import 'package:app/screens/home/sections/finance/payments/payment_filters/_payment_filters.dart';
+import 'package:app/screens/home/sections/finance/payments/widgets/payments_bar.dart';
+import 'package:app/screens/home/sections/finance/payments/widgets/payments_totals.dart';
 import 'package:app/screens/modals/finance/record_payment/_record_payment.dart';
 
-import '../finance_tab.dart';
-import '../money_format.dart';
-import 'payment_filters.dart';
-import 'payments_table.dart';
+import './payments_table.dart';
 
 /// Payments tab: everything the company received and everything it paid, one
 /// movement per row.
@@ -77,7 +79,7 @@ class _FinancePaymentsTabState extends State<FinancePaymentsTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Bar(onRecord: _record),
+        PaymentsBar(onRecord: _record),
         SizedBox(height: AppSize.spaceXS),
         // The filters stay in view through every state, the empty one included:
         // an empty list is very often a filter that matched nothing, and hiding
@@ -88,7 +90,7 @@ class _FinancePaymentsTabState extends State<FinancePaymentsTab> {
         // filter's, so they are there before any row is and stay when the
         // filter matches none. Every amount in this list is stamped in it —
         // nothing is ever converted — so it is the right one for both.
-        _Totals(
+        PaymentsTotals(
           totals: service.totals,
           currency: context.select<BusinessService, String>(
             (business) => business.currencyCode
@@ -96,7 +98,13 @@ class _FinancePaymentsTabState extends State<FinancePaymentsTab> {
         ),
         SizedBox(height: AppSize.spaceXS),
         Expanded(child: _body(context, service)),
-        if (service.hasMore) _More(service: service)
+        if (service.hasMore) SectionMoreButton(
+          label: S.of(context).finance_more(moneyCount(context, service.total - service.payments.length)),
+          retryLabel: S.of(context).finance_retry,
+          failed: service.moreFailed,
+          onMore: service.more,
+          onRetry: service.retryMore
+        )
       ]
     );
   }
@@ -204,133 +212,4 @@ class _FinancePaymentsTabState extends State<FinancePaymentsTab> {
     context.read<MoneyService>().retry();
     context.read<MoneyReceivablesService>().refresh();
   }
-}
-
-/// The one action of the tab, on its own line above the filters: everything
-/// else here reads, and this is the only thing that writes.
-class _Bar extends StatelessWidget {
-  const _Bar({required this.onRecord});
-
-  final void Function() onRecord;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      Button(
-        width: null,
-        title: S.of(context).finance_payments_record,
-        leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
-        action: onRecord
-      )
-    ]
-  );
-}
-
-/// What the whole filter adds up to, in each direction.
-///
-/// It is deliberately not the sum of the rows on screen: the list is one page
-/// of a filter that can run into thousands of movements, and "cuanto llevo
-/// pagado a proveedores este mes" is a question about the filter.
-class _Totals extends StatelessWidget {
-  const _Totals({required this.totals, required this.currency});
-
-  final MoneyPaymentTotals totals;
-  final String currency;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return Row(children: [
-      _Total(
-        icon: CI.arrow_down,
-        label: S.of(context).finance_payments_in,
-        value: totals.income.total,
-        count: totals.income.count,
-        currency: currency,
-        color: scheme.snackBar.success
-      ),
-      SizedBox(width: AppSize.spaceM),
-      _Total(
-        icon: CI.arrow_top,
-        label: S.of(context).finance_payments_out,
-        value: totals.expense.total,
-        count: totals.expense.count,
-        currency: currency,
-        color: scheme.snackBar.error
-      )
-    ]);
-  }
-}
-
-class _Total extends StatelessWidget {
-  const _Total({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.count,
-    required this.currency,
-    required this.color
-  });
-
-  final IconData icon;
-  final String label;
-  final double value;
-  final int count;
-  final String currency;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, size: AppSize.text, color: color),
-      SizedBox(width: AppSize.gap),
-      TextSmall("$label:", color: scheme.text.secondary),
-      SizedBox(width: AppSize.gap),
-      TextMedium(
-        moneyLabel(value, currency),
-        bold: true,
-        multiplier: 0.9,
-        color: color
-      ),
-      SizedBox(width: AppSize.gap),
-      TextSmall(
-        "(${moneyCount(context, count)})",
-        color: scheme.text.secondary,
-        multiplier: 0.9
-      )
-    ]);
-  }
-}
-
-/// The end of the list: how many movements are left and the button that brings
-/// the next page.
-///
-/// It is a button and not an infinite scroll because the table virtualizes its
-/// own rows and does not report where it is: asking for the next page as the
-/// last row appears would mean reaching inside it for a scroll position it
-/// deliberately does not hand out.
-class _More extends StatelessWidget {
-  const _More({required this.service});
-
-  final MoneyPaymentsService service;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(top: AppSize.gap),
-    child: Center(child: SizedBox(
-      width: AppSize.action * 5,
-      child: Button(
-        title: service.moreFailed
-          ? S.of(context).finance_retry
-          : S.of(context).finance_more(
-              moneyCount(context, service.total - service.payments.length)
-            ),
-        action: service.moreFailed ? service.retryMore : service.more
-      )
-    ))
-  );
 }

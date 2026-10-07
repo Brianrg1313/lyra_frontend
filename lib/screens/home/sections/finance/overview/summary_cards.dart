@@ -4,7 +4,9 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/money/money_summary_model.dart';
 
-import '../money_format.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/finance/money_format.dart';
+import 'package:app/screens/home/sections/finance/overview/widgets/money_summary_card.dart';
 
 /// The four figures the money screen opens with: what came in, what went out,
 /// what left on credit and what that leaves.
@@ -33,7 +35,7 @@ class MoneySummaryCards extends StatelessWidget {
       spacing: AppSize.gap,
       runSpacing: AppSize.gap,
       children: [
-        _Card(
+        MoneySummaryCard(
           icon: CI.arrow_down,
           title: S.of(context).finance_income,
           amount: moneyLabel(summary.income, currency),
@@ -47,7 +49,7 @@ class MoneySummaryCards extends StatelessWidget {
             "  ·  ${S.of(context).finance_income_payments}"
             " ${moneyLabel(summary.payments.total, currency)}"
         ),
-        _Card(
+        MoneySummaryCard(
           icon: CI.arrow_top,
           title: S.of(context).finance_expenses,
           amount: moneyLabel(summary.expenses.total, currency),
@@ -56,7 +58,7 @@ class MoneySummaryCards extends StatelessWidget {
             moneyCount(context, summary.expenses.count)
           )
         ),
-        _Card(
+        MoneySummaryCard(
           icon: CI.wallet,
           title: S.of(context).finance_net,
           amount: moneyLabel(summary.net, currency),
@@ -67,7 +69,7 @@ class MoneySummaryCards extends StatelessWidget {
             : scheme.snackBar.success,
           detail: S.of(context).finance_net_hint
         ),
-        _Card(
+        MoneySummaryCard(
           icon: CI.invoice_list,
           title: S.of(context).finance_credit,
           amount: moneyLabel(summary.credit.total, currency),
@@ -75,68 +77,6 @@ class MoneySummaryCards extends StatelessWidget {
           detail: S.of(context).finance_credit_hint
         )
       ]
-    );
-  }
-}
-
-/// One figure, on its own block over the body's sheet.
-class _Card extends StatelessWidget {
-  const _Card({
-    required this.icon,
-    required this.title,
-    required this.amount,
-    required this.accent,
-    required this.detail
-  });
-
-  final IconData icon;
-  final String title;
-  final String amount;
-
-  /// The colour of the icon and of the amount. It is what tells the four apart
-  /// at a glance, which is how this row is read.
-  final Color accent;
-
-  /// The line under the amount: what it is made of, or what it means.
-  final String detail;
-
-  /// A fixed width and not a `Flexible`: the four are laid out in a [Wrap], so
-  /// they need a measure of their own to decide when to break the line.
-  static const double _width = 230;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return SizedBox(
-      width: _width,
-      child: Surface.over(
-        padding: EdgeInsets.all(AppSize.padding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(children: [
-              Icon(icon, size: AppSize.text, color: accent),
-              SizedBox(width: AppSize.gap),
-              Expanded(child: TextSmall(
-                title,
-                color: scheme.text.secondary,
-                ellipsis: true
-              ))
-            ]),
-            SizedBox(height: AppSize.spaceXS),
-            TextLarge(amount, color: accent, ellipsis: true),
-            SizedBox(height: AppSize.gap),
-            TextSmall(
-              detail,
-              color: scheme.text.secondary,
-              multiplier: 0.9,
-              ellipsis: true
-            )
-          ]
-        )
-      )
     );
   }
 }

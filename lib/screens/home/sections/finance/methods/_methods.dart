@@ -19,9 +19,9 @@ import 'package:app/screens/modals/finance/exchange_currency_form/_exchange_curr
 import 'package:app/screens/modals/finance/payment_method_form/_payment_method_form.dart';
 import 'package:app/screens/modals/server/master_password/_master_password.dart';
 
-import 'currencies_block.dart';
-import 'method_card.dart';
-import 'methods_heading.dart';
+import './currencies_block.dart';
+import './method_card.dart';
+import './methods_heading.dart';
 
 /// Payment methods tab: what money this company takes, and how it can be paid.
 ///

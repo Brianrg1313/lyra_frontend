@@ -5,8 +5,10 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sales_catalog_service.dart';
 
+// WIDGETS
+import 'package:app/screens/home/sections/sales/stage/sale_stage_tag.dart';
+
 import './sale_format.dart';
-import './stage_tag.dart';
 
 /// The board: one row per sale, newest movement first.
 ///

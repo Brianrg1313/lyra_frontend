@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/business/create_business/_create_business.dart';
+
+import './section_message.dart';
 
 /// What is seen in a home section when the customer still has no business.
 ///

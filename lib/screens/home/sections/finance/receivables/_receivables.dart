@@ -14,12 +14,14 @@ import 'package:app/services/money/money_receivables_service.dart';
 import 'package:app/services/money/money_service.dart';
 
 // WIDGETS
-import 'package:core/button.dart';
+import 'package:app/screens/home/sections/_section/more_button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/finance/money_format.dart';
+import 'package:app/screens/home/sections/finance/receivables/widgets/receivables_bar.dart';
+import 'package:app/screens/home/sections/finance/receivables/widgets/receivables_totals.dart';
 import 'package:app/screens/modals/finance/record_payment/_record_payment.dart';
 
-import '../money_format.dart';
-import 'receivables_table.dart';
+import './receivables_table.dart';
 
 /// Receivables tab: the tickets that went out on credit and have not been paid.
 ///
@@ -72,15 +74,21 @@ class _FinanceReceivablesTabState extends State<FinanceReceivablesTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Totals(totals: service.totals, currency: service.currency),
+        ReceivablesTotals(totals: service.totals, currency: service.currency),
         SizedBox(height: AppSize.spaceXS),
-        _Bar(
+        ReceivablesBar(
           openOnly: service.openOnly,
           onOpenOnly: service.showOpenOnly
         ),
         SizedBox(height: AppSize.spaceXS),
         Expanded(child: _body(context, service)),
-        if (service.hasMore) _More(service: service)
+        if (service.hasMore) SectionMoreButton(
+          label: S.of(context).finance_more(moneyCount(context, service.total - service.sales.length)),
+          retryLabel: S.of(context).finance_retry,
+          failed: service.moreFailed,
+          onMore: service.more,
+          onRetry: service.retryMore
+        )
       ]
     );
   }
@@ -142,144 +150,4 @@ class _FinanceReceivablesTabState extends State<FinanceReceivablesTab> {
     context.read<MoneyPaymentsService>().refresh();
     context.read<MoneyService>().retry();
   }
-}
-
-/// The three numbers the tab is opened for: how much was sold on credit, how
-/// much of it has come in and how much is outstanding.
-///
-/// They are the filter's and not the page's, which is why they sit above the
-/// list and not under it.
-class _Totals extends StatelessWidget {
-  const _Totals({required this.totals, required this.currency});
-
-  final MoneyReceivableTotals totals;
-  final String currency;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return Wrap(
-      spacing: AppSize.gap,
-      runSpacing: AppSize.gap,
-      children: [
-        _Total(
-          title: S.of(context).finance_receivables_sold,
-          amount: moneyLabel(totals.sold, currency),
-          color: scheme.text.primary
-        ),
-        _Total(
-          title: S.of(context).finance_receivables_collected,
-          amount: moneyLabel(totals.collected, currency),
-          color: scheme.snackBar.success
-        ),
-        _Total(
-          title: S.of(context).finance_receivables_outstanding,
-          amount: moneyLabel(totals.outstanding, currency),
-          color: scheme.snackBar.alert
-        )
-      ]
-    );
-  }
-}
-
-class _Total extends StatelessWidget {
-  const _Total({
-    required this.title,
-    required this.amount,
-    required this.color
-  });
-
-  final String title;
-  final String amount;
-  final Color color;
-
-  /// A fixed width for the same reason as the summary cards: they are laid out
-  /// in a [Wrap] and need a measure of their own to decide when to break.
-  static const double _width = 190;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return SizedBox(
-      width: _width,
-      child: Surface.over(
-        padding: EdgeInsets.all(AppSize.spaceXS),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextSmall(title, color: scheme.text.secondary, ellipsis: true),
-            SizedBox(height: AppSize.gap),
-            TextMedium(amount, bold: true, color: color, ellipsis: true)
-          ]
-        )
-      )
-    );
-  }
-}
-
-/// The one control of the tab: whether the settled tickets are listed too.
-class _Bar extends StatelessWidget {
-  const _Bar({required this.openOnly, required this.onOpenOnly});
-
-  final bool openOnly;
-  final void Function(bool value) onOpenOnly;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return Row(children: [
-      FeedbackButton(
-        action: () => onOpenOnly(!openOnly),
-        height: AppSize.button,
-        message: S.of(context).finance_receivables_open_only,
-        padding: EdgeInsets.symmetric(horizontal: AppSize.spaceXS),
-        radius: AppSize.cornerInset(AppSize.gap),
-        color: openOnly ? scheme.line : scheme.surfaceOver,
-        feedbackColor: scheme.lineOver,
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(
-            openOnly ? CI.chekmark : CI.circle,
-            size: AppSize.text,
-            color: openOnly ? scheme.text.primary : scheme.text.secondary
-          ),
-          SizedBox(width: AppSize.gap),
-          TextMedium(
-            S.of(context).finance_receivables_open_only,
-            bold: openOnly,
-            multiplier: 0.9,
-            color: openOnly ? scheme.text.primary : scheme.text.secondary
-          )
-        ])
-      )
-    ]);
-  }
-}
-
-/// The end of the list: how many tickets are left and the button that brings
-/// the next page. Same reasoning as the payments tab's — the table virtualizes
-/// its rows and does not report where its scroll is.
-class _More extends StatelessWidget {
-  const _More({required this.service});
-
-  final MoneyReceivablesService service;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(top: AppSize.gap),
-    child: Center(child: SizedBox(
-      width: AppSize.action * 5,
-      child: Button(
-        title: service.moreFailed
-          ? S.of(context).finance_retry
-          : S.of(context).finance_more(
-              moneyCount(context, service.total - service.sales.length)
-            ),
-        action: service.moreFailed ? service.retryMore : service.more
-      )
-    ))
-  );
 }

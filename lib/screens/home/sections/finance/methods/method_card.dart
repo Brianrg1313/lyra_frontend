@@ -5,8 +5,9 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/money/money_method_model.dart';
 
 // WIDGETS
-import '../money_format.dart';
-import 'methods_heading.dart';
+import 'package:app/screens/home/sections/finance/money_format.dart';
+
+import './methods_heading.dart';
 
 /// One of the company's accounts, as a block over the body's sheet.
 ///

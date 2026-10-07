@@ -12,7 +12,7 @@ import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sale_stage_model.dart';
 import 'package:app/services/sales/sales_catalog_service.dart';
 import 'package:app/services/sales/sales_service.dart';
-import 'package:app/screens/home/sections/sales/sales_filters.dart';
+import 'package:app/screens/home/sections/sales/sales_filters/_sales_filters.dart';
 
 /// **The bar above the board is one row**, and that is the thing about it that
 /// can break without anybody noticing: the count is the backend's sentence and

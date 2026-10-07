@@ -62,6 +62,11 @@
 - `sections/_section/unavailable.dart` — `UnavailableSection({capability, surface})`: a section or tab (`surface: false`) the deployment mode lacks, or locked until the internet answers; a session on the master alone offers "sign in online" (`showOnlineSignIn`) once the backend answers (`HybridService.canGoOnline`), otherwise nothing to ask for.
 - `sections/_section/no_permission.dart` — `NoPermissionSection({permission, title, surface = true})`: shown by `homeContent` in place of a section without `<key>.view`, and by business/finance/sales in place of a tab (`surface: false`); owns a `PermissionRequestsService`, offers "Request access" unless one is pending.
 - `sections/_section/placeholder.dart` — `SectionPlaceholder`: `dashboard services marketing report externalServices`.
+- `sections/_section/filter_chip.dart` — `SectionFilterChip({title, isActive, action, icon?, leading?, trailing?})`: one control of a
+  filter bar (sales, payments), label cut at a fixed width. `sections/_section/filter_menu_chip.dart` — `SectionMenuChip`: one that
+  opens `showSelectMenu` under itself (`emptyText`, `maxOptions`).
+- `sections/_section/more_button.dart` — `SectionMoreButton({label, retryLabel, failed, onMore, onRetry})`: the "load more" at the
+  end of a paged table (payments, receivables, sales).
 - `sections/_section/section_message.dart` — `SectionMessage({icon, message, action?})`: full-section empty/error/loading. Use instead of ad-hoc centered columns.
 
 ## Sections with their own module

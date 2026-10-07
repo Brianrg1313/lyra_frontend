@@ -67,6 +67,8 @@ the single import for screens; never import `package:core/core.dart` directly.
 - `SectionTabs<T>` (`lib/screens/home/sections/_section/section_tabs.dart`) — tab bar of any tabbed section.
 - `PageSwitcher` (`lib/screens/home/sections/_section/page_switcher.dart`) — animated swap of a section's sub-pages/tab bodies.
 - `SectionMessage` (`lib/screens/home/sections/_section/section_message.dart`) — full-section empty/error/loading.
+- `SectionFilterChip` `SectionMenuChip` (`lib/screens/home/sections/_section/filter_chip.dart`, `filter_menu_chip.dart`) — the controls of a filter bar.
+- `SectionMoreButton` (`lib/screens/home/sections/_section/more_button.dart`) — "load more" under a paged table.
 - `SettingsBlock` `SettingsRow` `SettingsTag`… (`lib/screens/modals/shared/settings/settings_block.dart`) — read-only panel rows.
 - `BusinessListener` (`lib/screens/home/sections/_section/business_listener.dart`) — sub-page reacting to a business switch.
 - `BadgeMark` `BadgeCorner` (`lib/screens/home/badges/badge_mark.dart`) — what a place has pending; `BadgeNotes` (`badge_notes.dart`) says it in words; places in `BadgePlace` (`lib/services/badges/badge_place.dart`).

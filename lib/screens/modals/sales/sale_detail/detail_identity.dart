@@ -6,7 +6,7 @@ import 'package:app/services/sales/sale_model.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/sales/sale_format.dart';
-import 'package:app/screens/home/sections/sales/stage_tag.dart';
+import 'package:app/screens/home/sections/sales/stage/sale_stage_tag.dart';
 
 /// Which sale this is, at the top of the panel: who is buying, where it stands
 /// and how long it has been standing there.

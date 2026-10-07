@@ -4,7 +4,8 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/money/money_receivable_model.dart';
 
-import '../money_format.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/finance/money_format.dart';
 
 /// What is still owed, as a table: one row per credit ticket, newest first.
 ///

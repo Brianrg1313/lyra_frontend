@@ -4,7 +4,8 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/money/money_payment_model.dart';
 
-import '../money_format.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/finance/money_format.dart';
 
 /// The history as a table: one row per movement, newest first.
 ///

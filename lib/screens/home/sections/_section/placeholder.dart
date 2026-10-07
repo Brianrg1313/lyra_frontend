@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-import '../_sections.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/_sections.dart';
 
 /// Temporary content of the sections that do not have their own screen yet.
 /// As each one is built it is replaced in `HomeSection.build`.

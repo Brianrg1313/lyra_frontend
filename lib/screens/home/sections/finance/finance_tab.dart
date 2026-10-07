@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/services/badges/badge_place.dart';
 
-import './methods/_methods.dart';
-import './overview/_overview.dart';
-import './payments/_payments.dart';
-import './receivables/_receivables.dart';
+// WIDGETS
+import 'package:app/screens/home/sections/finance/methods/_methods.dart';
+import 'package:app/screens/home/sections/finance/overview/_overview.dart';
+import 'package:app/screens/home/sections/finance/payments/_payments.dart';
+import 'package:app/screens/home/sections/finance/receivables/_receivables.dart';
 
 /// The parts of the company's money that can be looked at from the finance
 /// page.

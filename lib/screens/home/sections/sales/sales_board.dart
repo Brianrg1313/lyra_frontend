@@ -1,7 +1,6 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
@@ -14,12 +13,12 @@ import 'package:app/services/sales/sales_catalog_service.dart';
 import 'package:app/services/sales/sales_service.dart';
 
 // WIDGETS
-import 'package:core/button.dart';
+import 'package:app/screens/home/sections/_section/more_button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/sales/sales_filters/_sales_filters.dart';
 import 'package:app/screens/modals/sales/sale_detail/_sale_detail.dart';
 import 'package:app/screens/modals/sales/sale_fulfillment/_sale_fulfillment.dart';
 
-import './sales_filters.dart';
 import './sales_table.dart';
 
 /// One of the two lists of the sales page: the filter bar, the board and the
@@ -118,7 +117,17 @@ class _SalesBoardState extends State<SalesBoard> {
         // of the same question, and a board is short of lines.
         const SalesFilters(),
         Expanded(child: _body(context, service)),
-        if (service.hasMore) _More(service: service)
+        // No count of what is left, unlike the money's: with a state filter on,
+        // what is left is unknown here (the total counts the section and the
+        // filter narrows the page), and a number that is right only half the
+        // time is worse than none.
+        if (service.hasMore) SectionMoreButton(
+          label: S.of(context).sales_more,
+          retryLabel: S.of(context).sales_retry,
+          failed: service.moreFailed,
+          onMore: service.more,
+          onRetry: service.retryMore
+        )
       ]
     );
   }
@@ -305,32 +314,4 @@ class _SalesBoardState extends State<SalesBoard> {
 
     FloatFlag.of(context).message(S.of(context).sales_handover_saved);
   }
-}
-
-/// The end of the list. The table virtualizes its rows and does not report
-/// where its scroll is, so the next page is asked for and not fetched by
-/// reaching the bottom — the same reasoning the money history follows.
-///
-/// The button carries no count of what is left, unlike the money's: with a
-/// state filter on, what is left is unknown here (the total counts the section
-/// and the filter narrows the page), and a number that is right only half the
-/// time is worse than none.
-class _More extends StatelessWidget {
-  const _More({required this.service});
-
-  final SalesService service;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(top: AppSize.gap),
-    child: Center(child: SizedBox(
-      width: AppSize.action * 5,
-      child: Button(
-        title: service.moreFailed
-          ? S.of(context).sales_retry
-          : S.of(context).sales_more,
-        action: service.moreFailed ? service.retryMore : service.more
-      )
-    ))
-  );
 }

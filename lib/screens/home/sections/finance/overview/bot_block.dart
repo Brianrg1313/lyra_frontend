@@ -10,9 +10,10 @@ import 'package:app/services/money/money_bot_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/finance/money_format.dart';
+import 'package:app/screens/home/sections/finance/overview/widgets/money_bot_row.dart';
 
-import '../money_format.dart';
-import 'range_picker.dart';
+import './range_picker.dart';
 
 /// What Lyra costs the company.
 ///
@@ -195,7 +196,7 @@ class _MoneyBotBlockState extends State<MoneyBotBlock> {
 
     return [
       SizedBox(height: AppSize.spaceXS),
-      _Line(
+      MoneyBotRow(
         icon: CI.chat,
         title: strings.finance_bot_answers,
         amount: moneyFineLabel(spend.answers.total, currency),
@@ -209,7 +210,7 @@ class _MoneyBotBlockState extends State<MoneyBotBlock> {
           strings.finance_bot_research
         ])
       ),
-      _Line(
+      MoneyBotRow(
         icon: CI.tables,
         title: strings.finance_bot_tables,
         amount: moneyFineLabel(spend.tables.total, currency),
@@ -217,7 +218,7 @@ class _MoneyBotBlockState extends State<MoneyBotBlock> {
           moneyCount(context, spend.tables.count)
         )
       ),
-      _Line(
+      MoneyBotRow(
         icon: CI.search,
         title: strings.finance_bot_vectors,
         amount: moneyFineLabel(spend.vectors.total, currency),
@@ -227,7 +228,7 @@ class _MoneyBotBlockState extends State<MoneyBotBlock> {
         ])
       ),
       if (spend.other > 0)
-        _Line(
+        MoneyBotRow(
           icon: CI.info,
           title: strings.finance_bot_other,
           amount: moneyFineLabel(spend.other, currency),
@@ -237,57 +238,4 @@ class _MoneyBotBlockState extends State<MoneyBotBlock> {
   }
 
   static String _detail(List<String> parts) => parts.join("  ·  ");
-}
-
-/// One area of the spend: what it is, what it is made of, and what it cost.
-class _Line extends StatelessWidget {
-  const _Line({
-    required this.icon,
-    required this.title,
-    required this.amount,
-    required this.detail
-  });
-
-  final IconData icon;
-  final String title;
-  final String amount;
-
-  /// What this line covers, or what it counts. It carries **no money**: the
-  /// amounts of a card are its four totals and nothing else, so that the figure
-  /// somebody came to read is never one of eight on the sheet.
-  final String detail;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return Padding(
-      padding: EdgeInsets.only(top: AppSize.gap),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: AppSize.text * 0.9, color: scheme.text.secondary),
-          SizedBox(width: AppSize.gap),
-          Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextSmall(title, ellipsis: true),
-              TextSmall(
-                detail,
-                color: scheme.text.secondary,
-                multiplier: 0.85,
-                ellipsis: true
-              )
-            ]
-          )),
-          SizedBox(width: AppSize.gap),
-          // Bold and in the plain text colour, like the total above: these four
-          // and that one are the prices of this card, and they are meant to be
-          // findable without reading a word around them.
-          TextMedium(amount, bold: true, color: scheme.text.primary)
-        ]
-      )
-    );
-  }
 }
