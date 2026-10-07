@@ -10,7 +10,7 @@ import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/deliveries/delivery_option/_delivery_option.dart';
 import 'package:app/screens/modals/deliveries/edit_delivery_notes/_edit_delivery_notes.dart';
 

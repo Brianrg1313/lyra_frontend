@@ -10,9 +10,9 @@ import 'package:app/services/sales/sales_catalog_service.dart';
 import 'package:app/services/sales/sales_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/no_permission.dart';
-import 'package:app/screens/home/sections/page_switcher.dart';
-import 'package:app/screens/home/sections/section_tabs.dart';
+import 'package:app/screens/home/sections/_section/no_permission.dart';
+import 'package:app/screens/home/sections/_section/page_switcher.dart';
+import 'package:app/screens/home/sections/_section/section_tabs.dart';
 
 import './sales_board.dart';
 import './sales_tab.dart';

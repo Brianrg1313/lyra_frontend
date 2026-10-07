@@ -7,7 +7,7 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/permissions/permission_requests_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/permissions/request_permission/_request_permission.dart';
 
 /// What is seen in place of a section (or a tab) the person is not granted in the active

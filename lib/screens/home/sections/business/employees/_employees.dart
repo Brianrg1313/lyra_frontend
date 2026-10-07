@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:app/services/business/business_employees_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import './employee_detail.dart';
 import './employee_list.dart';

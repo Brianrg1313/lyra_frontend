@@ -12,7 +12,7 @@ import 'package:app/services/business/delivery_area_request.dart';
 import 'package:app/services/business/delivery_areas_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import '../deliveries_map.dart';
 import './state/area_editor.dart';

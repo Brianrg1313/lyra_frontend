@@ -15,7 +15,7 @@ import 'package:app/services/badges/badges_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/business_listener.dart';
+import 'package:app/screens/home/sections/_section/business_listener.dart';
 import 'package:app/screens/home/badges/badge_mark.dart';
 import 'package:app/screens/home/badges/badge_route.dart';
 import 'package:app/screens/modals/home/pending/_pending.dart';

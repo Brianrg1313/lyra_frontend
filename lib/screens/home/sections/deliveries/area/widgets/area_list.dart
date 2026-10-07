@@ -8,7 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 import 'package:app/screens/home/sections/deliveries/settings/delivery_format.dart';
 

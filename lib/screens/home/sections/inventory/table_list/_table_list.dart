@@ -17,7 +17,7 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:core/button.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 
 import 'import_button.dart';

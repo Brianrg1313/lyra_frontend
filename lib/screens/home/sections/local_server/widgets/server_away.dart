@@ -12,7 +12,7 @@ import 'package:app/services/local_server/local_server_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/server/master_password/_master_password.dart';
 import 'package:app/screens/pre_start/deployment/master/desktop/_body.dart' as master;
 

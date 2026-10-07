@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:app/services/chats/chats_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import './inbox_filters.dart';
 import './inbox_tile.dart';

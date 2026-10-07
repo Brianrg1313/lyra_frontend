@@ -11,7 +11,7 @@ import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 
 import 'sheet.dart';

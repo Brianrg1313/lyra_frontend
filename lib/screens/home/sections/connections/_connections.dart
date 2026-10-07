@@ -14,7 +14,7 @@ import 'package:app/services/connections/connections_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import 'connection_row.dart';
 

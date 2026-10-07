@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app/screens/home/sections/_sections.dart';
-import 'package:app/screens/home/sections/page_switcher.dart';
+import 'package:app/screens/home/sections/_section/page_switcher.dart';
 import 'package:app/screens/home/sections/business/_business_detail.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
 import 'package:app/screens/home/sections/channels/form/_channel_form.dart';

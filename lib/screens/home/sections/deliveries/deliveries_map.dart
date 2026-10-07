@@ -13,7 +13,7 @@ import 'package:app/services/business/business_location_service.dart';
 import 'package:app/services/maps/map_tiles_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 /// Right panel: the map the deliveries are followed on.
 ///

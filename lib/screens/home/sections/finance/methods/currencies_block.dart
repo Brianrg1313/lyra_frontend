@@ -11,7 +11,7 @@ import 'package:app/services/money/money_currencies_service.dart';
 import 'package:app/services/money/money_currency_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 import '../money_format.dart';

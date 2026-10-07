@@ -14,7 +14,7 @@ import 'package:app/services/money/money_methods_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/badges/badge_notes.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/finance/exchange_currency_form/_exchange_currency_form.dart';
 import 'package:app/screens/modals/finance/payment_method_form/_payment_method_form.dart';
 import 'package:app/screens/modals/server/master_password/_master_password.dart';

@@ -51,17 +51,18 @@
   server`), groups `.home` (dashboard, business, messages, deliveries, sales; untitled) `.products`
   `.reports` (finance first) `.connectionGroups` (with `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
   `needsBusiness`, `build()`; `homeContent(currentKey, section, businessId)` (incl. sub-pages).
-- `sections/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?, badge?})` (locked = lock icon, still opens; `badge` = a tab's `BadgePlace`, a dot after its title): tab bar used
+- `sections/_section/` — widgets shared by every section (none is a section itself).
+- `sections/_section/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?, badge?})` (locked = lock icon, still opens; `badge` = a tab's `BadgePlace`, a dot after its title): tab bar used
   by business, finance and sales. **Reuse it for any new tabbed section.**
-- `sections/page_switcher.dart` — `PageSwitcher({id, child})`: ~300 ms fade-through between the pages of one section.
+- `sections/_section/page_switcher.dart` — `PageSwitcher({id, child})`: ~300 ms fade-through between the pages of one section.
   Wraps `homeContent` (keyed by section, so switching sections does not animate) and the tab bodies of
   business, finance and sales. **Wrap the body of any new tabbed section in it.**
-- `sections/business_listener.dart` — `mixin BusinessListener<T>`.
-- `sections/no_business.dart` — `NoBusinessSection`.
-- `sections/unavailable.dart` — `UnavailableSection({capability, surface})`: a section or tab (`surface: false`) the deployment mode lacks, or locked until the internet answers; a session on the master alone offers "sign in online" (`showOnlineSignIn`) once the backend answers (`HybridService.canGoOnline`), otherwise nothing to ask for.
-- `sections/no_permission.dart` — `NoPermissionSection({permission, title, surface = true})`: shown by `homeContent` in place of a section without `<key>.view`, and by business/finance/sales in place of a tab (`surface: false`); owns a `PermissionRequestsService`, offers "Request access" unless one is pending.
-- `sections/placeholder.dart` — `SectionPlaceholder`: `dashboard services marketing report externalServices`.
-- `sections/section_message.dart` — `SectionMessage({icon, message, action?})`: full-section empty/error/loading. Use instead of ad-hoc centered columns.
+- `sections/_section/business_listener.dart` — `mixin BusinessListener<T>`.
+- `sections/_section/no_business.dart` — `NoBusinessSection`.
+- `sections/_section/unavailable.dart` — `UnavailableSection({capability, surface})`: a section or tab (`surface: false`) the deployment mode lacks, or locked until the internet answers; a session on the master alone offers "sign in online" (`showOnlineSignIn`) once the backend answers (`HybridService.canGoOnline`), otherwise nothing to ask for.
+- `sections/_section/no_permission.dart` — `NoPermissionSection({permission, title, surface = true})`: shown by `homeContent` in place of a section without `<key>.view`, and by business/finance/sales in place of a tab (`surface: false`); owns a `PermissionRequestsService`, offers "Request access" unless one is pending.
+- `sections/_section/placeholder.dart` — `SectionPlaceholder`: `dashboard services marketing report externalServices`.
+- `sections/_section/section_message.dart` — `SectionMessage({icon, message, action?})`: full-section empty/error/loading. Use instead of ad-hoc centered columns.
 
 ## Sections with their own module
 

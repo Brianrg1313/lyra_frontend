@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 /// Statistics tab: how the company is doing —sales, movement, growth— without
 /// leaving it.

@@ -11,7 +11,7 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/permissions/permission_request.dart';
 import 'package:app/services/permissions/permission_request_model.dart';
 import 'package:app/services/permissions/permission_requests_service.dart';
-import 'package:app/screens/home/sections/no_permission.dart';
+import 'package:app/screens/home/sections/_section/no_permission.dart';
 import 'package:app/screens/modals/permissions/request_permission/_request_permission.dart';
 
 /// **Asking for a missing permission** (`/permissions/requests/`): the body sends the area id

@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:app/services/chats/chat_thread_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import './message_bubble.dart';
 

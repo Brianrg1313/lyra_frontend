@@ -11,7 +11,7 @@ import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/finance/accounting_export/_accounting_export.dart';
 import 'package:app/toolkit/save_file.dart';
 

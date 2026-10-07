@@ -10,7 +10,7 @@ import 'package:app/services/business/business_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/badges/badge_notes.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import 'profile_details.dart';
 

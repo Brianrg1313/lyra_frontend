@@ -6,7 +6,7 @@ import 'package:app/toolkit/settings/initial_builder.dart' show hybridService;
 import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/server/online_sign_in/_online_sign_in.dart';
 
 /// What a home section or tab shows when the deployment mode doesn't let it open

@@ -16,10 +16,10 @@ import 'package:app/services/money/money_receivables_service.dart';
 import 'package:app/services/money/money_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/no_permission.dart';
-import 'package:app/screens/home/sections/unavailable.dart';
-import 'package:app/screens/home/sections/page_switcher.dart';
-import 'package:app/screens/home/sections/section_tabs.dart';
+import 'package:app/screens/home/sections/_section/no_permission.dart';
+import 'package:app/screens/home/sections/_section/unavailable.dart';
+import 'package:app/screens/home/sections/_section/page_switcher.dart';
+import 'package:app/screens/home/sections/_section/section_tabs.dart';
 
 import 'finance_tab.dart';
 

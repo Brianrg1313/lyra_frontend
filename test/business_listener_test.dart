@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 // PACKAGES
 import 'package:provider/provider.dart';
 
-import 'package:app/screens/home/sections/business_listener.dart';
+import 'package:app/screens/home/sections/_section/business_listener.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/toolkit/api.dart';
 

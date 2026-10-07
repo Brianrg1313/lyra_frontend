@@ -5,12 +5,12 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 
-import './business_listener.dart';
-import './no_business.dart';
-import './no_permission.dart';
-import './unavailable.dart';
-import './page_switcher.dart';
-import './placeholder.dart';
+import './_section/business_listener.dart';
+import './_section/no_business.dart';
+import './_section/no_permission.dart';
+import './_section/unavailable.dart';
+import './_section/page_switcher.dart';
+import './_section/placeholder.dart';
 import 'business/_business_detail.dart';
 import './channels/_channels.dart';
 import './channels/form/_channel_form.dart';

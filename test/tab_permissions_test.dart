@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:core/core.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/screens/home/sections/section_tabs.dart';
+import 'package:app/screens/home/sections/_section/section_tabs.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
 import 'package:app/screens/home/sections/sales/sales_tab.dart';

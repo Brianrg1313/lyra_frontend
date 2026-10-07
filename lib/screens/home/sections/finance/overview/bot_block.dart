@@ -9,7 +9,7 @@ import 'package:app/services/money/money_bot_model.dart';
 import 'package:app/services/money/money_bot_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import '../money_format.dart';
 import 'range_picker.dart';

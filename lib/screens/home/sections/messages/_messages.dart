@@ -12,7 +12,7 @@ import 'package:app/services/chats/chats_service.dart';
 import 'package:app/services/home/home_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import './chat/_chat.dart';
 import './inbox/_inbox.dart';

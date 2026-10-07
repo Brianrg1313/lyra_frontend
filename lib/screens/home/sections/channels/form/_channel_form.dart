@@ -14,8 +14,8 @@ import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/business_listener.dart';
-import 'package:app/screens/home/sections/section_message.dart';
+import 'package:app/screens/home/sections/_section/business_listener.dart';
+import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import 'blocks/agent_picker.dart';
 import 'blocks/credentials_block.dart';
