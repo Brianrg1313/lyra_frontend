@@ -147,15 +147,19 @@ class _BusinessProfileIncorporationState
     super.dispose();
   }
 
+  /// Whether the last build offered to save. A key rebuilds the row only when
+  /// that flips, not on every letter.
+  bool _drawnChanged = false;
+
   void _listener() {
-    if (mounted) setState(() {});
+    if (mounted && _changed != _drawnChanged) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) => ProfileFieldFrame(
     icon: CI.calendar,
     label: S.of(context).business_profile_incorporation,
-    action: _changed ? ProfileTextAction(
+    action: (_drawnChanged = _changed) ? ProfileTextAction(
       label: S.of(context).save,
       action: _save
     ) : null,

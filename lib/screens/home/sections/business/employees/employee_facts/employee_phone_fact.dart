@@ -74,6 +74,10 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
   bool _editing = false;
   bool _saving = false;
 
+  /// Whether the last build drew the tile as changed. A key rebuilds the tile
+  /// only when that flips — the check comes or goes — not on every letter.
+  bool _drawnChanged = false;
+
   /// The chosen country, kept here: the select resolves its option only once
   /// it is mounted.
   String _country = "";
@@ -123,7 +127,7 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
       icon: widget.icon,
       label: widget.label,
       saving: _saving,
-      changed: _value != widget.value,
+      changed: _drawnChanged = _changed,
       onConfirm: _commit,
       onCancel: _close,
       onOutside: _outside,
@@ -183,10 +187,11 @@ class _EmployeePhoneFactState extends State<EmployeePhoneFact> {
     return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: caret));
   }
 
-  /// Redraws on each key: the check comes and goes with the change.
   void _typed() {
-    if (_editing && mounted) setState(() {});
+    if (_editing && mounted && _changed != _drawnChanged) setState(() {});
   }
+
+  bool get _changed => _value != widget.value;
 
   void _open() {
     final catalog = CountryCatalogService();

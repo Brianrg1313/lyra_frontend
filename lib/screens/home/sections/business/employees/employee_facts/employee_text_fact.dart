@@ -119,6 +119,10 @@ class _EmployeeTextFactState extends State<EmployeeTextFact> {
   bool _editing = false;
   bool _saving = false;
 
+  /// Whether the last build drew the tile as changed. A key rebuilds the tile
+  /// only when that flips — the check comes or goes — not on every letter.
+  bool _drawnChanged = false;
+
   /// The map search of an address, alive while its field is open: it holds
   /// the session Google bills the typing and the pick under.
   BusinessPlacesService? _places;
@@ -184,7 +188,7 @@ class _EmployeeTextFactState extends State<EmployeeTextFact> {
       icon: widget.icon,
       label: widget.label,
       saving: _saving,
-      changed: _changed,
+      changed: _drawnChanged = _changed,
       onConfirm: _commit,
       onCancel: _close,
       onOutside: _outside,
@@ -196,9 +200,8 @@ class _EmployeeTextFactState extends State<EmployeeTextFact> {
 
   bool get _changed => _input.text.trim() != _raw.trim();
 
-  /// Redraws on each key: the check comes and goes with [_changed].
   void _typed() {
-    if (_editing && mounted) setState(() {});
+    if (_editing && mounted && _changed != _drawnChanged) setState(() {});
   }
 
   void _open() {

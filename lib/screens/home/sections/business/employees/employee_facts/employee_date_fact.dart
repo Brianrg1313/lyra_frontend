@@ -74,6 +74,10 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
   bool _editing = false;
   bool _saving = false;
 
+  /// Whether the last build drew the tile as changed. A key rebuilds the tile
+  /// only when that flips — the check comes or goes — not on every letter.
+  bool _drawnChanged = false;
+
   /// The chosen month, 1 to 12, or `0` for none. Kept here: the select
   /// resolves its option only once it is mounted.
   int _chosen = 0;
@@ -119,7 +123,7 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
       label: widget.label,
       saving: _saving,
       // A day that does not exist is a change too: the check says why.
-      changed: _value != _saved,
+      changed: _drawnChanged = _changed,
       onConfirm: _commit,
       onCancel: _close,
       onOutside: _outside,
@@ -168,10 +172,11 @@ class _EmployeeDateFactState extends State<EmployeeDateFact> {
     );
   }
 
-  /// Redraws on each key: the check comes and goes with the change.
   void _typed() {
-    if (_editing && mounted) setState(() {});
+    if (_editing && mounted && _changed != _drawnChanged) setState(() {});
   }
+
+  bool get _changed => _value != _saved;
 
   void _open() {
     final day = widget.day;

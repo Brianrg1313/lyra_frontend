@@ -52,35 +52,49 @@ class EmployeeList extends StatelessWidget {
         Expanded(child: LayoutBuilder(builder: (context, constraints) {
           final wide = constraints.maxWidth >= _wide;
 
-          /// One group of rows with a line between each pair — never above
-          /// the first or below the last, so a group title sits flush.
-          List<Widget> group(List<BusinessEmployeeModel> employees) => [
-            for (var i = 0; i < employees.length; i++) ...[
-              if (i > 0) Separator.horizontal(
-                margin: EdgeInsets.symmetric(vertical: AppSize.gap * 0.5)
-              ),
-              EmployeeRow(
-                employee: employees[i],
-                wide: wide,
-                selected: employees[i].key == service.selectedKey,
-                onTap: () => service.select(employees[i].key)
-              )
-            ]
-          ];
+          final current = service.current;
+          final former = service.former;
+          final head = wide ? 1 : 0;
 
-          return ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              if (wide) const EmployeeListColumns(),
-              ...group(service.current),
-              if (service.former.isNotEmpty) ...[
-                _GroupTitle(
-                  title: S.of(context).employees_former_title,
-                  count: service.former.length
-                ),
-                ...group(service.former)
+          /// One row of a group, with a line above it unless it is the
+          /// group's first, so a group title sits flush.
+          Widget row(List<BusinessEmployeeModel> employees, int index) {
+            final employee = employees[index];
+            final tile = EmployeeRow(
+              employee: employee,
+              wide: wide,
+              selected: employee.key == service.selectedKey,
+              onTap: () => service.select(employee.key)
+            );
+
+            if (index == 0) return tile;
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Separator.horizontal(margin: EdgeInsets.symmetric(vertical: AppSize.gap * 0.5)),
+                tile
               ]
-            ]
+            );
+          }
+
+          // Built lazily: a company's people (and everyone who has left it)
+          // can run into the hundreds, and only the rows on screen are drawn.
+          return ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: head + current.length + (former.isEmpty ? 0 : 1 + former.length),
+            itemBuilder: (context, index) {
+              if (index < head) return const EmployeeListColumns();
+
+              final at = index - head;
+              if (at < current.length) return row(current, at);
+              if (at == current.length) {
+                return _GroupTitle(title: S.of(context).employees_former_title, count: former.length);
+              }
+
+              return row(former, at - current.length - 1);
+            }
           );
         }))
       ]

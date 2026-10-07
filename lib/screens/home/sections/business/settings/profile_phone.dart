@@ -157,8 +157,12 @@ class _BusinessProfilePhoneState extends State<BusinessProfilePhone> {
     super.dispose();
   }
 
+  /// Whether the last build offered to save. A key rebuilds the row only when
+  /// that flips, not on every letter.
+  bool _drawnChanged = false;
+
   void _listener() {
-    if (mounted) setState(() {});
+    if (mounted && _changed != _drawnChanged) setState(() {});
   }
 
   @override
@@ -171,7 +175,7 @@ class _BusinessProfilePhoneState extends State<BusinessProfilePhone> {
       icon: CI.phone,
       label: S.of(context).business_profile_phone,
       description: S.of(context).business_profile_phone_note,
-      action: _changed ? ProfileTextAction(
+      action: (_drawnChanged = _changed) ? ProfileTextAction(
         label: S.of(context).save,
         action: _save
       ) : null,
