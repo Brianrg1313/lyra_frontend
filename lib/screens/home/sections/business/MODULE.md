@@ -41,7 +41,7 @@
 - `employee_detail_header.dart` — `EmployeeDetailHeader`: presence wash, picture, name, quick copy actions, tags, job, headline.
 - `employee_quick_action.dart` — `EmployeeQuickAction`: a header's square copy button.
 - `employee_action.dart` — `enum EmployeeAction` (permissions, settings, activity, sales: icon, label, description).
-- `employee_actions.dart` — `EmployeeActions`: one sheet under the search, a 2-column grid (1 when narrow), each opens `showEmployeeTool`; permissions: the viewer's own read-only, someone else's only with `business.employees.permissions`; settings: on the viewer's card their own account (`OwnSettings`), on another's the placeholder.
+- `employee_actions.dart` — `EmployeeActions`: one sheet under the search, a 2-column grid (1 when narrow), each opens `showEmployeeTool`; permissions: the viewer's own read-only, someone else's only with `business.employees.permissions`; settings: on the viewer's card their own account (`OwnSettings`), on another's the placeholder. `employee_action_cell.dart` — `EmployeeActionCell` (one cell).
 - `blocks/_blocks.dart` — `employeeBlocks(context, detail, {own})`: the blocks in order — person (full profile only; `sealedLocked` → "Type password" → `showUnseal`, then the detail again), tenure, away today, ending, work contact, job + pay, emergency, upcoming absences, record, notes.
 - `blocks/employee_editor.dart` — `EmployeeEditor`: what is editable and the per-key save (`save` job keys, `savePerson` personal keys, `place`).
 - `blocks/employee_block_values.dart` — the checks (names, work email, amount, birthday) and the blocks' shared values (company country, digit formatters, options in use, countries).
@@ -72,13 +72,13 @@
 ### employees/own_settings/ — the viewer's own account (app area `account`), in the settings action's side panel; an index whose subsections open stacked side panels
 
 - `_own_settings.dart` — `OwnSettings`: owns `AccountSecurityService` and `AccountHistoryService` (read on opening only where `account.security` / `account.history` show); header, a search over every subsection's rows (`OwnSetting.matches`), and the index (`OwnIndex`) or what the search found (`OwnResults`).
-- `own_header.dart` — `OwnHeader`: picture, name, email, and one sentence on the sign in's steps (warning tint and a "turn on" action without a second step; only where `account.security` shows).
+- `own_header.dart` — `OwnHeader`: picture, name, email, and one sentence on the sign in's steps (`widgets/own_sign_in_posture.dart` — `OwnSignInPosture`: warning tint and a "turn on" action without a second step; only where `account.security` shows).
 - `own_section.dart` — `enum OwnSection` (icon, title, subtitle, body, searchable `settings`, `open`: a stacked `showSideModal` re-providing the index's services). `own_setting.dart` — `OwnSetting` (one searchable row, `fold`).
 - `own_preferences.dart` — `OwnPreferences`: language and appearance of this device, and how inventory tables open (`PreferencesService`), every mode.
 - `own_security.dart` — `OwnSecurity`: first password (`showCreatePassword`), second factor (on, change, off: `showTwoFactorSetup`, `showTwoFactorProof`), recovery codes left / new set (app only), SMS and recovery e-mails soon.
 - `own_sign_in_methods.dart` — `OwnSignInMethods`: the sign-in e-mail, Google/Apple/Microsoft soon.
 - `own_sessions.dart` — `OwnSessions`: this device (platform, sign out), other devices soon.
-- `own_history.dart` — `OwnHistory`: every company worked for (logo, role, contract, since/range, tenure, state tag).
+- `own_history.dart` — `OwnHistory`: every company worked for; `widgets/own_history_job.dart` — `OwnHistoryJob` (logo, role, contract, since/range, tenure, state tag).
 - `own_notifications.dart` — `OwnNotifications`; `own_privacy.dart` — `OwnPrivacy` (all rows soon, the tag on the page's lead line).
 - `widgets/own_index.dart` — `OwnIndex` (working subsections, then the ones with nothing working yet). `widgets/own_results.dart` — `OwnResults`. `widgets/own_group.dart` — `OwnGroup` (rows over one surface).
 - `widgets/own_section_row.dart` — `OwnSectionRow`; `widgets/own_setting_row.dart` — `OwnSettingRow`; `widgets/own_row_tap.dart` — `OwnRowTap`; `widgets/own_arrow.dart` — `OwnArrow`.
