@@ -6,21 +6,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
-import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
+import 'package:app/services/account/account_security_service.dart';
+import 'package:app/services/business/business_employee_model.dart';
+import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/client/client_service.dart';
+import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/toolkit/deployment.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/_own_settings.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_history.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_security.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_sessions.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_notifications.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_privacy.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_setting.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_sign_in_methods.dart';
+import 'package:app/screens/home/sections/employees/employee_detail/_employee_detail.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_history.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_security.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_sessions.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_notifications.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_privacy.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_sign_in_methods.dart';
 
-/// The person's own settings (their card's settings action): an index of subsections, each
-/// opening its own panel, and a search through every row of them. Security and the work
+/// The person's own account, on their own card's page: one row per subsection after the parts of
+/// their job, each opening a page of its own. Security and the work
 /// history are the cloud account's: on a master without the cloud they are drawn and say they
 /// need the internet, and nothing is read. Rows with no backend yet are marked "coming soon",
 /// never drawn as switches that do nothing.
@@ -46,19 +48,28 @@ void main() {
         GlobalCupertinoLocalizations.delegate
       ],
       supportedLocales: S.delegate.supportedLocales,
-      home: ChangeNotifierProvider<ClientService>(
-        create: (_) => ClientService(),
+      home: MultiProvider(
+        providers: [
+          ChangeNotifierProvider<ClientService>(create: (_) => ClientService()),
+          ChangeNotifierProvider<BusinessEmployeesService>(create: (_) => BusinessEmployeesService()),
+          ChangeNotifierProvider<AccountSecurityService>(create: (_) => AccountSecurityService()),
+          ChangeNotifierProvider<PermissionsService>.value(value: PermissionsService())
+        ],
         child: Builder(builder: (context) {
           AppSize.instance(context);
-          return Material(child: SizedBox(width: 480, child: child));
+          return Material(child: SizedBox(width: 480, height: 4000, child: child));
         })
       )
     ));
     await tester.pump();
   }
 
-  testWidgets('the index lists every subsection, the ones with nothing working yet tagged', (tester) async {
-    await pump(tester, const OwnSettings());
+  testWidgets('the own card lists every subsection, the ones with nothing working yet tagged', (tester) async {
+    // Unfiled: the account is all there is, and nothing is read for it.
+    const me = BusinessEmployeeModel(me: true, username: "ana", name: "Ana", lastName: "Ruiz");
+    final opened = <String>[];
+
+    await pump(tester, EmployeeDetailPage(employee: me, onOpen: opened.add));
 
     expect(tester.takeException(), isNull);
 
@@ -68,33 +79,9 @@ void main() {
 
     expect(find.text("Coming soon"), findsNWidgets(2));
     expect(find.text("Turn on two-step verification"), findsNothing);
-  });
 
-  testWidgets('the search finds a row by its words, in any order, with the subsection holding it', (tester) async {
-    await pump(tester, const OwnSettings());
-
-    await tester.enterText(find.descendant(of: find.byType(SearchInput), matching: find.byType(EditableText)), "codes recovery");
-    await tester.pump();
-
-    expect(find.text("Recovery codes"), findsOneWidget);
-    expect(find.text("Security"), findsOneWidget);
-    expect(find.text("Preferences"), findsNothing);
-
-    await tester.enterText(find.descendant(of: find.byType(SearchInput), matching: find.byType(EditableText)), "appearance");
-    await tester.pump();
-
-    expect(find.text("Appearance"), findsOneWidget);
-    expect(find.text("Preferences"), findsOneWidget);
-    expect(find.text("Security"), findsNothing);
-
-    await tester.enterText(find.descendant(of: find.byType(SearchInput), matching: find.byType(EditableText)), "zzz");
-    await tester.pump();
-
-    expect(find.textContaining("Nothing in your settings matches"), findsOneWidget);
-  });
-
-  test('folding drops case, accents and hyphens', () {
-    expect(OwnSetting.fold("Verificación en Dos-Pasos"), "verificacion en dos pasos");
+    await tester.tap(find.text("Security"));
+    expect(opened, ["/home/employees/me/security"]);
   });
 
   testWidgets('without the cloud the subsections draw and the account\'s rows wait for it', (tester) async {

@@ -241,6 +241,9 @@ class _SalesBoardState extends State<SalesBoard> {
   /// the handover panel takes its modes: a side modal opens on a navigator
   /// above this section's providers.
   Future<void> _open(SaleModel sale) async {
+    // Opening it is reviewing it: it stops being new for this person.
+    context.read<SalesService>().review(sale);
+
     final asked = await showSaleDetail(
       context,
       sale: sale,

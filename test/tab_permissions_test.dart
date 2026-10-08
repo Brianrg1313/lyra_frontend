@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:core/core.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/services/permissions/permissions_service.dart';
+import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/_section/section_tabs.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
@@ -25,7 +26,7 @@ void main() {
   tearDown(() => PermissionsService().clear());
 
   test('each tab is its section area', () {
-    expect(BusinessTab.employees.area, "business.employees");
+    expect(BusinessTab.branches.area, "business.branches");
     expect(FinanceTab.methods.area, "finance.methods");
     expect(SalesTab.done.area, "sales.done");
   });
@@ -50,15 +51,17 @@ void main() {
       }
     });
 
-    // The employees tab is always granted (the viewer's own profile) and comes first.
-    expect(BusinessTab.opening, BusinessTab.employees);
+    expect(BusinessTab.opening, BusinessTab.branches);
     expect(FinanceTab.opening, FinanceTab.payments);
   });
 
-  test('the employees tab opens without its view: everyone sees their own profile', () {
+  test('the employees section opens without its view: everyone sees their own profile', () {
     PermissionsService().seed({"b-1": {"business": {"view": true}}});
 
-    expect(BusinessTab.employees.granted, isTrue);
+    // It kept the area it had as a business tab.
+    expect(HomeSection.employees.area, "business.employees");
+    expect(HomeSection.employees.granted("b-1"), isTrue);
+    expect(HomeSection.finance.granted("b-1"), isFalse);
     expect(BusinessTab.settings.granted, isFalse);
   });
 

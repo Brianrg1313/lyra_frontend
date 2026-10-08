@@ -10,7 +10,7 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/services/account/account_history_service.dart';
 import 'package:app/services/account/employment_record_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
-import 'package:app/screens/home/sections/business/employees/own_settings/own_history.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_history.dart';
 
 /// The person's work history (`GET /profile/employments`) in their own settings: rows arrive
 /// compressed with the company nested, a job held is "current" from its start, an ended one is

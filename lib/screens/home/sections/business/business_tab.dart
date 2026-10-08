@@ -9,14 +9,12 @@ import 'package:app/services/permissions/permissions_service.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/business/branches/_branches.dart';
 import 'package:app/screens/home/sections/business/clients/_clients.dart';
-import 'package:app/screens/home/sections/business/employees/_employees.dart';
 import 'package:app/screens/home/sections/business/settings/_settings.dart';
 import 'package:app/screens/home/sections/business/statistics/_statistics.dart';
 
 /// The parts of a business that can be looked at from its page.
 ///
-/// They are views of the **same** business —how it is doing, who works in it,
-/// where it operates and from which branches, who it sells to and how it
+/// They are views of the **same** business —how it is doing, where it operates and from which branches, who it sells to and how it
 /// is configured—, not different screens: that is why they are tabs of one page
 /// and not side bar
 /// sections. You switch from one to another without requesting the business
@@ -33,7 +31,6 @@ import 'package:app/screens/home/sections/business/statistics/_statistics.dart';
 /// from here, so adding a tab is adding a case and not touching four places.
 enum BusinessTab {
   statistics(key: "statistics", icon: CI.chart),
-  employees(key: "employees", icon: CI.employee),
   branches(key: "branches", icon: CI.shop),
   clients(key: "clients", icon: CI.user),
   settings(key: "settings", icon: CI.setting);
@@ -63,10 +60,8 @@ enum BusinessTab {
   /// Permission area of this tab (`docs/app-areas.json`): `business.<key>`. Its `view` opens it.
   String get area => "business.$key";
 
-  /// Whether the tab opens in the active company: its area's `view`. The employees tab
-  /// opens for every member, since everyone may see their own profile; without the `view`
-  /// the backend narrows it to that one card.
-  bool get granted => isReachable && (this == employees || PermissionsService().canOpen(area));
+  /// Whether the tab opens in the active company: its area's `view`.
+  bool get granted => isReachable && PermissionsService().canOpen(area);
 
   /// Whether the running mode opens it now (`CapabilityService.shows`): the branches without the
   /// internet are drawn locked, on the message that says why, not left out.
@@ -94,7 +89,6 @@ enum BusinessTab {
 
   String title(BuildContext context) => switch (this) {
     statistics => S.of(context).business_tab_statistics,
-    employees => S.of(context).business_tab_employees,
     branches => S.of(context).business_tab_branches,
     clients => S.of(context).business_tab_clients,
     settings => S.of(context).business_tab_settings
@@ -103,15 +97,13 @@ enum BusinessTab {
   /// Where its pending things are read: the profile's setup (country, logo) on the settings.
   BadgePlace? get badge => this == settings ? BadgePlace.businessSettings : null;
 
-  /// Whether the tab draws its own surface. Split-panel tabs do, so they can
-  /// inset a panel inside it; the page skips its single surface for them.
-  bool get ownsSurface => this == employees;
+  /// Whether the body is drawn edge to edge on the page's surface, without its
+  /// padding: the branches' map is the sheet itself.
+  bool get bleeds => this == branches;
 
-  /// Body of the tab. It goes inside the page's surface, unless it
-  /// [ownsSurface]: then what it draws is already its sheet.
+  /// Body of the tab. It goes inside the page's surface.
   Widget build() => switch (this) {
     statistics => const BusinessStatisticsTab(),
-    employees => const BusinessEmployeesTab(),
     branches => const BusinessBranchesTab(),
     clients => const BusinessClientsTab(),
     settings => const BusinessSettingsTab()

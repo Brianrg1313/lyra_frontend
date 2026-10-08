@@ -12,6 +12,9 @@ String badgeTitle(BuildContext context, BadgeModel badge) {
 
   return switch (badge.title) {
     "badge_chats_attention" => text.badge_chats_attention,
+    "badge_chats_unread" => text.badge_chats_unread,
+    "badge_sales_new" => text.badge_sales_new,
+    "badge_knowledge_pending" => text.badge_knowledge_pending,
     "badge_appointments_upcoming" => text.badge_appointments_upcoming,
     "badge_reservations_pending" => text.badge_reservations_pending,
     "badge_pos_invoices" => text.badge_pos_invoices,

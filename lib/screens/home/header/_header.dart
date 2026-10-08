@@ -12,6 +12,7 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/badges/badge_model.dart';
 import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/badges/badges_service.dart';
+import 'package:app/services/badges/notification_model.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -180,17 +181,26 @@ class _HomeHeaderState extends State<HomeHeader>
   /// found by opening it.
   Future<void> _pending() async {
     final business = context.read<BusinessService>().activeId;
-    final badge = await showPendingPanel(
+    final chosen = await showPendingPanel(
       context,
-      opens: (badge) => badgeRoute(badge, business: business) != null
+      opens: (badge) => badgeRoute(badge, business: business) != null,
+      leads: (notification) => notificationRoute(notification) != null
     );
 
-    if (badge == null || !mounted) return;
+    if (chosen == null || !mounted) return;
 
-    final route = badgeRoute(badge, business: business);
+    if (chosen is NotificationModel) {
+      final route = notificationRoute(chosen);
+      if (route != null) Navis.push(context, route);
+      return;
+    }
+
+    if (chosen is! BadgeModel) return;
+
+    final route = badgeRoute(chosen, business: business);
     if (route == null) return;
 
-    if (badge.kind == BadgeKind.news) unawaited(BadgesService().seen([badge.key]));
+    if (chosen.kind == BadgeKind.news) unawaited(BadgesService().seen([chosen.key]));
     Navis.push(context, route);
   }
 

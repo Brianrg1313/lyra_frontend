@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/chats/chat_model.dart';
 
 // WIDGETS
+import 'package:app/screens/home/badges/badge_mark.dart';
 import 'package:app/screens/home/sections/messages/chat_format.dart';
 import 'package:app/screens/home/sections/messages/tags/chat_stage_color.dart';
 import 'package:app/screens/home/sections/messages/tags/chat_stage_tag.dart';
@@ -12,8 +13,12 @@ import 'package:app/screens/home/sections/messages/tags/chat_tag_chip.dart';
 import 'package:app/screens/home/sections/messages/tags/chat_tag_color.dart';
 
 /// One conversation of the inbox: who, when, where it stands and every tag
-/// beside the stage, and the marks that ask for a person (unanswered,
+/// beside the stage, and the marks that ask for a person (unread, unanswered,
 /// attention, taken by a person).
+///
+/// Unread ([ChatModel.unseen]: the customer wrote since this person opened it)
+/// is the side bar number's red, and wins the corner over "unanswered": a
+/// conversation the bot already answered can still be news to a person.
 class InboxTile extends StatelessWidget {
   const InboxTile({
     super.key,
@@ -58,14 +63,16 @@ class InboxTile extends StatelessWidget {
               Row(children: [
                 Expanded(child: TextMedium(
                   chat.title,
-                  bold: !chat.answered,
+                  bold: chat.unseen || !chat.answered,
                   ellipsis: true
                 )),
                 SizedBox(width: AppSize.gap),
                 TextSmall(
                   chatTimeLabel(context, chat.activity),
                   multiplier: 0.9,
-                  color: chat.answered ? scheme.text.secondary : scheme.primary
+                  color: chat.unseen
+                    ? scheme.chart.critical
+                    : (chat.answered ? scheme.text.secondary : scheme.primary)
                 )
               ]),
               SizedBox(height: AppSize.gap * 0.8),
@@ -86,7 +93,10 @@ class InboxTile extends StatelessWidget {
                   padding: EdgeInsets.only(left: AppSize.gap),
                   child: Icon(CI.user, size: AppSize.text * 1.2, color: scheme.text.secondary)
                 ),
-                if (!chat.answered) Padding(
+                if (chat.unseen) Padding(
+                  padding: EdgeInsets.only(left: AppSize.gap),
+                  child: const UnseenMark()
+                ) else if (!chat.answered) Padding(
                   padding: EdgeInsets.only(left: AppSize.gap),
                   child: Container(
                     width: AppSize.gap * 1.8,

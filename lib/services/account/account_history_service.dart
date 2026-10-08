@@ -9,7 +9,7 @@ enum AccountHistoryStatus { idle, loading, ready, empty, error }
 
 /// The companies the signed-in person has worked for (`GET /profile/employments`): theirs, not
 /// the active company's, so every company they ever joined is listed whichever one is open.
-/// Cloud only. Owned by the panel that shows it.
+/// Cloud only. Owned by the employees section (`EmployeesSection`), read on the first own page.
 class AccountHistoryService extends ChangeNotifier {
   AccountHistoryStatus _status = AccountHistoryStatus.idle;
   AccountHistoryStatus get status => _status;

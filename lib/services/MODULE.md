@@ -125,9 +125,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   (private fields empty unless `fullProfile`; `sealedLocked` on a master session a cloud grant opened), `EmployeeJob` (`salary` null ≠ 0), `EmployeeManager`, `EmployeeLeave`,
   `EmployeeSpan`, `EmployeeEnding`, and the workday/period/contract-status/end-reason/document/sex enums.
 - `business_employees_service.dart` — `BusinessEmployeesService` (+ `BusinessEmployeesStatus`, `EmployeeDetailStatus`):
-  current + former lists (a failed former read leaves it empty; not read without `viewsAll`), `total` = active count, selection (first read opens the
-  viewer), details cached per id, `inviteTemplates` (the templates an invitation may carry: the viewer's keys only, none without `business.employees.permissions` or while `PermissionsSource.online`), `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
-  and opens it; answers what was sent, a master's activation code included, or null on a refusal), `edit` (`PUT /business/employees/`), `editOwn` (the viewer's personal keys, `PUT /profile/`). Provided by the business page. Seam `seed`.
+  current + former lists (a failed former read leaves it empty; not read without `viewsAll`), `total` = active count, `find` (a URL's person; `me` = the viewer's card), details cached per id, `inviteTemplates` (the templates an invitation may carry: the viewer's keys only, none without `business.employees.permissions` or while `PermissionsSource.online`), `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
+  the list; answers what was sent, a master's activation code included, or null on a refusal), `edit` (`PUT /business/employees/`), `editOwn` (the viewer's personal keys, `PUT /profile/`). Provided by `EmployeesSection`. Seam `seed`.
 - `business_email_model.dart` — `BusinessEmailModel`, `BusinessEmailPurpose`.
 - `business_language.dart` — `BusinessLanguage`.
 - `business_location_model.dart` — `BusinessLocationModel`: written address **and** map point, two facts
@@ -297,14 +296,26 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   else a dot), `BadgeState` (`fromJson` of the compressed table, `anchor`, `union`: several anchors and/or badge keys, each badge once).
 - `badge_place.dart` — `BadgePlace`: **every place in the app that draws a badge → the anchors (or badge keys) it reads** (side bar
   entries via `section(key)`, tabs, header, the two channel-form fields, the profile's country and logo by key). Move a dot here.
-  `sidebar.business` and `topbar.account` are not read.
+  `sidebar.business` and `topbar.account` are not read. `messages` reads `sidebar.chats` (`chats.attention` + `chats.unread`),
+  `sales`/`knowledge` their side bar anchors, `salesProcess` the sales board's `process` tab (`sales.new`).
 - `badges_service.dart` — `BadgesService` singleton (`.value` provider): `seed(data, business:)` (`/init`'s, kept only
   when measured for the active company, else read), `refresh` (`GET /badges/`), `seen(keys)` (dismissible only,
   optimistic, `POST /badges/seen/`), `discover(place)` (its `news` seen), `at(place)`, `clear`. Rereads on
   `badges/changed` / `badges/reset` (gathered 300 ms), `onRestored`, and a company switch (old dots dropped at once).
   Reads are REST, never `badges/get`: after a switch the socket still answers for the previous company. Seam `transport`.
+  Starts `NotificationsService` (`_listen`) and clears it on sign out.
+  **Rows new to this person** (`BadgeRow`: `chat` by chat id, `sale` by its `chat`): `opened(kind, id)` →
+  `POST /badges/opened/` (a second call while one travels is sent again after it). The backend answers with
+  `badges/opened` `{kind, id}` (`openedEvent`, to this person's screens: `ChatsService`/`SalesService` drop the
+  row's `unseen`) and `badges/changed`. `chats.unread` / `sales.new` count exactly the rows marked `unseen`.
+- `notification_model.dart` — `NotificationModel` (one row of `GET /notifications/` or one `notification/new`: id, type, title, body
+  shown as received, level, link, data, seen, date); `area` = the `HomeSection.key` a type is about (`chat.new` → messages,
+  `sale.ticket` → sales, `knowledge.pending` → knowledge): the gate and where tapping goes. A new gated type gets its line there.
+- `notifications_service.dart` — `NotificationsService` singleton (`.value` provider): `notification/new` → kept on top of
+  `recent` (deduped by id, 30 kept) and shown as a `FloatFlag` — **only if the person can open its `area`** (the event goes to
+  the whole company room); `load` (`GET /notifications/`, when the bell opens), `markSeen`, `clear` (sign out, company switch).
 
-## account/ — the signed-in person's own account (cloud only, `api` direct; owned by `OwnSettings`)
+## account/ — the signed-in person's own account (cloud only, `api` direct; owned by `EmployeesSection`)
 
 - `two_factor_model.dart` — `TwoFactorMethod` (`app`/`email`), `TwoFactorStatus` (`recoveryLeft` only for the app),
   `TwoFactorEnrollment` (secret + `otpauth` uri, `groupedSecret`), `TwoFactorProof` (`code`|`recovery`; `body(codeKey:)`:
@@ -318,14 +329,14 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 
 ## home/
 
-- `home_service.dart` — `HomeService`: side bar state (Hive) and `searchQuery`; `preload()` in `preCall`.
+- `home_service.dart` — `HomeService`: side bar state (Hive) and `searchQuery`; `preload()` in `preCall`; `goTo` reopens a section on its last page (`PreferencesService.lastPathIn`).
 
 ## preferences/
 
 - `preferences_service.dart` — `PreferencesService` singleton (Hive box `preferences`, `preload()` in `preCall`):
   device-wide theme/language (applied to and persisted from `AppController`); per account (`bindUser` from
-  `ClientService`) the last `/home...` path (`homePath`), the last active business (`useBusiness` from
-  `BusinessService`), per-business selections (`RememberedSelection`: `chat`, `employee`, `table`; `recall`/`remember`)
+  `ClientService`) the last `/home...` path (`homePath`, recorded on `Navis.delegate`), per business the last path of each section (`lastPathIn`), the last active business (`useBusiness` from
+  `BusinessService`), per-business selections (`RememberedSelection`: `chat`, `table`; `recall`/`remember`)
   and how inventory tables open (`InventoryView`, `inventoryView` / `useInventoryView`);
   `linkDeclined` / `declineLink` (the "not now" to joining a server with its company online); device-wide per master
   instance, `hasMasterPassword` / `rememberMasterPassword` (written by `LanService.signIn`/`activate`).
@@ -452,13 +463,15 @@ Rows are measured on read from their owning collection (invoice, conversation, t
   `STAGE`/`CHANNEL`/`MINE` filters (server-side), paging (`hasMore` vs `total`, not rows read),
   `fulfil()` and `approve()`. `approve(row)` writes against `SaleModel.conversation`, never `id`,
   and drops the row. Listens to `sale/progress` and `ConnectionService.onRestored` (see sales
-  section). Seams `seed`/`receive`.
+  section). `review(sale)`: opening a sale clears its `unseen` and sends `BadgesService.opened(sale, chat)`;
+  `badges/opened` (kind `sale`) clears every row with that `chat`. Seams `seed`/`receive`.
 - `sales_catalog_service.dart` — `SalesCatalogService`: `GET /sales/stages` (stages in precedence,
   handover modes/states) + `GET /pos/methods` for `channels`. `sections` not read (tab titles are `S`).
   `of(section)`, `stageName`/`channelName` fall back to the code.
 - `sale_model.dart` — `SaleModel`, `SalesPage`, `SaleSource`, `SaleSection`, `SaleLevel`,
   `saleAmount`/`saleCount`/`saleDate`. **`saleAmount` returns `null`, not `0`.** Action rules:
-  `canFulfil`, `canApprove` (at `verifying` **and** has a `conversation`).
+  `canFulfil`, `canApprove` (at `verifying` **and** has a `conversation`). `unseen`: a channel sale this person
+  has not opened (kept by `moved`, cleared by `opened`).
 - `sale_detail_service.dart` — `SaleDetailService`: `GET /sales/detail/$reference` (ticket code,
   row id or chat all resolve). **Created per opened panel**, never cached. `missing` =
   `sale_not_found` (news, not an error).
@@ -485,13 +498,15 @@ Rows are measured on read from their owning collection (invoice, conversation, t
   paging), `summary`, `stages`, `tags` (catalog → `tagOf(code)`), `team`, `selected`. Applies
   `chat/message|handover|stage|tags|attention|attended` to held rows; unknown/new chat → debounced page-1 reread (only on page 1, else `pending`). Notifies
   (`FloatFlag`) on `chat/attention|alert|assigned`. `moved(from, to)` after a send opened a new session.
+  `unseen`: an inbound `chat/message` sets it on every row but `selected`; `select` and `badges/opened` clear it.
   Seams `seed`/`seedTags`/`receive`.
 - `chat_thread_service.dart` — `ChatThreadService` (+ `ChatThreadStatus`): one open chat, **created per
   panel**. `detail/:ID` + `messages/:ID` (`BEFORE`, `ALL`), `send` (returns the landing chat id),
-  `pause` `resume` `assign` `setStage` `resolve` `markRead`, `refreshDetail` (the AI spend has no event); patches the inbox row after its writes and
+  `pause` `resume` `assign` `setStage` `resolve` `markRead`, `refreshDetail` (the AI spend has no event); reports the chat
+  opened (`BadgesService.opened`) after `load` and on every inbound message while open; patches the inbox row after its writes and
   its tags after each detail read; `chat/tags` replaces the detail's tags.
   Messages deduped by id; ticks never go backwards; `rekeyed` renames. Seams `seed`/`receive`.
-- `chat_model.dart` — `ChatModel` (row, tag codes), `ChatsPage`, `ChatStage`, `ChatTag` (catalog, detail, event), `ChatLevel`, `ChatWaiting`, `ChatBot`
+- `chat_model.dart` — `ChatModel` (row, tag codes, `unseen`), `ChatsPage`, `ChatStage`, `ChatTag` (catalog, detail, event), `ChatLevel`, `ChatWaiting`, `ChatBot`
   (`isPausedAt`), `ChatPerson`, `ChatLine`, `ChatSummary` (`awaiting` null ≠ 0), `ChatStageOption`,
   `chatText`/`chatInt`/`chatDouble`/`chatDate`/`chatCodes`/`chatEvent`.
 - `chat_message_model.dart` — `ChatMessage` (`queued` local), `ChatMessagesPage`, `ChatAuthorKind`, `ChatMessageStatus`.

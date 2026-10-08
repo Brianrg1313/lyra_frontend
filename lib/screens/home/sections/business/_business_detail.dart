@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/business/business_branches_service.dart';
-import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/business/business_model.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
@@ -170,40 +169,27 @@ class _BusinessDetailSectionState extends State<BusinessDetailSection>
     // is enough to know if the id is one of theirs without waiting for the
     // profile.
     final business = service.byId(id);
-    final ownsSurface = business != null
-      && service.activeId == id
-      && _tab.ownsSurface
-      && _granted(_tab);
 
-    // The branches and the people are read by their tabs but belong to the
-    // page: switching tabs does not ask for them again, and a business switch
-    // remounts the page, which is what drops them (every one of their
-    // endpoints answers for the active business). Lazy, so a visit that never
-    // opens a tab never builds its service.
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => BusinessBranchesService()),
-        ChangeNotifierProvider(create: (_) => BusinessEmployeesService())
-      ],
+    // The branches are read by their tab but belong to the page: switching
+    // tabs does not ask for them again, and a business switch remounts the
+    // page, which is what drops them (every one of their endpoints answers
+    // for the active business). Lazy, so a visit that never opens the tab
+    // never builds its service.
+    return ChangeNotifierProvider(
+      create: (_) => BusinessBranchesService(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           BusinessDetailHeader(tab: _tab, onTab: _openTab),
           SizedBox(height: AppSize.gap),
-          // Two switchers so the shared sheet does not blink between the tabs
-          // drawn on it: those animate inside it, and the sheet itself only
-          // swaps against a tab that brings its own.
-          Expanded(child: PageSwitcher(
-            id: ownsSurface ? _tab : #sheet,
-            child: ownsSurface
-              ? _tab.build()
-              : Surface(
-                  padding: EdgeInsets.all(AppSize.padding),
-                  child: PageSwitcher(
-                    id: _tab,
-                    child: _body(context, service, id, business)
-                  )
-                )
+          // The tabs animate inside the one sheet, so it does not blink
+          // between them.
+          Expanded(child: Surface(
+            padding: _tab.bleeds ? EdgeInsets.zero : EdgeInsets.all(AppSize.padding),
+            child: PageSwitcher(
+              id: _tab,
+              child: _body(context, service, id, business)
+            )
           ))
         ])
     );

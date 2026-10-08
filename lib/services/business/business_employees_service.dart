@@ -13,7 +13,6 @@ import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
-import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart';
@@ -22,12 +21,12 @@ enum BusinessEmployeesStatus { idle, loading, ready, error }
 
 enum EmployeeDetailStatus { idle, loading, ready, error }
 
-/// The people of the active company (`/business/employees/`) and the one open
-/// in the detail panel.
+/// The people of the active company (`/business/employees/`) and their details.
 ///
-/// Provided by the business page (`BusinessDetailSection`), not app-wide, like
-/// the branches: every endpoint answers for the business in the `business_id`
-/// header, and a business switch remounts the page, which drops what was read.
+/// Provided by the employees section (`EmployeesSection`), not app-wide: every
+/// endpoint answers for the business in the `business_id` header, and a
+/// business switch remounts the section, which drops what was read. Who is
+/// open is not kept here: it is the URL (`/home/employees/:id`).
 ///
 /// The list is two reads: the current people (active, then invited — the
 /// viewer always first) and the former ones. The former are a second list the
@@ -37,34 +36,11 @@ enum EmployeeDetailStatus { idle, loading, ready, error }
 /// Without `business.employees.view` the current list is only the viewer's own
 /// card (the backend narrows it) and the former one is not read at all.
 ///
-/// A detail is read once per person per page and kept: switching back and
+/// A detail is read once per person per section and kept: switching back and
 /// forth between two employees in the list does not reread either.
 class BusinessEmployeesService extends ChangeNotifier {
   BusinessEmployeesService({EmployeesSource? source, PermissionsSource? permissions})
-    : _injected = source, _injectedPermissions = permissions {
-    _live.add(this);
-  }
-
-  /// Every page's list alive now: [openOwn] reaches the one already mounted.
-  static final Set<BusinessEmployeesService> _live = {};
-
-  /// Asked by [openOwn] and not yet honoured: the next list to be ready opens
-  /// the viewer's card instead of the remembered person.
-  static bool _ownRequested = false;
-
-  /// Opens the viewer's own card, asked from outside the page (the side bar's
-  /// profile card). Static because whoever asks has no page to read the
-  /// service from: a mounted list switches now, and a page about to mount
-  /// opens on it at its first read.
-  static void openOwn() {
-    _ownRequested = true;
-
-    for (final service in _live) {
-      if (service._status == BusinessEmployeesStatus.ready && service._current.isNotEmpty) {
-        service._selectOwn();
-      }
-    }
-  }
+    : _injected = source, _injectedPermissions = permissions;
 
   final EmployeesSource? _injected;
   final PermissionsSource? _injectedPermissions;
@@ -76,8 +52,6 @@ class BusinessEmployeesService extends ChangeNotifier {
   List<BusinessEmployeeModel> _current = const [];
   List<BusinessEmployeeModel> _former = const [];
   int _total = 0;
-
-  String? _selected;
 
   final Map<String, BusinessEmployeeDetail> _details = {};
   final Map<String, EmployeeDetailStatus> _detailStatus = {};
@@ -99,12 +73,12 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// Whether the viewer sees everyone, not only their own card.
   static bool get viewsAll => PermissionsService().canOpen("business.employees");
 
-  /// Key ([BusinessEmployeeModel.key]) of the person open in the detail panel.
-  String? get selectedKey => _selected;
-
-  BusinessEmployeeModel? get selected {
+  /// The person a URL names: [BusinessEmployeeModel.meKey] is always the
+  /// viewer's own card, whether or not it has an employment id, so the side
+  /// bar links to it without knowing that id. `null` when nobody listed is.
+  BusinessEmployeeModel? find(String key) {
     for (final employee in [..._current, ..._former]) {
-      if (employee.key == _selected) return employee;
+      if (key == BusinessEmployeeModel.meKey ? employee.me : employee.key == key) return employee;
     }
 
     return null;
@@ -115,9 +89,7 @@ class BusinessEmployeesService extends ChangeNotifier {
   EmployeeDetailStatus detailStatusOf(String id) =>
     _detailStatus[id] ?? EmployeeDetailStatus.idle;
 
-  /// Reads both lists. Without [force] they are read once per page. The first
-  /// read opens the viewer's own card; a reread keeps the selection while that
-  /// person is still listed.
+  /// Reads both lists. Without [force] they are read once per section.
   Future<void> load({bool force = false}) async {
     if (_status == BusinessEmployeesStatus.loading) return;
     if (!force && _status == BusinessEmployeesStatus.ready) return;
@@ -140,15 +112,6 @@ class BusinessEmployeesService extends ChangeNotifier {
       _detailStatus.clear();
     }
 
-    notifyListeners();
-  }
-
-  /// Opens a person in the detail panel.
-  void select(String key) {
-    if (_selected == key) return;
-
-    _selected = key;
-    PreferencesService().remember(RememberedSelection.employee, key);
     notifyListeners();
   }
 
@@ -183,7 +146,7 @@ class BusinessEmployeesService extends ChangeNotifier {
   /// and the invitation waits there until they sign up with it. [template]
   /// (one of [inviteTemplates]) is copied onto them when they accept.
   ///
-  /// Rereads the list and opens the new invitation. Answers what was sent,
+  /// Rereads the list, where the new invitation shows. Answers what was sent,
   /// with the activation code a master made for a new account, which the
   /// form shows once. A refusal (already invited or working here, a title it
   /// does not take) is shown in the floating flag and answers `null`.
@@ -210,9 +173,6 @@ class BusinessEmployeesService extends ChangeNotifier {
     }
 
     await load(force: true);
-
-    final id = sent.id;
-    if (id != null && id.isNotEmpty) select(id);
 
     return sent;
   }
@@ -309,20 +269,6 @@ class BusinessEmployeesService extends ChangeNotifier {
     _former = former;
     _total = total;
     _status = BusinessEmployeesStatus.ready;
-
-    final keys = {for (final employee in [...current, ...former]) employee.key};
-
-    if (_ownRequested && current.isNotEmpty) {
-      _selectOwn();
-    } else if (!keys.contains(_selected)) {
-      // First read: whoever was open when the tab was last left, while they
-      // are still listed; otherwise the viewer's own card.
-      final last = PreferencesService().recall(RememberedSelection.employee);
-
-      _selected = keys.contains(last)
-        ? last
-        : current.isNotEmpty ? current.first.key : former.firstOrNull?.key;
-    }
   }
 
   /// The former list, or none for a viewer who may only see their own card:
@@ -363,14 +309,6 @@ class BusinessEmployeesService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The viewer's card is the first of [current] (`listFrom` puts it there).
-  void _selectOwn() {
-    _ownRequested = false;
-
-    final own = _current.firstWhere((employee) => employee.me, orElse: () => _current.first);
-    select(own.key);
-  }
-
   /// A read can answer after the page that asked for it is gone (a business
   /// switch remounts it), and notifying a disposed notifier throws.
   @override
@@ -381,7 +319,6 @@ class BusinessEmployeesService extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    _live.remove(this);
     super.dispose();
   }
 }

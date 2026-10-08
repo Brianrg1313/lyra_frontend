@@ -21,6 +21,8 @@ enum BadgePlace {
   // Side bar entries, by `HomeSection.key`.
   business(["business.profile"]),
   messages(["sidebar.chats"]),
+  sales(["sidebar.sales"]),
+  knowledge(["sidebar.knowledge"]),
   inventory(["sidebar.inventory"]),
   channels(["sidebar.channels"]),
   finance(["sidebar.money", "business.payments"]),
@@ -29,6 +31,7 @@ enum BadgePlace {
   businessSettings(["business.profile"]),
   financeReceivables(["money.receivables"]),
   financeMethods(["business.payments"]),
+  salesProcess(["sales.process"]),
 
   // Header.
   pos(["sidebar.pos"]),
@@ -53,6 +56,8 @@ enum BadgePlace {
   static BadgePlace? section(String key) => switch (key) {
     "business" => business,
     "messages" => messages,
+    "sales" => sales,
+    "knowledge" => knowledge,
     "inventory" => inventory,
     "channels" => channels,
     "finance" => finance,

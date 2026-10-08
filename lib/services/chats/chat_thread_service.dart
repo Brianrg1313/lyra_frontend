@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/chats/chat_detail_model.dart';
 import 'package:app/services/chats/chat_event.dart';
 import 'package:app/services/chats/chat_message_model.dart';
@@ -108,6 +109,8 @@ class ChatThreadService extends ChangeNotifier {
 
     if (_status == ChatThreadStatus.loading) _status = ChatThreadStatus.ready;
     _notify();
+
+    _opened();
   }
 
   /// Reads the detail again. Its AI spend (`usage`) moves with every turn and
@@ -403,7 +406,13 @@ class ChatThreadService extends ChangeNotifier {
     if (event == null || chatText(event["id"]) != id) return;
 
     final json = chatEvent(event["message"]);
-    if (json != null) _add(ChatMessage.fromJson(json));
+    if (json != null) {
+      final message = ChatMessage.fromJson(json);
+      _add(message);
+
+      // What the customer writes into the open conversation is read as it lands.
+      if (message.incoming) _opened();
+    }
 
     final current = _detail;
     if (current != null) {
@@ -417,6 +426,14 @@ class ChatThreadService extends ChangeNotifier {
     }
 
     _notify();
+  }
+
+  /// The person has this conversation in front of them: it is not new for them
+  /// (`chats.unread`).
+  void _opened() {
+    if (_disposed) return;
+
+    unawaited(BadgesService().opened(BadgeRow.chat, id));
   }
 
   void _onStatus(dynamic data) {

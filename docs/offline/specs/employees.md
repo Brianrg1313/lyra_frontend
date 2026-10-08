@@ -2,7 +2,7 @@
 
 **Plan** §2 (employees row), §6.3 (sealed fields), §5.4 (permission-shaped answers). **App
 today** `business/business_employee*_model.dart`, `business_employees_service.dart`,
-`screens/home/sections/business/employees`, `docs/app-areas.json` (`business.employees.*`).
+`screens/home/sections/employees`, `docs/app-areas.json` (`business.employees.*`).
 
 An **employment** links an account (`session.md`) to the company with a job. Offline, an
 invitation creates the account too, since there's no e-mail to invite a stranger with.

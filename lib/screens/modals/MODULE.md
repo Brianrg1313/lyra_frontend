@@ -56,7 +56,6 @@ through `Navigator.pop(context, value)`.
 - `edit_business_field/business_field.dart` — `BusinessField`: registry of editable data (key, value, input). **Add a datum here.**
 - `edit_business_email/_edit_business_email.dart` — `EditBusinessEmailModal`: create/edit an address.
 - `verify_business_email/_verify_business_email.dart` — `VerifyBusinessEmailModal`.
-- `employee_tool/_employee_tool.dart` — `showEmployeeTool(context, icon:, title:, description:, person:, builder?)`, `EmployeeToolModal`: side panel of one employee action (from `EmployeeActions`); `builder` draws its body (permissions → `EmployeePermissions`, one's own settings → `OwnSettings`), otherwise the placeholder; `employeeToolWidth`, shared by the panels stacked on it.
 - `two_factor/_two_factor.dart` — `showTwoFactorSetup(context, service:, email:)` (method, then its step; the factor in force proven last), `TwoFactorChoiceModal`; re-exports `showTwoFactorProof`, `showRecoveryCodes`. Opened from `OwnSecurity`; every write goes through the passed `AccountSecurityService`.
 - `two_factor/two_factor_app.dart` — `TwoFactorAppModal`: staged secret as QR (`PairingQr`) and grouped key, the app's first code → pops the recovery codes.
 - `two_factor/two_factor_email.dart` — `TwoFactorEmailModal`: mails the code on opening (resend), takes it back → pops `true`.
@@ -190,9 +189,12 @@ All three **return a value and write nothing** (POS services live below this nav
   optional note (≤ 200); **writes** through the `PermissionRequestsService` passed in. A `409` (already pending/granted) closes it. Returns `true` if sent.
 
 ### `home/` (the shell's header)
-- `pending/_pending.dart` — `showPendingPanel(context, opens:)`, `PendingModal`: every badge standing, loudest first (live);
-  a row that `opens` returns its `BadgeModel` (the header navigates); dismissible ones (not the terms: no terms page yet)
-  get "Dismiss" / "Mark as read" (`BadgesService.seen`). Returns the chosen badge or `null`.
+- `pending/_pending.dart` — `showPendingPanel(context, opens:, leads:)`, `PendingModal`: every badge standing, loudest first (live),
+  then "Recent notifications" (`NotificationsService.recent`, live; unseen ones bold with a filled dot). Opening it is opening
+  the bell: `load` then `BadgesService.seen(["notifications.unseen"])` (in that order, or every row reads as seen), and
+  `markSeen` on close; the bell's own badge is not a row. A row that `opens`/`leads` returns its `BadgeModel` or
+  `NotificationModel` (the header navigates); dismissible badges (not the terms: no terms page yet) get "Dismiss" /
+  "Mark as read" (`BadgesService.seen`). Returns the chosen one or `null`.
 
 ### `server/` (one session over the cloud and a master, plan §9.6)
 - `master_password/_master_password.dart` — `showMasterPassword(context, login:)`, `showUnseal(context)`,

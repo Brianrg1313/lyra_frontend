@@ -7,6 +7,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/chats/chat_event.dart';
 import 'package:app/services/chats/chat_model.dart';
+import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/toolkit/api.dart';
@@ -65,6 +66,7 @@ class ChatsService extends ChangeNotifier {
       connection.on(ChatEvent.attended, _onAttended),
       connection.on(ChatEvent.alert, _onAlert),
       connection.on(ChatEvent.assigned, _onAssigned),
+      connection.on(BadgesService.openedEvent, _onOpened),
       connection.onRestored(_onRestored)
     ];
   }
@@ -257,6 +259,10 @@ class ChatsService extends ChangeNotifier {
 
     _selected = id;
     PreferencesService().remember(RememberedSelection.chat, id);
+
+    // Its panel tells the backend (`ChatThreadService.load`); the row is not left saying "new"
+    // while that travels.
+    if (id != null) _patch(id, (row) => row.unseen ? row.read() : row);
     _notify();
   }
 
@@ -315,6 +321,7 @@ class ChatsService extends ChangeNotifier {
     ChatEvent.tags => _onTags(data),
     ChatEvent.attention => _onAttention(data),
     ChatEvent.attended => _onAttended(data),
+    BadgesService.openedEvent => _onOpened(data),
     _ => null
   };
 
@@ -332,7 +339,14 @@ class ChatsService extends ChangeNotifier {
     if (event["created"] == true || index == -1) {
       _scheduleCatchUp();
     } else {
-      final row = _chats.removeAt(index).touched(event);
+      var row = _chats.removeAt(index).touched(event);
+
+      // The customer wrote: unread for this person, unless it is the conversation they have open
+      // (its panel reports it read again).
+      final message = chatEvent(event["message"]);
+      if (message != null && chatText(message["direction"]) == "in") {
+        row = row.read(unseen: id != _selected);
+      }
 
       // An answered row can leave the "unanswered" tab; any other filter is
       // untouched by a message.
@@ -347,6 +361,14 @@ class ChatsService extends ChangeNotifier {
     }
 
     _scheduleSummary();
+  }
+
+  /// This person opened a conversation, here or on another screen.
+  void _onOpened(dynamic data) {
+    final event = chatEvent(data);
+    if (event == null || BadgeRow.from(event["kind"]) != BadgeRow.chat) return;
+
+    _patch(chatText(event["id"]), (row) => row.unseen ? row.read() : row);
   }
 
   void _onHandover(dynamic data) {

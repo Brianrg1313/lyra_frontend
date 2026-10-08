@@ -12,6 +12,7 @@ import './_section/unavailable.dart';
 import './_section/page_switcher.dart';
 import './_section/placeholder.dart';
 import 'business/_business_detail.dart';
+import './employees/_employees.dart';
 import './channels/_channels.dart';
 import './channels/form/_channel_form.dart';
 import './connections/_connections.dart';
@@ -37,6 +38,7 @@ enum HomeSection {
   // that contains them all, while the dashboard is just one more of them.
   dashboard(key: "dashboard", path: "/home", icon: CI.home),
   business(key: "business", path: "/home/business", icon: CI.store),
+  employees(key: "employees", path: "/home/employees", icon: CI.employee),
   inventory(key: "inventory", path: "/home/inventory", icon: CI.shop),
   services(key: "services", path: "/home/services", icon: CI.task_list),
   channels(key: "channels", path: "/home/channels", icon: CI.ia),
@@ -70,6 +72,9 @@ enum HomeSection {
   /// First group of the side bar, with no title: what the company **is** and
   /// what it has going right now.
   ///
+  /// [employees] follows the business: who works in it used to be one of its
+  /// tabs, and it is looked at on its own all day (one's own card, the people).
+  ///
   /// [messages], [deliveries] and [sales] follow the business, in the order a
   /// sale happens: the conversation where it starts, getting the goods to the
   /// customer, and the board of everything still in progress. They used to
@@ -78,6 +83,7 @@ enum HomeSection {
   static const List<HomeSection> home = [
     dashboard,
     business,
+    employees,
     messages,
     deliveries,
     sales
@@ -140,6 +146,7 @@ enum HomeSection {
   String title(BuildContext context) => switch (this) {
     dashboard => S.of(context).home,
     business => S.of(context).business,
+    employees => S.of(context).employees,
     inventory => S.of(context).inventory,
     services => S.of(context).services,
     channels => S.of(context).channels,
@@ -176,6 +183,18 @@ enum HomeSection {
   /// The server's page isn't a company's either: it's the master's devices.
   bool get needsBusiness => this != dashboard && this != business && this != server;
 
+  /// Permission and capability area (`docs/app-areas.json`): the [key], except
+  /// [employees], which kept the area it had as a business tab
+  /// (`business.employees`): its grants are the backend's `employees.*`, and
+  /// moving the screen does not move them.
+  String get area => this == employees ? "business.employees" : key;
+
+  /// Whether the member may open it in [businessId]: its area's `view`. The
+  /// employees open for every member, since everyone may see their own card;
+  /// without the `view` the backend narrows the list to that one.
+  bool granted(String businessId) =>
+    this == employees || PermissionsService().canOpen(area, business: businessId);
+
   /// Section content.
   ///
   /// There is no case for [business]: its content is assembled by [homeContent],
@@ -187,6 +206,7 @@ enum HomeSection {
     inventory => const InventorySection(),
     channels => const ChannelsSection(),
     knowledge => const KnowledgeSection(),
+    employees => const EmployeesSection(),
     connections => const ConnectionsSection(),
     // The money page is built here and not by [homeContent], unlike the
     // business's: its tabs carry no id —every money endpoint answers for the
@@ -264,7 +284,7 @@ Widget homeContent(
   String? businessId
 ) {
   final Widget screen;
-  final capability = CapabilityService().of(section.key);
+  final capability = CapabilityService().of(section.area);
 
   if (capability != Capability.available) {
     screen = UnavailableSection(
@@ -273,11 +293,11 @@ Widget homeContent(
     );
   } else if (businessId == null && section.needsBusiness) {
     screen = const NoBusinessSection();
-  } else if (businessId != null && !PermissionsService().canOpen(section.key, business: businessId)) {
+  } else if (businessId != null && !section.granted(businessId)) {
     screen = Builder(
       key: ValueKey("no_permission_${section.key}"),
       builder: (context) => NoPermissionSection(
-        permission: "${section.key}.view",
+        permission: "${section.area}.view",
         title: section.title(context)
       )
     );

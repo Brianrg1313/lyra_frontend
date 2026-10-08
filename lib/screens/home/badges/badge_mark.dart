@@ -26,6 +26,10 @@ Color badgeColor(BuildContext context, BadgeLevel level) {
 /// waiting, tickets open), a dot when it is only alerts or news, whose 1 says nothing. Nothing at
 /// all when the place is clear.
 ///
+/// The number is always a red circle whatever the level: a count of things waiting is the call
+/// to act, and a fixed diameter keeps `99+` from stretching it into a pill (the text shrinks
+/// instead). The dot keeps the level's colour.
+///
 /// [dot] forces the dot where a number does not fit (a collapsed side bar, a tab).
 class BadgeMark extends StatelessWidget {
   const BadgeMark({super.key, required this.place, this.dot = false});
@@ -60,11 +64,31 @@ class BadgeMark extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSize.gap, vertical: AppSize.gap / 2),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(AppSize.corner)),
-      child: TextSmall(anchor.count > _max ? "$_max+" : "${anchor.count}", color: Colors.white)
+      width: AppSize.corner,
+      height: AppSize.corner,
+      padding: EdgeInsets.all(AppSize.gap / 2),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: ThemeColor.of(context).chart.critical, shape: BoxShape.circle),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: TextSmall(anchor.count > _max ? "$_max+" : "${anchor.count}", color: Colors.white)
+      )
     );
   }
+}
+
+/// The mark of one row a side bar number counts: a conversation with messages this person has not
+/// read, a sale they have not opened. The same red as the number, so the rows it points at are
+/// found by looking for its colour.
+class UnseenMark extends StatelessWidget {
+  const UnseenMark({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: AppSize.gap * 1.8,
+    height: AppSize.gap * 1.8,
+    decoration: BoxDecoration(color: ThemeColor.of(context).chart.critical, shape: BoxShape.circle)
+  );
 }
 
 /// [child] with [place]'s mark on its top-right corner: an icon button, an avatar.

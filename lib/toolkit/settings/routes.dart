@@ -18,6 +18,9 @@ import 'package:app/screens/home/sections/channels/form/_channel_form.dart';
 import 'package:app/screens/home/sections/connections/form/_connection_form.dart';
 import 'package:app/screens/home/sections/deliveries/area/_area.dart';
 import 'package:app/screens/home/sections/deliveries/settings/_settings.dart';
+import 'package:app/screens/home/sections/employees/employee_detail/_employee_detail.dart';
+import 'package:app/screens/home/sections/employees/employee_detail/employee_part.dart';
+import 'package:app/screens/home/sections/employees/own_settings/own_section.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/home/sections/sales/sales_tab.dart';
@@ -223,6 +226,34 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   ),
+  // One person of the employees section, and each part of their card: one
+  // route per part on the same criteria as the business tabs. The account's
+  // subsections hang off the viewer's own card (`/home/employees/me/...`).
+  // The section resolves the page itself, so the lists outlive the moves.
+  ScreenRoute(
+    animation: _animation,
+    key: EmployeeDetailPage.routeKey,
+    url: EmployeeDetailPage.path(":id"),
+    parents: ["employees"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  ),
+  ...EmployeePart.values.map((part) => ScreenRoute(
+    animation: _animation,
+    key: part.routeKey,
+    url: part.path(":id"),
+    parents: ["employees"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  )),
+  ...OwnSection.values.map((section) => ScreenRoute(
+    animation: _animation,
+    key: section.routeKey,
+    url: section.path,
+    parents: ["employees"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  )),
   // Delivery settings: sub-page of `deliveries`, opened from the desk's
   // header. No id in the URL: every delivery endpoint answers for the active
   // company.

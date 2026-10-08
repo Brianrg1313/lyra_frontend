@@ -6,14 +6,11 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/database/database_service.dart';
 
 /// What is open inside a section without being in the URL: the section keeps
-/// it as state (see the messages desk and the employees tab), so the route
+/// it as state (see the messages desk), so the route
 /// alone cannot bring it back.
 enum RememberedSelection {
   /// The open conversation of the messages desk (`ChatsService.selected`).
   chat,
-
-  /// The person open in the employees tab (`BusinessEmployeesService.selectedKey`).
-  employee,
 
   /// The product table open in the inventory section (its header's selector).
   table
@@ -30,10 +27,10 @@ enum InventoryView { summary, sheet }
 /// - **Device-wide**: theme and language. They are about the machine, not the
 ///   account, and are applied before `runApp` (see [preload]) so the first
 ///   frame is already painted with them — at the login too.
-/// - **Per account**: the last home page, the active business and what was
+/// - **Per account**: the last home page (and of each section), the active business and what was
 ///   open inside a section. Keyed by username, because two people signing in
 ///   on the same desktop must each land where *they* left; a selection is also
-///   keyed by business, since a chat or an employee id means nothing in
+///   keyed by business, since a chat or a table id means nothing in
 ///   another company.
 ///
 /// A singleton and not a provider: it is read before the tree exists
@@ -90,7 +87,10 @@ class PreferencesService {
     app.theme.addListener(() => _write(_themeKey, app.theme.value?.name));
     app.locale.addListener(() => _write(_localeKey, app.locale.value?.languageCode));
 
-    Navis.currentKey.addListener(_screenChanged);
+    // The delegate and not `Navis.currentKey`: the key changes before the
+    // history does (reading `currentPath` there gives the page being left),
+    // and it stays the same between two ids of one route (`/home/business/:id`).
+    Navis.delegate.addListener(_screenChanged);
   }
 
   /// Binds the per-account preferences to [username]; null on sign out.
@@ -99,6 +99,7 @@ class PreferencesService {
   void bindUser(String? username) {
     _user = (username == null || username.isEmpty) ? null : username;
     if (_user == null) _business = null;
+    _recorded = null;
 
     _inventoryView.value = _storedInventoryView;
   }
@@ -117,7 +118,7 @@ class PreferencesService {
   // ───────────────────────────── last page ─────────────────────────────
 
   /// The home page the account was on when the app closed, URL args
-  /// included (`/home/business/:id/employees`), or null if none was recorded.
+  /// included (`/home/business/:id/clients`), or null if none was recorded.
   String? get lastPath => _read<String>(_userKey("path"));
 
   /// Where to land after the session resolves when no deep link asks for
@@ -128,14 +129,37 @@ class PreferencesService {
   /// are not places to come back to on their own. A page that no longer
   /// exists (a deleted table) is handled by the page itself, as a deep link
   /// would be.
+  ///
+  /// Each page is also recorded as the last one of its section ([lastPathIn]).
   void _screenChanged() {
     if (_user == null) return;
 
     final path = Navis.currentPath;
+    if (path == _recorded) return;
     if (path != "/home" && !path.startsWith("/home/")) return;
 
+    _recorded = path;
     _write(_userKey("path"), path);
+
+    final route = Navis().match(path)?.route;
+    if (route != null) _write(_sectionKey(route.parents.isEmpty ? route.key : route.parents.first), path);
   }
+
+  /// The last path written, so the delegate's notifications that change no
+  /// page (a pop over a modal route) do not write again.
+  String? _recorded;
+
+  /// The page of the home section [section] (its route key) that was open
+  /// last in the active business, tab or sub-page included
+  /// (`/home/finance/payments`), or null if none was or its route no longer
+  /// exists. Per business: the path may carry its ids (a table, a person).
+  String? lastPathIn(String section) {
+    final path = _read<String>(_sectionKey(section));
+    return path != null && Navis().match(path) != null ? path : null;
+  }
+
+  String? _sectionKey(String section) =>
+    _business == null ? null : _userKey("${_business!}/section/$section");
 
   // ───────────────────────────── active business ─────────────────────
 
@@ -147,6 +171,7 @@ class PreferencesService {
   /// switch, create, clear). Scopes [recall]/[remember] to it.
   void useBusiness(String? id) {
     _business = id;
+    _recorded = null;
     if (id != null) _write(_userKey("business"), id);
   }
 

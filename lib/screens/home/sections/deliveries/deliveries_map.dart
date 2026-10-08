@@ -39,7 +39,8 @@ class DeliveriesMap extends StatelessWidget {
     this.overlays = const [],
     this.onTap,
     this.center,
-    this.zoomButtons = false
+    this.zoomButtons = false,
+    this.businessMark = true
   });
 
   /// Owned by the section, so its header can move the map.
@@ -57,6 +58,11 @@ class DeliveriesMap extends StatelessWidget {
   /// view (the branch form) would otherwise take the wheel and stop the view
   /// from scrolling while the pointer is over it.
   final bool zoomButtons;
+
+  /// Whether the company's point is marked. The branch form leaves it out:
+  /// its pin is the point being placed, and on the main branch both sit on
+  /// the same spot, one over the other.
+  final bool businessMark;
 
   static const double businessZoom = 14;
 
@@ -130,7 +136,7 @@ class DeliveriesMap extends StatelessWidget {
             userAgentPackageName: "com.andromeda.lyra"
           ),
           ...layers,
-          if (point != null) MarkerLayer(
+          if (businessMark && point != null) MarkerLayer(
             markers: [
               Marker(
                 point: point,

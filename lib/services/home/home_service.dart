@@ -4,6 +4,7 @@ import 'package:core/core.dart';
 
 // SERVICES
 import 'package:app/services/database/database_service.dart';
+import 'package:app/services/preferences/preferences_service.dart';
 
 // MODELS
 import 'package:app/screens/home/sections/_sections.dart';
@@ -81,8 +82,14 @@ class HomeService extends ChangeNotifier {
 
   /// Navigates to [section]. Each section is its own route, so the change
   /// is reflected in the URL and one can go back with the back button.
+  ///
+  /// Entering it from another section opens the page it was left on (its tab
+  /// or sub-page, [PreferencesService.lastPathIn]); pressing the section already
+  /// open goes back to its root.
   void goTo(BuildContext context, HomeSection section) {
-    Navis.push(context, section.path);
+    final inside = section.isCurrent(Navis.currentKey.value);
+    final path = inside ? null : PreferencesService().lastPathIn(section.key);
+    Navis.push(context, path ?? section.path);
   }
 
   /// Opens POS mode. It is not a section but a standalone page (see [Pos]), so

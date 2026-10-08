@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/messages/inbox/_inbox.dart';
+import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/chats/chat_event.dart';
 import 'package:app/services/chats/chat_model.dart';
 import 'package:app/services/chats/chat_request.dart';
@@ -55,7 +56,7 @@ void main() {
       expect(HomeSection.messages.needsBusiness, isTrue);
       expect(
         HomeSection.home.indexOf(HomeSection.messages),
-        HomeSection.home.indexOf(HomeSection.business) + 1
+        HomeSection.home.indexOf(HomeSection.employees) + 1
       );
     });
   });
@@ -191,6 +192,33 @@ void main() {
       expect(service.chats.first.name, "Renamed");
       expect(service.chats.first.answered, isFalse);
       expect(service.chats.first.awaiting, DateTime.utc(2026, 9, 16, 19, 30));
+    });
+
+    test('the customer writing marks a row unread, unless it is the open one, and opening clears it', () {
+      service.seed([row("a"), row("b")]);
+      service.select("b");
+
+      for (final id in ["a", "b"]) {
+        service.receive(ChatEvent.message, {
+          "id": id,
+          "created": false,
+          "message": {"id": "m-$id", "direction": "in", "text": "Hi"}
+        });
+      }
+      service.receive(ChatEvent.message, {
+        "id": "a",
+        "created": false,
+        "message": {"id": "m-out", "direction": "out", "text": "Hello"}
+      });
+
+      ChatModel of(String id) => service.chats.firstWhere((chat) => chat.id == id);
+
+      expect(of("a").unseen, isTrue, reason: "our own reply does not read it for this person");
+      expect(of("b").unseen, isFalse, reason: "it is open: its panel reads it as it lands");
+
+      service.receive(BadgesService.openedEvent, {"kind": "chat", "id": "a"});
+      expect(of("a").unseen, isFalse);
+      expect(ChatsPage.fromResponse(page([["x", true]], keys: ["id", "unseen"])).chats.single.unseen, isTrue);
     });
 
     test('an answer takes the row off the unanswered tab', () {

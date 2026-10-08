@@ -273,7 +273,8 @@ class ChatModel {
     this.bot = const ChatBot(),
     this.assignee,
     this.line,
-    this.tags = const []
+    this.tags = const [],
+    this.unseen = false
   });
 
   final String id;
@@ -313,6 +314,10 @@ class ChatModel {
   /// names and colours come from the catalog (`ChatsService.tagOf`).
   final List<String> tags;
 
+  /// The customer wrote since this person last opened it: what the side bar's `chats.unread`
+  /// counts, row by row. Per person — a colleague's reading does not clear it.
+  final bool unseen;
+
   /// What the conversation is called on screen: the profile name, else the number.
   String get title => name.isNotEmpty ? name : contact;
 
@@ -339,7 +344,8 @@ class ChatModel {
     bot: ChatBot.from(json["bot"]),
     assignee: ChatPerson.from(json["assignee"]),
     line: ChatLine.from(json["line"]),
-    tags: chatCodes(json["tags"])
+    tags: chatCodes(json["tags"]),
+    unseen: json["unseen"] == true
   );
 
   /// The row after a `chat/message` event: only what that event carries.
@@ -365,6 +371,9 @@ class ChatModel {
   /// The row after `chat/tags`: the whole set is replaced, never merged.
   ChatModel tagged(List<String> tags) => _copy(tags: tags);
 
+  /// Opened (or not, after the customer wrote again).
+  ChatModel read({bool unseen = false}) => _copy(unseen: unseen);
+
   ChatModel _copy({
     String? name,
     String? status,
@@ -378,7 +387,8 @@ class ChatModel {
     ChatBot? bot,
     ChatPerson? assignee,
     bool clearAssignee = false,
-    List<String>? tags
+    List<String>? tags,
+    bool? unseen
   }) => ChatModel(
     id: id,
     contact: contact,
@@ -396,7 +406,8 @@ class ChatModel {
     bot: bot ?? this.bot,
     assignee: clearAssignee ? null : (assignee ?? this.assignee),
     line: line,
-    tags: tags ?? this.tags
+    tags: tags ?? this.tags,
+    unseen: unseen ?? this.unseen
   );
 }
 

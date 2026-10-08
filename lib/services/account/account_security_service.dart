@@ -11,7 +11,7 @@ enum AccountSecurityStatus { idle, loading, ready, error }
 ///
 /// It is the account's, not a company's: no `business_id` matters and no administrator reaches
 /// it. Cloud only (the master keeps its own accounts and has no second factor), so it calls
-/// `api` itself, like the sign up. Owned by the panel that shows it, not app-wide.
+/// `api` itself, like the sign up. Owned by the employees section (`EmployeesSection`), not app-wide.
 ///
 /// Every write rethrows the backend's `{message, code}` for the caller to show; the state it
 /// holds is only what the backend answered.

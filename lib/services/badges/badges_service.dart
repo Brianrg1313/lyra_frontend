@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/badges/badge_model.dart';
 import 'package:app/services/badges/badge_place.dart';
+import 'package:app/services/badges/notifications_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/toolkit/api.dart';
@@ -18,6 +19,27 @@ abstract interface class BadgesTransport {
 
   /// `POST /lyra/v1/badges/seen`: acknowledges [keys] and answers the state that results.
   Future<dynamic> seen(List<String> keys);
+
+  /// `POST /lyra/v1/badges/opened`: this person opened a conversation or a channel sale.
+  Future<dynamic> opened(BadgeRow kind, String id);
+}
+
+/// The rows that can be new to a person: a conversation of the inbox and a sale of the board
+/// that came in through a channel (backend `model:/badges/views.js`). [name] is the `KIND` sent.
+enum BadgeRow {
+  /// Addressed by the chat id. New when the customer wrote since it was last opened
+  /// (`chats.unread`).
+  chat,
+
+  /// Addressed by the chat the sale was arranged in ([SaleModel.chat]). New until it is opened
+  /// (`sales.new`).
+  sale;
+
+  static BadgeRow? from(dynamic value) => switch (value) {
+    "chat" => chat,
+    "sale" => sale,
+    _ => null
+  };
 }
 
 class _CloudBadges implements BadgesTransport {
@@ -28,6 +50,10 @@ class _CloudBadges implements BadgesTransport {
 
   @override
   Future<dynamic> seen(List<String> keys) => api.post(path: "/badges/seen/", version: "v1", data: {"KEYS": keys});
+
+  @override
+  Future<dynamic> opened(BadgeRow kind, String id) =>
+    api.post(path: "/badges/opened/", version: "v1", data: {"KIND": kind.name, "ID": id});
 }
 
 /// **Every dot, number and marker the app draws**, for the person signed in and the active
@@ -74,6 +100,10 @@ class BadgesService extends ChangeNotifier {
   static const changedEvent = "badges/changed";
   static const resetEvent = "badges/reset";
 
+  /// To this person only: they opened a row on another screen (`{kind, id}`). The lists holding
+  /// it drop its marker; the counter comes beside it as `badges/changed`.
+  static const openedEvent = "badges/opened";
+
   /// How long a burst of stale notices is gathered into one read. A sale touches the tickets,
   /// the receivables and the stock in the same second.
   static const _gather = Duration(milliseconds: 300);
@@ -92,6 +122,11 @@ class BadgesService extends ChangeNotifier {
 
   bool _listening = false;
   Timer? _pending;
+
+  /// Rows whose opening is being sent, and the ones asked again meanwhile: a customer writing
+  /// into the open chat while the last one travels must be read after it, not swallowed.
+  final Set<String> _opening = {};
+  final Set<String> _reopen = {};
 
   BadgeState get state => _state;
 
@@ -171,6 +206,31 @@ class BadgesService extends ChangeNotifier {
     }
   }
 
+  /// **This person opened [id]**, so it stops being new for them: the conversation of the inbox
+  /// or the channel sale of the board. Sent when it is opened, and again while it stays open and
+  /// the customer writes. The backend answers by telling this person's screens (`badges/opened`,
+  /// `badges/changed`); the lists drop their own marker at once, without waiting for it.
+  Future<void> opened(BadgeRow kind, String id) async {
+    if (id.isEmpty || _activeKey == null || !_reachable) return;
+
+    final key = "${kind.name}:$id";
+
+    if (!_opening.add(key)) {
+      _reopen.add(key);
+      return;
+    }
+
+    try {
+      await transport.opened(kind, id);
+    } catch (e) {
+      if (kDebugMode) print("badges: opened failed: $e");
+    } finally {
+      _opening.remove(key);
+    }
+
+    if (_reopen.remove(key)) await opened(kind, id);
+  }
+
   /// [place] was opened: the `news` badges it shows are acknowledged — finding the section is
   /// the whole point of them.
   void discover(BadgePlace place) {
@@ -189,6 +249,7 @@ class BadgesService extends ChangeNotifier {
     _reads++;
     _watching = null;
     _state = BadgeState.empty;
+    NotificationsService().clear();
 
     notifyListeners();
   }
@@ -208,6 +269,9 @@ class BadgesService extends ChangeNotifier {
     connection.on(resetEvent, (_) => _stale());
     connection.onRestored(_stale);
     businessService.addListener(_businessChanged);
+
+    // The bell's moments travel beside its number.
+    NotificationsService().listen();
   }
 
   /// A company switch, creation or sign out: the dots of the one left describe nobody here, so

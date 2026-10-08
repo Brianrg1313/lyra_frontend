@@ -30,6 +30,8 @@
 - `inbox/_inbox.dart` — `InboxPanel`: title + count, filters, pending banner, list. `inbox/inbox_list.dart` — `InboxList`: paged list (auto "more" near the end).
 - `inbox/inbox_filters.dart` — `InboxFilters` (chips per `ChatsFilter` with summary counts), `inboxFilterTitle`. `inbox/inbox_filter_chip.dart` — `InboxFilterChip`.
 - `inbox/inbox_tile.dart` — `InboxTile`: avatar, name, last activity, stage + tag chips, attention (only when no tag names it)/paused/unanswered marks.
+  `unseen` (customer wrote since this person opened it, `chats.unread`): bold name, time and `UnseenMark` in the side bar number's red,
+  in place of the unanswered dot.
 - `chat/_chat.dart` — `ChatPanel({id})`: owns `ChatThreadService`; header, attention bar, messages, composer.
 - `chat/chat_header.dart` — `ChatHeader`: identity + stage, tags, take over (duration menu) / return to assistant, assign (`team`), options menu (mark read, sold with confirmation, ended, undo, AI cost → `showChatUsage`, earlier sessions); `widgets/chat_bot_line.dart` — `ChatBotLine`: who answers + assignee; `widgets/chat_handover_button.dart` — `ChatHandoverButton`.
 - `chat/chat_attention.dart` — `ChatAttentionBar`, `chatAttentionTitle`: most urgent mark, team-only detail, resolve button for `pending`.

@@ -80,13 +80,14 @@ void main() {
 
     test('the sales option sits in the top group', () {
       // The sale end to end, in the order it happens, right after the
-      // business: the conversation where it starts, the delivery, then the
+      // business and its people: the conversation where it starts, the delivery, then the
       // board of what is going on.
       expect(
         HomeSection.home,
         [
           HomeSection.dashboard,
           HomeSection.business,
+          HomeSection.employees,
           HomeSection.messages,
           HomeSection.deliveries,
           HomeSection.sales

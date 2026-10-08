@@ -46,7 +46,9 @@ by `_sales.dart`, not app-wide. Contracts and model rules: `lib/services/MODULE.
 
 - `_sales.dart` — `SalesSection`: creates/provides both services, `SectionTabs` + the active
   board, keyed by tab (fresh `State` per tab), or `NoPermissionSection` when not granted (see home module).
-- `sales_tab.dart` — `enum SalesTab { process, done }`: `key icon section routeKey path area`, `initial = process`, `opening`. Route table reads it.
+- `sales_tab.dart` — `enum SalesTab { process, done }`: `key icon section routeKey path area badge`, `initial = process`, `opening`. Route table reads it.
+  `badge`: `process` draws `BadgePlace.salesProcess` (backend `sales.new`: the channel sales this person has not opened —
+  the rows the table marks); `done` none.
 - `sales_board.dart` — `SalesBoard({section})`: bar, table, "load more" (`SectionMoreButton`, no count). Loads on first frame,
   applies header search (code · customer · seller), opens `showSaleDetail` and acts on its
   `SaleDetailRequest` (handover form, or approval via `showAlertModal` + `SalesService.approve`).
@@ -61,7 +63,8 @@ by `_sales.dart`, not app-wide. Contracts and model rules: `lib/services/MODULE.
   for movements the list could not follow); `sales_filters/sales_search_caption.dart` — `SalesSearchCaption`.
 - `sales_table.dart` — `SalesTable`: `DataTableView`, ticket · customer · state · channel · wait ·
   units · total · outstanding · seller, ticket frozen. Not sortable. Every row opens
-  (`onRowTap`); no action column.
+  (`onRowTap`); no action column. An `unseen` row: `UnseenMark` before the ticket, ticket and customer bold.
+  Opening a row (`SalesBoard._open`) is reviewing it: `SalesService.review`.
 - `stage/sale_stage_color.dart` — `saleStageColor`, `saleLevelColor`: the only place a stage becomes a colour.
 - `stage/sale_stage_tag.dart` — `SaleStageTag`; `stage/sale_stage_dot.dart` — `SaleStageDot`.
 - `sale_format.dart` — `saleAmountLabel` (empty for null), `saleCountLabel`, `saleDateLabel`, `saleWaitLabel` (time at current stage).

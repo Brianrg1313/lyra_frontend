@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 // SERVICES
+import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sale_progress_model.dart';
@@ -53,6 +54,7 @@ class SalesService extends ChangeNotifier {
     // listeners down and hooks them up when it connects, and they survive a
     // reconnection.
     _unlisten = ConnectionService().on(SaleProgressModel.event, _onProgress);
+    _unlistenOpened = ConnectionService().on(BadgesService.openedEvent, _onOpened);
 
     // What a notice cannot cover: the drop itself. A board is live while the
     // connection is, and what moved while this app was not in the room was
@@ -110,6 +112,7 @@ class SalesService extends ChangeNotifier {
 
   Timer? _catchUp;
   void Function()? _unlisten;
+  void Function()? _unlistenOpened;
   void Function()? _reconnected;
 
   /// `true` once the section was left.
@@ -129,6 +132,9 @@ class SalesService extends ChangeNotifier {
 
     _unlisten?.call();
     _unlisten = null;
+
+    _unlistenOpened?.call();
+    _unlistenOpened = null;
 
     _reconnected?.call();
     _reconnected = null;
@@ -481,6 +487,38 @@ class SalesService extends ChangeNotifier {
     _catchUp = null;
 
     unawaited(_read(1, reset: true, silent: true));
+  }
+
+  /// **The person opened [sale]**: it stops being new for them (`sales.new`). Only a sale that
+  /// came in through a channel can be, and it is addressed by its chat.
+  void review(SaleModel sale) {
+    if (sale.chat.isEmpty) return;
+
+    if (sale.unseen) _opened(sale.chat);
+    unawaited(BadgesService().opened(BadgeRow.sale, sale.chat));
+  }
+
+  /// This person opened a sale, here or on another screen.
+  void _onOpened(dynamic data) {
+    if (data is! Map || BadgeRow.from(data["kind"]) != BadgeRow.sale) return;
+
+    _opened((data["id"] ?? "").toString());
+  }
+
+  void _opened(String chat) {
+    if (chat.isEmpty) return;
+
+    var changed = false;
+
+    for (var index = 0; index < _sales.length; index++) {
+      final row = _sales[index];
+      if (row.chat != chat || !row.unseen) continue;
+
+      _sales[index] = row.opened;
+      changed = true;
+    }
+
+    if (changed) _notify();
   }
 
   /// A sale moved somewhere in the company.

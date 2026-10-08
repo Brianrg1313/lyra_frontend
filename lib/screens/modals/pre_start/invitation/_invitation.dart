@@ -8,7 +8,7 @@ import 'package:app/services/client/employment_invitation_model.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/business/employees/employee_format.dart';
+import 'package:app/screens/home/sections/employees/employee_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 /// What the invitation says, and the button to accept it. Pops `true` once

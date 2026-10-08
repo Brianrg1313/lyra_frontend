@@ -117,7 +117,8 @@ class SaleModel {
     this.seller = "",
     this.chat = "",
     this.date,
-    this.updated
+    this.updated,
+    this.unseen = false
   });
 
   /// The handover state that means the customer has it. It is spelled here —
@@ -230,6 +231,10 @@ class SaleModel {
   /// Last movement on it, which is the order the list comes in.
   final DateTime? updated;
 
+  /// A sale that came in through a channel and that this person has not opened yet: what the
+  /// side bar's `sales.new` counts, row by row. A sale rung up at the counter never is.
+  final bool unseen;
+
   /// Whether the row is a conversation rather than a sale with a document
   /// behind it. It is what the table checks before drawing a price or a seller.
   bool get isDeal => source == SaleSource.chat;
@@ -324,7 +329,36 @@ class SaleModel {
     chat: chat,
     date: date,
     // The movement is what the list is ordered by, and it just happened.
-    updated: since ?? DateTime.now()
+    updated: since ?? DateTime.now(),
+    unseen: unseen
+  );
+
+  /// The same sale, opened by this person.
+  SaleModel get opened => SaleModel(
+    id: id,
+    source: source,
+    ticket: ticket,
+    stage: stage,
+    label: label,
+    section: section,
+    level: level,
+    attention: attention,
+    since: since,
+    channel: channel,
+    customer: customer,
+    contact: contact,
+    units: units,
+    total: total,
+    currency: currency,
+    method: method,
+    collected: collected,
+    outstanding: outstanding,
+    mode: mode,
+    state: state,
+    seller: seller,
+    chat: chat,
+    date: date,
+    updated: updated
   );
 
   factory SaleModel.fromJson(Map<String, dynamic> data) => SaleModel(
@@ -351,7 +385,8 @@ class SaleModel {
     seller: (data["seller"] ?? "").toString(),
     chat: (data["chat"] ?? "").toString(),
     date: saleDate(data["date"]),
-    updated: saleDate(data["updated"])
+    updated: saleDate(data["updated"]),
+    unseen: data["unseen"] == true
   );
 }
 

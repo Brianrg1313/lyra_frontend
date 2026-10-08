@@ -747,6 +747,7 @@ class _PointPicker extends StatelessWidget {
             // The map sits in the modal's scroll (one column) or beside it:
             // the wheel scrolls the form, the buttons zoom.
             zoomButtons: true,
+            businessMark: false,
             overlays: [
               if (picked != null) MarkerLayer(markers: [
                 Marker(

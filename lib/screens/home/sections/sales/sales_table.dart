@@ -6,6 +6,7 @@ import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sales_catalog_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/badges/badge_mark.dart';
 import 'package:app/screens/home/sections/sales/stage/sale_stage_tag.dart';
 
 import './sale_format.dart';
@@ -85,13 +86,24 @@ class SalesTable extends StatelessWidget {
           // A conversation has not been rung up, so it has no code: that is
           // what tells a deal apart from a sale at a glance, and it is the
           // value somebody reads off a printed slip to look one up.
-          cell: (context, sale, _) => TextSmall(
-            sale.ticket.isEmpty ? _none : sale.ticket,
-            ellipsis: true,
-            color: sale.ticket.isEmpty
-              ? scheme.text.secondary
-              : scheme.text.primary
-          )
+          //
+          // A sale this person has not opened yet carries the side bar
+          // number's red mark here, at the frozen end, and reads bold: the
+          // rows that number counts.
+          cell: (context, sale, _) => Row(children: [
+            if (sale.unseen) Padding(
+              padding: EdgeInsets.only(right: AppSize.gap),
+              child: const UnseenMark()
+            ),
+            Flexible(child: TextSmall(
+              sale.ticket.isEmpty ? _none : sale.ticket,
+              ellipsis: true,
+              bold: sale.unseen,
+              color: sale.ticket.isEmpty
+                ? scheme.text.secondary
+                : scheme.text.primary
+            ))
+          ])
         ),
         TableColumn(
           id: "customer",
@@ -104,6 +116,7 @@ class SalesTable extends StatelessWidget {
           cell: (context, sale, _) => TextSmall(
             sale.customer.isEmpty ? _none : sale.customer,
             ellipsis: true,
+            bold: sale.unseen,
             color: sale.customer.isEmpty
               ? scheme.text.secondary
               : scheme.text.primary

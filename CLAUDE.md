@@ -85,7 +85,8 @@ the single import for screens; never import `package:core/core.dart` directly.
 | toolkit | `lib/toolkit` | App wiring: api/socket instances, routes, themes, bootstrap hooks, barrel export. | `lib/toolkit/MODULE.md` |
 | services | `lib/services` | State and backend access: `ChangeNotifier` services, models, request bodies. No widgets. | `lib/services/MODULE.md` |
 | home | `lib/screens/home` | Main shell: side bar, header, section router. Every `/home/...` route renders this one page. | `lib/screens/home/MODULE.md` |
-| business section | `lib/screens/home/sections/business` | Business page and its tabs (statistics, employees, branches, clients, settings/profile). | `.../business/MODULE.md` |
+| business section | `lib/screens/home/sections/business` | Business page and its tabs (statistics, branches, clients, settings/profile). | `.../business/MODULE.md` |
+| employees section | `lib/screens/home/sections/employees` | The company's people: the list always on the left; on the right one person's page (an index of their card's parts), each part on its own page (permissions included), and on one's own card the account's subsections. | `.../employees/MODULE.md` |
 | inventory section | `lib/screens/home/sections/inventory` | Product tables, one at a time (selector in the bar): stock summary or spreadsheet (cells switch); templates when there is none. | `.../inventory/MODULE.md` |
 | channels section | `lib/screens/home/sections/channels` | AI channels: grid, edit page, form blocks shared with the create/detail panels. | `.../channels/MODULE.md` |
 | knowledge section | `lib/screens/home/sections/knowledge` | Frequent questions Lyra looks up: the company's context per question (branch, products, dates), and the questions Lyra left waiting for one. Cloud only. | `.../knowledge/MODULE.md` |

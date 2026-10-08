@@ -29,11 +29,11 @@ import './option.dart';
 /// offers—.
 ///
 /// With one, a section the person is not granted (`<section>.view` in
-/// [PermissionsService], section keys being area keys) is locked the same way,
+/// [PermissionsService], see [HomeSection.area]) is locked the same way,
 /// so the side bar keeps its shape across companies, but it still opens: the
 /// section is drawn as `NoPermissionSection`, which is where access is asked.
-/// The businesses option is always granted to a member, and the dashboard is
-/// not a company's.
+/// The businesses and employees options are always granted to a member, and the
+/// dashboard is not a company's.
 ///
 /// A section the network or the master can't serve now ([CapabilityService],
 /// `needsInternet`) is locked before any of that, and opens on the message that
@@ -47,11 +47,12 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
   final businessId = context.select<BusinessService, String?>(
     (service) => service.activeId
   );
-  final permissions = context.watch<PermissionsService>();
+  // The grants are read through [HomeSection.granted]; watched so a reread relocks the list.
+  context.watch<PermissionsService>();
   final capabilities = context.watch<CapabilityService>();
 
   String? lock(HomeSection section) {
-    switch (capabilities.of(section.key)) {
+    switch (capabilities.of(section.area)) {
       case Capability.needsInternet: return S.of(context).section_needs_internet_title;
       case Capability.needsLink: return S.of(context).section_needs_link_title;
       default:
@@ -61,7 +62,7 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
       return section.needsBusiness ? S.of(context).section_no_business_subtitle : null;
     }
 
-    return permissions.canOpen(section.key, business: businessId)
+    return section.granted(businessId)
       ? null
       : S.of(context).section_no_permission;
   }
@@ -72,12 +73,12 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
     active,
     isExpanded,
     lock(section),
-    businessId != null || capabilities.locked(section.key)
+    businessId != null || capabilities.locked(section.area)
   );
 
   /// A group whose sections are all left out loses its title too.
   List<Widget> group(Iterable<HomeSection> sections, [String? title]) {
-    final shown = sections.where((section) => capabilities.exists(section.key));
+    final shown = sections.where((section) => capabilities.exists(section.area));
     if (shown.isEmpty) return const [];
 
     return [

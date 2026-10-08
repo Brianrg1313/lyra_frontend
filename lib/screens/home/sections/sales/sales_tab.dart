@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/sales/sale_model.dart';
 
@@ -64,6 +65,9 @@ enum SalesTab {
   /// without the shell knowing, and the page would keep showing the previous
   /// list.
   String get routeKey => "sales_$key";
+
+  /// Where its pending things are read: the sales still going. The finished ones are not work.
+  BadgePlace? get badge => this == process ? BadgePlace.salesProcess : null;
 
   /// Permission area of this tab (`docs/app-areas.json`): `sales.<key>`. Its `view` opens it.
   String get area => "sales.$key";
