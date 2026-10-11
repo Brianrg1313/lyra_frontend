@@ -19,6 +19,8 @@ backend, routes and theme. No UI.
   - Both extend private `_SessionApi` (token from `DatabaseService.fromSecure` in `preRequest`).
   - `useCookieSession` — web-only `HttpOnly` cookie session, off unless `--dart-define=LYRA_COOKIE_SESSION=true`
     (backend contract: `docs/task-cookie-session-backend.md`). `openSession(token)` — stores the token a sign in answered (no-op in cookie mode).
+  - `useBranch(String? id)` — the branch on every api and `sockets` (`branch_id`); called only by `BranchService`, then `ConnectionService().rebind()`.
+  - `onBranchRefused` — hook fired by `_SessionApi` on any answer with `action: "select_branch"`; set by `BranchService`.
   - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
 - `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`/`.paired` (the pairing's role, whichever session),
   `lanEnabled` (every native install, or the page a master serves; no build flag), `restore`
@@ -41,7 +43,7 @@ backend, routes and theme. No UI.
 - `lan_key.dart` — `LanDeviceKey` (a pairing key: signs, PEM or none, `keep`), `PemDeviceKey`.
 - `lan_found.dart` — `LanFound` (a master mDNS found), `LanPairingSocket`.
 - `save_file.dart` — `saveFile` (bytes to a file the person keeps: a save dialog natively, a download in a browser).
-- `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` in headers **and**
+- `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` and `branch_id` in headers **and**
   `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
   Also `presenceSocket`: the backend's `/presence` namespace, no token (`tokenName: "Presence"`), reconnects within 2 s; the only way the app knows the backend is there (`CloudPresence`).
 - `settings/routes.dart` — the route table. Home sections, business/finance/sales tabs are generated

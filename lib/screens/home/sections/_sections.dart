@@ -273,6 +273,9 @@ enum HomeSection {
 /// without the internet ([CapabilityService]), shows [UnavailableSection]: the
 /// side bar leaves it out, but a URL still gets here.
 ///
+/// [branchId] is the branch the person works in (`BranchService`): a switch remounts the
+/// section like a business switch does.
+///
 /// Moving between the pages of one section (the channels and one channel's form) goes through a [PageSwitcher]; moving
 /// to another section does not animate. The switcher is keyed by [section], so
 /// a new section mounts a new one and shows its page as is. Its page identity
@@ -281,7 +284,8 @@ enum HomeSection {
 Widget homeContent(
   String currentKey,
   HomeSection section,
-  String? businessId
+  String? businessId,
+  {String? branchId}
 ) {
   final Widget screen;
   final capability = CapabilityService().of(section.area);
@@ -305,8 +309,9 @@ Widget homeContent(
     screen = _screen(currentKey, section, businessId);
   }
 
+  // The branch too: the till, stock, sales and money a section reads are the branch's.
   return KeyedSubtree(
-    key: ValueKey(businessId),
+    key: ValueKey((businessId, branchId)),
     child: PageSwitcher(
       key: ValueKey(section),
       id: screen.key ?? screen.runtimeType,

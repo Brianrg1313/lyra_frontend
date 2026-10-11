@@ -13,7 +13,10 @@ enum RememberedSelection {
   chat,
 
   /// The product table open in the inventory section (its header's selector).
-  table
+  table,
+
+  /// The branch the person works in (`BranchService`, the header's branch selector).
+  branch
 }
 
 /// How the inventory section shows the open table: the stock summary (photo, the

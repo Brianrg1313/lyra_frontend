@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/toolkit/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
@@ -39,7 +40,21 @@ class PermissionsService extends ChangeNotifier {
 
   factory PermissionsService() => _singleton;
 
-  PermissionsService._internal();
+  PermissionsService._internal() {
+    BranchService().addListener(_onBranch);
+  }
+
+  /// The branch [_tree] last answered for: a switch to one with a structure of its own redraws
+  /// whoever watches this (the side bar's locks, the tabs).
+  String? _branch;
+
+  void _onBranch() {
+    final branch = BranchService().activeId;
+    if (branch == _branch) return;
+
+    _branch = branch;
+    if (_branches.isNotEmpty) notifyListeners();
+  }
 
   /// Areas of scope `account`: they do not depend on a company, so the backend does not
   /// send them and they are never filtered.
@@ -47,6 +62,12 @@ class PermissionsService extends ChangeNotifier {
 
   /// Company id → its granted tree.
   Map<String, Map> _companies = const {};
+
+  /// Company id → branch id → the tree of a person with a structure of their own in that branch
+  /// (`/init`'s `branch_permissions`, `sedes-frontend.md` §4): a manager here, a cashier there.
+  /// It replaces the company's tree while that branch is the one worked in. Absent when nobody
+  /// has one.
+  Map<String, Map> _branches = const {};
 
   /// Companies created in this session, or a master's `owned`: their owner holds everything,
   /// so there is no need to reread `/init` to know it.
@@ -74,7 +95,7 @@ class PermissionsService extends ChangeNotifier {
     if (company == null) return false;
     if (_owned.contains(company)) return true;
 
-    Object? node = _companies[company];
+    Object? node = _tree(company);
     for (final key in path) {
       if (node is! Map) return false;
       node = node[key];
@@ -105,7 +126,7 @@ class PermissionsService extends ChangeNotifier {
     if (company == null) return const {};
     if (_owned.contains(company)) return null;
 
-    Object? node = _companies[company];
+    Object? node = _tree(company);
     for (final key in area.split(".")) {
       if (node is! Map) return const {};
       node = node[key];
@@ -119,10 +140,30 @@ class PermissionsService extends ChangeNotifier {
     };
   }
 
-  /// Stores `/init`'s `permissions` (a tree per company) and a master's [owned] company ids. A
-  /// company whose entry isn't a tree gets nothing.
-  void seed(dynamic data, {dynamic owned}) {
+  /// What the person may do in [company]: in the active company, the tree of the branch worked
+  /// in (`BranchService`) when they have one there, else the company's.
+  Map? _tree(String company) {
+    if (company == businessService.activeId) {
+      final branch = BranchService().activeId;
+      final own = branch == null ? null : _branches[company]?[branch];
+
+      if (own is Map) return own;
+    }
+
+    return _companies[company];
+  }
+
+  /// Stores `/init`'s `permissions` (a tree per company), its `branch_permissions` ([branches]:
+  /// per company, a tree per branch) and a master's [owned] company ids. A company whose entry
+  /// isn't a tree gets nothing.
+  void seed(dynamic data, {dynamic owned, dynamic branches}) {
     if (data is! Map) return;
+
+    _branches = {
+      if (branches is Map)
+        for (final entry in branches.entries)
+          if (entry.value is Map) entry.key.toString(): entry.value as Map
+    };
 
     _companies = {
       for (final entry in data.entries)
@@ -147,6 +188,7 @@ class PermissionsService extends ChangeNotifier {
   /// Forgets every grant. For session logout: the next session brings its own.
   void clear() {
     _companies = const {};
+    _branches = const {};
     _owned = const {};
     _loaded = false;
 

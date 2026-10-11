@@ -8,8 +8,9 @@
 
 - `Home` takes nothing by constructor (the `Navigator` caches the shell page): read
   `Navis.currentKey` / `Navis.currentArgs`.
-- Content is keyed by the active business (`KeyedSubtree(key: ValueKey(businessId))`): a switch
-  **remounts** the section, so sections just load in `initState`.
+- Content is keyed by the active business and branch (`KeyedSubtree(key: ValueKey((businessId, branchId)))`): a switch
+  **remounts** the section, so sections just load in `initState`. Until `BranchService.settled` the content is a `Loading`
+  (the till, stock, sales and money refuse a request with no `branch_id`).
 - Sub-pages bound to an id of the previous business (`/home/channels/:id`) use the
   `BusinessListener` mixin to navigate away.
 - **Const-section trap**: `_screen` returns sections as `const`; a canonicalized const is skipped by
@@ -29,14 +30,14 @@
 
 - `_home.dart` — `Home extends PageBuilder`, `static const shell = "home"`. `initialized` opens the
   socket (`ConnectionService().open()`, idempotent) when authenticated; `_OfferOnline` (on `HybridService` and `CapabilityService`) joins a master's
-  company with its company online whenever `HybridService.shouldAskLink` turns true (`askLinkCompany`), and opens the online sign in once a session on the master alone can go online (`HybridService.shouldOfferOnline`). Listens to `Navis.currentKey` + `BusinessService.activeId`, and
+  company with its company online whenever `HybridService.shouldAskLink` turns true (`askLinkCompany`), and opens the online sign in once a session on the master alone can go online (`HybridService.shouldOfferOnline`). `_AskBranch` opens `showBranchPicker` when `BranchService.shouldAsk`. Listens to `Navis.currentKey` + `BusinessService.activeId` + `BranchService` (`activeId`, `settled`), and
   rebuilds on `PermissionsService` and `CapabilityService` (the internet or "work offline" lock a section in place).
 - `desktop/_body.dart` — `DesktopBody`: side bar + header + content.
 - `desktop/side_bar/side_bar.dart` — `SideBar({section})`: groups from `HomeSection`, collapsible via `HomeService`.
 - `desktop/side_bar/options.dart` — option list (each with `BadgePlace.section`; opening one `discover`s its news); locks unmet `needsBusiness` and, with a business, sections without `<key>.view` (`PermissionsService`) — those still open, onto `NoPermissionSection`. No POS option (the POS opens from the header).
 - `desktop/side_bar/option.dart` — `Option({icon, title, action, isExpanded, isActive, lockedMessage, badge})` (`lockedMessage` non-null = locked, shown as tooltip; `opensLocked` = still clickable; `badge` = its `BadgePlace`, a mark after the title or a dot on the icon when collapsed, none when locked).
 - `desktop/side_bar/profile.dart` — `ProfileCard` (`ConnectionDot` on the picture's bottom-right); pressing it opens the viewer's own card in the employees section (`/home/employees/me`), still without a company. `desktop/side_bar/connection_dot.dart` — `ConnectionDot`: the socket's state (green connected, yellow connecting, red down, nothing while idle). `desktop/side_bar/sign_out.dart` — `SignOut`: calls `ClientService.signOut`.
-- `header/_header.dart` — `HomeHeader`: search (`HomeService.searchQuery`, cleared on screen change), business selector, POS (`BadgePlace.pos`),
+- `header/_header.dart` — `HomeHeader`: search (`HomeService.searchQuery`, cleared on screen change), business and branch selectors, POS (`BadgePlace.pos`),
   the bell (`BadgePlace.bell`; opens `showPendingPanel`, then goes to `badgeRoute` or `notificationRoute`), inbox (coming soon).
 - `badges/badge_mark.dart` — `BadgeMark({place, dot})` (a number in a red circle when the place counts things, a dot in the level colour for alerts/news, nothing
   when clear; listens to the `BadgesService` singleton, no provider needed), `BadgeCorner({place, child, dot, outside})`, `badgeColor(level)` (info blue, warning yellow, critical red).
@@ -45,6 +46,7 @@
 - `badges/badge_title.dart` — `badgeTitle(context, badge)`: the badge's `title` l10n key → `S`; an unknown one → `badge_unknown`.
 - `badges/badge_route.dart` — `badgeRoute(badge, business:)`: the app page that clears a badge, by its most specific anchor; `null` = none yet.
   `notificationRoute(notification)`: the section of its `area`, `null` for one about none.
+- `header/branch_selector.dart` — `BranchSelector`: the branch worked in (`BranchService`), beside the business; `showSelectMenu` of the person's branches; drawn only with more than one.
 - `header/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation; lists the
   pending invitations (`ClientService.invitations`, a dot on the anchor) and opens `InvitationModal` (accepted →
   re-`resolve()`s and switches to it); with `CapabilityService.singleCompany` only shows the one company.
@@ -52,7 +54,7 @@
   business employees inventory services channels knowledge connections messages deliveries sales finance marketing report externalServices
   server`), groups `.home` (dashboard, business, employees, messages, deliveries, sales; untitled) `.products` (inventory, services, channels, knowledge)
   `.reports` (finance first) `.connectionGroups` (with `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
-  `needsBusiness`, `area` (the key; employees keeps `business.employees`), `granted(businessId)` (employees: every member), `build()`; `homeContent(currentKey, section, businessId)` (incl. sub-pages).
+  `needsBusiness`, `area` (the key; employees keeps `business.employees`), `granted(businessId)` (employees: every member), `build()`; `homeContent(currentKey, section, businessId, {branchId})` (incl. sub-pages).
 - `sections/_section/` — widgets shared by every section (none is a section itself).
 - `sections/_section/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?, badge?})` (locked = lock icon, still opens; `badge` = a tab's `BadgePlace`, a dot after its title): tab bar used
   by business, finance and sales. **Reuse it for any new tabbed section.**

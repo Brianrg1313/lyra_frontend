@@ -21,6 +21,7 @@ import 'package:app/screens/home/badges/badge_mark.dart';
 import 'package:app/screens/home/badges/badge_route.dart';
 import 'package:app/screens/modals/home/pending/_pending.dart';
 
+import './branch_selector.dart';
 import './business_selector.dart';
 
 /// Top bar of the home: the app search, the active business and the accesses
@@ -136,6 +137,10 @@ class _HomeHeaderState extends State<HomeHeader>
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: HomeHeader._businessMaxWidth),
           child: const BusinessSelector()
+        ),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: HomeHeader._businessMaxWidth),
+          child: const BranchSelector()
         ),
         Expanded(child: Align(
           alignment: Alignment.center,

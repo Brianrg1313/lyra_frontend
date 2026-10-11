@@ -25,6 +25,11 @@ class _Sockets extends SocketAPI {
   /// re-read on every reconnection while the headers stay frozen.
   String? business;
 
+  /// The branch the screens work in (`useBranch`): bound to it, the socket gets only that
+  /// branch's stock, sales and money events, with that branch's permissions. Conversations
+  /// follow the person, not the branch.
+  String? branch;
+
   /// `name` is the socket.io namespace, not a path prefix as it is in the REST
   /// api: the backend mounts every handler on the default namespace
   /// (`io.on("connection")`, no `io.of(...)` anywhere), so anything else here
@@ -43,10 +48,10 @@ class _Sockets extends SocketAPI {
   ApiModel get prod => dev;
 
   @override
-  Headers get extraHeaders => {"business_id": ?business};
+  Headers get extraHeaders => {"business_id": ?business, "branch_id": ?branch};
 
   @override
-  Map<String, dynamic> get extraAuth => {"business_id": ?business};
+  Map<String, dynamic> get extraAuth => {"business_id": ?business, "branch_id": ?branch};
 
   /// Same role as `preRequest` in the REST api: if the token isn't in memory
   /// yet (cold start, the session was opened in an earlier run) it's

@@ -139,8 +139,9 @@ Reached through `LanService.server` (the `lan/` services own it).
   through `BusinessBranchesService`).
 - `business_branch_model.dart` — `BusinessBranchModel`: one row of `GET /business/branches/` (compressed); no country (the company's).
 - `business_branch_request.dart` — `BranchDraft` (what the form collects), `createBranchRequest` (empty texts not sent, flags always), `editBranchRequest` (`ID` + **only what changed**; an emptied text travels as `""` = erase, `MAIN` only as `true`, a removed point as both `""`). Points at 6 decimals, as a pair.
-- `business_branches_service.dart` — `BusinessBranchesService` (+ status): `GET`/`POST`/`PUT /business/branches/`, rereads after a write.
+- `business_branches_service.dart` — `BusinessBranchesService` (+ status): `GET`/`POST`/`PUT /business/branches/`, rereads after a write (and `BranchService.load`).
   Provided by the business page, not app-wide.
+- `branch_service.dart` — `BranchService` singleton (+ `BranchStatus`), `.value` provider, cloud only: the branch the person works in (`branch_id` on every api and the socket's `auth`, `useBranch`); `bind(company)` from `BusinessService._use` (the kept one per company, `RememberedSelection.branch`, on the header at once), `load` (`GET /business/branches/`: the person's branches, main first; a kept one the list lacks gives way to the first), `select` (header, kept, socket `rebind`), `settled` (the home waits on it), `shouldAsk`/`asked` (several and none picked, or refused), `refused` (`onBranchRefused`: any `action: "select_branch"` answer, or a socket refused so).
 - `business_places_model.dart` — `PlaceSuggestion`, `PlaceModel`: the address search's answers, a picked place
   already in the shape of the form. A suggestion with no id is dropped; half a point is no point.
 - `business_places_service.dart` — `BusinessPlacesService` (+ status): `/business/location/search/` and
@@ -275,7 +276,7 @@ See `baileys_server/MODULE.md` for the server side.
 
 ## permissions/
 
-- `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree of the
+- `permissions_service.dart` — `PermissionsService` singleton: `/init`'s `permissions` (company id → granted tree, replaced in the active company by `branch_permissions`' tree for the branch worked in when the person has one there; of the
   ids of `docs/app-areas.json`; a master answers the same tree, `session.md` S-34). `can(id)`, `canOpen(area)`, `granted(area)` (its granted actions, `null` = all) on the active company by default; absent on the path = denied, account
   areas (`dashboard`, `account`) always open, `local_server` open in the cloud (this computer's, not a company's), not loaded (older backend) = nothing hidden, an area the mode lacks (`CapabilityService`) denied before any grant. `own(id)` after `createBusiness`; `owns()` (created here, or in a master's `owned`). Cleared on sign out.
 - `permission_requests_service.dart` — `PermissionRequestsService` (+ status): `GET`/`POST /permissions/requests/` (active company), `isPending(id)`.
@@ -341,7 +342,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `preferences_service.dart` — `PreferencesService` singleton (Hive box `preferences`, `preload()` in `preCall`):
   device-wide theme/language (applied to and persisted from `AppController`); per account (`bindUser` from
   `ClientService`) the last `/home...` path (`homePath`, recorded on `Navis.delegate`), per business the last path of each section (`lastPathIn`), the last active business (`useBusiness` from
-  `BusinessService`), per-business selections (`RememberedSelection`: `chat`, `table`; `recall`/`remember`)
+  `BusinessService`), per-business selections (`RememberedSelection`: `chat`, `table`, `branch`; `recall`/`remember`)
   and how inventory tables open (`InventoryView`, `inventoryView` / `useInventoryView`);
   `linkDeclined` / `declineLink` (the "not now" to joining a server with its company online); device-wide per master
   instance, `hasMasterPassword` / `rememberMasterPassword` (written by `LanService.signIn`/`activate`).

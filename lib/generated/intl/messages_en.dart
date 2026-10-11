@@ -894,6 +894,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "billing_label_monthly": m6,
     "billing_period": MessageLookupByLibrary.simpleMessage("Billing period"),
     "billing_today": MessageLookupByLibrary.simpleMessage("Today"),
+    "branch_picker_subtitle": MessageLookupByLibrary.simpleMessage(
+      "The till, stock, sales and money you see are this branch\'s. You can switch it from the top bar.",
+    ),
+    "branch_picker_title": MessageLookupByLibrary.simpleMessage(
+      "Which branch are you working in?",
+    ),
+    "branch_selector_title": MessageLookupByLibrary.simpleMessage(
+      "Branch you work in",
+    ),
     "business": MessageLookupByLibrary.simpleMessage("Business"),
     "business_branch_create_subtitle": MessageLookupByLibrary.simpleMessage(
       "Every branch is in the country of the business: its phone code and the address search come from it.",

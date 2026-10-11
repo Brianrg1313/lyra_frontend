@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/client/client_service.dart';
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/connection/cloud_presence.dart';
@@ -62,6 +63,8 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // the provider: it must not be destroyed if the tree gets remounted.
     ChangeNotifierProvider.value(value: clientService),
     ChangeNotifierProvider.value(value: businessService),
+    // A singleton: `BusinessService` binds it to every company it activates.
+    ChangeNotifierProvider.value(value: BranchService()),
     // Also `.value`, and for a stronger reason: it's a singleton and its
     // lifecycle is that of the connection, not that of the tree. It's
     // registered only so its state can be observed with `context.watch`.

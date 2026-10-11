@@ -6,6 +6,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/client/client_service.dart';
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
@@ -16,6 +17,7 @@ import 'package:app/toolkit/settings/initial_builder.dart' show hybridService;
 import 'package:app/screens/home/desktop/_body.dart';
 import 'package:app/screens/home/header/_header.dart';
 import 'package:app/screens/home/sections/_sections.dart';
+import 'package:app/screens/modals/business/branch_picker/_branch_picker.dart';
 import 'package:app/screens/modals/server/link_company/_link_company.dart';
 import 'package:app/screens/modals/server/online_sign_in/_online_sign_in.dart';
 
@@ -75,6 +77,9 @@ class Home extends PageBuilder {
     final businessId = context.select<BusinessService, String?>(
       (service) => service.activeId
     );
+    final branch = context.select<BranchService, (String?, bool)>(
+      (service) => (service.activeId, service.settled)
+    );
     // A reread `/init` can grant or revoke the open section; the internet going or coming back,
     // or "work offline", locks or opens it in place.
     context.watch<PermissionsService>();
@@ -93,19 +98,62 @@ class Home extends PageBuilder {
         // The resolved section marks the side bar option; the content can be
         // the section's own or one of its sub-pages (e.g. a business tab inside
         // `business`).
-        final content = homeContent(currentKey, section, businessId);
+        // Until the branch is known a section would read with no `branch_id`, and the till,
+        // stock, sales and money refuse that.
+        final content = branch.$2
+          ? homeContent(currentKey, section, businessId, branchId: branch.$1)
+          : const Center(child: Loading());
 
-        return _OfferOnline(child: DeviceSelector(
+        return _OfferOnline(child: _AskBranch(child: DeviceSelector(
           phone: (context) => _HomeBody(header: header!, content: content),
           desktop: (context) => DesktopBody(
             section: section,
             header: header!,
             content: content
           )
-        ));
+        )));
       }
     );
   }
+}
+
+/// Asks which branch the person works in when there are several and none was picked on this
+/// device, or when the backend refused the one sent (`BranchService.shouldAsk`). Until then the
+/// header carries the list's first, so nothing waits on the answer.
+class _AskBranch extends StatefulWidget {
+  const _AskBranch({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_AskBranch> createState() => _AskBranchState();
+}
+
+class _AskBranchState extends State<_AskBranch> {
+  final _branches = BranchService();
+
+  @override
+  void initState() {
+    super.initState();
+    _branches.addListener(_ask);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ask());
+  }
+
+  @override
+  void dispose() {
+    _branches.removeListener(_ask);
+    super.dispose();
+  }
+
+  void _ask() {
+    if (!mounted || !_branches.shouldAsk) return;
+
+    _branches.asked();
+    unawaited(showBranchPicker(context));
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// A session on the master alone stays offline until the same person signs in online: once the

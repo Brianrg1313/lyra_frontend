@@ -37,6 +37,15 @@ void main() {
     );
   });
 
+  test('the content changes identity when the branch changes', () {
+    // The till, the stock, the sales and the money a section reads are its branch's.
+    Key? keyIn(String? branch) =>
+      homeContent("inventory", HomeSection.inventory, "1842", branchId: branch).key;
+
+    expect(keyIn("a"), isNot(keyIn("b")));
+    expect(keyIn("a"), keyIn("a"));
+  });
+
   test('every section stays inside the business scope', () {
     for (final section in HomeSection.values) {
       expect(

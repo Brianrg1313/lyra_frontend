@@ -6240,6 +6240,36 @@ class S {
     );
   }
 
+  /// `Branch you work in`
+  String get branch_selector_title {
+    return Intl.message(
+      'Branch you work in',
+      name: 'branch_selector_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Which branch are you working in?`
+  String get branch_picker_title {
+    return Intl.message(
+      'Which branch are you working in?',
+      name: 'branch_picker_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The till, stock, sales and money you see are this branch's. You can switch it from the top bar.`
+  String get branch_picker_subtitle {
+    return Intl.message(
+      'The till, stock, sales and money you see are this branch\'s. You can switch it from the top bar.',
+      name: 'branch_picker_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `New branch`
   String get business_branch_create_title {
     return Intl.message(

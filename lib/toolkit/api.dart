@@ -88,6 +88,22 @@ void useBusiness(String? id) {
   sockets.business = id;
 }
 
+/// Sets the branch the person works in on every api and on the socket
+/// (`branch_id`), or clears it. `BranchService` calls it, then
+/// `ConnectionService().rebind()`: the socket's rooms are the handshake's.
+///
+/// Sent on every request and not only on the routes that require it (the
+/// till, stock, sales, money): the backend ignores it elsewhere, and one rule
+/// can't be forgotten on a new route.
+void useBranch(String? id) {
+  api.branch = id;
+  assets.branch = id;
+  aries.branch = id;
+  scorpius.branch = id;
+  edge.branch = id;
+  sockets.branch = id;
+}
+
 /// Whether the session lives in an `HttpOnly` cookie instead of a stored
 /// token. Web only: there the token would sit in browser storage, readable by
 /// any script on the page (flutter_secure_storage has no OS vault on web).
@@ -119,6 +135,11 @@ Future<void> openSession(Object? token) async {
 /// session means, already imports this file. It sets it on construction.
 void Function()? onSessionRejected;
 
+/// Called when the backend refuses the request's branch (`action: "select_branch"`: none sent
+/// where one is required, one the person no longer works in, or one closed). Set by
+/// `BranchService`, which rereads the branches and asks for one.
+void Function()? onBranchRefused;
+
 /// Base of the app's apis: session token and active business travel the same
 /// way on all of them, so the handling lives here once.
 abstract class _SessionApi extends RestAPI {
@@ -133,11 +154,16 @@ abstract class _SessionApi extends RestAPI {
   /// or after signing out), and in that case the header doesn't travel.
   String? business;
 
+  /// The branch the person works in (`branch_id`), null while there is none to send: a master's
+  /// devices (one site), or before the company's branches were read.
+  String? branch;
+
   /// `session: cookie` tells the backend to answer a sign in with the cookie
   /// instead of a token in the body (see [useCookieSession]).
   @override
   Headers get extraHeaders => {
     "business_id": ?business,
+    "branch_id": ?branch,
     if (useCookieSession) "session": "cookie"
   };
 
@@ -152,6 +178,7 @@ abstract class _SessionApi extends RestAPI {
       if (answer.statusCode == 401 && e is Map && e["action"] == "login") {
         onSessionRejected?.call();
       }
+      if (e is Map && e["action"] == "select_branch") onBranchRefused?.call();
       rethrow;
     }
   }

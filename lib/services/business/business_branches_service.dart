@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/toolkit/api.dart';
@@ -100,6 +103,9 @@ class BusinessBranchesService extends ChangeNotifier {
     }
 
     final branches = await _fetch();
+
+    // The header's selector lists the same branches.
+    unawaited(BranchService().load(force: true));
 
     _writing = false;
     _branches = branches ?? _branches;

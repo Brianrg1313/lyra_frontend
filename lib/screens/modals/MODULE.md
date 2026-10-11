@@ -50,6 +50,7 @@ through `Navigator.pop(context, value)`.
   Decide nothing (colour/empty wording passed in). **Build new panel rows from these.**
 
 ### `business/`
+- `branch_picker/_branch_picker.dart` — `showBranchPicker`, `BranchPickerModal` (the person's branches; a pick is `BranchService.select`), `BranchChoice` (glyph, name, address, check). Opened by the home (`_AskBranch`).
 - `create_business/_create_business.dart` — `CreateBusinessModal` (from `BusinessSelector`, `NoBusinessSection`, `Welcome`); pops `true` on success. With `singleCompany` (a master's welcome) it also asks country, main currency (proposed by the country) and language from `Catalogs`, without the notice. The fields scroll, the button stays under them.
 - `create_business/notice.dart` — `CreateBusinessNotice`: legal notice.
 - `edit_business_field/_edit_business_field.dart` — `EditBusinessFieldModal`: edits **one** profile datum.

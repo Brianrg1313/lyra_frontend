@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:provider/provider.dart';
 
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/capabilities/capability_service.dart';
@@ -549,6 +550,7 @@ class BusinessService extends ChangeNotifier {
   void _use() {
     useBusiness(_active?.cloudKey);
     PreferencesService().useBusiness(_active?.id);
+    BranchService().bind(_active?.id);
     CapabilityService().linked = Deployment.mode != DeploymentMode.hybrid || _active?.cloudId != null;
   }
 
