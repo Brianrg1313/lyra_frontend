@@ -188,6 +188,16 @@ class _BranchFormModalState extends State<BranchFormModal> {
     pattern: "[A-Za-z0-9.-]"
   );
 
+  /// The backend's rule: 1 to 8 letters, digits or `-`, stored uppercase.
+  late final _series = _text(
+    "SERIES",
+    S.of(context).business_branch_series,
+    initial: _from?.series ?? "",
+    min: 1,
+    max: 8,
+    pattern: "[A-Za-z0-9-]"
+  );
+
   // Same limits as the backend's location keys (`rules.json`). Any character:
   // addresses are written in every language, and a place picked on the map
   // comes with whatever its source uses.
@@ -433,6 +443,11 @@ class _BranchFormModalState extends State<BranchFormModal> {
           placeholder: S.of(context).business_branch_tax_id_hint,
           controller: _taxId
         ),
+        Input(
+          title: S.of(context).business_branch_series,
+          placeholder: S.of(context).business_branch_series_hint,
+          controller: _series
+        ),
         if (map != null) Padding(
           padding: EdgeInsets.only(top: AppSize.padding),
           child: Column(
@@ -548,6 +563,7 @@ class _BranchFormModalState extends State<BranchFormModal> {
       online: _online,
       legalName: _legalName.value,
       taxId: _taxId.value,
+      series: _series.value,
       phone: _phoneValue,
       address: _address.value,
       landmark: _landmark.value,

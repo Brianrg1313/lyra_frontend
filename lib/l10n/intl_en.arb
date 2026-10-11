@@ -661,6 +661,8 @@
   "business_branch_online": "Bot orders",
   "business_branch_no_address": "No address yet",
   "business_branch_no_point": "Not on the map",
+  "business_branch_series": "Sales series · optional",
+  "business_branch_series_hint": "A letter or code before each sale's number, like A in A-000123",
   "branch_selector_title": "Branch you work in",
   "branch_picker_title": "Which branch are you working in?",
   "branch_picker_subtitle": "The till, stock, sales and money you see are this branch's. You can switch it from the top bar.",

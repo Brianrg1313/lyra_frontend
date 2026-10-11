@@ -16,6 +16,7 @@ class BusinessBranchModel {
     this.online = true,
     this.legalName = "",
     this.taxId = "",
+    this.series = "",
     this.phone = "",
     this.address = "",
     this.landmark = "",
@@ -46,6 +47,10 @@ class BusinessBranchModel {
   /// Empty when the branch invoices as the company itself.
   final String legalName;
   final String taxId;
+
+  /// Prefix of the internal number of the branch's sales (`A` → `A-000123`), uppercase; empty
+  /// numbers them bare. Changing it leaves the numbers already given as they were.
+  final String series;
 
   final String phone;
   final String address;
@@ -92,6 +97,7 @@ class BusinessBranchModel {
       online: _flag(row["online"]) ?? true,
       legalName: _text(row["legal_name"]),
       taxId: _text(row["tax_id"]),
+      series: _text(row["series"]).toUpperCase(),
       phone: _text(row["phone"]),
       address: _text(row["address"]),
       landmark: _text(row["landmark"]),

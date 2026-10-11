@@ -74,5 +74,16 @@ void main() {
     test("main only travels as true", () {
       expect(editBranchRequest(from: _branch, draft: _draft(main: true))["MAIN"], true);
     });
+
+    test("the sales series travels uppercase, and emptied as empty", () {
+      const lettered = BusinessBranchModel(id: "b1", name: "Downtown", series: "A");
+      const draft = BranchDraft(name: "Downtown", series: "b-2");
+
+      expect(editBranchRequest(from: _branch, draft: draft)["SERIES"], "B-2");
+      expect(editBranchRequest(from: lettered, draft: const BranchDraft(name: "Downtown"))["SERIES"], "");
+      expect(createBranchRequest(const BranchDraft(name: "Downtown", series: "a"))["SERIES"], "A");
+      expect(createBranchRequest(const BranchDraft(name: "Downtown")).containsKey("SERIES"), isFalse);
+      expect(BusinessBranchModel.from({"id": "b1", "series": "c"})!.series, "C");
+    });
   });
 }

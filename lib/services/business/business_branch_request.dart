@@ -21,6 +21,7 @@ class BranchDraft {
     this.online = true,
     this.legalName = "",
     this.taxId = "",
+    this.series = "",
     this.phone = "",
     this.address = "",
     this.landmark = "",
@@ -36,6 +37,9 @@ class BranchDraft {
   final bool online;
   final String legalName;
   final String taxId;
+
+  /// The sales' number prefix, as typed (stored uppercase).
+  final String series;
   final String phone;
   final String address;
   final String landmark;
@@ -57,6 +61,7 @@ Map<String, dynamic> createBranchRequest(BranchDraft draft) => {
   if (draft.main) "MAIN": true,
   ..._filled("LEGAL_NAME", draft.legalName),
   ..._filled("TAX_ID", draft.taxId),
+  ..._filled("SERIES", draft.series.toUpperCase()),
   ..._filled("PHONE", draft.phone.replaceAll(" ", "")),
   ..._filled("ADDRESS", draft.address),
   ..._filled("LANDMARK", draft.landmark),
@@ -91,6 +96,7 @@ Map<String, dynamic> editBranchRequest({
   text("NAME", draft.name, from.name);
   text("LEGAL_NAME", draft.legalName, from.legalName);
   text("TAX_ID", draft.taxId, from.taxId);
+  text("SERIES", draft.series.toUpperCase(), from.series);
   text("PHONE", draft.phone.replaceAll(" ", ""), from.phone);
   text("ADDRESS", draft.address, from.address);
   text("LANDMARK", draft.landmark, from.landmark);

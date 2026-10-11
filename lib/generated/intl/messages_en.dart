@@ -990,6 +990,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_branch_section_invoicing": MessageLookupByLibrary.simpleMessage(
       "Invoicing",
     ),
+    "business_branch_series": MessageLookupByLibrary.simpleMessage(
+      "Sales series · optional",
+    ),
+    "business_branch_series_hint": MessageLookupByLibrary.simpleMessage(
+      "A letter or code before each sale\'s number, like A in A-000123",
+    ),
     "business_branch_tax_id": MessageLookupByLibrary.simpleMessage("Tax ID"),
     "business_branch_tax_id_hint": MessageLookupByLibrary.simpleMessage(
       "J-12345678-9",

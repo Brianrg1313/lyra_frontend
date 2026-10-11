@@ -6240,6 +6240,26 @@ class S {
     );
   }
 
+  /// `Sales series · optional`
+  String get business_branch_series {
+    return Intl.message(
+      'Sales series · optional',
+      name: 'business_branch_series',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A letter or code before each sale's number, like A in A-000123`
+  String get business_branch_series_hint {
+    return Intl.message(
+      'A letter or code before each sale\'s number, like A in A-000123',
+      name: 'business_branch_series_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Branch you work in`
   String get branch_selector_title {
     return Intl.message(
