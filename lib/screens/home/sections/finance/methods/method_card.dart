@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/money/money_method_model.dart';
 
 // WIDGETS
@@ -95,6 +96,19 @@ class MoneyMethodCard extends StatelessWidget {
             ]),
             SizedBox(height: AppSize.gap),
             TextMedium(method.title, bold: true, ellipsis: true),
+            // Whose it is, when it is one branch's: a till elsewhere doesn't offer it.
+            if (method.branch != null) ...[
+              SizedBox(height: AppSize.gap * 0.5),
+              TextSmall(
+                S.of(context).finance_method_of_branch(
+                  BranchService().nameOf(method.branch).isEmpty
+                    ? S.of(context).finance_method_branch_other
+                    : BranchService().nameOf(method.branch)
+                ),
+                color: scheme.text.secondary,
+                ellipsis: true
+              )
+            ],
             ..._lines(context),
             ..._charge(context),
             if (method.instructions.isNotEmpty) ...[

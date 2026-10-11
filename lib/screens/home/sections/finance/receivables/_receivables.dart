@@ -130,7 +130,7 @@ class _FinanceReceivablesTabState extends State<FinanceReceivablesTab> {
       context,
       concepts: [...catalog.incoming, ...catalog.outgoing],
       settlements: catalog.settlements,
-      accounts: context.read<MoneyMethodsService>().methods,
+      accounts: context.read<MoneyMethodsService>().usable,
       currency: context.read<BusinessService>().currency,
       ticket: sale.ticket,
       amount: sale.outstanding

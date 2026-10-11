@@ -273,6 +273,7 @@ class MoneyMethod {
     this.fee = const MoneyFee(),
     this.reference = false,
     this.change = false,
+    this.branch,
     this.position = 0
   });
 
@@ -339,6 +340,11 @@ class MoneyMethod {
   final bool change;
 
   /// Where it sits in the picker. The company's own order.
+  /// The branch the account belongs to, or null when every branch charges into it. A till
+  /// offers only its branch's and the company's (`servesBranch`): a payment into another
+  /// branch's account is refused (`payment_account_other_branch`).
+  final String? branch;
+
   final int position;
 
   factory MoneyMethod.fromJson(Map<String, dynamic> data) => MoneyMethod(
@@ -359,10 +365,18 @@ class MoneyMethod {
     fee: MoneyFee.fromJson(data["fee"]),
     reference: data["reference"] == true || data["reference"] == 1,
     change: data["change"] == true || data["change"] == 1,
+    branch: switch ((data["branch"] ?? "").toString().trim()) {
+      "" => null,
+      final id => id
+    },
     position: _int(data["position"])
   );
 
   bool get isValid => id.isNotEmpty;
+
+  /// Whether a payment worked in [branch] may land in it: the account is the company's, or
+  /// that branch's. No branch worked in (a master) takes every one.
+  bool servesBranch(String? branch) => this.branch == null || branch == null || this.branch == branch;
 
   /// What this account is called on screen: the company's own name for it, and
   /// the rail's when it never gave it one.

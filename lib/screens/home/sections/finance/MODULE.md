@@ -61,7 +61,7 @@ all seven created and provided by `_finance.dart`, none app-wide.
 - `widgets/money_main_currency_card.dart` — `MoneyMainCurrencyCard`; `widgets/money_exchange_card.dart` — `MoneyExchangeCard`
   (mode tag, effective rate, official beside a custom one); `widgets/money_no_exchanges.dart` — `MoneyNoExchanges`.
 - `methods_heading.dart` — `MethodsHeading` (title, subtitle, add button) and `kMoneyCardWidth`, shared by both halves.
-- `method_card.dart` — `MoneyMethodCard`: one account, lines labelled by its rail's sheet (`fields:`), generic fallback; then currency and commission.
+- `method_card.dart` — `MoneyMethodCard`: one account, lines labelled by its rail's sheet (`fields:`), generic fallback; the branch it is of ("Only X"), then currency and commission. Payments and receivables offer `MoneyMethodsService.usable` to record into.
 
 ## Conventions
 

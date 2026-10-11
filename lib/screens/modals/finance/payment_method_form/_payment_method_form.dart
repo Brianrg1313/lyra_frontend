@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show TextInputFormatter;
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/money/account_mask.dart';
@@ -191,6 +192,18 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
     initial: widget.method?.instructions
   );
 
+  /// The branch the account is of; empty is the whole company.
+  late final _branch = InputController.select(
+    key: "BRANCH",
+    form: _form,
+    initial: widget.method?.branch ?? _everyBranch
+  );
+
+  static const String _everyBranch = "";
+
+  /// Asked only with branches to tell apart, or when the account already names one.
+  bool get _asksBranch => BranchService().choosable || widget.method?.branch != null;
+
   /// The currency the account takes, when the rail leaves it to the company.
   late final _currency = InputController.select(
     key: "CURRENCY",
@@ -309,6 +322,7 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
             leftIcon: Icon(CI.bookmark, color: scheme.icon)
           ),
           ..._accountInputs(context),
+          if (_asksBranch) _branchInput(context),
           ..._currencyInputs(context),
           _feeInputs(context),
           Input(
@@ -364,6 +378,37 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
   /// The currency field, or the rail's fixed one, plus a warning when it is one
   /// the company cannot price: a Pago Movil in bolivars with no bolivar rate
   /// configured takes money the charge cannot be converted into.
+  /// Which branch charges into the account: one, or every one. A till offers only its
+  /// branch's accounts and the company's.
+  Widget _branchInput(BuildContext context) {
+    final branches = BranchService();
+    final stored = widget.method?.branch;
+
+    return SelectInput(
+      title: S.of(context).finance_method_branch,
+      placeholder: S.of(context).finance_method_branch_every,
+      controller: _branch,
+      searchable: false,
+      emptyText: S.of(context).business_delivery_select_empty,
+      leftIcon: Icon(CI.store, color: ThemeColor.of(context).icon),
+      options: [
+        SelectOption(
+          value: _everyBranch,
+          placeholder: S.of(context).finance_method_branch_every,
+          subtitle: S.of(context).finance_method_branch_every_note
+        ),
+        for (final branch in branches.branches)
+          SelectOption(value: branch.id, placeholder: branch.name),
+        // A branch this person doesn't work in still names the account it is of.
+        if (stored != null && branches.byId(stored) == null)
+          SelectOption(value: stored, placeholder: S.of(context).finance_method_branch_other)
+      ]
+    );
+  }
+
+  /// The branch picked, null for the whole company.
+  String? get _pickedBranch => _branch.value.trim().isEmpty ? null : _branch.value.trim();
+
   List<Widget> _currencyInputs(BuildContext context) {
     final codes = widget.currencies.codes;
     if (_code.isEmpty || codes.isEmpty) return const [];
@@ -734,7 +779,8 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
           instructions: _instructions.text,
           fields: fields,
           currency: currency,
-          fee: fee
+          fee: fee,
+          branch: _asksBranch && _pickedBranch != widget.method!.branch ? (id: _pickedBranch) : null
         )
       : createMoneyMethodRequest(
           code: _rail.value,
@@ -742,7 +788,8 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
           instructions: _instructions.text,
           fields: fields,
           currency: currency ?? "",
-          fee: fee
+          fee: fee,
+          branch: _asksBranch ? _pickedBranch : null
         ));
   }
 

@@ -171,7 +171,7 @@ through `Navigator.pop(context, value)`.
   name, `document` stores the code (`SelectOption.chosen`), `format` → `AccountMask`. New rail =
   new `FormController` (`obligatory` is fixed at creation). Currency picked from `currencies:` (fixed when the
   rail has one; warns if it has no rate; not asked without a setup). Commission: none / percent (< 100) / fixed
-  in the account's currency. Returns `create/updateMoneyMethodRequest`.
+  in the account's currency. Branch (every branch or one of `BranchService.branches`) asked only with several branches or one stored. Returns `create/updateMoneyMethodRequest`.
 - `exchange_currency_form/_exchange_currency_form.dart` — `showExchangeCurrencyForm(context, main:, taken:,
   exchange?)`, `ExchangeCurrencyFormModal`: currency (fixed on edit; fiat minus main and taken), mode, custom
   rate. Returns `saveMoneyExchangeRequest` (no `RATE` when official).

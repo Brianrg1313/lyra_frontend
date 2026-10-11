@@ -33,6 +33,9 @@
 /// }
 /// ```
 ///
+/// **Branch** (`BRANCH`): the branch the account is of; left out (or null) it is the whole
+/// company's. A branch of another company is `404 branch_not_found`.
+///
 /// **Currency and commission** (`CURRENCY`, `FEE_TYPE`, `FEE`) are the
 /// company's and not the rail's, with one exception: a rail that moves a single
 /// currency (`MoneyRail.currency`) is saved in it whatever is sent. Contract:
@@ -55,9 +58,11 @@ Map<String, dynamic> createMoneyMethodRequest({
   Map<String, String> fields = const {},
   String currency = "",
   MoneyFee fee = const MoneyFee(),
+  String? branch,
   int? position
 }) => {
   "CODE": code,
+  "BRANCH": ?branch,
   if (label.trim().isNotEmpty) "LABEL": label.trim(),
   for (final entry in fields.entries)
     if (entry.value.trim().isNotEmpty) entry.key.toUpperCase(): entry.value.trim(),
@@ -86,6 +91,8 @@ Map<String, dynamic> createMoneyMethodRequest({
 ///
 /// [fee] travels whole when given, `none` included: on an edit that is how a
 /// commission is taken off (`FEE_TYPE: "none"`, `FEE: null`).
+///
+/// [branch] travels only when given: `(id: null)` moves the account to the whole company.
 Map<String, dynamic> updateMoneyMethodRequest({
   required String id,
   String? label,
@@ -93,9 +100,11 @@ Map<String, dynamic> updateMoneyMethodRequest({
   Map<String, String> fields = const {},
   String? currency,
   MoneyFee? fee,
+  ({String? id})? branch,
   int? position
 }) => {
   "ID": id,
+  if (branch != null) "BRANCH": branch.id,
   if (label != null) "LABEL": _orNull(label),
   for (final entry in fields.entries) entry.key.toUpperCase(): _orNull(entry.value),
   if (instructions != null) "INSTRUCTIONS": _orNull(instructions),

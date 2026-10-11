@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/money/money_method_model.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/services/money/sources/money_source.dart';
@@ -69,6 +70,22 @@ class MoneyMethodsService extends ChangeNotifier {
 
   /// The company's accounts, in the order it arranged them.
   List<MoneyMethod> get methods => _methods;
+
+  /// Seeds the accounts, for tests.
+  @visibleForTesting
+  void seed(List<MoneyMethod> methods) {
+    _methods = methods;
+    _status = MoneyMethodsStatus.ready;
+    notifyListeners();
+  }
+
+  /// The accounts a payment worked in the active branch may land in: its own and the
+  /// company's (`MoneyMethod.servesBranch`). `GET /money/methods` lists every branch's.
+  List<MoneyMethod> get usable {
+    final branch = BranchService().activeId;
+
+    return [for (final method in _methods) if (method.servesBranch(branch)) method];
+  }
 
   /// What it may turn on. Empty until [loadRails] answers.
   List<MoneyRail> get rails => _rails;

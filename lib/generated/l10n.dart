@@ -13603,6 +13603,56 @@ class S {
     );
   }
 
+  /// `Branch`
+  String get finance_method_branch {
+    return Intl.message(
+      'Branch',
+      name: 'finance_method_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every branch`
+  String get finance_method_branch_every {
+    return Intl.message(
+      'Every branch',
+      name: 'finance_method_branch_every',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Any branch can charge into it`
+  String get finance_method_branch_every_note {
+    return Intl.message(
+      'Any branch can charge into it',
+      name: 'finance_method_branch_every_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Another branch`
+  String get finance_method_branch_other {
+    return Intl.message(
+      'Another branch',
+      name: 'finance_method_branch_other',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only {branch}`
+  String finance_method_of_branch(Object branch) {
+    return Intl.message(
+      'Only $branch',
+      name: 'finance_method_of_branch',
+      desc: '',
+      args: [branch],
+    );
+  }
+
   /// `Currency`
   String get finance_method_currency {
     return Intl.message(

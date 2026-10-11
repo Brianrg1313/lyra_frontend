@@ -155,7 +155,7 @@ class _FinancePaymentsTabState extends State<FinancePaymentsTab> {
       context,
       concepts: _concepts,
       settlements: context.read<MoneyCatalogService>().settlements,
-      accounts: context.read<MoneyMethodsService>().methods,
+      accounts: context.read<MoneyMethodsService>().usable,
       currency: context.read<BusinessService>().currency
     );
 
