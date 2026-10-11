@@ -45,6 +45,9 @@ Map<String, dynamic> deliveryNotesRequest(String notes) =>
 /// alone (and always for the shop's own riders). The zones and the radius
 /// only travel for a local reach: a national courier with a list of
 /// neighbourhoods beside it would read as a limit it does not have.
+///
+/// [branch] is where a national or international option leaves from; it only travels off a
+/// local reach (the map decides a local one), and left out it is whichever branch serves.
 Map<String, dynamic> createDeliveryOptionRequest({
   required DeliveryMode mode,
   String provider = "",
@@ -56,12 +59,14 @@ Map<String, dynamic> createDeliveryOptionRequest({
   double? freeFrom,
   int? etaMin,
   int? etaMax,
-  String notes = ""
+  String notes = "",
+  String? branch
 }) {
   final local = (coverage ?? mode.reach) == DeliveryCoverage.local;
   final carrier = mode.namesCarrier ? provider.trim() : "";
 
   return {
+    if (!local) "BRANCH": ?branch,
     "MODE": mode.value,
     if (carrier.isNotEmpty) "PROVIDER": carrier,
     if (label.trim().isNotEmpty) "LABEL": label.trim(),
@@ -98,7 +103,8 @@ Map<String, dynamic> updateDeliveryOptionRequest({
   double? freeFrom,
   int? etaMin,
   int? etaMax,
-  String notes = ""
+  String notes = "",
+  String? branch
 }) {
   final carrier = mode.namesCarrier ? provider.trim() : "";
   final moved = mode != from.mode || carrier != from.provider;
@@ -106,6 +112,8 @@ Map<String, dynamic> updateDeliveryOptionRequest({
 
   return {
     "ID": from.id,
+    // Only off a local reach, where it means something, and only when it changed.
+    if (!local && branch != from.branch) "BRANCH": branch ?? "",
     if (moved) "MODE": mode.value,
     if (moved) "PROVIDER": carrier.isEmpty ? null : carrier,
     "LABEL": _orNull(label),

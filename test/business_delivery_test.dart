@@ -267,6 +267,41 @@ void main() {
       expect(body["ZONES"], isEmpty);
       expect(body["RADIUS"], isNull);
     });
+
+    // The warehouse that hands a national courier its orders; a local option's branch is the
+    // map's to decide, so it never travels there.
+    test("the branch it leaves from travels off a local reach, only when it changed", () {
+      final moved = updateDeliveryOptionRequest(
+        from: stored, mode: stored.mode, provider: stored.provider, branch: "deposito"
+      );
+      final kept = updateDeliveryOptionRequest(
+        from: const DeliveryOption(id: "a1", mode: DeliveryMode.courier, coverage: DeliveryCoverage.national, branch: "deposito"),
+        mode: DeliveryMode.courier,
+        branch: "deposito"
+      );
+      final cleared = updateDeliveryOptionRequest(
+        from: const DeliveryOption(id: "a1", mode: DeliveryMode.courier, coverage: DeliveryCoverage.national, branch: "deposito"),
+        mode: DeliveryMode.courier
+      );
+      final local = updateDeliveryOptionRequest(
+        from: stored, mode: stored.mode, provider: stored.provider,
+        coverage: DeliveryCoverage.local, branch: "deposito"
+      );
+
+      expect(moved["BRANCH"], "deposito");
+      expect(kept.containsKey("BRANCH"), isFalse);
+      expect(cleared["BRANCH"], "");
+      expect(local.containsKey("BRANCH"), isFalse);
+      expect(
+        createDeliveryOptionRequest(mode: DeliveryMode.courier, coverage: DeliveryCoverage.national, branch: "deposito")["BRANCH"],
+        "deposito"
+      );
+      expect(
+        createDeliveryOptionRequest(mode: DeliveryMode.own, coverage: DeliveryCoverage.local, branch: "deposito").containsKey("BRANCH"),
+        isFalse
+      );
+      expect(DeliveryOption.from({"id": "a1", "mode": "courier", "branch": "deposito"})!.branch, "deposito");
+    });
   });
 
   group("the delivery time", () {

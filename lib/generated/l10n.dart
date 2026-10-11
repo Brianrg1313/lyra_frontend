@@ -17336,6 +17336,46 @@ class S {
     );
   }
 
+  /// `Leaves from`
+  String get business_delivery_branch {
+    return Intl.message(
+      'Leaves from',
+      name: 'business_delivery_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The branch that serves the order`
+  String get business_delivery_branch_any {
+    return Intl.message(
+      'The branch that serves the order',
+      name: 'business_delivery_branch_any',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whichever branch has the order ready`
+  String get business_delivery_branch_any_note {
+    return Intl.message(
+      'Whichever branch has the order ready',
+      name: 'business_delivery_branch_any_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From {branch}`
+  String business_delivery_branch_from(Object branch) {
+    return Intl.message(
+      'From $branch',
+      name: 'business_delivery_branch_from',
+      desc: '',
+      args: [branch],
+    );
+  }
+
   /// `How far it reaches`
   String get business_delivery_coverage {
     return Intl.message(

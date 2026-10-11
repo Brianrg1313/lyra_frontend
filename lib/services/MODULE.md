@@ -149,9 +149,9 @@ Reached through `LanService.server` (the `lan/` services own it).
   (the Places token). `unavailable` is a server with no key, not a failure — the form's fields are the answer
   on their own. `restrictTo` searches another country than the company's (`COUNTRY`).
 - `business_delivery_model.dart` — `BusinessDeliveryModel`, `DeliveryOption`, `DeliveryZone`, `DeliveryMode`,
-  `DeliveryCoverage`, `DeliveryProvider`, `DeliveryCatalog`, `DeliveryEtaUnit`. `delivers`/`pickup` three-state, `meeting` two-state.
+  `DeliveryCoverage`, `DeliveryProvider`, `DeliveryCatalog`, `DeliveryEtaUnit`. `delivers`/`pickup` three-state, `meeting` two-state; an option's `branch` (where a national/international one leaves from; null = whichever serves).
 - `business_delivery_request.dart` — `DeliveryFlag`, `deliveryFlagRequest`, `deliveryMeetingRequest`, `deliveryNotesRequest`,
-  create/update/remove option bodies, `readDeliveryAmount` (refuses `1,500`, like the backend).
+  create/update/remove option bodies (`BRANCH` only off a local reach, on edit only when changed, `""` = whichever serves), `readDeliveryAmount` (refuses `1,500`, like the backend).
 - `business_delivery_service.dart` — `BusinessDeliveryService` (+ status): the answer, its options and the
   carrier catalog (`/delivery/providers/`, read by the form only). Provided by the delivery settings page (deliveries section).
 - `delivery_area_model.dart` — `DeliveryAreasModel` (`scope`, both maps in `areas`; `of(branch)`: one map, null = shared;

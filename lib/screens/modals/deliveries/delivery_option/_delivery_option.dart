@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
@@ -174,6 +175,18 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
     initial: _option?.coverage.value
   );
 
+  /// Where a national or international option leaves from; empty is whichever branch serves
+  /// the order. Not in [_form]: it is drawn only off a local reach.
+  late final _branch = InputController.select(
+    key: "BRANCH",
+    initial: _option?.branch ?? _anyBranch
+  );
+
+  static const String _anyBranch = "";
+
+  /// Asked only with branches to tell apart, or when the option already names one.
+  bool get _asksBranch => BranchService().choosable || _option?.branch != null;
+
   late final _fee = InputController(
     key: "FEE",
     form: _form,
@@ -250,6 +263,7 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
     }
 
     _radius.dispose();
+    _branch.dispose();
     _form.dispose();
     super.dispose();
   }
@@ -333,6 +347,8 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
               () => _coverage = DeliveryCoverage.from(option.value)
             )
           ),
+          if (_reach != null && _reach != DeliveryCoverage.local && _asksBranch)
+            _branchInput(context),
           if (_reach == DeliveryCoverage.local) ...[
             Input(
               title: _optional(context, S.of(context).business_delivery_radius_title),
@@ -400,6 +416,40 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
         ]
       )
     );
+  }
+
+  /// The branch that hands this option's orders to the courier.
+  Widget _branchInput(BuildContext context) {
+    final branches = BranchService();
+    final stored = _option?.branch;
+
+    return SelectInput(
+      title: _optional(context, S.of(context).business_delivery_branch),
+      placeholder: S.of(context).business_delivery_branch_any,
+      controller: _branch,
+      searchable: false,
+      emptyText: S.of(context).business_delivery_select_empty,
+      leftIcon: Icon(CI.store, color: ThemeColor.of(context).icon),
+      options: [
+        SelectOption(
+          value: _anyBranch,
+          placeholder: S.of(context).business_delivery_branch_any,
+          subtitle: S.of(context).business_delivery_branch_any_note
+        ),
+        for (final branch in branches.branches)
+          SelectOption(value: branch.id, placeholder: branch.name),
+        if (stored != null && branches.byId(stored) == null)
+          SelectOption(value: stored, placeholder: S.of(context).finance_method_branch_other)
+      ]
+    );
+  }
+
+  /// The branch picked, null for whichever serves the order. Only off a local reach.
+  String? _pickedBranch(bool local) {
+    if (local || !_asksBranch) return _option?.branch;
+
+    final value = _branch.value.trim();
+    return value.isEmpty ? null : value;
   }
 
   /// The carrier picker of [mode]: the catalog's carriers of that kind, the
@@ -589,7 +639,8 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
           freeFrom: freeFrom.value,
           etaMin: etaMin,
           etaMax: etaMax,
-          notes: _notes.value
+          notes: _notes.value,
+          branch: _pickedBranch(local)
         )
       : createDeliveryOptionRequest(
           mode: mode,
@@ -602,7 +653,8 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
           freeFrom: freeFrom.value,
           etaMin: etaMin,
           etaMax: etaMax,
-          notes: _notes.value
+          notes: _notes.value,
+          branch: _pickedBranch(local)
         ));
   }
 

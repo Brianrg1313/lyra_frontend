@@ -186,6 +186,7 @@ class DeliveryOption {
     this.etaMin,
     this.etaMax,
     this.notes = "",
+    this.branch,
     this.position = 100
   });
 
@@ -231,6 +232,12 @@ class DeliveryOption {
   final int? etaMax;
 
   final String notes;
+
+  /// The branch a national or international option leaves from (the warehouse that hands the
+  /// order to the courier); null is whichever branch serves the order. A local option ignores
+  /// it: there the map decides.
+  final String? branch;
+
   final int position;
 
   /// The carrier's brand: its catalog name, or its code when the catalog no
@@ -270,6 +277,7 @@ class DeliveryOption {
       etaMin: _number(row["eta_min"])?.round(),
       etaMax: _number(row["eta_max"])?.round(),
       notes: _text(row["notes"]),
+      branch: _text(row["branch"]).isEmpty ? null : _text(row["branch"]),
       position: _number(row["position"])?.round() ?? 100
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 
 // WIDGETS
@@ -121,6 +122,15 @@ class DeliveryOptionField extends StatelessWidget {
       if (local && option.zones.isNotEmpty) SettingsTag(
         icon: CI.list,
         label: deliveryZonesLabel(context, option.zones, currency),
+        color: neutral
+      ),
+      if (!local && option.branch != null) SettingsTag(
+        icon: CI.store,
+        label: S.of(context).business_delivery_branch_from(
+          BranchService().nameOf(option.branch).isEmpty
+            ? S.of(context).finance_method_branch_other
+            : BranchService().nameOf(option.branch)
+        ),
         color: neutral
       )
     ];

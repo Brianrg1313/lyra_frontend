@@ -152,7 +152,7 @@ through `Navigator.pop(context, value)`.
 ### `deliveries/` (from the delivery settings page)
 - `delivery_option/_delivery_option.dart` — `showDeliveryOptionForm(context, catalog:, currency:, option?)`,
   `DeliveryOptionFormModal`: mode → carrier → reach → figures. Carrier pickers are one per mode (their lists
-  differ); radius/zones only for a local reach. Checks what the backend refuses. **Returns the create/update body.**
+  differ); radius/zones only for a local reach, the branch it leaves from only off one (with several branches, `BranchService`). Checks what the backend refuses. **Returns the create/update body.**
 - `delivery_option/zone_rows.dart` — `ZoneDraft`, `ZoneRows`: a row per zone (area + its own price). Their
   controllers belong to **no** form: rows come and go, and a registered one would stay and be validated.
 - `edit_delivery_notes/_edit_delivery_notes.dart` — `showDeliveryNotes(context, notes:)`,
