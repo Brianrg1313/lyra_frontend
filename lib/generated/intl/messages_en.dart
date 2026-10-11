@@ -331,154 +331,160 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m130(name) => "${name} no longer has access to the business.";
 
-  static String m131(name) => "From the template ${name}, with changes";
+  static String m131(branch) =>
+      "${branch} uses the permissions of every branch. Change something to give it its own.";
 
-  static String m132(name) => "From the template ${name}";
+  static String m132(branch) =>
+      "In ${branch} these replace the permissions of every branch.";
 
-  static String m133(name) =>
+  static String m133(name) => "From the template ${name}, with changes";
+
+  static String m134(name) => "From the template ${name}";
+
+  static String m135(name) =>
       "The template ${name} replaces their permissions when you save.";
 
-  static String m134(ticket) => "Ticket ${ticket} charged";
+  static String m136(ticket) => "Ticket ${ticket} charged";
 
-  static String m135(number, ticket) =>
+  static String m137(number, ticket) =>
       "Sale ${number} charged (ticket ${ticket})";
 
-  static String m136(count) =>
+  static String m138(count) =>
       "${Intl.plural(count, zero: 'Out of stock', one: '1 left', other: '${count} left')}";
 
-  static String m137(count) =>
+  static String m139(count) =>
       "${Intl.plural(count, zero: 'No sales today', one: '1 sale today', other: '${count} sales today')}";
 
-  static String m138(price) => "${price} each";
+  static String m140(price) => "${price} each";
 
-  static String m139(number) => "Ticket #${number}";
+  static String m141(number) => "Ticket #${number}";
 
-  static String m140(product) =>
+  static String m142(product) =>
       "The units of ${product} were released from the stock screen and are no longer set aside for this ticket";
 
-  static String m141(rate) => "VAT ${rate}%";
-
-  static String m142(count) =>
-      "${Intl.plural(count, zero: 'Nothing on it yet', one: '1 product', other: '${count} products')}";
-
-  static String m143(page) => "Page ${page}";
+  static String m143(rate) => "VAT ${rate}%";
 
   static String m144(count) =>
+      "${Intl.plural(count, zero: 'Nothing on it yet', one: '1 product', other: '${count} products')}";
+
+  static String m145(page) => "Page ${page}";
+
+  static String m146(count) =>
       "${Intl.plural(count, zero: 'No rows match your search', one: '1 row matches', other: '${count} rows match')}";
 
-  static String m145(time) => "Resend code in ${time}";
+  static String m147(time) => "Resend code in ${time}";
 
-  static String m146(count) => "${count} sales";
+  static String m148(count) => "${count} sales";
 
-  static String m147(count) => "${count} units";
+  static String m149(count) => "${count} units";
 
-  static String m148(count) => "${count} left";
+  static String m150(count) => "${count} left";
 
-  static String m149(count) => "${count} held";
+  static String m151(count) => "${count} held";
 
-  static String m150(price) => "was ${price}";
+  static String m152(price) => "was ${price}";
 
-  static String m151(count) => "${count} no longer sold";
+  static String m153(count) => "${count} no longer sold";
 
-  static String m152(count) => "${count} said to be held, and nothing is";
+  static String m154(count) => "${count} said to be held, and nothing is";
 
-  static String m153(count) => "${count} sent in all";
+  static String m155(count) => "${count} sent in all";
 
-  static String m154(rate, base) => "${rate}% on ${base}";
+  static String m156(rate, base) => "${rate}% on ${base}";
 
-  static String m155(count) => "${count} moved";
+  static String m157(count) => "${count} moved";
 
-  static String m156(count) => "${count} d";
+  static String m158(count) => "${count} d";
 
-  static String m157(count) => "${count} h";
+  static String m159(count) => "${count} h";
 
-  static String m158(count) => "${count} min";
+  static String m160(count) => "${count} min";
 
-  static String m159(company) =>
+  static String m161(company) =>
       "Only the owner of ${company} can create its server.";
 
-  static String m160(company) =>
+  static String m162(company) =>
       "Lyra keeps a copy of ${company} on this computer, so you keep working when the internet goes down. The other devices of your place connect to it.";
 
-  static String m161(time) => "Synced with your company online at ${time}.";
+  static String m163(time) => "Synced with your company online at ${time}.";
 
-  static String m162(email) =>
+  static String m164(email) =>
       "We sent a code to ${email}. Enter it with your name and your account is ready.";
 
-  static String m163(count) =>
+  static String m165(count) =>
       "${Intl.plural(count, zero: 'Nothing available right now', one: '1 unit available', other: '${count} units available')}";
 
-  static String m164(max) => "Enter a whole number between 1 and ${max}";
-
-  static String m165(count) =>
-      "${Intl.plural(count, zero: 'Nothing reserved right now', one: '1 unit reserved', other: '${count} units reserved')}";
-
-  static String m166(count) =>
-      "${Intl.plural(count, one: 'One less', other: '${count} less')}";
+  static String m166(max) => "Enter a whole number between 1 and ${max}";
 
   static String m167(count) =>
-      "${Intl.plural(count, one: 'One more', other: '${count} more')}";
+      "${Intl.plural(count, zero: 'Nothing reserved right now', one: '1 unit reserved', other: '${count} units reserved')}";
 
   static String m168(count) =>
-      "${Intl.plural(count, zero: 'No products', one: '1 product', other: '${count} products')}";
+      "${Intl.plural(count, one: 'One less', other: '${count} less')}";
 
-  static String m169(name) =>
-      "Deleting ${name} removes its fields and everything stored in it. This can\'t be undone.";
+  static String m169(count) =>
+      "${Intl.plural(count, one: 'One more', other: '${count} more')}";
 
   static String m170(count) =>
-      "${Intl.plural(count, zero: 'No fields', one: '1 field', other: '${count} fields')}";
+      "${Intl.plural(count, zero: 'No products', one: '1 product', other: '${count} products')}";
 
   static String m171(name) =>
-      "Leaving the name empty deletes ${name} and everything stored in it. This can\'t be undone.";
+      "Deleting ${name} removes its fields and everything stored in it. This can\'t be undone.";
 
   static String m172(count) =>
-      "${Intl.plural(count, one: 'visibility set on 1 column', other: 'visibility set on ${count} columns')}";
+      "${Intl.plural(count, zero: 'No fields', one: '1 field', other: '${count} fields')}";
 
-  static String m173(count) =>
-      "${Intl.plural(count, one: '1 column renamed', other: '${count} columns renamed')}";
+  static String m173(name) =>
+      "Leaving the name empty deletes ${name} and everything stored in it. This can\'t be undone.";
 
   static String m174(count) =>
-      "${Intl.plural(count, one: '1 column retyped', other: '${count} columns retyped')}";
+      "${Intl.plural(count, one: 'visibility set on 1 column', other: 'visibility set on ${count} columns')}";
 
   static String m175(count) =>
-      "${Intl.plural(count, one: '1 column added to the summary', other: '${count} columns added to the summary')}";
+      "${Intl.plural(count, one: '1 column renamed', other: '${count} columns renamed')}";
 
   static String m176(count) =>
-      "${Intl.plural(count, zero: 'No records', one: '1 record', other: '${count} records')}";
+      "${Intl.plural(count, one: '1 column retyped', other: '${count} columns retyped')}";
 
-  static String m177(field) => "Add ${field}";
+  static String m177(count) =>
+      "${Intl.plural(count, one: '1 column added to the summary', other: '${count} columns added to the summary')}";
 
   static String m178(count) =>
+      "${Intl.plural(count, zero: 'No records', one: '1 record', other: '${count} records')}";
+
+  static String m179(field) => "Add ${field}";
+
+  static String m180(count) =>
       "${Intl.plural(count, zero: 'No columns', one: '1 column', other: '${count} columns')}";
 
-  static String m179(count, total) =>
+  static String m181(count, total) =>
       "Inventory summary: ${count} of ${total} columns";
 
-  static String m180(field) => "Edit ${field}";
-
-  static String m181(count) =>
-      "${Intl.plural(count, one: '1 option', other: '${count} options')}";
-
-  static String m182(type, count) => "${type} · ${count}";
+  static String m182(field) => "Edit ${field}";
 
   static String m183(count) =>
+      "${Intl.plural(count, one: '1 option', other: '${count} options')}";
+
+  static String m184(type, count) => "${type} · ${count}";
+
+  static String m185(count) =>
       "${Intl.plural(count, one: '1 column is still plain text', other: '${count} columns are still plain text')}";
 
-  static String m184(email) =>
+  static String m186(email) =>
       "We sent a 6-digit code to ${email}. Type it to turn it on.";
 
-  static String m185(length) => "Enter the ${length}-digit code we sent to";
+  static String m187(length) => "Enter the ${length}-digit code we sent to";
 
-  static String m186(time) => "Resend in ${time}";
+  static String m188(time) => "Resend in ${time}";
 
-  static String m187(company) =>
+  static String m189(company) =>
       "Once you accept, you join ${company}\'s team and they can see your profile.";
 
-  static String m188(job, company) => "${job} at ${company}";
+  static String m190(job, company) => "${job} at ${company}";
 
-  static String m189(company) => "${company} invited you";
+  static String m191(company) => "${company} invited you";
 
-  static String m190(name) => "Welcome, ${name}";
+  static String m192(name) => "Welcome, ${name}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -4477,18 +4483,48 @@ class MessageLookup extends MessageLookupByLibrary {
     "permission_server_title": MessageLookupByLibrary.simpleMessage(
       "Local server",
     ),
-    "permission_template_custom": m131,
+    "permission_structure_base": MessageLookupByLibrary.simpleMessage(
+      "Every branch",
+    ),
+    "permission_structure_base_note": MessageLookupByLibrary.simpleMessage(
+      "What they can do wherever a branch has nothing of its own",
+    ),
+    "permission_structure_inherits": MessageLookupByLibrary.simpleMessage(
+      "Same as every branch",
+    ),
+    "permission_structure_inherits_note": m131,
+    "permission_structure_own": MessageLookupByLibrary.simpleMessage(
+      "Their own permissions here",
+    ),
+    "permission_structure_own_note": m132,
+    "permission_structure_reset": MessageLookupByLibrary.simpleMessage(
+      "Use every branch\'s",
+    ),
+    "permission_structure_reset_message": MessageLookupByLibrary.simpleMessage(
+      "This branch\'s own permissions are removed, and the ones of every branch apply here again.",
+    ),
+    "permission_structure_reset_title": MessageLookupByLibrary.simpleMessage(
+      "Use every branch\'s permissions here?",
+    ),
+    "permission_structure_title": MessageLookupByLibrary.simpleMessage(
+      "Permissions in",
+    ),
+    "permission_template_custom": m133,
     "permission_template_empty": MessageLookupByLibrary.simpleMessage(
       "No template matches.",
     ),
-    "permission_template_from": m132,
-    "permission_template_picked": m133,
+    "permission_template_from": m134,
+    "permission_template_picked": m135,
     "permission_template_placeholder": MessageLookupByLibrary.simpleMessage(
       "Pick a template",
     ),
     "permission_template_title": MessageLookupByLibrary.simpleMessage(
       "Start from a template",
     ),
+    "permission_works_everywhere": MessageLookupByLibrary.simpleMessage(
+      "Every branch",
+    ),
+    "permission_works_in": MessageLookupByLibrary.simpleMessage("Works in"),
     "plan_basic": MessageLookupByLibrary.simpleMessage("Basic"),
     "plan_duo": MessageLookupByLibrary.simpleMessage("Duo"),
     "plan_family": MessageLookupByLibrary.simpleMessage("Family"),
@@ -4541,8 +4577,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "pos_category_all": MessageLookupByLibrary.simpleMessage("All"),
     "pos_checkout_confirm": MessageLookupByLibrary.simpleMessage("Charge"),
-    "pos_checkout_done": m134,
-    "pos_checkout_done_number": m135,
+    "pos_checkout_done": m136,
+    "pos_checkout_done_number": m137,
     "pos_checkout_method": MessageLookupByLibrary.simpleMessage(
       "Payment method",
     ),
@@ -4572,11 +4608,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "pos_product_no_price_flag": MessageLookupByLibrary.simpleMessage(
       "That product has no price, so it cannot be rung up",
     ),
-    "pos_product_stock": m136,
+    "pos_product_stock": m138,
     "pos_product_unnamed": MessageLookupByLibrary.simpleMessage(
       "Unnamed product",
     ),
-    "pos_sales_today": m137,
+    "pos_sales_today": m139,
     "pos_search_product": MessageLookupByLibrary.simpleMessage(
       "Search products",
     ),
@@ -4611,7 +4647,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "pos_ticket_dropped": MessageLookupByLibrary.simpleMessage(
       "This ticket was just cancelled from another screen",
     ),
-    "pos_ticket_each": m138,
+    "pos_ticket_each": m140,
     "pos_ticket_empty_subtitle": MessageLookupByLibrary.simpleMessage(
       "Pick a product from the catalog and it lands here",
     ),
@@ -4620,8 +4656,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "pos_ticket_less": MessageLookupByLibrary.simpleMessage("One less"),
     "pos_ticket_more": MessageLookupByLibrary.simpleMessage("One more"),
-    "pos_ticket_number": m139,
-    "pos_ticket_released": m140,
+    "pos_ticket_number": m141,
+    "pos_ticket_released": m142,
     "pos_ticket_remove": MessageLookupByLibrary.simpleMessage(
       "Take it off the ticket",
     ),
@@ -4629,7 +4665,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "pos_ticket_taken": MessageLookupByLibrary.simpleMessage(
       "This ticket was just charged from another register",
     ),
-    "pos_ticket_tax": m141,
+    "pos_ticket_tax": m143,
     "pos_ticket_tax_edit": MessageLookupByLibrary.simpleMessage(
       "Change the rate charged on this ticket",
     ),
@@ -4637,7 +4673,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "pos_ticket_unheld": MessageLookupByLibrary.simpleMessage(
       "No longer set aside",
     ),
-    "pos_ticket_units": m142,
+    "pos_ticket_units": m144,
     "price_title": MessageLookupByLibrary.simpleMessage("What\'s the price?"),
     "product_table_view_add_item": MessageLookupByLibrary.simpleMessage(
       "Add item",
@@ -4696,11 +4732,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_table_view_next": MessageLookupByLibrary.simpleMessage(
       "Next page",
     ),
-    "product_table_view_page": m143,
+    "product_table_view_page": m145,
     "product_table_view_previous": MessageLookupByLibrary.simpleMessage(
       "Previous page",
     ),
-    "product_table_view_search_count": m144,
+    "product_table_view_search_count": m146,
     "product_table_view_sku_generate": MessageLookupByLibrary.simpleMessage(
       "Generate SKU",
     ),
@@ -4732,7 +4768,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "report": MessageLookupByLibrary.simpleMessage("Report"),
     "resend_code": MessageLookupByLibrary.simpleMessage("Resend code"),
-    "resend_code_timer": m145,
+    "resend_code_timer": m147,
     "sales": MessageLookupByLibrary.simpleMessage("Sales"),
     "sales_all_stages": MessageLookupByLibrary.simpleMessage("Every state"),
     "sales_any_channel": MessageLookupByLibrary.simpleMessage("Every channel"),
@@ -4767,7 +4803,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_column_total": MessageLookupByLibrary.simpleMessage("Total"),
     "sales_column_units": MessageLookupByLibrary.simpleMessage("Units"),
     "sales_column_wait": MessageLookupByLibrary.simpleMessage("Waiting"),
-    "sales_count": m146,
+    "sales_count": m148,
     "sales_detail_address": MessageLookupByLibrary.simpleMessage(
       "On the number",
     ),
@@ -4824,7 +4860,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "sales_detail_held": MessageLookupByLibrary.simpleMessage("Units held"),
     "sales_detail_hold_expires": MessageLookupByLibrary.simpleMessage("Lapses"),
-    "sales_detail_hold_units": m147,
+    "sales_detail_hold_units": m149,
     "sales_detail_holds": MessageLookupByLibrary.simpleMessage(
       "What the shelf is keeping",
     ),
@@ -4832,15 +4868,15 @@ class MessageLookup extends MessageLookupByLibrary {
       "Nothing is set aside for this customer.",
     ),
     "sales_detail_id": MessageLookupByLibrary.simpleMessage("Sale id"),
-    "sales_detail_item_available": m148,
+    "sales_detail_item_available": m150,
     "sales_detail_item_concept": MessageLookupByLibrary.simpleMessage(
       "Not a product",
     ),
     "sales_detail_item_gone": MessageLookupByLibrary.simpleMessage(
       "No longer sold",
     ),
-    "sales_detail_item_held": m149,
-    "sales_detail_item_list": m150,
+    "sales_detail_item_held": m151,
+    "sales_detail_item_list": m152,
     "sales_detail_item_price": MessageLookupByLibrary.simpleMessage("Price"),
     "sales_detail_item_product": MessageLookupByLibrary.simpleMessage(
       "Product",
@@ -4857,7 +4893,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_detail_items_flags": MessageLookupByLibrary.simpleMessage(
       "Worth checking",
     ),
-    "sales_detail_items_gone_count": m151,
+    "sales_detail_items_gone_count": m153,
     "sales_detail_items_lines": MessageLookupByLibrary.simpleMessage("Lines"),
     "sales_detail_items_no_match": MessageLookupByLibrary.simpleMessage(
       "No line matches the search",
@@ -4868,7 +4904,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_detail_items_search": MessageLookupByLibrary.simpleMessage(
       "Search a product or its code",
     ),
-    "sales_detail_items_unheld_count": m152,
+    "sales_detail_items_unheld_count": m154,
     "sales_detail_method": MessageLookupByLibrary.simpleMessage("Paid with"),
     "sales_detail_method_offered": MessageLookupByLibrary.simpleMessage(
       "Offered to pay with",
@@ -4891,7 +4927,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "sales_detail_proof": MessageLookupByLibrary.simpleMessage("Payment proof"),
     "sales_detail_proof_at": MessageLookupByLibrary.simpleMessage("Sent"),
-    "sales_detail_proof_count": m153,
+    "sales_detail_proof_count": m155,
     "sales_detail_proof_empty": MessageLookupByLibrary.simpleMessage(
       "Nothing has been sent for this sale yet.",
     ),
@@ -4951,7 +4987,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_detail_status_open": MessageLookupByLibrary.simpleMessage("Open"),
     "sales_detail_subtotal": MessageLookupByLibrary.simpleMessage("Subtotal"),
     "sales_detail_tax": MessageLookupByLibrary.simpleMessage("Tax"),
-    "sales_detail_tax_rate": m154,
+    "sales_detail_tax_rate": m156,
     "sales_detail_terminal": MessageLookupByLibrary.simpleMessage("Till"),
     "sales_detail_title": MessageLookupByLibrary.simpleMessage("Sale"),
     "sales_detail_total": MessageLookupByLibrary.simpleMessage("Total"),
@@ -5027,7 +5063,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_handover_title": MessageLookupByLibrary.simpleMessage("Handover"),
     "sales_mine": MessageLookupByLibrary.simpleMessage("Sold by me"),
     "sales_more": MessageLookupByLibrary.simpleMessage("Load more"),
-    "sales_pending": m155,
+    "sales_pending": m157,
     "sales_retry": MessageLookupByLibrary.simpleMessage("Try again"),
     "sales_search_empty_subtitle": MessageLookupByLibrary.simpleMessage(
       "Nothing read so far carries that ticket code, customer or seller. The sale may be further down: load more and search again.",
@@ -5046,9 +5082,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_tickets_only": MessageLookupByLibrary.simpleMessage(
       "Filtering by channel or by seller answers with tickets only: a conversation the assistant is still holding has neither.",
     ),
-    "sales_wait_days": m156,
-    "sales_wait_hours": m157,
-    "sales_wait_minutes": m158,
+    "sales_wait_days": m158,
+    "sales_wait_hours": m159,
+    "sales_wait_minutes": m160,
     "sales_wait_now": MessageLookupByLibrary.simpleMessage("just now"),
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "search": MessageLookupByLibrary.simpleMessage("Search"),
@@ -5116,8 +5152,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "server_create_button": MessageLookupByLibrary.simpleMessage(
       "Create the server here",
     ),
-    "server_create_owner_only": m159,
-    "server_create_subtitle": m160,
+    "server_create_owner_only": m161,
+    "server_create_subtitle": m162,
     "server_create_title": MessageLookupByLibrary.simpleMessage(
       "Make this computer your server",
     ),
@@ -5139,7 +5175,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "server_sign_in_online": MessageLookupByLibrary.simpleMessage(
       "Sign in online",
     ),
-    "server_sync_done": m161,
+    "server_sync_done": m163,
     "server_sync_failing": MessageLookupByLibrary.simpleMessage(
       "Couldn\'t sync with your company online. It keeps trying.",
     ),
@@ -5176,7 +5212,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sign_out_failed": MessageLookupByLibrary.simpleMessage(
       "Could not sign out. Check your connection and try again.",
     ),
-    "sign_up_code_subtitle": m162,
+    "sign_up_code_subtitle": m164,
     "sign_up_code_title": MessageLookupByLibrary.simpleMessage(
       "Create your account",
     ),
@@ -5213,7 +5249,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_move_add_stock": MessageLookupByLibrary.simpleMessage(
       "Add to stock",
     ),
-    "stock_move_available": m163,
+    "stock_move_available": m165,
     "stock_move_dest_leave": MessageLookupByLibrary.simpleMessage("They leave"),
     "stock_move_dest_leave_hint": MessageLookupByLibrary.simpleMessage(
       "Sold, damaged, lost or miscounted: they are not coming back.",
@@ -5238,7 +5274,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Explain the movement for whoever audits it later",
     ),
     "stock_move_quantity": MessageLookupByLibrary.simpleMessage("Quantity"),
-    "stock_move_quantity_error": m164,
+    "stock_move_quantity_error": m166,
     "stock_move_quantity_error_free": MessageLookupByLibrary.simpleMessage(
       "Enter a whole number greater than zero",
     ),
@@ -5255,10 +5291,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_move_release_hint": MessageLookupByLibrary.simpleMessage(
       "They go back on sale.",
     ),
-    "stock_move_reserved": m165,
+    "stock_move_reserved": m167,
     "stock_move_saved": MessageLookupByLibrary.simpleMessage("Stock updated"),
-    "stock_move_step_less": m166,
-    "stock_move_step_more": m167,
+    "stock_move_step_less": m168,
+    "stock_move_step_more": m169,
     "stock_move_take_action": MessageLookupByLibrary.simpleMessage("Take out"),
     "stock_move_take_hint": MessageLookupByLibrary.simpleMessage(
       "Take units out",
@@ -5298,7 +5334,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_reason_wrong_item": MessageLookupByLibrary.simpleMessage(
       "Wrong item",
     ),
-    "stock_summary_count": m168,
+    "stock_summary_count": m170,
     "stock_summary_empty_subtitle": MessageLookupByLibrary.simpleMessage(
       "This table\'s products show up here, with what\'s left of each one.",
     ),
@@ -5357,7 +5393,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "summary_title": MessageLookupByLibrary.simpleMessage("All set!"),
     "table_color_title": MessageLookupByLibrary.simpleMessage("Color"),
     "table_created": MessageLookupByLibrary.simpleMessage("Table created"),
-    "table_delete_message": m169,
+    "table_delete_message": m171,
     "table_delete_title": MessageLookupByLibrary.simpleMessage(
       "Delete this table?",
     ),
@@ -5368,11 +5404,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_description_title": MessageLookupByLibrary.simpleMessage(
       "Description (optional)",
     ),
-    "table_field_count": m170,
+    "table_field_count": m172,
     "table_field_delete_confirm": MessageLookupByLibrary.simpleMessage(
       "Delete field",
     ),
-    "table_field_delete_message": m171,
+    "table_field_delete_message": m173,
     "table_field_delete_title": MessageLookupByLibrary.simpleMessage(
       "Delete this field?",
     ),
@@ -5427,24 +5463,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_normalize_message": MessageLookupByLibrary.simpleMessage(
       "We read a sample of every column and give it the type it should have — a price that compares as a number, a date that sorts, a description the AI can search by meaning — and set how much of each one a bot may see. Columns you already typed or marked yourself are left alone.",
     ),
-    "table_normalize_narrowed": m172,
+    "table_normalize_narrowed": m174,
     "table_normalize_none": MessageLookupByLibrary.simpleMessage(
       "Every column was already right",
     ),
-    "table_normalize_renamed": m173,
-    "table_normalize_retyped": m174,
+    "table_normalize_renamed": m175,
+    "table_normalize_retyped": m176,
     "table_normalize_running": MessageLookupByLibrary.simpleMessage(
       "Normalizing this table",
     ),
-    "table_normalize_summarized": m175,
+    "table_normalize_summarized": m177,
     "table_normalize_title": MessageLookupByLibrary.simpleMessage(
       "Normalize this table?",
     ),
     "table_options": MessageLookupByLibrary.simpleMessage("Table options"),
     "table_primary": MessageLookupByLibrary.simpleMessage("Primary"),
-    "table_record_count": m176,
+    "table_record_count": m178,
     "table_renamed": MessageLookupByLibrary.simpleMessage("Table renamed"),
-    "table_settings_add": m177,
+    "table_settings_add": m179,
     "table_settings_agent_filterable": MessageLookupByLibrary.simpleMessage(
       "Filterable columns",
     ),
@@ -5513,7 +5549,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_channels_title": MessageLookupByLibrary.simpleMessage(
       "Connected channels",
     ),
-    "table_settings_column_count": m178,
+    "table_settings_column_count": m180,
     "table_settings_column_field": MessageLookupByLibrary.simpleMessage(
       "Column",
     ),
@@ -5546,7 +5582,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_columns_subtitle": MessageLookupByLibrary.simpleMessage(
       "What each one holds, how much of it the AI sees and which ones the inventory summary shows. All of it is changed right here",
     ),
-    "table_settings_columns_summary_count": m179,
+    "table_settings_columns_summary_count": m181,
     "table_settings_columns_title": MessageLookupByLibrary.simpleMessage(
       "Columns",
     ),
@@ -5561,7 +5597,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_description_empty": MessageLookupByLibrary.simpleMessage(
       "No description",
     ),
-    "table_settings_edit": m180,
+    "table_settings_edit": m182,
     "table_settings_error_subtitle": MessageLookupByLibrary.simpleMessage(
       "It may have been deleted, or it belongs to another business",
     ),
@@ -5597,7 +5633,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_no_records": MessageLookupByLibrary.simpleMessage(
       "No records yet",
     ),
-    "table_settings_options": m181,
+    "table_settings_options": m183,
     "table_settings_options_empty": MessageLookupByLibrary.simpleMessage(
       "No options yet",
     ),
@@ -5635,7 +5671,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_title": MessageLookupByLibrary.simpleMessage(
       "Table settings",
     ),
-    "table_settings_type_count": m182,
+    "table_settings_type_count": m184,
     "table_settings_types": MessageLookupByLibrary.simpleMessage("Types"),
     "table_settings_unavailable": MessageLookupByLibrary.simpleMessage(
       "Not available",
@@ -5653,7 +5689,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "USD, Bs., kg",
     ),
     "table_settings_unknown": MessageLookupByLibrary.simpleMessage("Unknown"),
-    "table_settings_untyped": m183,
+    "table_settings_untyped": m185,
     "table_settings_untyped_hint": MessageLookupByLibrary.simpleMessage(
       "A column imported from a file is born as text. Giving it its real type is what lets the AI compare it, filter by it and quote it properly. You can change it in the Type column below",
     ),
@@ -5766,7 +5802,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Your recovery codes",
     ),
     "two_factor_continue": MessageLookupByLibrary.simpleMessage("Continue"),
-    "two_factor_email_sent": m184,
+    "two_factor_email_sent": m186,
     "two_factor_off_body": MessageLookupByLibrary.simpleMessage(
       "Signing in will ask only for your password or emailed code.",
     ),
@@ -5812,7 +5848,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verify_code_continue_with_password": MessageLookupByLibrary.simpleMessage(
       "Continue and create a password",
     ),
-    "verify_code_inbox_subtitle": m185,
+    "verify_code_inbox_subtitle": m187,
     "verify_code_inbox_title": MessageLookupByLibrary.simpleMessage(
       "Check your inbox",
     ),
@@ -5822,7 +5858,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verify_code_password_notice": MessageLookupByLibrary.simpleMessage(
       "A password isn\'t required, but we recommend creating one. Your account will be as secure as you want it to be: we offer several ways to protect it, and you decide how far to go.",
     ),
-    "verify_code_resend_in": m186,
+    "verify_code_resend_in": m188,
     "verify_code_signing_in": MessageLookupByLibrary.simpleMessage(
       "Signing you in…",
     ),
@@ -5856,7 +5892,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_invitation_accept": MessageLookupByLibrary.simpleMessage(
       "Accept invitation",
     ),
-    "welcome_invitation_accept_notice": m187,
+    "welcome_invitation_accept_notice": m189,
     "welcome_invitation_action": MessageLookupByLibrary.simpleMessage("Review"),
     "welcome_invitation_branch": MessageLookupByLibrary.simpleMessage("Branch"),
     "welcome_invitation_company": MessageLookupByLibrary.simpleMessage(
@@ -5868,7 +5904,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_invitation_department": MessageLookupByLibrary.simpleMessage(
       "Department",
     ),
-    "welcome_invitation_job": m188,
+    "welcome_invitation_job": m190,
     "welcome_invitation_modal_title": MessageLookupByLibrary.simpleMessage(
       "Invitation",
     ),
@@ -5876,7 +5912,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_invitation_subtitle": MessageLookupByLibrary.simpleMessage(
       "Review the invitation to join their team.",
     ),
-    "welcome_invitation_title": m189,
+    "welcome_invitation_title": m191,
     "welcome_jobs_body": MessageLookupByLibrary.simpleMessage(
       "Job openings are coming soon. You will be able to browse them and apply from here.",
     ),
@@ -5896,7 +5932,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_subtitle": MessageLookupByLibrary.simpleMessage(
       "Lyra works around a company. Tell us how you want to start: you can change your mind later.",
     ),
-    "welcome_title": m190,
+    "welcome_title": m192,
     "write_a_description": MessageLookupByLibrary.simpleMessage(
       "Optional description...",
     ),

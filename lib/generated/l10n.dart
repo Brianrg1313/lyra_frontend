@@ -19065,6 +19065,126 @@ class S {
     );
   }
 
+  /// `Works in`
+  String get permission_works_in {
+    return Intl.message(
+      'Works in',
+      name: 'permission_works_in',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every branch`
+  String get permission_works_everywhere {
+    return Intl.message(
+      'Every branch',
+      name: 'permission_works_everywhere',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Permissions in`
+  String get permission_structure_title {
+    return Intl.message(
+      'Permissions in',
+      name: 'permission_structure_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every branch`
+  String get permission_structure_base {
+    return Intl.message(
+      'Every branch',
+      name: 'permission_structure_base',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What they can do wherever a branch has nothing of its own`
+  String get permission_structure_base_note {
+    return Intl.message(
+      'What they can do wherever a branch has nothing of its own',
+      name: 'permission_structure_base_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Their own permissions here`
+  String get permission_structure_own {
+    return Intl.message(
+      'Their own permissions here',
+      name: 'permission_structure_own',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Same as every branch`
+  String get permission_structure_inherits {
+    return Intl.message(
+      'Same as every branch',
+      name: 'permission_structure_inherits',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{branch} uses the permissions of every branch. Change something to give it its own.`
+  String permission_structure_inherits_note(Object branch) {
+    return Intl.message(
+      '$branch uses the permissions of every branch. Change something to give it its own.',
+      name: 'permission_structure_inherits_note',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `In {branch} these replace the permissions of every branch.`
+  String permission_structure_own_note(Object branch) {
+    return Intl.message(
+      'In $branch these replace the permissions of every branch.',
+      name: 'permission_structure_own_note',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `Use every branch's`
+  String get permission_structure_reset {
+    return Intl.message(
+      'Use every branch\'s',
+      name: 'permission_structure_reset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use every branch's permissions here?`
+  String get permission_structure_reset_title {
+    return Intl.message(
+      'Use every branch\'s permissions here?',
+      name: 'permission_structure_reset_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This branch's own permissions are removed, and the ones of every branch apply here again.`
+  String get permission_structure_reset_message {
+    return Intl.message(
+      'This branch\'s own permissions are removed, and the ones of every branch apply here again.',
+      name: 'permission_structure_reset_message',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Permissions saved.`
   String get permission_saved {
     return Intl.message(

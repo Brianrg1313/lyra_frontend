@@ -31,10 +31,24 @@ class PermissionsCloudSource implements PermissionsSource {
   }
 
   @override
-  Future<void> assign(String username, {String? template, Map<String, Map<String, bool>>? permissions}) => api.put(
+  Future<void> assign(
+    String username, {
+    String? template,
+    Map<String, Map<String, bool>>? permissions,
+    ({List<String>? ids})? branches,
+    String? branch,
+    bool reset = false
+  }) => api.put(
     path: "/permissions/members/",
     version: "v1",
-    data: assignMemberRequest(username: username, template: template, permissions: permissions)
+    data: assignMemberRequest(
+      username: username,
+      template: template,
+      permissions: permissions,
+      branches: branches,
+      branch: branch,
+      reset: reset
+    )
   );
 
   @override

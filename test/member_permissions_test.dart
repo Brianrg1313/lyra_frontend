@@ -376,8 +376,20 @@ class _Source implements PermissionsSource {
   }
 
   @override
-  Future<void> assign(String username, {String? template, Map<String, Map<String, bool>>? permissions}) async =>
+  Future<void> assign(
+    String username, {
+    String? template,
+    Map<String, Map<String, bool>>? permissions,
+    ({List<String>? ids})? branches,
+    String? branch,
+    bool reset = false
+  }) async {
     assigned.add((username: username, template: template, permissions: permissions));
+    placed.add((branches: branches, branch: branch, reset: reset));
+  }
+
+  /// What each assign said about branches.
+  final placed = <({({List<String>? ids})? branches, String? branch, bool reset})>[];
 
   @override
   Future<void> revoke(String username) async => revoked.add(username);

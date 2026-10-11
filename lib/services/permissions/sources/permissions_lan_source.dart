@@ -39,7 +39,16 @@ class PermissionsLanSource implements PermissionsSource {
   }
 
   @override
-  Future<void> assign(String username, {String? template, Map<String, Map<String, bool>>? permissions}) =>
+  Future<void> assign(
+    String username, {
+    String? template,
+    Map<String, Map<String, bool>>? permissions,
+    ({List<String>? ids})? branches,
+    String? branch,
+    bool reset = false
+  }) =>
+    // A master is one site: where a person works and a branch's own structure are the cloud's,
+    // pulled with the person's document (`session.md`), never written here.
     _lan.call(Ops.permissionsMembersAssign, args: {
       "username": username,
       "template": ?template,

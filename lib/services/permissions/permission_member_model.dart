@@ -37,7 +37,9 @@ class PermissionMemberModel {
     required this.grant,
     this.template,
     this.custom = false,
-    this.online = false
+    this.online = false,
+    this.branches,
+    this.byBranch = const {}
   });
 
   final String username;
@@ -58,6 +60,16 @@ class PermissionMemberModel {
   /// cloud changes it (`session.md` P-12). The cloud's own answers never say so.
   final bool online;
 
+  /// The branches they work in; null is every branch.
+  final List<String>? branches;
+
+  /// The structures of their own some branches have, by branch id: there they replace the base.
+  /// Usually empty, and always for an `all` member.
+  final Map<String, PermissionBranchGrant> byBranch;
+
+  /// Whether they work in [branch].
+  bool worksIn(String branch) => branches == null || branches!.contains(branch);
+
   static PermissionMemberModel? from(Object? raw) {
     if (raw is! Map || raw["username"] == null) return null;
 
@@ -73,9 +85,32 @@ class PermissionMemberModel {
       grant: Grant(all: owner || raw["all"] == true, sections: _sections(raw["sections"])),
       template: PermissionTemplateRef.from(raw["template"]),
       custom: raw["custom"] == true,
-      online: raw["online"] == true
+      online: raw["online"] == true,
+      branches: switch (raw["branches"]) {
+        final List list when list.isNotEmpty => [for (final id in list) id.toString()],
+        _ => null
+      },
+      byBranch: {
+        if (raw["by_branch"] is Map)
+          for (final MapEntry(:key, :value) in (raw["by_branch"] as Map).entries)
+            if (value is Map) "$key": PermissionBranchGrant(
+              grant: Grant(sections: _sections(value["sections"])),
+              template: PermissionTemplateRef.from(value["template"]),
+              custom: value["custom"] == true
+            )
+      }
     );
   }
+}
+
+/// A branch's own structure for one member (`by_branch[<branch>]`): never `all`, which is the
+/// person's everywhere.
+class PermissionBranchGrant {
+  const PermissionBranchGrant({required this.grant, this.template, this.custom = false});
+
+  final Grant grant;
+  final PermissionTemplateRef? template;
+  final bool custom;
 }
 
 /// A template to start a member from (`GET /permissions/templates`): the platform's (`global`,

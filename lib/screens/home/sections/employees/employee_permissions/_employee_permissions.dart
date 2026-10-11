@@ -13,6 +13,7 @@ import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/employees/employee_facts/employee_search.dart';
 import 'package:app/screens/home/sections/employees/employee_facts/widgets/employee_fact_frame.dart';
 
+import './permission_branches.dart';
 import './permission_section.dart';
 import './permission_sheet.dart';
 import './permission_template_text.dart';
@@ -71,6 +72,11 @@ class _EmployeePermissionsState extends State<EmployeePermissions> {
 
   void _changed() {
     if (!mounted) return;
+    // Another structure opened (a branch's, or the base again): no template is picked there.
+    if (_service.template == null && _template.selectedValue != null) {
+      _template.textController.clear();
+      _template.selectedValue = null;
+    }
     _saving.value = _service.saving;
     setState(() {});
   }
@@ -110,6 +116,27 @@ class _EmployeePermissionsState extends State<EmployeePermissions> {
     try {
       await _service.revoke();
       if (mounted) FloatFlag.of(context).message(S.of(context).permission_revoked(name));
+    } catch (e) {
+      FloatFlag.showFromError(e);
+    }
+  }
+
+  /// Puts the open branch back on the base structure, after asking.
+  Future<void> _resetBranch() async {
+    final s = S.of(context);
+
+    final confirmed = await showAlertModal(
+      context: context,
+      title: s.permission_structure_reset_title,
+      message: s.permission_structure_reset_message,
+      confirmText: s.permission_structure_reset,
+      cancelText: s.cancel
+    );
+    if (!confirmed) return;
+
+    try {
+      await _service.resetBranch();
+      if (mounted) FloatFlag.of(context).message(S.of(context).permission_saved);
     } catch (e) {
       FloatFlag.showFromError(e);
     }
@@ -159,6 +186,8 @@ class _EmployeePermissionsState extends State<EmployeePermissions> {
           padding: EdgeInsets.only(bottom: AppSize.spaceS),
           child: TextSmall(note, lines: 3, ellipsis: true, color: scheme.text.secondary)
         ),
+        if (_service.placeable || _service.branchable)
+          PermissionBranches(service: _service, onReset: _resetBranch),
         if (templates.isNotEmpty) ...[
           SelectInput(
             controller: _template,
@@ -219,6 +248,8 @@ class _EmployeePermissionsState extends State<EmployeePermissions> {
     if (!member.access) return s.permission_no_access_note;
     if (picked != null) return s.permission_template_picked(permissionTemplateText(context, picked).name);
     if (_service.all) return s.permission_all_note;
+    // A branch's structure is said under its picker.
+    if (_service.branch != null) return null;
 
     final name = member.template?.name;
     if (name == null) return null;

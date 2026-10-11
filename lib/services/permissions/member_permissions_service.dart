@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
 import 'package:app/toolkit/deployment.dart';
@@ -19,6 +20,11 @@ enum MemberPermissionsStatus { idle, loading, ready, error }
 /// action turns its section on, a section turned off clears the actions the viewer may change, and
 /// a key the viewer does not hold is never touched ([canChange], P-6 escalation). The backend
 /// still decides; this only spares a 403 the screen could have predicted.
+///
+/// With several branches (`sedes-frontend.md` §4) it also holds where the person works ([works],
+/// a draft too) and which structure the draft is: the base ([branch] null) or one branch's own,
+/// which replaces the base there — a manager in one shop, a cashier in another. A branch without
+/// one opens on the base ([inherits]); saving there gives it one, [resetBranch] takes it away.
 class MemberPermissionsService extends ChangeNotifier {
   MemberPermissionsService({this.username, PermissionsSource? source}) : _injected = source;
 
@@ -51,6 +57,14 @@ class MemberPermissionsService extends ChangeNotifier {
   bool _saving = false;
   bool get saving => _saving;
 
+  /// The branch whose own structure the draft is; null is the base.
+  String? _branch;
+  String? get branch => _branch;
+
+  /// Where the person works, as drafted: null is every branch.
+  List<String>? _works;
+  List<String>? get works => _works;
+
   bool _disposed = false;
 
   /// Whether the draft is `all`: everything, including what the catalog adds later.
@@ -62,6 +76,62 @@ class MemberPermissionsService extends ChangeNotifier {
     final member = _member;
 
     return member == null || member.me || member.owner || member.online || (member.grant.all && !_mine.all);
+  }
+
+  /// Whether a structure per branch can be given: several branches to tell apart, and someone
+  /// who is not `all` (that is everywhere) nor the owner.
+  bool get branchable {
+    final member = _member;
+
+    return member != null && !readOnly && !member.grant.all && BranchService().choosable;
+  }
+
+  /// Whether where they work can be changed here: several branches, and the editor not read-only.
+  bool get placeable => _member != null && !readOnly && BranchService().choosable;
+
+  /// The open branch has no structure of its own: the draft is the base, which applies there.
+  bool get inherits => _branch != null && !(_member?.byBranch.containsKey(_branch) ?? false);
+
+  /// Whether where they work changed in the draft.
+  bool get worksChanged => !_sameBranches(_works, _member?.branches);
+
+  /// Opens [branch]'s structure (null: the base) in the draft, dropping what was drafted.
+  void editIn(String? branch) {
+    if (branch == _branch) return;
+    if (branch != null && !branchable) return;
+
+    _branch = branch;
+    _reset();
+    _notify();
+  }
+
+  /// Turns [branch] on or off where they work. Every branch on is "every branch" (null); the
+  /// last one can't be turned off.
+  void toggleWorks(String branch) {
+    if (!placeable) return;
+
+    final all = [for (final row in BranchService().branches) row.id];
+    final now = _works ?? all;
+    final next = now.contains(branch) ? [for (final id in now) if (id != branch) id] : [...now, branch];
+
+    if (next.isEmpty) return;
+
+    _works = all.every(next.contains) ? null : next;
+    // The open branch's own structure goes with it.
+    if (_works != null && _branch != null && !_works!.contains(_branch)) {
+      _branch = null;
+      _reset(keepWorks: true);
+    }
+
+    _notify();
+  }
+
+  /// Every branch, again.
+  void worksEverywhere() {
+    if (!placeable || _works == null) return;
+
+    _works = null;
+    _notify();
   }
 
   /// The stored flag of [section] (`access`) or one of its actions in the draft.
@@ -77,7 +147,7 @@ class MemberPermissionsService extends ChangeNotifier {
     if (readOnly || member == null) return false;
     if ((template.grant.all || member.grant.all) && !_mine.all) return false;
 
-    return PermissionCatalog.changes(member.grant.sections, template.grant.sections).every(_mine.can);
+    return PermissionCatalog.changes(_stored.sections, template.grant.sections).every(_mine.can);
   }
 
   /// Something to send: a template picked, a key changed, or a person with no access yet (saving
@@ -86,8 +156,18 @@ class MemberPermissionsService extends ChangeNotifier {
     final member = _member;
     if (member == null || readOnly) return false;
 
-    return !member.access || _template != null || (_all && !member.grant.all) ||
-      PermissionCatalog.changes(member.grant.sections, _sections).isNotEmpty;
+    return !member.access || _template != null || (_all && !_stored.all) || worksChanged ||
+      PermissionCatalog.changes(_stored.sections, _sections).isNotEmpty;
+  }
+
+  /// The structure the draft started from: the open branch's own, else the base.
+  Grant get _stored {
+    final member = _member!;
+    final own = _branch == null ? null : member.byBranch[_branch];
+
+    if (own != null) return own.grant;
+
+    return _branch == null ? member.grant : Grant(sections: member.grant.sections);
   }
 
   Future<void> load() async {
@@ -146,7 +226,8 @@ class MemberPermissionsService extends ChangeNotifier {
     if (!canApply(template)) return;
 
     _template = template;
-    _all = template.grant.all;
+    // In a branch an `all` template is its keys: `all` is the person's, everywhere.
+    _all = _branch == null && template.grant.all;
     _sections = PermissionCatalog.normalize(template.grant.sections, all: template.grant.all);
     _notify();
   }
@@ -163,7 +244,7 @@ class MemberPermissionsService extends ChangeNotifier {
     final member = _member;
     if (member == null || !dirty || _saving) return;
 
-    final base = _template?.grant ?? member.grant;
+    final base = _template?.grant ?? _stored;
     final partial = <String, Map<String, bool>>{};
 
     if (!_all) {
@@ -174,8 +255,29 @@ class MemberPermissionsService extends ChangeNotifier {
       }
     }
 
+    // A branch only gets a structure of its own when something in it was changed.
+    final reshaped = _template != null || partial.isNotEmpty || (_all && !_stored.all);
+
     await _busy(() async {
-      await _source.assign(member.username, template: _template?.id, permissions: partial);
+      await _source.assign(
+        member.username,
+        template: _template?.id,
+        permissions: partial,
+        branches: worksChanged ? (ids: _works) : null,
+        branch: reshaped ? _branch : null
+      );
+      await _reread();
+    });
+  }
+
+  /// Puts the open branch back on the base structure. Throws the source's error.
+  Future<void> resetBranch() async {
+    final member = _member;
+    final branch = _branch;
+    if (member == null || branch == null || inherits || _saving) return;
+
+    await _busy(() async {
+      await _source.assign(member.username, branch: branch, reset: true);
       await _reread();
     });
   }
@@ -205,15 +307,24 @@ class MemberPermissionsService extends ChangeNotifier {
 
   Future<void> _reread() async {
     _member = await _source.member(_member!.username);
+    // A branch they no longer work in has no structure of theirs to stay on.
+    if (_branch != null && !_member!.worksIn(_branch!)) _branch = null;
     _reset();
   }
 
-  void _reset() {
-    final grant = _member?.grant ?? _mine;
+  void _reset({bool keepWorks = false}) {
+    final grant = _member == null ? _mine : _stored;
 
     _template = null;
     _all = grant.all;
     _sections = PermissionCatalog.normalize(grant.sections, all: grant.all);
+    if (!keepWorks) _works = _member?.branches;
+  }
+
+  static bool _sameBranches(List<String>? a, List<String>? b) {
+    if (a == null || b == null) return a == b;
+
+    return a.length == b.length && a.toSet().containsAll(b);
   }
 
   void _notify() {

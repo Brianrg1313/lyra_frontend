@@ -49,9 +49,10 @@
 
 ### employee_permissions/ — one person's permissions (the permissions part's page)
 
-- `_employee_permissions.dart` — `EmployeePermissions` (`username`, none = one's own): note, template picker, search, one sheet per section, footer (cancel/save, give access, remove access); over `MemberPermissionsService`.
+- `_employee_permissions.dart` — `EmployeePermissions` (`username`, none = one's own): note, `PermissionBranches` (several branches), template picker, search, one sheet per section, footer (cancel/save, give access, remove access); over `MemberPermissionsService`.
 - `permission_section.dart` — `enum PermissionSection` (every section of `PermissionCatalog`: icon, title, description, action titles).
 - `permission_template_text.dart` — `permissionTemplateText` (a global template in the app's words).
+- `permission_branches.dart` — `PermissionBranches`: where they work (a chip per branch, "every branch") and which structure the sheets are (`Permissions in`: every branch's, or one branch's own; "use every branch's" resets it, asked first).
 - `permission_sheet.dart` — `PermissionSheet`: a section's switch and its actions threaded under it (locked keys the viewer lacks). `permission_cell.dart` — `PermissionCell` (one switch). `permission_thread.dart` — `PermissionThread`. `permission_grid.dart` — `PermissionGrid` (sizes shared by the rows).
 
 ### own_settings/ — the viewer's own account (app area `account`): subsections listed on their own card's page, each a page of its own

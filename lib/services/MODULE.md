@@ -285,10 +285,10 @@ See `baileys_server/MODULE.md` for the server side.
 - `permission_request.dart` — `requestPermissionRequest` (`REASON` only when not blank), `kPermissionReasonMax`.
 - `member_permissions_service.dart` — `MemberPermissionsService` (+ status): one person's document, the templates and the viewer's
   own grant, a draft in catalog keys (`toggle`, `apply`, `discard`, `save` sends only what changed, `revoke`), `canChange`/`canApply`
-  (escalation), `readOnly` (self, owner, `all` without `all`, `online`); no username = the viewer's own. Owned by `EmployeePermissions`.
-- `permission_member_model.dart` — `PermissionMemberModel` (+ `access`, `grant`, `online`: a syncing master's, read-only), `PermissionTemplateModel`, `PermissionTemplateRef`,
+  (escalation), `readOnly` (self, owner, `all` without `all`, `online`); no username = the viewer's own; with several branches `works` (where they work, a draft: `toggleWorks`, `worksEverywhere`, sent as `BRANCHES`), `editIn(branch)` (the draft is that branch's own structure, or the base until it has one: `inherits`; a change there is sent with `BRANCH`), `resetBranch` (`RESET`), `branchable` (not `all`), `placeable`. Owned by `EmployeePermissions`.
+- `permission_member_model.dart` — `PermissionMemberModel` (+ `access`, `grant`, `online`: a syncing master's, read-only; `branches` null = every one, `byBranch` → `PermissionBranchGrant`, `worksIn`), `PermissionTemplateModel`, `PermissionTemplateRef`,
   `permissionsMine` (`GET /permissions` → `Grant`).
-- `permission_member_request.dart` — `assignMemberRequest` (`USERNAME`, `TEMPLATE_ID?`, partial `PERMISSIONS?`).
+- `permission_member_request.dart` — `assignMemberRequest` (`USERNAME`, `TEMPLATE_ID?`, partial `PERMISSIONS?`, `BRANCHES` only when given, `BRANCH`, `RESET` only with `BRANCH`).
 - `sources/permissions_source.dart` — `PermissionsSource`: `mine`, `templates`, `member(username)`, `assign`, `revoke`.
 - `sources/permissions_cloud_source.dart` — `PermissionsCloudSource`: `/permissions/`, `/permissions/templates/`, `/permissions/members/`.
 - `sources/permissions_lan_source.dart` — `PermissionsLanSource`: `permissions.get`, `.templates.list`, `.members.detail/assign/revoke`.

@@ -21,8 +21,17 @@ abstract interface class PermissionsSource {
   /// One member, or someone with an active job and no access yet.
   Future<PermissionMemberModel> member(String username);
 
-  /// Copies [template] onto the member and/or lays the partial [permissions] over it.
-  Future<void> assign(String username, {String? template, Map<String, Map<String, bool>>? permissions});
+  /// Copies [template] onto the member and/or lays the partial [permissions] over it; in
+  /// [branch], over that branch's own structure ([reset]: back to the base). [branches] is where
+  /// they work, when given (`assignMemberRequest`). A master is one site: it takes neither.
+  Future<void> assign(
+    String username, {
+    String? template,
+    Map<String, Map<String, bool>>? permissions,
+    ({List<String>? ids})? branches,
+    String? branch,
+    bool reset = false
+  });
 
   /// Takes the member's access away; their permissions stay for when it comes back.
   Future<void> revoke(String username);
