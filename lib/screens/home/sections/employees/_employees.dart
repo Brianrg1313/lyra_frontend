@@ -126,7 +126,7 @@ class _EmployeesSectionState extends State<EmployeesSection> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(flex: 2, child: Surface(child: EmployeeList(
+        Expanded(flex: 1, child: Surface(child: EmployeeList(
           selected: employee?.key,
           onOpen: (employee) => _go(EmployeeDetailPage.path(EmployeeDetailPage.idOf(employee)))
         ))),
