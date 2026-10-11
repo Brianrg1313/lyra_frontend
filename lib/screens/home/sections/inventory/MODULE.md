@@ -6,7 +6,7 @@
 table selector; the cells switch shows the open table as its stock summary or as the spreadsheet.
 No table → templates by the company's activity, a blank table, the import.
 **Services** `TablesService`, `TableViewService`, `TableDetailService`, `StockSummaryService`
-(`lib/services/stock`) + `lib/services/inventory` (field types, imports, SKUs, dates, images,
+(`lib/services/stock`), `StockTransfersService` (transfers page) + `lib/services/inventory` (field types, imports, SKUs, dates, images,
 `TableTemplatesService`). `PreferencesService`: the open table per company
 (`RememberedSelection.table`) and the view per account (`inventoryView`).
 **Modals** `lib/screens/modals/inventory` (`create_table create_field import_table rename_table
@@ -25,12 +25,18 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
+- `transfers_button.dart` — `TransfersButton`: to the transfers page, with `BadgePlace.inventoryTransfers`; only with several branches and `inventory.transfers`.
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts})`: owns that table's `StockSummaryService`, fixed column header over a `ListView`; header search → `MATCH`.
 - `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
 - `stock_summary/summary_header.dart` — `SummaryHeader` (a title click orders by its column: `summary_sort_title.dart` — `SummarySortTitle`); `stock_summary/summary_product_row.dart` — `SummaryProductRow`; `stock_summary/summary_line.dart` — `SummaryLine`.
 - `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`.
 - `stock_summary/summary_value.dart` — `SummaryValue`; `summary_number.dart` — `SummaryNumber`; `summary_picture.dart` — `SummaryPicture`.
+
+## transfers/ — stock between branches (`/home/inventory/transfers`, cloud only)
+
+- `_transfers.dart` — `StockTransfersSection` (`routeKey = "inventory_transfers"`, `path`; a fixed segment before a table's `:id`): owns `StockTransfersService`; back to inventory, "New transfer" (`inventory.transfer` and another branch), `BadgeNotes`, side chips (coming here / sent from here) and a status menu, the list (`SectionMoreButton`); the writes and their confirmations (drop a draft, call a sent one back).
+- `transfer_row.dart` — `TransferRow`: the other branch, status tag, first products (names from `nameOf`, else SKU), units (received of sent), date, note; only this branch's step: send/drop a draft, call back a sent one (sender), receive (receiver).
 
 ## table_view/ — the spreadsheet
 

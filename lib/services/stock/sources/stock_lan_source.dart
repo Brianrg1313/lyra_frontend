@@ -4,6 +4,8 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 // SERVICES
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
+import 'package:app/services/stock/prices/branch_price_model.dart';
+import 'package:app/services/stock/transfers/stock_transfer_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/toolkit/deployment.dart';
@@ -61,4 +63,27 @@ class StockLanSource implements StockSource {
       if (note.isNotEmpty) "note": note
     }));
   }
+
+  // A master is one site (plan D6): there is no other branch to send to or price for.
+
+  @override
+  Future<StockTransfersPage> transfers(Map<String, dynamic> request) => throw UnsupportedError("stock transfers are cloud only");
+
+  @override
+  Future<StockTransfer> createTransfer(Map<String, dynamic> request) => throw UnsupportedError("stock transfers are cloud only");
+
+  @override
+  Future<StockTransfer> updateTransfer(Map<String, dynamic> request) => throw UnsupportedError("stock transfers are cloud only");
+
+  @override
+  Future<StockTransfer> receiveTransfer(Map<String, dynamic> request) => throw UnsupportedError("stock transfers are cloud only");
+
+  @override
+  Future<List<BranchPrice>> prices(List<String> products) => throw UnsupportedError("branch prices are cloud only");
+
+  @override
+  Future<void> setPrice(Map<String, dynamic> request) => throw UnsupportedError("branch prices are cloud only");
+
+  @override
+  Future<void> removePrice(Map<String, dynamic> request) => throw UnsupportedError("branch prices are cloud only");
 }

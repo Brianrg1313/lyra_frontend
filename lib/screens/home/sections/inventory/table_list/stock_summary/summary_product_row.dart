@@ -80,7 +80,7 @@ class SummaryProductRow extends StatelessWidget {
     );
   }
 
-  /// One of the three numbers columns.
+  /// One of the numbers columns.
   ///
   /// The two inventory ones are drawn with their buttons; performance, which
   /// isn't measured yet, is a figure and nothing more.
@@ -104,6 +104,7 @@ class SummaryProductRow extends StatelessWidget {
         value: switch (column.key) {
           StockSummaryColumn.stockKey => stock,
           StockSummaryColumn.reservedKey => reserved,
+          StockSummaryColumn.transitKey => row.transit,
           // Performance isn't measured yet: the column is there, the value
           // isn't.
           _ => null

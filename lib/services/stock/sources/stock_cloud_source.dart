@@ -1,5 +1,8 @@
 // SERVICES
 import 'package:app/services/stock/movements/stock_movement_model.dart';
+import 'package:app/services/stock/prices/branch_price_model.dart';
+import 'package:app/services/stock/transfers/stock_transfer_model.dart';
+import 'package:app/toolkit/deployment.dart' show UnreadableAnswer;
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/toolkit/api.dart';
@@ -39,4 +42,36 @@ class StockCloudSource implements StockSource {
     version: "v1",
     data: movement.request(tableId: tableId, productId: productId)
   ));
+
+  @override
+  Future<StockTransfersPage> transfers(Map<String, dynamic> request) async =>
+    StockTransfersPage.fromJson(await api.post(path: "/inventory/stock/transfers/search", version: "v1", data: request));
+
+  @override
+  Future<StockTransfer> createTransfer(Map<String, dynamic> request) async =>
+    _transfer(await api.post(path: "/inventory/stock/transfers", version: "v1", data: request));
+
+  @override
+  Future<StockTransfer> updateTransfer(Map<String, dynamic> request) async =>
+    _transfer(await api.put(path: "/inventory/stock/transfers", version: "v1", data: request));
+
+  @override
+  Future<StockTransfer> receiveTransfer(Map<String, dynamic> request) async =>
+    _transfer(await api.post(path: "/inventory/stock/transfers/receive", version: "v1", data: request));
+
+  @override
+  Future<List<BranchPrice>> prices(List<String> products) async => products.isEmpty
+    ? const []
+    : BranchPrice.listFrom(await api.post(path: "/inventory/products/prices", version: "v1", data: {"PRODUCTS": products}));
+
+  @override
+  Future<void> setPrice(Map<String, dynamic> request) =>
+    api.put(path: "/inventory/products/prices", version: "v1", data: request);
+
+  @override
+  Future<void> removePrice(Map<String, dynamic> request) =>
+    api.delete(path: "/inventory/products/prices", version: "v1", data: request);
+
+  static StockTransfer _transfer(dynamic answer) =>
+    StockTransfer.read(answer) ?? (throw const UnreadableAnswer("inventory/stock/transfers"));
 }

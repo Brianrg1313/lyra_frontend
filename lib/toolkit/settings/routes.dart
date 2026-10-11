@@ -22,6 +22,7 @@ import 'package:app/screens/home/sections/employees/employee_detail/_employee_de
 import 'package:app/screens/home/sections/employees/employee_detail/employee_part.dart';
 import 'package:app/screens/home/sections/employees/own_settings/own_section.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
+import 'package:app/screens/home/sections/inventory/transfers/_transfers.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/home/sections/sales/sales_tab.dart';
 
@@ -185,6 +186,15 @@ final List<ScreenRoute> routes = [
   // It's the only route that hangs off a table: its settings are a side
   // panel (`showTableSettings`) that opens on top of the list or the sheet,
   // so the URL stays that of whatever was left underneath.
+  // The transfers between branches: a fixed segment, so it goes before a table's `:id`.
+  ScreenRoute(
+    animation: _animation,
+    key: StockTransfersSection.routeKey,
+    url: StockTransfersSection.path,
+    parents: ["inventory"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  ),
   ScreenRoute(
     animation: _animation,
     key: TableViewSection.routeKey,

@@ -11563,6 +11563,550 @@ class S {
     );
   }
 
+  /// `On its way`
+  String get stock_summary_transit {
+    return Intl.message(
+      'On its way',
+      name: 'stock_summary_transit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transfers`
+  String get inventory_transfers_title {
+    return Intl.message(
+      'Transfers',
+      name: 'inventory_transfers_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stock moving between {branch} and your other branches`
+  String inventory_transfers_branch(Object branch) {
+    return Intl.message(
+      'Stock moving between $branch and your other branches',
+      name: 'inventory_transfers_branch',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `Transfers`
+  String get inventory_transfers_open {
+    return Intl.message(
+      'Transfers',
+      name: 'inventory_transfers_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New transfer`
+  String get inventory_transfers_new {
+    return Intl.message(
+      'New transfer',
+      name: 'inventory_transfers_new',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coming here`
+  String get inventory_transfers_incoming {
+    return Intl.message(
+      'Coming here',
+      name: 'inventory_transfers_incoming',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sent from here`
+  String get inventory_transfers_outgoing {
+    return Intl.message(
+      'Sent from here',
+      name: 'inventory_transfers_outgoing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every status`
+  String get inventory_transfers_status_all {
+    return Intl.message(
+      'Every status',
+      name: 'inventory_transfers_status_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draft`
+  String get inventory_transfers_status_draft {
+    return Intl.message(
+      'Draft',
+      name: 'inventory_transfers_status_draft',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On its way`
+  String get inventory_transfers_status_sent {
+    return Intl.message(
+      'On its way',
+      name: 'inventory_transfers_status_sent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Received`
+  String get inventory_transfers_status_received {
+    return Intl.message(
+      'Received',
+      name: 'inventory_transfers_status_received',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelled`
+  String get inventory_transfers_status_cancelled {
+    return Intl.message(
+      'Cancelled',
+      name: 'inventory_transfers_status_cancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The transfers didn't load`
+  String get inventory_transfers_error {
+    return Intl.message(
+      'The transfers didn\'t load',
+      name: 'inventory_transfers_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing is on its way to this branch.`
+  String get inventory_transfers_empty_incoming {
+    return Intl.message(
+      'Nothing is on its way to this branch.',
+      name: 'inventory_transfers_empty_incoming',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This branch hasn't sent anything yet.`
+  String get inventory_transfers_empty_outgoing {
+    return Intl.message(
+      'This branch hasn\'t sent anything yet.',
+      name: 'inventory_transfers_empty_outgoing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From {branch}`
+  String inventory_transfers_from(Object branch) {
+    return Intl.message(
+      'From $branch',
+      name: 'inventory_transfers_from',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `To {branch}`
+  String inventory_transfers_to(Object branch) {
+    return Intl.message(
+      'To $branch',
+      name: 'inventory_transfers_to',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `{count, plural, =1{and 1 more} other{and {count} more}}`
+  String inventory_transfers_more(num count) {
+    return Intl.plural(
+      count,
+      one: 'and 1 more',
+      other: 'and $count more',
+      name: 'inventory_transfers_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 unit} other{{count} units}}`
+  String inventory_transfers_units(num count) {
+    return Intl.plural(
+      count,
+      one: '1 unit',
+      other: '$count units',
+      name: 'inventory_transfers_units',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{received} of {units} received`
+  String inventory_transfers_units_received(Object received, Object units) {
+    return Intl.message(
+      '$received of $units received',
+      name: 'inventory_transfers_units_received',
+      desc: '',
+      args: [received, units],
+    );
+  }
+
+  /// `Still moving`
+  String get inventory_transfers_unsettled {
+    return Intl.message(
+      'Still moving',
+      name: 'inventory_transfers_unsettled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send`
+  String get inventory_transfers_send {
+    return Intl.message(
+      'Send',
+      name: 'inventory_transfers_send',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Discard`
+  String get inventory_transfers_drop {
+    return Intl.message(
+      'Discard',
+      name: 'inventory_transfers_drop',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Discard this draft?`
+  String get inventory_transfers_drop_title {
+    return Intl.message(
+      'Discard this draft?',
+      name: 'inventory_transfers_drop_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing had moved yet, so no stock changes.`
+  String get inventory_transfers_drop_message {
+    return Intl.message(
+      'Nothing had moved yet, so no stock changes.',
+      name: 'inventory_transfers_drop_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Call back`
+  String get inventory_transfers_call_back {
+    return Intl.message(
+      'Call back',
+      name: 'inventory_transfers_call_back',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Call this shipment back?`
+  String get inventory_transfers_call_back_title {
+    return Intl.message(
+      'Call this shipment back?',
+      name: 'inventory_transfers_call_back_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Its units go back on this branch's shelf, and the other branch stops waiting for them.`
+  String get inventory_transfers_call_back_message {
+    return Intl.message(
+      'Its units go back on this branch\'s shelf, and the other branch stops waiting for them.',
+      name: 'inventory_transfers_call_back_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receive`
+  String get inventory_transfers_receive {
+    return Intl.message(
+      'Receive',
+      name: 'inventory_transfers_receive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Shipment received`
+  String get inventory_transfers_received {
+    return Intl.message(
+      'Shipment received',
+      name: 'inventory_transfers_received',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Shipment sent`
+  String get inventory_transfers_sent {
+    return Intl.message(
+      'Shipment sent',
+      name: 'inventory_transfers_sent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draft saved`
+  String get inventory_transfers_drafted {
+    return Intl.message(
+      'Draft saved',
+      name: 'inventory_transfers_drafted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From {branch}. The units leave the shelf when it is sent, and join the other branch's when it is received there.`
+  String inventory_transfers_form_subtitle(Object branch) {
+    return Intl.message(
+      'From $branch. The units leave the shelf when it is sent, and join the other branch\'s when it is received there.',
+      name: 'inventory_transfers_form_subtitle',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `Send to`
+  String get inventory_transfers_destination {
+    return Intl.message(
+      'Send to',
+      name: 'inventory_transfers_destination',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a branch`
+  String get inventory_transfers_destination_placeholder {
+    return Intl.message(
+      'Pick a branch',
+      name: 'inventory_transfers_destination_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick the branch it goes to`
+  String get inventory_transfers_destination_required {
+    return Intl.message(
+      'Pick the branch it goes to',
+      name: 'inventory_transfers_destination_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search a product to add`
+  String get inventory_transfers_search {
+    return Intl.message(
+      'Search a product to add',
+      name: 'inventory_transfers_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Products`
+  String get inventory_transfers_lines {
+    return Intl.message(
+      'Products',
+      name: 'inventory_transfers_lines',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} free`
+  String inventory_transfers_available(Object count) {
+    return Intl.message(
+      '$count free',
+      name: 'inventory_transfers_available',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Remove`
+  String get inventory_transfers_remove_line {
+    return Intl.message(
+      'Remove',
+      name: 'inventory_transfers_remove_line',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add at least one product with units`
+  String get inventory_transfers_items_required {
+    return Intl.message(
+      'Add at least one product with units',
+      name: 'inventory_transfers_items_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note`
+  String get inventory_transfers_note {
+    return Intl.message(
+      'Note',
+      name: 'inventory_transfers_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Anything the other branch should know`
+  String get inventory_transfers_note_hint {
+    return Intl.message(
+      'Anything the other branch should know',
+      name: 'inventory_transfers_note_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save as draft`
+  String get inventory_transfers_save_draft {
+    return Intl.message(
+      'Save as draft',
+      name: 'inventory_transfers_save_draft',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send now`
+  String get inventory_transfers_send_now {
+    return Intl.message(
+      'Send now',
+      name: 'inventory_transfers_send_now',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receive shipment`
+  String get inventory_transfers_receive_title {
+    return Intl.message(
+      'Receive shipment',
+      name: 'inventory_transfers_receive_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sent from {branch}. Count what arrived: it joins this branch's shelf, and what is missing is written off with the reason you pick.`
+  String inventory_transfers_receive_subtitle(Object branch) {
+    return Intl.message(
+      'Sent from $branch. Count what arrived: it joins this branch\'s shelf, and what is missing is written off with the reason you pick.',
+      name: 'inventory_transfers_receive_subtitle',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `{count} sent`
+  String inventory_transfers_line_sent(Object count) {
+    return Intl.message(
+      '$count sent',
+      name: 'inventory_transfers_line_sent',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `What happened to the rest`
+  String get inventory_transfers_reason {
+    return Intl.message(
+      'What happened to the rest',
+      name: 'inventory_transfers_reason',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Damaged`
+  String get inventory_transfers_reason_damage {
+    return Intl.message(
+      'Damaged',
+      name: 'inventory_transfers_reason_damage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lost`
+  String get inventory_transfers_reason_loss {
+    return Intl.message(
+      'Lost',
+      name: 'inventory_transfers_reason_loss',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stolen`
+  String get inventory_transfers_reason_theft {
+    return Intl.message(
+      'Stolen',
+      name: 'inventory_transfers_reason_theft',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A count goes from 0 to {count}`
+  String inventory_transfers_count_invalid(Object count) {
+    return Intl.message(
+      'A count goes from 0 to $count',
+      name: 'inventory_transfers_count_invalid',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Shipments waiting to be received`
+  String get badge_inventory_incoming {
+    return Intl.message(
+      'Shipments waiting to be received',
+      name: 'badge_inventory_incoming',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Performance`
   String get stock_summary_performance {
     return Intl.message(
@@ -19455,6 +19999,26 @@ class S {
     );
   }
 
+  /// `Send stock to another branch`
+  String get permission_inventory_transfer {
+    return Intl.message(
+      'Send stock to another branch',
+      name: 'permission_inventory_transfer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receive stock from another branch`
+  String get permission_inventory_receive {
+    return Intl.message(
+      'Receive stock from another branch',
+      name: 'permission_inventory_receive',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Choose the summary's columns`
   String get permission_inventory_configure {
     return Intl.message(
@@ -19760,6 +20324,16 @@ class S {
     return Intl.message(
       'Delete records',
       name: 'permission_products_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set a branch's own price`
+  String get permission_products_price {
+    return Intl.message(
+      'Set a branch\'s own price',
+      name: 'permission_products_price',
       desc: '',
       args: [],
     );

@@ -24,6 +24,7 @@ import './finance/_finance.dart';
 import './local_server/_local_server.dart';
 import './inventory/table_list/_table_list.dart';
 import './inventory/table_view/_table_view.dart';
+import './inventory/transfers/_transfers.dart';
 import './knowledge/_knowledge.dart';
 import './messages/_messages.dart';
 import './sales/_sales.dart';
@@ -358,6 +359,11 @@ Widget _screen(String currentKey, HomeSection section, String? businessId) {
     // A table's link opens the section itself, on that table: the same const widget as
     // the bare section, so moving between the two keeps its state.
     TableViewSection.routeKey => const InventorySection(),
+    // Cloud only: a master is one site, with nobody to send stock to.
+    StockTransfersSection.routeKey => switch (CapabilityService().of("inventory.transfers")) {
+      Capability.available => const StockTransfersSection(),
+      final capability => UnavailableSection(capability: capability)
+    },
     // Keyed by id: without it, going from one channel's edit page straight to
     // another's would reuse the previous `State`, which already read the id
     // from the URL in its `initState` and would keep editing the first one.

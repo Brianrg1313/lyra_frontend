@@ -18,6 +18,7 @@ String badgeTitle(BuildContext context, BadgeModel badge) {
     "badge_appointments_upcoming" => text.badge_appointments_upcoming,
     "badge_reservations_pending" => text.badge_reservations_pending,
     "badge_pos_invoices" => text.badge_pos_invoices,
+    "badge_inventory_incoming" => text.badge_inventory_incoming,
     "badge_money_receivables" => text.badge_money_receivables,
     "badge_notifications_unseen" => text.badge_notifications_unseen,
     "badge_setup_country" => text.badge_setup_country,

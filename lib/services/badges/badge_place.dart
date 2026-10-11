@@ -33,6 +33,9 @@ enum BadgePlace {
   financeMethods(["business.payments"]),
   salesProcess(["sales.process"]),
 
+  // Inventory: the shipments other branches sent here (`inventory.incoming`).
+  inventoryTransfers(["inventory.transfers"]),
+
   // Header.
   pos(["sidebar.pos"]),
   bell(["topbar.notifications"]),

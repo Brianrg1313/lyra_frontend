@@ -198,14 +198,18 @@
       "title": "Inventory",
       "modes": ["cloud", "local", "hybrid"],
       "scope": "company",
-      "routes": ["inventory", "inventory_table_view"],
-      "paths": ["/home/inventory", "/home/inventory/:id"],
+      "routes": ["inventory", "inventory_table_view", "inventory_transfers"],
+      "paths": ["/home/inventory", "/home/inventory/:id", "/home/inventory/transfers"],
       "actions": ["view", "create_table", "import", "edit_table", "delete_table", "edit_columns", "edit_records", "move_stock"],
       "action_modes": {
-        "templates": ["cloud"]
+        "templates": ["cloud"],
+        "transfers": ["cloud"],
+        "prices": ["cloud"]
       },
       "action_notes": {
         "templates": "Starting tables by the company's activity, offered while it has no table (the backend's catalogue; a master has none).",
+        "transfers": "Stock sent to and received from another branch (`inventory.transfer`, `inventory.receive` in the catalog); a master is one site.",
+        "prices": "A product's own price at a branch (`products.price` in the catalog); a master is one site.",
         "edit_table": "Rename, colour, header data and agent settings of a table.",
         "edit_columns": "Create, rename, retype, reorder and delete fields.",
         "edit_records": "Write cells and rows in the spreadsheet.",

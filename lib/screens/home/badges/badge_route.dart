@@ -6,6 +6,7 @@ import 'package:app/services/badges/notification_model.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
+import 'package:app/screens/home/sections/inventory/transfers/_transfers.dart';
 import 'package:app/screens/pos/_pos.dart';
 
 /// Where opening [badge] goes, in this app's routing, or `null` when it has no page here yet
@@ -45,6 +46,7 @@ final List<(String, String? Function(String? business))> _routes = [
   ("sidebar.chats", (_) => HomeSection.messages.path),
   ("sidebar.sales", (_) => HomeSection.sales.path),
   ("sidebar.knowledge", (_) => HomeSection.knowledge.path),
+  ("inventory.transfers", (_) => StockTransfersSection.path),
   ("sidebar.inventory", (_) => HomeSection.inventory.path),
   ("sidebar.channels", (_) => HomeSection.channels.path),
   ("sidebar.money", (_) => HomeSection.finance.path),

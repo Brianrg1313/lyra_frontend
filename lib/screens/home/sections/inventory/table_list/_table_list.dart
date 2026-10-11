@@ -21,6 +21,7 @@ import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart'
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
 
+import './transfers_button.dart';
 import './import_button.dart';
 import './inventory_bar.dart';
 import './inventory_start.dart';
@@ -245,6 +246,7 @@ class _InventorySectionState extends State<InventorySection> {
       controls: const [InventoryViewToggle()],
       actions: [
         TableOptionsButton(table: table),
+        const TransfersButton(),
         if (_importAction != null) ImportButton(action: _import, loading: _importing),
         Button(
           width: null,

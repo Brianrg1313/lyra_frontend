@@ -75,6 +75,7 @@ class SummaryHeader extends StatelessWidget {
     return switch (column.key) {
       StockSummaryColumn.stockKey => S.of(context).stock_summary_stock,
       StockSummaryColumn.reservedKey => S.of(context).stock_summary_reserved,
+      StockSummaryColumn.transitKey => S.of(context).stock_summary_transit,
       StockSummaryColumn.performanceKey =>
         S.of(context).stock_summary_performance,
       _ => ""

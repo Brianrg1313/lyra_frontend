@@ -303,7 +303,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `badge_place.dart` — `BadgePlace`: **every place in the app that draws a badge → the anchors (or badge keys) it reads** (side bar
   entries via `section(key)`, tabs, header, the two channel-form fields, the profile's country and logo by key). Move a dot here.
   `sidebar.business` and `topbar.account` are not read. `messages` reads `sidebar.chats` (`chats.attention` + `chats.unread`),
-  `sales`/`knowledge` their side bar anchors, `salesProcess` the sales board's `process` tab (`sales.new`).
+  `sales`/`knowledge` their side bar anchors, `salesProcess` the sales board's `process` tab (`sales.new`), `inventoryTransfers` the transfers button and page (`inventory.incoming`).
 - `badges_service.dart` — `BadgesService` singleton (`.value` provider): `seed(data, business:)` (`/init`'s, kept only
   when measured for the active company, else read), `refresh` (`GET /badges/`), `seen(keys)` (dismissible only,
   optimistic, `POST /badges/seen/`), `discover(place)` (its `news` seen), `at(place)`, `clear`. Rereads on
@@ -372,7 +372,11 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `inventory.tables.normalize`.
 - `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance). Used by `StockSummaryService`.
   `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
-  `stock.move` (`operationOf`).
+  `stock.move` (`operationOf`). Also transfers (search, create, update, receive) and a branch's prices (read, set, remove):
+  cloud only, the LAN source throws `UnsupportedError` (a master is one site).
+- `transfers/stock_transfer_model.dart` — `StockTransfer` (`read`; `from`/`to` branch ids, lines, units, received, `settled`, `movedAt`, `sentBy`), `StockTransferLine` (`sku`, quantity, received, `shortage`), `StockTransferStatus` (`draft sent received cancelled`), `StockShortage` (`damage loss theft`), `StockTransfersPage`.
+- `transfers/stock_transfer_request.dart` — `createTransferRequest` (`SEND` only to send at once, lines without units dropped), `editTransferRequest`, `transferActionRequest` (send / cancel), `receiveTransferRequest` (only the lines counted short), `searchTransfersRequest`.
+- `transfers/stock_transfers_service.dart` — `StockTransfersService` (+ status, `StockTransferSide`, `TransferProduct`): one side and status at a time (opens on incoming `sent`), paging, writes answer the row (`_place`), `transfer/changed` replaces or rereads, `onRestored` rereads; `canSend`/`canReceive` from the person's own grant (`PermissionsSource.mine`: `inventory.transfer`, `inventory.receive`); `nameOf` (the table's summary, first text column, 200 rows, once per table), `searchProducts` (primary table, free = stock − reserved), `destinations`. Owned by the transfers page.
 - `tables/tables_service.dart` — `TablesService` (+ `TablesStatus`, `TableImportResult`,
   `TableImportStage`): list, create, rename, delete, import; listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
@@ -386,7 +390,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_normalize_model.dart` — `POST .../builder/normalize/` result.
 - `tables/table_normalizing_model.dart` / `table_ready_model.dart` — `table/normalizing` / `table/ready` notices.
 - `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`).
-- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow`, `StockSummaryColumn` (`sortable`), `StockSummarySort`.
+- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement`, `StockBalance`, `StockOperation`, `StockReason`.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move
   (sale, restock, another till's hold), carries the balance after it.
@@ -545,7 +549,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/channels/{,providers/,detail/$id}` · `/connections/{,providers/,detail/$id}` · `/knowledge/{,products/}`
 `/inventory/products/builder/{list,structure,details,fields,normalize}/` ·
 `/inventory/products/records/{list,manage,images}/` · `/inventory/products/import/{structure,records}/$format/` ·
-`/inventory/stock/summary/`
+`/inventory/stock/summary/` · `/inventory/stock/transfers{,/receive,/search}` · `/inventory/products/prices`
 `/sales/` · `/sales/stages/` · `/sales/detail/$id` · `/sales/fulfillment/` · `/chats/stage/`
 `/pos/` · `/pos/catalog/` · `/pos/methods/` · `/pos/invoices/{,items,close,cancel}`
 `/aries/v1/chats{,/stages,/tags,/summary,/detail/$id,/messages/$id,/messages,/read,/bot/pause,/bot/resume,/assign,/stage,/alerts/resolve}` · `/aries/v1/team{,?ID=}`

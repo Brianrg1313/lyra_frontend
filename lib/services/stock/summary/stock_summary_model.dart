@@ -43,6 +43,10 @@ class StockSummaryColumn {
 
   /// Key of the indicator of how well it sells. It is not measured yet: the
   /// column exists and its value is null.
+  /// What another branch sent here and nobody has counted in yet: in no balance, so it can't
+  /// be sold anywhere until it is received.
+  static const String transitKey = "transit";
+
   static const String performanceKey = "performance";
 
   /// By what the column is identified within the row: the field's UUID if it
@@ -80,12 +84,13 @@ class StockSummaryColumn {
   bool get isImage => key == imageKey;
   bool get isStock => key == stockKey;
   bool get isReserved => key == reservedKey;
+  bool get isTransit => key == transitKey;
   bool get isPerformance => key == performanceKey;
 
   /// Whether it is one of the three numbers that close the row. They are drawn
   /// differently than the rest —narrow, right-aligned— because they are for
   /// comparing top to bottom, not for reading.
-  bool get isNumber => isStock || isReserved || isPerformance;
+  bool get isNumber => isStock || isReserved || isTransit || isPerformance;
 
   /// Whether the summary can be ordered by it (`stock.md` ST-35): any of the company's
   /// columns but the photo, and `stock` only when a stock column of the table is behind
@@ -112,7 +117,7 @@ class StockSummaryColumn {
   }
 
   static const Set<String> _fixed = {
-    imageKey, stockKey, reservedKey, performanceKey
+    imageKey, stockKey, reservedKey, transitKey, performanceKey
   };
 
   /// The stored width as a number. MySQL returns an INT as text quite often,
@@ -217,6 +222,9 @@ class StockSummaryRow {
   /// How much of what there is is set aside for someone, or null if it is not
   /// counted.
   int? get reserved => _int(values[StockSummaryColumn.reservedKey]);
+
+  /// What is on its way here from another branch, or null if the answer doesn't say.
+  int? get transit => _int(values[StockSummaryColumn.transitKey]);
 
   static int? _int(dynamic raw) => switch (raw) {
     final num value => value.toInt(),

@@ -656,6 +656,9 @@ class _Source implements StockSource {
   final sorts = <StockSummarySort?>[];
 
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
   Future<StockSummaryPage> summary({
     required int page,
     required int size,
