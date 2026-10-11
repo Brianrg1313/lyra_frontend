@@ -62,12 +62,13 @@ class SaleDetailIdentity extends StatelessWidget {
               ellipsis: true,
               color: sale.customer.isEmpty ? scheme.text.secondary : null
             ),
-            if (sale.ticket.isNotEmpty) ...[
+            if (sale.ticket.isNotEmpty || sale.number.isNotEmpty) ...[
               SizedBox(height: AppSize.gap * 0.5),
               // Selectable because it is the value somebody reads off a printed
-              // slip and pastes into a message to the customer.
+              // slip and pastes into a message to the customer. The internal
+              // number goes first: it is the branch's count of its sales.
               TextSmall(
-                sale.ticket,
+                [sale.number, sale.ticket].where((part) => part.isNotEmpty).join(" · "),
                 selectable: true,
                 color: scheme.text.secondary
               )

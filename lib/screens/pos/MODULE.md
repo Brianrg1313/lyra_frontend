@@ -36,7 +36,7 @@ returns to the section as it was. No in-page back button.
 - `desktop/ticket_line.dart` — `PosTicketLine`: name/total over −,+/unit price. Steps are `ADD ±1`;
   − at 1 removes. Inert while `isPending`. `!isHeld` shows a danger note.
 - `desktop/ticket_footer.dart` — `PosTicketFooter`: typed-in amount (`PosAmountModal`), VAT row
-  (`PosTaxModal`, only place to set it), subtotal, total, checkout (`PosCheckoutModal`, dimmed while settling).
+  (`PosTaxModal`, only place to set it), subtotal, total, checkout (`PosCheckoutModal`, dimmed while settling; done names the sale's `number` when it has one).
 - `desktop/admin_card.dart` — who is at the counter, today's sales, exit POS.
 
 ## Invariants

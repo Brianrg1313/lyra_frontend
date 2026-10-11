@@ -50,7 +50,7 @@ by `_sales.dart`, not app-wide. Contracts and model rules: `lib/services/MODULE.
   `badge`: `process` draws `BadgePlace.salesProcess` (backend `sales.new`: the channel sales this person has not opened —
   the rows the table marks); `done` none.
 - `sales_board.dart` — `SalesBoard({section})`: bar, table, "load more" (`SectionMoreButton`, no count). Loads on first frame,
-  applies header search (code · customer · seller), opens `showSaleDetail` and acts on its
+  applies header search (code · number · customer · seller), opens `showSaleDetail` and acts on its
   `SaleDetailRequest` (handover form, or approval via `showAlertModal` + `SalesService.approve`).
   One-minute clock keeps "waiting" fresh.
 - `sales_filters/_sales_filters.dart` — `SalesFilters`: one row — count left, controls right; caption
@@ -61,7 +61,7 @@ by `_sales.dart`, not app-wide. Contracts and model rules: `lib/services/MODULE.
   `catalog.of(section)`, each with its dot. `sales_filters/sales_channel_filter.dart` — `SalesChannelFilter`.
 - `sales_filters/sales_count.dart` — `SalesCount`; `sales_filters/sales_pending.dart` — `SalesPending` (reload
   for movements the list could not follow); `sales_filters/sales_search_caption.dart` — `SalesSearchCaption`.
-- `sales_table.dart` — `SalesTable`: `DataTableView`, ticket · customer · state · channel · wait ·
+- `sales_table.dart` — `SalesTable`: `DataTableView`, ticket · number (the branch's `A-000123`) · customer · state · channel · wait ·
   units · total · outstanding · seller, ticket frozen. Not sortable. Every row opens
   (`onRowTap`); no action column. An `unseen` row: `UnseenMark` before the ticket, ticket and customer bold.
   Opening a row (`SalesBoard._open`) is reviewing it: `SalesService.review`.

@@ -39,6 +39,7 @@ const _sales = [
     id: "1",
     source: SaleSource.ticket,
     ticket: "K7M4-2QX9",
+    number: "A-000123",
     customer: "Ana Perez",
     seller: "Luis Gomez"
   ),
@@ -74,6 +75,21 @@ void main() {
     expect(find.text("Ana Perez"), findsOneWidget);
     expect(find.text("Carlos Ruiz"), findsNothing);
     expect(find.text("Ana Maria Soto"), findsNothing);
+
+    await _dispose(tester, service, home);
+  });
+
+  testWidgets("the branch's internal number finds its sale too", (tester) async {
+    final home = HomeService();
+    final service = SalesService()..seed(_sales);
+
+    await _pump(tester, service, home);
+
+    home.search("a-000123");
+    await tester.pump();
+
+    expect(find.text("Ana Perez"), findsOneWidget);
+    expect(find.text("Carlos Ruiz"), findsNothing);
 
     await _dispose(tester, service, home);
   });

@@ -474,7 +474,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 - `sales_catalog_service.dart` — `SalesCatalogService`: `GET /sales/stages` (stages in precedence,
   handover modes/states) + `GET /pos/methods` for `channels`. `sections` not read (tab titles are `S`).
   `of(section)`, `stageName`/`channelName` fall back to the code.
-- `sale_model.dart` — `SaleModel`, `SalesPage`, `SaleSource`, `SaleSection`, `SaleLevel`,
+- `sale_model.dart` — `SaleModel` (`number`: the branch's internal `A-000123` of a completed sale, empty before; also on `SaleDetailModel` and `PosInvoice`), `SalesPage`, `SaleSource`, `SaleSection`, `SaleLevel`,
   `saleAmount`/`saleCount`/`saleDate`. **`saleAmount` returns `null`, not `0`.** Action rules:
   `canFulfil`, `canApprove` (at `verifying` **and** has a `conversation`). `unseen`: a channel sale this person
   has not opened (kept by `moved`, cleared by `opened`).

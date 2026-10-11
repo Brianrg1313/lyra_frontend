@@ -105,6 +105,17 @@ class SalesTable extends StatelessWidget {
             ))
           ])
         ),
+        // The branch's count of its completed sales (`A-000123`): a gap is a missing sale.
+        TableColumn(
+          id: "number",
+          title: S.of(context).sales_column_number,
+          width: 110,
+          cell: (context, sale, _) => TextSmall(
+            sale.number.isEmpty ? _none : sale.number,
+            ellipsis: true,
+            color: sale.number.isEmpty ? scheme.text.secondary : scheme.text.primary
+          )
+        ),
         TableColumn(
           id: "customer",
           title: S.of(context).sales_column_customer,

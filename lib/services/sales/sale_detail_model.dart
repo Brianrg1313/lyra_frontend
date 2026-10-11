@@ -25,6 +25,7 @@ class SaleDetailModel {
     this.id = "",
     this.source = SaleSource.chat,
     this.ticket = "",
+    this.number = "",
     this.status = "",
     this.stage = "",
     this.label = "",
@@ -64,6 +65,9 @@ class SaleDetailModel {
 
   /// The ticket code as it is printed. Empty on a sale nobody rang up.
   final String ticket;
+
+  /// The branch's internal number of a completed sale (`A-000123`, `SaleModel.number`).
+  final String number;
 
   /// What the *document* says about itself (`open`, `completed`, `cancelled`).
   /// It is not [stage]: the document knows it was charged, and the stage knows
@@ -187,6 +191,7 @@ class SaleDetailModel {
       id: (data["id"] ?? "").toString(),
       source: SaleSource.from(data["source"]),
       ticket: (data["ticket"] ?? "").toString(),
+      number: (data["number"] ?? "").toString(),
       status: (data["status"] ?? "").toString(),
       stage: (data["stage"] ?? "").toString(),
       label: (data["label"] ?? "").toString(),

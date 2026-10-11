@@ -205,9 +205,9 @@ class PosTicketFooter extends StatelessWidget {
     // the backend's figure and it counts more than this till's tickets.
     unawaited(context.read<PosService>().retry());
 
-    FloatFlag.of(context).message(
-      S.of(context).pos_checkout_done(sale.ticket)
-    );
+    FloatFlag.of(context).message(sale.number.isEmpty
+      ? S.of(context).pos_checkout_done(sale.ticket)
+      : S.of(context).pos_checkout_done_number(sale.number, sale.ticket));
   }
 
   /// Announces whatever the last write left behind, if it left anything.

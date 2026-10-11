@@ -129,7 +129,7 @@ through `Navigator.pop(context, value)`.
   `Future<SaleDetailRequest?>` (`approve` · `fulfil`), `SaleDetailModal`: one sale in full. **Writes
   nothing**; the board acts on the returned request after it closes. Owns a fresh
   `SaleDetailService` per opening; header drawn from the row so it shows before the read.
-- `sale_detail/detail_identity.dart` — `SaleDetailIdentity`: customer, code, stage tag, wait, plus
+- `sale_detail/detail_identity.dart` — `SaleDetailIdentity`: customer, number · code, stage tag, wait, plus
   the one `action` button (approve if `canApprove`, else fulfil if `canFulfil`), handed in built.
 - `sale_detail/detail_proof.dart` — `SaleDetailProof`: the payment proof(s) the customer sent,
   newest first — picture (→ `showImageViewer`), document (→ `launchUrl`), or text; lost image says

@@ -97,6 +97,7 @@ class SaleModel {
     required this.id,
     this.source = SaleSource.chat,
     this.ticket = "",
+    this.number = "",
     this.stage = "",
     this.label = "",
     this.section,
@@ -146,6 +147,10 @@ class SaleModel {
   /// The ticket code (`K7M4-2QX9`), which is how people name the same sale out
   /// loud. Empty on a conversation, which has not been rung up.
   final String ticket;
+
+  /// The branch's consecutive number of a completed sale, with the branch's series (`A-000123`).
+  /// Internal control, not a fiscal number: a gap is a missing sale. Empty until it is completed.
+  final String number;
 
   /// Where it stands, as a code (`shipping`, `verifying`, `owed`). It is what
   /// the stage filter compares against; what is *shown* is [label].
@@ -308,6 +313,7 @@ class SaleModel {
     id: id,
     source: source,
     ticket: ticket,
+    number: number,
     stage: stage,
     label: label,
     section: section,
@@ -338,6 +344,7 @@ class SaleModel {
     id: id,
     source: source,
     ticket: ticket,
+    number: number,
     stage: stage,
     label: label,
     section: section,
@@ -365,6 +372,7 @@ class SaleModel {
     id: (data["id"] ?? "").toString(),
     source: SaleSource.from(data["source"]),
     ticket: (data["ticket"] ?? "").toString(),
+    number: (data["number"] ?? "").toString(),
     stage: (data["stage"] ?? "").toString(),
     label: (data["label"] ?? "").toString(),
     section: SaleSection.from(data["section"]),

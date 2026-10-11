@@ -127,6 +127,14 @@ void main() {
     expect(invoice.paymentName, "Transferencia");
   });
 
+  test("the charged sale carries its branch's number, the open ticket none", () {
+    final open = PosInvoice.fromJson(_invoice());
+    final charged = PosInvoice.fromJson({...(_invoice(open: false) as Map), "number": "A-000123"});
+
+    expect(open.number, isEmpty);
+    expect(charged.number, "A-000123");
+  });
+
   test('an answer that cannot be read is discarded and not drawn', () {
     // A response that is not an object, or one with no id, is a read that was
     // not understood. Drawing it would be a ticket of holes.

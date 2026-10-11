@@ -187,6 +187,7 @@ class _SalesBoardState extends State<SalesBoard> {
 
     return sales.where((sale) =>
       sale.ticket.toLowerCase().contains(query) ||
+      sale.number.toLowerCase().contains(query) ||
       sale.customer.toLowerCase().contains(query) ||
       sale.seller.toLowerCase().contains(query)
     ).toList();

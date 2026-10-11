@@ -100,6 +100,7 @@ class PosInvoice {
   const PosInvoice({
     this.id = "",
     this.ticket = "",
+    this.number = "",
     this.isOpen = false,
     this.units = 0,
     this.subtotal = 0,
@@ -117,6 +118,9 @@ class PosInvoice {
   /// opened** and never changes, so it can be read out and printed on a
   /// provisional slip long before anything is paid.
   final String ticket;
+
+  /// The branch's internal number (`A-000123`), given when it is charged: empty while open.
+  final String number;
 
   /// Whether it is still being built. False on the ticket a checkout answers
   /// with, which is the same document already charged.
@@ -148,6 +152,7 @@ class PosInvoice {
     return PosInvoice(
       id: (data["id"] ?? "").toString(),
       ticket: (data["ticket"] ?? "").toString(),
+      number: (data["number"] ?? "").toString(),
       // The backend says `open` on an invoice and `status` on both. The flag is
       // read first because a closed invoice does not carry it at all.
       isOpen: data["open"] == true,

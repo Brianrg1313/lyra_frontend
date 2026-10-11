@@ -11385,6 +11385,16 @@ class S {
     );
   }
 
+  /// `Sale {number} charged (ticket {ticket})`
+  String pos_checkout_done_number(Object number, Object ticket) {
+    return Intl.message(
+      'Sale $number charged (ticket $ticket)',
+      name: 'pos_checkout_done_number',
+      desc: '',
+      args: [number, ticket],
+    );
+  }
+
   /// `The payment methods have not been loaded, so nothing can be charged yet`
   String get pos_checkout_methods_error {
     return Intl.message(
@@ -15074,6 +15084,16 @@ class S {
     return Intl.message(
       'Ticket',
       name: 'sales_column_ticket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Number`
+  String get sales_column_number {
+    return Intl.message(
+      'Number',
+      name: 'sales_column_number',
       desc: '',
       args: [],
     );
