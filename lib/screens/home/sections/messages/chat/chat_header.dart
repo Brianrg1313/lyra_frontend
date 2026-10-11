@@ -87,8 +87,11 @@ class ChatHeader extends StatelessWidget {
 
   Future<void> _assign(BuildContext context) async {
     final thread = context.read<ChatThreadService>();
-    final team = context.read<ChatsService>().team;
+    // Only who may take this conversation: its branch's people and those of every branch.
+    final team = await thread.assignable();
     final current = thread.detail?.assignee;
+
+    if (!context.mounted) return;
 
     final picked = await showSelectMenu(
       context: context,

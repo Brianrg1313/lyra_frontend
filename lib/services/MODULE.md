@@ -508,7 +508,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
   Seams `seed`/`seedTags`/`receive`.
 - `chat_thread_service.dart` — `ChatThreadService` (+ `ChatThreadStatus`): one open chat, **created per
   panel**. `detail/:ID` + `messages/:ID` (`BEFORE`, `ALL`), `send` (returns the landing chat id),
-  `pause` `resume` `assign` `setStage` `resolve` `markRead`, `refreshDetail` (the AI spend has no event); reports the chat
+  `pause` `resume` `assign` (`assignable`: `GET /team?ID=`, who may take this chat by its branch) `setStage` `resolve` `markRead`, `refreshDetail` (the AI spend has no event); reports the chat
   opened (`BadgesService.opened`) after `load` and on every inbound message while open; patches the inbox row after its writes and
   its tags after each detail read; `chat/tags` replaces the detail's tags.
   Messages deduped by id; ticks never go backwards; `rekeyed` renames. Seams `seed`/`receive`.
@@ -548,7 +548,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/inventory/stock/summary/`
 `/sales/` · `/sales/stages/` · `/sales/detail/$id` · `/sales/fulfillment/` · `/chats/stage/`
 `/pos/` · `/pos/catalog/` · `/pos/methods/` · `/pos/invoices/{,items,close,cancel}`
-`/aries/v1/chats{,/stages,/tags,/summary,/detail/$id,/messages/$id,/messages,/read,/bot/pause,/bot/resume,/assign,/stage,/alerts/resolve}` · `/aries/v1/team`
+`/aries/v1/chats{,/stages,/tags,/summary,/detail/$id,/messages/$id,/messages,/read,/bot/pause,/bot/resume,/assign,/stage,/alerts/resolve}` · `/aries/v1/team{,?ID=}`
 `/scorpius/v1/tilesets` · `/scorpius/v1/raster/$name/$style/{z}/{x}/{y}{r}.png` · (no client yet) `/scorpius/v1/{route,matrix,isochrone,coverage}`
 `/money/` · `/money/summary/` · `/money/ai/` · `/money/catalog/` · `/money/methods/` ·
 `/money/payments/{,search,void}/` · `/money/receivables/`

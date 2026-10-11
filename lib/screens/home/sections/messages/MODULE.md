@@ -33,7 +33,7 @@
   `unseen` (customer wrote since this person opened it, `chats.unread`): bold name, time and `UnseenMark` in the side bar number's red,
   in place of the unanswered dot.
 - `chat/_chat.dart` — `ChatPanel({id})`: owns `ChatThreadService`; header, attention bar, messages, composer.
-- `chat/chat_header.dart` — `ChatHeader`: identity + stage, tags, take over (duration menu) / return to assistant, assign (`team`), options menu (mark read, sold with confirmation, ended, undo, AI cost → `showChatUsage`, earlier sessions); `widgets/chat_bot_line.dart` — `ChatBotLine`: who answers + assignee; `widgets/chat_handover_button.dart` — `ChatHandoverButton`.
+- `chat/chat_header.dart` — `ChatHeader`: identity + stage, tags, take over (duration menu) / return to assistant, assign (`ChatThreadService.assignable`: who may take this chat, read on each open; a `desk_member_branch` refusal is its flag), options menu (mark read, sold with confirmation, ended, undo, AI cost → `showChatUsage`, earlier sessions); `widgets/chat_bot_line.dart` — `ChatBotLine`: who answers + assignee; `widgets/chat_handover_button.dart` — `ChatHandoverButton`.
 - `chat/chat_attention.dart` — `ChatAttentionBar`, `chatAttentionTitle`: most urgent mark, team-only detail, resolve button for `pending`.
 - `chat/message_list.dart` — `MessageList`: reversed `ListView`, loads older (`BEFORE`) near the top, groups runs by author.
 - `chat/message_bubble.dart` — `MessageBubble`: side by direction, fill by author, image (`FileModel` → `showImageViewer`), audio mark, ticks/queued/failed.

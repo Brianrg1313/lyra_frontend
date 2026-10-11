@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/chats/chat_detail_model.dart';
 import 'package:app/services/chats/chat_event.dart';
@@ -292,6 +293,22 @@ class ChatThreadService extends ChangeNotifier {
   Future<bool> resume() => _handover("/chats/bot/resume", chatIdRequest(id: id));
 
   /// Assigns a member, or unassigns with null.
+  /// Who may take this conversation (`GET /aries/v1/team?ID=`): a person kept to other
+  /// branches can't take one of this conversation's branch (`409 desk_member_branch`). Read on
+  /// every "Assign to…", so a refusal is followed by the list as it is now. A failed read falls
+  /// back to the whole team ([inbox]'s), which the backend still checks.
+  Future<List<ChatPerson>> assignable() async {
+    try {
+      final data = await aries.get(path: "/team", version: "v1", query: {"ID": id});
+
+      return [for (final row in catalogRows(data)) ?ChatPerson.from(row)];
+    } catch (error) {
+      if (kDebugMode) print("loadChatAssignable failed: $error");
+
+      return inbox?.team ?? const [];
+    }
+  }
+
   Future<bool> assign(String? username) => _write(
     () => aries.put(
       path: "/chats/assign",
