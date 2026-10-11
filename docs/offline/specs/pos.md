@@ -38,6 +38,11 @@ What the counter draws: the primary table's records, read **by field type**, not
   units. A discount outside (0, 100] is ignored (the price is the list price). Only `DISCOUNT` is
   a discount: a `PERCENTAGE` column never is. This is the one place a discounted price is
   computed, so the grid, the ticket and the sale detail can't disagree.
+- **POS-7b** A master is one site of its company, and the cloud may price a product differently
+  there (`price`, `task-edge-sync-backend.md` §11, pulled only): its `price` replaces the `PRICE`
+  cell as the list price, and unless it `inheritsDiscount` its `discount` replaces the `DISCOUNT`
+  cell (null: not on offer here). POS-7 then applies to those. The grid and a new line read it; a
+  line already on a ticket keeps what it froze (POS-12).
 
 ### Ops
 

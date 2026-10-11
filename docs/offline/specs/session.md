@@ -257,7 +257,10 @@ word wins).
   `online: true`, and the app shows the editor read-only with where to change it. The owner stays
   `all` whatever arrives (S-6). At the first link each person's document goes up with their
   account, so the cloud admits them with it (§10 there). Revoked, or past the allowance, the
-  master's own editor is the way again.
+  master's own editor is the way again. The document is the company's and the master is one of its
+  sites (`sync_link.site`): a person whose `branches` leaves this site out has no access here, and
+  one with a structure of their own here (`at[<site>]`) gets it instead of `sections` / `template`
+  / `custom` — a manager in one shop, a cashier in another.
 
 ### Ops
 

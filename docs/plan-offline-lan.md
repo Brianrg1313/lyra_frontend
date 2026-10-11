@@ -1,6 +1,6 @@
 # Plan: offline / LAN mode (local master)
 
-## Where we are (2026-10-06) — read this first
+## Where we are (2026-10-11) — read this first
 
 Each release's detail is in the release log (appendix A). Phases are in §11, decisions in §13.
 
@@ -16,7 +16,12 @@ Each release's detail is in the release log (appendix A). Phases are in §11, de
 | 6 Sync (§9) | the engine's half done (`EdgeSync`, tested against an in-memory backend), permissions included (the cloud's win, P-12); the enrolment by itself, no screen; the backend's half (2026-10-04): every entity of contract §11 applied, swept and in the snapshot, one entity per section on both sides (§9.8; deliveries added, not yet run against the dev backend; employees 2026-10-06, a link from before an entity uploads its records once), seen end to end with the engine against the dev backend | the conflicts inbox on screen; the next entities (POS tickets, clients, files), the allowance's measure; the cloud's web finding its master (§9.7, D19, planned, nothing built) |
 | 7 Hardening | not started | — |
 
-**Next step:** statistics. Clients wait until the cloud has a customer list to follow.
+**Next step:** the engine's half of branches (2026-10-11, the backend's `sedes-frontend.md`): a master is
+one site of its cloud company, so it should apply its site's own price (`price` entity, `pos.md` POS-7b) and a
+person's structure at its site (`member.branches` / `member.at`, `session.md`); the sale's internal number
+(`A-000123`, the site's `series`) needs a decision first (who numbers a site's sales when both the cloud and the
+master sell for it). The app's online half is done and on a master hides what needs other branches. Then statistics;
+clients wait until the cloud has a customer list to follow.
 **Real hardware goes last** (owner's call, 2026-10-04): the exit checks of phase 3 and 4b and the
 "not yet seen" list below run together once the code is done.
 
