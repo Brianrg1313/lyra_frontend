@@ -153,12 +153,17 @@ Reached through `LanService.server` (the `lan/` services own it).
   create/update/remove option bodies, `readDeliveryAmount` (refuses `1,500`, like the backend).
 - `business_delivery_service.dart` — `BusinessDeliveryService` (+ status): the answer, its options and the
   carrier catalog (`/delivery/providers/`, read by the form only). Provided by the delivery settings page (deliveries section).
-- `delivery_area_model.dart` — `DeliveryAreasModel` (`holding(point)`: active, cheapest first), `DeliveryArea` (`radius` | `polygon`,
-  fee, minimum, active), `DeliveryAreaKind`, `DeliveryTravelMode`; `readRing`, `ringContains` (same ray casting as the backend),
+- `delivery_area_model.dart` — `DeliveryAreasModel` (`scope`, both maps in `areas`; `of(branch)`: one map, null = shared;
+  `inForce(branches)`: the backend's `DeliveryAreas.inForce`; `holding(point)`: active, cheapest first), `DeliveryArea` (`branch`,
+  `radius` | `polygon`, fee, minimum, active), `DeliveryScope {global, branch}`, `deliveringBranch` (the backend's
+  `Coverage.dispatcher`: area owner per branch, else the closest `online` branch), `DeliveryAreaKind`, `DeliveryTravelMode`;
+  `readRing`, `ringContains` (same ray casting as the backend),
   `ringSquareKm`, `simplifyRing` (`limit:` raises the tolerance until it fits), `maxRingPoints` (the backend's 250).
-- `delivery_area_request.dart` — create/update/active/remove bodies; only the kind's shape travels, coordinates `{LATITUDE, LONGITUDE}` at 6 decimals.
-- `delivery_areas_service.dart` — `DeliveryAreasService` (+ status, `limit = 20`): `/business/delivery/areas/`,
-  `travelShape` (`POST /scorpius/v1/isochrone` → largest outline, simplified). Provided by the delivery area page.
+- `delivery_area_request.dart` — create (`BRANCH` only when it has one)/update/active/remove bodies, `deliveryScopeRequest`
+  (`DELIVERY_SCOPE`, a delivery setting); only the kind's shape travels, coordinates `{LATITUDE, LONGITUDE}` at 6 decimals.
+- `delivery_areas_service.dart` — `DeliveryAreasService` (+ status, `limit = 20` per map): `/business/delivery/areas/`,
+  `setScope` (`PUT /business/delivery/`, then rereads the areas), `travelShape` (`POST /scorpius/v1/isochrone` → largest
+  outline, simplified). Provided by the deliveries desk and the delivery area page.
 
 ## catalog/ — platform configuration from `/init/`
 

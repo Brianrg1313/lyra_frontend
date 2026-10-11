@@ -274,6 +274,16 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   ),
+  // The same page on one branch's map: its own key, so going there from the
+  // bare page repaints the shell (`Navis.currentKey`).
+  ScreenRoute(
+    animation: _animation,
+    key: DeliveryAreaSection.branchRouteKey,
+    url: DeliveryAreaSection.branchPath(":branch"),
+    parents: ["deliveries"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  ),
   // POS mode: a standalone screen, without `shell` or `parents`.
   //
   // It doesn't hang off `/home` nor share its frame, on purpose: it isn't

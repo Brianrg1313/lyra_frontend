@@ -1,47 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-// WIDGETS
-import 'package:core/button.dart';
-
-/// What the tab is, one line that says what it is for, and its one action.
-///
-/// Without [onAdd] no button is drawn: a list that could not be read does not
-/// offer to grow.
+/// What the tab is and one line that says what it is for. [count], once the
+/// list is read, sits by the title: how many places the company has is the
+/// first thing the map is asked.
 class BranchesHeading extends StatelessWidget {
-  const BranchesHeading({super.key, this.onAdd});
+  const BranchesHeading({super.key, this.count});
 
-  final void Function()? onAdd;
+  final int? count;
 
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
-            TextMedium(S.of(context).business_branches_title, bold: true, ellipsis: true),
-            SizedBox(height: AppSize.gap * 0.5),
-            TextSmall(
-              S.of(context).business_branches_subtitle,
-              lines: 2,
-              ellipsis: true,
-              color: scheme.text.secondary
-            )
+            Flexible(child: TextLarge(S.of(context).business_branches_title, ellipsis: true)),
+            if (count != null) ...[
+              SizedBox(width: AppSize.spaceXS),
+              TextLarge("$count", color: scheme.text.secondary)
+            ]
           ]
-        )),
-        if (onAdd != null) ...[
-          SizedBox(width: AppSize.spaceS),
-          Button(
-            width: null,
-            title: S.of(context).business_branches_add,
-            leftIcon: Icon(CI.plus, color: scheme.button.text),
-            action: onAdd!
-          )
-        ]
+        ),
+        SizedBox(height: AppSize.gap * 0.5),
+        TextSmall(
+          S.of(context).business_branches_subtitle,
+          lines: 2,
+          ellipsis: true,
+          color: scheme.text.secondary
+        )
       ]
     );
   }

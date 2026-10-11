@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 
 // SERVICES
 import 'package:app/services/business/delivery_area_model.dart';
+import 'package:app/services/business/delivery_area_request.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart';
@@ -44,7 +45,7 @@ class DeliveryAreasService extends ChangeNotifier {
 
   bool get isWriting => _writing;
 
-  /// The backend's ceiling of areas per company.
+  /// The backend's ceiling of areas per map: the shared one, and each branch's.
   static const int limit = 20;
 
   /// Reads the areas. Without [force] they are read once per page.
@@ -76,6 +77,12 @@ class DeliveryAreasService extends ChangeNotifier {
   /// Removes one. Whoever calls it has already asked for confirmation.
   Future<bool> remove(BuildContext context, String id) =>
     _write(context, () => _source.removeArea(id));
+
+  /// Puts one map or the other in force (`deliveryScopeRequest`). It is a
+  /// delivery setting, written where the others are, and reread here with the
+  /// areas: they answer which one is in force.
+  Future<bool> setScope(BuildContext context, DeliveryScope scope) =>
+    _write(context, () => _source.editDelivery(deliveryScopeRequest(scope)));
 
   /// How far one gets from [from] in [minutes] by [mode]: the largest outline
   /// the routing engine answers, simplified for editing. `null` when there is

@@ -18,11 +18,13 @@
   `key icon routeKey path(businessId) area granted badge bleeds` (settings: the profile's setup), `initial = statistics`, `opening`. Add a tab here.
 - `detail_header.dart` — `BusinessDetailHeader`: thin wrapper over `SectionTabs`.
 - `statistics/_statistics.dart` — `BusinessStatisticsTab` (default).
-- `branches/_branches.dart` — `BusinessBranchesTab`: the sheet is a `DeliveriesMap` (own `BusinessLocationService` + `MapTilesService`), edge to edge (`BusinessTab.bleeds`), opening on the company's point (else the tileset center); `BranchesPanel` floats on its left (25/30/36% of the width on desktop/tablet/phone), the add button (`showBranchForm`) on its top right, hidden when the list failed; every branch is marked on the map (`BranchMarkers`); a tapped branch moves the map to its point and opens `showBranchForm` on it.
+- `branches/_branches.dart` — `BusinessBranchesTab`: the sheet is a `DeliveriesMap` (own `BusinessLocationService` + `MapTilesService`), edge to edge (`BusinessTab.bleeds`), opening on the company's point (else the tileset center); `BranchesPanel` floats on its left (25/30/36% of the width on desktop/tablet/phone), the add button (`showBranchForm`) on its top right, hidden when the list failed; `businessMark: false`: every branch, the main one included, is pinned on the map (`BranchMarkers`); a tapped branch is selected, moves the map to its point and opens `showBranchForm` on it; provides `BranchesFocus`.
 - `branches/branches_panel.dart` — `BranchesPanel`: the side bar's line and shadow; heading, local search (name, address), list of `BusinessBranchesService.branches`, main first; loading / error + retry / empty / no match.
-- `branches/branches_heading.dart` — `BranchesHeading({onAdd})`: title, subtitle, add button (none without `onAdd`).
-- `branches/branch_markers.dart` — `BranchMarkers`: map layer with one tappable mark per non-main branch with a point.
-- `branches/branch_row.dart` — `BranchRow`: icon (yellow star on the main one), name, address; tappable (`onTap`).
+- `branches/branches_heading.dart` — `BranchesHeading({count})`: large title with the branch count beside it, subtitle.
+- `branches/branches_focus.dart` — `BranchesFocus`: selected and hovered branch, shared by rows and pins (`lit(id)`).
+- `branches/branch_glyph.dart` — `BranchGlyph`: a branch's round mark (star on the main one, else shop/warehouse), primary when lit; used by rows and pins.
+- `branches/branch_markers.dart` — `BranchMarkers`: map layer with one tappable pin per branch with a point; a lit pin shows its name and is drawn on top. Also drawn by the deliveries desk and area page (with `BranchGlyph`, `BranchesFocus`).
+- `branches/branch_row.dart` — `BranchRow`: flat row, filled when lit; glyph, name, address, a no-point icon; tappable (`onTap`).
 - `clients/_clients.dart` — `BusinessClientsTab`.
 
 ### settings/ — the profile (read-only sheet; **every edit opens a modal** in `lib/screens/modals/business`)

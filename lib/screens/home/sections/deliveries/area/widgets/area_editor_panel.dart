@@ -30,7 +30,8 @@ class AreaEditorPanel extends StatefulWidget {
     super.key,
     required this.editor,
     required this.currency,
-    required this.count
+    required this.count,
+    this.branch
   });
 
   final AreaEditor editor;
@@ -38,8 +39,12 @@ class AreaEditorPanel extends StatefulWidget {
   /// The company's currency, which every amount is in.
   final String currency;
 
-  /// How many areas there are, to name a new one ("Area 3").
+  /// How many areas the map has, to name a new one ("Area 3").
   final int count;
+
+  /// The map a new area goes into: that branch's, or the shared one when
+  /// `null`. An edit keeps the area where it is.
+  final String? branch;
 
   @override
   State<AreaEditorPanel> createState() => _AreaEditorPanelState();
@@ -358,6 +363,7 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
     final area = _area;
     final request = area == null
       ? createDeliveryAreaRequest(
+          branch: widget.branch,
           name: name,
           kind: kind,
           center: _editor.center,

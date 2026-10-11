@@ -7,6 +7,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:latlong2/latlong.dart';
 
 // SERVICES
+import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/catalog/catalog_table.dart';
 
 /// Where the active company delivers, drawn on the map, exactly as
@@ -16,23 +17,51 @@ import 'package:app/services/catalog/catalog_table.dart';
 /// company's words ("Chacao"), which a person reads but nothing can measure an
 /// address against. A shape is what decides whether a customer's point is
 /// inside, with no map provider involved (the backend's `Geometry`).
+///
+/// Both maps come in one list: the areas every branch serves ([DeliveryArea.branch]
+/// `null`) and each branch's own. [scope] says which of the two is in force;
+/// the other is kept, so switching back finds the drawings where they were.
 class DeliveryAreasModel {
-  const DeliveryAreasModel({this.currency = "", this.areas = const []});
+  const DeliveryAreasModel({
+    this.currency = "",
+    this.scope = DeliveryScope.global,
+    this.areas = const []
+  });
 
   /// ISO 4217 code every fee and minimum is written in.
   final String currency;
 
-  /// In the order the company arranged them.
+  /// Which areas decide where the company delivers.
+  final DeliveryScope scope;
+
+  /// In the order the company arranged them, both maps.
   final List<DeliveryArea> areas;
 
-  /// Takes the answer as an object (`{currency, areas}`) or as the bare list.
+  /// Takes the answer as an object (`{currency, scope, areas}`) or as the bare list.
   factory DeliveryAreasModel.fromJson(dynamic json) {
     final rows = json is Map ? json["areas"] : json;
 
     return DeliveryAreasModel(
       currency: json is Map ? _text(json["currency"]).toUpperCase() : "",
+      scope: json is Map ? DeliveryScope.from(json["scope"]) : DeliveryScope.global,
       areas: [for (final row in catalogRows(rows)) ?DeliveryArea.from(row)]
     );
+  }
+
+  /// The areas of one map: the shared one when [branch] is `null`, else that
+  /// branch's.
+  List<DeliveryArea> of(String? branch) =>
+    [for (final area in areas) if (area.branch == branch) area];
+
+  /// The areas in force: the shared map under [DeliveryScope.global], under
+  /// [DeliveryScope.branch] those of a branch still in [branches] (an archived
+  /// branch's areas stop counting with it). The backend's `DeliveryAreas.inForce`.
+  List<DeliveryArea> inForce(Iterable<String> branches) {
+    if (scope == DeliveryScope.global) return of(null);
+
+    final live = branches.toSet();
+
+    return [for (final area in areas) if (area.branch != null && live.contains(area.branch)) area];
   }
 
   /// The active areas holding [point], cheapest first.
@@ -46,6 +75,70 @@ class DeliveryAreasModel {
     .where((area) => area.active && area.contains(point))
     .toList()
     ..sort((a, b) => (a.fee ?? double.infinity).compareTo(b.fee ?? double.infinity));
+}
+
+/// Which drawn areas are in force, `companies.delivery_scope` in the backend.
+enum DeliveryScope {
+  /// One map every branch serves: an order leaves from the closest branch
+  /// (the closest with the products, once stock is kept per branch).
+  global,
+
+  /// Each branch its own map: an order leaves from the branch whose area
+  /// holds the customer.
+  branch;
+
+  /// Anything but `branch` is the default, as in the backend.
+  static DeliveryScope from(dynamic code) =>
+    code?.toString().trim().toLowerCase() == "branch" ? branch : global;
+
+  /// Code that travels to the backend.
+  String get value => name;
+}
+
+/// The branch an order to [point] would leave from, as the backend's
+/// `Coverage.dispatcher` decides it: under [DeliveryScope.branch] the owner of
+/// the cheapest area in force holding it; otherwise, or when no branch's area
+/// holds it, the closest branch on the map in a straight line, among those
+/// that take channel orders when there are any. `null` when no branch has a
+/// point.
+///
+/// It is what the probe on the map shows; the backend's answer is the one an
+/// order is decided with.
+BusinessBranchModel? deliveringBranch(
+  LatLng point, {
+  required DeliveryScope scope,
+  required List<DeliveryArea> inForce,
+  required List<BusinessBranchModel> branches
+}) {
+  final placed = [
+    for (final branch in branches)
+      if (branch.latitude != null && branch.longitude != null) branch
+  ];
+
+  if (scope == DeliveryScope.branch) {
+    final owner = DeliveryAreasModel(areas: inForce).holding(point).firstOrNull?.branch;
+
+    for (final branch in placed) {
+      if (branch.id == owner) return branch;
+    }
+  }
+
+  final online = [for (final branch in placed) if (branch.online) branch];
+  final pool = online.isEmpty ? placed : online;
+
+  BusinessBranchModel? closest;
+  var best = double.infinity;
+
+  for (final branch in pool) {
+    final distance = const Distance().distance(LatLng(branch.latitude!, branch.longitude!), point);
+
+    if (distance < best) {
+      best = distance;
+      closest = branch;
+    }
+  }
+
+  return closest;
 }
 
 /// How an area's shape is given.
@@ -101,6 +194,7 @@ enum DeliveryTravelMode {
 class DeliveryArea {
   const DeliveryArea({
     required this.id,
+    this.branch,
     required this.name,
     required this.kind,
     this.center,
@@ -114,6 +208,9 @@ class DeliveryArea {
 
   /// Public uuid: what an edit and a removal name it by.
   final String id;
+
+  /// The branch that delivers to it; `null` is an area every branch serves.
+  final String? branch;
 
   final String name;
   final DeliveryAreaKind kind;
@@ -182,8 +279,11 @@ class DeliveryArea {
     final latitude = _number(row["latitude"]);
     final longitude = _number(row["longitude"]);
 
+    final branch = _text(row["branch"]);
+
     return DeliveryArea(
       id: id,
+      branch: branch.isEmpty ? null : branch,
       name: _text(row["name"]),
       kind: kind,
       center: latitude == null || longitude == null

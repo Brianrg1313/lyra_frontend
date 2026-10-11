@@ -66,31 +66,35 @@ class _BranchesPanelState extends State<BranchesPanel> {
     // The side bar's edge and shadow: the panel floats over the map the way
     // the bar floats over the page.
     return Container(
-      padding: EdgeInsets.all(AppSize.padding),
+      padding: EdgeInsets.all(AppSize.gap),
       decoration: BoxDecoration(
-        color: scheme.surface,
-        border: Border.all(color: scheme.line),
-        borderRadius: BorderRadius.circular(AppSize.spaceS),
-        boxShadow: [BoxShadow(
-          color: scheme.background.withAlpha(120),
-          blurRadius: AppSize.gap,
-          spreadRadius: 1
-        )]
+        color: scheme.surface.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(AppSize.spaceS)
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const BranchesHeading(),
-          SizedBox(height: AppSize.spaceS),
-          SearchInput(
-            controller: _search,
-            placeholder: S.of(context).business_branches_search,
-            onSearch: (value) => setState(() => _query = value.trim().toLowerCase())
-          ),
-          SizedBox(height: AppSize.spaceS),
-          Expanded(child: _list(context, service))
-        ]
-      )
+      child: Container(
+        padding: EdgeInsets.all(AppSize.padding),
+        decoration: BoxDecoration(
+          color: scheme.navBar,
+          border: Border.all(color: scheme.line),
+          borderRadius: BorderRadius.circular(AppSize.spaceS)
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            BranchesHeading(
+              count: service.status == BusinessBranchesStatus.ready ? service.branches.length : null
+            ),
+            SizedBox(height: AppSize.spaceS),
+            SearchInput(
+              controller: _search,
+              placeholder: S.of(context).business_branches_search,
+              onSearch: (value) => setState(() => _query = value.trim().toLowerCase())
+            ),
+            SizedBox(height: AppSize.spaceS),
+            Expanded(child: _list(context, service))
+          ]
+        )
+      ),
     );
   }
 
@@ -128,10 +132,12 @@ class _BranchesPanelState extends State<BranchesPanel> {
       ));
     }
 
+    // Rows are flat and close: the fill of the pointed-at one is what
+    // separates it, not a card around each.
     return ListView.separated(
       padding: EdgeInsets.zero,
       itemCount: branches.length,
-      separatorBuilder: (_, _) => SizedBox(height: AppSize.gap),
+      separatorBuilder: (_, _) => SizedBox(height: AppSize.gap * 0.5),
       itemBuilder: (_, index) => BranchRow(
         branch: branches[index],
         onTap: () => widget.onSelect(branches[index])

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-// PACKAGES
-import 'package:latlong2/latlong.dart';
-
 // SERVICES
 import 'package:app/services/business/delivery_area_model.dart';
 
@@ -11,20 +8,35 @@ import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/screens/home/sections/deliveries/settings/delivery_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
-import './area_layers.dart';
-
-/// What the tapped point gets: the areas holding it, or that none does.
+/// What the tapped point gets: the areas in force holding it (cheapest first),
+/// or that none does, and the branch the order would leave from.
 class AreaProbe extends StatelessWidget {
-  const AreaProbe({super.key, required this.areas, required this.point, required this.onClear});
+  const AreaProbe({
+    super.key,
+    required this.holding,
+    required this.currency,
+    required this.colorOf,
+    required this.onClear,
+    this.from
+  });
 
-  final DeliveryAreasModel areas;
-  final LatLng point;
+  /// The active areas in force holding the point, cheapest first.
+  final List<DeliveryArea> holding;
+
+  final String currency;
+
+  /// Each area's colour, the one the map draws it with.
+  final Color Function(DeliveryArea area) colorOf;
+
+  /// Name of the branch the order would leave from (`deliveringBranch`), or
+  /// `null` when no branch is on the map.
+  final String? from;
+
   final void Function() onClear;
 
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
-    final holding = areas.holding(point);
 
     return SettingsBlock(
       title: holding.isEmpty
@@ -38,25 +50,41 @@ class AreaProbe extends StatelessWidget {
         message: S.of(context).deliveries_area_probe_clear,
         action: onClear
       ),
-      child: holding.isEmpty
-        ? TextSmall(
-            S.of(context).deliveries_area_probe_out_note,
-            lines: 3,
-            color: scheme.text.secondary
-          )
-        : Wrap(
-            spacing: AppSize.gap,
-            runSpacing: AppSize.gap,
-            children: [
-              for (final area in holding) SettingsTag(
-                icon: CI.globe_shopping,
-                label: area.fee == null
-                  ? area.name
-                  : "${area.name} · ${deliveryFeeLabel(context, area.fee, areas.currency)}",
-                color: areaColor(context, areas.areas.indexOf(area))
-              )
-            ]
-          )
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (holding.isEmpty)
+            TextSmall(
+              S.of(context).deliveries_area_probe_out_note,
+              lines: 3,
+              color: scheme.text.secondary
+            )
+          else
+            Wrap(
+              spacing: AppSize.gap,
+              runSpacing: AppSize.gap,
+              children: [
+                for (final area in holding) SettingsTag(
+                  icon: CI.globe_shopping,
+                  label: area.fee == null
+                    ? area.name
+                    : "${area.name} · ${deliveryFeeLabel(context, area.fee, currency)}",
+                  color: colorOf(area)
+                )
+              ]
+            ),
+          // Where it would leave from is only news where it is delivered.
+          if (holding.isNotEmpty && from != null) ...[
+            SizedBox(height: AppSize.gap),
+            SettingsTag(
+              icon: CI.store,
+              label: S.of(context).deliveries_area_probe_from(from!),
+              color: scheme.text.secondary
+            )
+          ]
+        ]
+      )
     );
   }
 }

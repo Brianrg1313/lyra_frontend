@@ -2,49 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
 import 'package:app/screens/home/sections/deliveries/settings/_settings.dart';
 
-/// Bar above the two panels: the section title and its actions.
+/// The section's actions, floating over the map's top right corner (the
+/// title is the panel's).
 ///
-/// "Center" only shows while there is a map and the company has a point on it.
 /// "New delivery" has no endpoint behind it yet, so it answers coming soon.
-/// "Settings" opens the delivery settings sub-page (`DeliverySettingsSection`).
+/// "Settings" opens the delivery settings sub-page (`DeliverySettingsSection`);
+/// it sits on a surface so it reads over the tiles.
 class DeliveriesHeader extends StatelessWidget {
   const DeliveriesHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Surface(
-      padding: EdgeInsets.fromLTRB(
-        AppSize.padding, AppSize.gap,
-        AppSize.gap, AppSize.gap
-      ),
-      child: SizedBox(
-        height: AppSize.button,
-        child: Row(children: [
-          Expanded(child: TextMedium(
-            S.of(context).deliveries,
-            bold: true,
-            ellipsis: true
-          )),
-          SizedBox(width: AppSize.gap),
-          FeedbackButton(
+    final scheme = ThemeColor.of(context);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Surface(
+          radius: AppSize.corner,
+          child: FeedbackButton(
             height: AppSize.button,
-            feedbackColor: ThemeColor.of(context).surfaceFeedback,
-            padding: EdgeInsets.symmetric(horizontal: AppSize.padding),
-            action: () => FloatFlag.of(context).message(S.of(context).coming_soon),
-            child: Center(child: TextMedium(S.of(context).deliveries_create))
-          ),
-          SizedBox(width: AppSize.gap),
-          FeedbackButton(
-            height: AppSize.button,
-            feedbackColor: ThemeColor.of(context).surfaceFeedback,
+            feedbackColor: scheme.surfaceFeedback,
             padding: EdgeInsets.symmetric(horizontal: AppSize.padding),
             action: () => Navis.push(context, DeliverySettingsSection.path),
-            child: Center(child: TextMedium(S.of(context).deliveries_settings))
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(CI.setting, size: AppSize.text, color: scheme.icon),
+                SizedBox(width: AppSize.gap),
+                TextMedium(S.of(context).deliveries_settings)
+              ]
+            )
           )
-        ])
-      )
+        ),
+        SizedBox(width: AppSize.gap),
+        Button(
+          width: null,
+          title: S.of(context).deliveries_create,
+          leftIcon: Icon(CI.plus, color: scheme.button.text),
+          action: () => FloatFlag.of(context).message(S.of(context).coming_soon)
+        )
+      ]
     );
   }
 }

@@ -10,10 +10,12 @@ import 'package:latlong2/latlong.dart';
 
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
+import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_area_request.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_list.dart';
+import 'package:app/screens/home/sections/deliveries/area/widgets/area_probe.dart';
 
 /// Delivery areas: how they are read, whether a point is inside, what travels
 /// to the backend, how a shape is made, and what the list draws.
@@ -176,7 +178,66 @@ void main() {
     });
   });
 
+  group("maps per branch", () {
+    const north = "b-north";
+    const south = "b-south";
+
+    final model = DeliveryAreasModel.fromJson({
+      "currency": "USD",
+      "scope": "branch",
+      "areas": [
+        {"id": "all", "branch": null, "name": "Todas", "kind": "polygon", "polygon": [[10.49, -66.86], [10.49, -66.84], [10.51, -66.84]]},
+        {"id": "n", "branch": north, "name": "Norte", "kind": "radius", "latitude": 10.5, "longitude": -66.85, "radius": 3, "fee": 5},
+        {"id": "s", "branch": south, "name": "Sur", "kind": "radius", "latitude": 10.5, "longitude": -66.85, "radius": 3, "fee": 2},
+        {"id": "gone", "branch": "b-archived", "name": "Vieja", "kind": "radius", "latitude": 10.5, "longitude": -66.85, "radius": 3}
+      ]
+    });
+
+    BusinessBranchModel branch(String id, double latitude, double longitude, {bool online = true}) =>
+      BusinessBranchModel.from({
+        "id": id, "name": id, "main": false, "storefront": true, "online": online,
+        "latitude": latitude, "longitude": longitude
+      })!;
+
+    test("each area names its map; the scope says which are in force, and an archived branch's drop out", () {
+      expect(model.scope, DeliveryScope.branch);
+      expect(model.of(null).map((area) => area.id), ["all"]);
+      expect(model.of(north).map((area) => area.id), ["n"]);
+      expect(model.inForce([north, south]).map((area) => area.id), ["n", "s"]);
+
+      final shared = DeliveryAreasModel(scope: DeliveryScope.global, areas: model.areas);
+      expect(shared.inForce([north, south]).map((area) => area.id), ["all"]);
+
+      // Anything but "branch" is the shared map, as in the backend.
+      expect(DeliveryAreasModel.fromJson({"scope": "city", "areas": []}).scope, DeliveryScope.global);
+    });
+
+    test("per branch, the owner of the cheapest area holding the point delivers; shared, the closest online branch", () {
+      final branches = [
+        branch(north, 10.60, -66.85),
+        branch(south, 10.40, -66.85),
+        branch("b-warehouse", 10.505, -66.85, online: false)
+      ];
+      final inForce = model.inForce([north, south]);
+
+      expect(deliveringBranch(_inside, scope: DeliveryScope.branch, inForce: inForce, branches: branches)?.id, south);
+
+      // Shared: the warehouse is closest but takes no channel orders.
+      expect(deliveringBranch(const LatLng(10.58, -66.85), scope: DeliveryScope.global, inForce: const [], branches: branches)?.id, north);
+      expect(deliveringBranch(_inside, scope: DeliveryScope.global, inForce: const [], branches: const []), isNull);
+    });
+  });
+
   group("requests", () {
+    test("a new area names its branch only when it has one, and the scope travels as a setting", () {
+      final shared = createDeliveryAreaRequest(name: "Todas", kind: DeliveryAreaKind.polygon, points: _square);
+      final mine = createDeliveryAreaRequest(branch: "b-1", name: "Norte", kind: DeliveryAreaKind.polygon, points: _square);
+
+      expect(shared.containsKey("BRANCH"), isFalse);
+      expect(mine["BRANCH"], "b-1");
+      expect(deliveryScopeRequest(DeliveryScope.branch), {"DELIVERY_SCOPE": "branch"});
+    });
+
     test("a radius sends its middle and kilometres, and no outline", () {
       final body = createDeliveryAreaRequest(
         name: " Around ",
@@ -267,9 +328,16 @@ void main() {
         AppSize.instance(context);
 
         return Scaffold(body: AreaList(
-          areas: areas,
-          probe: probe,
-          onClearProbe: () {},
+          header: const SizedBox.shrink(),
+          areas: areas.areas,
+          currency: areas.currency,
+          probe: probe == null ? null : AreaProbe(
+            holding: areas.holding(probe),
+            currency: areas.currency,
+            colorOf: (_) => const Color(0xFF000000),
+            from: "Sede Centro",
+            onClear: () {}
+          ),
           onFocus: (_) {},
           onEdit: (_) {},
           onToggle: (_) {},
@@ -324,6 +392,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text("Inside your areas"), findsOneWidget);
+      expect(find.text("Leaves from Sede Centro"), findsOneWidget);
     });
   });
 }

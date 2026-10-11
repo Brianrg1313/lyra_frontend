@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// PACKAGES
+import 'package:provider/provider.dart';
+
 // SERVICES
 import 'package:app/services/business/business_branch_model.dart';
 
-/// One branch in the panel's list: its icon, its name and where it is. The
-/// main one wears a yellow star instead of the shop.
+import './branch_glyph.dart';
+import './branches_focus.dart';
+
+/// One branch in the panel's list: its mark (the same as its pin's), its name
+/// and where it is. Flat until pointed at — here or on its pin —, then filled,
+/// so the row and the pin say they are the same branch.
 ///
-/// The star is a Material icon: the app's icon font has none.
+/// A branch without a point says so at the end: tapping it opens its form but
+/// cannot move the map.
 class BranchRow extends StatelessWidget {
   const BranchRow({super.key, required this.branch, required this.onTap});
 
@@ -17,53 +25,52 @@ class BranchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
+    final focus = context.watch<BranchesFocus>();
+    final lit = focus.lit(branch.id);
     final place = branch.place;
 
-    return FocusableWidget(
-      action: onTap,
-      message: branch.name,
-      child: Container(
-        padding: EdgeInsets.all(AppSize.spaceXS),
-        decoration: BoxDecoration(
-          color: scheme.surfaceOver,
-          borderRadius: BorderRadius.circular(AppSize.corner)
-        ),
-        child: Row(children: [
-          Container(
-            width: AppSize.button,
-            height: AppSize.button,
-            decoration: BoxDecoration(
-              color: scheme.surface,
-              borderRadius: BorderRadius.circular(AppSize.cornerInset(AppSize.spaceXS))
-            ),
-            child: Center(child: branch.main
-              ? Icon(
-                  Icons.star_rounded,
-                  size: AppSize.text * 1.3,
-                  color: scheme.chart.warning,
-                  semanticLabel: S.of(context).business_branch_main
-                )
-              : Icon(
-                  branch.storefront ? CI.store : CI.warehouse,
-                  size: AppSize.text * 1.2,
-                  color: scheme.icon
-                ))
+    return MouseRegion(
+      onEnter: (_) => focus.hover(branch.id, true),
+      onExit: (_) => focus.hover(branch.id, false),
+      child: FocusableWidget(
+        action: onTap,
+        message: branch.name,
+        child: AnimatedContainer(
+          duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 160),
+          padding: EdgeInsets.all(AppSize.spaceXS),
+          decoration: BoxDecoration(
+            color: lit ? scheme.surfaceOver : scheme.surface,
+            borderRadius: BorderRadius.circular(AppSize.cornerInset(AppSize.gap))
           ),
-          SizedBox(width: AppSize.spaceXS),
-          Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextMedium(branch.name, bold: true, ellipsis: true),
-              SizedBox(height: AppSize.gap * 0.5),
-              TextSmall(
-                place.isEmpty ? S.of(context).business_branch_no_address : place,
-                ellipsis: true,
-                color: scheme.text.secondary
+          child: Row(children: [
+            BranchGlyph(branch: branch, lit: lit, size: AppSize.button),
+            SizedBox(width: AppSize.spaceXS),
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextMedium(branch.name, bold: true, ellipsis: true),
+                SizedBox(height: AppSize.gap * 0.5),
+                TextSmall(
+                  place.isEmpty ? S.of(context).business_branch_no_address : place,
+                  ellipsis: true,
+                  color: scheme.text.secondary
+                )
+              ]
+            )),
+            if (branch.latitude == null) ...[
+              SizedBox(width: AppSize.gap),
+              Icon(
+                Icons.location_off_outlined,
+                size: AppSize.text,
+                color: scheme.text.secondary,
+                semanticLabel: S.of(context).business_branch_no_point
               )
             ]
-          ))
-        ])
+          ])
+        )
       )
     );
   }

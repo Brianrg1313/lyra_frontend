@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-// PACKAGES
-import 'package:latlong2/latlong.dart';
-
 // SERVICES
 import 'package:app/services/business/delivery_area_model.dart';
 
@@ -11,29 +8,34 @@ import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import './area_layers.dart';
-import './area_probe.dart';
 import './area_tile.dart';
 
-/// Left panel while looking: which areas reach the point tapped on the map,
-/// and every area, each with its colour on the map, its size and its figures.
+/// Left panel while looking: which map is open and how the areas are shared
+/// ([header]), what the point tapped on the map gets ([probe], or the hint to
+/// tap one), and every area of the open map, each with its colour on the map,
+/// its size and its figures.
 class AreaList extends StatelessWidget {
   const AreaList({
     super.key,
+    required this.header,
     required this.areas,
+    required this.currency,
     required this.probe,
-    required this.onClearProbe,
     required this.onFocus,
     required this.onEdit,
     required this.onToggle,
     required this.onRemove
   });
 
-  final DeliveryAreasModel areas;
+  final Widget header;
 
-  /// The point tapped on the map, or `null` when none was.
-  final LatLng? probe;
+  /// The open map's areas, in order.
+  final List<DeliveryArea> areas;
 
-  final void Function() onClearProbe;
+  final String currency;
+
+  /// What the tapped point gets, or `null` when none was tapped.
+  final Widget? probe;
 
   /// Moves the map to an area.
   final void Function(DeliveryArea area) onFocus;
@@ -48,24 +50,22 @@ class AreaList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
-    final point = probe;
 
     return ScrollableWidget(
       showBar: false,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (point != null)
-          AreaProbe(areas: areas, point: point, onClear: onClearProbe)
-        else
-          Padding(
-            padding: EdgeInsets.only(bottom: AppSize.spaceS),
-            child: TextSmall(
-              S.of(context).deliveries_area_probe_hint,
-              lines: 3,
-              color: scheme.text.secondary
-            )
-          ),
-        if (areas.areas.isEmpty)
+        header,
+        SizedBox(height: AppSize.spaceS),
+        probe ?? Padding(
+          padding: EdgeInsets.only(bottom: AppSize.spaceS),
+          child: TextSmall(
+            S.of(context).deliveries_area_probe_hint,
+            lines: 3,
+            color: scheme.text.secondary
+          )
+        ),
+        if (areas.isEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: AppSize.spaceL),
             child: SectionMessage(
@@ -75,15 +75,15 @@ class AreaList extends StatelessWidget {
             )
           )
         else
-          for (var i = 0; i < areas.areas.length; i++)
+          for (var i = 0; i < areas.length; i++)
             AreaTile(
-              area: areas.areas[i],
-              color: areaColor(context, i, active: areas.areas[i].active),
-              currency: areas.currency,
-              onFocus: () => onFocus(areas.areas[i]),
-              onEdit: () => onEdit(areas.areas[i]),
-              onToggle: () => onToggle(areas.areas[i]),
-              onRemove: () => onRemove(areas.areas[i])
+              area: areas[i],
+              color: areaColor(context, i, active: areas[i].active),
+              currency: currency,
+              onFocus: () => onFocus(areas[i]),
+              onEdit: () => onEdit(areas[i]),
+              onToggle: () => onToggle(areas[i]),
+              onRemove: () => onRemove(areas[i])
             )
       ]
     );

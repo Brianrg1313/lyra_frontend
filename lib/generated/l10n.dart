@@ -6230,6 +6230,16 @@ class S {
     );
   }
 
+  /// `Not on the map`
+  String get business_branch_no_point {
+    return Intl.message(
+      'Not on the map',
+      name: 'business_branch_no_point',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `New branch`
   String get business_branch_create_title {
     return Intl.message(
@@ -13928,6 +13938,16 @@ class S {
     return Intl.message('Deliveries', name: 'deliveries', desc: '', args: []);
   }
 
+  /// `The orders on their way to your customers, and where they are.`
+  String get deliveries_subtitle {
+    return Intl.message(
+      'The orders on their way to your customers, and where they are.',
+      name: 'deliveries_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Here you will see every order still on its way to the customer.`
   String get deliveries_pending_soon {
     return Intl.message(
@@ -13935,6 +13955,152 @@ class S {
       name: 'deliveries_pending_soon',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Pending deliveries`
+  String get deliveries_pending_title {
+    return Intl.message(
+      'Pending deliveries',
+      name: 'deliveries_pending_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where you deliver`
+  String get deliveries_scope_title {
+    return Intl.message(
+      'Where you deliver',
+      name: 'deliveries_scope_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Shared`
+  String get deliveries_scope_global {
+    return Intl.message(
+      'Shared',
+      name: 'deliveries_scope_global',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Per branch`
+  String get deliveries_scope_branch {
+    return Intl.message(
+      'Per branch',
+      name: 'deliveries_scope_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every branch covers the same areas, and an order leaves from the closest branch.`
+  String get deliveries_scope_global_note {
+    return Intl.message(
+      'Every branch covers the same areas, and an order leaves from the closest branch.',
+      name: 'deliveries_scope_global_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Each branch covers its own areas, and an order leaves from the branch whose area holds the customer.`
+  String get deliveries_scope_branch_note {
+    return Intl.message(
+      'Each branch covers its own areas, and an order leaves from the branch whose area holds the customer.',
+      name: 'deliveries_scope_branch_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =0{No areas drawn yet} =1{1 area, shared by every branch} other{{count} areas, shared by every branch}}`
+  String deliveries_scope_global_count(num count) {
+    return Intl.plural(
+      count,
+      zero: 'No areas drawn yet',
+      one: '1 area, shared by every branch',
+      other: '$count areas, shared by every branch',
+      name: 'deliveries_scope_global_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =0{No areas} =1{1 area} other{{count} areas}}`
+  String deliveries_scope_branch_count(num count) {
+    return Intl.plural(
+      count,
+      zero: 'No areas',
+      one: '1 area',
+      other: '$count areas',
+      name: 'deliveries_scope_branch_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Edit areas`
+  String get deliveries_scope_edit {
+    return Intl.message(
+      'Edit areas',
+      name: 'deliveries_scope_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Couldn't load your branches.`
+  String get deliveries_scope_branches_error {
+    return Intl.message(
+      'Couldn\'t load your branches.',
+      name: 'deliveries_scope_branches_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add your branches in the business page to draw their areas.`
+  String get deliveries_scope_branches_empty {
+    return Intl.message(
+      'Add your branches in the business page to draw their areas.',
+      name: 'deliveries_scope_branches_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Areas of`
+  String get deliveries_area_map {
+    return Intl.message(
+      'Areas of',
+      name: 'deliveries_area_map',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every branch`
+  String get deliveries_area_map_shared {
+    return Intl.message(
+      'Every branch',
+      name: 'deliveries_area_map_shared',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Leaves from {branch}`
+  String deliveries_area_probe_from(Object branch) {
+    return Intl.message(
+      'Leaves from $branch',
+      name: 'deliveries_area_probe_from',
+      desc: '',
+      args: [branch],
     );
   }
 

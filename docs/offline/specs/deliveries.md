@@ -25,7 +25,7 @@ the 10 m the cloud's two decimals of a kilometre keep), times in minutes, a poin
 ### Data
 
 `delivers: bool?`, `pickup: bool?` (three states: yes, no, not said), `meeting: bool`, `notes:
-string?`, `currency` (the main one), `options: [option]`. The settings live on the company, as in
+string?`, `scope: global|branch` (D-15), `currency` (the main one), `options: [option]`. The settings live on the company, as in
 the cloud.
 
 **Option** `{id, mode: own|platform|courier, provider?, providerName?, icon (null), label?,
@@ -60,7 +60,7 @@ etaMax?, notes?, position}`.
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
 | `delivery.get` | `delivery` | — | settings | — |
-| `delivery.set` | `delivery.edit` | any of `delivers`, `pickup`, `meeting`, `notes` | settings | `invalid_delivery_flag`, `invalid_field` |
+| `delivery.set` | `delivery.edit` | any of `delivers`, `pickup`, `meeting`, `notes`, `scope` | settings | `invalid_delivery_flag`, `invalid_delivery_scope`, `invalid_field` |
 | `delivery.options.create` | `delivery.create` | `mode`, `provider`, `label`, `coverage`, `radius`, `zones`, `fee`, `freeFrom`, `etaMin`, `etaMax`, `notes`, `position` | settings | D-2 to D-7 codes |
 | `delivery.options.edit` | `delivery.edit` | `id` and the create's keys | settings | `not_found`, D-2 to D-7 codes |
 | `delivery.options.remove` | `delivery.delete` | `id` | settings | `not_found` |
@@ -72,8 +72,8 @@ etaMax?, notes?, position}`.
 
 ### Data
 
-`area {id, name, kind: radius|polygon, latitude?, longitude?, radius?, polygon: [[latitude,
-longitude]], fee?, minimum?, active, position}` and the list's `currency`.
+`area {id, branch?, name, kind: radius|polygon, latitude?, longitude?, radius?, polygon: [[latitude,
+longitude]], fee?, minimum?, active, position}` and the list's `currency` and `scope`.
 
 ### Rules
 
@@ -88,6 +88,13 @@ longitude]], fee?, minimum?, active, position}` and the list's `currency`.
   probe (`DeliveryAreasModel.holding`); the master doesn't answer it.
 - **D-13** `{id, active}` alone pauses or resumes; `null` is active. Removing is soft on both sides
   (nothing refers to an area).
+- **D-15** An area's `branch` is the branch that delivers to it, null an area every branch serves.
+  The company's `scope` says which set is in force: `global` (default) one map every branch
+  serves, the order leaving from the closest branch; `branch` each branch's own map, the order
+  leaving from the branch whose area holds the customer. Both sets are kept and listed; switching
+  deletes nothing. At most 20 areas per map. The branches are the cloud's, so the master only
+  checks that `branch` is an id (`invalid_delivery_branch`); the cloud refuses one that is not an
+  active branch of the company.
 - **D-14** The travel-time outline (isochrone) is the cloud's routing engine: the app asks the
   cloud while it answers, and without it the editor draws by radius or by points.
 
@@ -95,9 +102,9 @@ longitude]], fee?, minimum?, active, position}` and the list's `currency`.
 
 | Op | Permission | Args | Answer | Errors |
 |---|---|---|---|---|
-| `delivery.areas.list` | `delivery` | — | `{currency, areas}` | — |
-| `delivery.areas.create` | `delivery.create` | `name`, `kind`, `latitude`, `longitude`, `radius`, `polygon`, `fee`, `minimum`, `active`, `position` | list | D-10, D-11 codes |
-| `delivery.areas.edit` | `delivery.edit` | `id` and the create's keys | list | `not_found`, D-10 codes |
+| `delivery.areas.list` | `delivery` | — | `{currency, scope, areas}` | — |
+| `delivery.areas.create` | `delivery.create` | `branch`, `name`, `kind`, `latitude`, `longitude`, `radius`, `polygon`, `fee`, `minimum`, `active`, `position` | list | D-10, D-11 codes |
+| `delivery.areas.edit` | `delivery.edit` | `id` and the create's keys | list | `not_found`, D-10, D-15 codes |
 | `delivery.areas.remove` | `delivery.delete` | `id` | list | `not_found` |
 
 The permissions are the cloud catalogue's keys, as its routes take them (`session.md` P-4).

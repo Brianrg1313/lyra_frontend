@@ -26,57 +26,21 @@ Color areaColor(BuildContext context, int index, {bool active = true}) {
   return series.isEmpty ? scheme.primary : series[index % series.length];
 }
 
-/// What goes over the tiles and under the company's mark: every saved area,
-/// and the shape being made.
+/// What goes over the tiles and under the company's mark: every saved area
+/// of the map being edited, the other branches' areas in force under it
+/// ([others], grey: what this branch's map sits beside), and the shape being
+/// made.
 ///
 /// The area being edited is left out of the saved ones, so the map shows the
 /// shape as it is being changed and not the two on top of each other.
 List<Widget> areaLayers(
   BuildContext context,
   List<DeliveryArea> areas,
-  AreaEditor editor
-) {
+  AreaEditor editor, {
+  List<DeliveryArea> others = const []
+}) {
   final scheme = ThemeColor.of(context);
   final editing = editor.isOpen ? editor.editing?.id : null;
-  final polygons = <Polygon>[];
-  final circles = <CircleMarker>[];
-
-  for (var i = 0; i < areas.length; i++) {
-    final area = areas[i];
-
-    if (area.id == editing) continue;
-
-    final color = areaColor(context, i, active: area.active);
-    // Faint while another one is shaped: the saved areas are the reference,
-    // not what is being worked on.
-    final fill = color.withValues(alpha: editor.isOpen ? 0.06 : 0.16);
-    // A paused area keeps its outline, broken: it is there, and it reaches nobody.
-    final pattern = area.active
-      ? const StrokePattern.solid()
-      : StrokePattern.dashed(segments: const [8, 6]);
-
-    switch (area.kind) {
-      case DeliveryAreaKind.polygon when area.points.length >= 3:
-        polygons.add(Polygon(
-          points: area.points,
-          color: fill,
-          borderColor: color,
-          borderStrokeWidth: 2,
-          pattern: pattern
-        ));
-      case DeliveryAreaKind.radius when area.center != null && area.radius != null:
-        circles.add(CircleMarker(
-          point: area.center!,
-          radius: area.radius! * 1000,
-          useRadiusInMeter: true,
-          color: fill,
-          borderColor: color,
-          borderStrokeWidth: 2
-        ));
-      default:
-        break;
-    }
-  }
 
   final draft = <Widget>[];
 
@@ -109,9 +73,63 @@ List<Widget> areaLayers(
   }
 
   return [
-    if (circles.isNotEmpty) CircleLayer(circles: circles),
-    if (polygons.isNotEmpty) PolygonLayer(polygons: polygons),
+    ...savedAreaLayers(context, others, colorOf: (_) => scheme.text.secondary, faint: true),
+    ...savedAreaLayers(
+      context,
+      [for (final area in areas) if (area.id != editing) area],
+      colorOf: (area) => areaColor(context, areas.indexOf(area), active: area.active),
+      faint: editor.isOpen
+    ),
     ...draft
+  ];
+}
+
+/// Saved areas as map layers, each in [colorOf]'s colour. [faint] while
+/// another shape is being made: the saved areas are the reference, not what is
+/// being worked on. The deliveries desk draws the areas in force with it.
+List<Widget> savedAreaLayers(
+  BuildContext context,
+  List<DeliveryArea> areas, {
+  required Color Function(DeliveryArea area) colorOf,
+  bool faint = false
+}) {
+  final polygons = <Polygon>[];
+  final circles = <CircleMarker>[];
+
+  for (final area in areas) {
+    final color = colorOf(area);
+    final fill = color.withValues(alpha: faint ? 0.06 : 0.16);
+    // A paused area keeps its outline, broken: it is there, and it reaches nobody.
+    final pattern = area.active
+      ? const StrokePattern.solid()
+      : StrokePattern.dashed(segments: const [8, 6]);
+
+    switch (area.kind) {
+      case DeliveryAreaKind.polygon when area.points.length >= 3:
+        polygons.add(Polygon(
+          points: area.points,
+          color: fill,
+          borderColor: color,
+          borderStrokeWidth: 2,
+          pattern: pattern
+        ));
+      case DeliveryAreaKind.radius when area.center != null && area.radius != null:
+        circles.add(CircleMarker(
+          point: area.center!,
+          radius: area.radius! * 1000,
+          useRadiusInMeter: true,
+          color: fill,
+          borderColor: color,
+          borderStrokeWidth: 2
+        ));
+      default:
+        break;
+    }
+  }
+
+  return [
+    if (circles.isNotEmpty) CircleLayer(circles: circles),
+    if (polygons.isNotEmpty) PolygonLayer(polygons: polygons)
   ];
 }
 

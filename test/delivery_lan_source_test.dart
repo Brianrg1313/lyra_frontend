@@ -71,8 +71,8 @@ void main() {
   });
 
   test('the areas: a circle in kilometres, an outline of pairs, amounts', () async {
-    master.answers[Ops.deliveryAreasList.name] = {"currency": "USD", "areas": [
-      {"id": "a-1", "name": "Centro", "kind": "radius", "latitude": 10.48, "longitude": -66.87, "radius": 3000,
+    master.answers[Ops.deliveryAreasList.name] = {"currency": "USD", "scope": "branch", "areas": [
+      {"id": "a-1", "branch": "b-1", "name": "Centro", "kind": "radius", "latitude": 10.48, "longitude": -66.87, "radius": 3000,
         "polygon": [], "fee": 200, "minimum": null, "active": true, "position": 100},
       {"id": "a-2", "name": "Este", "kind": "polygon", "latitude": null, "longitude": null, "radius": null,
         "polygon": [[10.5, -66.9], [10.5, -66.8], [10.4, -66.8]], "fee": null, "minimum": 1000, "active": false,
@@ -82,7 +82,8 @@ void main() {
     final areas = await source.areas();
     final [circle, outline] = areas.areas;
 
-    expect(areas.currency, "USD");
+    expect((areas.currency, areas.scope), ("USD", DeliveryScope.branch));
+    expect((circle.branch, outline.branch), ("b-1", null));
     expect((circle.kind, circle.center, circle.radius, circle.fee), (DeliveryAreaKind.radius, const LatLng(10.48, -66.87), 3.0, 2.0));
     expect((outline.kind, outline.points.length, outline.minimum, outline.active), (DeliveryAreaKind.polygon, 3, 10.0, false));
   });
@@ -90,16 +91,18 @@ void main() {
   test('an area\'s write: the outline as pairs, the radius in metres, pausing alone', () async {
     await source.createArea(createDeliveryAreaRequest(name: "Este", kind: DeliveryAreaKind.polygon, minimum: 10,
       points: const [LatLng(10.5, -66.9), LatLng(10.5, -66.8), LatLng(10.4, -66.8)]));
-    await source.createArea(createDeliveryAreaRequest(name: "Centro", kind: DeliveryAreaKind.radius,
+    await source.createArea(createDeliveryAreaRequest(branch: "b-1", name: "Centro", kind: DeliveryAreaKind.radius,
       center: const LatLng(10.48, -66.87), radius: 3, fee: 2));
+    await source.editDelivery(deliveryScopeRequest(DeliveryScope.branch));
     await source.updateArea(deliveryAreaActiveRequest(
       const DeliveryArea(id: "a-1", name: "Centro", kind: DeliveryAreaKind.radius), false));
 
     expect([for (final (op, args) in master.calls) [op, args]], [
       ["delivery.areas.create", {"name": "Este", "kind": "polygon",
         "polygon": [[10.5, -66.9], [10.5, -66.8], [10.4, -66.8]], "minimum": 1000}],
-      ["delivery.areas.create", {"name": "Centro", "kind": "radius", "latitude": 10.48, "longitude": -66.87,
-        "radius": 3000, "fee": 200}],
+      ["delivery.areas.create", {"branch": "b-1", "name": "Centro", "kind": "radius", "latitude": 10.48,
+        "longitude": -66.87, "radius": 3000, "fee": 200}],
+      ["delivery.set", {"scope": "branch"}],
       ["delivery.areas.edit", {"id": "a-1", "active": false}],
     ]);
   });

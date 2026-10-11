@@ -152,8 +152,8 @@
           "key": "deliveries.areas",
           "title": "Delivery area",
           "modes": ["cloud", "hybrid"],
-          "routes": ["deliveries_area"],
-          "paths": ["/home/deliveries/area"],
+          "routes": ["deliveries_area", "deliveries_area_branch"],
+          "paths": ["/home/deliveries/area", "/home/deliveries/area/:branch"],
           "actions": ["view", "create", "edit", "delete"]
         }
       ]

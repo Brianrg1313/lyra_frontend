@@ -85,7 +85,10 @@ class DeliveryLanSource implements DeliverySource {
   }
 
   /// The settings' body keys, as the master names them.
-  static const settingKeys = {"DELIVERS": "delivers", "PICKUP": "pickup", "MEETING_POINT": "meeting", "NOTES": "notes"};
+  static const settingKeys = {
+    "DELIVERS": "delivers", "PICKUP": "pickup", "MEETING_POINT": "meeting", "NOTES": "notes",
+    "DELIVERY_SCOPE": "scope"
+  };
 
   /// An option's body keys, as the master names them.
   static const optionKeys = {
@@ -96,7 +99,7 @@ class DeliveryLanSource implements DeliverySource {
 
   /// An area's body keys, as the master names them.
   static const areaKeys = {
-    "ID": "id", "NAME": "name", "KIND": "kind", "LATITUDE": "latitude", "LONGITUDE": "longitude",
+    "ID": "id", "BRANCH": "branch", "NAME": "name", "KIND": "kind", "LATITUDE": "latitude", "LONGITUDE": "longitude",
     "RADIUS": "radius", "POLYGON": "polygon", "FEE": "fee", "MINIMUM": "minimum", "ACTIVE": "active",
     "POSITION": "position"
   };
@@ -162,6 +165,7 @@ class DeliveryLanSource implements DeliverySource {
 
     return {
       "currency": answer["currency"],
+      "scope": answer["scope"],
       "areas": [
         for (final area in answer["areas"] as List? ?? const [])
           if (area is Map) {

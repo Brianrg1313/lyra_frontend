@@ -368,6 +368,12 @@ Widget _screen(String currentKey, HomeSection section, String? businessId) {
     ),
     DeliverySettingsSection.routeKey => const DeliverySettingsSection(),
     DeliveryAreaSection.routeKey => const DeliveryAreaSection(),
+    // Keyed by branch: the page reads it on mount, so another branch's link
+    // must not reuse the open one's `State`.
+    DeliveryAreaSection.branchRouteKey => DeliveryAreaSection(
+      key: ValueKey("deliveries_area_${Navis.currentArgs?["branch"]}"),
+      branch: Navis.currentArgs?["branch"]
+    ),
     _ => section.build()
   };
 }

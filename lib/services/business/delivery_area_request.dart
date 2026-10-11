@@ -16,8 +16,10 @@ import 'package:app/services/business/delivery_area_model.dart';
 /// Builds the body that adds an area.
 ///
 /// Only the shape of its [kind] travels: a circle is its middle and its
-/// kilometres, a polygon its outline. What was left empty is not sent.
+/// kilometres, a polygon its outline. What was left empty is not sent, and a
+/// [branch] left out is an area on the map every branch serves.
 Map<String, dynamic> createDeliveryAreaRequest({
+  String? branch,
   required String name,
   required DeliveryAreaKind kind,
   LatLng? center,
@@ -26,6 +28,7 @@ Map<String, dynamic> createDeliveryAreaRequest({
   double? fee,
   double? minimum
 }) => {
+  "BRANCH": ?branch,
   "NAME": name.trim(),
   ..._shape(kind, center, radius, points),
   "FEE": ?fee,
@@ -54,6 +57,11 @@ Map<String, dynamic> updateDeliveryAreaRequest({
   "FEE": fee,
   "MINIMUM": minimum
 };
+
+/// Says which areas are in force: one map shared by every branch, or one per
+/// branch (`PUT /business/delivery/`). Switching deletes nothing.
+Map<String, dynamic> deliveryScopeRequest(DeliveryScope scope) =>
+  {"DELIVERY_SCOPE": scope.value};
 
 /// Pauses or resumes an area without touching its shape.
 Map<String, dynamic> deliveryAreaActiveRequest(DeliveryArea area, bool active) =>

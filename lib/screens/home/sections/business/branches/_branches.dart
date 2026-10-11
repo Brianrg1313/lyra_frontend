@@ -19,12 +19,14 @@ import 'package:app/screens/home/sections/deliveries/deliveries_map.dart';
 import 'package:app/screens/modals/business/branch_form/_branch_form.dart';
 
 import './branch_markers.dart';
+import './branches_focus.dart';
 import './branches_panel.dart';
 
 /// Branches tab: the map is the sheet, and the branches float over its left
 /// side in a panel (title, search, list), with the add button on its right.
-/// Every branch with a point is marked on the map; tapping one, there or in
-/// the list, centers the map on it and opens its form. It opens on the
+/// Every branch with a point is pinned on the map; tapping one, there or in
+/// the list, centers the map on it and opens its form. A row and its pin
+/// light up together (`BranchesFocus`), pointed at on either side. It opens on the
 /// company's point (the main branch's) and, without one, on the center of the
 /// map the tile server holds for the region.
 ///
@@ -41,6 +43,7 @@ class _BusinessBranchesTabState extends State<BusinessBranchesTab> {
   final BusinessLocationService _location = BusinessLocationService();
   final MapTilesService _tiles = MapTilesService();
   final MapController _map = MapController();
+  final BranchesFocus _focus = BranchesFocus();
 
   @override
   void initState() {
@@ -60,6 +63,7 @@ class _BusinessBranchesTabState extends State<BusinessBranchesTab> {
     _location.dispose();
     _tiles.dispose();
     _map.dispose();
+    _focus.dispose();
 
     super.dispose();
   }
@@ -99,6 +103,8 @@ class _BusinessBranchesTabState extends State<BusinessBranchesTab> {
   /// A branch without a point leaves the map where it is. The map is only
   /// moved once drawn: its controller throws before the tiles are ready.
   Future<void> _open(BuildContext context, BusinessBranchModel branch) {
+    _focus.select(branch.id);
+
     if (branch case BusinessBranchModel(:final double latitude, :final double longitude)
         when _tiles.status == MapTilesStatus.ready) {
       _map.move(LatLng(latitude, longitude), DeliveriesMap.businessZoom);
@@ -116,12 +122,15 @@ class _BusinessBranchesTabState extends State<BusinessBranchesTab> {
   Widget build(BuildContext context) => MultiProvider(
     providers: [
       ChangeNotifierProvider<BusinessLocationService>.value(value: _location),
-      ChangeNotifierProvider<MapTilesService>.value(value: _tiles)
+      ChangeNotifierProvider<MapTilesService>.value(value: _tiles),
+      ChangeNotifierProvider<BranchesFocus>.value(value: _focus)
     ],
     child: LayoutBuilder(builder: (context, constraints) => Stack(
       children: [
         Positioned.fill(child: DeliveriesMap(
           controller: _map,
+          // The main branch's pin stands there, with its star.
+          businessMark: false,
           layers: [BranchMarkers(onSelect: (branch) => _open(context, branch))]
         )),
         Positioned(
