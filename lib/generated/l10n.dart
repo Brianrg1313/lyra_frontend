@@ -12097,6 +12097,186 @@ class S {
     );
   }
 
+  /// `Prices per branch`
+  String get branch_prices_title {
+    return Intl.message(
+      'Prices per branch',
+      name: 'branch_prices_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A branch sells at the catalog's price unless it has its own. A ticket already open keeps the price it opened with.`
+  String get branch_prices_subtitle {
+    return Intl.message(
+      'A branch sells at the catalog\'s price unless it has its own. A ticket already open keeps the price it opened with.',
+      name: 'branch_prices_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The branches' prices didn't load`
+  String get branch_prices_error {
+    return Intl.message(
+      'The branches\' prices didn\'t load',
+      name: 'branch_prices_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `this branch`
+  String get branch_prices_this_branch {
+    return Intl.message(
+      'this branch',
+      name: 'branch_prices_this_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `catalog price`
+  String get branch_prices_from_catalog {
+    return Intl.message(
+      'catalog price',
+      name: 'branch_prices_from_catalog',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No offer here`
+  String get branch_prices_no_offer {
+    return Intl.message(
+      'No offer here',
+      name: 'branch_prices_no_offer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{percent}% off here`
+  String branch_prices_offer(Object percent) {
+    return Intl.message(
+      '$percent% off here',
+      name: 'branch_prices_offer',
+      desc: '',
+      args: [percent],
+    );
+  }
+
+  /// `{branch}'s own price`
+  String branch_prices_here(Object branch) {
+    return Intl.message(
+      '$branch\'s own price',
+      name: 'branch_prices_here',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `Price · optional`
+  String get branch_prices_price {
+    return Intl.message(
+      'Price · optional',
+      name: 'branch_prices_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Empty keeps the catalog's`
+  String get branch_prices_price_hint {
+    return Intl.message(
+      'Empty keeps the catalog\'s',
+      name: 'branch_prices_price_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Catalog: {price}`
+  String branch_prices_catalog(Object price) {
+    return Intl.message(
+      'Catalog: $price',
+      name: 'branch_prices_catalog',
+      desc: '',
+      args: [price],
+    );
+  }
+
+  /// `Offer % · optional`
+  String get branch_prices_discount {
+    return Intl.message(
+      'Offer % · optional',
+      name: 'branch_prices_discount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Empty keeps the product's offer, 0 takes it off here`
+  String get branch_prices_discount_hint {
+    return Intl.message(
+      'Empty keeps the product\'s offer, 0 takes it off here',
+      name: 'branch_prices_discount_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A price has at most two decimals, and an offer is under 100%`
+  String get branch_prices_invalid {
+    return Intl.message(
+      'A price has at most two decimals, and an offer is under 100%',
+      name: 'branch_prices_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write a price or an offer for this branch`
+  String get branch_prices_empty {
+    return Intl.message(
+      'Write a price or an offer for this branch',
+      name: 'branch_prices_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price saved for this branch`
+  String get branch_prices_saved {
+    return Intl.message(
+      'Price saved for this branch',
+      name: 'branch_prices_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use the catalog's`
+  String get branch_prices_remove {
+    return Intl.message(
+      'Use the catalog\'s',
+      name: 'branch_prices_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This branch sells at the catalog's price again`
+  String get branch_prices_removed {
+    return Intl.message(
+      'This branch sells at the catalog\'s price again',
+      name: 'branch_prices_removed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Shipments waiting to be received`
   String get badge_inventory_incoming {
     return Intl.message(

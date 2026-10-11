@@ -389,6 +389,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_view_model.dart` — `TableViewModel`, `TableColumnModel`, `TableRowModel`.
 - `tables/table_normalize_model.dart` — `POST .../builder/normalize/` result.
 - `tables/table_normalizing_model.dart` / `table_ready_model.dart` — `table/normalizing` / `table/ready` notices.
+- `prices/branch_price_model.dart` — `BranchPrice` (a product's own price at a branch: `price` null = the catalog's, `inheritsDiscount`, `discount` null = no offer there), `setBranchPriceRequest` (`DISCOUNT` null with `clearDiscount`), `removeBranchPriceRequest`.
+- `prices/branch_prices_service.dart` — `BranchPricesService({productId, tableId})` (+ status): every branch's own prices of one product, `here` (the branch worked in), `canPrice` (`products.price` from the person's grant), `set`/`remove` (the header's branch only; reread after), `price/changed` for the product rereads. Owned by its panel.
 - `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`).
 - `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement`, `StockBalance`, `StockOperation`, `StockReason`.

@@ -1,11 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// PACKAGES
+import 'package:provider/provider.dart';
+
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
+import 'package:app/services/inventory/table_field_type.dart';
+import 'package:app/services/stock/summary/stock_summary_service.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 
 // WIDGETS
+import 'package:app/screens/modals/inventory/branch_prices/_branch_prices.dart';
 import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart';
 
 import './summary_layout.dart';
@@ -70,14 +80,44 @@ class SummaryProductRow extends StatelessWidget {
       child: SummaryLine(
         layout: layout,
         image: SummaryPicture(row: row),
-        field: (column) => SummaryValue(
-          column: column,
-          raw: row[column.key],
-          currency: currency
-        ),
+        field: (column) => _priced(context, column)
+          ? FocusableWidget(
+              action: () => _openPrices(context, column),
+              message: S.of(context).branch_prices_title,
+              child: SummaryValue(column: column, raw: row[column.key], currency: currency)
+            )
+          : SummaryValue(
+              column: column,
+              raw: row[column.key],
+              currency: currency
+            ),
         number: _number
       )
     );
+  }
+
+  /// A price opens what each branch sells the product at, where there are branches to tell
+  /// apart (`inventory.prices`, cloud only): a number of the row, so it is touched like one.
+  bool _priced(BuildContext context, StockSummaryColumn column) =>
+    column.type == TableFieldType.price &&
+    BranchService().choosable &&
+    CapabilityService().shows("inventory.prices");
+
+  void _openPrices(BuildContext context, StockSummaryColumn column) {
+    final raw = row[column.key];
+    final name = layout.fields
+      .where((field) => field.type == TableFieldType.text)
+      .map((field) => row[field.key]?.toString().trim() ?? "")
+      .firstWhere((value) => value.isNotEmpty, orElse: () => "");
+
+    unawaited(showBranchPrices(
+      context,
+      productId: row.id,
+      product: name,
+      tableId: context.read<StockSummaryService>().table,
+      catalogPrice: raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? ""),
+      currency: currency
+    ));
   }
 
   /// One of the numbers columns.

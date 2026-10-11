@@ -122,6 +122,7 @@ through `Navigator.pop(context, value)`.
 - `stock_movement/_stock_movement.dart` — `showStockMovement(...)`, `StockMovementModal` (from a stock summary stepper).
 - `stock_movement/movement_shape.dart` — `StockMovementShape`, `StockCounter`, `StockDirection`, `MovementDestination`, `MovementDestinationKind`.
 - `stock_movement/movement_option.dart` — `MovementOption`: selectable outcome row.
+- `branch_prices/_branch_prices.dart` — `showBranchPrices(context, productId:, product:, tableId:, catalogPrice:, currency:)`, `BranchPricesModal` (owns its `BranchPricesService`): each branch with its own price/offer or the catalog's; with `products.price`, the branch worked in's price and offer % (empty keeps the product's offer, 0 takes it off), save, "use the catalog's".
 - `transfer_form/_transfer_form.dart` — `showTransferForm(context, service:)`, `TransferFormModal`: where it goes (the other branches), products found in the primary table's summary (`StockTransfersService.searchProducts`, free units beside each, one table per transfer), units, note; "save as draft" / "send now". Returns `createTransferRequest`.
 - `receive_transfer/_receive_transfer.dart` — `showReceiveTransfer(context, transfer:, nameOf:)`, `ReceiveTransferModal`: each line opens on what was sent; one counted short asks the reason (`StockShortage`, `loss` by default). Returns `TransferCount` (only the short lines).
 - `stock_movement/quantity_field.dart` — `QuantityField`: amount with step buttons.
