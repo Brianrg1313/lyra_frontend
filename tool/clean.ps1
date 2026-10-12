@@ -5,7 +5,10 @@
 param([switch]$Engine, [switch]$NoBuild)
 
 Set-Location (Split-Path $PSScriptRoot)
-Get-Process app, lyra_node -ErrorAction SilentlyContinue | Stop-Process -Force
+$running = Get-Process app, lyra_node -ErrorAction SilentlyContinue
+$running | Stop-Process -Force
+# A killed process keeps its file handles until it has fully exited: deleting right away fails on home.hive.
+$running | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
 
 $paths = @(
   (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'lyra'),   # Hive.initFlutter('lyra')
@@ -15,7 +18,9 @@ $paths = @(
 if ($Engine) { $paths += Join-Path $env:LOCALAPPDATA 'Lyra\node' }
 
 foreach ($p in $paths) {
-  if (Test-Path $p) { Remove-Item $p -Recurse -Force; Write-Host "removed $p" }
+  if (-not (Test-Path $p)) { continue }
+  try { Remove-Item $p -Recurse -Force -ErrorAction Stop; Write-Host "removed $p" }
+  catch { Write-Warning "could not remove ${p}: $($_.Exception.Message)" }
 }
 
 if (-not $NoBuild) {
