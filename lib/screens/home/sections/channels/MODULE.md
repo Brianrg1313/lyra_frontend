@@ -4,7 +4,7 @@
 **Role** AI channels: networks the business answers on, what each knows and can do. Content of
 the `channels` home section plus its edit sub-page.
 **Services** `ChannelsService`, `ChannelCatalogService` (`lib/services/channels`).
-**Other entry points** Create (step-by-step modal; reuses `ProviderPicker`, `CredentialsBlock`, `DataTableSelect`, `PaymentPickerNote`): `lib/screens/modals/channels/create_channel`. Detail/edit in
+**Other entry points** Create (step-by-step modal; reuses `ProviderPicker`, `DataTableSelect`, `PaymentPickerNote`): `lib/screens/modals/channels/create_channel`. Detail/edit in
 place: `lib/screens/modals/channels/channel_detail`. Both reuse this module's `form/` controller and blocks.
 
 ## Routing

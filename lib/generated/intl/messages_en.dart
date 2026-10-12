@@ -2028,12 +2028,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Needs setup",
     ),
     "channel_state_ready": MessageLookupByLibrary.simpleMessage("Connected"),
-    "channel_step_connect_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Paste the keys the network gives you. Don\'t have them yet? Leave them empty and add them later.",
-    ),
-    "channel_step_connect_title": MessageLookupByLibrary.simpleMessage(
-      "Connect your account",
-    ),
     "channel_step_label": m30,
     "channel_step_network_subtitle": MessageLookupByLibrary.simpleMessage(
       "Pick the app. Lyra will answer the messages that arrive there.",
@@ -2046,21 +2040,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "channel_step_payments_title": MessageLookupByLibrary.simpleMessage(
       "Where can customers pay you?",
-    ),
-    "channel_step_qr_create": MessageLookupByLibrary.simpleMessage(
-      "Finish these steps and create the channel",
-    ),
-    "channel_step_qr_done": MessageLookupByLibrary.simpleMessage(
-      "Done: Lyra starts answering on your number",
-    ),
-    "channel_step_qr_scan": MessageLookupByLibrary.simpleMessage(
-      "Open WhatsApp on your phone and scan the code that appears",
-    ),
-    "channel_step_qr_subtitle": MessageLookupByLibrary.simpleMessage(
-      "There\'s nothing to paste: you\'ll link your phone with a QR code, like on WhatsApp Web.",
-    ),
-    "channel_step_qr_title": MessageLookupByLibrary.simpleMessage(
-      "Link your number",
     ),
     "channel_step_role_subtitle": MessageLookupByLibrary.simpleMessage(
       "Choose its job on this channel. You can change it later.",

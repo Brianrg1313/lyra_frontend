@@ -85,11 +85,11 @@ through `Navigator.pop(context, value)`.
 
 ### `channels/`
 - `create_channel/_create_channel.dart` — `showCreateChannel(context, {preset})`, `CreateChannelModal`: core `showStepModal` + `ModalSteps`, one question per page
-  under a `StepArt`: network → credentials (WhatsApp Personal: the QR to come) → role → data source → payment accounts → tools
-  (no name/description). Next stops only without a network, or on a product table not chosen. Reuses `sections/channels/form/`
-  controller, `ProviderPicker`/`CredentialsBlock` (`labeled: false`), `DataTableSelect`, `PaymentPickerNote`. Provides its own
-  `MoneyMethodsService`. A `ChannelPreset` fills it, opens it on the credentials step (and picks the main table once the tables are read). Returns the new id, `null` if closed.
-- `create_channel/step_bodies.dart` — `RoleStep` `SourceStep` `PaymentsStep` `ToolsStep` (answers as `ChoiceCard`s, each with its hint), `QrStep` (WhatsApp Personal: three numbered lines).
+  under a `StepArt`: network → role → data source → payment accounts → tools
+  (no name/description, no credentials: added on the channel's page). Next stops only without a network, or on a product table not chosen. Reuses `sections/channels/form/`
+  controller, `ProviderPicker` (`labeled: false`), `DataTableSelect`, `PaymentPickerNote`. Provides its own
+  `MoneyMethodsService`. A `ChannelPreset` fills it, opens it on the role step (and picks the main table once the tables are read). Returns the new id, `null` if closed.
+- `create_channel/step_bodies.dart` — `RoleStep` `SourceStep` `PaymentsStep` `ToolsStep` (answers as `ChoiceCard`s, each with its hint).
 - `create_channel/choice_card.dart` — `ChoiceCard`: full-width answer (icon, name, one line, round or square mark, "Soon" badge).
 - `create_channel/step_art.dart` — `StepArt(gradient, icon)`: a themed `gradient-N.png` with the step's icon in a white ring.
 - `baileys_pairing/_baileys_pairing.dart` — `linkBaileysChannel` (start the session, pair on `starting`/`qr_pending`), `showBaileysPairing`.

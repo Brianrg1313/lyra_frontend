@@ -14,7 +14,6 @@ import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/channels/form/blocks/credentials_block.dart';
 import 'package:app/screens/home/sections/channels/form/blocks/provider_picker.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
 
@@ -32,6 +31,10 @@ import './step_bodies.dart';
 ///
 /// Editing stays a page (`ChannelFormSection`) and a detail panel: they open
 /// against a channel that already exists and is read next to the others.
+///
+/// The network's keys (or a WhatsApp Personal QR) are not asked here: they
+/// are the step that stalls a newcomer, and a channel is registered before
+/// Meta issues its tokens anyway. They are added on the channel's page.
 ///
 /// A [preset] opens it already filled (network, role, tools, and the
 /// company's main table to read from), on the step after the network, which
@@ -51,7 +54,7 @@ Future<String?> showCreateChannel(
   return created is String ? created : null;
 }
 
-/// The steps: network, its connection, the agent's job, what it reads, where
+/// The steps: network, the agent's job, what it reads, where
 /// customers pay, and what else it understands. Only the network and the
 /// table (when reading one) stop the way forward; the rest can be left as it
 /// comes.
@@ -147,19 +150,10 @@ class _CreateChannelModalState extends State<CreateChannelModal> {
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider<MoneyMethodsService>
-    .value(
-      value: _methods,
-      // The connect step's title, image and fields follow the network.
-      child: ValueListenableBuilder<String>(
-        valueListenable: _controller.provider,
-        builder: (context, code, _) => _steps(code)
-      )
-    );
+    .value(value: _methods, child: _steps());
 
-  Widget _steps(String code) {
+  Widget _steps() {
     final s = S.of(context);
-    final schema = _schemaOf(code);
-    final personal = code == ChannelProviderModel.whatsappPersonalCode;
 
     return ModalSteps(
       initialStep: widget.preset == null ? 0 : 1,
@@ -179,41 +173,28 @@ class _CreateChannelModalState extends State<CreateChannelModal> {
           builder: (_) => ProviderPicker(controller: _controller, labeled: false)
         ),
         ModalStep(
-          title: personal ? s.channel_step_qr_title : s.channel_step_connect_title,
-          subtitle: personal ? s.channel_step_qr_subtitle : s.channel_step_connect_subtitle,
-          image: StepArt(
-            gradient: "gradient-2.png",
-            icon: personal ? CI.qr_code : schema?.icon ?? CI.link
-          ),
-          builder: (_) => personal
-            ? const QrStep()
-            : schema == null
-              ? const SizedBox.shrink()
-              : CredentialsBlock(controller: _controller, schema: schema, labeled: false)
-        ),
-        ModalStep(
           title: s.channel_step_role_title,
           subtitle: s.channel_step_role_subtitle,
-          image: const StepArt(gradient: "gradient-3.png", icon: CI.ia),
+          image: const StepArt(gradient: "gradient-2.png", icon: CI.ia),
           builder: (_) => RoleStep(controller: _controller)
         ),
         ModalStep(
           title: s.channel_step_source_title,
           subtitle: s.channel_step_source_subtitle,
-          image: const StepArt(gradient: "gradient-1.png", icon: CI.inventory),
+          image: const StepArt(gradient: "gradient-3.png", icon: CI.inventory),
           validate: _hasTable,
           builder: (_) => SourceStep(controller: _controller)
         ),
         ModalStep(
           title: s.channel_step_payments_title,
           subtitle: s.channel_step_payments_subtitle,
-          image: const StepArt(gradient: "gradient-2.png", icon: CI.wallet),
+          image: const StepArt(gradient: "gradient-1.png", icon: CI.wallet),
           builder: (_) => PaymentsStep(controller: _controller)
         ),
         ModalStep(
           title: s.channel_step_tools_title,
           subtitle: s.channel_step_tools_subtitle,
-          image: const StepArt(gradient: "gradient-3.png", icon: CI.microphone),
+          image: const StepArt(gradient: "gradient-2.png", icon: CI.microphone),
           builder: (_) => ToolsStep(controller: _controller)
         )
       ]
@@ -267,8 +248,7 @@ class _CreateChannelModalState extends State<CreateChannelModal> {
       );
     } catch (_) {
       // The error was already shown by the service; the modal stays open with
-      // everything typed, which is the only reasonable thing when someone
-      // just pasted four tokens.
+      // every answer as it was, to retry.
       if (mounted) _controller.busy(false);
       return;
     }
