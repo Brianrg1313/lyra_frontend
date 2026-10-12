@@ -42,7 +42,7 @@ class InventoryBar extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.all(AppSize.gap),
     child: SizedBox(
-      height: AppSize.action,
+      height: AppSize.button,
       child: CustomMultiChildLayout(
         delegate: _BarLayout(gap: AppSize.spaceS),
         children: [
