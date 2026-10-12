@@ -18,8 +18,6 @@ import './channels/form/_channel_form.dart';
 import './connections/_connections.dart';
 import './connections/form/_connection_form.dart';
 import './deliveries/_deliveries.dart';
-import './deliveries/area/_area.dart';
-import './deliveries/settings/_settings.dart';
 import './finance/_finance.dart';
 import './local_server/_local_server.dart';
 import './inventory/table_list/_table_list.dart';
@@ -41,6 +39,7 @@ enum HomeSection {
   business(key: "business", path: "/home/business", icon: CI.store),
   employees(key: "employees", path: "/home/employees", icon: CI.employee),
   inventory(key: "inventory", path: "/home/inventory", icon: CI.shop),
+  supplyChain(key: "supply_chain", path: "/home/supply_chain", icon: CI.warehouse),
   services(key: "services", path: "/home/services", icon: CI.task_list),
   channels(key: "channels", path: "/home/channels", icon: CI.ia),
   knowledge(key: "knowledge", path: "/home/knowledge", icon: CI.help),
@@ -49,6 +48,7 @@ enum HomeSection {
   deliveries(key: "deliveries", path: "/home/deliveries", icon: CI.delivery),
   sales(key: "sales", path: "/home/sales", icon: CI.sale),
   finance(key: "finance", path: "/home/finance", icon: CI.wallet),
+  lyraBusiness(key: "lyra_business", path: "/home/lyra_business", icon: CI.globe_shopping),
   marketing(key: "marketing", path: "/home/marketing", icon: Icons.campaign_outlined),
   report(key: "report", path: "/home/report", icon: CI.chart),
   externalServices(key: "external_services", path: "/home/external_services", icon: CI.link),
@@ -70,53 +70,56 @@ enum HomeSection {
   final String path;
   final IconData icon;
 
-  /// First group of the side bar, with no title: what the company **is** and
-  /// what it has going right now.
+  /// First group of the side bar, with no title: what the company **is**.
   ///
   /// [employees] follows the business: who works in it used to be one of its
   /// tabs, and it is looked at on its own all day (one's own card, the people).
-  ///
-  /// [messages], [deliveries] and [sales] follow the business, in the order a
-  /// sale happens: the conversation where it starts, getting the goods to the
-  /// customer, and the board of everything still in progress. They used to
-  /// sit under a "transactions" title of their own; they are the screens
-  /// opened all day, so they went up to the untitled top of the bar.
   static const List<HomeSection> home = [
     dashboard,
     business,
-    employees,
-    messages,
-    deliveries,
-    sales
+    employees
   ];
 
-  /// Product group of the side bar.
+  /// Operations group of the side bar: the screens opened all day.
+  ///
+  /// [sales] leads, then [messages] and [deliveries]: the board of what is
+  /// going on, the conversations it starts from and the goods on their way.
+  static const List<HomeSection> operations = [
+    sales,
+    messages,
+    deliveries,
+    services
+  ];
+
+  /// Resources group of the side bar: what the company sells and what Lyra
+  /// knows about it.
   ///
   /// [knowledge] follows [channels]: the channels decide where Lyra answers,
   /// the frequent questions what she knows when a customer asks how the
   /// business works.
-  static const List<HomeSection> products = [
+  static const List<HomeSection> resources = [
     inventory,
-    services,
+    supplyChain,
     channels,
     knowledge
   ];
 
-  /// Report group of the side bar.
+  /// Management group of the side bar.
   ///
   /// [finance] opens it: the company's money is what gets looked back at.
-  static const List<HomeSection> reports = [
+  static const List<HomeSection> management = [
     finance,
+    lyraBusiness,
     marketing,
     report
   ];
 
-  /// Connections group of the side bar.
+  /// Integrations group of the side bar.
   ///
   /// Connections come first because they are the company's own accounts —what
   /// gets connected and looked at often—; external services are what the
   /// platform consumes behind the scenes.
-  static const List<HomeSection> connectionGroups = [
+  static const List<HomeSection> integrations = [
     connections,
     externalServices,
     server
@@ -149,6 +152,7 @@ enum HomeSection {
     business => S.of(context).business,
     employees => S.of(context).employees,
     inventory => S.of(context).inventory,
+    supplyChain => S.of(context).supply_chain,
     services => S.of(context).services,
     channels => S.of(context).channels,
     knowledge => S.of(context).knowledge,
@@ -157,6 +161,7 @@ enum HomeSection {
     deliveries => S.of(context).deliveries,
     sales => S.of(context).sales,
     finance => S.of(context).finance,
+    lyraBusiness => S.of(context).lyra_business,
     marketing => S.of(context).marketing,
     report => S.of(context).report,
     externalServices => S.of(context).external_services,
@@ -376,14 +381,6 @@ Widget _screen(String currentKey, HomeSection section, String? businessId) {
       const ConnectionFormSection(key: ValueKey("connection_new")),
     ConnectionFormSection.editRouteKey => ConnectionFormSection(
       key: ValueKey("connection_${Navis.currentArgs?["id"]}")
-    ),
-    DeliverySettingsSection.routeKey => const DeliverySettingsSection(),
-    DeliveryAreaSection.routeKey => const DeliveryAreaSection(),
-    // Keyed by branch: the page reads it on mount, so another branch's link
-    // must not reuse the open one's `State`.
-    DeliveryAreaSection.branchRouteKey => DeliveryAreaSection(
-      key: ValueKey("deliveries_area_${Navis.currentArgs?["branch"]}"),
-      branch: Navis.currentArgs?["branch"]
     ),
     _ => section.build()
   };

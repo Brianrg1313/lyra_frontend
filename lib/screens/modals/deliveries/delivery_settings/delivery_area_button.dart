@@ -4,7 +4,7 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
-/// Opens the delivery area page. Drawn like the [SettingsSelect] beside it, so
+/// Back to the delivery area, on the desk under the panel. Drawn like the [SettingsSelect] beside it, so
 /// the two read as one row of controls.
 class DeliveryAreaButton extends StatelessWidget {
   const DeliveryAreaButton({super.key, required this.action});

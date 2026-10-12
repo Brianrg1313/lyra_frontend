@@ -57,7 +57,7 @@ Future<Map<String, dynamic>?> showDeliveryOptionForm(
 /// and not as an error code after the panel closed.
 ///
 /// It **returns the request body and writes nothing**: the delivery service is
-/// provided by the delivery settings page, under the navigator this panel is opened on.
+/// provided by the delivery settings panel, which this one stacks on and is not under.
 class DeliveryOptionFormModal extends StatefulWidget {
   const DeliveryOptionFormModal({
     super.key,

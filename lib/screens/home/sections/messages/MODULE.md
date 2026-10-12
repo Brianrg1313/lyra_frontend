@@ -23,6 +23,10 @@
 ## Files
 
 - `_messages.dart` — `MessagesSection`: creates/provides `ChatsService`, loads it, forwards header search; `Row` of `InboxPanel` (flex 1) and `_OpenChat` (flex 2).
+  Also reads the app-wide `ChannelsService`: none → `MessagesStart` instead of the desk (kept through the reads that follow; a failed read keeps the desk).
+- `start/_start.dart` — `MessagesStart`: no channel yet; the desk's two panels with networks in place of chats: `ChannelPreset` rows (ready first, "soon" disabled, a blank one) left, the picked one's preview right (stacked when narrow);
+  connecting opens `showCreateChannel`; a WhatsApp Personal one goes on to its QR (`linkBaileysChannel`) **before** the channels reload, which swaps this page for the desk.
+- `start/preset_row.dart` — `PresetRow`: a network in the list (mark, name, what it takes). `start/preset_preview.dart` — `PresetPreview`: what it takes, a sample exchange in the chat's bubbles, its tools, connect.
 - `chat_format.dart` — `chatTimeLabel`, `chatDateLabel`, `chatWaitLabel`.
 - `tags/chat_stage_tag.dart` — `ChatStageTag`. `tags/chat_stage_color.dart` — `chatStageColor` (same hues as `saleStageColor` for shared codes), `chatWaitingColor`.
 - `tags/chat_tags.dart` — `ChatTags` (wrap). `tags/chat_tag_chip.dart` — `ChatTagChip` (bold = work for a person; tooltip since + tickets).

@@ -3,6 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // PACKAGES
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
@@ -14,18 +16,27 @@ import 'package:app/services/business/delivery_areas_service.dart';
 import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
-import 'package:app/screens/home/sections/deliveries/coverage_block.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
+import 'package:app/screens/home/sections/deliveries/deliveries_panel.dart';
 
-/// Where the company delivers, in the desk's panel: one shared map or one per
-/// branch, switched there. Per branch, a branch with no areas delivers nowhere,
-/// which the panel must not hide.
+/// Where the company delivers, edited in the desk's panel: one shared map or
+/// one per branch, switched there; the open map's areas under "Add area".
 void main() {
   setUpAll(() {
     ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
   });
 
-  Future<(_Deliveries, DeliveryAreasService)> pump(WidgetTester tester, String scope) async {
+  Future<(_Deliveries, List<AreaMethod>, AreaEditor)> pump(WidgetTester tester, String scope) async {
     final deliveries = _Deliveries(scope);
+    final added = <AreaMethod>[];
+    final map = MapController();
+    final editor = AreaEditor(map: map);
+
+    addTearDown(() {
+      editor.dispose();
+      map.dispose();
+    });
+
     final areas = DeliveryAreasService(source: deliveries);
     final branches = BusinessBranchesService(source: _Business());
 
@@ -43,10 +54,19 @@ void main() {
           ChangeNotifierProvider<BusinessBranchesService>.value(value: branches),
           ChangeNotifierProvider<BranchesFocus>(create: (_) => BranchesFocus())
         ],
-        child: Builder(builder: (context) {
+        child: ListenableBuilder(listenable: Listenable.merge([areas, editor]), builder: (context, _) {
           AppSize.instance(context);
 
-          return const Scaffold(body: SingleChildScrollView(child: CoverageBlock()));
+          // The desk works out the open map: per branch, the first one.
+          final owner = areas.areas?.scope == DeliveryScope.branch ? "b-centro" : null;
+
+          return Scaffold(body: DeliveriesPanel(
+            editor: editor,
+            owner: owner,
+            origin: () => const LatLng(10.5, -66.9),
+            onOwner: (_) {},
+            onAdd: added.add
+          ));
         })
       )
     ));
@@ -55,35 +75,77 @@ void main() {
     await branches.load();
     await tester.pumpAndSettle();
 
-    return (deliveries, areas);
+    return (deliveries, added, editor);
   }
 
-  testWidgets("shared: one row for the map every branch serves, with its count", (tester) async {
+  testWidgets("shared: the map every branch serves, no branch to pick", (tester) async {
     await pump(tester, "global");
 
     expect(tester.takeException(), isNull);
-    expect(find.text("Every branch"), findsOneWidget);
-    expect(find.text("1 area, shared by every branch"), findsOneWidget);
-    expect(find.text("Centro"), findsNothing);
+    expect(find.text("Todas"), findsOneWidget);
+    expect(find.text("Centro 1"), findsNothing);
+    expect(find.text("Areas of"), findsNothing);
   });
 
-  testWidgets("per branch: one row per branch, the one with no areas said so", (tester) async {
+  testWidgets("per branch: the open branch's areas only, with its count", (tester) async {
     await pump(tester, "branch");
 
     expect(tester.takeException(), isNull);
     expect(find.text("Centro"), findsOneWidget);
     expect(find.text("2 areas"), findsOneWidget);
-    expect(find.text("No areas · Not on the map"), findsOneWidget);
+    expect(find.text("Centro 1"), findsOneWidget);
+    expect(find.text("Todas"), findsNothing);
   });
 
   testWidgets("the switch writes the other scope and the panel follows it", (tester) async {
-    final (deliveries, _) = await pump(tester, "global");
+    final (deliveries, _, _) = await pump(tester, "global");
 
     await tester.tap(find.text("Per branch"));
     await tester.pumpAndSettle();
 
     expect(deliveries.writes, [{"DELIVERY_SCOPE": "branch"}]);
-    expect(find.text("Centro"), findsOneWidget);
+    expect(find.text("Centro 1"), findsOneWidget);
+  });
+
+  testWidgets("\"Add area\" sits above the areas and starts the method picked", (tester) async {
+    final (_, added, _) = await pump(tester, "global");
+
+    expect(
+      tester.getTopLeft(find.text("Add area")).dy,
+      lessThan(tester.getTopLeft(find.text("Todas")).dy)
+    );
+
+    await tester.tap(find.text("Add area"));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("Radius around your business"));
+    await tester.pumpAndSettle();
+
+    expect(added, [AreaMethod.radius]);
+  });
+
+  testWidgets("shaping: the panel reads the shape live, and Save stays in reach", (tester) async {
+    final (_, _, editor) = await pump(tester, "global");
+
+    editor.start(AreaMethod.radius, const LatLng(10.5, -66.9));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text("New area"), findsOneWidget);
+    expect(find.text("28.27 km²"), findsOneWidget);
+    expect(find.text("Within 3 km"), findsOneWidget);
+    expect(find.text("Add area"), findsNothing);
+    expect(find.text("Save"), findsOneWidget);
+
+    editor.setRadius(1);
+    await tester.pumpAndSettle();
+
+    expect(find.text("3.14 km²"), findsOneWidget);
+
+    editor.start(AreaMethod.draw, const LatLng(10.5, -66.9));
+    await tester.pumpAndSettle();
+
+    expect(find.text("0 km²"), findsOneWidget);
+    expect(find.text("0 points · 3 at least"), findsOneWidget);
   });
 }
 

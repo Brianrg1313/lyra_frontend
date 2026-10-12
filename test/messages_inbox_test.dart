@@ -55,8 +55,8 @@ void main() {
       expect(match?.route.key, HomeSection.messages.key);
       expect(HomeSection.messages.needsBusiness, isTrue);
       expect(
-        HomeSection.home.indexOf(HomeSection.messages),
-        HomeSection.home.indexOf(HomeSection.employees) + 1
+        HomeSection.operations.indexOf(HomeSection.messages),
+        HomeSection.operations.indexOf(HomeSection.sales) + 1
       );
     });
   });

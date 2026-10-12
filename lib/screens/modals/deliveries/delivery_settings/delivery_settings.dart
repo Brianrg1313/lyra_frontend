@@ -12,20 +12,22 @@ import 'package:app/screens/home/sections/business/settings/profile_field.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 import './delivery_area_button.dart';
+import './delivery_gate.dart';
 import './delivery_flag_field.dart';
 import './delivery_meeting_field.dart';
 
-/// The general answer: whether the company delivers, whether a customer can
-/// collect, and its own sentence about delivery.
+/// The general answer: whether the company delivers, where, what the
+/// assistant does past the areas, and the company's own sentence about it.
 ///
-/// The two flags are picked where they are read ([SettingsSelect]) and save
-/// themselves: choosing needs neither a keyboard nor a save button. They offer
+/// Whether it delivers is picked where it is read ([SettingsSelect]) and saves
+/// itself: choosing needs neither a keyboard nor a save button. It offers
 /// **three** answers and not a switch, because "not set yet" is not "no" (see
 /// [BusinessDeliveryModel]) and a switch can only say one of the other two.
 ///
-/// Beside whether it delivers goes the way to the delivery area: where it
-/// delivers is the next question once the answer is yes. Under it, whether
-/// those areas are fixed or flexible ([DeliveryMeetingField]).
+/// Beside it goes the way to the delivery area: where it delivers is the next
+/// question once the answer is yes. Under it, whether those areas are fixed or
+/// flexible ([DeliveryMeetingField]), faded while the company does not deliver
+/// ([DeliveryGate]). Pickup is another question and has its own block.
 class DeliverySettingsBlock extends StatelessWidget {
   const DeliverySettingsBlock({
     super.key,
@@ -44,7 +46,7 @@ class DeliverySettingsBlock extends StatelessWidget {
   /// Opens the note's editor.
   final void Function() onNotes;
 
-  /// Opens the delivery area page.
+  /// Back to the delivery area, on the desk.
   final void Function() onArea;
 
   /// Saves whether the areas are flexible (`true`) or fixed.
@@ -66,14 +68,9 @@ class DeliverySettingsBlock extends StatelessWidget {
           onChanged: onFlag,
           trailing: DeliveryAreaButton(action: onArea)
         ),
-        DeliveryMeetingField(value: delivery.meeting, onChanged: onMeeting),
-        DeliveryFlagField(
-          flag: DeliveryFlag.pickup,
-          value: delivery.pickup,
-          icon: CI.store,
-          label: S.of(context).business_delivery_pickup,
-          description: S.of(context).business_delivery_pickup_note,
-          onChanged: onFlag
+        DeliveryGate(
+          off: delivery.delivers == false,
+          child: DeliveryMeetingField(value: delivery.meeting, onChanged: onMeeting)
         ),
         ProfileField(
           icon: CI.chat,
@@ -91,4 +88,28 @@ class DeliverySettingsBlock extends StatelessWidget {
       ]
     );
   }
+}
+
+/// Whether a customer can collect the order: a way of getting it that does
+/// not depend on delivering, so it is neither under that answer nor faded by it.
+class DeliveryPickupBlock extends StatelessWidget {
+  const DeliveryPickupBlock({super.key, required this.delivery, required this.onFlag});
+
+  final BusinessDeliveryModel delivery;
+  final Future<void> Function(DeliveryFlag flag, bool? value) onFlag;
+
+  @override
+  Widget build(BuildContext context) => ProfileBlock(
+    title: S.of(context).deliveries_settings_pickup,
+    fields: [
+      DeliveryFlagField(
+        flag: DeliveryFlag.pickup,
+        value: delivery.pickup,
+        icon: CI.store,
+        label: S.of(context).business_delivery_pickup,
+        description: S.of(context).business_delivery_pickup_note,
+        onChanged: onFlag
+      )
+    ]
+  );
 }

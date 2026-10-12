@@ -5,7 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/deliveries/settings/delivery_format.dart';
+import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 /// What the tapped point gets: the areas in force holding it (cheapest first),

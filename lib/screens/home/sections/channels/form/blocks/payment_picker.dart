@@ -9,10 +9,9 @@ import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/money/money_methods_service.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/_section/form/form_block.dart';
-import 'package:app/screens/home/sections/_section/form/option_card.dart';
-import 'package:app/screens/home/sections/_section/form/option_grid.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/form_row.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/option_chip.dart';
 import 'package:app/screens/home/sections/channels/form/widgets/payment_picker_note.dart';
 
 /// Which of the company's accounts this channel may tell a customer to pay
@@ -40,12 +39,14 @@ class PaymentPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final service = context.watch<MoneyMethodsService>();
 
-    return FormBlock(
-      title: S.of(context).channel_payments_title,
-      subtitle: S.of(context).channel_payments_subtitle,
+    return ChannelFormRow(
+      label: S.of(context).channel_payments_title,
+      note: service.status == MoneyMethodsStatus.ready
+        ? S.of(context).channel_payments_subtitle
+        : null,
       child: switch (service.status) {
         // The accounts are their own read, so failing to get them takes this
-        // block down and nothing else: the rest of the channel is still
+        // row down and nothing else: the rest of the channel is still
         // editable and saving it leaves the selection as it was.
         MoneyMethodsStatus.error => PaymentPickerNote(
           text: S.of(context).channel_payments_error,
@@ -58,27 +59,22 @@ class PaymentPicker extends StatelessWidget {
         ),
         MoneyMethodsStatus.ready => ValueListenableBuilder<Set<String>>(
           valueListenable: controller.methods,
-          builder: (context, selected, _) => OptionGrid(children: [
-            for (final method in service.methods) OptionCard(
+          builder: (context, selected, _) => OptionChips(children: [
+            for (final method in service.methods) OptionChip(
               // Cash is the one account with nothing to write down, and the
               // one a customer is told about rather than sent to.
               icon: method.method == _cash ? CI.cashbox : CI.discount_card,
               title: method.title,
               // The institution and the number, which is what tells two
-              // accounts of the same rail apart. A rail with nothing to write
-              // down falls back to its own name so the card is not left with
-              // a title and a blank line under it.
-              subtitle: method.subtitle.isNotEmpty ? method.subtitle : method.name,
+              // accounts of the same rail apart.
+              detail: method.subtitle,
               selected: selected.contains(method.id),
               multiple: true,
               action: () => controller.toggleMethod(method.id)
             )
           ])
         ),
-        _ => Padding(
-          padding: EdgeInsets.only(top: AppSize.spaceXS),
-          child: const Center(child: Loading())
-        )
+        _ => const Align(alignment: Alignment.centerLeft, child: Loading())
       }
     );
   }

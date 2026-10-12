@@ -141,10 +141,11 @@
           "key": "deliveries.settings",
           "title": "Delivery settings",
           "modes": ["cloud", "hybrid"],
-          "routes": ["deliveries_settings"],
-          "paths": ["/home/deliveries/settings"],
+          "routes": [],
+          "paths": [],
           "actions": ["view", "edit"],
           "action_notes": {
+            "view": "Side panel from the deliveries desk's header, no route of its own.",
             "edit": "Delivers/pickup flags, delivery note, flexible areas, delivery options."
           }
         },
@@ -152,9 +153,12 @@
           "key": "deliveries.areas",
           "title": "Delivery area",
           "modes": ["cloud", "hybrid"],
-          "routes": ["deliveries_area", "deliveries_area_branch"],
-          "paths": ["/home/deliveries/area", "/home/deliveries/area/:branch"],
-          "actions": ["view", "create", "edit", "delete"]
+          "routes": [],
+          "paths": [],
+          "actions": ["view", "create", "edit", "delete"],
+          "action_notes": {
+            "view": "Drawn and edited on the deliveries desk itself (its panel and map), no route of its own."
+          }
         }
       ]
     },
@@ -311,6 +315,26 @@
           }
         }
       ]
+    },
+    {
+      "key": "supply_chain",
+      "title": "Supply chain",
+      "modes": ["cloud"],
+      "scope": "company",
+      "routes": ["supply_chain"],
+      "paths": ["/home/supply_chain"],
+      "actions": ["view"],
+      "status": "placeholder"
+    },
+    {
+      "key": "lyra_business",
+      "title": "Lyra Business",
+      "modes": ["cloud"],
+      "scope": "company",
+      "routes": ["lyra_business"],
+      "paths": ["/home/lyra_business"],
+      "actions": ["view"],
+      "status": "placeholder"
     },
     {
       "key": "marketing",

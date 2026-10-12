@@ -60,10 +60,9 @@ Future<void> showChannelDetail(
   );
 }
 
-/// Width of the panel in a window with room for it: two columns of option
-/// cards (`OptionGrid`'s own minimum, `AppSize.action * 4.5`, twice over)
-/// plus the panel's margins — the same measurement the create panel takes,
-/// because it draws the same blocks.
+/// Width of the panel in a window with room for it: enough for the blocks'
+/// rows to keep their label beside the options (`ChannelFormRow`) plus the
+/// panel's margins.
 double get _panelWidth => AppSize.action * 10 + AppSize.padding * 2;
 
 /// Everything about one channel, in the panel its card opens.

@@ -5,7 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
-/// "Add area", in the page's header. It unfolds the three ways an area is
+/// "Add area", in the desk's panel right above the areas. It unfolds the three ways an area is
 /// made, each with what it is for, since the right one depends on how the
 /// company thinks of where it delivers: "5 km around us", "this part of the
 /// city", "as far as a rider gets in 20 minutes".
@@ -21,15 +21,17 @@ class AddAreaButton extends StatelessWidget {
 
     return FeedbackButton(
       height: AppSize.button,
-      feedbackColor: scheme.surfaceFeedback,
-      padding: EdgeInsets.symmetric(horizontal: AppSize.padding),
+      radius: AppSize.corner,
+      color: scheme.surfaceOver,
+      feedbackColor: scheme.line,
+      padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS),
       action: () => _open(context),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(CI.plus, size: AppSize.text, color: scheme.icon),
+          Icon(CI.plus, size: AppSize.text, color: scheme.primary),
           SizedBox(width: AppSize.gap),
-          TextMedium(S.of(context).deliveries_area_add)
+          TextSmall(S.of(context).deliveries_area_add, bold: true, color: scheme.primary)
         ]
       )
     );

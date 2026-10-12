@@ -87,6 +87,8 @@ class CapabilityService extends ChangeNotifier {
     "finance.receivables": _notLocal,
     "finance.methods": _all,
     "finance.export": _lan,
+    "supply_chain": _online,
+    "lyra_business": _online,
     "marketing": _online,
     "report": _online,
     "connections": _online,

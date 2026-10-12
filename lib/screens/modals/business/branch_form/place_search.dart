@@ -103,6 +103,18 @@ class _PlaceSearchState extends State<PlaceSearch> {
     widget.controller.textController.addListener(_typed);
   }
 
+  /// The form may hand a new service (another country searched): the
+  /// dropdown follows that one.
+  @override
+  void didUpdateWidget(PlaceSearch old) {
+    super.didUpdateWidget(old);
+
+    if (old.places == widget.places) return;
+
+    old.places.removeListener(_answered);
+    widget.places.addListener(_answered);
+  }
+
   @override
   void dispose() {
     _typing?.cancel();
@@ -111,11 +123,19 @@ class _PlaceSearchState extends State<PlaceSearch> {
     super.dispose();
   }
 
+  /// Only what is typed asks: a field the form fills (a picked place written
+  /// into the address it searches from) is not focused, and searching that
+  /// text again would reopen the list the pick just closed.
   void _typed() {
     final text = widget.controller.textController.text;
 
     if (text == _last) return;
     _last = text;
+
+    if (!widget.controller.focus.hasFocus) {
+      _typing?.cancel();
+      return;
+    }
 
     _typing?.cancel();
     _typing = Timer(_pause, () {

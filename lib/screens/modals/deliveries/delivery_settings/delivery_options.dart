@@ -9,6 +9,7 @@ import 'package:app/screens/home/sections/business/settings/profile_block.dart';
 import 'package:app/screens/home/sections/business/settings/profile_field.dart';
 import 'package:app/screens/home/sections/business/settings/profile_text_action.dart';
 
+import './delivery_gate.dart';
 import './delivery_option_field.dart';
 
 /// The ways the company delivers, one row each, with adding in the block's
@@ -51,7 +52,8 @@ class DeliveryOptionsBlock extends StatelessWidget {
       fields: [
         // Off, the options are kept and listed: they are what comes back when
         // delivery is turned on again. That they are not offered today has to
-        // be said where they are, or they read as offered.
+        // be said where they are, or they read as offered; the rows fade under it
+        // (`DeliveryGate`) and the notice does not.
         if (delivery.delivers == false && options.isNotEmpty) const _Off(),
         if (options.isEmpty)
           ProfileField(
@@ -61,11 +63,14 @@ class DeliveryOptionsBlock extends StatelessWidget {
             value: ""
           )
         else
-          for (final option in options) DeliveryOptionField(
-            option: option,
-            currency: delivery.currency,
-            onEdit: () => onEdit(option),
-            onRemove: () => onRemove(option)
+          for (final option in options) DeliveryGate(
+            off: delivery.delivers == false,
+            child: DeliveryOptionField(
+              option: option,
+              currency: delivery.currency,
+              onEdit: () => onEdit(option),
+              onRemove: () => onRemove(option)
+            )
           )
       ]
     );

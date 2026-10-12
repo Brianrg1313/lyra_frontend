@@ -8,6 +8,8 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/business/business_service.dart';
+import 'package:app/services/channels/channels_service.dart';
 import 'package:app/services/chats/chats_service.dart';
 import 'package:app/services/home/home_service.dart';
 
@@ -15,6 +17,7 @@ import 'package:app/services/home/home_service.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/messages/chat/_chat.dart';
 import 'package:app/screens/home/sections/messages/inbox/_inbox.dart';
+import 'package:app/screens/home/sections/messages/start/_start.dart';
 
 /// **The conversation desk**: the content of the `messages` section.
 ///
@@ -28,6 +31,10 @@ import 'package:app/screens/home/sections/messages/inbox/_inbox.dart';
 /// holds belongs to the company being looked at, and a business switch
 /// remounts the section. The header search travels to the backend (`SEARCH`,
 /// profile name or number), debounced.
+///
+/// A company with no channel gets [MessagesStart] instead: nothing can arrive
+/// until one is connected. The channels are the app-wide [ChannelsService]'s,
+/// read here too so the desk follows a channel created anywhere.
 class MessagesSection extends StatefulWidget {
   const MessagesSection({super.key});
 
@@ -52,7 +59,10 @@ class _MessagesSectionState extends State<MessagesSection> {
 
     // Deferred: the reads notify, and notifying while mounting rebuilds mid-build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _chats.load();
+      if (!mounted) return;
+
+      _chats.load();
+      context.read<ChannelsService>().load(context.read<BusinessService>().active.id);
     });
   }
 
@@ -72,8 +82,28 @@ class _MessagesSectionState extends State<MessagesSection> {
     });
   }
 
+  /// Whether the last settled read of the channels found none. Kept through
+  /// the reads that follow (a create leaves the list `idle` until reloaded),
+  /// so the page does not flicker between the start and the desk; null until
+  /// the first read settles.
+  bool? _noChannels;
+
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<ChatsService>.value(
+  Widget build(BuildContext context) {
+    final status = context.select<ChannelsService, ChannelsStatus>((service) => service.status);
+
+    // A failed read keeps the desk: the chats can still be there.
+    if (status == ChannelsStatus.empty) _noChannels = true;
+    if (status == ChannelsStatus.ready || status == ChannelsStatus.error) _noChannels = false;
+
+    return switch (_noChannels) {
+      null => const Surface(child: Center(child: Loading())),
+      true => const MessagesStart(),
+      false => _desk()
+    };
+  }
+
+  Widget _desk() => ChangeNotifierProvider<ChatsService>.value(
     value: _chats,
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,

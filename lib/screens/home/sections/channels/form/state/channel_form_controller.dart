@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/channels/channel_agent_role.dart';
 import 'package:app/services/channels/channel_data_source.dart';
 import 'package:app/services/channels/channel_detail_model.dart';
+import 'package:app/services/channels/channel_preset.dart';
 import 'package:app/services/channels/channel_provider_model.dart';
 import 'package:app/services/channels/channel_request.dart';
 import 'package:app/services/channels/channel_tools.dart';
@@ -177,6 +178,29 @@ class ChannelFormController {
   /// What was typed in a network field, or empty if it was not created (a
   /// network that never got drawn).
   String valueOf(String key) => _fields[key]?.value.trim() ?? "";
+
+  /// The scope a preset fixed, for its provider only: `(provider, scope)`.
+  (String, String)? _presetScope;
+
+  /// Fills a create from [preset]: its network, role and tools. Everything
+  /// stays editable; only its scope has no picker, so it is kept apart and
+  /// travels only while that same network stays chosen ([scopeOf]).
+  void applyPreset(ChannelPreset preset) {
+    provider.value = preset.provider;
+    role.value = preset.role;
+    tools.value = Set.of(preset.tools);
+
+    _presetScope = preset.scope.isEmpty ? null : (preset.provider, preset.scope);
+  }
+
+  /// `true` if a preset fixed the scope of [code], so the provider picker can
+  /// offer a network with several jobs for this one create.
+  bool fixesScope(String code) => _presetScope?.$1 == code;
+
+  /// `SCOPE` for a create on [schema]: the preset's, or the network's only one.
+  String scopeOf(ChannelProviderModel schema) => fixesScope(schema.provider)
+    ? _presetScope!.$2
+    : schema.defaultScope;
 
   /// Pours into the form the channel that was just read.
   ///
@@ -386,7 +410,7 @@ class ChannelFormController {
       )
     : createChannelRequest(
         provider: schema.provider,
-        scope: schema.defaultScope,
+        scope: scopeOf(schema),
         role: role.value.value,
         tables: tableIds,
         methods: methodIds,

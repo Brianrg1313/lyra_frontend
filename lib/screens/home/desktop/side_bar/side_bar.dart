@@ -10,7 +10,7 @@ import 'package:app/services/home/home_service.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 
 // WIDGETS
-import './profile.dart';
+import './business_selector.dart';
 import './options.dart';
 import './sign_out.dart';
 
@@ -43,7 +43,7 @@ class SideBar extends StatelessWidget {
             )]
           ),
           child: Column(children: [
-            ProfileCard(isExpanded: isExpanded),
+            const BusinessSelector(),
             Separator.horizontal(
               margin: EdgeInsets.symmetric(horizontal: AppSize.padding),
             ),

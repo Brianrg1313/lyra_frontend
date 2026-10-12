@@ -19,17 +19,17 @@ enum AreaMethod {
   DeliveryAreaKind get kind => this == radius ? DeliveryAreaKind.radius : DeliveryAreaKind.polygon;
 }
 
-/// What the delivery area page is doing: looking at the areas (and probing a
-/// point), or shaping one.
+/// What the deliveries desk is doing with its areas: looking at them (and
+/// probing a point), or shaping one.
 ///
-/// It is the one thing the header, the side panel and the map share —the
-/// header starts an area, the panel names and prices it, the map shapes it— so
-/// it lives in the page and not in any of them. It holds **only the shape**:
+/// It is the one thing the panel and the map share —the panel starts an area
+/// and names and prices it, the map shapes it— so it lives in the desk and not
+/// in either of them. It holds **only the shape**:
 /// the name and the figures are the panel's inputs, read when it saves.
 class AreaEditor extends ChangeNotifier {
   AreaEditor({required this.map});
 
-  /// Owned by the page. The editor moves it to what it opens.
+  /// Owned by the desk. The editor moves it to what it opens.
   final MapController map;
 
   bool _open = false;

@@ -9,8 +9,32 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/baileys/baileys_client.dart';
 import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/baileys/baileys_session_status.dart';
+
+/// Starts [channelId]'s `baileys_server` session and, when it has to be
+/// paired, opens [showBaileysPairing] on it. Throws [BaileysClientException]
+/// when the sidecar refuses; the caller says so.
+///
+/// `POST /sessions` answers as soon as the session is created, before Baileys
+/// has reached WhatsApp's servers to request a QR — that first response is
+/// `starting`, not `qr_pending`. The modal treats both the same (its own
+/// `watch(until:)` keeps waiting through both, with a spinner for
+/// `starting`), so it opens on either: opening only on `qr_pending` left
+/// nothing watching the session, stuck on "starting".
+Future<void> linkBaileysChannel(BuildContext context, String channelId) async {
+  final result = await context.read<BaileysService>().activate(channelId);
+
+  if (result.state != BaileysSessionState.qrPending &&
+    result.state != BaileysSessionState.starting) {
+    return;
+  }
+
+  if (!context.mounted) return;
+
+  await showBaileysPairing(context, channelId: channelId, initial: result);
+}
 
 /// Opens the QR pairing modal for a WhatsApp Personal channel and watches
 /// its session until it links (or the modal is dismissed).

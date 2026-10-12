@@ -9,6 +9,7 @@ import 'package:app/services/account/account_history_service.dart';
 import 'package:app/services/account/account_security_service.dart';
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/business_employees_service.dart';
+import 'package:app/services/business/business_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
@@ -49,7 +50,9 @@ class EmployeesSection extends StatefulWidget {
 }
 
 class _EmployeesSectionState extends State<EmployeesSection> {
-  final _employees = BusinessEmployeesService();
+  late final _employees = BusinessEmployeesService(
+    businessId: context.read<BusinessService>().activeId
+  );
   final _security = AccountSecurityService();
   final _history = AccountHistoryService();
 

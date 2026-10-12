@@ -89,9 +89,10 @@ List<Widget> options(BuildContext context, HomeSection active, bool isExpanded) 
 
   return [
     ...group(HomeSection.home),
-    ...group(HomeSection.products, S.of(context).section_products),
-    ...group(HomeSection.reports, S.of(context).section_reports),
-    ...group(HomeSection.connectionGroups, S.of(context).section_connections)
+    ...group(HomeSection.operations, S.of(context).section_operations),
+    ...group(HomeSection.resources, S.of(context).section_resources),
+    ...group(HomeSection.management, S.of(context).section_management),
+    ...group(HomeSection.integrations, S.of(context).section_integrations)
   ];
 }
 

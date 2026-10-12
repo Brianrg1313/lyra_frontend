@@ -13,6 +13,7 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/badges/badges_service.dart';
+import 'package:app/services/business/own_job_title_service.dart';
 import 'package:app/services/badges/notifications_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/lan/lan_service.dart';
@@ -89,6 +90,7 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // What is pending in the active company, from the same response and then
     // the socket: the side bar, the tabs and the header draw its dots.
     ChangeNotifierProvider.value(value: BadgesService()),
+    ChangeNotifierProvider.value(value: OwnJobTitleService()),
     // The feed behind the bell: what just happened, live, and its last page.
     ChangeNotifierProvider.value(value: NotificationsService()),
     // Which areas the deployment mode has: the side bar leaves out the ones

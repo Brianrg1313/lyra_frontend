@@ -34,16 +34,22 @@ Channels have no name/description: a card is identified by network and data sour
   submit. `SCOPE`, `ROLE`, `TABLES`, `PAYMENT_METHODS` top-level (`payload()`); data-source category
   round-trips through `SETTINGS`. `dirty` compares against the channel as read (not core's
   `isEdited`); `settle()`, `revert()`.
-- `blocks/provider_picker.dart` — `ProviderPicker`: first block. On create: configurable,
-  single-scope providers only (no scope picker yet → no Facebook/Instagram); WhatsApp Personal first.
-- `blocks/credentials_block.dart` — `CredentialsBlock`: provider fields (`widgets/channel_credential_field.dart` — `ChannelCredentialField`); for WhatsApp Personal a notice pointing to the switch.
-- `blocks/agent_picker.dart` — `AgentPicker`: seller / support / agent (3 of the backend's 6 `ROLE`s; others fall back to `general`).
+Every block is one `ChannelFormRow` (label left, controls, one note); single choices note only the chosen option.
+
+- `blocks/provider_picker.dart` — `ProviderPicker`: first block, `NetworkTile`s. On create: configurable,
+  single-scope providers only (no scope picker yet → no Facebook/Instagram), plus one whose scope a
+  preset fixed (`ChannelFormController.applyPreset`/`scopeOf`); WhatsApp Personal first. Note: the chosen network's capabilities.
+- `blocks/credentials_block.dart` — `CredentialsBlock`: provider fields (`widgets/channel_credential_field.dart` — `ChannelCredentialField`, its backend hint shown only while focused); for WhatsApp Personal a QR notice.
+- `blocks/agent_picker.dart` — `AgentPicker`: chips, seller / support / agent (3 of the backend's 6 `ROLE`s; others fall back to `general`).
 - `blocks/data_picker.dart` — `DataPicker`: `ChannelDataSource` filtered by role
   (`allowedFor`); a role change corrects the source (`_syncSource`). No tables → the `field.table` dot on its note.
 - `blocks/payment_picker.dart` — `PaymentPicker`: multi-select over `MoneyMethodsService.methods`
   (none is valid). Each host provides its own `MoneyMethodsService`. No accounts → points to finance, with the `field.payment_method` dot.
-- `blocks/tools_picker.dart` — `ToolsPicker`: `ChannelTool` (voice, image, video, documents).
-- `FormBlock`, `OptionCard`, `OptionGrid`: shared with connections, in `sections/_section/form/` (home module).
+- `blocks/tools_picker.dart` — `ToolsPicker`: `ChannelTool` chips (voice, image, video, documents); note: the cost.
+- `widgets/form_row.dart` — `ChannelFormRow` (label beside the controls, above them under `action * 9`; same tree either way), `ChannelFormNote`.
+- `widgets/option_chip.dart` — `OptionChip` (button-tall choice; `multiple` swaps the icon for a check), `OptionChips` (wrap).
+- `widgets/network_tile.dart` — `NetworkTile`: the network's large square tile.
+- `FormBlock`, `OptionCard`, `OptionGrid` (`sections/_section/form/`, home module): connections and `ChannelAccount` only.
 - `widgets/data_table_select.dart` — `DataTableSelect` (the data picker's table select); `widgets/payment_picker_note.dart` — `PaymentPickerNote`.
 - `widgets/missing_banner.dart` — `MissingBanner`: what the channel still needs.
 

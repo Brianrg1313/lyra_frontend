@@ -5,8 +5,8 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/channels/channel_provider_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/_section/form/form_block.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/form_row.dart';
 import 'package:app/screens/home/sections/channels/form/widgets/channel_credential_field.dart';
 
 /// The network's credentials: the account id, the access token, the app
@@ -37,39 +37,45 @@ class CredentialsBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // WhatsApp Personal has no fields at all — there is nothing to paste, the
-    // number links by scanning a QR code after the channel exists — so
-    // drawing the usual empty title-and-column would be a box with nothing
-    // in it. A short notice pointing at where the pairing actually happens
-    // (the channel's switch in the list) says something instead of nothing.
+    // number links by scanning a QR code after the channel exists — so the row
+    // says where that happens instead of drawing an empty column.
     if (schema.provider == ChannelProviderModel.whatsappPersonalCode) {
-      return FormBlock(
-        title: S.of(context).channel_whatsapp_personal_notice_title,
-        subtitle: S.of(context).channel_whatsapp_personal_notice_subtitle,
-        child: const SizedBox.shrink()
+      return ChannelFormRow(
+        label: S.of(context).channel_whatsapp_personal_notice_title,
+        child: TextSmall(
+          S.of(context).channel_whatsapp_personal_notice_subtitle,
+          lines: 3,
+          ellipsis: true,
+          color: ThemeColor.of(context).text.secondary
+        )
       );
     }
 
-    return FormBlock(
-      title: S.of(context).channel_credentials_title,
-      subtitle: S.of(context).channel_credentials_subtitle(schema.name),
-      child: Column(children: [
-        // The fields are drawn in the catalog's order: the account ids first
-        // and the secrets at the end, which is the order they are obtained
-        // in.
-        //
-        // The key is the field's key and not its position: when switching
-        // networks the lists cross —`app_secret` is the seventh field of
-        // WhatsApp and the fifth of Messenger, but it is the same field with
-        // the same value— and without a key Flutter would pair by position,
-        // leaving an input drawing another field's controller. With it, the
-        // ones that repeat between two networks do not even notice the
-        // change and the ones that do not, leave and come back whole.
-        for (final field in schema.fields) ChannelCredentialField(
-          key: ValueKey(field.key),
-          controller: controller,
-          field: field
-        )
-      ])
+    return ChannelFormRow(
+      label: S.of(context).channel_credentials_title,
+      note: S.of(context).channel_credentials_subtitle,
+      alignToControl: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // The fields are drawn in the catalog's order: the account ids first
+          // and the secrets at the end, which is the order they are obtained
+          // in.
+          //
+          // The key is the field's key and not its position: when switching
+          // networks the lists cross —`app_secret` is the seventh field of
+          // WhatsApp and the fifth of Messenger, but it is the same field with
+          // the same value— and without a key Flutter would pair by position,
+          // leaving an input drawing another field's controller. With it, the
+          // ones that repeat between two networks do not even notice the
+          // change and the ones that do not, leave and come back whole.
+          for (final field in schema.fields) ChannelCredentialField(
+            key: ValueKey(field.key),
+            controller: controller,
+            field: field
+          )
+        ]
+      )
     );
   }
 }

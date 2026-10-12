@@ -16,8 +16,6 @@ import 'package:app/screens/home/sections/business/_business_detail.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
 import 'package:app/screens/home/sections/channels/form/_channel_form.dart';
 import 'package:app/screens/home/sections/connections/form/_connection_form.dart';
-import 'package:app/screens/home/sections/deliveries/area/_area.dart';
-import 'package:app/screens/home/sections/deliveries/settings/_settings.dart';
 import 'package:app/screens/home/sections/employees/employee_detail/_employee_detail.dart';
 import 'package:app/screens/home/sections/employees/employee_detail/employee_part.dart';
 import 'package:app/screens/home/sections/employees/own_settings/own_section.dart';
@@ -264,36 +262,6 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   )),
-  // Delivery settings: sub-page of `deliveries`, opened from the desk's
-  // header. No id in the URL: every delivery endpoint answers for the active
-  // company.
-  ScreenRoute(
-    animation: _animation,
-    key: DeliverySettingsSection.routeKey,
-    url: DeliverySettingsSection.path,
-    parents: ["deliveries"],
-    shell: Home.shell,
-    page: (_) => const Home()
-  ),
-  // Delivery area: opened from the delivery settings, on the same criteria.
-  ScreenRoute(
-    animation: _animation,
-    key: DeliveryAreaSection.routeKey,
-    url: DeliveryAreaSection.path,
-    parents: ["deliveries"],
-    shell: Home.shell,
-    page: (_) => const Home()
-  ),
-  // The same page on one branch's map: its own key, so going there from the
-  // bare page repaints the shell (`Navis.currentKey`).
-  ScreenRoute(
-    animation: _animation,
-    key: DeliveryAreaSection.branchRouteKey,
-    url: DeliveryAreaSection.branchPath(":branch"),
-    parents: ["deliveries"],
-    shell: Home.shell,
-    page: (_) => const Home()
-  ),
   // POS mode: a standalone screen, without `shell` or `parents`.
   //
   // It doesn't hang off `/home` nor share its frame, on purpose: it isn't

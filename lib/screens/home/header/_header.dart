@@ -22,10 +22,11 @@ import 'package:app/screens/home/badges/badge_route.dart';
 import 'package:app/screens/modals/home/pending/_pending.dart';
 
 import './branch_selector.dart';
-import './business_selector.dart';
+import './profile.dart';
 
-/// Top bar of the home: the app search, the active business and the accesses
-/// that belong to no particular section (what is pending, and the inbox).
+/// Top bar of the home: the POS and the branch worked in on the left, the app
+/// search in the middle, what is pending, the inbox and the signed-in person on
+/// the right. The active business heads the side bar.
 ///
 /// Like the side bar it is fixed: it is built once in the shell and is not
 /// remounted when the section changes, so it keeps its state (what was typed,
@@ -49,10 +50,10 @@ class HomeHeader extends StatefulWidget {
   /// bar stays free for whatever is added later.
   static const double _searchWidth = 320;
 
-  /// Cap for the business selector. It does not measure its width —the selector
-  /// is sized by the name of the active business—, it only keeps a long one from
-  /// pushing the search against the edge.
-  static double get _businessMaxWidth => AppSize.action * 4.5;
+  /// Cap for the branch selector. It does not measure its width —it is sized by
+  /// the name it shows—, it only keeps a long one from pushing the search
+  /// against the edge.
+  static double get _sideMaxWidth => AppSize.action * 4.5;
 
   @override
   State<HomeHeader> createState() => _HomeHeaderState();
@@ -118,7 +119,7 @@ class _HomeHeaderState extends State<HomeHeader>
     context.read<HomeService>().clearSearch();
   }
 
-  /// Everything on the right measures what it measures and the search keeps the
+  /// Everything at the ends measures what it measures and the search keeps the
   /// rest: it is the only thing that does not break by being narrower.
   ///
   /// It only checks whether an active business **exists** for the POS access:
@@ -134,12 +135,18 @@ class _HomeHeaderState extends State<HomeHeader>
     return Surface(
       padding: EdgeInsets.all(AppSize.gap),
       child: Row(children: [
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: HomeHeader._businessMaxWidth),
-          child: const BusinessSelector()
+        // The POS is here in addition to the side bar because it is the only
+        // place that stays visible with the bar compressed, and because going to
+        // charge is not going to a section: it is leaving the home.
+        _HeaderAction(
+          icon: CI.cashbox,
+          isLocked: !hasBusiness,
+          badge: BadgePlace.pos,
+          message: S.of(context).pos_mode,
+          action: () => context.read<HomeService>().goToPos(context)
         ),
         ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: HomeHeader._businessMaxWidth),
+          constraints: BoxConstraints(maxWidth: HomeHeader._sideMaxWidth),
           child: const BranchSelector()
         ),
         Expanded(child: Align(
@@ -155,16 +162,6 @@ class _HomeHeaderState extends State<HomeHeader>
             )
           )
         )),
-        // The POS is here in addition to the side bar because it is the only
-        // place that stays visible with the bar compressed, and because going to
-        // charge is not going to a section: it is leaving the home.
-        _HeaderAction(
-          icon: CI.cashbox,
-          isLocked: !hasBusiness,
-          badge: BadgePlace.pos,
-          message: S.of(context).pos_mode,
-          action: () => context.read<HomeService>().goToPos(context)
-        ),
         // The bell's number is the unseen notifications; what it opens is everything pending,
         // the side bar's dots included, each leading to the page that clears it.
         _HeaderAction(
@@ -177,6 +174,10 @@ class _HomeHeaderState extends State<HomeHeader>
           icon: CI.mail,
           message: S.of(context).inbox,
           action: _soon
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: AppSize.gap),
+          child: const ProfileCard()
         )
       ])
     );

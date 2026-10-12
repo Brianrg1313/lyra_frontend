@@ -17,7 +17,7 @@ import 'package:app/services/maps/map_tiles_service.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/business/branches/branch_markers.dart';
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
-import 'package:app/screens/home/sections/deliveries/area/_area.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_layers.dart';
 
 import './deliveries_header.dart';
@@ -28,16 +28,18 @@ import './widgets/map_panel.dart';
 /// **The deliveries desk**: the content of the `deliveries` section.
 ///
 /// The map is the sheet, edge to edge, like the business's branches tab: the
-/// panel floats over its left side (where the company delivers, then the
-/// deliveries still pending) and the actions over its top right corner. On the
-/// map, every branch is pinned and the areas in force are drawn: the shared
-/// map, or each branch's in that branch's colour. A pin opens its branch's
-/// areas when they are drawn per branch; otherwise it only moves the map.
+/// panel floats over its left side and the actions over its top right corner.
+/// Where the company delivers is drawn and edited here, on the one map: the
+/// panel lists the open map's areas (the shared one, or per branch the one
+/// picked) and "Add area" turns the map into where a new one is shaped. Per
+/// branch, the other branches' areas in force are drawn grey under the open
+/// map's, and a pin opens its branch's map; with one shared map a pin only
+/// moves the map.
 ///
 /// The services live here and not app-wide, as on the business page: what
 /// they read answers for the active company, and a business switch remounts
-/// the section. [MapController] lives here so what floats over the map can
-/// move it.
+/// the section. The [MapController] and the [AreaEditor] live here because
+/// the panel, the map and its pins all move or read them.
 class DeliveriesSection extends StatefulWidget {
   const DeliveriesSection({super.key});
 
@@ -52,6 +54,24 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   final DeliveryAreasService _areas = DeliveryAreasService();
   final BranchesFocus _focus = BranchesFocus();
   final MapController _map = MapController();
+  late final AreaEditor _editor = AreaEditor(map: _map);
+
+  /// The branch whose map was asked for; [_owner] says which one is open.
+  String? _picked;
+
+  /// The open map: `null` for the shared one; per branch, the one picked, or
+  /// the first (the main one) when none was or it is gone.
+  String? get _owner {
+    if (_areas.areas?.scope != DeliveryScope.branch) return null;
+
+    final branches = _branches.branches;
+
+    for (final branch in branches) {
+      if (branch.id == _picked) return branch.id;
+    }
+
+    return branches.firstOrNull?.id;
+  }
 
   @override
   void initState() {
@@ -70,6 +90,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
 
   @override
   void dispose() {
+    _editor.dispose();
     _location.dispose();
     _tiles.dispose();
     _branches.dispose();
@@ -80,19 +101,83 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     super.dispose();
   }
 
-  /// A pin tapped: its branch's areas, when each branch draws its own;
-  /// otherwise the map goes to it.
-  void _open(BusinessBranchModel branch) {
-    if (_areas.areas?.scope == DeliveryScope.branch) {
-      Navis.push(context, DeliveryAreaSection.branchPath(branch.id));
+  /// A pin tapped, or a branch picked in the panel: per branch, its map opens
+  /// (unless an area is being shaped on the one open); shared, the map only
+  /// goes to it.
+  void _open(String branch) {
+    if (_editor.isOpen) return;
+
+    final perBranch = _areas.areas?.scope == DeliveryScope.branch;
+
+    if (perBranch) {
+      setState(() => _picked = branch);
+      _editor.clearProbe();
+    }
+
+    _focus.select(branch);
+
+    final point = _point(branch);
+
+    if (point != null && _tiles.status == MapTilesStatus.ready) {
+      _map.move(point, perBranch ? _map.camera.zoom : DeliveriesMap.businessZoom);
+    }
+  }
+
+  /// Starts a new area, unless the list is not there to add it to, or full.
+  void _start(AreaMethod method) {
+    final areas = _areas.areas;
+    final branches = _branches.status == BusinessBranchesStatus.ready;
+
+    if (_areas.status != DeliveryAreasStatus.ready ||
+        areas == null ||
+        (areas.scope == DeliveryScope.branch && (!branches || _owner == null))) {
+      FloatFlag.of(context).alert(message: S.of(context).deliveries_area_not_ready);
       return;
     }
 
-    _focus.select(branch.id);
+    if (areas.of(_owner).length >= DeliveryAreasService.limit) {
+      FloatFlag.of(context).alert(
+        message: S.of(context).deliveries_area_limit(DeliveryAreasService.limit)
+      );
+      return;
+    }
 
-    if (branch case BusinessBranchModel(:final double latitude, :final double longitude)
-        when _tiles.status == MapTilesStatus.ready) {
-      _map.move(LatLng(latitude, longitude), DeliveriesMap.businessZoom);
+    _editor.start(method, _origin());
+  }
+
+  /// A branch's point, or `null` when it has none.
+  LatLng? _point(String? id) {
+    for (final branch in _branches.branches) {
+      if (branch case BusinessBranchModel(:final double latitude, :final double longitude) when branch.id == id) {
+        return LatLng(latitude, longitude);
+      }
+    }
+
+    return null;
+  }
+
+  /// Where an area starts: the open branch's point, else the company's, else
+  /// the middle of the map on screen, else the middle of the map the server
+  /// holds.
+  LatLng _origin() {
+    final branch = _point(_owner);
+
+    if (branch != null) return branch;
+
+    final location = _location.location;
+
+    if (location != null && location.hasPoint) {
+      return LatLng(location.latitude!, location.longitude!);
+    }
+
+    try {
+      return _map.camera.center;
+    } catch (_) {
+      final tileset = _tiles.tilesetFor(null, null);
+
+      return tileset == null
+        ? const LatLng(0, 0)
+        : LatLng(tileset.centerLatitude, tileset.centerLongitude);
     }
   }
 
@@ -107,54 +192,60 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     ],
     child: Surface(
       padding: EdgeInsets.zero,
-      child: LayoutBuilder(builder: (context, constraints) => Stack(
-        children: [
-          Positioned.fill(child: ListenableBuilder(
-            listenable: Listenable.merge([_areas, _branches]),
-            builder: (context, _) => DeliveriesMap(
+      child: ListenableBuilder(
+        listenable: Listenable.merge([_areas, _branches, _editor]),
+        builder: (context, _) => LayoutBuilder(builder: (context, constraints) => Stack(
+          children: [
+            Positioned.fill(child: DeliveriesMap(
               controller: _map,
-              // The main branch's pin stands there, with its star.
+              // Every branch is pinned, the main one with its star at the company's point.
               businessMark: false,
               layers: [
-                ..._coverage(context),
-                BranchMarkers(onSelect: _open)
-              ]
+                ..._layers(context),
+                BranchMarkers(onSelect: (branch) => _open(branch.id))
+              ],
+              overlays: areaOverlays(context, _editor),
+              onTap: _editor.tap
+            )),
+            Positioned(
+              top: AppSize.spaceS,
+              bottom: AppSize.spaceS,
+              left: AppSize.spaceS,
+              width: MapPanel.width(context, constraints.maxWidth),
+              child: MapPanel(child: DeliveriesPanel(
+                editor: _editor,
+                owner: _owner,
+                origin: _origin,
+                onOwner: _open,
+                onAdd: _start
+              ))
+            ),
+            Positioned(
+              top: AppSize.spaceS,
+              right: AppSize.spaceS,
+              child: const DeliveriesHeader()
             )
-          )),
-          Positioned(
-            top: AppSize.spaceS,
-            bottom: AppSize.spaceS,
-            left: AppSize.spaceS,
-            width: MapPanel.width(context, constraints.maxWidth),
-            child: const MapPanel(child: DeliveriesPanel())
-          ),
-          Positioned(
-            top: AppSize.spaceS,
-            right: AppSize.spaceS,
-            child: const DeliveriesHeader()
-          )
-        ]
-      ))
+          ]
+        ))
+      )
     )
   );
 
-  /// The areas in force: the shared map in the area page's colours, or each
-  /// branch's areas in one colour per branch, so the map reads as which branch
-  /// covers what.
-  List<Widget> _coverage(BuildContext context) {
+  /// The open map's areas in their colours (and the one being shaped), the
+  /// other branches' in force grey under them.
+  List<Widget> _layers(BuildContext context) {
     final areas = _areas.areas;
 
-    if (areas == null) return const [];
+    if (areas == null) return areaLayers(context, const [], _editor);
 
-    final branches = [for (final branch in _branches.branches) branch.id];
-    final inForce = areas.inForce(branches);
+    final owner = _owner;
+    final inForce = areas.inForce([for (final branch in _branches.branches) branch.id]);
 
-    return savedAreaLayers(
+    return areaLayers(
       context,
-      inForce,
-      colorOf: (area) => areas.scope == DeliveryScope.global
-        ? areaColor(context, inForce.indexOf(area), active: area.active)
-        : areaColor(context, branches.indexOf(area.branch!), active: area.active)
+      areas.of(owner),
+      _editor,
+      others: [for (final area in inForce) if (area.branch != owner) area]
     );
   }
 }

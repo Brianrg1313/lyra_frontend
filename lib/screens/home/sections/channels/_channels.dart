@@ -95,6 +95,6 @@ class _ChannelsSectionState extends State<ChannelsSection> {
   /// for — so it fits a side panel instead of a whole sub-page.
   Future<void> _create() async {
     final created = await showCreateChannel(context);
-    if (created) _load(force: true);
+    if (created != null) _load(force: true);
   }
 }

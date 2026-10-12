@@ -1284,9 +1284,9 @@ class S {
     return Intl.message('Channels', name: 'channels', desc: '', args: []);
   }
 
-  /// `Finance`
+  /// `Finances`
   String get finance {
-    return Intl.message('Finance', name: 'finance', desc: '', args: []);
+    return Intl.message('Finances', name: 'finance', desc: '', args: []);
   }
 
   /// `Marketing`
@@ -1294,9 +1294,29 @@ class S {
     return Intl.message('Marketing', name: 'marketing', desc: '', args: []);
   }
 
-  /// `Report`
+  /// `Reports`
   String get report {
-    return Intl.message('Report', name: 'report', desc: '', args: []);
+    return Intl.message('Reports', name: 'report', desc: '', args: []);
+  }
+
+  /// `Supply chain`
+  String get supply_chain {
+    return Intl.message(
+      'Supply chain',
+      name: 'supply_chain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra Business`
+  String get lyra_business {
+    return Intl.message(
+      'Lyra Business',
+      name: 'lyra_business',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `External Services`
@@ -4587,6 +4607,16 @@ class S {
     );
   }
 
+  /// `Updates`
+  String get profile_menu_updates {
+    return Intl.message(
+      'Updates',
+      name: 'profile_menu_updates',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Needs the internet: it lives in your online account.`
   String get account_needs_internet {
     return Intl.message(
@@ -6305,6 +6335,26 @@ class S {
     return Intl.message(
       'Every branch is in the country of the business: its phone code and the address search come from it.',
       name: 'business_branch_create_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose a country`
+  String get business_branch_country_hint {
+    return Intl.message(
+      'Choose a country',
+      name: 'business_branch_country_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The country of the business, shared by every branch. It also sets its clock, the payment methods it's offered and the carriers it can deliver with.`
+  String get business_branch_country_note {
+    return Intl.message(
+      'The country of the business, shared by every branch. It also sets its clock, the payment methods it\'s offered and the carriers it can deliver with.',
+      name: 'business_branch_country_note',
       desc: '',
       args: [],
     );
@@ -8274,26 +8324,41 @@ class S {
     );
   }
 
-  /// `Products`
-  String get section_products {
+  /// `Operations`
+  String get section_operations {
     return Intl.message(
-      'Products',
-      name: 'section_products',
+      'Operations',
+      name: 'section_operations',
       desc: '',
       args: [],
     );
   }
 
-  /// `Reports`
-  String get section_reports {
-    return Intl.message('Reports', name: 'section_reports', desc: '', args: []);
+  /// `Resources`
+  String get section_resources {
+    return Intl.message(
+      'Resources',
+      name: 'section_resources',
+      desc: '',
+      args: [],
+    );
   }
 
-  /// `Connections`
-  String get section_connections {
+  /// `Management`
+  String get section_management {
     return Intl.message(
-      'Connections',
-      name: 'section_connections',
+      'Management',
+      name: 'section_management',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Integrations`
+  String get section_integrations {
+    return Intl.message(
+      'Integrations',
+      name: 'section_integrations',
       desc: '',
       args: [],
     );
@@ -8509,30 +8574,20 @@ class S {
     );
   }
 
-  /// `Channel type`
+  /// `Network`
   String get channel_type_title {
     return Intl.message(
-      'Channel type',
+      'Network',
       name: 'channel_type_title',
       desc: '',
       args: [],
     );
   }
 
-  /// `Which network this channel connects to. It decides which credentials you'll need below`
-  String get channel_type_subtitle {
-    return Intl.message(
-      'Which network this channel connects to. It decides which credentials you\'ll need below',
-      name: 'channel_type_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The network can't be changed: its stored credentials belong to it. To use another one, connect a new channel`
+  /// `It can't be changed. To use another network, connect a new channel`
   String get channel_type_locked {
     return Intl.message(
-      'The network can\'t be changed: its stored credentials belong to it. To use another one, connect a new channel',
+      'It can\'t be changed. To use another network, connect a new channel',
       name: 'channel_type_locked',
       desc: '',
       args: [],
@@ -8584,10 +8639,10 @@ class S {
     );
   }
 
-  /// `There are no tokens to paste. Once this channel is created, turn it on from the channels list to scan a QR code and link your WhatsApp`
+  /// `Nothing to paste: the number links by scanning a QR code once the channel exists`
   String get channel_whatsapp_personal_notice_subtitle {
     return Intl.message(
-      'There are no tokens to paste. Once this channel is created, turn it on from the channels list to scan a QR code and link your WhatsApp',
+      'Nothing to paste: the number links by scanning a QR code once the channel exists',
       name: 'channel_whatsapp_personal_notice_subtitle',
       desc: '',
       args: [],
@@ -8804,24 +8859,9 @@ class S {
     );
   }
 
-  /// `Agent role`
+  /// `Role`
   String get channel_role_title {
-    return Intl.message(
-      'Agent role',
-      name: 'channel_role_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What the agent does when it answers on this channel`
-  String get channel_role_subtitle {
-    return Intl.message(
-      'What the agent does when it answers on this channel',
-      name: 'channel_role_subtitle',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Role', name: 'channel_role_title', desc: '', args: []);
   }
 
   /// `Seller`
@@ -8889,16 +8929,6 @@ class S {
     return Intl.message(
       'Data',
       name: 'channel_source_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Where the agent reads from. Without a source it answers from memory, which means it makes prices up`
-  String get channel_source_subtitle {
-    return Intl.message(
-      'Where the agent reads from. Without a source it answers from memory, which means it makes prices up',
-      name: 'channel_source_subtitle',
       desc: '',
       args: [],
     );
@@ -9044,10 +9074,10 @@ class S {
     );
   }
 
-  /// `Which of your accounts the agent may give a customer to pay into. It offers these and no others`
+  /// `Optional. The agent only offers the accounts you pick`
   String get channel_payments_subtitle {
     return Intl.message(
-      'Which of your accounts the agent may give a customer to pay into. It offers these and no others',
+      'Optional. The agent only offers the accounts you pick',
       name: 'channel_payments_subtitle',
       desc: '',
       args: [],
@@ -9084,20 +9114,10 @@ class S {
     );
   }
 
-  /// `What the agent can process and produce besides text`
-  String get channel_tools_subtitle {
-    return Intl.message(
-      'What the agent can process and produce besides text',
-      name: 'channel_tools_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Each tool you turn on raises the processing cost of this channel, charged per conversation answered. Audio and video cost noticeably more than text.`
+  /// `Each one adds to the cost per conversation answered; voice and video the most`
   String get channel_tools_cost {
     return Intl.message(
-      'Each tool you turn on raises the processing cost of this channel, charged per conversation answered. Audio and video cost noticeably more than text.',
+      'Each one adds to the cost per conversation answered; voice and video the most',
       name: 'channel_tools_cost',
       desc: '',
       args: [],
@@ -9194,13 +9214,13 @@ class S {
     );
   }
 
-  /// `What {provider} needs to connect. You can save the channel without them and paste them later`
-  String channel_credentials_subtitle(Object provider) {
+  /// `You can save the channel now and paste them later`
+  String get channel_credentials_subtitle {
     return Intl.message(
-      'What $provider needs to connect. You can save the channel without them and paste them later',
+      'You can save the channel now and paste them later',
       name: 'channel_credentials_subtitle',
       desc: '',
-      args: [provider],
+      args: [],
     );
   }
 
@@ -14852,19 +14872,6 @@ class S {
     );
   }
 
-  /// `{count, plural, =0{No areas drawn yet} =1{1 area, shared by every branch} other{{count} areas, shared by every branch}}`
-  String deliveries_scope_global_count(num count) {
-    return Intl.plural(
-      count,
-      zero: 'No areas drawn yet',
-      one: '1 area, shared by every branch',
-      other: '$count areas, shared by every branch',
-      name: 'deliveries_scope_global_count',
-      desc: '',
-      args: [count],
-    );
-  }
-
   /// `{count, plural, =0{No areas} =1{1 area} other{{count} areas}}`
   String deliveries_scope_branch_count(num count) {
     return Intl.plural(
@@ -14875,26 +14882,6 @@ class S {
       name: 'deliveries_scope_branch_count',
       desc: '',
       args: [count],
-    );
-  }
-
-  /// `Edit areas`
-  String get deliveries_scope_edit {
-    return Intl.message(
-      'Edit areas',
-      name: 'deliveries_scope_edit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Couldn't load your branches.`
-  String get deliveries_scope_branches_error {
-    return Intl.message(
-      'Couldn\'t load your branches.',
-      name: 'deliveries_scope_branches_error',
-      desc: '',
-      args: [],
     );
   }
 
@@ -15058,21 +15045,31 @@ class S {
     );
   }
 
-  /// `Select delivery area`
-  String get deliveries_area {
+  /// `What your assistant tells a customer who asks about delivery.`
+  String get deliveries_settings_subtitle {
     return Intl.message(
-      'Select delivery area',
-      name: 'deliveries_area',
+      'What your assistant tells a customer who asks about delivery.',
+      name: 'deliveries_settings_subtitle',
       desc: '',
       args: [],
     );
   }
 
-  /// `Delivery area`
-  String get deliveries_area_title {
+  /// `Pickup`
+  String get deliveries_settings_pickup {
     return Intl.message(
-      'Delivery area',
-      name: 'deliveries_area_title',
+      'Pickup',
+      name: 'deliveries_settings_pickup',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select delivery area`
+  String get deliveries_area {
+    return Intl.message(
+      'Select delivery area',
+      name: 'deliveries_area',
       desc: '',
       args: [],
     );
@@ -15258,10 +15255,10 @@ class S {
     );
   }
 
-  /// `Add one from the top: a radius around your business, a shape drawn on the map, or how far a courier gets in some minutes.`
+  /// `Add one with the button above: a radius around your business, a shape drawn on the map, or how far a courier gets in some minutes.`
   String get deliveries_area_empty_subtitle {
     return Intl.message(
-      'Add one from the top: a radius around your business, a shape drawn on the map, or how far a courier gets in some minutes.',
+      'Add one with the button above: a radius around your business, a shape drawn on the map, or how far a courier gets in some minutes.',
       name: 'deliveries_area_empty_subtitle',
       desc: '',
       args: [],
@@ -18515,6 +18512,276 @@ class S {
     return Intl.message(
       'Its messages open on this side.',
       name: 'messages_select_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect a channel to receive messages`
+  String get messages_start_title {
+    return Intl.message(
+      'Connect a channel to receive messages',
+      name: 'messages_start_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customers write to you on these networks and the assistant answers them here. Pick one to see how.`
+  String get messages_start_subtitle {
+    return Intl.message(
+      'Customers write to you on these networks and the assistant answers them here. Pick one to see how.',
+      name: 'messages_start_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Soon`
+  String get channel_preset_soon {
+    return Intl.message(
+      'Soon',
+      name: 'channel_preset_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect`
+  String get channel_preset_connect {
+    return Intl.message(
+      'Connect',
+      name: 'channel_preset_connect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The form opens filled in; you can change anything before saving.`
+  String get channel_preset_connect_hint {
+    return Intl.message(
+      'The form opens filled in; you can change anything before saving.',
+      name: 'channel_preset_connect_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `WhatsApp, your number`
+  String get channel_preset_whatsapp_personal {
+    return Intl.message(
+      'WhatsApp, your number',
+      name: 'channel_preset_whatsapp_personal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan a QR with your phone. No business account.`
+  String get channel_preset_whatsapp_personal_needs {
+    return Intl.message(
+      'Scan a QR with your phone. No business account.',
+      name: 'channel_preset_whatsapp_personal_needs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do you still have the black sneakers in size 42?`
+  String get channel_preset_whatsapp_personal_ask {
+    return Intl.message(
+      'Do you still have the black sneakers in size 42?',
+      name: 'channel_preset_whatsapp_personal_ask',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Yes, 3 pairs left at $59. Shall I set one aside for you?`
+  String get channel_preset_whatsapp_personal_answer {
+    return Intl.message(
+      'Yes, 3 pairs left at \$59. Shall I set one aside for you?',
+      name: 'channel_preset_whatsapp_personal_answer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `WhatsApp Business`
+  String get channel_preset_whatsapp_business {
+    return Intl.message(
+      'WhatsApp Business',
+      name: 'channel_preset_whatsapp_business',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your Meta business account, with its number and tokens.`
+  String get channel_preset_whatsapp_business_needs {
+    return Intl.message(
+      'Your Meta business account, with its number and tokens.',
+      name: 'channel_preset_whatsapp_business_needs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Can I pay by bank transfer?`
+  String get channel_preset_whatsapp_business_ask {
+    return Intl.message(
+      'Can I pay by bank transfer?',
+      name: 'channel_preset_whatsapp_business_ask',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Of course. I'll send you the account with your order total.`
+  String get channel_preset_whatsapp_business_answer {
+    return Intl.message(
+      'Of course. I\'ll send you the account with your order total.',
+      name: 'channel_preset_whatsapp_business_answer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Instagram direct messages`
+  String get channel_preset_instagram {
+    return Intl.message(
+      'Instagram direct messages',
+      name: 'channel_preset_instagram',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A professional account, connected through Meta.`
+  String get channel_preset_instagram_needs {
+    return Intl.message(
+      'A professional account, connected through Meta.',
+      name: 'channel_preset_instagram_needs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How much is the bag from your last post?`
+  String get channel_preset_instagram_ask {
+    return Intl.message(
+      'How much is the bag from your last post?',
+      name: 'channel_preset_instagram_ask',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `$45, in brown or black. Which one do you like?`
+  String get channel_preset_instagram_answer {
+    return Intl.message(
+      '\$45, in brown or black. Which one do you like?',
+      name: 'channel_preset_instagram_answer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Messenger`
+  String get channel_preset_messenger {
+    return Intl.message(
+      'Messenger',
+      name: 'channel_preset_messenger',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your Facebook page's messages, connected through Meta.`
+  String get channel_preset_messenger_needs {
+    return Intl.message(
+      'Your Facebook page\'s messages, connected through Meta.',
+      name: 'channel_preset_messenger_needs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What time do you close today?`
+  String get channel_preset_messenger_ask {
+    return Intl.message(
+      'What time do you close today?',
+      name: 'channel_preset_messenger_ask',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `At 8 pm. I can have your order ready before then.`
+  String get channel_preset_messenger_answer {
+    return Intl.message(
+      'At 8 pm. I can have your order ready before then.',
+      name: 'channel_preset_messenger_answer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Telegram`
+  String get channel_preset_telegram {
+    return Intl.message(
+      'Telegram',
+      name: 'channel_preset_telegram',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A bot of your own, made with BotFather.`
+  String get channel_preset_telegram_needs {
+    return Intl.message(
+      'A bot of your own, made with BotFather.',
+      name: 'channel_preset_telegram_needs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Is the blue one in stock?`
+  String get channel_preset_telegram_ask {
+    return Intl.message(
+      'Is the blue one in stock?',
+      name: 'channel_preset_telegram_ask',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Yes, 12 left at the main branch. Want me to hold one?`
+  String get channel_preset_telegram_answer {
+    return Intl.message(
+      'Yes, 12 left at the main branch. Want me to hold one?',
+      name: 'channel_preset_telegram_answer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set it up yourself`
+  String get channel_preset_blank {
+    return Intl.message(
+      'Set it up yourself',
+      name: 'channel_preset_blank',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose the network, what the assistant does and where it reads from.`
+  String get channel_preset_blank_hint {
+    return Intl.message(
+      'Choose the network, what the assistant does and where it reads from.',
+      name: 'channel_preset_blank_hint',
       desc: '',
       args: [],
     );

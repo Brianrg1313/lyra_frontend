@@ -59,10 +59,9 @@ void main() {
       }
     });
 
-    test('the money option opens the reports group', () {
-      // The money is what gets looked back at, so it leads the reports; the
-      // screens used all day moved up to the untitled top group.
-      expect(HomeSection.reports.first, HomeSection.finance);
+    test('the money option opens the management group', () {
+      // The money is what gets looked back at, so it leads the management group.
+      expect(HomeSection.management.first, HomeSection.finance);
       expect(HomeSection.home.contains(HomeSection.finance), isFalse);
     });
 

@@ -70,8 +70,9 @@ through `Navigator.pop(context, value)`.
   create (no `branch`) or edit one branch whole — name, store/warehouse (`STOREFRONT`, two cards), bot orders (`ONLINE`),
   main (not drawn on the main branch), phone, legal name + tax id (empty = the company's), address, landmark, city,
   region, postal code and the point on `DeliveriesMap` (beside the form; in one column, before the address; opens on the
-  branch's point). No country: `country` (the company's) fixes the phone code. Owns its own
-  `BusinessLocationService` + `MapTilesService` + `BusinessPlacesService`; **writes** through the branches service
+  branch's point). `country` (the company's) fixes the phone code; only the main branch's form asks for it, and saving
+  it also writes the changed country and phone on the company (`BusinessService.editProfile`). Owns its own
+  `BusinessLocationService` + `MapTilesService` + one `BusinessPlacesService` per search (map box, address field); **writes** through the branches service
   passed by constructor (edit sends only what changed). Returns `true` if something was written.
 - `branch_form/phone_field.dart` — `BranchPhoneField`: one box, the company's flag + dial fixed in front of
   the typed number; without a country (or a saved phone with another code) the whole phone, flag of the typed code.
@@ -79,12 +80,15 @@ through `Navigator.pop(context, value)`.
   Places through the backend, answers restricted to the company's country). Asks 350 ms after typing stops (the
   core field's own wait is too long; the service drops repeats). Answers drop from the box as a select (core
   `SelectOptionTile` in an `OverlayPortal`). Draws **nothing** when the server has no key, and hands the pick up —
-  it writes no field itself. With `child` the dropdown hangs from that field instead (the employee address tile).
+  it writes no field itself. With `child` the dropdown hangs from that field instead (the employee address tile, the
+  branch form's address). Only a focused field asks: text the form writes after a pick searches nothing.
 
 ### `channels/`
-- `create_channel/_create_channel.dart` — `showCreateChannel(context)`, `CreateChannelModal`: network,
+- `create_channel/_create_channel.dart` — `showCreateChannel(context, {preset})`, `CreateChannelModal`: centered modal (`showModal`, `ModalSize.large`), button outside the scroll; network,
   credentials, role, data source, payment accounts, tools (no name/description). Reuses
-  `sections/channels/form/` controller and blocks. Provides its own `MoneyMethodsService`. Returns `true` if created.
+  `sections/channels/form/` controller and blocks. Provides its own `MoneyMethodsService`. A `ChannelPreset`
+  fills it (and picks the main table once the tables are read). Returns the new id, `null` if closed.
+- `baileys_pairing/_baileys_pairing.dart` — `linkBaileysChannel` (start the session, pair on `starting`/`qr_pending`), `showBaileysPairing`.
 - `channel_detail/_channel_detail.dart` — `showChannelDetail(context, channel:, label:)`,
   `ChannelDetailModal`: opened by tapping a card; edits the channel **in place** with the same
   blocks, own `MoneyMethodsService`, confirm/cancel only while `ChannelFormController.dirty`.
@@ -152,7 +156,20 @@ through `Navigator.pop(context, value)`.
   `SaleFulfillmentModal`: handover mode/state. **Returns `fulfilSaleRequest`**. State picker only
   after a mode; sends only what changed (no-diff submit refused).
 
-### `deliveries/` (from the delivery settings page)
+### `deliveries/` (from the deliveries desk)
+- `delivery_settings/_delivery_settings.dart` — `showDeliverySettings(context)` ("Select delivery area" only closes it:
+  the areas are on the desk), `DeliverySettingsModal`: side panel, **owns its `BusinessDeliveryService`**.
+- `delivery_settings/settings_body.dart` — `DeliverySettingsBody({onArea})`: reads the service; owns every write the blocks
+  and the panels stacked on it ask for. Order: delivery, ways you deliver, pickup.
+- `delivery_settings/delivery_settings.dart` — `DeliverySettingsBlock`: delivers (three-state `SettingsSelect` + `showSelectMenu`)
+  with "Select delivery area" beside it (`onArea`), fixed/flexible areas (`meeting`, two-state), the delivery note;
+  `DeliveryPickupBlock`: pickup (three-state). Rows: `delivery_flag_field.dart` — `DeliveryFlagField`,
+  `delivery_meeting_field.dart` — `DeliveryMeetingField`, `delivery_area_button.dart` — `DeliveryAreaButton`.
+- `delivery_settings/delivery_options.dart` — `DeliveryOptionsBlock`: the options, adding in the block title, the "turned off"
+  notice. `limit = 20`. `delivery_option_field.dart` — `DeliveryOptionField`: one option, its mode/reach line and its figures
+  as `SettingsTag`s (off a local reach, the branch it leaves from).
+- `delivery_settings/delivery_gate.dart` — `DeliveryGate({off, child})`: fades what only holds while delivering (options,
+  fixed/flexible) when `delivers == false`; still editable.
 - `delivery_option/_delivery_option.dart` — `showDeliveryOptionForm(context, catalog:, currency:, option?)`,
   `DeliveryOptionFormModal`: mode → carrier → reach → figures. Carrier pickers are one per mode (their lists
   differ); radius/zones only for a local reach, the branch it leaves from only off one (with several branches, `BranchService`). Checks what the backend refuses. **Returns the create/update body.**

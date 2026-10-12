@@ -86,7 +86,7 @@ List<Widget> areaLayers(
 
 /// Saved areas as map layers, each in [colorOf]'s colour. [faint] while
 /// another shape is being made: the saved areas are the reference, not what is
-/// being worked on. The deliveries desk draws the areas in force with it.
+/// being worked on.
 List<Widget> savedAreaLayers(
   BuildContext context,
   List<DeliveryArea> areas, {

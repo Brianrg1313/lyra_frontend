@@ -13,7 +13,8 @@ import 'package:app/screens/home/sections/deliveries/widgets/scope_switch.dart';
 /// Top of the area list: whether the branches share one map or each draws its
 /// own, and, per branch, whose map is open — a button that unfolds the
 /// branches with how many areas each has. A branch's pin on the map opens its
-/// map too.
+/// map too. A branch's map with nothing in it is said in the warning colour:
+/// under that scope the branch delivers nowhere.
 class AreaMapPicker extends StatelessWidget {
   const AreaMapPicker({
     super.key,
@@ -67,7 +68,7 @@ class AreaMapPicker extends StatelessWidget {
                   TextSmall(
                     S.of(context).deliveries_scope_branch_count(areas.of(open.id).length),
                     ellipsis: true,
-                    color: scheme.text.secondary
+                    color: areas.of(open.id).isEmpty ? scheme.chart.warning : scheme.text.secondary
                   )
                 ]
               )),

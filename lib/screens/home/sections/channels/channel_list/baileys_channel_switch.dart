@@ -96,27 +96,7 @@ class _BaileysChannelSwitchState extends State<BaileysChannelSwitch> {
 
     try {
       if (turningOn) {
-        final result = await service.activate(widget.channel.id);
-
-        // `POST /sessions` answers as soon as the session is created, before
-        // Baileys has actually reached WhatsApp's servers to request a QR —
-        // that first response is `starting`, not `qr_pending`. The pairing
-        // modal already treats both the same way (its own `watch(until:)`
-        // keeps waiting through both, and it renders a spinner for
-        // `starting`), so it has to open on either, not just `qr_pending`:
-        // opening only on `qr_pending` meant the modal never appeared and
-        // nothing ever watched the session again, leaving the switch stuck
-        // on "starting" until the next full grid refresh.
-        if (result.state == BaileysSessionState.qrPending ||
-          result.state == BaileysSessionState.starting) {
-          if (!context.mounted) return;
-
-          await showBaileysPairing(
-            context,
-            channelId: widget.channel.id,
-            initial: result
-          );
-        }
+        await linkBaileysChannel(context, widget.channel.id);
       } else {
         await service.deactivate(widget.channel.id);
       }

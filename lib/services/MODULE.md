@@ -127,6 +127,8 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `business_employees_service.dart` — `BusinessEmployeesService` (+ `BusinessEmployeesStatus`, `EmployeeDetailStatus`):
   current + former lists (a failed former read leaves it empty; not read without `viewsAll`), `total` = active count, `find` (a URL's person; `me` = the viewer's card), details cached per id, `inviteTemplates` (the templates an invitation may carry: the viewer's keys only, none without `business.employees.permissions` or while `PermissionsSource.online`), `invite` (`POST /business/employees/invite/` by email, with or without an account; rereads
   the list; answers what was sent, a master's activation code included, or null on a refusal), `edit` (`PUT /business/employees/`), `editOwn` (the viewer's personal keys, `PUT /profile/`). Provided by `EmployeesSection`. Seam `seed`.
+  With `businessId`, each list read hands the viewer's title to `OwnJobTitleService`.
+- `own_job_title_service.dart` — `OwnJobTitleService` singleton (`.value` provider): the viewer's job title per company (the `me` row of `EmployeesSource.current`), read once per company (`load`), `remember` (a list the section read), `clear` on sign out. Seam `source`.
 - `business_email_model.dart` — `BusinessEmailModel`, `BusinessEmailPurpose`.
 - `business_language.dart` — `BusinessLanguage`.
 - `business_location_model.dart` — `BusinessLocationModel`: written address **and** map point, two facts
@@ -153,7 +155,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `business_delivery_request.dart` — `DeliveryFlag`, `deliveryFlagRequest`, `deliveryMeetingRequest`, `deliveryNotesRequest`,
   create/update/remove option bodies (`BRANCH` only off a local reach, on edit only when changed, `""` = whichever serves), `readDeliveryAmount` (refuses `1,500`, like the backend).
 - `business_delivery_service.dart` — `BusinessDeliveryService` (+ status): the answer, its options and the
-  carrier catalog (`/delivery/providers/`, read by the form only). Provided by the delivery settings page (deliveries section).
+  carrier catalog (`/delivery/providers/`, read by the form only). Provided by the delivery settings panel (`modals/deliveries/delivery_settings/`).
 - `delivery_area_model.dart` — `DeliveryAreasModel` (`scope`, both maps in `areas`; `of(branch)`: one map, null = shared;
   `inForce(branches)`: the backend's `DeliveryAreas.inForce`; `holding(point)`: active, cheapest first), `DeliveryArea` (`branch`,
   `radius` | `polygon`, fee, minimum, active), `DeliveryScope {global, branch}`, `deliveringBranch` (the backend's
@@ -164,7 +166,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   (`DELIVERY_SCOPE`, a delivery setting); only the kind's shape travels, coordinates `{LATITUDE, LONGITUDE}` at 6 decimals.
 - `delivery_areas_service.dart` — `DeliveryAreasService` (+ status, `limit = 20` per map): `/business/delivery/areas/`,
   `setScope` (`PUT /business/delivery/`, then rereads the areas), `travelShape` (`POST /scorpius/v1/isochrone` → largest
-  outline, simplified). Provided by the deliveries desk and the delivery area page.
+  outline, simplified). Provided by the deliveries desk.
 
 ## catalog/ — platform configuration from `/init/`
 
@@ -219,7 +221,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 
 - `channels_service.dart` — `ChannelsService` (+ status): `GET /channels/`, `/channels/detail/$id`, writes.
 - `channel_catalog_service.dart` — `ChannelCatalogService`: `GET /channels/providers/`; `byCode`
-  also answers the locally synthesized WhatsApp Personal code.
+  also answers the locally synthesized WhatsApp Personal code. Seam `seed`.
 - `channel_provider_model.dart` — `ChannelProviderModel`, `ChannelProviderField`, `ChannelFieldType`.
   `ChannelProviderModel.whatsappPersonal()` is **not** in the backend catalog: a personal number
   linked by QR through `baileys_server`; no fields.
@@ -227,6 +229,8 @@ Reached through `LanService.server` (the `lan/` services own it).
   `tables` (`ChannelTableModel`); the detail also `paymentMethods` (`ChannelPaymentModel`).
 - `channel_table_model.dart` — `{id, name}`; re-joined by the backend on read, a deleted table does not come back.
 - `channel_payment_model.dart` — `{id, code, label, method}`; same re-join rule (an account turned off stops coming back).
+- `channel_preset.dart` — `ChannelPreset` (network, scope, tools; all sell), `ChannelPresetOffer` by catalog
+  (`ready`/`soon`/`hidden`; WhatsApp Personal always ready). Fills the create panel only.
 - `channel_agent_role.dart` — `ChannelAgentRole`. `channel_data_source.dart` — `ChannelDataSource`.
   `channel_tools.dart` — `ChannelTool`.
 - `channel_request.dart` — create/update bodies. `TABLES`, `TOOLS`, `PAYMENT_METHODS` always travel

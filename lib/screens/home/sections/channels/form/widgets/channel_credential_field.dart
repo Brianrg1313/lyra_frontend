@@ -8,7 +8,7 @@ import 'package:app/services/channels/channel_provider_model.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
 
-/// A provider field.
+/// A provider field, with where to find its value while it is being filled.
 ///
 /// An already stored secret is shown empty and **it is not an error**: the
 /// backend never returns the value of a token, it only says under which key
@@ -41,23 +41,14 @@ class ChannelCredentialField extends StatelessWidget {
               color: scheme.icon
             )
           ),
-          // The hint is written by the backend and says **where** to get the value
-          // in the provider's console. It is the only thing whoever is
-          // configuring has, and without it this form is a list of impossible
-          // fields.
-          if (field.hint.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(
-                left: AppSize.spaceS,
-                bottom: AppSize.gap
-              ),
-              child: TextSmall(
-                field.hint,
-                lines: 3,
-                ellipsis: true,
-                color: scheme.text.secondary
-              )
-            )
+          // The hint is written by the backend and says **where** to get the
+          // value in the provider's console. Without it this is a list of
+          // impossible fields; with all of them open it is a wall of text. So
+          // it shows for the field being filled, which is the one it is for.
+          if (field.hint.isNotEmpty) _Hint(
+            text: field.hint,
+            focus: controller.field(field).focus
+          )
         ]
       )
     );
@@ -70,4 +61,38 @@ class ChannelCredentialField extends StatelessWidget {
   String _title(BuildContext context) => field.required
     ? "${field.label} · ${S.of(context).channel_field_required}"
     : field.label;
+}
+
+/// The field's hint, open while [focus] has it.
+class _Hint extends StatelessWidget {
+  const _Hint({required this.text, required this.focus});
+
+  final String text;
+  final FocusNode focus;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: focus,
+    builder: (context, _) => AnimatedSize(
+      duration: MediaQuery.of(context).disableAnimations
+        ? Duration.zero
+        : const Duration(milliseconds: 150),
+      alignment: Alignment.topLeft,
+      child: focus.hasFocus
+        ? Padding(
+            padding: EdgeInsets.only(
+              left: AppSize.spaceS,
+              top: AppSize.gap * 0.5,
+              bottom: AppSize.gap
+            ),
+            child: TextSmall(
+              text,
+              lines: 3,
+              ellipsis: true,
+              color: ThemeColor.of(context).text.secondary
+            )
+          )
+        : const SizedBox(width: double.infinity)
+    )
+  );
 }

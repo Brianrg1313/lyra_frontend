@@ -13,6 +13,7 @@ import 'package:app/services/business/business_branches_service.dart';
 import 'package:app/services/business/business_location_service.dart';
 import 'package:app/services/business/business_places_model.dart';
 import 'package:app/services/business/business_places_service.dart';
+import 'package:app/services/business/business_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/maps/map_tiles_service.dart';
 
@@ -20,6 +21,7 @@ import 'package:app/services/maps/map_tiles_service.dart';
 import 'package:core/form.dart';
 import 'package:core/button.dart';
 import 'package:core/images.dart';
+import 'package:app/screens/home/sections/business/settings/country_flag.dart';
 import 'package:app/screens/home/sections/deliveries/deliveries_map.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
@@ -30,8 +32,9 @@ import 'place_search.dart';
 /// it. Answers `true` when something was written; the service has already
 /// reread the list by then.
 ///
-/// [country] is the company's (ISO code): every branch is in it, so it is not
-/// asked. It fixes the phone's code and limits the address search.
+/// [country] is the company's (ISO code): every branch is in it. It fixes the
+/// phone's code and limits the address search. Only the main branch's form
+/// asks for it, since there it is the company's own (see [BranchFormModal]).
 Future<bool> showBranchForm(
   BuildContext context, {
   required BusinessBranchesService branches,
@@ -69,6 +72,11 @@ Future<bool> showBranchForm(
 /// still be moved by hand — a geocoder is a first draft, not the answer.
 ///
 /// On edit only what changed travels (`editBranchRequest`).
+///
+/// **The main branch is where the company is.** Its form also asks for the
+/// company's country, and its phone is the company's public one; both live on
+/// the company (`PUT /business/profile/`), apart from the branch, so saving
+/// writes them there too and the settings sheet shows the same.
 class BranchFormModal extends StatefulWidget {
   const BranchFormModal({
     super.key,
@@ -95,8 +103,17 @@ class _BranchFormModalState extends State<BranchFormModal> {
   /// The search box's own form: the branch form must not validate it.
   final _searchForm = FormController();
 
-  /// Owned here: it holds one editing session (the Places token).
-  final _places = BusinessPlacesService();
+  /// Owned here: each holds one editing session (the Places token). One per
+  /// field that searches — the map's box and the address — since a service's
+  /// answers open the dropdown of every search listening to it.
+  late BusinessPlacesService _places = _placesIn(_country);
+  late BusinessPlacesService _addressPlaces = _placesIn(_country);
+
+  /// The company's country is searched by default (the backend's); another
+  /// one chosen in this form is asked for by name.
+  BusinessPlacesService _placesIn(String country) => BusinessPlacesService(
+    restrictTo: country == widget.country ? "" : country
+  );
 
   late final _search = InputController.search(form: _searchForm);
 
@@ -116,14 +133,37 @@ class _BranchFormModalState extends State<BranchFormModal> {
   late bool _online = _from?.online ?? true;
   late bool _main = _from?.main ?? false;
 
-  /// The company's dial code (`58`), or empty when its country has none.
-  late final String _dial =
-    CountryCatalogService().byCode(widget.country)?.phone ?? "";
+  /// Whether this form also edits the company: only the main branch's does.
+  late final bool _company = _from?.main ?? false;
+
+  /// The company's country, as chosen here (only the main branch's form
+  /// changes it).
+  late String _country = widget.country;
+
+  late final _countryInput = InputController.select(
+    key: "COUNTRY",
+    form: _form,
+    initial: widget.country
+  );
+
+  /// The dial code the form opened with (`58`), or empty when the company's
+  /// country has none.
+  late final String _openingDial = _dialOf(widget.country);
 
   /// The code is fixed only when the saved phone is in it (or there is none):
   /// a phone saved with another code is shown whole, never cut wrong.
-  late final bool _fixedDial = _dial.isNotEmpty &&
-    ((_from?.phone ?? "").isEmpty || _from!.phone.startsWith("+$_dial"));
+  late final bool _fixedDial = _openingDial.isNotEmpty &&
+    ((_from?.phone ?? "").isEmpty || _from!.phone.startsWith("+$_openingDial"));
+
+  /// The country whose code goes in front of the number: the one chosen,
+  /// unless it has none, and then the one the form opened with.
+  String get _dialCountry =>
+    _dialOf(_country).isEmpty ? widget.country : _country;
+
+  String get _dial => _dialOf(_dialCountry);
+
+  static String _dialOf(String country) =>
+    CountryCatalogService().byCode(country)?.phone ?? "";
 
   @override
   void initState() {
@@ -156,7 +196,7 @@ class _BranchFormModalState extends State<BranchFormModal> {
         S.of(context).business_branch_phone,
         initial: (_from?.phone ?? "").isEmpty
           ? ""
-          : _from!.phone.substring(_dial.length + 1),
+          : _from!.phone.substring(_openingDial.length + 1),
         min: 4,
         max: 12,
         pattern: "[0-9]",
@@ -272,6 +312,7 @@ class _BranchFormModalState extends State<BranchFormModal> {
     _tiles.dispose();
     _searchForm.dispose();
     _places.dispose();
+    _addressPlaces.dispose();
     super.dispose();
   }
 
@@ -427,7 +468,7 @@ class _BranchFormModalState extends State<BranchFormModal> {
         _Heading(title: S.of(context).business_branch_section_contact),
         BranchPhoneField(
           controller: _phone,
-          country: _fixedDial ? CountryCatalogService().byCode(widget.country) : null
+          country: _fixedDial ? CountryCatalogService().byCode(_dialCountry) : null
         ),
         _Heading(
           title: S.of(context).business_branch_section_invoicing,
@@ -460,11 +501,22 @@ class _BranchFormModalState extends State<BranchFormModal> {
           )
         ),
         _Heading(title: S.of(context).business_branch_section_address),
-        Input(
-          title: S.of(context).business_location_address,
-          placeholder: S.of(context).business_location_address_hint,
+        if (_company) _CountryField(
+          controller: _countryInput,
+          onSelected: _countryChanged
+        ),
+        // Typed anyway; the places the search knows drop under it as a
+        // shortcut, like under the map's own box.
+        PlaceSearch(
           controller: _address,
-          leftIcon: Icon(CI.store, color: scheme.icon)
+          places: _addressPlaces,
+          onPicked: _pick,
+          child: Input(
+            title: S.of(context).business_location_address,
+            placeholder: S.of(context).business_location_address_hint,
+            controller: _address,
+            leftIcon: Icon(CI.store, color: scheme.icon)
+          )
         ),
         Input(
           title: S.of(context).business_location_landmark,
@@ -495,6 +547,29 @@ class _BranchFormModalState extends State<BranchFormModal> {
         )
       ]
     );
+  }
+
+  /// Another country searches there: both searches start over in it. The
+  /// services left behind are freed after the frame, once the dropdowns
+  /// listen to the new ones.
+  void _countryChanged(SelectOption option) {
+    if (option.value == _country) return;
+
+    final left = [_places, _addressPlaces];
+
+    setState(() {
+      _country = option.value;
+      _places = _placesIn(_country);
+      _addressPlaces = _placesIn(_country);
+    });
+
+    _search.textController.clear();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final places in left) {
+        places.dispose();
+      }
+    });
   }
 
   /// Writes the picked place into the address fields and the map. The
@@ -528,6 +603,7 @@ class _BranchFormModalState extends State<BranchFormModal> {
     // had happened.
     _search.textController.clear();
     _places.clear();
+    _addressPlaces.clear();
 
     final point = picked.point;
 
@@ -583,12 +659,81 @@ class _BranchFormModalState extends State<BranchFormModal> {
 
     if (!mounted) return;
 
+    final done = saved && await _writeCompany();
+
+    if (!mounted) return;
+
     _form.loading.value = false;
 
     // A refusal was already shown by the service: the modal stays open with
-    // what was written, to correct it.
-    if (saved) Navigator.pop(context, true);
+    // what was written, to correct it. Sent again, the branch's edit is the
+    // same one, and only what the company still lacks is written.
+    if (done) Navigator.pop(context, true);
   }
+
+  /// The main branch's country and phone, written on the company too (see
+  /// [BranchFormModal]), one field at a time and only what differs.
+  ///
+  /// The phone goes when it was changed here, or when the branch has one the
+  /// company lacks: the two were stored apart, and saving a main branch with
+  /// no phone must not wipe the company's.
+  Future<bool> _writeCompany() async {
+    if (!_company) return true;
+
+    final business = context.read<BusinessService>();
+
+    if (_country.isNotEmpty && _country != (business.profile?.country ?? widget.country)) {
+      if (!await business.editProfile(context, "COUNTRY", _country)) return false;
+      if (!mounted) return false;
+    }
+
+    final phone = _phoneValue;
+
+    final write = phone != business.profile?.phone &&
+      (phone != (_from?.phone ?? "") || phone.isNotEmpty);
+
+    if (!write) return true;
+
+    return business.editProfile(context, "PHONE", phone);
+  }
+}
+
+/// The company's country, among the catalog's (watched: it may answer after
+/// the form is drawn), with what changing it moves.
+class _CountryField extends StatelessWidget {
+  const _CountryField({required this.controller, required this.onSelected});
+
+  final InputController controller;
+  final void Function(SelectOption option) onSelected;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      SelectInput(
+        title: S.of(context).business_location_country,
+        placeholder: S.of(context).business_branch_country_hint,
+        controller: controller,
+        options: [
+          for (final country in context.watch<CountryCatalogService>().countries)
+            SelectOption(
+              value: country.code,
+              placeholder: country.name,
+              leading: CountryFlag(country: country)
+            )
+        ],
+        onSelected: onSelected
+      ),
+      Padding(
+        padding: EdgeInsets.only(left: AppSize.spaceXS, bottom: AppSize.spaceS),
+        child: TextSmall(
+          S.of(context).business_branch_country_note,
+          lines: 3,
+          color: ThemeColor.of(context).text.secondary
+        )
+      )
+    ]
+  );
 }
 
 /// A group title inside the form, with an optional line under it.

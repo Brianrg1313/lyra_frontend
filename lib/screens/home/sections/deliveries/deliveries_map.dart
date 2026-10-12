@@ -28,7 +28,7 @@ import 'package:app/screens/home/sections/deliveries/widgets/map_zoom_buttons.da
 /// by that point and the tileset because `initialCenter` is only read when the
 /// map mounts.
 ///
-/// The delivery area page draws on this same map: [layers] go over the tiles
+/// The desk's areas are drawn and shaped on it: [layers] go over the tiles
 /// and under the company's mark, [overlays] over it (handles, pins), and
 /// [onTap] receives where the map was touched.
 class DeliveriesMap extends StatelessWidget {

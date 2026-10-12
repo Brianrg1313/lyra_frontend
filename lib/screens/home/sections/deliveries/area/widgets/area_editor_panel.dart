@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -15,7 +17,7 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:core/button.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
-import 'package:app/screens/home/sections/deliveries/settings/delivery_format.dart';
+import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
 
 import './area_tool_chip.dart';
 
@@ -147,65 +149,121 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
     final currency = CurrencyCatalogService().resolve(widget.currency);
     final method = _editor.method;
 
-    return ScrollableWidget(
-      showBar: false,
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Expanded(child: ScrollableWidget(
+          showBar: false,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _title(context),
+            SizedBox(height: AppSize.spaceS),
+            _ShapeReadout(editor: _editor),
+            SizedBox(height: AppSize.spaceS),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: AppSize.gap * 0.25),
+                  child: Icon(CI.info, size: AppSize.text * 0.9, color: scheme.text.secondary)
+                ),
+                SizedBox(width: AppSize.gap),
+                Expanded(child: TextSmall(_hint(context), lines: 4, color: scheme.text.secondary))
+              ]
+            ),
+            SizedBox(height: AppSize.spaceS),
+            ...switch (method) {
+              AreaMethod.radius => _radiusTools(context),
+              AreaMethod.draw => _drawTools(context),
+              AreaMethod.travel => [
+                ..._travelTools(context),
+                if (_editor.points.isNotEmpty) ...[
+                  SizedBox(height: AppSize.spaceS),
+                  ..._drawTools(context)
+                ]
+              ]
+            },
+            Separator.horizontal(margin: EdgeInsets.symmetric(vertical: AppSize.spaceM)),
+            Input(
+              title: S.of(context).deliveries_area_name,
+              placeholder: S.of(context).deliveries_area_name_hint,
+              controller: _name,
+              leftIcon: Icon(CI.bookmark, color: scheme.icon)
+            ),
+            Input(
+              title: "${S.of(context).deliveries_area_fee} (${S.of(context).business_delivery_optional})",
+              placeholder: S.of(context).deliveries_area_fee_hint(currency.symbol),
+              controller: _fee,
+              leftIcon: Icon(CI.wallet, color: scheme.icon)
+            ),
+            Input(
+              title: "${S.of(context).deliveries_area_minimum} (${S.of(context).business_delivery_optional})",
+              placeholder: S.of(context).deliveries_area_minimum_hint,
+              controller: _minimum,
+              leftIcon: Icon(CI.cart_shopping, color: scheme.icon),
+              onSubmit: _save
+            )
+          ]
+        )),
+        // Out of the scroll: the way out stays in reach however long the tools get.
+        SizedBox(height: AppSize.spaceS),
+        // Two halves of one height; only Save wears the button's fill, so the
+        // way out never reads as a second way to save.
         Row(children: [
-          Icon(_methodIcon(method), size: AppSize.text * 1.2, color: scheme.primary),
+          Expanded(child: FeedbackButton(
+            action: _editor.close,
+            height: AppSize.action,
+            radius: AppSize.corner,
+            color: scheme.surfaceOver,
+            feedbackColor: scheme.line,
+            child: Center(child: TextMedium(
+              S.of(context).cancel,
+              ellipsis: true,
+              color: scheme.text.secondary
+            ))
+          )),
           SizedBox(width: AppSize.gap),
-          Expanded(child: TextMedium(
+          Expanded(child: MainButton(
+            title: S.of(context).save,
+            loading: _saving,
+            action: _save
+          ))
+        ])
+      ]
+    );
+  }
+
+  /// "New area" or "Edit area", and the way it is being made under it.
+  Widget _title(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final method = _editor.method;
+
+    return Row(children: [
+      Container(
+        width: AppSize.action,
+        height: AppSize.action,
+        decoration: BoxDecoration(
+          color: scheme.primary.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppSize.corner)
+        ),
+        child: Icon(_methodIcon(method), size: AppSize.text * 1.1, color: scheme.primary)
+      ),
+      SizedBox(width: AppSize.spaceS),
+      Expanded(child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextMedium(
             _area == null
               ? S.of(context).deliveries_area_new_title
               : S.of(context).deliveries_area_edit_title,
             bold: true,
             ellipsis: true
-          ))
-        ]),
-        SizedBox(height: AppSize.gap),
-        TextSmall(_hint(context), lines: 4, color: scheme.text.secondary),
-        SizedBox(height: AppSize.spaceS),
-        ...switch (method) {
-          AreaMethod.radius => _radiusTools(context),
-          AreaMethod.draw => _drawTools(context),
-          AreaMethod.travel => [
-            ..._travelTools(context),
-            if (_editor.points.isNotEmpty) ...[
-              SizedBox(height: AppSize.spaceS),
-              ..._drawTools(context)
-            ]
-          ]
-        },
-        SizedBox(height: AppSize.spaceS),
-        Input(
-          title: S.of(context).deliveries_area_name,
-          placeholder: S.of(context).deliveries_area_name_hint,
-          controller: _name,
-          leftIcon: Icon(CI.bookmark, color: scheme.icon)
-        ),
-        Input(
-          title: "${S.of(context).deliveries_area_fee} · ${S.of(context).business_delivery_optional}",
-          placeholder: S.of(context).deliveries_area_fee_hint(currency.symbol),
-          controller: _fee,
-          leftIcon: Icon(CI.wallet, color: scheme.icon)
-        ),
-        Input(
-          title: "${S.of(context).deliveries_area_minimum} · ${S.of(context).business_delivery_optional}",
-          placeholder: S.of(context).deliveries_area_minimum_hint,
-          controller: _minimum,
-          leftIcon: Icon(CI.cart_shopping, color: scheme.icon),
-          onSubmit: _save
-        ),
-        SizedBox(height: AppSize.spaceM),
-        MainButton(
-          title: S.of(context).save,
-          loading: _saving,
-          action: _save
-        ),
-        SizedBox(height: AppSize.gap),
-        Button(title: S.of(context).cancel, action: _editor.close)
-      ]
-    );
+          ),
+          TextSmall(_methodName(context, method), ellipsis: true, color: scheme.text.secondary)
+        ]
+      ))
+    ]);
   }
 
   List<Widget> _radiusTools(BuildContext context) => [
@@ -232,13 +290,6 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
     final points = _editor.points;
 
     return [
-      TextSmall(
-        S.of(context).deliveries_area_points(points.length),
-        color: points.length < 3
-          ? ThemeColor.of(context).snackBar.error
-          : ThemeColor.of(context).text.secondary
-      ),
-      SizedBox(height: AppSize.gap),
       Wrap(
         spacing: AppSize.gap,
         runSpacing: AppSize.gap,
@@ -417,3 +468,75 @@ IconData _methodIcon(AreaMethod method) => switch (method) {
   AreaMethod.draw => CI.pen,
   AreaMethod.travel => CI.delivery
 };
+
+String _methodName(BuildContext context, AreaMethod method) => switch (method) {
+  AreaMethod.radius => S.of(context).deliveries_area_method_radius,
+  AreaMethod.draw => S.of(context).deliveries_area_method_draw,
+  AreaMethod.travel => S.of(context).deliveries_area_method_travel
+};
+
+/// The shape as it stands, in the colour the map draws it: how big it is,
+/// followed live while it is dragged, and what it is made of. One line of
+/// figures and not a headline: the map is where the shape is looked at.
+class _ShapeReadout extends StatelessWidget {
+  const _ShapeReadout({required this.editor});
+
+  final AreaEditor editor;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final color = scheme.primary;
+    final shaped = editor.hasShape;
+    final points = editor.points;
+    final polygon = editor.method.kind == DeliveryAreaKind.polygon;
+    final circle = editor.method == AreaMethod.radius;
+
+    final squareKm = !shaped
+      ? 0.0
+      : polygon ? ringSquareKm(points) : math.pi * editor.radius * editor.radius;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(AppSize.corner)
+      ),
+      child: Row(children: [
+        // The draft's own swatch: filled and ringed as the map fills and rings it.
+        Container(
+          width: AppSize.text,
+          height: AppSize.text,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: shaped ? 0.25 : 0.06),
+            border: Border.all(color: color.withValues(alpha: shaped ? 1 : 0.4), width: 2),
+            shape: circle ? BoxShape.circle : BoxShape.rectangle,
+            borderRadius: circle ? null : BorderRadius.circular(AppSize.gap / 2)
+          )
+        ),
+        SizedBox(width: AppSize.spaceS),
+        Expanded(child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextMedium(
+              S.of(context).deliveries_area_size(deliveryNumber(squareKm)),
+              bold: true,
+              ellipsis: true,
+              color: shaped ? scheme.text.primary : scheme.text.secondary
+            ),
+            TextSmall(
+              polygon
+                ? S.of(context).deliveries_area_points(points.length)
+                : deliveryRadiusLabel(context, editor.radius),
+              ellipsis: true,
+              // Short of a shape, what it still needs is the news.
+              color: polygon && !shaped ? scheme.chart.warning : scheme.text.secondary
+            )
+          ]
+        ))
+      ])
+    );
+  }
+}

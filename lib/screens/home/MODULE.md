@@ -33,12 +33,16 @@
   company with its company online whenever `HybridService.shouldAskLink` turns true (`askLinkCompany`), and opens the online sign in once a session on the master alone can go online (`HybridService.shouldOfferOnline`). `_AskBranch` opens `showBranchPicker` when `BranchService.shouldAsk`. Listens to `Navis.currentKey` + `BusinessService.activeId` + `BranchService` (`activeId`, `settled`), and
   rebuilds on `PermissionsService` and `CapabilityService` (the internet or "work offline" lock a section in place).
 - `desktop/_body.dart` — `DesktopBody`: side bar + header + content.
-- `desktop/side_bar/side_bar.dart` — `SideBar({section})`: groups from `HomeSection`, collapsible via `HomeService`.
+- `desktop/side_bar/side_bar.dart` — `SideBar({section})`: `BusinessSelector` on top, groups from `HomeSection`, collapsible via `HomeService`.
 - `desktop/side_bar/options.dart` — option list (each with `BadgePlace.section`; opening one `discover`s its news); locks unmet `needsBusiness` and, with a business, sections without `<key>.view` (`PermissionsService`) — those still open, onto `NoPermissionSection`. No POS option (the POS opens from the header).
 - `desktop/side_bar/option.dart` — `Option({icon, title, action, isExpanded, isActive, lockedMessage, badge})` (`lockedMessage` non-null = locked, shown as tooltip; `opensLocked` = still clickable; `badge` = its `BadgePlace`, a mark after the title or a dot on the icon when collapsed, none when locked).
-- `desktop/side_bar/profile.dart` — `ProfileCard` (`ConnectionDot` on the picture's bottom-right); pressing it opens the viewer's own card in the employees section (`/home/employees/me`), still without a company. `desktop/side_bar/connection_dot.dart` — `ConnectionDot`: the socket's state (green connected, yellow connecting, red down, nothing while idle). `desktop/side_bar/sign_out.dart` — `SignOut`: calls `ClientService.signOut`.
-- `header/_header.dart` — `HomeHeader`: search (`HomeService.searchQuery`, cleared on screen change), business and branch selectors, POS (`BadgePlace.pos`),
-  the bell (`BadgePlace.bell`; opens `showPendingPanel`, then goes to `badgeRoute` or `notificationRoute`), inbox (coming soon).
+- `desktop/side_bar/sign_out.dart` — `SignOut`: calls `ClientService.signOut`.
+- `desktop/side_bar/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation; lists the
+  pending invitations (`ClientService.invitations`, a dot on the anchor) and opens `InvitationModal` (accepted →
+  re-`resolve()`s and switches to it); with `CapabilityService.singleCompany` only shows the one company. Wide: logo, name and the viewer's job title there (`OwnJobTitleService`); narrow (collapsed bar): only the logo.
+- `header/_header.dart` — `HomeHeader`: left POS (`BadgePlace.pos`)
+  and branch selector; search in the middle (`HomeService.searchQuery`, cleared on screen change); right the bell (`BadgePlace.bell`; opens `showPendingPanel`, then goes to `badgeRoute` or `notificationRoute`), inbox (coming soon) and `ProfileCard`.
+- `header/profile.dart` — `ProfileCard`: the picture alone, name and email in its tooltip (`ConnectionDot` on the picture's bottom-right); pressing it unfolds a menu (`showSelectMenu`): account (the viewer's own card, `/home/employees/me`), the `OwnSection` shortcuts (preferences, security, sign-in methods, sessions) and updates (placeholder, "coming soon"); still without a company. `header/connection_dot.dart` — `ConnectionDot`: the socket's state (green connected, yellow connecting, red down, nothing while idle).
 - `badges/badge_mark.dart` — `BadgeMark({place, dot})` (a number in a red circle when the place counts things, a dot in the level colour for alerts/news, nothing
   when clear; listens to the `BadgesService` singleton, no provider needed), `BadgeCorner({place, child, dot, outside})`, `badgeColor(level)` (info blue, warning yellow, critical red).
   `UnseenMark`: the red dot of one row a side bar number counts (an unread chat, an unopened sale).
@@ -47,13 +51,10 @@
 - `badges/badge_route.dart` — `badgeRoute(badge, business:)`: the app page that clears a badge, by its most specific anchor; `null` = none yet.
   `notificationRoute(notification)`: the section of its `area`, `null` for one about none.
 - `header/branch_selector.dart` — `BranchSelector`: the branch worked in (`BranchService`), beside the business; `showSelectMenu` of the person's branches; drawn only with more than one.
-- `header/business_selector.dart` — `BusinessSelector`: switches the active business, offers creation; lists the
-  pending invitations (`ClientService.invitations`, a dot on the anchor) and opens `InvitationModal` (accepted →
-  re-`resolve()`s and switches to it); with `CapabilityService.singleCompany` only shows the one company.
 - `sections/_sections.dart` — **section registry**: `enum HomeSection` (`key path icon area`; `dashboard
-  business employees inventory services channels knowledge connections messages deliveries sales finance marketing report externalServices
-  server`), groups `.home` (dashboard, business, employees, messages, deliveries, sales; untitled) `.products` (inventory, services, channels, knowledge)
-  `.reports` (finance first) `.connectionGroups` (with `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
+  business employees inventory supplyChain services channels knowledge connections messages deliveries sales finance lyraBusiness marketing report externalServices
+  server`), groups `.home` (dashboard, business, employees; untitled) `.operations` (sales, messages, deliveries, services) `.resources` (inventory, supplyChain, channels, knowledge)
+  `.management` (finance first, lyraBusiness, marketing, report) `.integrations` (connections, externalServices, `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
   `needsBusiness`, `area` (the key; employees keeps `business.employees`), `granted(businessId)` (employees: every member), `build()`; `homeContent(currentKey, section, businessId, {branchId})` (incl. sub-pages).
 - `sections/_section/` — widgets shared by every section (none is a section itself).
 - `sections/_section/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?, badge?})` (locked = lock icon, still opens; `badge` = a tab's `BadgePlace`, a dot after its title): tab bar used
@@ -65,12 +66,12 @@
 - `sections/_section/no_business.dart` — `NoBusinessSection`.
 - `sections/_section/unavailable.dart` — `UnavailableSection({capability, surface})`: a section or tab (`surface: false`) the deployment mode lacks, or locked until the internet answers; a session on the master alone offers "sign in online" (`showOnlineSignIn`) once the backend answers (`HybridService.canGoOnline`), otherwise nothing to ask for.
 - `sections/_section/no_permission.dart` — `NoPermissionSection({permission, title, surface = true})`: shown by `homeContent` in place of a section without `<key>.view`, and by business/finance/sales in place of a tab (`surface: false`); owns a `PermissionRequestsService`, offers "Request access" unless one is pending.
-- `sections/_section/placeholder.dart` — `SectionPlaceholder`: `dashboard services marketing report externalServices`.
+- `sections/_section/placeholder.dart` — `SectionPlaceholder`: `dashboard services supplyChain lyraBusiness marketing report externalServices`.
 - `sections/_section/filter_chip.dart` — `SectionFilterChip({title, isActive, action, icon?, leading?, trailing?})`: one control of a
   filter bar (sales, payments), label cut at a fixed width. `sections/_section/filter_menu_chip.dart` — `SectionMenuChip`: one that
   opens `showSelectMenu` under itself (`emptyText`, `maxOptions`).
 - `sections/_section/form/form_block.dart` — `FormBlock` (title, explanation, content), `form/option_card.dart` — `OptionCard`
-  (`multiple`: a check instead of a dot), `form/option_grid.dart` — `OptionGrid`: the blocks of the channel and connection forms.
+  (`multiple`: a check instead of a dot), `form/option_grid.dart` — `OptionGrid`: the blocks of the connection form (and `ChannelAccount`); the channel form has its own rows.
 - `sections/_section/more_button.dart` — `SectionMoreButton({label, retryLabel, failed, onMore, onRetry})`: the "load more" at the
   end of a paged table (payments, receivables, sales).
 - `sections/_section/section_message.dart` — `SectionMessage({icon, message, action?})`: full-section empty/error/loading. Use instead of ad-hoc centered columns.

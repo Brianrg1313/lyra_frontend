@@ -10,14 +10,16 @@ import 'package:app/screens/home/sections/_section/section_message.dart';
 import './area_layers.dart';
 import './area_tile.dart';
 
-/// Left panel while looking: which map is open and how the areas are shared
-/// ([header]), what the point tapped on the map gets ([probe], or the hint to
-/// tap one), and every area of the open map, each with its colour on the map,
-/// its size and its figures.
+/// The desk's panel while looking: which map is open and how the areas are
+/// shared ([header]), what the point tapped on the map gets ([probe], or the
+/// hint to tap one), the way to add one ([add]) right above them, and every
+/// area of the open map, each with its colour on the map, its size and its
+/// figures.
 class AreaList extends StatelessWidget {
   const AreaList({
     super.key,
     required this.header,
+    this.add,
     required this.areas,
     required this.currency,
     required this.probe,
@@ -28,6 +30,9 @@ class AreaList extends StatelessWidget {
   });
 
   final Widget header;
+
+  /// Starts a new area ("Add area"), above the areas it adds to.
+  final Widget? add;
 
   /// The open map's areas, in order.
   final List<DeliveryArea> areas;
@@ -65,6 +70,10 @@ class AreaList extends StatelessWidget {
             color: scheme.text.secondary
           )
         ),
+        if (add != null) ...[
+          add!,
+          SizedBox(height: AppSize.spaceS)
+        ],
         if (areas.isEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: AppSize.spaceL),

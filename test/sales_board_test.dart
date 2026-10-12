@@ -78,19 +78,16 @@ void main() {
       expect(HomeSection.sales.needsBusiness, isTrue);
     });
 
-    test('the sales option sits in the top group', () {
-      // The sale end to end, in the order it happens, right after the
-      // business and its people: the conversation where it starts, the delivery, then the
-      // board of what is going on.
+    test('the sales option leads the operations group', () {
+      // The board of what is going on first, then the conversations it starts
+      // from, the goods on their way and the services.
       expect(
-        HomeSection.home,
+        HomeSection.operations,
         [
-          HomeSection.dashboard,
-          HomeSection.business,
-          HomeSection.employees,
+          HomeSection.sales,
           HomeSection.messages,
           HomeSection.deliveries,
-          HomeSection.sales
+          HomeSection.services
         ]
       );
     });

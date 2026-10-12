@@ -57,7 +57,8 @@
   and map point, edited in one form (`showBranchForm`); the main branch's is the company's (`GET /business/location/`
   reads it). There is no location tab.
 - **The country is the company's**, not a branch's: a select in the settings sheet (`PUT /business/profile/`
-  `COUNTRY`), which also moves the clock, the payment rails and the delivery carriers. The branch form reads it to
+  `COUNTRY`), which also moves the clock, the payment rails and the delivery carriers; the main branch's form also
+  sets it, and writes the main branch's phone as the company's (two columns, `companies` and `company_branches`). The branch form reads it to
   fix the phone code and limit the address search.
 - `BusinessBranchesService` is provided by `_business_detail.dart`, not app-wide:
   switching tabs keeps what was read, switching business remounts the page and drops it.

@@ -27,7 +27,7 @@ Future<String?> showDeliveryNotes(
 /// One field, like the profile's: a sentence is corrected where it is read.
 ///
 /// It **returns the text and writes nothing**: the delivery service is
-/// provided by the delivery settings page, under the navigator this opens on.
+/// provided by the delivery settings panel, which this opens over and is not under.
 class EditDeliveryNotesModal extends StatefulWidget {
   const EditDeliveryNotesModal({super.key, required this.notes});
 

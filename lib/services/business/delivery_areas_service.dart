@@ -17,9 +17,9 @@ enum DeliveryAreasStatus { idle, loading, ready, error }
 /// (`/business/delivery/areas/`), and the travel-time outline an area can be
 /// started from (`POST /scorpius/v1/isochrone`).
 ///
-/// Provided by the delivery area page (`DeliveryAreaSection`), not app-wide:
+/// Provided by the deliveries desk (`DeliveriesSection`), not app-wide:
 /// every endpoint answers for the business in the `business_id` header, and a
-/// business switch remounts the page.
+/// business switch remounts the section.
 ///
 /// Every write rereads the whole list instead of patching it: the backend
 /// orders the areas and may simplify a shape it stores.

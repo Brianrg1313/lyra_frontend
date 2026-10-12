@@ -6,10 +6,9 @@ import 'package:app/services/channels/channel_agent_role.dart';
 import 'package:app/services/channels/channel_data_source.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/_section/form/form_block.dart';
-import 'package:app/screens/home/sections/_section/form/option_card.dart';
-import 'package:app/screens/home/sections/_section/form/option_grid.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/form_row.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/option_chip.dart';
 import 'package:app/screens/home/sections/channels/form/widgets/data_table_select.dart';
 
 /// Where the model gets what it knows from: a product table, a services
@@ -41,36 +40,33 @@ class DataPicker extends StatelessWidget {
   final ChannelFormController controller;
 
   @override
-  Widget build(BuildContext context) => FormBlock(
-    title: S.of(context).channel_source_title,
-    subtitle: S.of(context).channel_source_subtitle,
-    child: ValueListenableBuilder<ChannelAgentRole>(
-      valueListenable: controller.role,
-      builder: (context, role, _) => ValueListenableBuilder<ChannelDataSource>(
-        valueListenable: controller.source,
-        builder: (context, selected, _) {
-          final options = ChannelDataSource.allowedFor(role);
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              OptionGrid(children: [
-                for (final source in options) OptionCard(
-                  icon: source.icon,
-                  title: source.title(context),
-                  subtitle: source.subtitle(context),
-                  selected: source == selected,
-                  enabled: source.available,
-                  badge: source.available
-                    ? null
-                    : S.of(context).channel_source_soon,
-                  action: () => controller.source.value = source
-                )
-              ]),
-              if (selected.needsTable) DataTableSelect(controller: controller)
-            ]
-          );
-        }
+  Widget build(BuildContext context) => ValueListenableBuilder<ChannelAgentRole>(
+    valueListenable: controller.role,
+    builder: (context, role, _) => ValueListenableBuilder<ChannelDataSource>(
+      valueListenable: controller.source,
+      builder: (context, selected, _) => ChannelFormRow(
+        label: S.of(context).channel_source_title,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            OptionChips(children: [
+              for (final source in ChannelDataSource.allowedFor(role)) OptionChip(
+                icon: source.icon,
+                title: source.title(context),
+                selected: source == selected,
+                enabled: source.available,
+                badge: source.available ? null : S.of(context).channel_source_soon,
+                action: () => controller.source.value = source
+              )
+            ]),
+            // What the chosen source answers, before saying which table.
+            ChannelFormNote(selected.subtitle(context)),
+            if (selected.needsTable) Padding(
+              padding: EdgeInsets.only(top: AppSize.spaceXS),
+              child: DataTableSelect(controller: controller)
+            )
+          ]
+        )
       )
     )
   );

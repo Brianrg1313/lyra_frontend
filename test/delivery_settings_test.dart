@@ -10,7 +10,7 @@ import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/business/business_delivery_service.dart';
-import 'package:app/screens/home/sections/deliveries/settings/settings_body.dart';
+import 'package:app/screens/modals/deliveries/delivery_settings/settings_body.dart';
 
 /// What the delivery settings draw: the general answer with its three states, and
 /// each way of delivering with the figures a customer asks about.
@@ -50,7 +50,7 @@ Widget _app(BusinessDeliveryService service) => MaterialApp(
     child: Builder(builder: (context) {
       AppSize.instance(context);
 
-      return const Scaffold(body: DeliverySettingsBody());
+      return Scaffold(body: DeliverySettingsBody(onArea: () {}));
     })
   )
 );
@@ -163,5 +163,26 @@ void main() {
       find.textContaining("Delivery is turned off"),
       findsOneWidget
     );
+  });
+
+  testWidgets("turned off, what only holds while delivering fades and pickup does not", (tester) async {
+    await tester.pumpWidget(_app(_Delivery(
+      delivery: const BusinessDeliveryModel(
+        delivers: false,
+        pickup: true,
+        currency: "USD",
+        options: [_riders]
+      )
+    )));
+    await tester.pumpAndSettle();
+
+    double opacity(Finder finder) => tester
+      .widgetList<AnimatedOpacity>(find.ancestor(of: finder, matching: find.byType(AnimatedOpacity)))
+      .fold(1.0, (value, widget) => value * widget.opacity);
+
+    expect(opacity(find.text("Own riders")), lessThan(1));
+    expect(opacity(find.text("Fixed")), lessThan(1));
+    expect(opacity(find.textContaining("Delivery is turned off")), 1);
+    expect(opacity(find.text("Pickup at the business")), 1);
   });
 }

@@ -5,10 +5,9 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/channels/channel_agent_role.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/_section/form/form_block.dart';
-import 'package:app/screens/home/sections/_section/form/option_card.dart';
-import 'package:app/screens/home/sections/_section/form/option_grid.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/form_row.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/option_chip.dart';
 
 /// What the agent answering the channel does: sell, give support or handle
 /// things in general.
@@ -25,16 +24,15 @@ class AgentPicker extends StatelessWidget {
   final ChannelFormController controller;
 
   @override
-  Widget build(BuildContext context) => FormBlock(
-    title: S.of(context).channel_role_title,
-    subtitle: S.of(context).channel_role_subtitle,
-    child: ValueListenableBuilder<ChannelAgentRole>(
-      valueListenable: controller.role,
-      builder: (context, selected, _) => OptionGrid(children: [
-        for (final role in ChannelAgentRole.values) OptionCard(
+  Widget build(BuildContext context) => ValueListenableBuilder<ChannelAgentRole>(
+    valueListenable: controller.role,
+    builder: (context, selected, _) => ChannelFormRow(
+      label: S.of(context).channel_role_title,
+      note: selected.subtitle(context),
+      child: OptionChips(children: [
+        for (final role in ChannelAgentRole.values) OptionChip(
           icon: role.icon,
           title: role.title(context),
-          subtitle: role.subtitle(context),
           selected: role == selected,
           action: () => controller.role.value = role
         )

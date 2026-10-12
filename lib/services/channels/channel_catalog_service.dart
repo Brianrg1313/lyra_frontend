@@ -93,6 +93,14 @@ class ChannelCatalogService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Puts [providers] in as a loaded catalog, without the network. A seam for tests.
+  @visibleForTesting
+  void seed(List<ChannelProviderModel> providers) {
+    _providers = providers;
+    _status = ChannelCatalogStatus.ready;
+    notifyListeners();
+  }
+
   /// Empties the cache. For signing out, together with the rest of the services.
   void clear() {
     _providers = const [];

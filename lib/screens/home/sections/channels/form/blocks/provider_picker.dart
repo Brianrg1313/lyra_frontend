@@ -9,10 +9,9 @@ import 'package:app/services/channels/channel_catalog_service.dart';
 import 'package:app/services/channels/channel_provider_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/_section/form/form_block.dart';
-import 'package:app/screens/home/sections/_section/form/option_card.dart';
-import 'package:app/screens/home/sections/_section/form/option_grid.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/form_row.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/network_tile.dart';
 
 /// What network is connected: the form's first block, and the one that
 /// decides everything that comes after —the credential fields come from the
@@ -28,12 +27,11 @@ import 'package:app/screens/home/sections/channels/form/state/channel_form_contr
 /// source or the tools, there is no "coming soon" card for a network, because
 /// the list is the backend's and grows on its own as networks are wired up.
 ///
-/// [_WhatsAppPersonal] is the one exception — linking a personal number (no
+/// WhatsApp Personal is the one exception — linking a personal number (no
 /// Meta business account) through the local `baileys_server` sidecar
-/// instead of the backend catalog. Shown first, always selectable on create:
-/// unlike a catalog network it does not depend on `GET /channels/providers`
-/// having loaded, since [ChannelProviderModel.whatsappPersonal] is built
-/// locally.
+/// instead of the backend catalog. Shown first on create, with no tokens to
+/// paste: the number links by QR once the channel exists
+/// (`BaileysChannelSwitch`, or straight away from the messages start).
 ///
 /// **In an edit it cannot be changed.** The stored secrets were gathered for
 /// one network, and pointing them at another would leave values that mean
@@ -48,39 +46,55 @@ class ProviderPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final catalog = context.watch<ChannelCatalogService>();
 
-    return FormBlock(
-      title: S.of(context).channel_type_title,
-      subtitle: controller.isEditing
-        ? S.of(context).channel_type_locked
-        : S.of(context).channel_type_subtitle,
-      child: switch (catalog.status) {
-        ChannelCatalogStatus.idle || ChannelCatalogStatus.loading =>
-          const Center(child: Loading()),
-        ChannelCatalogStatus.error => _Error(
-          onRetry: () => catalog.load(force: true)
-        ),
-        ChannelCatalogStatus.ready => ValueListenableBuilder<String>(
-          valueListenable: controller.provider,
-          builder: (context, selected, _) => OptionGrid(children: [
-            if (!controller.isEditing) _WhatsAppPersonal(
-              selected: selected == ChannelProviderModel.whatsappPersonalCode,
-              action: () => controller.provider.value =
-                ChannelProviderModel.whatsappPersonalCode
-            ),
-            for (final provider in _visible(catalog, selected)) OptionCard(
-              icon: provider.icon,
-              title: provider.name,
-              subtitle: _capabilities(context, provider),
-              selected: provider.provider == selected,
-              // While editing, the network is decided: the card is shown so it is known
-              // which one it is, but it does not respond.
-              enabled: !controller.isEditing,
-              action: () => controller.provider.value = provider.provider
-            )
-          ])
-        )
-      }
+    return ValueListenableBuilder<String>(
+      valueListenable: controller.provider,
+      builder: (context, selected, _) => ChannelFormRow(
+        label: S.of(context).channel_type_title,
+        note: _note(context, catalog, selected),
+        child: switch (catalog.status) {
+          ChannelCatalogStatus.idle || ChannelCatalogStatus.loading =>
+            const Align(alignment: Alignment.centerLeft, child: Loading()),
+          ChannelCatalogStatus.error => _Error(
+            onRetry: () => catalog.load(force: true)
+          ),
+          ChannelCatalogStatus.ready => Wrap(
+            spacing: AppSize.gap,
+            runSpacing: AppSize.gap,
+            children: [
+              if (!controller.isEditing) NetworkTile(
+                icon: CI.whatsapp,
+                title: S.of(context).channel_type_whatsapp_personal,
+                selected: selected == ChannelProviderModel.whatsappPersonalCode,
+                action: () => controller.provider.value =
+                  ChannelProviderModel.whatsappPersonalCode
+              ),
+              for (final provider in _visible(catalog, selected)) NetworkTile(
+                icon: provider.icon,
+                title: provider.name,
+                selected: provider.provider == selected,
+                // While editing, the network is decided: the tile is shown so
+                // it is known which one it is, but it does not respond.
+                enabled: !controller.isEditing,
+                action: () => controller.provider.value = provider.provider
+              )
+            ]
+          )
+        }
+      )
     );
+  }
+
+  /// What the chosen network is, in one line: why it cannot change on edit,
+  /// what a personal number means, or what a catalog network handles.
+  String? _note(BuildContext context, ChannelCatalogService catalog, String selected) {
+    if (controller.isEditing) return S.of(context).channel_type_locked;
+
+    if (selected == ChannelProviderModel.whatsappPersonalCode) {
+      return S.of(context).channel_type_whatsapp_personal_hint;
+    }
+
+    final provider = catalog.byCode(selected);
+    return provider == null ? null : _capabilities(context, provider);
   }
 
   /// What networks to show.
@@ -102,9 +116,13 @@ class ProviderPicker extends StatelessWidget {
       return current == null ? const [] : [current];
     }
 
+    // A preset that fixed the scope makes a network with several jobs
+    // creatable for this one panel (Instagram's direct messages).
     return [
       for (final provider in catalog.providers)
-        if (provider.isSupported && provider.hasSingleScope) provider
+        if (provider.isSupported &&
+          (provider.hasSingleScope || controller.fixesScope(provider.provider)))
+          provider
     ];
   }
 
@@ -132,31 +150,6 @@ class ProviderPicker extends StatelessWidget {
 
     return labels.isEmpty ? null : labels.join(" · ");
   }
-}
-
-/// Linking a personal WhatsApp number, without a Meta business account behind
-/// it — the way most small businesses actually run WhatsApp today.
-///
-/// Picking it does not draw the usual [CredentialsBlock]: there are no
-/// tokens to paste, so that block shows a QR-pairing notice for this
-/// provider instead (see its own doc). The actual pairing happens after the
-/// channel is created, by turning on its switch in the list
-/// (`BaileysChannelSwitch`), which is what starts `baileys_server` and
-/// brings up the QR to scan.
-class _WhatsAppPersonal extends StatelessWidget {
-  const _WhatsAppPersonal({required this.selected, required this.action});
-
-  final bool selected;
-  final void Function() action;
-
-  @override
-  Widget build(BuildContext context) => OptionCard(
-    icon: CI.whatsapp,
-    title: S.of(context).channel_type_whatsapp_personal,
-    subtitle: S.of(context).channel_type_whatsapp_personal_hint,
-    selected: selected,
-    action: action
-  );
 }
 
 /// The catalog did not load. Without it there is no form to draw —the

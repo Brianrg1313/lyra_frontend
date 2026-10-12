@@ -10,6 +10,7 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/employee_activation_model.dart';
+import 'package:app/services/business/own_job_title_service.dart';
 import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
@@ -39,8 +40,12 @@ enum EmployeeDetailStatus { idle, loading, ready, error }
 /// A detail is read once per person per section and kept: switching back and
 /// forth between two employees in the list does not reread either.
 class BusinessEmployeesService extends ChangeNotifier {
-  BusinessEmployeesService({EmployeesSource? source, PermissionsSource? permissions})
+  BusinessEmployeesService({EmployeesSource? source, PermissionsSource? permissions, this.businessId})
     : _injected = source, _injectedPermissions = permissions;
+
+  /// The company the lists are of; given, each list read hands the viewer's title to
+  /// [OwnJobTitleService] (the side bar's).
+  final String? businessId;
 
   final EmployeesSource? _injected;
   final PermissionsSource? _injectedPermissions;
@@ -269,6 +274,8 @@ class BusinessEmployeesService extends ChangeNotifier {
     _former = former;
     _total = total;
     _status = BusinessEmployeesStatus.ready;
+
+    if (businessId != null) OwnJobTitleService().remember(businessId!, current);
   }
 
   /// The former list, or none for a viewer who may only see their own card:

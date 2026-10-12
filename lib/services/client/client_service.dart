@@ -22,6 +22,7 @@ import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/badges/badges_service.dart';
+import 'package:app/services/business/own_job_title_service.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/baileys/baileys_service.dart';
 import 'package:app/services/channels/channels_service.dart';
@@ -370,6 +371,7 @@ class ClientService extends ChangeNotifier {
       CdnService().clear();
       PermissionsService().clear();
       BadgesService().clear();
+      OwnJobTitleService().clear();
       clear();
     } finally {
       _signingOut = false;
