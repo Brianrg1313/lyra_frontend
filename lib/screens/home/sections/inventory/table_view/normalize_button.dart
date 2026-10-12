@@ -61,8 +61,8 @@ class _NormalizeButtonState extends State<NormalizeButton> {
     return FeedbackButton(
       action: _running ? null : () => _normalize(context),
       mouseCursor: _running ? SystemMouseCursors.basic : null,
-      width: AppSize.action,
-      height: AppSize.action,
+      width: AppSize.button,
+      height: AppSize.button,
       feedbackColor: scheme.surfaceFeedback,
       message: _running
         ? S.of(context).table_normalize_running

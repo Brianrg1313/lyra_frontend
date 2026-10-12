@@ -21,7 +21,6 @@ import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart'
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
 
-import './transfers_button.dart';
 import './import_button.dart';
 import './inventory_bar.dart';
 import './inventory_start.dart';
@@ -39,7 +38,8 @@ import './view_toggle.dart';
 /// stock summary ([StockSummarySection]: photo, the columns chosen for it and what's
 /// left) or as every cell of it ([TableViewSection], the sheet). Both are the account's
 /// choices and are remembered (`PreferencesService`): which table, per company, and
-/// which view.
+/// which view. A table with no rows opens on the sheet, without the switch: there is
+/// nothing to summarize yet.
 ///
 /// Which table opens: the link's (`/home/inventory/:id`), else the one last open in this
 /// company, else the primary one, else the first. A table that is gone (deleted, another
@@ -67,6 +67,10 @@ class _InventorySectionState extends State<InventorySection> {
   /// button shows it. What follows —the backend typing the columns, the rows going
   /// up— shows on the table.
   final _importing = ValueNotifier<bool>(false);
+
+  /// The table that opened with no rows, kept on the sheet while it stays open (see
+  /// [_blank]).
+  String? _blankId;
 
   @override
   void initState() {
@@ -109,6 +113,18 @@ class _InventorySectionState extends State<InventorySection> {
     }
 
     return tables.first;
+  }
+
+  /// Whether [table] opens on the sheet whatever the cells switch says: a table with no
+  /// rows has nothing to summarize, and what it needs is to be filled. `null` (rows not
+  /// counted) isn't empty. It stays on the sheet until another table opens, so the
+  /// listing's count catching up with the rows just written doesn't swap the view
+  /// under the cursor.
+  bool _blank(TableLiteModel table) {
+    if (table.records == 0) _blankId = table.id;
+    if (_blankId != table.id) _blankId = null;
+
+    return _blankId == table.id;
   }
 
   void _select(String id) {
@@ -235,6 +251,7 @@ class _InventorySectionState extends State<InventorySection> {
 
     final table = _open(tables);
     final stage = service.importStage(table.id);
+    final blank = _blank(table);
 
     final parts = InventoryBarParts(
       selector: TableSelector(
@@ -243,10 +260,10 @@ class _InventorySectionState extends State<InventorySection> {
         onSelect: (table) => _select(table.id),
         stageOf: service.importStage
       ),
-      controls: const [InventoryViewToggle()],
+      // A blank table has only the sheet: the switch would have nothing to switch to.
+      controls: [if (!blank) const InventoryViewToggle()],
       actions: [
         TableOptionsButton(table: table),
-        const TransfersButton(),
         if (_importAction != null) ImportButton(action: _import, loading: _importing),
         Button(
           width: null,
@@ -274,7 +291,7 @@ class _InventorySectionState extends State<InventorySection> {
 
     return ValueListenableBuilder<InventoryView>(
       valueListenable: PreferencesService().inventoryView,
-      builder: (context, view, _) => switch (view) {
+      builder: (context, view, _) => switch (blank ? InventoryView.sheet : view) {
         InventoryView.summary => StockSummarySection(
           key: ValueKey("summary_${table.id}"),
           tableId: table.id,

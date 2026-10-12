@@ -109,8 +109,8 @@ class _ActionButton extends StatelessWidget {
 
     return FeedbackButton(
       action: action,
-      width: AppSize.action,
-      height: AppSize.action,
+      width: AppSize.button,
+      height: AppSize.button,
       color: scheme.surfaceOver,
       message: message,
       child: Center(child: Icon(

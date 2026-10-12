@@ -42,7 +42,7 @@ class ImportButton extends StatelessWidget {
         children: [
           SizedBox(
             width: AppSize.text * 1.2,
-            height: AppSize.button * 1.2,
+            height: AppSize.text * 1.2,
             child: busy
               ? CircularProgressIndicator(
                   strokeWidth: 2,

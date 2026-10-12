@@ -39,7 +39,7 @@ class TableSelector extends StatelessWidget {
     return Builder(builder: (anchor) => FeedbackButton(
       action: () => _open(anchor),
       color: scheme.input.fill,
-      height: AppSize.action,
+      height: AppSize.button,
       radius: AppSize.cornerInset(AppSize.gap),
       padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS),
       message: S.of(context).inventory_table_selector,

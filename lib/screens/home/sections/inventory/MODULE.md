@@ -15,17 +15,16 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 ## table_list/ — the section
 
 - `_table_list.dart` — `InventorySection`: resolves the open table (link → remembered → primary → first), builds the
-  bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table; an importing table shows its stage
+  bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table (a table with no rows: the sheet, no switch); an importing table shows its stage
   instead (`TablesService.importStage`); no table → `InventoryStart`. The bar's right end: table options (⋯), import, create (modal);
   their flows live here.
-- `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view: selector and controls left, the view's status centred, the view's then the section's actions against the right edge.
+- `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view: selector and controls left, the view's status centred, the view's then the section's actions against the right edge. Every control in it is `AppSize.button` tall (core's `Button` is).
 - `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables); `table_dot.dart` — `TableDot`.
 - `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`).
 - `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
 - `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
-- `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table.
+- `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches and `inventory.transfers`.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
-- `transfers_button.dart` — `TransfersButton`: to the transfers page, with `BadgePlace.inventoryTransfers`; only with several branches and `inventory.transfers`.
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts})`: owns that table's `StockSummaryService`, fixed column header over a `ListView`; header search → `MATCH`.
 - `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.

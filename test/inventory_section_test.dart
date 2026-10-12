@@ -19,6 +19,7 @@ import 'package:app/screens/home/sections/inventory/table_list/_table_list.dart'
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_start.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
+import 'package:app/screens/home/sections/inventory/table_list/view_toggle.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/settings/routes.dart';
@@ -154,6 +155,41 @@ void main() {
     // Only the bar's padding is left after create.
     final bar = tester.getTopRight(find.byType(InventoryBar)).dx;
     expect(tester.getTopRight(create).dx, closeTo(bar - AppSize.gap, 1));
+  });
+
+  testWidgets("every control of the bar is as tall as a button", (tester) async {
+    await _open(tester, HomeSection.inventory.path);
+
+    final controls = find.descendant(
+      of: find.byType(InventoryBar),
+      matching: find.byWidgetPredicate((widget) => widget is FeedbackButton || widget is Button)
+    );
+
+    expect(find.byType(InventoryViewToggle), findsOneWidget);
+    expect(controls, findsWidgets);
+    for (final element in controls.evaluate()) {
+      expect(tester.getSize(find.byWidget(element.widget)).height, closeTo(AppSize.button, 0.5));
+    }
+  });
+
+  testWidgets("a table with no rows has no cells switch: it only has the sheet", (tester) async {
+    Navis.navigate(HomeSection.inventory.path);
+
+    final source = _Inventory();
+    final tables = TablesService(source: source);
+    addTearDown(tables.dispose);
+
+    await tester.pumpWidget(_app(const InventorySection(), tables: tables));
+    await tester.pump();
+
+    // Seeded as importing so the bar is drawn without mounting a view (which reads).
+    tables.seedImport(_first, TableImportStage.preparing);
+    source.answer.complete(const [TableLiteModel(id: _first, title: "Computación", primary: true, records: 0)]);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text("Computación"), findsOneWidget);
+    expect(find.byType(InventoryViewToggle), findsNothing);
   });
 
   testWidgets("the bar's status sits in its middle", (tester) async {

@@ -5,17 +5,27 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
+import 'package:app/services/business/branch_service.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
+import 'package:app/screens/home/badges/badge_mark.dart';
+import 'package:app/screens/home/sections/inventory/transfers/_transfers.dart';
 import 'package:app/screens/modals/inventory/rename_table/_rename_table.dart';
 import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart';
 
 /// The open table's options, first of the inventory bar's actions (before import and
 /// create), with the dropdown it deploys (anchored to the button, which is why it is its
 /// own widget).
+///
+/// It also carries the way to the transfers between branches, last and only with another
+/// branch and `inventory.transfers` (cloud only): a page of the section, not an action of
+/// the bar. The shipments waiting to be received here mark the button itself, or they would
+/// go unseen behind the menu.
 ///
 /// It offers the three things that can be done to a table without opening it:
 ///
@@ -33,22 +43,37 @@ class TableOptionsButton extends StatelessWidget {
 
   final TableLiteModel table;
 
-  /// How much the button measures; by default that of an action.
+  /// How much the button measures; by default that of a button, like the rest of the bar.
   final double? size;
 
+  /// Listens to the singleton itself: the bar is drawn in places (tests, the sheet) that don't
+  /// provide it.
   @override
-  Widget build(BuildContext context) => FeedbackButton(
-    action: () => _open(context),
-    width: size ?? AppSize.action,
-    height: size ?? AppSize.action,
-    color: ThemeColor.of(context).surfaceOver,
-    message: S.of(context).table_options,
-    child: Center(child: Icon(
-      CI.dots_horizontal,
-      size: AppSize.text * 1.2,
-      color: ThemeColor.of(context).icon
-    ))
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: BranchService(),
+    builder: (context, _) {
+      final button = FeedbackButton(
+        action: () => _open(context),
+        width: size ?? AppSize.button,
+        height: size ?? AppSize.button,
+        color: ThemeColor.of(context).surfaceOver,
+        message: S.of(context).table_options,
+        child: Center(child: Icon(
+          CI.dots_horizontal,
+          size: AppSize.text * 1.2,
+          color: ThemeColor.of(context).icon
+        ))
+      );
+
+      return _transfers
+        ? BadgeCorner(place: BadgePlace.inventoryTransfers, dot: true, outside: true, child: button)
+        : button;
+    }
   );
+
+  /// Whether the transfers between branches are offered here.
+  static bool get _transfers =>
+    BranchService().choosable && CapabilityService().shows("inventory.transfers");
 
   /// Opens the dropdown anchored to the button. Without a search box and
   /// without a form's size ([dense]): they're three options, not a list.
@@ -71,6 +96,16 @@ class TableOptionsButton extends StatelessWidget {
           value: "delete",
           placeholder: S.of(context).delete_table,
           icon: CI.trash
+        ),
+        if (_transfers) SelectOption(
+          value: "transfers",
+          placeholder: S.of(context).inventory_transfers_open,
+          leading: BadgeCorner(
+            place: BadgePlace.inventoryTransfers,
+            dot: true,
+            outside: true,
+            child: Icon(CI.store, size: AppSize.text * 1.2, color: ThemeColor.of(context).icon)
+          )
         )
       ]
     );
@@ -84,6 +119,8 @@ class TableOptionsButton extends StatelessWidget {
         await _settings(context);
       case "delete":
         await _delete(context);
+      case "transfers":
+        Navis.push(context, StockTransfersSection.path);
     }
   }
 

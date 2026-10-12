@@ -21,8 +21,8 @@ class InventoryViewToggle extends StatelessWidget {
         action: () => PreferencesService().useInventoryView(
           on ? InventoryView.summary : InventoryView.sheet
         ),
-        width: AppSize.action,
-        height: AppSize.action,
+        width: AppSize.button,
+        height: AppSize.button,
         color: on ? scheme.primary : scheme.input.fill,
         radius: AppSize.cornerInset(AppSize.gap),
         message: on
