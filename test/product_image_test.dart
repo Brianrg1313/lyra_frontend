@@ -6,7 +6,7 @@ import 'package:app/services/inventory/product_image.dart';
 const String _kOne = "11111111-2222-3333-4444-555555555555";
 const String _kTwo = "66666666-7777-8888-9999-000000000000";
 
-/// Una foto tal como la devuelve el backend despues de subirla.
+/// A photo as the backend returns it after uploading it.
 Map<String, dynamic> _file(String id) => {
   "id": id,
   "scope": "media",
@@ -24,80 +24,91 @@ void main() {
 
   tearDown(() => CdnService().clear());
 
-  group('lo que una celda tiene guardado', () {
-    test('la lista de ids que escribe la api', () {
+  group('what a cell has stored', () {
+    test('the list of ids the api writes', () {
       final images = ProductImage.from([_kOne, _kTwo]);
 
       expect(images.length, 2);
-      // La primera es la portada, y ese orden es el que manda: lo decide el
-      // backend, no la pantalla.
+      // The first is the cover, and that order rules: the backend decides it,
+      // not the screen.
       expect(images.first.id, _kOne);
       expect(images.first.isStored, isTrue);
     });
 
-    test('un id suelto, de antes de que hubiera galerias', () {
+    test('a loose id, from before galleries existed', () {
       final images = ProductImage.from(_kOne);
 
       expect(images.length, 1);
       expect(images.single.id, _kOne);
     });
 
-    test('una direccion que trajo una importacion', () {
-      // No es un archivo nuestro: es una columna de la empresa. Se distingue
-      // porque las dos cosas se borran distinto.
+    test('an address an import brought', () {
+      // Not a file of ours: a column of the company's. Told apart because the
+      // two are deleted differently.
       final images = ProductImage.from("https://tienda.test/foto.jpg");
 
       expect(images.single.isStored, isFalse);
       expect(images.single.url, "https://tienda.test/foto.jpg");
     });
 
-    test('una celda vacia no tiene fotos', () {
+    test('a file name an import wrote waits for its file, and is kept', () {
+      // The backend swaps it for the stored id when the file arrives (`Ingest`):
+      // dropping it here would write the cell back without it.
+      final images = ProductImage.from(["airforceone-white.png", _kOne]);
+
+      expect(images.length, 2);
+      expect(images.first.isPending, isTrue);
+      expect(images.first.isStored, isFalse);
+      expect(images.first.url, "");
+      expect(ProductImage.valuesOf(images), ["airforceone-white.png", _kOne]);
+    });
+
+    test('an empty cell has no photos', () {
       expect(ProductImage.from(null), isEmpty);
       expect(ProductImage.from(""), isEmpty);
       expect(ProductImage.from(const []), isEmpty);
     });
 
-    test('lo que no se puede dibujar se deja afuera', () {
-      // Un resto de una importacion torcida no es una foto: la celda muestra lo
-      // que se puede bajar.
-      expect(ProductImage.from(["", "sin-forma-de-nada", _kOne]).length, 1);
+    test('what cannot be drawn nor waited for is left out', () {
+      // "sin foto" is what a company writes for none: not a photo, not a name.
+      expect(ProductImage.from(["", "sin foto", "no-shape-at-all", _kOne]).length, 1);
     });
   });
 
-  group('las direcciones', () {
-    test('se arman con la base que reparte /init', () {
-      // La columna guarda ids, no direcciones: una direccion guardada envejece
-      // el dia que cambia el CDN.
+  group('the addresses', () {
+    test('are built with the base /init hands out', () {
+      // The column stores ids, not addresses: a stored address ages the day
+      // the CDN changes.
       expect(
         ProductImage.from(_kOne).single.url,
         "https://cdn.test/rigel/media/$_kOne"
       );
     });
 
-    test('la miniatura es la que renderizo el backend', () {
+    test('the thumbnail is the one the backend rendered', () {
       expect(
         ProductImage.from(_kOne).single.thumbnail,
         "https://cdn.test/rigel/media/$_kOne@$kProductImageWidth"
       );
     });
 
-    test('una foto externa no tiene miniatura', () {
-      // No se la renderizo nadie: se baja tal como esta, que es lo unico que hay
-      // de ella.
+    test('an external photo has no thumbnail', () {
+      // Nobody rendered one: it is downloaded as it is, which is all there is
+      // of it.
       final image = ProductImage.from("https://tienda.test/foto.jpg").single;
 
       expect(image.thumbnail, image.url);
     });
 
-    test('sin base todavia no hay de donde bajarla', () {
+    test('with no base yet there is nowhere to download it from', () {
       CdnService().clear();
 
       expect(ProductImage.from(_kOne).single.url, "");
     });
   });
 
-  group('la galeria que contesta el backend', () {
-    test('se guarda como la lista de ids, en orden', () {
+  group('the gallery the backend answers', () {
+    test('is kept as the list of ids, in order', () {
       final images = ProductImage.fromResponse({
         "file": _file(_kTwo),
         "images": [_file(_kOne), _file(_kTwo)]
@@ -106,7 +117,7 @@ void main() {
       expect(ProductImage.valuesOf(images), [_kOne, _kTwo]);
     });
 
-    test('una foto externa se guarda como su direccion', () {
+    test('an external photo is kept as its address', () {
       final images = ProductImage.fromResponse({
         "images": [
           {"id": null, "scope": "external", "url": "https://tienda.test/foto.jpg"},
@@ -120,7 +131,19 @@ void main() {
       );
     });
 
-    test('un producto que se quedo sin fotos deja la celda vacia', () {
+    test('a name still missing its file is kept as the name', () {
+      final images = ProductImage.fromResponse({
+        "images": [
+          _file(_kOne),
+          {"id": null, "scope": "missing", "name": "camión-rojo.jpg"}
+        ]
+      });
+
+      expect(ProductImage.valuesOf(images), [_kOne, "camión-rojo.jpg"]);
+      expect(images.last.isPending, isTrue);
+    });
+
+    test('a product left with no photos leaves the cell empty', () {
       expect(ProductImage.fromResponse({"images": []}), isEmpty);
       expect(ProductImage.fromResponse(null), isEmpty);
     });

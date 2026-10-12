@@ -43,7 +43,7 @@ extension SheetImagePicks on SheetController {
     final picked = await showSelectMenu(
       context: anchor,
       options: [
-        if (cover != null) SelectOption(
+        if (cover != null && !cover.isPending) SelectOption(
           value: _kImageView,
           placeholder: S.of(anchor).product_table_view_image_view,
           icon: CI.eye

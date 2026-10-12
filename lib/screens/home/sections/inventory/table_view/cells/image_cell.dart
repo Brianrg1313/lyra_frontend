@@ -102,7 +102,9 @@ class ImageCell extends StatelessWidget {
       ? const Center(child: Loading())
       : cover == null
         ? _empty(sheet)
-        : _picture(sheet, cover)
+        : cover.isPending
+          ? _pending(sheet)
+          : _picture(sheet, cover)
   );
 
   /// The photo. It crops to the frame and fills it ([BoxFit.cover]): a product
@@ -120,6 +122,15 @@ class ImageCell extends StatelessWidget {
       errorBuilder: (context, error, stack) => _empty(sheet)
     )
   );
+
+  /// A file name the import wrote, waiting for its file (the inventory's pictures
+  /// panel finds it): a plain picture glyph, not the add one, since the cell
+  /// already says which photo goes there.
+  Widget _pending(SheetStyle sheet) => Center(child: Icon(
+    CI.image,
+    size: AppSize.text * 1.2,
+    color: sheet.scheme.text.secondary.withValues(alpha: 0.5)
+  ));
 
   /// What shows when the product has no photo: the same frame with the add
   /// icon, in gray. It's not a warning that something's missing —a photo is
