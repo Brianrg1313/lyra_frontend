@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
 import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/inventory/picture_import_model.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_record_request.dart';
@@ -88,6 +89,7 @@ enum TableViewStatus { idle, loading, ready, empty, error }
 class TableViewService extends ChangeNotifier {
   TableViewService({InventorySource? source}) : _injected = source {
     _unlisten = ConnectionService().on(TableReadyModel.event, _onReady);
+    _unlistenPictures = ConnectionService().on(PictureProgress.event, _onPictures);
   }
 
   final InventorySource? _injected;
@@ -136,6 +138,17 @@ class TableViewService extends ChangeNotifier {
   /// screen, so without this it would keep listening to a table nobody watches
   /// anymore.
   void Function()? _unlisten;
+
+  /// Unsubscribes the `image/progress` listener ([_onPictures]).
+  void Function()? _unlistenPictures;
+
+  /// The gathered re-read of the pages in view after pictures landed ([_onPictures]).
+  Timer? _picturesTimer;
+
+  /// How long `image/progress` notices are gathered into one re-read. The backend already
+  /// sends one per second at most; an import of a thousand pictures still re-reads the rows in
+  /// view every few seconds, not every second.
+  static const Duration _picturesGather = Duration(seconds: 3);
 
   /// `true` while a new item is being saved. Prevents re-entering [add] if it
   /// fires twice; the screen manages its own load state for the button.
@@ -649,10 +662,37 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
+  /// Pictures an import named became files of ours on some rows of [tables]
+  /// (`PictureProgress`). If this table is one of them, the pages in view are read again
+  /// **in place**: the rows stay drawn until their new values arrive, so the cells swap a
+  /// pending name or address for the stored photo without the sheet blinking.
+  void _onPictures(dynamic data) {
+    if (_structureStatus != TableStructureStatus.ready || _tableId == null) return;
+    if (!PictureProgress.fromJson(data).tables.contains(_tableId)) return;
+
+    _picturesTimer ??= Timer(_picturesGather, () {
+      _picturesTimer = null;
+      unawaited(_rereadPages());
+    });
+  }
+
+  /// Reads again every page in the cache, keeping what it holds until the answer replaces it.
+  Future<void> _rereadPages() async {
+    for (final page in List<int>.from(_cached)) {
+      _paging.forget(page);
+
+      if (_paging.request(_paging.startOf(page)) == page) await _loadPage(page);
+    }
+  }
+
   @override
   void dispose() {
     _unlisten?.call();
     _unlisten = null;
+    _unlistenPictures?.call();
+    _unlistenPictures = null;
+    _picturesTimer?.cancel();
+    _picturesTimer = null;
     super.dispose();
   }
 

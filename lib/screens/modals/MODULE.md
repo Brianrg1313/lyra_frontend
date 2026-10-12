@@ -118,6 +118,7 @@ through `Navigator.pop(context, value)`.
 - `edit_table_details/table_detail_field.dart` — `enum TableDetailField`: writable header data.
 - `import_table/_import_table.dart` — `ImportTableModal`: **chooses a source only**, does not import.
 - `import_table/source_row.dart` — `ImportSourceRow`.
+- `import_pictures/_import_pictures.dart` — `showImportPictures(context)`, `ImportPicturesModal` (side panel): reads `…/import/images/status`, re-read when the counters move; downloading (server / devices), file names missing (first 30 + count) with "choose a folder" (desktop) and "upload a .zip" (not web), failures with "try again" (`retry`).
 - `table_settings/_table_settings.dart` — `showTableSettings(context, tableId)`, `TableSettingsModal` (side panel over list or sheet).
 - `table_settings/summary_block.dart` — `TableSummaryBlock`, `TableDatesBlock`.
 - `table_settings/columns_block.dart` — `TableColumnsBlock`; `columns_table.dart` — `TableColumnsTable` (the agent

@@ -9,6 +9,7 @@ import 'package:core/core.dart';
 import 'package:core/button.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/inventory/picture_import_service.dart';
 import 'package:app/services/inventory/table_template_model.dart';
 import 'package:app/services/inventory/table_templates_service.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
@@ -73,6 +74,8 @@ Widget _app(Widget child, {required TablesService tables}) => MaterialApp(
     return Scaffold(body: MultiProvider(
       providers: [
         ChangeNotifierProvider<TablesService>.value(value: tables),
+        // Idle with no active company in the app's scope: it reads nothing.
+        ChangeNotifierProvider<PictureImportService>.value(value: PictureImportService()),
         ChangeNotifierProvider<BusinessService>.value(value: BusinessService()..seed({
           "keys": ["id", "name"],
           "values": [["1842", "Bodega"]]

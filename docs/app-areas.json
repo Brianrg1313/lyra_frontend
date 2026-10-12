@@ -208,12 +208,14 @@
       "action_modes": {
         "templates": ["cloud"],
         "transfers": ["cloud"],
-        "prices": ["cloud"]
+        "prices": ["cloud"],
+        "picture_import": ["cloud"]
       },
       "action_notes": {
         "templates": "Starting tables by the company's activity, offered while it has no table (the backend's catalogue; a master has none).",
         "transfers": "Stock sent to and received from another branch (`inventory.transfer`, `inventory.receive` in the catalog); a master is one site.",
         "prices": "A product's own price at a branch (`products.price` in the catalog); a master is one site.",
+        "picture_import": "The pictures an import names (addresses, file names) becoming files: this device downloads what the cloud was refused and uploads the named files from a folder or a zip (`inventory.pictures`). The queue is the cloud's.",
         "edit_table": "Rename, colour, header data and agent settings of a table.",
         "edit_columns": "Create, rename, retype, reorder and delete fields.",
         "edit_records": "Write cells and rows in the spreadsheet.",

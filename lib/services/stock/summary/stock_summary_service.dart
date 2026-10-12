@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 // SERVICES
+import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/inventory/picture_import_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
@@ -51,7 +55,15 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// it. The shell remounts the section when changing company, so there is
 /// nothing to invalidate on its own account.
 class StockSummaryService extends ChangeNotifier {
-  StockSummaryService({StockSource? source, this.tableId = ""}) : _injected = source;
+  StockSummaryService({StockSource? source, this.tableId = ""}) : _injected = source {
+    _unlistenPictures = ConnectionService().on(PictureProgress.event, _onPictures);
+  }
+
+  /// Unsubscribes `image/progress` ([_onPictures]).
+  void Function()? _unlistenPictures;
+
+  /// The gathered re-read after pictures landed on this table.
+  Timer? _picturesTimer;
 
   final StockSource? _injected;
 
@@ -233,6 +245,27 @@ class StockSummaryService extends ChangeNotifier {
 
     return _read(1, reset: true, quiet: true);
   }
+  /// Pictures an import named became files of ours on some of [tables]' rows
+  /// (`PictureProgress`): the covers are re-read the quiet way [syncColumns] does, gathered a
+  /// few seconds so an import of a thousand pictures is not a read per second.
+  void _onPictures(dynamic data) {
+    if (_table.isEmpty || !PictureProgress.fromJson(data).tables.contains(_table)) return;
+
+    _picturesTimer ??= Timer(const Duration(seconds: 3), () {
+      _picturesTimer = null;
+      unawaited(syncColumns(_table));
+    });
+  }
+
+  @override
+  void dispose() {
+    _unlistenPictures?.call();
+    _unlistenPictures = null;
+    _picturesTimer?.cancel();
+    _picturesTimer = null;
+    super.dispose();
+  }
+
 
   /// Writes an inventory movement on a product of the summary and leaves the
   /// row saying what ended up.

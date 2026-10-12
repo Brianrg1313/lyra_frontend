@@ -25,6 +25,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches and `inventory.transfers`.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
+- `pictures_button.dart` — `PicturesButton`: the imported pictures' state (downloading / without their file / failed), opens `showImportPictures`; in the bar only while something is pending or failed (`PicturesButton.shown`). The section's first frame runs `PictureImportService.check`.
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts})`: owns that table's `StockSummaryService`, fixed column header over a `ListView`; header search → `MATCH`.
 - `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
@@ -81,6 +82,11 @@ backend prepares it between `table/normalizing` and `table/ready` (~30 s), which
 `TablesService` listens to (imports from any device show up). Rows upload after `table/ready`
 (`POST /import/records/<format>/`). **A table with an `importStage` does not open** (it would
 look like a failed import and get re-imported).
+
+The pictures an image column names become files behind the import (backend `Ingest`); this device's
+part is `PictureImportService` (`lib/services/MODULE.md`): it downloads what the cloud was refused with
+nobody asking, and the panel (`modals/inventory/import_pictures`) hands over the named files from a folder or a zip.
+A name still waiting draws as a plain picture glyph in its cell (`ProductImage.isPending`).
 
 ## Conventions
 

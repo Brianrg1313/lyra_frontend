@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart' show BuildContext;
 
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/inventory/import_file.dart';
+import 'package:app/services/inventory/picture_import_service.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_normalizing_model.dart';
@@ -566,6 +567,9 @@ class TablesService extends ChangeNotifier {
 
     if (ok) {
       FloatFlag.of().message(done);
+
+      // The pictures the rows name by file are most often next to the spreadsheet.
+      unawaited(PictureImportService().afterImport(tableId, file));
     } else {
       FloatFlag.of().error(message: failure);
     }

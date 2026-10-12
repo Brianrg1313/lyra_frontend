@@ -363,7 +363,10 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `kLocalImportExtensions`: `.xlsx`, `.xlsm`, `.csv`), `importFormatOf`, `pickImportFile()`, `importTableName(path)`.
 - `import_source.dart` — `ImportSource`, `ImportSourceGroup`.
 - `product_date.dart` — `ProductDate`, `DateSeparatorFormatter`.
-- `product_image.dart` — `ProductImage`: thumbnail sizing/URLs.
+- `product_image.dart` — `ProductImage`: thumbnail sizing/URLs; a stored id, an import's address, or a file name waiting for its file (`missing`, kept in the cell).
+- `picture_key.dart` — `pictureKey` (equal to the backend's `Ingest.key`), `isPictureName`, `looksLikePicture` (bytes sniff).
+- `picture_import_model.dart` — `PictureProgress` (`image/progress` and `…/status` counters, changed `tables`), `PictureImportStatus` (+ `names`, `failures`), `PictureFailure`.
+- `picture_import_service.dart` — `PictureImportService` (singleton, app scope; cloud only, `inventory.picture_import` + `inventory.pictures`): on `image/progress` `client` > 0 claims, downloads from the device and delivers (or fails) until nothing is left (never on the web); `afterImport` looks in the spreadsheet's folder for the names it wrote; `lookIn(folder)`, `unzip(zip)` (unpacked here, size caps) upload only files a missing name keys to `match`; `read`, `retry`, `check`. Calls `api` directly.
 - `sku_generator.dart` — `nextSku(...)`.
 
 ## stock/ — reading and moving inventory
@@ -382,10 +385,10 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `transfers/stock_transfer_request.dart` — `createTransferRequest` (`SEND` only to send at once, lines without units dropped), `editTransferRequest`, `transferActionRequest` (send / cancel), `receiveTransferRequest` (only the lines counted short), `searchTransfersRequest`.
 - `transfers/stock_transfers_service.dart` — `StockTransfersService` (+ status, `StockTransferSide`, `TransferProduct`): one side and status at a time (opens on incoming `sent`), paging, writes answer the row (`_place`), `transfer/changed` replaces or rereads, `onRestored` rereads; `canSend`/`canReceive` from the person's own grant (`PermissionsSource.mine`: `inventory.transfer`, `inventory.receive`); `nameOf` (the table's summary, first text column, 200 rows, once per table), `searchProducts` (primary table, free = stock − reserved), `destinations`. Owned by the transfers page.
 - `tables/tables_service.dart` — `TablesService` (+ `TablesStatus`, `TableImportResult`,
-  `TableImportStage`): list, create, rename, delete, import; listens to `table/normalizing|ready`.
+  `TableImportStage`): list, create, rename, delete, import (then `PictureImportService.afterImport`); listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
 - `tables/table_view_service.dart` — `TableViewService` (+ `TableStructureStatus`, `TableViewStatus`,
-  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/`, `/records/images/`.
+  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/`, `/records/images/`; `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
 - `tables/table_lite_model.dart` — list row.
 - `tables/table_detail_model.dart` — `TableDetailModel` and its summaries (`TableColumnsSummary`,
   `TableAgentSummary`, `TableChannelsSummary`, `TableChannelReader`, `TableFieldVisibility`, …).
@@ -395,7 +398,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_normalizing_model.dart` / `table_ready_model.dart` — `table/normalizing` / `table/ready` notices.
 - `prices/branch_price_model.dart` — `BranchPrice` (a product's own price at a branch: `price` null = the catalog's, `inheritsDiscount`, `discount` null = no offer there), `setBranchPriceRequest` (`DISCOUNT` null with `clearDiscount`), `removeBranchPriceRequest`.
 - `prices/branch_prices_service.dart` — `BranchPricesService({productId, tableId})` (+ status): every branch's own prices of one product, `here` (the branch worked in), `canPrice` (`products.price` from the person's grant), `set`/`remove` (the header's branch only; reread after), `price/changed` for the product rereads. Owned by its panel.
-- `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`).
+- `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`); `image/progress` naming its table is a quiet `syncColumns`.
 - `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement`, `StockBalance`, `StockOperation`, `StockReason`.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move
@@ -555,6 +558,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/channels/{,providers/,detail/$id}` · `/connections/{,providers/,detail/$id}` · `/knowledge/{,products/}`
 `/inventory/products/builder/{list,structure,details,fields,normalize}/` ·
 `/inventory/products/records/{list,manage,images}/` · `/inventory/products/import/{structure,records}/$format/` ·
+`/inventory/products/import/images/{status,claim,deliver,fail,match,retry}/` ·
 `/inventory/stock/summary/` · `/inventory/stock/transfers{,/receive,/search}` · `/inventory/products/prices`
 `/sales/` · `/sales/stages/` · `/sales/detail/$id` · `/sales/fulfillment/` · `/chats/stage/`
 `/pos/` · `/pos/catalog/` · `/pos/methods/` · `/pos/invoices/{,items,close,cancel}`

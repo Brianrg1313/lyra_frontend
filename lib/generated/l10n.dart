@@ -24143,6 +24143,238 @@ class S {
       args: [],
     );
   }
+
+  /// `Imported photos`
+  String get import_pictures_title {
+    return Intl.message(
+      'Imported photos',
+      name: 'import_pictures_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{1 photo downloading} other{{count} photos downloading}}`
+  String import_pictures_downloading(num count) {
+    return Intl.plural(
+      count,
+      one: '1 photo downloading',
+      other: '$count photos downloading',
+      name: 'import_pictures_downloading',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 photo without its file} other{{count} photos without their file}}`
+  String import_pictures_missing(num count) {
+    return Intl.plural(
+      count,
+      one: '1 photo without its file',
+      other: '$count photos without their file',
+      name: 'import_pictures_missing',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{1 photo failed} other{{count} photos failed}}`
+  String import_pictures_failed(num count) {
+    return Intl.plural(
+      count,
+      one: '1 photo failed',
+      other: '$count photos failed',
+      name: 'import_pictures_failed',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Downloading`
+  String get import_pictures_downloading_title {
+    return Intl.message(
+      'Downloading',
+      name: 'import_pictures_downloading_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The addresses your spreadsheets name. What a site refuses to the server, the company's apps download on their own.`
+  String get import_pictures_downloading_hint {
+    return Intl.message(
+      'The addresses your spreadsheets name. What a site refuses to the server, the company\'s apps download on their own.',
+      name: 'import_pictures_downloading_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By the server`
+  String get import_pictures_server {
+    return Intl.message(
+      'By the server',
+      name: 'import_pictures_server',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By the company's apps`
+  String get import_pictures_device {
+    return Intl.message(
+      'By the company\'s apps',
+      name: 'import_pictures_device',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Named by file`
+  String get import_pictures_missing_title {
+    return Intl.message(
+      'Named by file',
+      name: 'import_pictures_missing_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your spreadsheets name these files. Point to the folder or the .zip that holds them: only the files named here are uploaded.`
+  String get import_pictures_missing_hint {
+    return Intl.message(
+      'Your spreadsheets name these files. Point to the folder or the .zip that holds them: only the files named here are uploaded.',
+      name: 'import_pictures_missing_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose a folder`
+  String get import_pictures_folder {
+    return Intl.message(
+      'Choose a folder',
+      name: 'import_pictures_folder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upload a .zip`
+  String get import_pictures_zip {
+    return Intl.message(
+      'Upload a .zip',
+      name: 'import_pictures_zip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Zip archives`
+  String get import_pictures_zip_type {
+    return Intl.message(
+      'Zip archives',
+      name: 'import_pictures_zip_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Uploading these files needs the desktop or mobile app`
+  String get import_pictures_desktop_only {
+    return Intl.message(
+      'Uploading these files needs the desktop or mobile app',
+      name: 'import_pictures_desktop_only',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not be downloaded`
+  String get import_pictures_failed_title {
+    return Intl.message(
+      'Could not be downloaded',
+      name: 'import_pictures_failed_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Neither the server nor the company's apps could get these.`
+  String get import_pictures_failed_hint {
+    return Intl.message(
+      'Neither the server nor the company\'s apps could get these.',
+      name: 'import_pictures_failed_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get import_pictures_retry {
+    return Intl.message(
+      'Try again',
+      name: 'import_pictures_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} more`
+  String import_pictures_more(Object count) {
+    return Intl.message(
+      '$count more',
+      name: 'import_pictures_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =0{No file matched a missing photo} =1{1 photo found} other{{count} photos found}}`
+  String import_pictures_matched(num count) {
+    return Intl.plural(
+      count,
+      zero: 'No file matched a missing photo',
+      one: '1 photo found',
+      other: '$count photos found',
+      name: 'import_pictures_matched',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =0{Nothing to try again} =1{1 photo queued again} other{{count} photos queued again}}`
+  String import_pictures_retried(num count) {
+    return Intl.plural(
+      count,
+      zero: 'Nothing to try again',
+      one: '1 photo queued again',
+      other: '$count photos queued again',
+      name: 'import_pictures_retried',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Every imported photo is in place`
+  String get import_pictures_empty {
+    return Intl.message(
+      'Every imported photo is in place',
+      name: 'import_pictures_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The photos' status could not be read`
+  String get import_pictures_error {
+    return Intl.message(
+      'The photos\' status could not be read',
+      name: 'import_pictures_error',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

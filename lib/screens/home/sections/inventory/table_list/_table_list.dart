@@ -9,6 +9,7 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/import_source.dart';
+import 'package:app/services/inventory/picture_import_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
@@ -24,6 +25,7 @@ import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
 import './import_button.dart';
 import './inventory_bar.dart';
 import './inventory_start.dart';
+import './pictures_button.dart';
 import './table_options.dart';
 import './table_selector.dart';
 import './view_toggle.dart';
@@ -79,9 +81,13 @@ class _InventorySectionState extends State<InventorySection> {
     _picked = Navis.currentArgs?["id"];
 
     // Loads notify their listeners; deferred to the first frame so a rebuild
-    // isn't triggered while the tree is still being mounted.
+    // isn't triggered while the tree is still being mounted. The pictures' counters too:
+    // opening the inventory is when a device with some waiting takes its part.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _load();
+      if (!mounted) return;
+
+      _load();
+      context.read<PictureImportService>().check();
     });
   }
 
@@ -263,6 +269,7 @@ class _InventorySectionState extends State<InventorySection> {
       // A blank table has only the sheet: the switch would have nothing to switch to.
       controls: [if (!blank) const InventoryViewToggle()],
       actions: [
+        if (PicturesButton.shown(context.watch<PictureImportService>())) const PicturesButton(),
         TableOptionsButton(table: table),
         if (_importAction != null) ImportButton(action: _import, loading: _importing),
         Button(

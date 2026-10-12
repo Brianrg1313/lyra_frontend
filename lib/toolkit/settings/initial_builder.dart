@@ -25,6 +25,7 @@ import 'package:app/services/channels/channels_service.dart';
 import 'package:app/services/connections/connection_catalog_service.dart';
 import 'package:app/services/connections/connections_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
+import 'package:app/services/inventory/picture_import_service.dart';
 
 /// Single instance of the client.
 ///
@@ -103,6 +104,9 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // list and the creation screen, so it lives at the app's scope and not
     // the section's.
     ChangeNotifierProvider(create: (_) => TablesService()),
+    // Listens to `image/progress` whatever section is open: it is this device's half of
+    // the imported pictures, and it works with nobody looking.
+    ChangeNotifierProvider.value(value: PictureImportService()),
     // Same reason as the tables: the list's cache has to survive navigation
     // between the channel list and a channel's form.
     ChangeNotifierProvider(create: (_) => ChannelsService()),
