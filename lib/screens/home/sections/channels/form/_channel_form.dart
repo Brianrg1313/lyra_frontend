@@ -30,9 +30,9 @@ import 'package:app/screens/home/sections/channels/form/widgets/missing_banner.d
 /// (which channel reads this table) and shares the home shell, so the
 /// sidebar option stays highlighted.
 ///
-/// **Creating one is not here any more.** It moved to a side panel
+/// **Creating one is not here any more.** It moved to a step-by-step modal
 /// (`showCreateChannel`, in `lib/screens/modals/channels/create_channel`): a create
-/// starts from nothing and fits a panel; an edit opens against a channel that
+/// starts from nothing and goes one question at a time; an edit opens against a channel that
 /// already has credentials, a role, sources and possibly things missing, and
 /// reads better as its own page. The two used to be the same screen, told
 /// apart by whether the URL carried an id.

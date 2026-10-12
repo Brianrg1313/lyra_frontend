@@ -24,9 +24,9 @@ enum ChannelPresetOffer {
 /// handles, so a company with no channel connects one by pasting its tokens
 /// (or scanning a QR) instead of walking through every block of the form.
 ///
-/// It only **fills** the create panel (`showCreateChannel`'s `preset`): the
-/// panel still shows every block, so anything here can be changed before
-/// saving. The network itself comes from the backend catalog like always —
+/// It only **fills** the create modal (`showCreateChannel`'s `preset`), which
+/// then opens past the network step; every step is still there, so anything
+/// here can be changed before saving. The network itself comes from the backend catalog like always —
 /// a preset names a provider code, it does not describe one.
 ///
 /// Every preset sells: it is what a channel is connected for the first time

@@ -15,16 +15,19 @@ import 'package:app/toolkit/toolkit.dart';
 /// widths change, never the tree's shape: the credential and table inputs
 /// live in [child], and an `InputController` does not survive a remount (see
 /// `ChannelFormSection._body`).
+///
+/// Without [label] the controls take the whole width: the create modal asks
+/// one decision per page, and the page's own title already names it.
 class ChannelFormRow extends StatelessWidget {
   const ChannelFormRow({
     super.key,
-    required this.label,
+    this.label,
     required this.child,
     this.note,
     this.alignToControl = true
   });
 
-  final String label;
+  final String? label;
   final Widget child;
   final String? note;
 
@@ -44,12 +47,13 @@ class ChannelFormRow extends StatelessWidget {
         ? constraints.maxWidth
         : _sideBySide;
 
-      final side = available >= _sideBySide;
+      final label = this.label;
+      final side = label != null && available >= _sideBySide;
 
       return Wrap(
         runSpacing: AppSize.gap,
         children: [
-          SizedBox(
+          if (label != null) SizedBox(
             width: side ? labelWidth : available,
             child: Padding(
               padding: EdgeInsets.only(

@@ -4,7 +4,7 @@
 **Role** AI channels: networks the business answers on, what each knows and can do. Content of
 the `channels` home section plus its edit sub-page.
 **Services** `ChannelsService`, `ChannelCatalogService` (`lib/services/channels`).
-**Other entry points** Create: `lib/screens/modals/channels/create_channel`. Detail/edit in
+**Other entry points** Create (step-by-step modal; reuses `ProviderPicker`, `CredentialsBlock`, `DataTableSelect`, `PaymentPickerNote`): `lib/screens/modals/channels/create_channel`. Detail/edit in
 place: `lib/screens/modals/channels/channel_detail`. Both reuse this module's `form/` controller and blocks.
 
 ## Routing
@@ -46,7 +46,7 @@ Every block is one `ChannelFormRow` (label left, controls, one note); single cho
 - `blocks/payment_picker.dart` — `PaymentPicker`: multi-select over `MoneyMethodsService.methods`
   (none is valid). Each host provides its own `MoneyMethodsService`. No accounts → points to finance, with the `field.payment_method` dot.
 - `blocks/tools_picker.dart` — `ToolsPicker`: `ChannelTool` chips (voice, image, video, documents); note: the cost.
-- `widgets/form_row.dart` — `ChannelFormRow` (label beside the controls, above them under `action * 9`; same tree either way), `ChannelFormNote`.
+- `widgets/form_row.dart` — `ChannelFormRow` (label beside the controls, above them under `action * 9`; same tree either way; no label = controls full width, the create steps), `ChannelFormNote`.
 - `widgets/option_chip.dart` — `OptionChip` (button-tall choice; `multiple` swaps the icon for a check), `OptionChips` (wrap).
 - `widgets/network_tile.dart` — `NetworkTile`: the network's large square tile.
 - `FormBlock`, `OptionCard`, `OptionGrid` (`sections/_section/form/`, home module): connections and `ChannelAccount` only.

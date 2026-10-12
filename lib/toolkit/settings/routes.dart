@@ -202,7 +202,7 @@ final List<ScreenRoute> routes = [
     page: (_) => const Home()
   ),
   // Settings of an already-connected channel. Creating one is not a route any
-  // more — it opens as a side panel (`showCreateChannel`) over the section —
+  // more — it opens as a step-by-step modal (`showCreateChannel`) over the section —
   // so this is the only channel form route left, with the channel resolved
   // from the `:id` segment.
   ScreenRoute(

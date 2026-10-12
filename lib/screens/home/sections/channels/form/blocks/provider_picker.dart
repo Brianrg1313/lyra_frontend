@@ -38,9 +38,13 @@ import 'package:app/screens/home/sections/channels/form/widgets/network_tile.dar
 /// nothing there; the backend rejects it and here it is simply not offered. In
 /// its place it shows which one it is, disabled.
 class ProviderPicker extends StatelessWidget {
-  const ProviderPicker({super.key, required this.controller});
+  const ProviderPicker({super.key, required this.controller, this.labeled = true});
 
   final ChannelFormController controller;
+
+  /// Off where the page's title already asks for the network (the create
+  /// modal's first step).
+  final bool labeled;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +53,7 @@ class ProviderPicker extends StatelessWidget {
     return ValueListenableBuilder<String>(
       valueListenable: controller.provider,
       builder: (context, selected, _) => ChannelFormRow(
-        label: S.of(context).channel_type_title,
+        label: labeled ? S.of(context).channel_type_title : null,
         note: _note(context, catalog, selected),
         child: switch (catalog.status) {
           ChannelCatalogStatus.idle || ChannelCatalogStatus.loading =>

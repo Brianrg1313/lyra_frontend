@@ -28,11 +28,16 @@ class CredentialsBlock extends StatelessWidget {
   const CredentialsBlock({
     super.key,
     required this.controller,
-    required this.schema
+    required this.schema,
+    this.labeled = true
   });
 
   final ChannelFormController controller;
   final ChannelProviderModel schema;
+
+  /// Off where the page's title already says what is asked (the create
+  /// modal's connect step).
+  final bool labeled;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +57,7 @@ class CredentialsBlock extends StatelessWidget {
     }
 
     return ChannelFormRow(
-      label: S.of(context).channel_credentials_title,
+      label: labeled ? S.of(context).channel_credentials_title : null,
       note: S.of(context).channel_credentials_subtitle,
       alignToControl: false,
       child: Column(

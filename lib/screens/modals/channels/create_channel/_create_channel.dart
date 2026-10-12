@@ -1,11 +1,8 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
-import 'package:core/button.dart';
 
 // SERVICES
 import 'package:app/services/business/business_service.dart';
@@ -16,26 +13,29 @@ import 'package:app/services/channels/channels_service.dart';
 import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
-import 'package:app/screens/home/sections/channels/form/blocks/agent_picker.dart';
+// WIDGETS
 import 'package:app/screens/home/sections/channels/form/blocks/credentials_block.dart';
-import 'package:app/screens/home/sections/channels/form/blocks/data_picker.dart';
-import 'package:app/screens/home/sections/channels/form/blocks/payment_picker.dart';
 import 'package:app/screens/home/sections/channels/form/blocks/provider_picker.dart';
-import 'package:app/screens/home/sections/channels/form/blocks/tools_picker.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
 
-/// Opens the creation of a channel in a modal centered over the page.
+import './step_art.dart';
+import './step_bodies.dart';
+
+/// Opens the creation of a channel as a [ModalSteps]: one question per page,
+/// under an image, with back and next.
 ///
-/// It used to be a whole sub-page ([ChannelFormSection]'s old create route),
-/// then a side panel. Creating is a short task that starts from nothing — pick
-/// a network, paste its tokens, leave the rest as it comes — so it gets the
-/// window's attention instead of sharing it with the list next to it.
+/// It was one long form, every block a row. Whoever connects their first
+/// channel is often not at ease with software, and a page of ten decisions
+/// with tokens in the middle read as a wall; one question at a time, each
+/// answer explained where it is picked, reads as a conversation. The same
+/// controller underneath, so what is sent did not change.
 ///
 /// Editing stays a page (`ChannelFormSection`) and a detail panel: they open
 /// against a channel that already exists and is read next to the others.
 ///
 /// A [preset] opens it already filled (network, role, tools, and the
-/// company's main table to read from), still editable.
+/// company's main table to read from), on the step after the network, which
+/// the preset already chose; back still reaches it.
 ///
 /// Returns the new channel's id, so the caller reloads its list (and can pair
 /// a WhatsApp Personal one); `null` if the modal was closed without saving.
@@ -43,19 +43,18 @@ Future<String?> showCreateChannel(
   BuildContext context, {
   ChannelPreset? preset
 }) async {
-  final created = await showModal(
+  final created = await showStepModal(
     context: context,
-    title: S.of(context).create_channel,
-    size: ModalSize.large,
     builder: (context) => CreateChannelModal(preset: preset)
   );
 
   return created is String ? created : null;
 }
 
-/// The form itself, one decision per row ([ChannelFormRow]): the connection
-/// (network and its credentials) above a line, what the agent does below it,
-/// and the button outside the scroll so it is always at hand.
+/// The steps: network, its connection, the agent's job, what it reads, where
+/// customers pay, and what else it understands. Only the network and the
+/// table (when reading one) stop the way forward; the rest can be left as it
+/// comes.
 class CreateChannelModal extends StatefulWidget {
   const CreateChannelModal({super.key, this.preset});
 
@@ -148,69 +147,95 @@ class _CreateChannelModalState extends State<CreateChannelModal> {
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider<MoneyMethodsService>
-    .value(value: _methods, child: _form());
-
-  /// Widest the form gets: the label column and four network tiles beside
-  /// it. A narrower window takes what the modal may have.
-  static double get _width => AppSize.action * 16;
-
-  /// Tallest the form gets; the rows scroll inside it.
-  static double get _height => AppSize.action * 15;
-
-  /// The rows themselves, under the accounts provider.
-  Widget _form() {
-    final width = math.min(
-      _width,
-      ModalSize.large.maxWidth(context) - AppSize.padding * 2
-    ).floorToDouble();
-
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: width,
-        maxWidth: width,
-        maxHeight: _height
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Flexible(child: ScrollableWidget(
-            padding: EdgeInsets.only(bottom: AppSize.padding),
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ProviderPicker(controller: _controller),
-              // The credentials depend on the network: until one is chosen
-              // there are no fields to draw, because each network asks for
-              // its own.
-              ValueListenableBuilder<String>(
-                valueListenable: _controller.provider,
-                builder: (context, code, _) {
-                  final schema = _schemaOf(code);
-
-                  if (schema == null) return const SizedBox.shrink();
-
-                  return CredentialsBlock(controller: _controller, schema: schema);
-                }
-              ),
-              Separator.horizontal(
-                color: ThemeColor.of(context).line,
-                margin: EdgeInsets.only(bottom: AppSize.spaceM)
-              ),
-              AgentPicker(controller: _controller),
-              DataPicker(controller: _controller),
-              PaymentPicker(controller: _controller),
-              ToolsPicker(controller: _controller)
-            ]
-          )),
-          SizedBox(height: AppSize.spaceS),
-          Button(
-            title: S.of(context).create_channel,
-            loading: _controller.saving,
-            action: _submit
-          )
-        ]
+    .value(
+      value: _methods,
+      // The connect step's title, image and fields follow the network.
+      child: ValueListenableBuilder<String>(
+        valueListenable: _controller.provider,
+        builder: (context, code, _) => _steps(code)
       )
     );
+
+  Widget _steps(String code) {
+    final s = S.of(context);
+    final schema = _schemaOf(code);
+    final personal = code == ChannelProviderModel.whatsappPersonalCode;
+
+    return ModalSteps(
+      initialStep: widget.preset == null ? 0 : 1,
+      height: AppSize.action * 8,
+      stepLabel: (step, count) => s.channel_step_label(step, count),
+      nextText: s.next,
+      backText: s.back,
+      cancelText: s.cancel,
+      finishText: s.create_channel,
+      onFinish: _submit,
+      steps: [
+        ModalStep(
+          title: s.channel_step_network_title,
+          subtitle: s.channel_step_network_subtitle,
+          image: const StepArt(gradient: "gradient-1.png", icon: CI.chat),
+          validate: _hasNetwork,
+          builder: (_) => ProviderPicker(controller: _controller, labeled: false)
+        ),
+        ModalStep(
+          title: personal ? s.channel_step_qr_title : s.channel_step_connect_title,
+          subtitle: personal ? s.channel_step_qr_subtitle : s.channel_step_connect_subtitle,
+          image: StepArt(
+            gradient: "gradient-2.png",
+            icon: personal ? CI.qr_code : schema?.icon ?? CI.link
+          ),
+          builder: (_) => personal
+            ? const QrStep()
+            : schema == null
+              ? const SizedBox.shrink()
+              : CredentialsBlock(controller: _controller, schema: schema, labeled: false)
+        ),
+        ModalStep(
+          title: s.channel_step_role_title,
+          subtitle: s.channel_step_role_subtitle,
+          image: const StepArt(gradient: "gradient-3.png", icon: CI.ia),
+          builder: (_) => RoleStep(controller: _controller)
+        ),
+        ModalStep(
+          title: s.channel_step_source_title,
+          subtitle: s.channel_step_source_subtitle,
+          image: const StepArt(gradient: "gradient-1.png", icon: CI.inventory),
+          validate: _hasTable,
+          builder: (_) => SourceStep(controller: _controller)
+        ),
+        ModalStep(
+          title: s.channel_step_payments_title,
+          subtitle: s.channel_step_payments_subtitle,
+          image: const StepArt(gradient: "gradient-2.png", icon: CI.wallet),
+          builder: (_) => PaymentsStep(controller: _controller)
+        ),
+        ModalStep(
+          title: s.channel_step_tools_title,
+          subtitle: s.channel_step_tools_subtitle,
+          image: const StepArt(gradient: "gradient-3.png", icon: CI.microphone),
+          builder: (_) => ToolsStep(controller: _controller)
+        )
+      ]
+    );
+  }
+
+  /// Everything else follows from the network: without one there is nothing
+  /// to connect.
+  bool _hasNetwork() {
+    if (_schemaOf(_controller.provider.value) != null) return true;
+
+    FloatFlag.of(context).error(message: S.of(context).channel_type_missing);
+    return false;
+  }
+
+  /// Reading "a product table" without saying which leaves the agent with
+  /// nothing to read: not half-configured, misconfigured.
+  bool _hasTable() {
+    if (!_controller.source.value.needsTable || _controller.tableId.isNotEmpty) return true;
+
+    FloatFlag.of(context).error(message: S.of(context).channel_source_missing);
+    return false;
   }
 
   ChannelProviderModel? _schemaOf(String code) =>
@@ -227,21 +252,9 @@ class _CreateChannelModalState extends State<CreateChannelModal> {
   Future<void> _submit() async {
     if (_controller.saving.value) return;
 
-    final schema = _schemaOf(_controller.provider.value);
-
-    if (schema == null) {
-      FloatFlag.of(context).error(
-        message: S.of(context).channel_type_missing
-      );
-      return;
-    }
-
-    if (_controller.source.value.needsTable && _controller.tableId.isEmpty) {
-      FloatFlag.of(context).error(
-        message: S.of(context).channel_source_missing
-      );
-      return;
-    }
+    // Checked again: a preset opens past the network step.
+    if (!_hasNetwork() || !_hasTable()) return;
+    final schema = _schemaOf(_controller.provider.value)!;
 
     _controller.busy(true);
 

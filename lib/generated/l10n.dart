@@ -18787,6 +18787,186 @@ class S {
     );
   }
 
+  /// `Step {step} of {count}`
+  String channel_step_label(Object step, Object count) {
+    return Intl.message(
+      'Step $step of $count',
+      name: 'channel_step_label',
+      desc: '',
+      args: [step, count],
+    );
+  }
+
+  /// `Where do your customers write to you?`
+  String get channel_step_network_title {
+    return Intl.message(
+      'Where do your customers write to you?',
+      name: 'channel_step_network_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick the app. Lyra will answer the messages that arrive there.`
+  String get channel_step_network_subtitle {
+    return Intl.message(
+      'Pick the app. Lyra will answer the messages that arrive there.',
+      name: 'channel_step_network_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect your account`
+  String get channel_step_connect_title {
+    return Intl.message(
+      'Connect your account',
+      name: 'channel_step_connect_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paste the keys the network gives you. Don't have them yet? Leave them empty and add them later.`
+  String get channel_step_connect_subtitle {
+    return Intl.message(
+      'Paste the keys the network gives you. Don\'t have them yet? Leave them empty and add them later.',
+      name: 'channel_step_connect_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Link your number`
+  String get channel_step_qr_title {
+    return Intl.message(
+      'Link your number',
+      name: 'channel_step_qr_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There's nothing to paste: you'll link your phone with a QR code, like on WhatsApp Web.`
+  String get channel_step_qr_subtitle {
+    return Intl.message(
+      'There\'s nothing to paste: you\'ll link your phone with a QR code, like on WhatsApp Web.',
+      name: 'channel_step_qr_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Finish these steps and create the channel`
+  String get channel_step_qr_create {
+    return Intl.message(
+      'Finish these steps and create the channel',
+      name: 'channel_step_qr_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open WhatsApp on your phone and scan the code that appears`
+  String get channel_step_qr_scan {
+    return Intl.message(
+      'Open WhatsApp on your phone and scan the code that appears',
+      name: 'channel_step_qr_scan',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Done: Lyra starts answering on your number`
+  String get channel_step_qr_done {
+    return Intl.message(
+      'Done: Lyra starts answering on your number',
+      name: 'channel_step_qr_done',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What should Lyra do here?`
+  String get channel_step_role_title {
+    return Intl.message(
+      'What should Lyra do here?',
+      name: 'channel_step_role_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose its job on this channel. You can change it later.`
+  String get channel_step_role_subtitle {
+    return Intl.message(
+      'Choose its job on this channel. You can change it later.',
+      name: 'channel_step_role_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where does Lyra get its answers?`
+  String get channel_step_source_title {
+    return Intl.message(
+      'Where does Lyra get its answers?',
+      name: 'channel_step_source_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With your products at hand it gives real prices and stock instead of guessing.`
+  String get channel_step_source_subtitle {
+    return Intl.message(
+      'With your products at hand it gives real prices and stock instead of guessing.',
+      name: 'channel_step_source_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where can customers pay you?`
+  String get channel_step_payments_title {
+    return Intl.message(
+      'Where can customers pay you?',
+      name: 'channel_step_payments_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Optional. Lyra only shares the accounts you mark.`
+  String get channel_step_payments_subtitle {
+    return Intl.message(
+      'Optional. Lyra only shares the accounts you mark.',
+      name: 'channel_step_payments_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What else should Lyra understand?`
+  String get channel_step_tools_title {
+    return Intl.message(
+      'What else should Lyra understand?',
+      name: 'channel_step_tools_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Optional. Each one adds to the cost of every conversation answered; voice and video the most.`
+  String get channel_step_tools_subtitle {
+    return Intl.message(
+      'Optional. Each one adds to the cost of every conversation answered; voice and video the most.',
+      name: 'channel_step_tools_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The conversation could not be read`
   String get messages_thread_error_title {
     return Intl.message(
