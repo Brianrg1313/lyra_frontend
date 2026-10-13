@@ -88,8 +88,8 @@ abstract final class SheetCells {
     // The one with several tags renders like the single one, but its value is not
     // text but a list: that's why it reads [raw] and not [value], which for a list
     // would give Dart's `[a, b]`. They are written on one line (`Shoes, Sports`),
-    // which is how they are read and how they travel.
-    TableFieldType.categories => ListedCell(
+    // which is how they are read and how they travel. Sizes are stored the same.
+    TableFieldType.categories || TableFieldType.sizes => ListedCell(
       value: fieldLabelsText(raw ?? value),
       style: style,
       alignment: alignment,

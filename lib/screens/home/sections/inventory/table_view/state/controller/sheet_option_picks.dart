@@ -1,6 +1,6 @@
 part of '../sheet_controller.dart';
 
-/// The dropdown of a list cell: choose, create or (in a multi-tag column) toggle an option.
+/// The dropdown of a list cell: choose or create an option, or (in a multi-tag column) tick several.
 extension SheetOptionPicks on SheetController {
   /// Opens the dropdown of a list cell, anchored to the cell ([anchor] is its
   /// context).
@@ -20,11 +20,8 @@ extension SheetOptionPicks on SheetController {
   /// pass.
   ///
   /// Choosing the same one it already had sends nothing, like leaving a text
-  /// cell without touching it. In a multi-tag column
-  /// ([TableFieldType.multiple]) choosing is **putting or taking off** that
-  /// tag: the dropdown is a single-choice one, so touching one that was
-  /// already set takes it off instead of replacing all the others, which is
-  /// the only thing a single touch can mean there.
+  /// cell without touching it. A multi-tag column ([TableFieldType.multiple])
+  /// opens a check list instead ([_checkOptions]).
   Future<void> pickOption(SheetCell cell, BuildContext? anchor) async {
     select(cell);
 
@@ -37,20 +34,14 @@ extension SheetOptionPicks on SheetController {
 
     final type = TableFieldType.from(field.type);
 
-    // A multi-tag cell is saved as a list, so what it has set is read from the
-    // raw value and not from its text (see [rawOf]).
-    final chosen = type.multiple
-      ? fieldLabelsOf(rawOf(cell))
-      : const <String>[];
+    if (type.multiple) return _checkOptions(cell, anchor, field);
 
-    final current = type.multiple ? "" : valueOf(cell);
+    final current = valueOf(cell);
 
     final picked = await showSelectMenu(
       context: anchor,
-      options: _optionsOf(anchor, field, current: current, chosen: chosen),
-      // With several set there's no "the chosen one": which is set and which
-      // isn't is told by the check of each row ([_optionsOf]).
-      selected: type.multiple ? null : current,
+      options: _optionsOf(anchor, field, current: current),
+      selected: current,
       searchPlaceholder: field.options.length > _kOptionSearchFrom
         ? S.of(anchor).table_field_option_search
         : null,
@@ -65,51 +56,82 @@ extension SheetOptionPicks on SheetController {
 
     if (_disposed || picked == null) return;
 
-    if (!type.multiple) {
-      _writeOption(cell, picked.value);
-      return;
-    }
-
-    // Emptying the cell is a row of the dropdown like any other and arrives
-    // with the empty value: there's no tag to put on or take off there.
-    _writeOption(
-      cell,
-      picked.value.isEmpty
-        ? ""
-        : fieldLabelsValue(fieldLabelsToggled(chosen, picked.value))
-    );
+    _writeOption(cell, picked.value);
   }
 
-  /// The options offered in a cell's dropdown.
+  /// The check list of a multi-tag cell (`CATEGORIES`, `SIZES`): every option with its
+  /// box, ticked or not, and the dropdown stays open while they're ticked, so the
+  /// sizes a shoe comes in are a run of taps and not one dropdown per size. What is
+  /// checked when it closes is written in one go, and nothing if it didn't change.
+  ///
+  /// A label the cell holds that the field's list no longer has (an option removed, a
+  /// value imported as written) still shows, checked, after the field's options:
+  /// without its row it couldn't be unticked. Labels are matched to the list the way
+  /// the list matches them ([sameFieldOption]), so "m" in the cell ticks the "M".
+  ///
+  /// The written labels keep the list's order and not the taps', which in a `SIZES`
+  /// column is its scale (the backend orders it smallest first): "38, 39, 41", never
+  /// "41, 38, 39".
+  Future<void> _checkOptions(
+    SheetCell cell,
+    BuildContext anchor,
+    TableFieldModel field
+  ) async {
+    // A multi-tag cell is saved as a list, so what it has set is read from the
+    // raw value and not from its text (see [rawOf]).
+    final held = [
+      for (final label in fieldLabelsOf(rawOf(cell)))
+        fieldOptionLike(field.options, label) ?? label
+    ];
+
+    final loose = [
+      for (final label in held)
+        if (fieldOptionLike(field.options, label) == null) label
+    ];
+
+    final checked = await showCheckMenu(
+      context: anchor,
+      options: [
+        for (final option in [...field.options, ...loose])
+          SelectOption(value: option, placeholder: option)
+      ],
+      checked: held,
+      searchPlaceholder: field.options.length > _kOptionSearchFrom
+        ? S.of(anchor).table_field_option_search
+        : null,
+      emptyText: S.of(anchor).table_field_option_empty,
+      dense: true,
+      createText: S.of(anchor).table_field_option_create,
+      createPlaceholder: S.of(anchor).table_field_option_placeholder,
+      onCreate: (name) => _createOption(field, name)
+    );
+
+    if (_disposed) return;
+    if (fieldLabelsValue(checked) == fieldLabelsValue(held)) return;
+
+    _writeOption(cell, fieldLabelsValue(checked));
+  }
+
+  /// The options offered in a single-tag cell's dropdown.
   ///
   /// They're the field's and, above all of them, the one that empties the
   /// cell —but only if there's something to empty. Without it a list cell
   /// would have no way back: there's no editor to erase the text, so an
   /// option chosen by mistake would stay set forever.
-  ///
-  /// In a multi-tag column, the ones the cell already has set go with a
-  /// check: the dropdown can't mark them as "the chosen one" —it only knows
-  /// about one— and without the mark there'd be no way to see, before
-  /// touching, whether that row is going to put the tag on or take it off.
-  /// [chosen] arrives empty in a single-tag column, where `selected` says it.
   List<SelectOption> _optionsOf(
     BuildContext context,
     TableFieldModel field, {
-    required String current,
-    required List<String> chosen
+    required String current
   }) => [
-    if (current.isNotEmpty || chosen.isNotEmpty) SelectOption(
+    if (current.isNotEmpty) SelectOption(
       value: "",
       placeholder: S.of(context).table_field_option_none,
       icon: Icons.remove
     ),
     for (final option in field.options)
-      SelectOption(
-        value: option,
-        placeholder: option,
-        icon: fieldOptionLike(chosen, option) != null ? Icons.check : null
-      )
+      SelectOption(value: option, placeholder: option)
   ];
+
 
   /// Adds an option to the field's list from the dropdown itself.
   ///

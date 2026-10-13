@@ -77,17 +77,17 @@ void main() {
       );
     });
 
-    test('the types that pick from a list are two', () {
+    test('the types that pick from a list are three', () {
       expect(
         TableFieldType.values.where((type) => type.listed),
-        [TableFieldType.options, TableFieldType.categories]
+        [TableFieldType.options, TableFieldType.categories, TableFieldType.sizes]
       );
     });
 
-    test('only the multi-tag type stores more than one value', () {
+    test('only the multi-tag types store more than one value', () {
       expect(
         TableFieldType.values.where((type) => type.multiple),
-        [TableFieldType.categories]
+        [TableFieldType.categories, TableFieldType.sizes]
       );
     });
 
@@ -132,6 +132,7 @@ void main() {
       // menu.
       expect(TableFieldType.options.cursor, SystemMouseCursors.click);
       expect(TableFieldType.categories.cursor, SystemMouseCursors.click);
+      expect(TableFieldType.sizes.cursor, SystemMouseCursors.click);
       expect(TableFieldType.image.cursor, SystemMouseCursors.click);
     });
 

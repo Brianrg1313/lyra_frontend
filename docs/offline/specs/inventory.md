@@ -72,7 +72,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 | `type` | one of `TableFieldType` codes | `TEXT` … `STOCK` |
 | `position` | int | 0-based, dense |
 | `width` | int? | px, `null` = default |
-| `options` | [string] | only `OPTIONS` / `CATEGORIES` |
+| `options` | [string] | only `OPTIONS` / `CATEGORIES` / `SIZES` |
 | `unit` | string | only `PRICE` / `CURRENCY` / `MEASURE` |
 | `visibility` | `visible` / `declared` / `hidden` | kept for hybrid; no local effect |
 | `summary` | bool | shown in the stock summary |
@@ -135,6 +135,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
   | `DATETIME` | ISO instant | that shape |
   | `OPTIONS` | string | any text (I-15), it doesn't have to be in the list |
   | `CATEGORIES` | [string] | a list of texts |
+  | `SIZES` | [string] | a list of texts (the sizes a product comes in) |
   | `IMAGE` | [imageRef] | written only through `inventory.images.*` |
   | `COUNTER` `STOCK` | — | refused (I-10) |
 
@@ -157,7 +158,7 @@ AI typing of imported columns is replaced by fixed rules, and semantic search by
 
 - **I-25** Order of `records.list`: creation order (UUIDv7), oldest first, as the sheet draws it.
 - **I-26** `match` is the text search of the README over every text-like field of the table
-  (`TEXT` `TEXTAREA` `TITLE` `DESCRIPTION` `SKU` `BARCODE` `OPTIONS` `CATEGORIES`). It is the
+  (`TEXT` `TEXTAREA` `TITLE` `DESCRIPTION` `SKU` `BARCODE` `OPTIONS` `CATEGORIES` `SIZES`). It is the
   offline replacement of the cloud's semantic match.
 
 ---

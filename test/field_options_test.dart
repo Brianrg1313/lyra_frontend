@@ -100,25 +100,5 @@ void main() {
       // Vacia es lo que borra la celda.
       expect(fieldLabelsValue(const []), "");
     });
-
-    test('elegir una etiqueta la pone o la saca', () {
-      // El desplegable es de una sola eleccion, asi que tocar una que ya estaba
-      // solo puede querer decir "sacala": reemplazar a todas las demas seria
-      // perder lo que alguien cargo de a una.
-      expect(
-        fieldLabelsToggled(const ["Zapatos"], "Deportivos"),
-        ["Zapatos", "Deportivos"]
-      );
-      expect(
-        fieldLabelsToggled(const ["Zapatos", "Deportivos"], "Zapatos"),
-        ["Deportivos"]
-      );
-    });
-
-    test('dos etiquetas que solo se distinguen en tildes son la misma', () {
-      // La misma regla que en la lista del campo: serian indistinguibles al
-      // elegirlas.
-      expect(fieldLabelsToggled(const ["Marrón"], "marron"), isEmpty);
-    });
   });
 }

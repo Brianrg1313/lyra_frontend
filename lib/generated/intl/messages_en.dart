@@ -2971,6 +2971,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "field_type_price_hint": MessageLookupByLibrary.simpleMessage(
       "The selling price: what a customer pays",
     ),
+    "field_type_sizes": MessageLookupByLibrary.simpleMessage("Sizes"),
+    "field_type_sizes_hint": MessageLookupByLibrary.simpleMessage(
+      "The sizes a product comes in (38, 39, 40 · S, M, L · 750 ml), several per product",
+    ),
     "field_type_sku": MessageLookupByLibrary.simpleMessage("SKU"),
     "field_type_sku_hint": MessageLookupByLibrary.simpleMessage(
       "Your own reference or part number",

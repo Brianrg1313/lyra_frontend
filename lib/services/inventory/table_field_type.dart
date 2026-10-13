@@ -58,6 +58,12 @@ enum TableFieldType {
   url,
   options,
   categories,
+
+  /// The sizes a product comes in (38, 39, 40 · S, M, L · 120 ml, 750 ml): several per record,
+  /// stored like [categories]. It is its own type because the backend orders its list as a
+  /// scale (smallest first) and tells consecutive sizes as a range, and because as
+  /// [categories] every size would become a family the catalog is grouped by.
+  sizes,
   image,
   stock;
 
@@ -98,6 +104,7 @@ enum TableFieldType {
     "URL" => url,
     "OPTIONS" || "SELECT" => options,
     "CATEGORIES" => categories,
+    "SIZES" => sizes,
     "IMAGE" => image,
     "STOCK" => stock,
     "VECTOR" => description,
@@ -130,6 +137,7 @@ enum TableFieldType {
     url => S.of(context).field_type_url,
     options => S.of(context).field_type_options,
     categories => S.of(context).field_type_categories,
+    sizes => S.of(context).field_type_sizes,
     image => S.of(context).field_type_image,
     stock => S.of(context).field_type_stock
   };
@@ -159,6 +167,7 @@ enum TableFieldType {
     url => S.of(context).field_type_url_hint,
     options => S.of(context).field_type_options_hint,
     categories => S.of(context).field_type_categories_hint,
+    sizes => S.of(context).field_type_sizes_hint,
     image => S.of(context).field_type_image_hint,
     stock => S.of(context).field_type_stock_hint
   };
@@ -186,6 +195,7 @@ enum TableFieldType {
     url => CI.link,
     options => Icons.arrow_drop_down_circle_outlined,
     categories => CI.list,
+    sizes => Icons.format_size,
     image => CI.image,
     stock => Icons.inventory_2_outlined
   };
@@ -212,15 +222,17 @@ enum TableFieldType {
   /// Whether the field picks its values from a **closed list** that belongs to
   /// the column (see `TableFieldModel.options`).
   ///
-  /// There are two and the difference is how many each record stores: from an [options]
-  /// only one (a condition, a size), from a [categories] several (a product
-  /// is "shoes" and "sports" at the same time). That is why they are two types and not one with
-  /// a switch: what changes is not how it is picked but what is stored in
-  /// the cell, a text versus a list.
-  bool get listed => this == options || this == categories;
+  /// The difference is how many each record stores: from an [options] only one (a
+  /// condition), from a [categories] or [sizes] several (a product is "shoes" and
+  /// "sports" at the same time, and comes in 38 to 43). That is why they are separate types
+  /// and not one with a switch: what changes is what is stored in the cell, a text versus
+  /// a list.
+  bool get listed => this == options || multiple;
 
   /// Whether a cell of this field stores **several** values.
-  bool get multiple => this == categories;
+  ///
+  /// Their cell is ticked in a check list (`showCheckMenu`) instead of picked in a dropdown.
+  bool get multiple => this == categories || this == sizes;
 
   /// Whether the field's numbers do not bring their own symbol, so the symbol belongs to
   /// the column and travels with it (see `TableFieldModel.unit`): the currency of

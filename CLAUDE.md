@@ -55,7 +55,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 - **`package:core/button.dart`**: `Button` `MainButton` `FeedbackButton`
 - **`package:core/form.dart`**: `Input` `SearchInput` `SelectInput` `SelectOption` `CodeInput`
   `InputRow` `InputController` `FormController` `InputValidator` `InputType` `InputStatus`
-  `InputError` `showSelectMenu` `SelectOptionTile`
+  `InputError` `showSelectMenu` `showCheckMenu` `SelectOptionTile`
 - **`package:core/images.dart`**: `ImageDynamic` (assets, theme-aware), `CacheImage` (network)
 - **`package:core/types.dart`**: `ListenableMap`
 - **`package:core/api.dart`**: `RestAPI` `ApiModel` `ApiMode` `Headers`

@@ -60,7 +60,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).
 - `column_drag.dart` — `ColumnDrag`: carried column, drop line; `column_drag_ghost.dart` — `ColumnDragGhost`.
 - `cells/_cells.dart` — dispatch by `TableFieldType`; `date_cell` `image_cell` `listed_cell`
-  (`OPTIONS`/`CATEGORIES`) `price_cell` `sku_cell` `unit_cell` (number + unit/percent).
+  (`OPTIONS`; `CATEGORIES`/`SIZES` are ticked in core's `showCheckMenu`) `price_cell` `sku_cell` `unit_cell` (number + unit/percent).
 - `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
   `uploading`, editor, serialized write queues (columns, rows). Its writes are `part`s in `state/controller/`, extensions on it

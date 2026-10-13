@@ -8294,6 +8294,21 @@ class S {
     );
   }
 
+  /// `Sizes`
+  String get field_type_sizes {
+    return Intl.message('Sizes', name: 'field_type_sizes', desc: '', args: []);
+  }
+
+  /// `The sizes a product comes in (38, 39, 40 · S, M, L · 750 ml), several per product`
+  String get field_type_sizes_hint {
+    return Intl.message(
+      'The sizes a product comes in (38, 39, 40 · S, M, L · 750 ml), several per product',
+      name: 'field_type_sizes_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Image`
   String get field_type_image {
     return Intl.message('Image', name: 'field_type_image', desc: '', args: []);

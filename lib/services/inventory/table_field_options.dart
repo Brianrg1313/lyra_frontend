@@ -104,22 +104,3 @@ String fieldLabelsValue(List<String> labels) => [
   for (final label in labels)
     if (label.trim().isNotEmpty) label.trim()
 ].join(", ");
-
-/// The list with [label] inside if it was not there, or without it if it already was.
-///
-/// It is what makes choosing in a multi-label cell a **switch per label**: the dropdown
-/// is single-choice, so touching one puts it or removes it instead of replacing the existing
-/// ones. The one that is added goes at the end, which is where a new option goes in the field's list:
-/// the order is the order in which they were thought of.
-///
-/// Two labels that only differ in case or accents are the same
-/// ([sameFieldOption]), just like in the field's list.
-List<String> fieldLabelsToggled(List<String> labels, String label) {
-  final wanted = label.trim();
-  if (wanted.isEmpty) return labels;
-
-  final current = fieldOptionLike(labels, wanted);
-  if (current == null) return [...labels, wanted];
-
-  return [for (final one in labels) if (!sameFieldOption(one, current)) one];
-}

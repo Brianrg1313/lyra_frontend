@@ -873,6 +873,8 @@
   "field_type_options_hint": "A closed list of labels, one per product: size, colour, condition",
   "field_type_categories": "Categories",
   "field_type_categories_hint": "A closed list of labels, several per product",
+  "field_type_sizes": "Sizes",
+  "field_type_sizes_hint": "The sizes a product comes in (38, 39, 40 · S, M, L · 750 ml), several per product",
   "field_type_image": "Image",
   "field_type_image_hint": "Photos of the product",
   "field_type_stock": "Stock",
