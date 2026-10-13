@@ -54,6 +54,8 @@ sale's internal number waits for POS tickets to sync (D20).
 **Known issues**
 - A Mac's Chrome needs macOS's Local Network permission to open a master by name or IP (seen
   2026-10-01 as `ERR_NETWORK_IO_SUSPENDED`; not retried).
+- On a computer made a master from an online session, the cloud-only areas (channels, knowledge)
+  and the socket fail in `hybrid` (2026-10-13): `docs/task-hybrid-cloud-areas.md`.
 
 **Repos** All on this disk, **nothing pushed**, no remotes except `core`'s.
 - The backend (`backend/projects/lyra`): the permissions catalog gained `server` and `money.export` and the
@@ -77,6 +79,8 @@ sale's internal number waits for POS tickets to sync (D20).
 - This computer's earlier master was wiped on 2026-10-01 (passphrase forgotten): its data and the
   app's secure storage are in `%LOCALAPPDATA%\Lyra\backup-2026-10-01`, readable only with that
   master's 24 words; delete it otherwise. A fresh start offers "Create Master Server" again.
+  Wiped again on 2026-10-13 (`tool/clean.ps1 -Engine -NoBuild`), kept in `backup-2026-10-13` as
+  evidence for `docs/task-hybrid-cloud-areas.md`.
 
 **Gate** `flutter analyze` clean; `flutter test` 1218 passing with the 5 known failures of
 `test/MODULE.md`; `lyra_node`: `dart analyze` clean, `dart test -x process` passing.
