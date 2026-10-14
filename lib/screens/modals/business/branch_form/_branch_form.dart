@@ -16,6 +16,7 @@ import 'package:app/services/business/business_places_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/catalog/country_catalog_service.dart';
 import 'package:app/services/maps/map_tiles_service.dart';
+import 'package:app/toolkit/deployment.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -23,6 +24,7 @@ import 'package:core/button.dart';
 import 'package:core/images.dart';
 import 'package:app/screens/home/sections/business/settings/country_flag.dart';
 import 'package:app/screens/home/sections/deliveries/deliveries_map.dart';
+import 'package:app/screens/modals/business/branch_hours/_branch_hours.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 import 'phone_field.dart';
@@ -463,6 +465,20 @@ class _BranchFormModalState extends State<BranchFormModal> {
             label: S.of(context).business_branch_main_toggle,
             message: S.of(context).business_branch_main_note,
             toggle: () => setState(() => _main = !_main)
+          )
+        ],
+        // One week per branch (cloud only); a new one is born with the main
+        // branch's, edited once it exists.
+        if (Deployment.mode == DeploymentMode.cloud) ...[
+          _Heading(
+            title: S.of(context).business_branch_section_hours,
+            note: _from == null ? S.of(context).business_branch_hours_new : null
+          ),
+          if (_from != null) SettingsSelect(
+            label: S.of(context).business_branch_hours_open,
+            icon: CI.calendar,
+            message: S.of(context).business_branch_hours_note,
+            open: (_) => showBranchHours(context, branch: _from)
           )
         ],
         _Heading(title: S.of(context).business_branch_section_contact),

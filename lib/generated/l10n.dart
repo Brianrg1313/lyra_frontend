@@ -6560,6 +6560,76 @@ class S {
     );
   }
 
+  /// `Opening hours`
+  String get business_branch_section_hours {
+    return Intl.message(
+      'Opening hours',
+      name: 'business_branch_section_hours',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hours and closed days`
+  String get business_branch_hours_open {
+    return Intl.message(
+      'Hours and closed days',
+      name: 'business_branch_hours_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When this branch attends: the assistant tells customers these hours, and appointments and delivery windows follow them.`
+  String get business_branch_hours_note {
+    return Intl.message(
+      'When this branch attends: the assistant tells customers these hours, and appointments and delivery windows follow them.',
+      name: 'business_branch_hours_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A new branch starts with the main branch's hours. Change them once it is saved.`
+  String get business_branch_hours_new {
+    return Intl.message(
+      'A new branch starts with the main branch\'s hours. Change them once it is saved.',
+      name: 'business_branch_hours_new',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Opening hours`
+  String get branch_hours_title {
+    return Intl.message(
+      'Opening hours',
+      name: 'branch_hours_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When {name} attends each day, and the days it is closed. The assistant tells customers these hours, and appointments and delivery windows follow them.`
+  String branch_hours_subtitle(Object name) {
+    return Intl.message(
+      'When $name attends each day, and the days it is closed. The assistant tells customers these hours, and appointments and delivery windows follow them.',
+      name: 'branch_hours_subtitle',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `The hours could not be read`
+  String get branch_hours_error {
+    return Intl.message(
+      'The hours could not be read',
+      name: 'branch_hours_error',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `+584121234567`
   String get business_branch_phone_full_hint {
     return Intl.message(

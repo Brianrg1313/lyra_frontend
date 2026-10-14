@@ -12,11 +12,11 @@ import 'package:app/services/shipments/shipping_settings_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/modals/shared/opening_hours/closed_days.dart';
+import 'package:app/screens/modals/shared/opening_hours/week_editor.dart';
 
-import './closed_days.dart';
 import './offer_preview.dart';
 import './slot_settings.dart';
-import './week_editor.dart';
 
 /// Opens the schedule of the branch worked in, from the deliveries board.
 /// [service] is the board's, which knows what the person may change.

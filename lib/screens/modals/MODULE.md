@@ -45,6 +45,11 @@ through `Navigator.pop(context, value)`.
 ### `shared/`
 - `crop_image/_crop_image.dart` — `CropImageModal({bytes})`: square crop + zoom, returns bytes. Before every logo/photo upload.
 - `image_viewer/_image_viewer.dart` — `showImageViewer(context, url:)`, `ImageViewer`: full screen.
+- `opening_hours/week_editor.dart` — `WeekEditor`: one branch's week (`OpeningHoursService`), Monday first, stretches per
+  day (add, remove, copy the day before), validated (`HH:MM`, no overlap) and written whole; read only without
+  `appointments.configure`. Used by `branch_hours` and `shipping_settings`.
+- `opening_hours/closed_days.dart` — `ClosedDays`: the days ahead closed in that branch or in every one; close (day,
+  reason, every branch), open again (asks for an every-branch one). Same two users.
 - `settings/settings_block.dart` — read-only panel rows: `SettingsBlock` `SettingsRow` `SettingsValue`
   `SettingsList` `SettingsTag` `SettingsStat` `SettingsAction` `SettingsToggle` `SettingsSelect`.
   Decide nothing (colour/empty wording passed in). **Build new panel rows from these.**
@@ -73,7 +78,11 @@ through `Navigator.pop(context, value)`.
   branch's point). `country` (the company's) fixes the phone code; only the main branch's form asks for it, and saving
   it also writes the changed country and phone on the company (`BusinessService.editProfile`). Owns its own
   `BusinessLocationService` + `MapTilesService` + one `BusinessPlacesService` per search (map box, address field); **writes** through the branches service
-  passed by constructor (edit sends only what changed). Returns `true` if something was written.
+  passed by constructor (edit sends only what changed). Cloud only: an "Opening hours" row opens `showBranchHours` on a saved branch (a new one is born with the main
+  branch's week). Returns `true` if something was written.
+- `branch_hours/_branch_hours.dart` — `showBranchHours(context, branch:)`, `BranchHoursModal`: side panel with that
+  branch's `WeekEditor` + `ClosedDays`; **owns** an `OpeningHoursService` for it (writes name `BRANCH`, any branch, not
+  only the one worked in); editable with `appointments.configure` from `Sources.permissions.mine()`.
 - `branch_form/phone_field.dart` — `BranchPhoneField`: one box, the company's flag + dial fixed in front of
   the typed number; without a country (or a saved phone with another code) the whole phone, flag of the typed code.
 - `branch_form/place_search.dart` — `PlaceSearch`: the address search floating over the map's top edge (Google
@@ -198,10 +207,6 @@ through `Navigator.pop(context, value)`.
   no hours / no zone said in words.
 - `shipping_settings/slot_settings.dart` — `SlotSettings`: span, capacity (empty = no limit), lead, days, width, checked
   against the backend's ranges; read only without `shipments.configure`.
-- `shipping_settings/week_editor.dart` — `WeekEditor`: the branch's week, Monday first, stretches per day (add, remove,
-  copy the day before), validated (`HH:MM`, no overlap) and written whole; read only without `appointments.configure`.
-- `shipping_settings/closed_days.dart` — `ClosedDays`: the days ahead closed here or in every branch; close (day, reason,
-  every branch), open again (asks for an every-branch one).
 
 ### `messages/`
 - `chat_usage/_chat_usage.dart` — `showChatUsage(context, thread:)`, `ChatUsageModal`: AI spend of the open session (total, tokens, areas that ran). Re-provides the `ChatThreadService` and rereads the detail on open. `usageCost` `usageNumber` `usageCompact`.
