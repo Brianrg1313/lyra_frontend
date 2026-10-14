@@ -9,6 +9,7 @@ import 'package:app/services/appointments/opening_hours_model.dart';
 import 'package:app/services/appointments/opening_hours_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/screens/modals/business/branch_hours/_branch_hours.dart';
+import 'package:app/screens/modals/shared/opening_hours/week_editor.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 /// A branch's hours edited from the branch itself (`sedes-frontend.md` §11):
@@ -73,5 +74,47 @@ void main() {
     expect(find.byType(SettingsAction), findsNothing);
     expect(find.text(S.current.shipping_closed_add), findsNothing);
     hours.dispose();
+  });
+  testWidgets("a week with weekday and weekend hours opens grouped, and is typed every day or day by day", (tester) async {
+    final hours = OpeningHoursService(branch: "b2")..seed([
+      for (final weekday in [1, 2, 3, 4, 5]) OpeningStretch(weekday: weekday, opens: 540, closes: 1080),
+      for (final weekday in [6, 0]) OpeningStretch(weekday: weekday, opens: 600, closes: 840)
+    ]);
+    Finder adds() => find.byWidgetPredicate((w) => w is SettingsAction && w.message == S.current.shipping_week_add);
+
+    await pump(tester, hours, ["appointments", "appointments.configure"]);
+
+    expect(adds(), findsNWidgets(2));
+    expect(find.text(S.current.shipping_week_range("Monday", "Friday")), findsOneWidget);
+    expect(find.text(S.current.shipping_week_pair("Saturday", "Sunday")), findsOneWidget);
+
+    await tester.tap(find.text(S.current.shipping_week_mode_every));
+    await tester.pump();
+
+    expect(adds(), findsOneWidget);
+    expect(find.text(S.current.shipping_week_every), findsOneWidget);
+    expect(find.text(S.current.save), findsOneWidget);
+
+    await tester.tap(find.text(S.current.shipping_week_mode_daily));
+    await tester.pump();
+
+    // Every day took Monday's hours: Saturday now has them too.
+    expect(adds(), findsNWidgets(7));
+    expect(find.text("Saturday"), findsOneWidget);
+    expect(find.text("10:00"), findsNothing);
+    expect(find.text("09:00"), findsNWidgets(7));
+    hours.dispose();
+  });
+
+  test("the mode a saved week opens on is the coarsest it fits", () {
+    Map<int, List<(String, String)>> week(List<(String, String)> weekdays, List<(String, String)> weekend) => {
+      for (final day in [1, 2, 3, 4, 5]) day: weekdays,
+      for (final day in [6, 0]) day: weekend
+    };
+
+    expect(WeekEditor.modeOf(week([("09:00", "18:00")], [("09:00", "18:00")])), WeekMode.every);
+    expect(WeekEditor.modeOf(week([], [])), WeekMode.every);
+    expect(WeekEditor.modeOf(week([("09:00", "18:00")], [])), WeekMode.split);
+    expect(WeekEditor.modeOf({...week([("09:00", "18:00")], []), 3: [("09:00", "13:00")]}), WeekMode.daily);
   });
 }

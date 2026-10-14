@@ -16158,6 +16158,66 @@ class S {
     );
   }
 
+  /// `Every day`
+  String get shipping_week_mode_every {
+    return Intl.message(
+      'Every day',
+      name: 'shipping_week_mode_every',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weekdays and weekend`
+  String get shipping_week_mode_split {
+    return Intl.message(
+      'Weekdays and weekend',
+      name: 'shipping_week_mode_split',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Day by day`
+  String get shipping_week_mode_daily {
+    return Intl.message(
+      'Day by day',
+      name: 'shipping_week_mode_daily',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Monday to Sunday`
+  String get shipping_week_every {
+    return Intl.message(
+      'Monday to Sunday',
+      name: 'shipping_week_every',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{from} to {to}`
+  String shipping_week_range(Object from, Object to) {
+    return Intl.message(
+      '$from to $to',
+      name: 'shipping_week_range',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `{first} and {second}`
+  String shipping_week_pair(Object first, Object second) {
+    return Intl.message(
+      '$first and $second',
+      name: 'shipping_week_pair',
+      desc: '',
+      args: [first, second],
+    );
+  }
+
   /// `Closed days`
   String get shipping_closed_title {
     return Intl.message(

@@ -45,8 +45,9 @@ through `Navigator.pop(context, value)`.
 ### `shared/`
 - `crop_image/_crop_image.dart` — `CropImageModal({bytes})`: square crop + zoom, returns bytes. Before every logo/photo upload.
 - `image_viewer/_image_viewer.dart` — `showImageViewer(context, url:)`, `ImageViewer`: full screen.
-- `opening_hours/week_editor.dart` — `WeekEditor`: one branch's week (`OpeningHoursService`), Monday first, stretches per
-  day (add, remove, copy the day before), validated (`HH:MM`, no overlap) and written whole; read only without
+- `opening_hours/week_editor.dart` — `WeekEditor`: one branch's week (`OpeningHoursService`), Monday first, typed by
+  `WeekMode` (every day / weekdays and weekend / day by day; opens on the coarsest the saved week fits), stretches per
+  group (add, remove, copy the day before), validated (`HH:MM`, no overlap) and written whole per day; read only without
   `appointments.configure`. Used by `branch_hours` and `shipping_settings`.
 - `opening_hours/closed_days.dart` — `ClosedDays`: the days ahead closed in that branch or in every one; close (day,
   reason, every branch), open again (asks for an every-branch one). Same two users.
