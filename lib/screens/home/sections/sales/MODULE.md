@@ -51,7 +51,7 @@ by `_sales.dart`, not app-wide. Contracts and model rules: `lib/services/MODULE.
   the rows the table marks); `done` none.
 - `sales_board.dart` — `SalesBoard({section})`: bar, table, "load more" (`SectionMoreButton`, no count). Loads on first frame,
   applies header search (code · number · customer · seller), opens `showSaleDetail` and acts on its
-  `SaleDetailRequest` (handover form, or approval via `showAlertModal` + `SalesService.approve`).
+  `SaleDetailRequest` (handover form, or approval via `showApprovePayment` + `SalesService.approve`).
   One-minute clock keeps "waiting" fresh.
 - `sales_filters/_sales_filters.dart` — `SalesFilters`: one row — count left, controls right; caption
   row for tickets-only and `SalesSearchCaption`.

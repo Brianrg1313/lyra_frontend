@@ -17813,6 +17813,26 @@ class S {
     );
   }
 
+  /// `Charged apart`
+  String get sales_detail_due {
+    return Intl.message(
+      'Charged apart',
+      name: 'sales_detail_due',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payments received`
+  String get sales_detail_received {
+    return Intl.message(
+      'Payments received',
+      name: 'sales_detail_received',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `What is on it`
   String get sales_detail_items {
     return Intl.message(
@@ -18348,60 +18368,20 @@ class S {
     );
   }
 
-  /// `Approve the sale`
+  /// `Approve the payment`
   String get sales_approve_action {
     return Intl.message(
-      'Approve the sale',
+      'Approve the payment',
       name: 'sales_approve_action',
       desc: '',
       args: [],
     );
   }
 
-  /// `Approve this payment?`
-  String get sales_approve_title {
-    return Intl.message(
-      'Approve this payment?',
-      name: 'sales_approve_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `It says the money arrived and closes the sale. Nothing here can see a bank, so this is your word on it: look at the payment proof first.`
-  String get sales_approve_message {
-    return Intl.message(
-      'It says the money arrived and closes the sale. Nothing here can see a bank, so this is your word on it: look at the payment proof first.',
-      name: 'sales_approve_message',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Approve`
-  String get sales_approve_confirm {
-    return Intl.message(
-      'Approve',
-      name: 'sales_approve_confirm',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cancel`
-  String get sales_approve_cancel {
-    return Intl.message(
-      'Cancel',
-      name: 'sales_approve_cancel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sale approved`
+  /// `Payment approved`
   String get sales_approve_done {
     return Intl.message(
-      'Sale approved',
+      'Payment approved',
       name: 'sales_approve_done',
       desc: '',
       args: [],
@@ -20580,10 +20560,10 @@ class S {
     );
   }
 
-  /// `Mark as sold`
+  /// `Close the sale`
   String get messages_mark_sold {
     return Intl.message(
-      'Mark as sold',
+      'Close the sale',
       name: 'messages_mark_sold',
       desc: '',
       args: [],
@@ -20630,21 +20610,41 @@ class S {
     );
   }
 
-  /// `Mark this conversation as sold?`
+  /// `Close this sale?`
   String get messages_sold_confirm_title {
     return Intl.message(
-      'Mark this conversation as sold?',
+      'Close this sale?',
       name: 'messages_sold_confirm_title',
       desc: '',
       args: [],
     );
   }
 
-  /// `It confirms the payment and sends the customer the confirmation of their purchase.`
+  /// `Do it once nothing is pending: paid, and delivered or picked up.`
   String get messages_sold_confirm_message {
     return Intl.message(
-      'It confirms the payment and sends the customer the confirmation of their purchase.',
+      'Do it once nothing is pending: paid, and delivered or picked up.',
       name: 'messages_sold_confirm_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do it once nothing is pending. Its payment hasn't been approved: closing approves it too and sends the customer the confirmation of their purchase.`
+  String get messages_sold_approve_message {
+    return Intl.message(
+      'Do it once nothing is pending. Its payment hasn\'t been approved: closing approves it too and sends the customer the confirmation of their purchase.',
+      name: 'messages_sold_approve_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approve the payment`
+  String get messages_approve_payment {
+    return Intl.message(
+      'Approve the payment',
+      name: 'messages_approve_payment',
       desc: '',
       args: [],
     );
@@ -25739,6 +25739,96 @@ class S {
     return Intl.message(
       'The photos\' status could not be read',
       name: 'import_pictures_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approve the payment`
+  String get payment_approve_title {
+    return Intl.message(
+      'Approve the payment',
+      name: 'payment_approve_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing here can see a bank, so this is your word on it: look at the payment proof first. The customer is sent the confirmation of their purchase.`
+  String get payment_approve_message {
+    return Intl.message(
+      'Nothing here can see a bank, so this is your word on it: look at the payment proof first. The customer is sent the confirmation of their purchase.',
+      name: 'payment_approve_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Amount received`
+  String get payment_approve_amount {
+    return Intl.message(
+      'Amount received',
+      name: 'payment_approve_amount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Empty if all of it arrived`
+  String get payment_approve_amount_hint {
+    return Intl.message(
+      'Empty if all of it arrived',
+      name: 'payment_approve_amount_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Currency`
+  String get payment_approve_currency {
+    return Intl.message(
+      'Currency',
+      name: 'payment_approve_currency',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The sale's currency`
+  String get payment_approve_currency_sale {
+    return Intl.message(
+      'The sale\'s currency',
+      name: 'payment_approve_currency_sale',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `If it falls short of the total, the customer is told what is missing and the sale waits for the rest.`
+  String get payment_approve_partial {
+    return Intl.message(
+      'If it falls short of the total, the customer is told what is missing and the sale waits for the rest.',
+      name: 'payment_approve_partial',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approve`
+  String get payment_approve_confirm {
+    return Intl.message(
+      'Approve',
+      name: 'payment_approve_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write an amount greater than zero`
+  String get payment_approve_invalid {
+    return Intl.message(
+      'Write an amount greater than zero',
+      name: 'payment_approve_invalid',
       desc: '',
       args: [],
     );

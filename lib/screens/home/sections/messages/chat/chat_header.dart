@@ -17,11 +17,12 @@ import 'package:app/screens/home/sections/messages/tags/chat_stage_tag.dart';
 import 'package:app/screens/home/sections/messages/tags/chat_tag_color.dart';
 import 'package:app/screens/home/sections/messages/tags/chat_tags.dart';
 import 'package:app/screens/modals/messages/chat_usage/_chat_usage.dart';
+import 'package:app/screens/modals/shared/approve_payment/_approve_payment.dart';
 
 /// Who the customer is, where the conversation stands and what else is true
 /// about it (tags, with since when and from which tickets), who answers it,
 /// and the actions on it: take over / return to the assistant, assign, and the
-/// menu (close by hand, mark read, AI cost, earlier sessions).
+/// menu (approve the payment, close by hand, mark read, AI cost, earlier sessions).
 class ChatHeader extends StatelessWidget {
   const ChatHeader({super.key});
 
@@ -115,10 +116,12 @@ class ChatHeader extends StatelessWidget {
     final detail = thread.detail!;
     final manual = context.read<ChatsService>().manualStages.map((stage) => stage.stage).toSet();
 
-    // Without a catalog yet, the two stages the contract names are offered.
+    // Without a catalog yet, the stages the contract names are offered.
     bool can(String stage) => manual.isEmpty || manual.contains(stage);
 
-    final closed = detail.stage.stage == kChatStageSold || detail.stage.stage == kChatStageEnded;
+    final stage = detail.stage.stage;
+    // Approved («Por cerrar») or closed: what a person set and can take back.
+    final marked = stage == kChatStagePaid || stage == kChatStageSold || stage == kChatStageEnded;
 
     final picked = await showSelectMenu(
       context: context,
@@ -126,11 +129,13 @@ class ChatHeader extends StatelessWidget {
       options: [
         if (!detail.answered)
           SelectOption(value: "read", placeholder: S.of(context).messages_mark_read, icon: CI.chekmark),
-        if (detail.stage.stage != kChatStageSold && can(kChatStageSold))
+        if (!marked && can(kChatStagePaid))
+          SelectOption(value: kChatStagePaid, placeholder: S.of(context).messages_approve_payment, icon: CI.wallet),
+        if (stage != kChatStageSold && can(kChatStageSold))
           SelectOption(value: kChatStageSold, placeholder: S.of(context).messages_mark_sold, icon: CI.shopping_check),
-        if (detail.stage.stage != kChatStageEnded && can(kChatStageEnded))
+        if (stage != kChatStageEnded && can(kChatStageEnded))
           SelectOption(value: kChatStageEnded, placeholder: S.of(context).messages_mark_ended, icon: CI.chack_circle),
-        if (closed)
+        if (marked)
           SelectOption(value: "undo", placeholder: S.of(context).messages_undo_stage, icon: CI.arrow_left),
         SelectOption(value: "usage", placeholder: S.of(context).messages_usage, icon: CI.wallet),
         if (detail.sessions > 1)
@@ -150,11 +155,19 @@ class ChatHeader extends StatelessWidget {
       case "read":
         final marked = S.of(context).messages_marked_read;
         if (await thread.markRead()) FloatFlag.of().message(marked);
+      case kChatStagePaid:
+        final approval = await showApprovePayment(context);
+        if (approval != null) {
+          await thread.setStage(kChatStagePaid, amount: approval.amount, currency: approval.currency);
+        }
       case kChatStageSold:
         final confirmed = await showAlertModal(
           context: context,
           title: S.of(context).messages_sold_confirm_title,
-          message: S.of(context).messages_sold_confirm_message,
+          // Closing an unapproved sale approves it too, and messages the customer.
+          message: stage == kChatStagePaid
+            ? S.of(context).messages_sold_confirm_message
+            : S.of(context).messages_sold_approve_message,
           confirmText: S.of(context).messages_confirm,
           cancelText: S.of(context).messages_cancel
         );

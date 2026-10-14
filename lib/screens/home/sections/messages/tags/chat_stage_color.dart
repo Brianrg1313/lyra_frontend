@@ -14,6 +14,8 @@ Color chatStageColor(BuildContext context, String stage, ChatLevel level) {
     "uncharged" => chart.series[1],
     "verifying" => chart.serious,
     "paying" => chart.series[3],
+    // Approved and still open, like the sales board's handover: ours to move next.
+    "paid" => chart.series[2],
     "sold" => chart.good,
     "ended" || "abandoned" => scheme.text.secondary,
     _ => switch (level) {

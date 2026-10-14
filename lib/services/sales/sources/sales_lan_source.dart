@@ -62,7 +62,7 @@ class SalesLanSource implements SalesSource {
 
   /// Approving a payment is about conversations, which are cloud only (SA-25).
   @override
-  Future<void> approve(String chat) => throw UnsupportedError("sales.approve is cloud only");
+  Future<void> approve(String chat, {double? amount, String? currency}) => throw UnsupportedError("sales.approve is cloud only");
 
   @override
   Future<SaleDetailModel> detail(String reference) async {

@@ -41,10 +41,13 @@ class SalesCloudSource implements SalesSource {
       : null;
   }
 
-  /// A mark on the conversation (`PUT /chats/stage`, `STAGE: sold`).
+  /// A mark on the conversation (`PUT /chats/stage`, `STAGE: paid`).
   @override
-  Future<void> approve(String chat) =>
-    api.put(path: "/chats/stage/", version: "v1", data: approveSaleRequest(id: chat));
+  Future<void> approve(String chat, {double? amount, String? currency}) => api.put(
+    path: "/chats/stage/",
+    version: "v1",
+    data: approveSaleRequest(id: chat, amount: amount, currency: currency)
+  );
 
   /// No trailing slash: the reference is a path segment (`params: ["ID"]`),
   /// and an extra one would leave it empty on the other side.

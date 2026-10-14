@@ -318,13 +318,14 @@ class ChatThreadService extends ChangeNotifier {
     _applyHandover
   );
 
-  /// Closes by hand ([kChatStageSold] / [kChatStageEnded]) or undoes with null.
-  /// `sold` also messages the customer their confirmation.
-  Future<bool> setStage(String? stage) => _write(
+  /// Approves the payment ([kChatStagePaid], [amount] when only part arrived),
+  /// closes by hand ([kChatStageSold] / [kChatStageEnded]) or undoes with null.
+  /// Approving messages the customer their confirmation.
+  Future<bool> setStage(String? stage, {double? amount, String? currency}) => _write(
     () => aries.put(
       path: "/chats/stage",
       version: "v1",
-      data: chatStageRequest(id: id, stage: stage)
+      data: chatStageRequest(id: id, stage: stage, amount: amount, currency: currency)
     ),
     (_) => _readDetail().then((_) {
       final current = _detail;

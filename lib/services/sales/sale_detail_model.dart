@@ -47,6 +47,7 @@ class SaleDetailModel {
     this.taxes = const [],
     this.total,
     this.payment = const SalePaymentModel(),
+    this.due,
     this.handover,
     this.held = 0,
     this.reservations,
@@ -137,6 +138,10 @@ class SaleDetailModel {
 
   final SalePaymentModel payment;
 
+  /// What a charged ticket asks for on top of [total] — a delivery chosen after
+  /// the charge — until it is paid (`Ticketing.#late`). Null with none.
+  final SaleDueModel? due;
+
   /// How the customer gets it and how far that got. **Null when there is no
   /// handover to be at a point of**: an unpaid cart has not been charged and a
   /// conversation has no document.
@@ -217,6 +222,7 @@ class SaleDetailModel {
       payment: SalePaymentModel.fromJson(
         data["payment"] is Map ? saleFields(data["payment"] as Map) : const {}
       ),
+      due: data["due"] is Map ? SaleDueModel.fromJson(saleFields(data["due"] as Map)) : null,
       handover: handover is Map
         ? SaleHandoverModel.fromJson(saleFields(handover))
         : null,
@@ -246,6 +252,7 @@ class SalePaymentModel {
     this.credit = false,
     this.collected,
     this.outstanding,
+    this.received = const [],
     this.proofs = const []
   });
 
@@ -265,10 +272,15 @@ class SalePaymentModel {
   /// was written.
   final bool credit;
 
-  /// How much has come in, and what is still owed. **Null on anything but a
-  /// credit ticket**, under the rule above.
+  /// How much has come in, and what is still owed. **Null unless something can
+  /// be owed**: a credit ticket, or a channel ticket with a balance — part of a
+  /// transfer that fell short, or a delivery added once it was paid.
   final double? collected;
   final double? outstanding;
+
+  /// Every approval of a channel ticket, oldest first: what arrived, how, its
+  /// reference, when. Empty on anything else.
+  final List<SaleReceiptModel> received;
 
   /// **El comprobante**: everything the customer sent to show the money went
   /// out, oldest first. Empty on a sale that has none — a ticket rung up at the
@@ -281,6 +293,10 @@ class SalePaymentModel {
 
   /// Whether there is a debt standing on this sale.
   bool get isOwed => (outstanding ?? 0) > 0;
+
+  /// Whether the sale carries a balance to draw (credit, or a channel ticket
+  /// paid in parts).
+  bool get hasBalance => credit || collected != null || outstanding != null;
 
   /// The newest comprobante — the one somebody about to approve the sale is
   /// actually looking at — or null when nothing was ever sent.
@@ -301,6 +317,9 @@ class SalePaymentModel {
       credit: data["credit"] == true,
       collected: saleAmount(data["collected"]),
       outstanding: saleAmount(data["outstanding"]),
+      received: [
+        for (final row in catalogRows(data["received"])) SaleReceiptModel.fromJson(row)
+      ],
       proofs: [
         for (final row in all.isEmpty && newest is Map
           ? [saleFields(newest)]
@@ -308,6 +327,53 @@ class SalePaymentModel {
       ]
     );
   }
+}
+
+/// **One approval** of a channel ticket's money (`payment.received[]`): a
+/// person said this much arrived.
+class SaleReceiptModel {
+  const SaleReceiptModel({this.amount, this.method = "", this.reference = "", this.at});
+
+  final double? amount;
+  final String method;
+  final String reference;
+  final DateTime? at;
+
+  factory SaleReceiptModel.fromJson(Map<String, dynamic> data) => SaleReceiptModel(
+    amount: saleAmount(data["amount"]),
+    method: (data["method"] ?? "").toString(),
+    reference: (data["reference"] ?? "").toString(),
+    at: saleDate(data["at"])
+  );
+}
+
+/// **What a charged ticket asks for apart from its total** (`due`): its lines
+/// and what they come to. It joins the sale's total once paid.
+class SaleDueModel {
+  const SaleDueModel({this.items = const [], this.total = 0});
+
+  final List<SaleDueLine> items;
+  final double total;
+
+  factory SaleDueModel.fromJson(Map<String, dynamic> data) => SaleDueModel(
+    items: [for (final row in catalogRows(data["items"])) SaleDueLine.fromJson(row)],
+    total: saleAmount(data["total"]) ?? 0
+  );
+}
+
+/// One line of [SaleDueModel]: `Envío · <área>`.
+class SaleDueLine {
+  const SaleDueLine({this.name = "", this.qty = 0, this.price = 0});
+
+  final String name;
+  final double qty;
+  final double price;
+
+  factory SaleDueLine.fromJson(Map<String, dynamic> data) => SaleDueLine(
+    name: (data["name"] ?? "").toString(),
+    qty: saleAmount(data["qty"]) ?? 0,
+    price: saleAmount(data["price"]) ?? 0
+  );
 }
 
 /// **One comprobante**: a single thing the customer sent to show they paid.

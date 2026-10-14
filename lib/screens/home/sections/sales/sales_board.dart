@@ -19,6 +19,7 @@ import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/sales/sales_filters/_sales_filters.dart';
 import 'package:app/screens/modals/sales/sale_detail/_sale_detail.dart';
 import 'package:app/screens/modals/sales/sale_fulfillment/_sale_fulfillment.dart';
+import 'package:app/screens/modals/shared/approve_payment/_approve_payment.dart';
 
 import './sales_table.dart';
 
@@ -261,7 +262,7 @@ class _SalesBoardState extends State<SalesBoard> {
     }
   }
 
-  /// **Says the payment arrived**, which closes the sale.
+  /// **Says the payment arrived** — all of it, or the part a person states.
   ///
   /// The customer says the money is sent —that is what puts the sale at "Pago
   /// por verificar"— and nothing in this platform can see a bank: the transfer
@@ -271,21 +272,16 @@ class _SalesBoardState extends State<SalesBoard> {
   /// It is confirmed first, and the confirmation is not ceremony: this is the
   /// one action on the screen that states a fact about money nobody counted,
   /// and taking it back is another screen's job — the conversation is reopened
-  /// from the bandeja. The wording is what it is going to claim.
+  /// from the bandeja. Approving does not close the sale: that is said from
+  /// the conversation once nothing is pending.
   Future<void> _approve(SaleModel sale) async {
-    final confirmed = await showAlertModal(
-      context: context,
-      title: S.of(context).sales_approve_title,
-      message: S.of(context).sales_approve_message,
-      confirmText: S.of(context).sales_approve_confirm,
-      cancelText: S.of(context).sales_approve_cancel
-    );
+    final approval = await showApprovePayment(context);
 
-    if (!confirmed || !mounted) return;
+    if (approval == null || !mounted) return;
 
     final approved = await context
       .read<SalesService>()
-      .approve(context, sale: sale);
+      .approve(context, sale: sale, amount: approval.amount, currency: approval.currency);
 
     if (!approved || !mounted) return;
 

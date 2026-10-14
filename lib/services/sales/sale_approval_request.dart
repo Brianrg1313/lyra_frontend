@@ -12,8 +12,12 @@
 /// mark also settles the payment marker and takes the conversation off the
 /// worklist, which is what makes it an approval and not only a label.
 ///
+/// **Approving is not closing** (backend, 13/10/2026): `paid` leaves the sale
+/// «Por cerrar» —the handover is still ahead, and the customer may cancel— and
+/// `sold` is a separate, later word, said from the conversation.
+///
 /// ```json
-/// { "ID": "665f...", "STAGE": "sold" }
+/// { "ID": "665f...", "STAGE": "paid", "AMOUNT": 30000, "CURRENCY": "VES" }
 /// ```
 ///
 /// The owning business does not go in the body: it travels in the
@@ -21,13 +25,11 @@
 /// `toolkit/api.dart`).
 library;
 
-/// The stage a person sets to say the sale happened.
+/// The stage a person sets to say the money arrived.
 ///
-/// It is one of the two the backend lets a client write (`Stages.manual`), and
-/// the only one of those that is a sale — the other ends a conversation that
-/// was never one. It is spelled here rather than read off a catalog because it
-/// is the *action* this screen offers and not a value it draws.
-const String kSaleClosedStage = "sold";
+/// It is spelled here rather than read off a catalog because it is the
+/// *action* this screen offers and not a value it draws.
+const String kSaleApprovedStage = "paid";
 
 /// Builds the body that approves [id], which is **the conversation behind the
 /// sale and never the row's own id** — the endpoint reads it as a chat
@@ -36,11 +38,18 @@ const String kSaleClosedStage = "sold";
 /// document no chat collection has ever heard of. `SaleModel.conversation` is
 /// the value to pass; passing the row's id is `404 chat_not_found`.
 ///
-/// Nothing else travels. The endpoint takes a stage and not a payment: how much
-/// arrived and through which account are the conversation's own facts, and a
-/// client that could restate them here would be a second opinion about money
-/// nobody here counted.
-Map<String, dynamic> approveSaleRequest({required String id}) => {
+/// [amount] is the one figure a person states: **only part of the money
+/// arrived**. Short of the total, what came stays on the same ticket and the
+/// customer is asked for the rest; without it, approving is "all of it came".
+/// [currency] defaults to the ticket's (bolívares convert at the comprobante's
+/// rate), so it only travels with an amount.
+Map<String, dynamic> approveSaleRequest({
+  required String id,
+  double? amount,
+  String? currency
+}) => {
   "ID": id,
-  "STAGE": kSaleClosedStage
+  "STAGE": kSaleApprovedStage,
+  "AMOUNT": ?amount,
+  if (amount != null && currency != null && currency.isNotEmpty) "CURRENCY": currency
 };

@@ -24,9 +24,9 @@ import 'package:app/screens/modals/sales/sale_detail/detail_identity.dart';
 ///   opened for that conversation, and its id is a document no chat collection
 ///   has heard of — which the backend answers 404 to, leaving the money
 ///   unverified and the person told the sale does not exist.
-/// - **What travels.** The endpoint takes a stage a person may set and nothing
-///   about the money — a client that restated how much arrived would be a
-///   second opinion on a figure nobody here counted.
+/// - **What travels.** The stage a person may set (`paid`: approving is not
+///   closing) and, only when part of the money arrived, how much and in which
+///   currency — the one figure the person counted.
 /// - **That the card draws what it is handed.** The action is built by the
 ///   panel, which reads on its first frame and therefore is not mounted here
 ///   (**no test may hit the network**); what the card owes is a slot, and a
@@ -74,8 +74,21 @@ void main() {
     expect(_sale(stage: "verifying", chat: "").canApprove, isFalse);
   });
 
-  test('the approval says the sale closed and nothing about the money', () {
-    expect(approveSaleRequest(id: "c9"), {"ID": "c9", "STAGE": "sold"});
+  test('approving says the money arrived, and does not close the sale', () {
+    // Since 13/10/2026 approving is `paid` («Por cerrar»); `sold` is the later
+    // word a person says from the conversation once nothing is pending.
+    expect(approveSaleRequest(id: "c9"), {"ID": "c9", "STAGE": "paid"});
+  });
+
+  test('a short payment states only what arrived, in the currency it came in', () {
+    expect(
+      approveSaleRequest(id: "c9", amount: 30000, currency: "VES"),
+      {"ID": "c9", "STAGE": "paid", "AMOUNT": 30000, "CURRENCY": "VES"}
+    );
+
+    // The ticket's own currency is the default, and a currency alone says nothing.
+    expect(approveSaleRequest(id: "c9", amount: 12.5), {"ID": "c9", "STAGE": "paid", "AMOUNT": 12.5});
+    expect(approveSaleRequest(id: "c9", currency: "VES"), {"ID": "c9", "STAGE": "paid"});
   });
 
   testWidgets('the card carries the action it is handed, and none otherwise',

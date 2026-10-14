@@ -4323,6 +4323,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "messages_all_sessions": MessageLookupByLibrary.simpleMessage(
       "Show earlier conversations",
     ),
+    "messages_approve_payment": MessageLookupByLibrary.simpleMessage(
+      "Approve the payment",
+    ),
     "messages_assign": MessageLookupByLibrary.simpleMessage("Assign"),
     "messages_assigned_to": m123,
     "messages_attention_confirmation": MessageLookupByLibrary.simpleMessage(
@@ -4404,7 +4407,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Mark as ended",
     ),
     "messages_mark_read": MessageLookupByLibrary.simpleMessage("Mark as read"),
-    "messages_mark_sold": MessageLookupByLibrary.simpleMessage("Mark as sold"),
+    "messages_mark_sold": MessageLookupByLibrary.simpleMessage(
+      "Close the sale",
+    ),
     "messages_marked_read": MessageLookupByLibrary.simpleMessage(
       "Marked as read",
     ),
@@ -4444,11 +4449,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "Choose a conversation",
     ),
     "messages_send": MessageLookupByLibrary.simpleMessage("Send"),
+    "messages_sold_approve_message": MessageLookupByLibrary.simpleMessage(
+      "Do it once nothing is pending. Its payment hasn\'t been approved: closing approves it too and sends the customer the confirmation of their purchase.",
+    ),
     "messages_sold_confirm_message": MessageLookupByLibrary.simpleMessage(
-      "It confirms the payment and sends the customer the confirmation of their purchase.",
+      "Do it once nothing is pending: paid, and delivered or picked up.",
     ),
     "messages_sold_confirm_title": MessageLookupByLibrary.simpleMessage(
-      "Mark this conversation as sold?",
+      "Close this sale?",
     ),
     "messages_start_subtitle": MessageLookupByLibrary.simpleMessage(
       "Customers write to you on these networks and the assistant answers them here. Pick one to see how.",
@@ -4578,6 +4586,31 @@ class MessageLookup extends MessageLookupByLibrary {
       "Passwords don\'t match",
     ),
     "past_due": MessageLookupByLibrary.simpleMessage("Past"),
+    "payment_approve_amount": MessageLookupByLibrary.simpleMessage(
+      "Amount received",
+    ),
+    "payment_approve_amount_hint": MessageLookupByLibrary.simpleMessage(
+      "Empty if all of it arrived",
+    ),
+    "payment_approve_confirm": MessageLookupByLibrary.simpleMessage("Approve"),
+    "payment_approve_currency": MessageLookupByLibrary.simpleMessage(
+      "Currency",
+    ),
+    "payment_approve_currency_sale": MessageLookupByLibrary.simpleMessage(
+      "The sale\'s currency",
+    ),
+    "payment_approve_invalid": MessageLookupByLibrary.simpleMessage(
+      "Write an amount greater than zero",
+    ),
+    "payment_approve_message": MessageLookupByLibrary.simpleMessage(
+      "Nothing here can see a bank, so this is your word on it: look at the payment proof first. The customer is sent the confirmation of their purchase.",
+    ),
+    "payment_approve_partial": MessageLookupByLibrary.simpleMessage(
+      "If it falls short of the total, the customer is told what is missing and the sale waits for the rest.",
+    ),
+    "payment_approve_title": MessageLookupByLibrary.simpleMessage(
+      "Approve the payment",
+    ),
     "pending_funds": MessageLookupByLibrary.simpleMessage("Pending Payments"),
     "permission_access_cell": m141,
     "permission_all_locked": MessageLookupByLibrary.simpleMessage(
@@ -5232,16 +5265,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_all_stages": MessageLookupByLibrary.simpleMessage("Every state"),
     "sales_any_channel": MessageLookupByLibrary.simpleMessage("Every channel"),
     "sales_approve_action": MessageLookupByLibrary.simpleMessage(
-      "Approve the sale",
+      "Approve the payment",
     ),
-    "sales_approve_cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
-    "sales_approve_confirm": MessageLookupByLibrary.simpleMessage("Approve"),
-    "sales_approve_done": MessageLookupByLibrary.simpleMessage("Sale approved"),
-    "sales_approve_message": MessageLookupByLibrary.simpleMessage(
-      "It says the money arrived and closes the sale. Nothing here can see a bank, so this is your word on it: look at the payment proof first.",
-    ),
-    "sales_approve_title": MessageLookupByLibrary.simpleMessage(
-      "Approve this payment?",
+    "sales_approve_done": MessageLookupByLibrary.simpleMessage(
+      "Payment approved",
     ),
     "sales_catalog_error": MessageLookupByLibrary.simpleMessage(
       "The states could not be read",
@@ -5283,6 +5310,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sales_detail_customer_unknown": MessageLookupByLibrary.simpleMessage(
       "No name given",
     ),
+    "sales_detail_due": MessageLookupByLibrary.simpleMessage("Charged apart"),
     "sales_detail_error_subtitle": MessageLookupByLibrary.simpleMessage(
       "Check the connection and try again.",
     ),
@@ -5416,6 +5444,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "sales_detail_proof_subtitle": MessageLookupByLibrary.simpleMessage(
       "What the customer sent to show the money went out. It is what they said and showed, not something anybody here checked.",
+    ),
+    "sales_detail_received": MessageLookupByLibrary.simpleMessage(
+      "Payments received",
     ),
     "sales_detail_reference": MessageLookupByLibrary.simpleMessage("Reference"),
     "sales_detail_seller": MessageLookupByLibrary.simpleMessage("Sold by"),

@@ -506,8 +506,8 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 
 - `sales_service.dart` — `SalesService`: `GET /sales` per section (`open(section)`),
   `STAGE`/`CHANNEL`/`MINE` filters (server-side), paging (`hasMore` vs `total`, not rows read),
-  `fulfil()` and `approve()`. `approve(row)` writes against `SaleModel.conversation`, never `id`,
-  and drops the row. Listens to `sale/progress` and `ConnectionService.onRestored` (see sales
+  `fulfil()` and `approve(sale, amount?, currency?)`. `approve` writes against `SaleModel.conversation`, never `id`,
+  and rereads the board (approving is not closing: the row stays in process). Listens to `sale/progress` and `ConnectionService.onRestored` (see sales
   section). `review(sale)`: opening a sale clears its `unseen` and sends `BadgesService.opened(sale, chat)`;
   `badges/opened` (kind `sale`) clears every row with that `chat`. Seams `seed`/`receive`.
 - `sales_catalog_service.dart` — `SalesCatalogService`: `GET /sales/stages` (stages in precedence,
@@ -522,7 +522,9 @@ Rows are measured on read from their owning collection (invoice, conversation, t
   `sale_not_found` (news, not an error).
 - `sale_detail_model.dart` — `SaleDetailModel` + `SalePaymentModel`, `SaleProofModel`,
   `SaleHandoverModel`, `SaleOriginModel`, `SaleItemModel`, `SaleTaxModel`, `SaleHoldModel`,
+  `SaleReceiptModel` (`payment.received`: each approval), `SaleDueModel`/`SaleDueLine` (`due`: charged apart from the total),
   `saleFields(map)`. `payment.proofs` (oldest first) is parsed; `proof` is its last entry.
+  `payment.hasBalance`: credit, or `collected`/`outstanding` present (a channel ticket paid in parts).
   `SaleProofModel` kind comes from the **file** (`isImage`/`isFile`/`isLostImage`), not `kind`.
   Meaningful nulls: `reservations` null on a ticket vs `[]`; `handover` null = nothing to hand
   over. `SaleItemModel.isUnheld`.
@@ -532,12 +534,12 @@ Rows are measured on read from their owning collection (invoice, conversation, t
   left both lists (`isGone`); label arrives as `name`.
 - `sale_fulfillment_request.dart` — `fulfilSaleRequest(...)`: sets `MODE`/`STATE`, never a stage;
   send only what **changed** (re-sending the mode resets its state).
-- `sale_approval_request.dart` — `approveSaleRequest(id:)`, `kSaleClosedStage = "sold"`:
-  `PUT /chats/stage` body; `id` is the conversation.
+- `sale_approval_request.dart` — `approveSaleRequest(id:, amount?, currency?)`, `kSaleApprovedStage = "paid"`:
+  `PUT /chats/stage` body; `id` is the conversation; `AMOUNT` only for a short payment, `CURRENCY` only with it.
 
 ## chats/ — owned by the messages section
 
-`/aries/v1` via the `aries` client. Contract: `E:/andromeda/backend/projects/lyra/docs/aries-chat-desk.md`.
+`/aries/v1` via the `aries` client. Contract: `E:/andromeda/backend/projects/lyra/docs/guides/aries-chat-desk.md`.
 
 - `chats_service.dart` — `ChatsService` (+ `ChatsStatus`, `ChatsFilter`): inbox `GET /chats` (filters, `SEARCH`,
   paging), `summary`, `stages`, `tags` (catalog → `tagOf(code)`), `team`, `selected`. Applies
@@ -557,7 +559,8 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 - `chat_message_model.dart` — `ChatMessage` (`queued` local), `ChatMessagesPage`, `ChatAuthorKind`, `ChatMessageStatus`.
 - `chat_detail_model.dart` — `ChatDetailModel` (full `tags`), `ChatAttention` (`also`), `ChatPayment`, `ChatCartItem`, `ChatUsage` (`usage`: null = unreadable ≠ zero), `ChatUsageArea`.
 - `chat_request.dart` — send, pause, id-only (resume/read), assign (`USERNAME` always travels),
-  stage (`null` undoes), resolve bodies; `kChatStageSold`, `kChatStageEnded`.
+  stage (`null` undoes; `AMOUNT`/`CURRENCY` for a short `paid`), resolve bodies; `kChatStagePaid` (approve),
+  `kChatStageSold` (close), `kChatStageEnded`.
 - `chat_event.dart` — `ChatEvent`: socket event names.
 
 ## maps/ — the base map (deliveries section)

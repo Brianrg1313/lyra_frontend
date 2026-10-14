@@ -48,10 +48,13 @@ class SaleDetailMoney extends StatelessWidget {
         [_units(context), _subtotal(context)],
         [_tax(context), _total(context)],
         [_method(context)],
-        // Only a credit ticket can owe anything: every other method is money
-        // that was there when the ticket was written, and drawing a "collected"
-        // of zero over a cash sale would read as a payment that never came.
-        if (payment.credit) [_collected(context), _outstanding(context)]
+        // Only a sale that can owe anything draws a balance —a credit ticket,
+        // or a channel ticket paid in parts or asked for a late delivery—:
+        // a "collected" of zero over a cash sale would read as a payment that
+        // never came.
+        if (payment.hasBalance) [_collected(context), _outstanding(context)],
+        if (sale.due != null) [_due(context, sale.due!)],
+        if (payment.received.isNotEmpty) [_received(context)]
       ])
     );
   }
@@ -112,6 +115,45 @@ class SaleDetailMoney extends StatelessWidget {
         // The debt is the only red figure on the panel: it is the one thing on
         // a finished-looking sale that is not finished.
         color: payment.isOwed ? scheme.chart.critical : scheme.text.secondary
+      )
+    );
+  }
+
+  /// What is asked for on top of the total (a delivery chosen after the
+  /// charge), line by line; it joins the total once paid.
+  Widget _due(BuildContext context, SaleDueModel due) => SettingsValue(
+    icon: CI.delivery,
+    label: S.of(context).sales_detail_due,
+    value: saleAmountLabel(due.total, sale.currency),
+    hint: due.items.isEmpty
+      ? null
+      : [for (final line in due.items) line.name].join(" · ")
+  );
+
+  /// Each approval of the money, oldest first: how much, how, when.
+  Widget _received(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+
+    return SettingsRow(
+      icon: CI.chack_circle,
+      label: S.of(context).sales_detail_received,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final (index, entry) in sale.payment.received.indexed) ...[
+            if (index > 0) SizedBox(height: AppSize.gap * 0.5),
+            TextMedium(saleAmountLabel(entry.amount, sale.currency), ellipsis: true),
+            TextSmall(
+              [
+                if (entry.method.isNotEmpty) entry.method,
+                if (entry.reference.isNotEmpty) entry.reference,
+                if (entry.at != null) saleDateLabel(context, entry.at)
+              ].join(" · "),
+              ellipsis: true,
+              color: scheme.text.secondary
+            )
+          ]
+        ]
       )
     );
   }

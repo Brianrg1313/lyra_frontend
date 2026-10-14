@@ -321,7 +321,8 @@ class SalesService extends ChangeNotifier {
     return true;
   }
 
-  /// **Approves a sale whose payment nobody had checked**, which closes it.
+  /// **Approves a sale whose payment nobody had checked** — all of it, or only
+  /// [amount] when part of the money arrived.
   ///
   /// The other thing on this board that only a person can say. The customer
   /// says the money is sent —that is what puts the sale at "Pago por
@@ -329,39 +330,40 @@ class SalesService extends ChangeNotifier {
   /// happened somewhere else and the comprobante is a photo on WhatsApp. So
   /// somebody looks at it and says so, and this is where they say it.
   ///
-  /// It is a mark on the **conversation** (`PUT /chats/stage`, `STAGE: sold`)
+  /// It is a mark on the **conversation** (`PUT /chats/stage`, `STAGE: paid`)
   /// and not a sales endpoint, because that is where the payment marker it also
   /// settles lives: approving is one statement about both, and splitting it in
-  /// two would leave a sale closed with the money still queued for somebody to
+  /// two would leave a sale charged with the money still queued for somebody to
   /// verify.
   ///
-  /// **The row is dropped rather than rewritten.** The answer is the stage now
-  /// in force and not a sale, so there is nothing to write over the row with —
-  /// and there is no need: an approved sale is closed, which is the other
-  /// section. The backend announces the movement to every screen of the company
-  /// as usual, but not always under the id this list holds (approving opens the
-  /// register's own ticket for a purchase that never had one, and the notice
-  /// carries the ticket), so the row this board has in hand is taken off here
-  /// instead of being left to a notice that may name something else.
+  /// **Approving is not closing** (backend, 13/10/2026): the sale stays in
+  /// process at what its handover reads, and a short payment goes back to
+  /// waiting for the rest. The answer is a stage and not a row, so the first
+  /// page is read again —silently— rather than guessed at; past it the person
+  /// is told there is something to pick up ([_reread]).
   ///
   /// **It is addressed by the conversation and not by the row**
   /// ([SaleModel.conversation]). The two are the same value on a deal and are
   /// not on anything else: every sale gets a ticket now, so a purchase arranged
   /// over a channel is a row whose id names the register's document while the
   /// stage it stands at —«Pago por verificar»— is the conversation's. Sending
-  /// that id closed nothing and answered `404 chat_not_found`. The row is still
-  /// what the board holds it by, which is what [_left] takes it off with.
+  /// that id approved nothing and answered `404 chat_not_found`.
   ///
   /// Returns whether it was approved. A refusal is shown and the row is left
-  /// exactly where it was: a sale drawn as closed because the write failed is a
+  /// exactly where it was: a sale drawn as paid because the write failed is a
   /// payment nobody is ever going to check.
-  Future<bool> approve(BuildContext context, {required SaleModel sale}) async {
+  Future<bool> approve(
+    BuildContext context, {
+    required SaleModel sale,
+    double? amount,
+    String? currency
+  }) async {
     final chat = sale.conversation;
 
     if (chat.isEmpty) return false;
 
     try {
-      await _source.approve(chat);
+      await _source.approve(chat, amount: amount, currency: currency);
     } catch (error) {
       if (kDebugMode) print("approveSale failed: $error");
 
@@ -370,7 +372,7 @@ class SalesService extends ChangeNotifier {
       return false;
     }
 
-    _left(sale.id);
+    _reread();
 
     return true;
   }
@@ -431,39 +433,6 @@ class SalesService extends ChangeNotifier {
     _notify();
   }
 
-  /// Takes a row off the list because the sale left it, on a write whose answer
-  /// cannot redraw it.
-  ///
-  /// It is the half of [_onProgress] that drops a row, reached from a write
-  /// instead of from a notice. On the `done` tab the same movement is an
-  /// arrival and there is nothing to draw it from, so the first page is read
-  /// again — under the same rule as a notice about a sale nobody holds: silent
-  /// on page one, announced past it, where the list is somebody's scroll.
-  void _left(String id) {
-    final index = _sales.indexWhere((row) => row.id == id);
-
-    if (index != -1) {
-      _sales.removeAt(index);
-      if (_total > 0) _total--;
-      _status = _sales.isEmpty ? SalesStatus.empty : SalesStatus.ready;
-
-      _notify();
-
-      return;
-    }
-
-    if (_section != SaleSection.done) return;
-
-    if (_page > 1) {
-      _pending++;
-      _notify();
-
-      return;
-    }
-
-    unawaited(_read(1, reset: true, silent: true));
-  }
-
   /// The connection came back. Whatever moved while it was down was never
   /// delivered, and the server keeps no backlog to ask it for, so the board is
   /// read again rather than trusted.
@@ -473,7 +442,11 @@ class SalesService extends ChangeNotifier {
   /// new ones land, so a drop does not blank the board— and past it the list is
   /// somebody's scroll, so they are told there is something to pick up instead
   /// of having their place taken away.
-  void _onRestored() {
+  void _onRestored() => _reread();
+
+  /// Reads the board again without blanking it: silently on the first page,
+  /// and past it only a count of what is waiting to be picked up.
+  void _reread() {
     if (_disposed || _status == SalesStatus.idle) return;
 
     if (_page > 1) {

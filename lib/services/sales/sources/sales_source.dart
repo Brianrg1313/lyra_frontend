@@ -26,8 +26,9 @@ abstract interface class SalesSource {
   /// answers the sale as it now reads, when the answer carries it.
   Future<SaleModel?> fulfil(Map<String, dynamic> request);
 
-  /// Approves the payment of the sale arranged in conversation [chat]. Cloud only.
-  Future<void> approve(String chat);
+  /// Approves the payment of the sale arranged in conversation [chat] — only
+  /// [amount] of it when part arrived (`approveSaleRequest`). Cloud only.
+  Future<void> approve(String chat, {double? amount, String? currency});
 
   /// One sale by any of its references: ticket code, row id or chat.
   Future<SaleDetailModel> detail(String reference);

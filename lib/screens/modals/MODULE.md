@@ -43,6 +43,8 @@ through `Navigator.pop(context, value)`.
 ## Files
 
 ### `shared/`
+- `approve_payment/_approve_payment.dart` — `showApprovePayment(context)` → `PaymentApproval?` (`amount` null = all of it,
+  `currency` among the company's, null = the ticket's), `ApprovePaymentModal`. Writes nothing. From the chat header and the sales board.
 - `crop_image/_crop_image.dart` — `CropImageModal({bytes})`: square crop + zoom, returns bytes. Before every logo/photo upload.
 - `image_viewer/_image_viewer.dart` — `showImageViewer(context, url:)`, `ImageViewer`: full screen.
 - `opening_hours/week_editor.dart` — `WeekEditor`: one branch's week (`OpeningHoursService`), Monday first, typed by
@@ -157,7 +159,7 @@ through `Navigator.pop(context, value)`.
   newest first — picture (→ `showImageViewer`), document (→ `launchUrl`), or text; lost image says
   so. `belongsTo(sale)`: only sales with a conversation.
 - `sale_detail/detail_money.dart` — `SaleDetailMoney`: units, subtotal, tax (per-rate breakdown),
-  total, method/reference, collected/owed on credit only. Backend figures only; missing = words,
+  total, method/reference, collected/owed when `payment.hasBalance`, `due` (charged apart), `received` (each approval). Backend figures only; missing = words,
   never `0`. Two figures per line (`_MoneyGrid`), one column under `AppSize.action * 6`.
 - `sale_detail/detail_items.dart` — `SaleDetailItems`: line count + button to `showSaleItems`, plus
   rows for lines no longer sold / `isUnheld`.

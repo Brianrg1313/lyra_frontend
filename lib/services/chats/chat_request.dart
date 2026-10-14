@@ -3,6 +3,9 @@
 library;
 
 /// Stages a person can set by hand (`PUT /aries/v1/chats/stage`); `null` undoes.
+/// `paid` approves the payment (the conversation waits at «Por cerrar»), `sold`
+/// closes the sale once nothing is pending (approving first when it was not).
+const String kChatStagePaid = "paid";
 const String kChatStageSold = "sold";
 const String kChatStageEnded = "ended";
 
@@ -44,11 +47,23 @@ Map<String, dynamic> assignChatRequest({required String id, String? username}) =
   "USERNAME": username
 };
 
-/// `PUT /aries/v1/chats/stage`: [kChatStageSold], [kChatStageEnded] or `null`
-/// to undo. `sold` also settles the payment and **messages the customer**.
-Map<String, dynamic> chatStageRequest({required String id, String? stage}) => {
+/// `PUT /aries/v1/chats/stage`: [kChatStagePaid], [kChatStageSold],
+/// [kChatStageEnded] or `null` to undo (the close first, then the approval).
+/// Approving **messages the customer**.
+///
+/// [amount] approves only what arrived (`paid` only): short of the total, it
+/// stays on the same ticket and the customer is asked for the rest. [currency]
+/// defaults to the ticket's; bolívares convert at the comprobante's rate.
+Map<String, dynamic> chatStageRequest({
+  required String id,
+  String? stage,
+  double? amount,
+  String? currency
+}) => {
   "ID": id,
-  "STAGE": stage
+  "STAGE": stage,
+  "AMOUNT": ?amount,
+  if (amount != null && currency != null && currency.isNotEmpty) "CURRENCY": currency
 };
 
 /// `POST /aries/v1/chats/alerts/resolve`. Without [stage] every pending work
