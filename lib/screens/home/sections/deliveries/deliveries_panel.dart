@@ -10,6 +10,7 @@ import 'package:app/services/business/business_branches_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_area_request.dart';
 import 'package:app/services/business/delivery_areas_service.dart';
+import 'package:app/services/shipments/shipment_model.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
@@ -21,20 +22,25 @@ import 'package:app/screens/home/sections/deliveries/area/widgets/area_map_picke
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_probe.dart';
 import 'package:app/screens/modals/deliveries/delivery_settings/_delivery_settings.dart';
 
-import './pending_list.dart';
+import './shipments/shipment_list.dart';
+import './widgets/panel_halves.dart';
+
+/// What the panel shows: the branch's deliveries, or where the company
+/// delivers.
+enum DeliveriesView { shipments, areas }
 
 /// The panel over the desk's map.
 ///
 /// While looking: the section's title with its settings beside it (how the
-/// company delivers, a side panel over the map), where it delivers (shared or
-/// per branch, and per branch whose map is open), "Add area" and the open
-/// map's areas, and the deliveries still on their way at its foot. A tap on
-/// the map says which areas in force reach that point and which branch the
-/// order would leave from.
+/// company delivers, a side panel over the map), then one of two views. The
+/// branch's deliveries (`ShipmentList`), the daily work, open first; the
+/// areas show where it delivers (shared or per branch, and per branch whose
+/// map is open), "Add area" and the open map's areas. A tap on the map says
+/// which areas in force reach that point and which branch the order would
+/// leave from.
 ///
 /// While an area is shaped, everything under the title gives way to its tools,
-/// name and figures: the map is where the shape is made, and the pending list
-/// would only take room from them.
+/// name and figures: the map is where the shape is made.
 class DeliveriesPanel extends StatelessWidget {
   const DeliveriesPanel({
     super.key,
@@ -42,7 +48,12 @@ class DeliveriesPanel extends StatelessWidget {
     required this.owner,
     required this.origin,
     required this.onOwner,
-    required this.onAdd
+    required this.onAdd,
+    required this.view,
+    required this.onView,
+    required this.onShipment,
+    this.shipments = true,
+    this.litShipment
   });
 
   final AreaEditor editor;
@@ -57,6 +68,19 @@ class DeliveriesPanel extends StatelessWidget {
 
   /// Starts an area made by the method picked.
   final void Function(AreaMethod method) onAdd;
+
+  final DeliveriesView view;
+  final void Function(DeliveriesView view) onView;
+
+  /// Whether the deliveries board exists here: a branch's, in the cloud only
+  /// (a master runs none, and the board needs the `branch_id` the cloud picks).
+  final bool shipments;
+
+  /// Opens a shipment's panel.
+  final void Function(Shipment shipment) onShipment;
+
+  /// The shipment picked on the map.
+  final String? litShipment;
 
   @override
   Widget build(BuildContext context) {
@@ -93,11 +117,21 @@ class DeliveriesPanel extends StatelessWidget {
           color: scheme.text.secondary
         ),
         SizedBox(height: AppSize.spaceS),
-        Expanded(child: _areas(context)),
-        if (!editor.isOpen) ...[
-          Separator.horizontal(margin: EdgeInsets.symmetric(vertical: AppSize.spaceS)),
-          const PendingDeliveries()
-        ]
+        if (!editor.isOpen && shipments) ...[
+          PanelHalves<DeliveriesView>(
+            values: DeliveriesView.values,
+            selected: view,
+            label: (view) => view == DeliveriesView.shipments
+              ? S.of(context).deliveries_view_shipments
+              : S.of(context).deliveries_view_areas,
+            icon: (view) => view == DeliveriesView.shipments ? CI.delivery : CI.globe_shopping,
+            onChanged: onView
+          ),
+          SizedBox(height: AppSize.spaceS)
+        ],
+        Expanded(child: !editor.isOpen && shipments && view == DeliveriesView.shipments
+          ? ShipmentList(onOpen: onShipment, lit: litShipment)
+          : _areas(context))
       ]
     );
   }

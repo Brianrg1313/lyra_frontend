@@ -134,7 +134,8 @@
       "paths": ["/home/deliveries"],
       "actions": ["view", "create"],
       "action_notes": {
-        "create": "New delivery (coming soon, no endpoint yet)."
+        "view": "The desk. Its deliveries board (the branch's shipments, /shipments, and the branch's schedule) is the cloud's only: a master runs none.",
+        "create": "New delivery (coming soon, no endpoint yet): a shipment opens by itself when a delivery is paid."
       },
       "children": [
         {

@@ -23,7 +23,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
   A service takes `{XSource? source}` for tests and otherwise reads `Sources.<x>`
   (`lib/toolkit/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
   domains (chats, channels, connections, knowledge, maps, baileys, places, money AI, sign up, business
-  e-mails, badges, account) are not split.
+  e-mails, badges, account, shipments, opening hours) are not split.
 
 ## local_server/ — the master's engine (`lyra_node`), desktop only
 
@@ -167,6 +167,32 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `delivery_areas_service.dart` — `DeliveryAreasService` (+ status, `limit = 20` per map): `/business/delivery/areas/`,
   `setScope` (`PUT /business/delivery/`, then rereads the areas), `travelShape` (`POST /scorpius/v1/isochrone` → largest
   outline, simplified). Provided by the deliveries desk.
+
+## shipments/ — a branch's deliveries board (`envios-frontend.md`; cloud only, `api` direct; owned by the deliveries desk)
+
+- `shipment_model.dart` — `ShipmentState` (codes, `en_route` = `enRoute`; `going`), `ShipmentStateInfo` (`catalog`: name,
+  attention, `next`), `Shipment` (`read`, `list` of the compressed board, `leftBoard`: an event with `state: null`; id = the
+  sale's, `name` = number else ticket, `charged`, `stored`), `ShipmentCarrier`, `ShipmentDestination`, `ShipmentWindow`,
+  `ShipmentStep`, `ShippingSettings` (+ the backend's ranges), `DeliverySlot` (a franja: moments, day and hours as said,
+  taken, load, seats), `DeliveryOffer` (what the bot offers: `said` hours), `ShipmentCarriers` (riders by job, providers).
+- `shipment_request.dart` — `CarrierChoice` (rider / provider + reference / none), `shipmentStateRequest`,
+  `editShipmentRequest` (**only what changed**; empty = `""` takes it off; an address travels with the point it keeps),
+  `shippingSettingsRequest` (only what changed; no limit = `""`).
+- `shipments_service.dart` — `ShipmentsService` (+ status, `ShipmentsView {going, delivered}`): the board of the
+  `branch_id` header's branch, the states' catalog, the person's grant (`canDispatch`, `canConfigure`, `canSchedule` =
+  `appointments.configure`), `loadCarriers` (once), `windows`, `move` (answers the row, placed); `shipment/changed`
+  replaces, drops (`state: null`, another view) or places in window order; `onRestored` rereads. Seams `seed`, `receiveEvent`.
+- `shipping_settings_service.dart` — `ShippingSettingsService` (+ status): `/shipments/settings/`, `measure` (every franja
+  with `ALL`, and `/offer/`; a refusal kept in `slotsError`), `save` (only what changed, then measures). Owned by its panel.
+
+## appointments/ — when a branch attends (`sedes-frontend.md` §11; cloud only, `api` direct)
+
+- `opening_hours_model.dart` — `OpeningStretch` (weekday 0 = Sunday, minutes from midnight, `clock`, `minutes`, `service`
+  rows narrow a day), `ClosedDay` (`YYYY-MM-DD`, `branch` null = every branch).
+- `opening_hours_request.dart` — `setWeekRequest` (the **whole** week of a branch, its services' rows sent back),
+  `closeDayRequest`, `reopenDayRequest`.
+- `opening_hours_service.dart` — `OpeningHoursService({branch})` (+ status): the branch's week (its services' rows kept
+  apart) and the closures here or everywhere; `saveWeek`, `close`, `reopen`. Owned by the shipping schedule panel.
 
 ## catalog/ — platform configuration from `/init/`
 

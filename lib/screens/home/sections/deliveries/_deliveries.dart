@@ -13,16 +13,21 @@ import 'package:app/services/business/business_location_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_areas_service.dart';
 import 'package:app/services/maps/map_tiles_service.dart';
+import 'package:app/services/shipments/shipment_model.dart';
+import 'package:app/services/shipments/shipments_service.dart';
+import 'package:app/toolkit/deployment.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/business/branches/branch_markers.dart';
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_layers.dart';
+import 'package:app/screens/modals/deliveries/shipment/_shipment.dart';
 
 import './deliveries_header.dart';
 import './deliveries_map.dart';
 import './deliveries_panel.dart';
+import './shipments/shipment_markers.dart';
 import './widgets/map_panel.dart';
 
 /// **The deliveries desk**: the content of the `deliveries` section.
@@ -36,9 +41,13 @@ import './widgets/map_panel.dart';
 /// map's, and a pin opens its branch's map; with one shared map a pin only
 /// moves the map.
 ///
+/// The branch's deliveries open first: the panel lists them and the map pins
+/// where each goes (cloud only, [ShipmentsService]); a tile or a pin opens the
+/// shipment's panel.
+///
 /// The services live here and not app-wide, as on the business page: what
-/// they read answers for the active company, and a business switch remounts
-/// the section. The [MapController] and the [AreaEditor] live here because
+/// they read answers for the active company (and the shipments for the branch
+/// worked in), and a business or branch switch remounts the section. The [MapController] and the [AreaEditor] live here because
 /// the panel, the map and its pins all move or read them.
 class DeliveriesSection extends StatefulWidget {
   const DeliveriesSection({super.key});
@@ -52,12 +61,21 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   final MapTilesService _tiles = MapTilesService();
   final BusinessBranchesService _branches = BusinessBranchesService();
   final DeliveryAreasService _areas = DeliveryAreasService();
+  final ShipmentsService _shipments = ShipmentsService();
   final BranchesFocus _focus = BranchesFocus();
   final MapController _map = MapController();
   late final AreaEditor _editor = AreaEditor(map: _map);
 
   /// The branch whose map was asked for; [_owner] says which one is open.
   String? _picked;
+
+  /// The board exists only in the cloud (see [DeliveriesPanel.shipments]).
+  final bool _board = Deployment.mode == DeploymentMode.cloud;
+
+  late DeliveriesView _view = _board ? DeliveriesView.shipments : DeliveriesView.areas;
+
+  /// The shipment whose panel was opened last, named on its pin.
+  String? _litShipment;
 
   /// The open map: `null` for the shared one; per branch, the one picked, or
   /// the first (the main one) when none was or it is gone.
@@ -85,6 +103,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
       _tiles.load();
       _branches.load();
       _areas.load();
+      if (_board) _shipments.load();
     });
   }
 
@@ -95,6 +114,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     _tiles.dispose();
     _branches.dispose();
     _areas.dispose();
+    _shipments.dispose();
     _focus.dispose();
     _map.dispose();
 
@@ -121,6 +141,28 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     if (point != null && _tiles.status == MapTilesStatus.ready) {
       _map.move(point, perBranch ? _map.camera.zoom : DeliveriesMap.businessZoom);
     }
+  }
+
+  /// Shows [view]; the areas drop the probe a shipment view has no use for.
+  void _show(DeliveriesView view) {
+    if (view == _view) return;
+
+    _editor.clearProbe();
+    setState(() => _view = view);
+  }
+
+  /// Opens [shipment]'s panel, moving the map to where it goes.
+  Future<void> _openShipment(Shipment shipment) async {
+    setState(() => _litShipment = shipment.id);
+
+    final destination = shipment.destination;
+
+    if (destination case ShipmentDestination(:final double latitude, :final double longitude)
+        when _tiles.status == MapTilesStatus.ready) {
+      _map.move(LatLng(latitude, longitude), _map.camera.zoom);
+    }
+
+    await showShipment(context, service: _shipments, id: shipment.id);
   }
 
   /// Starts a new area, unless the list is not there to add it to, or full.
@@ -188,6 +230,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
       ChangeNotifierProvider<MapTilesService>.value(value: _tiles),
       ChangeNotifierProvider<BusinessBranchesService>.value(value: _branches),
       ChangeNotifierProvider<DeliveryAreasService>.value(value: _areas),
+      ChangeNotifierProvider<ShipmentsService>.value(value: _shipments),
       ChangeNotifierProvider<BranchesFocus>.value(value: _focus)
     ],
     child: Surface(
@@ -202,10 +245,12 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
               businessMark: false,
               layers: [
                 ..._layers(context),
-                BranchMarkers(onSelect: (branch) => _open(branch.id))
+                BranchMarkers(onSelect: (branch) => _open(branch.id)),
+                if (_view == DeliveriesView.shipments && !_editor.isOpen)
+                  ShipmentMarkers(onOpen: _openShipment, lit: _litShipment)
               ],
               overlays: areaOverlays(context, _editor),
-              onTap: _editor.tap
+              onTap: _view == DeliveriesView.areas || _editor.isOpen ? _editor.tap : null
             )),
             Positioned(
               top: AppSize.spaceS,
@@ -217,7 +262,12 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
                 owner: _owner,
                 origin: _origin,
                 onOwner: _open,
-                onAdd: _start
+                onAdd: _start,
+                view: _view,
+                onView: _show,
+                shipments: _board,
+                onShipment: _openShipment,
+                litShipment: _litShipment
               ))
             ),
             Positioned(

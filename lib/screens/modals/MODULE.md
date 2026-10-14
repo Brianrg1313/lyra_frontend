@@ -182,6 +182,26 @@ through `Navigator.pop(context, value)`.
   controllers belong to **no** form: rows come and go, and a registered one would stay and be validated.
 - `edit_delivery_notes/_edit_delivery_notes.dart` — `showDeliveryNotes(context, notes:)`,
   `EditDeliveryNotesModal`: one field. **Returns the text** (empty erases).
+- `shipment/_shipment.dart` — `showShipment(context, service:, id:)`, `ShipmentModal`: one shipment of the board, following
+  the desk's `ShipmentsService` row (gone = left the board); moves and the form only with `shipments.dispatch`.
+- `shipment/shipment_moves.dart` — `ShipmentMoves`: a button per state of the catalog's `next` (assigned only with a carrier).
+- `shipment/shipment_form.dart` — `ShipmentForm`: carrier (`showSelectMenu`: none, the branch's riders, the country's
+  carriers + reference), window (the branch's franjas with room), cost, note, receiver; address + point only for a sale
+  without a point of its own. Drafts follow the row until edited; one save, `editShipmentRequest`.
+- `shipment/shipment_facts.dart` — `ShipmentHeading` (number, state, untouched note, customer, opens the chat on the
+  messages desk), `ShipmentCarrying` (read only), `ShipmentDestinationBlock` (address, area, point, opens `maps`),
+  `ShipmentMoney` (total, collect on delivery, fee, cost), `ShipmentHistory`.
+- `shipping_settings/_shipping_settings.dart` — `showShippingSettings(context, service:)`, `ShippingSettingsModal`: the
+  branch worked in's schedule; **owns** `ShippingSettingsService` and `OpeningHoursService`; a week or closure change
+  re-measures the franjas.
+- `shipping_settings/offer_preview.dart` — `OfferPreview`: what the bot would offer today and each day's franjas with room;
+  no hours / no zone said in words.
+- `shipping_settings/slot_settings.dart` — `SlotSettings`: span, capacity (empty = no limit), lead, days, width, checked
+  against the backend's ranges; read only without `shipments.configure`.
+- `shipping_settings/week_editor.dart` — `WeekEditor`: the branch's week, Monday first, stretches per day (add, remove,
+  copy the day before), validated (`HH:MM`, no overlap) and written whole; read only without `appointments.configure`.
+- `shipping_settings/closed_days.dart` — `ClosedDays`: the days ahead closed here or in every branch; close (day, reason,
+  every branch), open again (asks for an every-branch one).
 
 ### `messages/`
 - `chat_usage/_chat_usage.dart` — `showChatUsage(context, thread:)`, `ChatUsageModal`: AI spend of the open session (total, tokens, areas that ran). Re-provides the `ChatThreadService` and rereads the detail on open. `usageCost` `usageNumber` `usageCompact`.

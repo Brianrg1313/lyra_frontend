@@ -65,7 +65,11 @@ void main() {
             owner: owner,
             origin: () => const LatLng(10.5, -66.9),
             onOwner: (_) {},
-            onAdd: added.add
+            onAdd: added.add,
+            view: DeliveriesView.areas,
+            onView: (_) {},
+            onShipment: (_) {},
+            shipments: false
           ));
         })
       )

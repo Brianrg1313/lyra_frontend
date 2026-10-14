@@ -14817,26 +14817,6 @@ class S {
     );
   }
 
-  /// `Here you will see every order still on its way to the customer.`
-  String get deliveries_pending_soon {
-    return Intl.message(
-      'Here you will see every order still on its way to the customer.',
-      name: 'deliveries_pending_soon',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Pending deliveries`
-  String get deliveries_pending_title {
-    return Intl.message(
-      'Pending deliveries',
-      name: 'deliveries_pending_title',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Where you deliver`
   String get deliveries_scope_title {
     return Intl.message(
@@ -15047,6 +15027,1209 @@ class S {
       name: 'deliveries_settings',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Deliveries`
+  String get deliveries_view_shipments {
+    return Intl.message(
+      'Deliveries',
+      name: 'deliveries_view_shipments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Areas`
+  String get deliveries_view_areas {
+    return Intl.message(
+      'Areas',
+      name: 'deliveries_view_areas',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries`
+  String get shipments_title {
+    return Intl.message(
+      'Deliveries',
+      name: 'shipments_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries · {branch}`
+  String shipments_title_branch(Object branch) {
+    return Intl.message(
+      'Deliveries · $branch',
+      name: 'shipments_title_branch',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `Schedule`
+  String get shipments_schedule {
+    return Intl.message(
+      'Schedule',
+      name: 'shipments_schedule',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On their way`
+  String get shipments_going {
+    return Intl.message(
+      'On their way',
+      name: 'shipments_going',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On their way ({count})`
+  String shipments_going_count(Object count) {
+    return Intl.message(
+      'On their way ($count)',
+      name: 'shipments_going_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Delivered`
+  String get shipments_delivered {
+    return Intl.message(
+      'Delivered',
+      name: 'shipments_delivered',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The deliveries could not be read`
+  String get shipments_error {
+    return Intl.message(
+      'The deliveries could not be read',
+      name: 'shipments_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check your connection and try again.`
+  String get shipments_error_subtitle {
+    return Intl.message(
+      'Check your connection and try again.',
+      name: 'shipments_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No deliveries pending`
+  String get shipments_empty {
+    return Intl.message(
+      'No deliveries pending',
+      name: 'shipments_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A delivery shows up here by itself when a customer who chose home delivery has their payment approved.`
+  String get shipments_empty_subtitle {
+    return Intl.message(
+      'A delivery shows up here by itself when a customer who chose home delivery has their payment approved.',
+      name: 'shipments_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing delivered yet`
+  String get shipments_delivered_empty {
+    return Intl.message(
+      'Nothing delivered yet',
+      name: 'shipments_delivered_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries marked as delivered stay here.`
+  String get shipments_delivered_empty_subtitle {
+    return Intl.message(
+      'Deliveries marked as delivered stay here.',
+      name: 'shipments_delivered_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery`
+  String get shipments_untitled {
+    return Intl.message(
+      'Delivery',
+      name: 'shipments_untitled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No time window`
+  String get shipments_window_none {
+    return Intl.message(
+      'No time window',
+      name: 'shipments_window_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nobody assigned`
+  String get shipments_carrier_none {
+    return Intl.message(
+      'Nobody assigned',
+      name: 'shipments_carrier_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Team member`
+  String get shipments_carrier_rider {
+    return Intl.message(
+      'Team member',
+      name: 'shipments_carrier_rider',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Collect on delivery`
+  String get shipments_collect {
+    return Intl.message(
+      'Collect on delivery',
+      name: 'shipments_collect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Location shared on the map`
+  String get shipments_destination_pin {
+    return Intl.message(
+      'Location shared on the map',
+      name: 'shipments_destination_pin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No address`
+  String get shipments_destination_none {
+    return Intl.message(
+      'No address',
+      name: 'shipments_destination_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery`
+  String get shipment_title {
+    return Intl.message('Delivery', name: 'shipment_title', desc: '', args: []);
+  }
+
+  /// `This delivery is no longer on the board`
+  String get shipment_gone {
+    return Intl.message(
+      'This delivery is no longer on the board',
+      name: 'shipment_gone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It was delivered, changed to pickup, or moved to another view.`
+  String get shipment_gone_subtitle {
+    return Intl.message(
+      'It was delivered, changed to pickup, or moved to another view.',
+      name: 'shipment_gone_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Code {ticket}`
+  String shipment_ticket(Object ticket) {
+    return Intl.message(
+      'Code $ticket',
+      name: 'shipment_ticket',
+      desc: '',
+      args: [ticket],
+    );
+  }
+
+  /// `Nobody has worked on this delivery yet: it opened by itself when the payment was approved.`
+  String get shipment_untouched {
+    return Intl.message(
+      'Nobody has worked on this delivery yet: it opened by itself when the payment was approved.',
+      name: 'shipment_untouched',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer`
+  String get shipment_customer_unknown {
+    return Intl.message(
+      'Customer',
+      name: 'shipment_customer_unknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open conversation`
+  String get shipment_open_chat {
+    return Intl.message(
+      'Open conversation',
+      name: 'shipment_open_chat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Move to`
+  String get shipment_moves {
+    return Intl.message('Move to', name: 'shipment_moves', desc: '', args: []);
+  }
+
+  /// `Only the steps this delivery can take from where it is.`
+  String get shipment_moves_subtitle {
+    return Intl.message(
+      'Only the steps this delivery can take from where it is.',
+      name: 'shipment_moves_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who and when`
+  String get shipment_carrying {
+    return Intl.message(
+      'Who and when',
+      name: 'shipment_carrying',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Carried by`
+  String get shipment_carrier {
+    return Intl.message(
+      'Carried by',
+      name: 'shipment_carrier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search people or carriers`
+  String get shipment_carrier_search {
+    return Intl.message(
+      'Search people or carriers',
+      name: 'shipment_carrier_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nobody can carry deliveries from this branch`
+  String get shipment_carrier_empty {
+    return Intl.message(
+      'Nobody can carry deliveries from this branch',
+      name: 'shipment_carrier_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Team`
+  String get shipment_carrier_team {
+    return Intl.message(
+      'Team',
+      name: 'shipment_carrier_team',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Courier`
+  String get shipment_carrier_courier {
+    return Intl.message(
+      'Courier',
+      name: 'shipment_carrier_courier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery platform`
+  String get shipment_carrier_platform {
+    return Intl.message(
+      'Delivery platform',
+      name: 'shipment_carrier_platform',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Order or tracking number`
+  String get shipment_reference {
+    return Intl.message(
+      'Order or tracking number',
+      name: 'shipment_reference',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The carrier's reference`
+  String get shipment_reference_hint {
+    return Intl.message(
+      'The carrier\'s reference',
+      name: 'shipment_reference_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time window`
+  String get shipment_window {
+    return Intl.message(
+      'Time window',
+      name: 'shipment_window',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search a day or time`
+  String get shipment_window_search {
+    return Intl.message(
+      'Search a day or time',
+      name: 'shipment_window_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This branch has no windows with room left. Check its schedule.`
+  String get shipment_window_no_slots {
+    return Intl.message(
+      'This branch has no windows with room left. Check its schedule.',
+      name: 'shipment_window_no_slots',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =0{Nothing booked} =1{1 delivery booked} other{{count} deliveries booked}}`
+  String shipment_window_taken(num count) {
+    return Intl.plural(
+      count,
+      zero: 'Nothing booked',
+      one: '1 delivery booked',
+      other: '$count deliveries booked',
+      name: 'shipment_window_taken',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{seats} left · {taken} booked`
+  String shipment_window_seats(Object seats, Object taken) {
+    return Intl.message(
+      '$seats left · $taken booked',
+      name: 'shipment_window_seats',
+      desc: '',
+      args: [seats, taken],
+    );
+  }
+
+  /// `Delivery cost`
+  String get shipment_cost {
+    return Intl.message(
+      'Delivery cost',
+      name: 'shipment_cost',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What carrying it cost the company`
+  String get shipment_cost_hint {
+    return Intl.message(
+      'What carrying it cost the company',
+      name: 'shipment_cost_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write the cost as an amount, like 3.50.`
+  String get shipment_cost_invalid {
+    return Intl.message(
+      'Write the cost as an amount, like 3.50.',
+      name: 'shipment_cost_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Note`
+  String get shipment_note {
+    return Intl.message('Note', name: 'shipment_note', desc: '', args: []);
+  }
+
+  /// `Instructions for whoever carries it`
+  String get shipment_note_hint {
+    return Intl.message(
+      'Instructions for whoever carries it',
+      name: 'shipment_note_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Received by`
+  String get shipment_receiver {
+    return Intl.message(
+      'Received by',
+      name: 'shipment_receiver',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who took the order`
+  String get shipment_receiver_hint {
+    return Intl.message(
+      'Who took the order',
+      name: 'shipment_receiver_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Address`
+  String get shipment_address {
+    return Intl.message(
+      'Address',
+      name: 'shipment_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where it goes`
+  String get shipment_address_hint {
+    return Intl.message(
+      'Where it goes',
+      name: 'shipment_address_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Map point`
+  String get shipment_point {
+    return Intl.message(
+      'Map point',
+      name: 'shipment_point',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Latitude, longitude or a map link`
+  String get shipment_point_hint {
+    return Intl.message(
+      'Latitude, longitude or a map link',
+      name: 'shipment_point_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `That is not a map point. Paste the coordinates or a map link.`
+  String get shipment_point_invalid {
+    return Intl.message(
+      'That is not a map point. Paste the coordinates or a map link.',
+      name: 'shipment_point_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery saved`
+  String get shipment_saved {
+    return Intl.message(
+      'Delivery saved',
+      name: 'shipment_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Destination`
+  String get shipment_destination {
+    return Intl.message(
+      'Destination',
+      name: 'shipment_destination',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open in maps`
+  String get shipment_open_map {
+    return Intl.message(
+      'Open in maps',
+      name: 'shipment_open_map',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Area`
+  String get shipment_area {
+    return Intl.message('Area', name: 'shipment_area', desc: '', args: []);
+  }
+
+  /// `Money`
+  String get shipment_money {
+    return Intl.message('Money', name: 'shipment_money', desc: '', args: []);
+  }
+
+  /// `Sale total`
+  String get shipment_total {
+    return Intl.message(
+      'Sale total',
+      name: 'shipment_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not paid yet: it is collected on delivery.`
+  String get shipment_collect_hint {
+    return Intl.message(
+      'Not paid yet: it is collected on delivery.',
+      name: 'shipment_collect_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid by the customer for delivery`
+  String get shipment_fee {
+    return Intl.message(
+      'Paid by the customer for delivery',
+      name: 'shipment_fee',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not stated`
+  String get shipment_none {
+    return Intl.message(
+      'Not stated',
+      name: 'shipment_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `History`
+  String get shipment_history {
+    return Intl.message(
+      'History',
+      name: 'shipment_history',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No steps recorded yet.`
+  String get shipment_history_empty {
+    return Intl.message(
+      'No steps recorded yet.',
+      name: 'shipment_history_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery schedule`
+  String get shipping_settings_title {
+    return Intl.message(
+      'Delivery schedule',
+      name: 'shipping_settings_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When {branch} delivers: its opening hours, the days it is closed and how they are split into time windows.`
+  String shipping_settings_subtitle(Object branch) {
+    return Intl.message(
+      'When $branch delivers: its opening hours, the days it is closed and how they are split into time windows.',
+      name: 'shipping_settings_subtitle',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `The schedule could not be read`
+  String get shipping_settings_error {
+    return Intl.message(
+      'The schedule could not be read',
+      name: 'shipping_settings_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No branch selected`
+  String get shipping_settings_no_branch {
+    return Intl.message(
+      'No branch selected',
+      name: 'shipping_settings_no_branch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick the branch you work in to see its schedule.`
+  String get shipping_settings_no_branch_subtitle {
+    return Intl.message(
+      'Pick the branch you work in to see its schedule.',
+      name: 'shipping_settings_no_branch_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What a customer is offered today`
+  String get shipping_offer_title {
+    return Intl.message(
+      'What a customer is offered today',
+      name: 'shipping_offer_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the assistant writes when a delivery is paid, and the windows of the coming days.`
+  String get shipping_offer_subtitle {
+    return Intl.message(
+      'What the assistant writes when a delivery is paid, and the windows of the coming days.',
+      name: 'shipping_offer_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{day}: any time from {opens} to {closes}`
+  String shipping_offer_range(Object day, Object opens, Object closes) {
+    return Intl.message(
+      '$day: any time from $opens to $closes',
+      name: 'shipping_offer_range',
+      desc: '',
+      args: [day, opens, closes],
+    );
+  }
+
+  /// `{day}: from {opens} to {closes}`
+  String shipping_offer_window(Object day, Object opens, Object closes) {
+    return Intl.message(
+      '$day: from $opens to $closes',
+      name: 'shipping_offer_window',
+      desc: '',
+      args: [day, opens, closes],
+    );
+  }
+
+  /// `No room left in the coming days.`
+  String get shipping_offer_none {
+    return Intl.message(
+      'No room left in the coming days.',
+      name: 'shipping_offer_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This branch has no opening hours, so it offers no delivery windows. Set them below.`
+  String get shipping_offer_no_hours {
+    return Intl.message(
+      'This branch has no opening hours, so it offers no delivery windows. Set them below.',
+      name: 'shipping_offer_no_hours',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The windows could not be measured.`
+  String get shipping_offer_error {
+    return Intl.message(
+      'The windows could not be measured.',
+      name: 'shipping_offer_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{day}: {count} windows, {open} with room`
+  String shipping_offer_day(Object day, Object count, Object open) {
+    return Intl.message(
+      '$day: $count windows, $open with room',
+      name: 'shipping_offer_day',
+      desc: '',
+      args: [day, count, open],
+    );
+  }
+
+  /// `{count} min`
+  String shipping_minutes(Object count) {
+    return Intl.message(
+      '$count min',
+      name: 'shipping_minutes',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Time windows`
+  String get shipping_slots_title {
+    return Intl.message(
+      'Time windows',
+      name: 'shipping_slots_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How the opening hours are split for deliveries.`
+  String get shipping_slots_subtitle {
+    return Intl.message(
+      'How the opening hours are split for deliveries.',
+      name: 'shipping_slots_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Minutes per window`
+  String get shipping_slots_span {
+    return Intl.message(
+      'Minutes per window',
+      name: 'shipping_slots_span',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `15 to 720`
+  String get shipping_slots_span_hint {
+    return Intl.message(
+      '15 to 720',
+      name: 'shipping_slots_span_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries per window`
+  String get shipping_slots_capacity {
+    return Intl.message(
+      'Deliveries per window',
+      name: 'shipping_slots_capacity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Empty for no limit (1 to 999)`
+  String get shipping_slots_capacity_hint {
+    return Intl.message(
+      'Empty for no limit (1 to 999)',
+      name: 'shipping_slots_capacity_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No limit`
+  String get shipping_slots_no_limit {
+    return Intl.message(
+      'No limit',
+      name: 'shipping_slots_no_limit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Preparation minutes`
+  String get shipping_slots_lead {
+    return Intl.message(
+      'Preparation minutes',
+      name: 'shipping_slots_lead',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Before the first window, 0 to 2880`
+  String get shipping_slots_lead_hint {
+    return Intl.message(
+      'Before the first window, 0 to 2880',
+      name: 'shipping_slots_lead_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Days ahead`
+  String get shipping_slots_days {
+    return Intl.message(
+      'Days ahead',
+      name: 'shipping_slots_days',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1 to 14`
+  String get shipping_slots_days_hint {
+    return Intl.message(
+      '1 to 14',
+      name: 'shipping_slots_days_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Minutes per offered window`
+  String get shipping_slots_width {
+    return Intl.message(
+      'Minutes per offered window',
+      name: 'shipping_slots_width',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On a busy day, 60 to 720`
+  String get shipping_slots_width_hint {
+    return Intl.message(
+      'On a busy day, 60 to 720',
+      name: 'shipping_slots_width_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the figures: each one has to be a whole number within its range.`
+  String get shipping_slots_invalid {
+    return Intl.message(
+      'Check the figures: each one has to be a whole number within its range.',
+      name: 'shipping_slots_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time windows saved`
+  String get shipping_slots_saved {
+    return Intl.message(
+      'Time windows saved',
+      name: 'shipping_slots_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Opening hours`
+  String get shipping_week_title {
+    return Intl.message(
+      'Opening hours',
+      name: 'shipping_week_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The hours this branch attends each day. They are also the hours the assistant gives customers.`
+  String get shipping_week_subtitle {
+    return Intl.message(
+      'The hours this branch attends each day. They are also the hours the assistant gives customers.',
+      name: 'shipping_week_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Closed`
+  String get shipping_week_closed {
+    return Intl.message(
+      'Closed',
+      name: 'shipping_week_closed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Opens`
+  String get shipping_week_opens {
+    return Intl.message(
+      'Opens',
+      name: 'shipping_week_opens',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Closes`
+  String get shipping_week_closes {
+    return Intl.message(
+      'Closes',
+      name: 'shipping_week_closes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add hours`
+  String get shipping_week_add {
+    return Intl.message(
+      'Add hours',
+      name: 'shipping_week_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Same as the day before`
+  String get shipping_week_copy {
+    return Intl.message(
+      'Same as the day before',
+      name: 'shipping_week_copy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove`
+  String get shipping_week_remove {
+    return Intl.message(
+      'Remove',
+      name: 'shipping_week_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Discard`
+  String get shipping_week_discard {
+    return Intl.message(
+      'Discard',
+      name: 'shipping_week_discard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{day}: write the hours as 09:00, with closing after opening.`
+  String shipping_week_invalid(Object day) {
+    return Intl.message(
+      '$day: write the hours as 09:00, with closing after opening.',
+      name: 'shipping_week_invalid',
+      desc: '',
+      args: [day],
+    );
+  }
+
+  /// `{day}: two stretches overlap.`
+  String shipping_week_overlap(Object day) {
+    return Intl.message(
+      '$day: two stretches overlap.',
+      name: 'shipping_week_overlap',
+      desc: '',
+      args: [day],
+    );
+  }
+
+  /// `Opening hours saved`
+  String get shipping_week_saved {
+    return Intl.message(
+      'Opening hours saved',
+      name: 'shipping_week_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Closed days`
+  String get shipping_closed_title {
+    return Intl.message(
+      'Closed days',
+      name: 'shipping_closed_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No deliveries or appointments are offered on these days.`
+  String get shipping_closed_subtitle {
+    return Intl.message(
+      'No deliveries or appointments are offered on these days.',
+      name: 'shipping_closed_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No closed days ahead.`
+  String get shipping_closed_empty {
+    return Intl.message(
+      'No closed days ahead.',
+      name: 'shipping_closed_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This branch`
+  String get shipping_closed_here {
+    return Intl.message(
+      'This branch',
+      name: 'shipping_closed_here',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every branch`
+  String get shipping_closed_everywhere {
+    return Intl.message(
+      'Every branch',
+      name: 'shipping_closed_everywhere',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Day`
+  String get shipping_closed_day {
+    return Intl.message('Day', name: 'shipping_closed_day', desc: '', args: []);
+  }
+
+  /// `Like 2026-12-25`
+  String get shipping_closed_day_hint {
+    return Intl.message(
+      'Like 2026-12-25',
+      name: 'shipping_closed_day_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reason`
+  String get shipping_closed_reason {
+    return Intl.message(
+      'Reason',
+      name: 'shipping_closed_reason',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday, inventory day…`
+  String get shipping_closed_reason_hint {
+    return Intl.message(
+      'Holiday, inventory day…',
+      name: 'shipping_closed_reason_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close it in every branch`
+  String get shipping_closed_everywhere_toggle {
+    return Intl.message(
+      'Close it in every branch',
+      name: 'shipping_closed_everywhere_toggle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close day`
+  String get shipping_closed_add {
+    return Intl.message(
+      'Close day',
+      name: 'shipping_closed_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write a real day, like 2026-12-25.`
+  String get shipping_closed_invalid {
+    return Intl.message(
+      'Write a real day, like 2026-12-25.',
+      name: 'shipping_closed_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open again`
+  String get shipping_closed_reopen {
+    return Intl.message(
+      'Open again',
+      name: 'shipping_closed_reopen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open this day again?`
+  String get shipping_closed_reopen_title {
+    return Intl.message(
+      'Open this day again?',
+      name: 'shipping_closed_reopen_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{day} opens again in every branch.`
+  String shipping_closed_reopen_everywhere(Object day) {
+    return Intl.message(
+      '$day opens again in every branch.',
+      name: 'shipping_closed_reopen_everywhere',
+      desc: '',
+      args: [day],
     );
   }
 
@@ -20716,6 +21899,46 @@ class S {
     return Intl.message(
       'Hand over orders',
       name: 'permission_sales_fulfill',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries`
+  String get permission_shipments_title {
+    return Intl.message(
+      'Deliveries',
+      name: 'permission_shipments_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The branch's deliveries board, its time windows and who can carry them.`
+  String get permission_shipments_description {
+    return Intl.message(
+      'The branch\'s deliveries board, its time windows and who can carry them.',
+      name: 'permission_shipments_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Assign, schedule and move deliveries`
+  String get permission_shipments_dispatch {
+    return Intl.message(
+      'Assign, schedule and move deliveries',
+      name: 'permission_shipments_dispatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set how the branch schedules deliveries`
+  String get permission_shipments_configure {
+    return Intl.message(
+      'Set how the branch schedules deliveries',
+      name: 'permission_shipments_configure',
       desc: '',
       args: [],
     );
