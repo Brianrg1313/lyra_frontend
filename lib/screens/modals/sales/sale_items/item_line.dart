@@ -69,6 +69,10 @@ class SaleItemLine extends StatelessWidget {
                   ellipsis: true,
                   color: item.name.isEmpty ? scheme.text.secondary : null
                 ),
+                if (_extras(context).isNotEmpty) ...[
+                  SizedBox(height: AppSize.gap * 0.5),
+                  TextSmall(_extras(context), lines: 3, color: scheme.text.secondary)
+                ],
                 if (item.sku.isNotEmpty) ...[
                   SizedBox(height: AppSize.gap * 0.5),
                   TextSmall(item.sku, ellipsis: true, color: scheme.text.secondary)
@@ -110,6 +114,14 @@ class SaleItemLine extends StatelessWidget {
       ]
     );
   }
+
+  /// What was chosen on a dish and what it went without: «+ Cheese $1.00 · Medium · without
+  /// fries», what the kitchen made.
+  String _extras(BuildContext context) => [
+    for (final pick in item.modifiers)
+      pick.price > 0 ? "+ ${pick.name} ${saleAmountLabel(pick.price, currency)}" : pick.name,
+    for (final name in item.omitted) S.of(context).sales_detail_item_without(name)
+  ].where((part) => part.trim().isNotEmpty).join(" · ");
 
   /// What the shelf says about this line, when it says anything.
   ///

@@ -179,7 +179,7 @@ through `Navigator.pop(context, value)`.
 - `sale_detail/detail_trace.dart` — `SaleDetailTrace`: channel, till/bot, seller, contact, note, timestamps, id. Absent facts not drawn.
 - `sale_items/_sale_items.dart` — `showSaleItems(context, sale:)`, `SaleItemsModal`: every line,
   **stacked** on the detail panel; `ListView.builder`; local search (name/code) past eight lines.
-- `sale_items/item_line.dart` — `SaleItemLine`: qty, product, price, amount + shelf tags (gone, held, left, unheld).
+- `sale_items/item_line.dart` — `SaleItemLine`: qty, product, what was chosen and gone without («+ Cheese $1.00 · without fries»), price, amount + shelf tags (gone, held, left, unheld).
 - `sale_fulfillment/_sale_fulfillment.dart` — `showSaleFulfillment(context, sale:, modes:)`,
   `SaleFulfillmentModal`: handover mode/state. **Returns `fulfilSaleRequest`**. State picker only
   after a mode; sends only what changed (no-diff submit refused).

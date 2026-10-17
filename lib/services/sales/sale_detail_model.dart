@@ -571,7 +571,9 @@ class SaleItemModel {
     this.held = 0,
     this.state = "",
     this.available,
-    this.gone = false
+    this.gone = false,
+    this.omitted = const [],
+    this.modifiers = const []
   });
 
   /// The catalog row behind it. Empty on a charge that is not a product — a
@@ -621,6 +623,14 @@ class SaleItemModel {
   /// Whether the product can no longer be sold.
   final bool gone;
 
+  /// What a dish went without («without fries»), named as it was that day
+  /// (`omitted`, `cocina-frontend.md` §5): a recipe edited later rewrites nothing.
+  final List<String> omitted;
+
+  /// What the customer chose on it, each with what it added to one unit — already inside
+  /// [price], which is the backend's.
+  final List<SaleItemModifier> modifiers;
+
   /// Whether the line was quoted a price at all.
   bool get isPriced => price != null;
 
@@ -643,9 +653,20 @@ class SaleItemModel {
     held: saleCount(data["held"]),
     state: (data["state"] ?? "").toString(),
     available: data["available"] == null ? null : saleCount(data["available"]),
-    gone: data["gone"] == true
+    gone: data["gone"] == true,
+    omitted: [
+      for (final item in data["omitted"] is List ? data["omitted"] as List : const [])
+        if (item is Map && (item["name"] ?? "").toString().isNotEmpty) item["name"].toString()
+    ],
+    modifiers: [
+      for (final item in data["modifiers"] is List ? data["modifiers"] as List : const [])
+        if (item is Map) (name: (item["name"] ?? "").toString(), price: saleAmount(item["price"]) ?? 0)
+    ]
   );
 }
+
+/// An option chosen on a sold line: its name and what it added to one unit.
+typedef SaleItemModifier = ({String name, double price});
 
 /// How much was taxed at one percentage. It is the breakdown a fiscal ticket
 /// prints, and it is the backend's arithmetic and never this app's.

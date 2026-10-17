@@ -20055,6 +20055,16 @@ class S {
     );
   }
 
+  /// `without {name}`
+  String sales_detail_item_without(Object name) {
+    return Intl.message(
+      'without $name',
+      name: 'sales_detail_item_without',
+      desc: '',
+      args: [name],
+    );
+  }
+
   /// `Not a product`
   String get sales_detail_item_concept {
     return Intl.message(

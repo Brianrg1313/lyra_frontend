@@ -74,6 +74,28 @@ void main() {
     expect(find.byType(SaleItemLine), findsNWidgets(3));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a dish says what was chosen on it and what it went without', (tester) async {
+    await _pump(tester, SaleDetailModel.fromJson({
+      "id": "s2",
+      "source": "ticket",
+      "status": "completed",
+      "currency": "USD",
+      "payment": const {"method": "cash"},
+      "items": const [{
+        "productId": "burger", "name": "Burger", "qty": 1, "price": 9, "total": 9,
+        "omitted": [{"id": "r-fries", "name": "fries"}],
+        "modifiers": [
+          {"group": "x", "option": "c", "name": "Cheese", "price": 1},
+          {"group": "d", "option": "m", "name": "Medium", "price": 0}
+        ]
+      }]
+    }));
+
+    expect(find.textContaining("+ Cheese"), findsOneWidget);
+    expect(find.textContaining("Medium · without fries"), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 /// A product name **on a line**, and not the same word sitting in the search

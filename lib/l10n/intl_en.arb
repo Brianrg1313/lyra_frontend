@@ -2063,6 +2063,7 @@
   "sales_detail_item_held": "{count} held",
   "sales_detail_item_available": "{count} left",
   "sales_detail_item_list": "was {price}",
+  "sales_detail_item_without": "without {name}",
   "sales_detail_item_concept": "Not a product",
   "sales_detail_handover": "The handover",
   "sales_detail_handover_mode": "How they get it",

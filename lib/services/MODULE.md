@@ -546,7 +546,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
   row id or chat all resolve). **Created per opened panel**, never cached. `missing` =
   `sale_not_found` (news, not an error).
 - `sale_detail_model.dart` — `SaleDetailModel` + `SalePaymentModel`, `SaleProofModel`,
-  `SaleHandoverModel`, `SaleOriginModel`, `SaleItemModel`, `SaleTaxModel`, `SaleHoldModel`,
+  `SaleHandoverModel`, `SaleOriginModel`, `SaleItemModel` (a dish's `omitted` names and `modifiers`: `SaleItemModifier`), `SaleTaxModel`, `SaleHoldModel`,
   `SaleReceiptModel` (`payment.received`: each approval), `SaleDueModel`/`SaleDueLine` (`due`: charged apart from the total),
   `saleFields(map)`. `payment.proofs` (oldest first) is parsed; `proof` is its last entry.
   `payment.hasBalance`: credit, or `collected`/`outstanding` present (a channel ticket paid in parts).
