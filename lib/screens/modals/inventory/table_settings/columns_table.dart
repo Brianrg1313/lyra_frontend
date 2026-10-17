@@ -458,10 +458,16 @@ class _Options extends StatelessWidget {
 /// **An empty unit is sent the same.** It is the only way to erase it: the
 /// backend reads the empty as a value and not as the absence of one (see
 /// `editFieldRequest`).
+///
+/// A measure and a stock offer the magnitudes a recipe can switch between
+/// (`kitchenUnitsFor`): a supply counted in `kg` is written in grams in a
+/// recipe, one counted in «kilos» too, but one in «kgs» only in itself.
 class _Unit extends StatelessWidget {
   const _Unit({required this.field});
 
   final TableDetailFieldModel field;
+
+  static const List<String> _magnitudes = ["kg", "g", "l", "ml"];
 
   @override
   Widget build(BuildContext context) {
@@ -487,7 +493,10 @@ class _Unit extends StatelessWidget {
             placeholder: S.of(anchor).table_settings_unit_none,
             icon: Icons.remove
           )
-        ]
+        ],
+        if (field.type == TableFieldType.measure || field.type == TableFieldType.stock)
+          for (final unit in _magnitudes)
+            if (unit != field.unit) SelectOption(value: unit, placeholder: unit)
       ],
       selected: field.unit,
       emptyText: S.of(anchor).table_settings_unit_empty,

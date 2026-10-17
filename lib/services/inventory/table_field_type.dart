@@ -236,10 +236,11 @@ enum TableFieldType {
 
   /// Whether the field's numbers do not bring their own symbol, so the symbol belongs to
   /// the column and travels with it (see `TableFieldModel.unit`): the currency of
-  /// [price] and [currency], the magnitude of [measure].
+  /// [price] and [currency], the magnitude of [measure], what a [stock] is counted in (a
+  /// supply's `kg`: what its recipe lines are written in, `cocina-frontend.md` §8).
   ///
   /// [discount] and [percentage] are deliberately left out: there the unit **is** the type.
-  bool get united => this == price || this == currency || this == measure;
+  bool get united => this == price || this == currency || this == measure || this == stock;
 
   /// Whether the field value is money. Both are read the same —an amount with the
   /// symbol of its currency— and the only thing that separates them is that [price] is what

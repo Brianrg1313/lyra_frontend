@@ -145,7 +145,7 @@ through `Navigator.pop(context, value)`.
 - `table_settings/_table_settings.dart` — `showTableSettings(context, tableId)`, `TableSettingsModal` (side panel over list or sheet).
 - `table_settings/summary_block.dart` — `TableSummaryBlock`, `TableDatesBlock`.
 - `table_settings/columns_block.dart` — `TableColumnsBlock`; `columns_table.dart` — `TableColumnsTable` (the agent
-  visibility cell only where `channels` is shown).
+  visibility cell only where `channels` is shown; a price, measure or stock column's unit, the last two offering kg, g, l, ml).
 - `table_settings/agent_block.dart` — `TableAgentBlock`: what the model sees and can do. With the channels block, only
   where `channels` is shown (`CapabilityService`).
 - `table_settings/channels_block.dart` — `TableChannelsBlock`: channels reading this table (links to the channel edit page).

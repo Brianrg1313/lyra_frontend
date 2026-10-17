@@ -68,8 +68,15 @@ class SummaryHeader extends StatelessWidget {
     );
 
   /// What a numbers column is called: what the company wrote, or what that
-  /// column is when there's nothing of its own behind it.
+  /// column is when there's nothing of its own behind it. The stock says what
+  /// it is counted in, when its column declares it: «Stock (kg)».
   String _label(BuildContext context, StockSummaryColumn column) {
+    final name = _name(context, column);
+
+    return column.isStock && column.unit.isNotEmpty ? "$name (${column.unit})" : name;
+  }
+
+  String _name(BuildContext context, StockSummaryColumn column) {
     if (column.name.isNotEmpty) return column.name;
 
     return switch (column.key) {

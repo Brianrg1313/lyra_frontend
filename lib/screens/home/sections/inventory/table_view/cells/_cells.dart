@@ -62,8 +62,9 @@ abstract final class SheetCells {
     ),
     // A measurement carries the symbol its column declared and a percentage has its
     // own baked in: there the unit **is** the type, so the field doesn't keep
-    // one (see [TableFieldType.united]).
-    TableFieldType.measure => UnitCell(
+    // one (see [TableFieldType.united]). A stock reads in what its column is
+    // counted in: «10 kg».
+    TableFieldType.measure || TableFieldType.stock => UnitCell(
       value: value,
       style: style,
       alignment: alignment,

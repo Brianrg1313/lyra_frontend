@@ -278,7 +278,7 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 
 - `kitchen_read.dart` — `kitchenNum` `kitchenInt` `kitchenText` `kitchenBool` `kitchenDate` `kitchenMaps` `kitchenTexts`.
 - `kitchen_api.dart` — `KitchenApi.reason` (the refusal's code), `KitchenApi.report` (floating flag; an `action` rethrown).
-- `kitchen_product_model.dart` — `KitchenProduct`: a summary row named by its first text column, `unit` (a measure column's or a "unit" column's), `stock` with decimals, `supplies`, `made`.
+- `kitchen_product_model.dart` — `KitchenProduct`: a summary row named by its first text column, `unit` (a "unit" column's per row, else the stock column's, else a measure column's), `stock` with decimals, `supplies`, `made`.
 - `made_consumes_model.dart` — `MadeConsumes` (`mapFrom`): what each record of a made table consumes and can be sold now, beside the rows of `records/list` (`consumes`).
 - `made_product_model.dart` — `MadeFields` (`of`: name = first `TITLE` else text, price = first `PRICE`, `others` typed in a field), `MadeProduct` (`listFrom` an aligned page: values by FIELD_ID, `consumes`).
 - `made_products_service.dart` — `MadeProductsService({tableId})` (+ status, `MadeProductDraft`): one made table's products (structure, pages of 50 with `MATCH`, `more`), the supplies' units (`unitOf`, `units`); `save` creates the name/price columns a table lacks, then the record with its `DATA` (an edit only what changed), `CONSUMES` and `BATCH` in one call, and reads the first page again. Owned by the made products view.

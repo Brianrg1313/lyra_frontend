@@ -73,7 +73,8 @@ class StockSummaryColumn {
   final List<String> options;
 
   /// The symbol with which the column's numbers are written: the currency code
-  /// of an amount, the magnitude of a measure. Empty in the rest, and also in
+  /// of an amount, the magnitude of a measure, what the stock is counted in
+  /// (its column's, `kg`). Empty in the rest, and also in
   /// an amount that never declared its own —there it is written with the
   /// company's currency, which is the one this list resolves once for all its
   /// rows.

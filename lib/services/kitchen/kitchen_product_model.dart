@@ -8,9 +8,9 @@ import 'package:app/services/stock/summary/stock_summary_model.dart';
 /// A product as the supply chain lists and picks it: a row of a table's stock summary
 /// (`POST /inventory/stock/summary/`), named by its first text column.
 ///
-/// The backend gives no unit for a product (`cocina-frontend.md` §8: a supplies table does not
-/// always have a unit column), so [unit] is the table's when it says one: a measure column's
-/// magnitude, or a column called "unit" holding it per row. Empty otherwise.
+/// The backend gives no unit for a product (`cocina-frontend.md` §8), so [unit] is the table's
+/// when it says one: a column called "unit" holding it per row, else its stock column's (what
+/// the whole table is counted in), else a measure column's magnitude. Empty otherwise.
 @immutable
 class KitchenProduct {
   const KitchenProduct({
@@ -46,7 +46,8 @@ class KitchenProduct {
   static List<KitchenProduct> fromSummary(StockSummaryPage page, {bool supplies = false, bool made = false}) {
     final columns = page.columns;
     final name = columns.where((column) => !column.isImage && !column.isNumber && !column.type.united).firstOrNull;
-    final measure = columns.where((column) => column.type == TableFieldType.measure && column.unit.isNotEmpty).firstOrNull;
+    final stock = columns.where((column) => column.isStock && column.unit.isNotEmpty).firstOrNull;
+    final measure = stock ?? columns.where((column) => column.type == TableFieldType.measure && column.unit.isNotEmpty).firstOrNull;
     final unitColumn = columns.where((column) => _unitNames.contains(column.name.trim().toLowerCase())).firstOrNull;
 
     return [

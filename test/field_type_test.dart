@@ -91,12 +91,12 @@ void main() {
       );
     });
 
-    test('the types that carry a column symbol are three', () {
+    test('the types that carry a column symbol are four', () {
       // Discount and percentage are left out on purpose: there the unit is the
       // type.
       expect(
         TableFieldType.values.where((type) => type.united),
-        [TableFieldType.price, TableFieldType.currency, TableFieldType.measure]
+        [TableFieldType.price, TableFieldType.currency, TableFieldType.measure, TableFieldType.stock]
       );
 
       expect(TableFieldType.discount.united, isFalse);

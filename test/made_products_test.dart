@@ -7,6 +7,7 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/home/home_service.dart';
 
+import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/inventory/table_record_request.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/kitchen/kitchen_product_search.dart';
@@ -17,6 +18,7 @@ import 'package:app/services/kitchen/made_product_model.dart';
 import 'package:app/services/kitchen/made_products_service.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
+import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 import 'package:app/screens/home/sections/inventory/made_products/_made_products.dart';
@@ -115,6 +117,30 @@ void main() {
       expect(kitchenUnitsFor("Kilos").last.factor, 1);
       expect(kitchenUnitsFor("g").last.factor, 1000);
       expect([for (final unit in kitchenUnitsFor("litros")) unit.symbol], ["ml", "l"]);
+    });
+
+    test("a supply's unit is its row's, else its stock column's, else a measure's", () {
+      StockSummaryPage page({String stockUnit = "", bool unitColumn = false}) => StockSummaryPage(
+        table: "s",
+        columns: [
+          const StockSummaryColumn(key: "f-name", name: "Name"),
+          const StockSummaryColumn(key: "f-weight", name: "Weight", type: TableFieldType.measure, unit: "g"),
+          if (unitColumn) const StockSummaryColumn(key: "f-unit", name: "Unidad"),
+          StockSummaryColumn(key: StockSummaryColumn.stockKey, unit: stockUnit, fixed: true)
+        ],
+        rows: const [
+          StockSummaryRow(id: "meat", values: {"f-name": "Meat", "f-unit": "", "stock": 10}),
+          StockSummaryRow(id: "bread", values: {"f-name": "Bread", "f-unit": "pieza", "stock": 40})
+        ]
+      );
+
+      String unitOf(StockSummaryPage page, String id) =>
+        KitchenProduct.fromSummary(page, supplies: true).firstWhere((product) => product.id == id).unit;
+
+      expect(unitOf(page(), "meat"), "g");
+      expect(unitOf(page(stockUnit: "kg"), "meat"), "kg");
+      expect(unitOf(page(stockUnit: "kg", unitColumn: true), "meat"), "kg", reason: "an empty row falls to the table's");
+      expect(unitOf(page(stockUnit: "kg", unitColumn: true), "bread"), "pieza");
     });
 
     test("anything else is written only in its own unit", () {
