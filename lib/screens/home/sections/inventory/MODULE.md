@@ -91,8 +91,9 @@ A name still waiting draws as a plain picture glyph in its cell (`ProductImage.i
 
 ## made_products/ — a made table (`cocina-frontend.md` §2, §3)
 
-- `_made_products.dart` — `MadeProductsSection({tableId, parts})`: owns `MadeProductsService`; the bar (count, «New product» with `supply_chain.recipes.edit`), header search → `MATCH`, the list (`SectionMoreButton`), empty / error states; a row opens `showMadeProduct`, its kitchen icon `showRecipePanel` (`supply_chain.recipes`).
-- `made_product_row.dart` — `MadeProductRow`: its cover, name, «by the batch» tag, what it consumes as chips in the unit each reads best in («Meat 300 g», «Bread ×1»), price, what can be sold now (`recipeAvailabilityLine`).
+- `_made_products.dart` — `MadeProductsSection({tableId, parts})`: owns `MadeProductsService`; the bar (count, «New product» with `supply_chain.recipes.edit`), header search → `MATCH`, the products as a grid of cards (as many columns as fit `MadeProductCard.extent`, each row as tall as its tallest), the new card first when one can write, `SectionMoreButton`, empty / error states; a card opens `showMadeProduct`, its «Kitchen» button `showRecipePanel` (`supply_chain.recipes`).
+- `made_product_card.dart` — `MadeProductCard`: its photo (greyed when none can be sold) stamped with «by the batch» and how many can be sold now as a traffic light (left / only N left / sold out; a batch's ready), name, what it consumes as chips in the unit each reads best in («Meat 300 g», «Bread ×1», the rest «+N more»; none: «Add what it is made of»), what runs out first when few or none are left, price at the foot.
+- `made_product_new_card.dart` — `MadeProductNewCard`: the grid's «New product» card.
 
 A made product is never a sheet row: its record and what it consumes are one `records/manage` call (all or nothing), so
 they are written together in its form.

@@ -2014,13 +2014,113 @@ class S {
     );
   }
 
-  /// `Consumes nothing yet`
-  String get made_product_consumes_none {
+  /// `Add what it is made of`
+  String get made_product_recipe_missing {
     return Intl.message(
-      'Consumes nothing yet',
-      name: 'made_product_consumes_none',
+      'Add what it is made of',
+      name: 'made_product_recipe_missing',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `No price yet`
+  String get made_product_no_price {
+    return Intl.message(
+      'No price yet',
+      name: 'made_product_no_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A photo, a price and what it is made of`
+  String get made_product_new_note {
+    return Intl.message(
+      'A photo, a price and what it is made of',
+      name: 'made_product_new_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `+{count} more`
+  String made_product_lines_more(Object count) {
+    return Intl.message(
+      '+$count more',
+      name: 'made_product_lines_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Kitchen`
+  String get made_product_kitchen_short {
+    return Intl.message(
+      'Kitchen',
+      name: 'made_product_kitchen_short',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{amount} left`
+  String made_product_left(Object amount) {
+    return Intl.message(
+      '$amount left',
+      name: 'made_product_left',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Only {amount} left`
+  String made_product_left_few(Object amount) {
+    return Intl.message(
+      'Only $amount left',
+      name: 'made_product_left_few',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Not enough supplies`
+  String get made_product_cannot_make {
+    return Intl.message(
+      'Not enough supplies',
+      name: 'made_product_cannot_make',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{amount} ready`
+  String made_product_ready(Object amount) {
+    return Intl.message(
+      '$amount ready',
+      name: 'made_product_ready',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `None ready`
+  String get made_product_none_ready {
+    return Intl.message(
+      'None ready',
+      name: 'made_product_none_ready',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Runs out first: {supply}`
+  String made_product_runs_out(Object supply) {
+    return Intl.message(
+      'Runs out first: $supply',
+      name: 'made_product_runs_out',
+      desc: '',
+      args: [supply],
     );
   }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -23,10 +24,11 @@ import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dar
 import 'package:app/screens/modals/inventory/made_product/_made_product.dart';
 import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
 
-import './made_product_row.dart';
+import './made_product_card.dart';
+import './made_product_new_card.dart';
 
-/// A `made` table, as what it is: a list of products, each one a name, a price and what it
-/// consumes (`cocina-frontend.md` §2, §3), never a sheet of rows and columns. «New product» and a
+/// A `made` table, as what it is: a menu, a grid of cards, each one a photo, a name, a price and
+/// what it consumes (`cocina-frontend.md` §2, §3), never a sheet of rows and columns. «New product» and a
 /// tap on one open its form ([showMadeProduct]), where what it consumes is picked from the
 /// supplies and measured in their unit; how many can be made with them is the backend's.
 ///
@@ -153,32 +155,46 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
 
     final products = _service.products;
     final kitchen = CapabilityService().shows("supply_chain.recipes");
+    final tiles = <Widget>[
+      if (_canWrite) MadeProductNewCard(onCreate: _open),
+      for (final product in products) MadeProductCard(
+        key: ValueKey(product.id),
+        product: product,
+        service: _service,
+        onOpen: () => _open(product),
+        onKitchen: kitchen ? () => _kitchen(product) : null
+      )
+    ];
 
-    return ListView.separated(
-      padding: EdgeInsets.all(AppSize.padding),
-      itemCount: products.length + (_service.hasMore ? 1 : 0),
-      separatorBuilder: (context, _) => SizedBox(height: AppSize.gap),
-      itemBuilder: (context, index) {
-        if (index == products.length) {
-          return SectionMoreButton(
-            label: s.made_products_more,
-            retryLabel: s.product_tables_retry,
-            failed: _service.moreFailed,
-            onMore: _service.more,
-            onRetry: _service.more
-          );
+    return LayoutBuilder(builder: (context, box) {
+      final gap = AppSize.spaceS;
+      final columns = max(1, ((box.maxWidth - AppSize.padding * 2 + gap) / (MadeProductCard.extent + gap)).floor());
+      final rows = (tiles.length / columns).ceil();
+
+      return ListView.separated(
+        padding: EdgeInsets.all(AppSize.padding),
+        itemCount: rows + (_service.hasMore ? 1 : 0),
+        separatorBuilder: (context, _) => SizedBox(height: gap),
+        itemBuilder: (context, row) {
+          if (row == rows) {
+            return SectionMoreButton(
+              label: s.made_products_more,
+              retryLabel: s.product_tables_retry,
+              failed: _service.moreFailed,
+              onMore: _service.more,
+              onRetry: _service.more
+            );
+          }
+
+          // A row of cards as tall as its tallest, so every price lines up at the foot.
+          return IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            for (var column = 0; column < columns; column++) ...[
+              if (column > 0) SizedBox(width: gap),
+              Expanded(child: row * columns + column < tiles.length ? tiles[row * columns + column] : const SizedBox())
+            ]
+          ]));
         }
-
-        final product = products[index];
-
-        return MadeProductRow(
-          key: ValueKey(product.id),
-          product: product,
-          service: _service,
-          onOpen: () => _open(product),
-          onKitchen: kitchen ? () => _kitchen(product) : null
-        );
-      }
-    );
+      );
+    });
   }
 }
