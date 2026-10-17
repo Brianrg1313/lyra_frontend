@@ -20,6 +20,7 @@ import 'package:app/screens/home/sections/employees/employee_detail/_employee_de
 import 'package:app/screens/home/sections/employees/employee_detail/employee_part.dart';
 import 'package:app/screens/home/sections/employees/own_settings/own_section.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
+import 'package:app/screens/home/sections/supply_chain/supply_chain_tab.dart';
 import 'package:app/screens/home/sections/inventory/transfers/_transfers.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/home/sections/sales/sales_tab.dart';
@@ -159,6 +160,15 @@ final List<ScreenRoute> routes = [
     key: tab.routeKey,
     url: tab.path,
     parents: ["finance"],
+    shell: Home.shell,
+    page: (_) => const Home()
+  )),
+  // The supply chain's tabs, on the money page's criteria: one route each, no id.
+  ...SupplyChainTab.values.map((tab) => ScreenRoute(
+    animation: _animation,
+    key: tab.routeKey,
+    url: tab.path,
+    parents: ["supply_chain"],
     shell: Home.shell,
     page: (_) => const Home()
   )),

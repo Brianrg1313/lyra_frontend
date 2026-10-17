@@ -327,7 +327,46 @@
       "routes": ["supply_chain"],
       "paths": ["/home/supply_chain"],
       "actions": ["view"],
-      "status": "placeholder"
+      "children": [
+        {
+          "key": "supply_chain.recipes",
+          "title": "Recipes",
+          "modes": ["cloud"],
+          "routes": ["supply_chain_recipes"],
+          "paths": ["/home/supply_chain/recipes"],
+          "actions": ["view", "edit", "pause", "produce", "discard", "presentations"],
+          "action_notes": {
+            "view": "What each product is made of and how many can be made now (`kitchen`), over the tables and their stock summary.",
+            "edit": "Create, replace and delete a recipe (`kitchen.recipes`).",
+            "pause": "The 86: a product off whatever it has left (`kitchen.pause`).",
+            "produce": "Make a batch of a preparation, with what was lost of it (`kitchen.produce`).",
+            "discard": "A dish made to order and lost spends its supplies (`kitchen.discard`).",
+            "presentations": "How a product is bought: «Saco» = 25 kg (`inventory.presentations`)."
+          }
+        },
+        {
+          "key": "supply_chain.modifiers",
+          "title": "Modifiers",
+          "modes": ["cloud"],
+          "routes": ["supply_chain_modifiers"],
+          "paths": ["/home/supply_chain/modifiers"],
+          "actions": ["view", "edit"],
+          "action_notes": {
+            "edit": "Create, edit and delete groups of modifiers: extras, término (`kitchen.modifiers`)."
+          }
+        },
+        {
+          "key": "supply_chain.reports",
+          "title": "Reports",
+          "modes": ["cloud"],
+          "routes": ["supply_chain_reports"],
+          "paths": ["/home/supply_chain/reports"],
+          "actions": ["view"],
+          "action_notes": {
+            "view": "Theoretical consumption, variance and cost per dish (`kitchen.reports`)."
+          }
+        }
+      ]
     },
     {
       "key": "lyra_business",

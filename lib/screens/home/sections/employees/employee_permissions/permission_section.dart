@@ -14,6 +14,7 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 /// `test/permissions_test.dart` keeps this list and the catalog equal.
 enum PermissionSection {
   inventory(CI.warehouse),
+  kitchen(CI.fire_sqaure),
   reservations(CI.bookmark),
   pos(CI.cashbox),
   sales(CI.sale),
@@ -40,6 +41,7 @@ enum PermissionSection {
 
   String title(BuildContext context) => switch (this) {
     inventory => S.of(context).permission_inventory_title,
+    kitchen => S.of(context).permission_kitchen_title,
     reservations => S.of(context).permission_reservations_title,
     pos => S.of(context).permission_pos_title,
     sales => S.of(context).permission_sales_title,
@@ -60,6 +62,7 @@ enum PermissionSection {
 
   String description(BuildContext context) => switch (this) {
     inventory => S.of(context).permission_inventory_description,
+    kitchen => S.of(context).permission_kitchen_description,
     reservations => S.of(context).permission_reservations_description,
     pos => S.of(context).permission_pos_description,
     sales => S.of(context).permission_sales_description,
@@ -90,7 +93,14 @@ enum PermissionSection {
       "inventory.transfer" => s.permission_inventory_transfer,
       "inventory.receive" => s.permission_inventory_receive,
       "inventory.configure" => s.permission_inventory_configure,
+      "inventory.presentations" => s.permission_inventory_presentations,
       "inventory.pictures" => s.permission_inventory_pictures,
+      "kitchen.recipes" => s.permission_kitchen_recipes,
+      "kitchen.pause" => s.permission_kitchen_pause,
+      "kitchen.produce" => s.permission_kitchen_produce,
+      "kitchen.discard" => s.permission_kitchen_discard,
+      "kitchen.modifiers" => s.permission_kitchen_modifiers,
+      "kitchen.reports" => s.permission_kitchen_reports,
       "reservations.create" => s.permission_reservations_create,
       "reservations.manage" => s.permission_reservations_manage,
       "pos.sell" => s.permission_pos_sell,

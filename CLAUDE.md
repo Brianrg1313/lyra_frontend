@@ -88,6 +88,7 @@ the single import for screens; never import `package:core/core.dart` directly.
 | business section | `lib/screens/home/sections/business` | Business page and its tabs (statistics, branches, clients, settings/profile). | `.../business/MODULE.md` |
 | employees section | `lib/screens/home/sections/employees` | The company's people: the list always on the left; on the right one person's page (an index of their card's parts), each part on its own page (permissions included), and on one's own card the account's subsections. | `.../employees/MODULE.md` |
 | inventory section | `lib/screens/home/sections/inventory` | Product tables, one at a time (selector in the bar): stock summary or spreadsheet (cells switch); templates when there is none. | `.../inventory/MODULE.md` |
+| supply chain section | `lib/screens/home/sections/supply_chain` | Products made of others: recipes (to order or by batch, the 86, batches, lost dishes, presentations), modifier groups, and the kitchen's reports (consumption, variance, cost per dish). Cloud only. | `.../supply_chain/MODULE.md` |
 | channels section | `lib/screens/home/sections/channels` | AI channels: grid, edit page, form blocks shared with the create/detail panels. | `.../channels/MODULE.md` |
 | knowledge section | `lib/screens/home/sections/knowledge` | Frequent questions Lyra looks up: the company's context per question (branch, products, dates), and the questions Lyra left waiting for one. Cloud only. | `.../knowledge/MODULE.md` |
 | connections section | `lib/screens/home/sections/connections` | Third-party accounts: list and create/edit form. | `.../connections/MODULE.md` |
@@ -136,7 +137,7 @@ provided by their screen. Load states: `enum XStatus { idle, loading, ready, emp
 (`lib/services/<domain>/sources/`: `XSource` returns models, `XCloudSource` holds the REST
 calls), resolved by `Sources` in `lib/toolkit/deployment.dart`. **Never `api.*` from a service.**
 Only cloud-only services (chats, channels, connections, maps, Baileys, places, money AI, sign up,
-badges, the person's own account, shipments, opening hours) call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
+badges, the person's own account, shipments, opening hours, kitchen) call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
 
 **Deployment modes** — every area of `docs/app-areas.json` declares `modes`, and
 `CapabilityService.modes` carries the same entry (`test/capabilities_test.dart` enforces it). A new

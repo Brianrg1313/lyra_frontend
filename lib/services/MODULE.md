@@ -23,7 +23,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
   A service takes `{XSource? source}` for tests and otherwise reads `Sources.<x>`
   (`lib/toolkit/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
   domains (chats, channels, connections, knowledge, maps, baileys, places, money AI, sign up, business
-  e-mails, badges, account, shipments, opening hours) are not split.
+  e-mails, badges, account, shipments, opening hours, kitchen) are not split.
 
 ## local_server/ — the master's engine (`lyra_node`), desktop only
 
@@ -272,6 +272,25 @@ Reached through `LanService.server` (the `lan/` services own it).
   empty = clear), `toggleKnowledgeRequest`, `deleteKnowledgeRequest`, `splitKnowledgeTags`.
 - `knowledge_product_search.dart` — `KnowledgeProductSearch`: `POST /knowledge/products/` (`SEARCH`), only the latest answer counts.
 
+## kitchen/ — recipes, modifiers and the kitchen's reports (supply chain section; cloud only, `api` direct)
+
+Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. Tables and summaries through `Sources`.
+
+- `kitchen_read.dart` — `kitchenNum` `kitchenInt` `kitchenText` `kitchenBool` `kitchenDate` `kitchenMaps` `kitchenTexts`.
+- `kitchen_api.dart` — `KitchenApi.reason` (the refusal's code), `KitchenApi.report` (floating flag; an `action` rethrown).
+- `kitchen_product_model.dart` — `KitchenProduct`: a summary row named by its first text column, `unit` (a measure column's or a "unit" column's), `stock` with decimals, `supplies`.
+- `recipe_model.dart` — `Recipe` (`read`, `namedAfter`: a write answers without names), `RecipeLine`, `RecipeMode` (`order`/`batch`), `RecipeUse`.
+- `recipe_availability_model.dart` — `RecipeAvailability` (`mapFrom`: by product, absent = no recipe; `capacity` only on a batch), `RecipeLimit`, `RecipeShort`.
+- `presentation_model.dart` — `Presentation`.
+- `modifier_model.dart` — `ModifierGroup` (`max` null = all, `required` = `min` > 0), `ModifierOption` (`spends`), `ModifierProduct`, `ModifierLine`.
+- `kitchen_report_model.dart` — `ConsumptionReport`/`ConsumptionSupply`/`ConsumptionDish`/`ConsumptionBatch`, `VarianceRow` (`counted` false = no comparison), `DishCost`/`DishCostLine` (`unitCost` null = never bought with a cost).
+- `kitchen_request.dart` — `kitchenQuantity` (whole numbers as integers), recipe, delete, pause, produce, discard, presentations, modifier group (option ids kept) and delete bodies; `kitchenWindowRequest` (whole local days in ISO 8601).
+- `kitchen_products_service.dart` — `KitchenProductsService` (+ status): tables, the open one's summary pages, `POST /recipes/availability` per page (≤ 200 ids per call), `remeasure`; `stock/changed` composite → a dish's `available`, else a row's stock. Seams `seed`/`receive`.
+- `recipe_service.dart` — `RecipeService({product})` (+ `RecipeStatus`, `BatchResult`): one product's recipe (`404 recipe_not_found` = `none`), availability and presentations; save, remove, pause, uses, produce, discard, presentations; each write measures again. Per opened panel. `fetch` (a recipe for a modifier's removals).
+- `modifiers_service.dart` — `ModifiersService` (+ status): `GET/PUT/DELETE /inventory/modifiers`; every write rereads.
+- `kitchen_reports_service.dart` — `KitchenReportsService` (+ `KitchenReport`, status): one report and one window; only the last read counts.
+- `kitchen_product_search.dart` — `KitchenProductSearch`: every table's summary `MATCH` at once (supplies first), `namesIn(tables)`.
+
 ## baileys/ — WhatsApp Personal sidecar link
 
 See `baileys_server/MODULE.md` for the server side.
@@ -415,7 +434,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
 - `tables/table_view_service.dart` — `TableViewService` (+ `TableStructureStatus`, `TableViewStatus`,
   `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/`, `/records/images/`; `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
-- `tables/table_lite_model.dart` — list row.
+- `tables/table_lite_model.dart` — list row (`supplies`: `kind: "supplies"`).
 - `tables/table_detail_model.dart` — `TableDetailModel` and its summaries (`TableColumnsSummary`,
   `TableAgentSummary`, `TableChannelsSummary`, `TableChannelReader`, `TableFieldVisibility`, …).
 - `tables/table_structure_model.dart` — `TableStructureModel`, `TableFieldModel`.
@@ -428,7 +447,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement`, `StockBalance`, `StockOperation`, `StockReason`.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move
-  (sale, restock, another till's hold), carries the balance after it.
+  (sale, restock, another till's hold), carries the balance after it; `exact` keeps a supply's decimals;
+  `composite` (a dish made to order): only `available` means anything — the POS keeps its hold, the ticket ignores it.
 
 ## money/ — owned by the finance section
 
@@ -589,6 +609,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/inventory/products/records/{list,manage,images}/` · `/inventory/products/import/{structure,records}/$format/` ·
 `/inventory/products/import/images/{status,claim,deliver,fail,match,retry}/` ·
 `/inventory/stock/summary/` · `/inventory/stock/transfers{,/receive,/search}` · `/inventory/products/prices`
+`/inventory/recipes{,/$id,/availability,/pause,/uses,/produce,/discard,/consumption,/variance,/cost}` · `/inventory/modifiers` · `/inventory/presentations{,/$id}`
 `/sales/` · `/sales/stages/` · `/sales/detail/$id` · `/sales/fulfillment/` · `/chats/stage/`
 `/pos/` · `/pos/catalog/` · `/pos/methods/` · `/pos/invoices/{,items,close,cancel}`
 `/aries/v1/chats{,/stages,/tags,/summary,/detail/$id,/messages/$id,/messages,/read,/bot/pause,/bot/resume,/assign,/stage,/alerts/resolve}` · `/aries/v1/team{,?ID=}`

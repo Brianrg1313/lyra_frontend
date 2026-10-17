@@ -26,6 +26,7 @@ import './inventory/transfers/_transfers.dart';
 import './knowledge/_knowledge.dart';
 import './messages/_messages.dart';
 import './sales/_sales.dart';
+import './supply_chain/_supply_chain.dart';
 
 /// Sections that live inside the home shell.
 ///
@@ -210,6 +211,7 @@ enum HomeSection {
   /// business would not remount it.
   Widget build() => switch (this) {
     inventory => const InventorySection(),
+    supplyChain => const SupplyChainSection(),
     channels => const ChannelsSection(),
     knowledge => const KnowledgeSection(),
     employees => const EmployeesSection(),

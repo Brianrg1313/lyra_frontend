@@ -1,0 +1,288 @@
+import 'package:flutter/foundation.dart';
+
+// SERVICES
+import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/kitchen/kitchen_product_model.dart';
+import 'package:app/services/kitchen/recipe_availability_model.dart';
+import 'package:app/services/stock/movements/stock_changed_model.dart';
+import 'package:app/services/stock/sources/inventory_source.dart';
+import 'package:app/services/stock/sources/stock_source.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
+import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
+
+/// Status of the recipes tab's list.
+enum KitchenProductsStatus { idle, loading, ready, empty, error }
+
+/// The products of one table, with what the branch can make of each: the recipes tab.
+///
+/// The backend lists no recipes (`cocina-frontend.md` §3 reads one by product), so the list is
+/// the table's stock summary and each page asks `POST /inventory/recipes/availability` for its
+/// ids: a product with a recipe answers (how many can be made, what runs out first, its 86), one
+/// without is skipped. That makes the availability the mark of «has a recipe».
+///
+/// Owned by the supply chain section (a business or branch switch remounts it). Live: a
+/// `stock/changed` with `composite: true` rewrites a dish's [availability] (a supply was spent,
+/// a recipe edited, a dish paused); any other one, a supply's stock.
+class KitchenProductsService extends ChangeNotifier {
+  KitchenProductsService({InventorySource? inventory, StockSource? stock, bool listen = true})
+    : _inventory = inventory,
+      _stock = stock {
+    if (listen) _off = ConnectionService().on(StockChangedModel.event, _onStock);
+  }
+
+  final InventorySource? _inventory;
+  final StockSource? _stock;
+  void Function()? _off;
+
+  InventorySource get _tables => _inventory ?? Sources.inventory;
+  StockSource get _summary => _stock ?? Sources.stock;
+
+  static const int _size = 50;
+
+  KitchenProductsStatus _status = KitchenProductsStatus.idle;
+  List<TableLiteModel> _tableList = const [];
+  TableLiteModel? _table;
+  List<KitchenProduct> _products = const [];
+  Map<String, RecipeAvailability> _availability = const {};
+  String _query = "";
+  int _page = 1;
+  int _total = 0;
+  bool _loadingMore = false;
+  int _ticket = 0;
+  bool _disposed = false;
+
+  KitchenProductsStatus get status => _status;
+  List<TableLiteModel> get tables => _tableList;
+  TableLiteModel? get table => _table;
+  List<KitchenProduct> get products => _products;
+  String get query => _query;
+  int get total => _total;
+  bool get hasMore => _products.length < _total;
+  bool get loadingMore => _loadingMore;
+
+  /// What [productId]'s recipe makes now; `null` when it has none.
+  RecipeAvailability? availabilityOf(String productId) => _availability[productId];
+
+  /// Reads the tables and opens the first catalog (what is sold is where recipes are written),
+  /// or [tableId] when it is one of them.
+  Future<void> load({String? tableId}) async {
+    _status = KitchenProductsStatus.loading;
+    _notify();
+
+    try {
+      _tableList = await _tables.tables();
+    } catch (error) {
+      if (kDebugMode) print("kitchen tables failed: $error");
+
+      _status = KitchenProductsStatus.error;
+      _notify();
+      return;
+    }
+
+    if (_tableList.isEmpty) {
+      _status = KitchenProductsStatus.empty;
+      _notify();
+      return;
+    }
+
+    _table = _tableList.where((table) => table.id == tableId).firstOrNull
+      ?? _tableList.where((table) => !table.supplies && table.primary).firstOrNull
+      ?? _tableList.where((table) => !table.supplies).firstOrNull
+      ?? _tableList.first;
+
+    await _read();
+  }
+
+  /// Shows [table]'s products.
+  Future<void> open(TableLiteModel table) async {
+    if (table.id == _table?.id) return;
+
+    _table = table;
+    _query = "";
+    await _read();
+  }
+
+  /// Products of the open table matching [text] (the summary's `MATCH`).
+  Future<void> search(String text) async {
+    if (text.trim() == _query) return;
+
+    _query = text.trim();
+    await _read();
+  }
+
+  /// Reads the first page again: after a recipe changed, so its mark and figure are the
+  /// backend's.
+  Future<void> reload() => _read(quiet: true);
+
+  Future<void> _read({bool quiet = false}) async {
+    final table = _table;
+    if (table == null) return;
+
+    final ticket = ++_ticket;
+
+    if (!quiet) {
+      _status = KitchenProductsStatus.loading;
+      _notify();
+    }
+
+    try {
+      final page = await _summary.summary(page: 1, size: _size, match: _query, tableId: table.id);
+      final products = KitchenProduct.fromSummary(page, supplies: table.supplies);
+      final availability = await _measure(products);
+
+      if (ticket != _ticket) return;
+
+      _products = products;
+      _availability = availability;
+      _page = 1;
+      _total = page.total;
+      _status = products.isEmpty ? KitchenProductsStatus.empty : KitchenProductsStatus.ready;
+    } catch (error) {
+      if (kDebugMode) print("kitchen products failed: $error");
+      if (ticket != _ticket) return;
+
+      if (!quiet) _status = KitchenProductsStatus.error;
+    }
+
+    _notify();
+  }
+
+  /// The next page of the open table.
+  Future<void> more() async {
+    final table = _table;
+    if (table == null || _loadingMore || !hasMore) return;
+
+    final ticket = _ticket;
+    _loadingMore = true;
+    _notify();
+
+    try {
+      final page = await _summary.summary(page: _page + 1, size: _size, match: _query, tableId: table.id);
+      final products = KitchenProduct.fromSummary(page, supplies: table.supplies);
+      final availability = await _measure(products);
+
+      if (ticket == _ticket) {
+        _products = [..._products, ...products];
+        _availability = {..._availability, ...availability};
+        _page = page.page;
+        _total = page.total;
+      }
+    } catch (error) {
+      if (kDebugMode) print("kitchen products more failed: $error");
+    }
+
+    _loadingMore = false;
+    _notify();
+  }
+
+  /// Measures [productIds] again (a recipe saved, deleted or paused from its panel).
+  Future<void> remeasure(List<String> productIds) async {
+    try {
+      final fresh = await _availabilityOf(productIds);
+
+      _availability = {
+        for (final entry in _availability.entries)
+          if (!productIds.contains(entry.key)) entry.key: entry.value,
+        ...fresh
+      };
+      _notify();
+    } catch (error) {
+      if (kDebugMode) print("kitchen remeasure failed: $error");
+    }
+  }
+
+  /// The availability of [products], up to the backend's 200 ids per call. A failure reads as
+  /// no recipes, so the list still shows; the panel reads its own.
+  Future<Map<String, RecipeAvailability>> _measure(List<KitchenProduct> products) async {
+    try {
+      return await _availabilityOf([for (final product in products) product.id]);
+    } catch (error) {
+      if (kDebugMode) print("kitchen availability failed: $error");
+      return const {};
+    }
+  }
+
+  static Future<Map<String, RecipeAvailability>> _availabilityOf(List<String> ids) async {
+    if (ids.isEmpty) return const {};
+
+    final result = <String, RecipeAvailability>{};
+
+    for (var start = 0; start < ids.length; start += 200) {
+      final chunk = ids.sublist(start, (start + 200).clamp(0, ids.length));
+
+      result.addAll(RecipeAvailability.mapFrom(await api.post(
+        path: "/inventory/recipes/availability",
+        version: "v1",
+        data: {"PRODUCT_IDS": chunk}
+      )));
+    }
+
+    return result;
+  }
+
+  void _onStock(dynamic data) => receive(StockChangedModel.fromEvent(data));
+
+  /// Applies a `stock/changed` notice.
+  @visibleForTesting
+  void receive(StockChangedModel notice) {
+    if (notice.isEmpty) return;
+
+    if (notice.composite) {
+      final current = _availability[notice.productId];
+      if (current == null) return;
+
+      _availability = {..._availability, notice.productId: current.withAvailable(notice.exact)};
+      _notify();
+      return;
+    }
+
+    final index = _products.indexWhere((product) => product.id == notice.productId);
+    if (index < 0) return;
+
+    final product = _products[index];
+    _products = List.of(_products)..[index] = KitchenProduct(
+      id: product.id,
+      tableId: product.tableId,
+      name: product.name,
+      unit: product.unit,
+      stock: notice.exact,
+      supplies: product.supplies
+    );
+
+    // A batch's shelf is its own stock: its figure follows.
+    final batch = _availability[notice.productId];
+    if (batch != null) {
+      _availability = {..._availability, notice.productId: batch.withAvailable(notice.exact)};
+    }
+
+    _notify();
+  }
+
+  /// Seeds the list, for tests.
+  @visibleForTesting
+  void seed({
+    List<TableLiteModel> tables = const [],
+    List<KitchenProduct> products = const [],
+    Map<String, RecipeAvailability> availability = const {}
+  }) {
+    _tableList = tables;
+    _table = tables.firstOrNull;
+    _products = products;
+    _availability = availability;
+    _total = products.length;
+    _status = products.isEmpty ? KitchenProductsStatus.empty : KitchenProductsStatus.ready;
+    _notify();
+  }
+
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _off?.call();
+    super.dispose();
+  }
+}
