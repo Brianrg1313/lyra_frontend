@@ -58,11 +58,17 @@ library;
 /// The [template] is the code of the chosen category (for example `"FOOD"`); it is
 /// omitted when none was chosen, so the backend creates the table without
 /// columns just as before.
+///
+/// [supplies] creates a table of supplies (`KIND: "supplies"`, `cocina-frontend.md` §2): what
+/// the company uses to make what it sells, never sold, counted with up to six decimals. It
+/// can't change afterwards (a supply's stock is kept in millionths), so it only travels when
+/// chosen: a catalog is the backend's default, and a master knows no other kind.
 Map<String, dynamic> createTableRequest({
   required String title,
   required String description,
   required String color,
-  String? template
+  String? template,
+  bool supplies = false
 }) {
   final trimmed = description.trim();
 
@@ -70,7 +76,8 @@ Map<String, dynamic> createTableRequest({
     "TITLE": title.trim(),
     if (trimmed.isNotEmpty) "DESCRIPTION": trimmed,
     "COLOR": color,
-    if (template != null && template.isNotEmpty) "TEMPLATE": template
+    if (template != null && template.isNotEmpty) "TEMPLATE": template,
+    if (supplies) "KIND": "supplies"
   };
 }
 

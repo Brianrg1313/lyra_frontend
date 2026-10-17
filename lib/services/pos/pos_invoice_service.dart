@@ -621,7 +621,8 @@ class PosInvoiceService extends ChangeNotifier {
 
     final change = StockChangedModel.fromEvent(data);
 
-    if (change.isEmpty) return;
+    // A dish made to order holds its supplies, not itself: its notice carries no hold to read.
+    if (change.isEmpty || change.composite) return;
 
     final mine = _lines
       .where((line) => line.productId == change.productId)

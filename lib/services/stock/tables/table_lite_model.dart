@@ -39,6 +39,11 @@ class TableLiteModel {
   /// Flutter ARGB literal (`0xFF2196F3`) the table is tinted with, or empty.
   final String color;
 
+  /// Whether its rows are supplies (`kind: "supplies"`, `cocina-frontend.md` §2): what the
+  /// company uses to make what it sells. Never sold, never the primary table, and counted
+  /// with decimals. Anything else, or nothing, is a catalog (the backend reads it the same).
+  final bool supplies;
+
   const TableLiteModel({
     required this.id,
     required this.title,
@@ -46,7 +51,8 @@ class TableLiteModel {
     this.fields = 0,
     this.records,
     this.primary = false,
-    this.color = ""
+    this.color = "",
+    this.supplies = false
   });
 
   /// Reads a row. Keys are checked in both conventions the backend can send
@@ -67,7 +73,8 @@ class TableLiteModel {
     primary: _primary(
       json["PRIMARY"] ?? json["primary"] ?? json["is_primary"]
     ),
-    color: (json["COLOR"] ?? json["color"])?.toString() ?? ""
+    color: (json["COLOR"] ?? json["color"])?.toString() ?? "",
+    supplies: (json["KIND"] ?? json["kind"])?.toString().trim().toLowerCase() == "supplies"
   );
 
   /// Whether the row comes marked as the primary one.
@@ -112,7 +119,8 @@ class TableLiteModel {
       fields: fields,
       records: records,
       primary: primary,
-      color: color
+      color: color,
+      supplies: supplies
     );
 
   /// Decodes the list's response without locking to a single format: it

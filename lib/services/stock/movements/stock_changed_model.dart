@@ -25,8 +25,10 @@ class StockChangedModel {
     this.table = "",
     this.onHand = 0,
     this.reserved = 0,
-    this.available = 0
-  });
+    this.available = 0,
+    double? exact,
+    this.composite = false
+  }) : exact = exact ?? available * 1.0;
 
   /// The product whose balance moved. Empty when the notice could not be read,
   /// which is the only way to discard it.
@@ -46,6 +48,16 @@ class StockChangedModel {
   /// [onHand] minus [reserved], already computed by the ledger.
   final int available;
 
+  /// [available] with its decimals: a supply is counted in millionths of its unit
+  /// (`cocina-frontend.md` §1), which the whole numbers above cut.
+  final double exact;
+
+  /// A product made to order (a recipe's `order`, `cocina-frontend.md` §12): it has no shelf,
+  /// so [onHand] and [reserved] say nothing (`onHand: null`) and only [available] moved — what
+  /// its supplies allow now, after one was spent, its recipe changed or it was paused (86).
+  /// Whoever patches a balance keeps its other numbers.
+  final bool composite;
+
   factory StockChangedModel.fromEvent(dynamic data) {
     if (data is! Map) return const StockChangedModel();
 
@@ -54,7 +66,13 @@ class StockChangedModel {
       table: (data["table"] ?? data["table_id"] ?? "").toString(),
       onHand: _count(data["onHand"]),
       reserved: _count(data["reserved"]),
-      available: _count(data["available"])
+      available: _count(data["available"]),
+      exact: switch (data["available"]) {
+        final num number => number.toDouble(),
+        final String text => double.tryParse(text),
+        _ => null
+      },
+      composite: data["composite"] == true
     );
   }
 

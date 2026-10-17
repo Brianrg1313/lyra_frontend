@@ -321,13 +321,16 @@ class PosCatalogService extends ChangeNotifier {
 
     final product = _products[index];
 
-    if (product.stock == notice.available && product.reserved == notice.reserved) {
+    // A dish made to order has no shelf: only what its supplies allow moved.
+    final reserved = notice.composite ? product.reserved : notice.reserved;
+
+    if (product.stock == notice.available && product.reserved == reserved) {
       return;
     }
 
     _products[index] = product.withBalance(
       stock: notice.available,
-      reserved: notice.reserved
+      reserved: reserved
     );
 
     notifyListeners();

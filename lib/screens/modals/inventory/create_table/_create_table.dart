@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/inventory/table_template.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
@@ -69,6 +70,20 @@ class _CreateTableModalState extends State<CreateTableModal> {
     initial: TableTemplate.blank
   );
 
+  /// What the table's rows are: what is sold, or what is used to make it (supplies). Asked
+  /// once, here: the backend never lets it change. Only where recipes exist (the supply
+  /// chain, cloud only); elsewhere every table is a catalog.
+  late final _kind = InputController.select(
+    key: "KIND",
+    form: _form,
+    initial: _catalog
+  );
+
+  static const _catalog = "catalog";
+  static const _supplies = "supplies";
+
+  bool get _asksKind => CapabilityService().shows("supply_chain");
+
   /// The create request asks for a header color even though the form no longer
   /// asks for one, so it travels fixed: any red, literal Flutter ARGB (`0x`
   /// plus 8 hex digits, alpha first), which is the only format accepted.
@@ -103,6 +118,27 @@ class _CreateTableModalState extends State<CreateTableModal> {
           placeholder: S.of(context).table_description_placeholder,
           controller: _description,
           leftIcon: Icon(CI.pen, color: ThemeColor.of(context).icon)
+        ),
+        if (_asksKind) SelectInput(
+          title: S.of(context).table_kind_title,
+          placeholder: S.of(context).table_kind_catalog,
+          emptyText: S.of(context).table_template_empty,
+          controller: _kind,
+          searchable: false,
+          options: [
+            SelectOption(
+              value: _catalog,
+              placeholder: S.of(context).table_kind_catalog,
+              subtitle: S.of(context).table_kind_catalog_note,
+              icon: CI.shop
+            ),
+            SelectOption(
+              value: _supplies,
+              placeholder: S.of(context).table_kind_supplies,
+              subtitle: S.of(context).table_kind_supplies_note,
+              icon: CI.warehouse
+            )
+          ]
         ),
         SelectInput(
           title: S.of(context).table_template_title,
@@ -148,6 +184,7 @@ class _CreateTableModalState extends State<CreateTableModal> {
     title: _title.value,
     description: _description.value,
     color: _color,
-    template: _template.value == TableTemplate.blank ? null : _template.value
+    template: _template.value == TableTemplate.blank ? null : _template.value,
+    supplies: _asksKind && _kind.value == _supplies
   );
 }
