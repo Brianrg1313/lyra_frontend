@@ -8,6 +8,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
@@ -61,7 +62,12 @@ class StockSummarySection extends StatefulWidget {
 }
 
 class _StockSummarySectionState extends State<StockSummarySection> {
-  late final _summary = StockSummaryService(source: widget.source, tableId: widget.tableId, supplies: widget.supplies);
+  late final _summary = StockSummaryService(
+    source: widget.source,
+    tableId: widget.tableId,
+    supplies: widget.supplies,
+    recipes: !widget.supplies && CapabilityService().shows("supply_chain.recipes")
+  );
 
   late final ValueListenable<String> _query;
 

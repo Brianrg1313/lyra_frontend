@@ -14,7 +14,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 
 ## table_list/ — the section
 
-- `_table_list.dart` — `InventorySection`: resolves the open table (link → remembered → primary → first), builds the
+- `_table_list.dart` — `InventorySection`: `catalog` tables only (supplies are the production line's; none of its own → `InventoryStart`); resolves the open table (link → remembered → primary → first), builds the
   bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table (a table with no rows: the sheet, no switch); an importing table shows its stage
   instead (`TablesService.importStage`); no table → `InventoryStart`. The bar's right end: table options (⋯), import, create (modal);
   their flows live here.
@@ -29,7 +29,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts, supplies})`: owns that table's `StockSummaryService` (a supplies table's moves with decimals), fixed column header over a `ListView`; header search → `MATCH`.
 - `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
-- `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched).
+- `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched); with `supply_chain.recipes` the photo opens the product's `showRecipePanel`, and a dish made to order's stock is what its supplies allow, no stepper.
 - `stock_summary/summary_header.dart` — `SummaryHeader` (a title click orders by its column: `summary_sort_title.dart` — `SummarySortTitle`); `stock_summary/summary_product_row.dart` — `SummaryProductRow`; `stock_summary/summary_line.dart` — `SummaryLine`.
 - `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`; the stock figure opens `showStockHistory` (`inventory.history`).
 - `stock_summary/summary_value.dart` — `SummaryValue`; `summary_number.dart` — `SummaryNumber`; `summary_picture.dart` — `SummaryPicture`.

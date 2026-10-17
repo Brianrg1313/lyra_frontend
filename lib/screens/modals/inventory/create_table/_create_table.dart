@@ -5,7 +5,6 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/inventory/table_template.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
@@ -21,10 +20,18 @@ import 'package:core/button.dart';
 /// neither knows nor creates columns on its own.
 ///
 /// It is a modal and not a screen because the form is short and fixed-size.
-/// It is opened from the inventory section ([InventorySection]), which, when it
-/// closes with the new table's id, reloads the tables and opens that one.
+/// It is opened from the inventory section ([InventorySection]) and from the production
+/// line's supplies tab, which, when it closes with the new table's id, reload their tables
+/// and open that one.
+///
+/// **The kind is the opener's, never asked** ([supplies], `cocina-frontend.md` §2.1): each
+/// section lists one kind of table only, so its «New table» makes that kind. The backend
+/// never lets it change.
 class CreateTableModal extends StatefulWidget {
-  const CreateTableModal({super.key});
+  const CreateTableModal({super.key, this.supplies = false});
+
+  /// A table of supplies (`KIND: "supplies"`), else a catalog.
+  final bool supplies;
 
   @override
   State<CreateTableModal> createState() => _CreateTableModalState();
@@ -70,20 +77,6 @@ class _CreateTableModalState extends State<CreateTableModal> {
     initial: TableTemplate.blank
   );
 
-  /// What the table's rows are: what is sold, or what is used to make it (supplies). Asked
-  /// once, here: the backend never lets it change. Only where recipes exist (the supply
-  /// chain, cloud only); elsewhere every table is a catalog.
-  late final _kind = InputController.select(
-    key: "KIND",
-    form: _form,
-    initial: _catalog
-  );
-
-  static const _catalog = "catalog";
-  static const _supplies = "supplies";
-
-  bool get _asksKind => CapabilityService().shows("supply_chain");
-
   /// The create request asks for a header color even though the form no longer
   /// asks for one, so it travels fixed: any red, literal Flutter ARGB (`0x`
   /// plus 8 hex digits, alpha first), which is the only format accepted.
@@ -104,7 +97,7 @@ class _CreateTableModalState extends State<CreateTableModal> {
       children: [
         Padding(
           padding: EdgeInsets.only(bottom: AppSize.spaceS),
-          child: TextMedium(S.of(context).create_table_subtitle)
+          child: TextMedium(widget.supplies ? S.of(context).table_kind_supplies_note : S.of(context).create_table_subtitle)
         ),
         Input(
           title: S.of(context).table_title_input,
@@ -118,27 +111,6 @@ class _CreateTableModalState extends State<CreateTableModal> {
           placeholder: S.of(context).table_description_placeholder,
           controller: _description,
           leftIcon: Icon(CI.pen, color: ThemeColor.of(context).icon)
-        ),
-        if (_asksKind) SelectInput(
-          title: S.of(context).table_kind_title,
-          placeholder: S.of(context).table_kind_catalog,
-          emptyText: S.of(context).table_template_empty,
-          controller: _kind,
-          searchable: false,
-          options: [
-            SelectOption(
-              value: _catalog,
-              placeholder: S.of(context).table_kind_catalog,
-              subtitle: S.of(context).table_kind_catalog_note,
-              icon: CI.shop
-            ),
-            SelectOption(
-              value: _supplies,
-              placeholder: S.of(context).table_kind_supplies,
-              subtitle: S.of(context).table_kind_supplies_note,
-              icon: CI.warehouse
-            )
-          ]
         ),
         SelectInput(
           title: S.of(context).table_template_title,
@@ -185,6 +157,6 @@ class _CreateTableModalState extends State<CreateTableModal> {
     description: _description.value,
     color: _color,
     template: _template.value == TableTemplate.blank ? null : _template.value,
-    supplies: _asksKind && _kind.value == _supplies
+    supplies: widget.supplies
   );
 }

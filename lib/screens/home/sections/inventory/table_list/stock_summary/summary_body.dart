@@ -101,6 +101,8 @@ class SummaryBody extends StatelessWidget {
                 row: rows[index],
                 layout: layout,
                 currency: currency,
+                recipes: service.recipes,
+                recipe: service.recipeOf(rows[index].id),
                 // The zebra alternates by position in the list, just like in the
                 // spreadsheet: the odd ones are the painted ones.
                 zebra: index.isOdd

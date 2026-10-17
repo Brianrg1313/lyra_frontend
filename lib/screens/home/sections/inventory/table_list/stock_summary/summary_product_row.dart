@@ -11,12 +11,17 @@ import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/inventory/table_field_type.dart';
+import 'package:app/services/kitchen/kitchen_product_model.dart';
+import 'package:app/services/kitchen/recipe_availability_model.dart';
+import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 
 // WIDGETS
 import 'package:app/screens/modals/inventory/branch_prices/_branch_prices.dart';
 import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart';
+import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
+import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
 
 import './summary_layout.dart';
 import './summary_line.dart';
@@ -37,14 +42,27 @@ import './summary_value.dart';
 /// correcting it on the spot, not opening the product. That the whole row were
 /// a button, besides, left every movement one pixel away from going to another
 /// screen.
+///
+/// **Where the kitchen is ([recipes]), the photo opens the product's recipe** (`cocina-frontend.md`
+/// §2.1: a dish's recipe lives on the product, in this section). A dish made to order has no
+/// shelf: its stock figure is what its supplies allow, with no buttons (the backend refuses to
+/// move it), and touching it says why («3 left — because of the bacon») by opening the recipe.
 class SummaryProductRow extends StatelessWidget {
   const SummaryProductRow({
     super.key,
     required this.row,
     required this.layout,
     required this.currency,
-    this.zebra = false
+    this.zebra = false,
+    this.recipes = false,
+    this.recipe
   });
+
+  /// Whether the photo opens the product's recipe.
+  final bool recipes;
+
+  /// What the product's recipe makes now; `null` when it has none.
+  final RecipeAvailability? recipe;
 
   final StockSummaryRow row;
   final SummaryLayout layout;
@@ -79,7 +97,13 @@ class SummaryProductRow extends StatelessWidget {
       ),
       child: SummaryLine(
         layout: layout,
-        image: SummaryPicture(row: row),
+        image: recipes
+          ? FocusableWidget(
+              action: () => _openRecipe(context),
+              message: S.of(context).stock_summary_recipe,
+              child: SummaryPicture(row: row)
+            )
+          : SummaryPicture(row: row),
         field: (column) => _priced(context, column)
           ? FocusableWidget(
               action: () => _openPrices(context, column),
@@ -91,7 +115,7 @@ class SummaryProductRow extends StatelessWidget {
               raw: row[column.key],
               currency: currency
             ),
-        number: _number
+        number: (column) => _number(context, column)
       )
     );
   }
@@ -108,6 +132,19 @@ class SummaryProductRow extends StatelessWidget {
     .where((field) => field.type == TableFieldType.text)
     .map((field) => row[field.key]?.toString().trim() ?? "")
     .firstWhere((value) => value.isNotEmpty, orElse: () => "");
+
+  /// The product's recipe panel; a recipe written, deleted or paused there rereads the rows in
+  /// view, so the dish's figure is the backend's.
+  Future<void> _openRecipe(BuildContext context) async {
+    final service = context.read<StockSummaryService>();
+
+    final changed = await showRecipePanel(
+      context,
+      product: KitchenProduct(id: row.id, tableId: service.table, name: _name)
+    );
+
+    if (changed) await service.syncColumns(service.table);
+  }
 
   void _openPrices(BuildContext context, StockSummaryColumn column) {
     final raw = row[column.key];
@@ -131,9 +168,23 @@ class SummaryProductRow extends StatelessWidget {
   /// not by what's already reserved— so a row missing either falls to the bare
   /// figure. It doesn't happen today: the summary answers both counters in any
   /// table, whether or not it has a stock column.
-  Widget _number(StockSummaryColumn column) {
+  Widget _number(BuildContext context, StockSummaryColumn column) {
     final stock = row.stock;
     final reserved = row.reserved;
+    final made = recipe;
+
+    // A dish made to order: what its supplies allow, never empty nor moved by hand.
+    if (made != null && made.mode == RecipeMode.order && column.isStock) {
+      return FocusableWidget(
+        action: () => _openRecipe(context),
+        message: recipeAvailabilityLine(context, made),
+        child: SummaryNumber(value: stock ?? made.available, alert: true, align: TextAlign.center)
+      );
+    }
+
+    if (made != null && made.mode == RecipeMode.order && column.isReserved) {
+      return SummaryNumber(value: reserved, align: TextAlign.center);
+    }
 
     final counter = switch (column.key) {
       StockSummaryColumn.stockKey => StockCounter.stock,

@@ -17,7 +17,8 @@ import 'package:app/screens/home/sections/supply_chain/reports/_reports.dart';
 /// `FinanceTab`): its own route key, no id — every kitchen endpoint answers for the active
 /// company and branch.
 enum SupplyChainTab {
-  recipes(key: "recipes", icon: CI.list),
+  /// The supplies tables (its key is the permission area's, `kitchen.*` in the backend).
+  recipes(key: "recipes", icon: CI.warehouse),
   modifiers(key: "modifiers", icon: CI.plus),
   reports(key: "reports", icon: CI.chart);
 

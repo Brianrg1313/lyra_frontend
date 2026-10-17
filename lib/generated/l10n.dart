@@ -1309,10 +1309,10 @@ class S {
     );
   }
 
-  /// `Recipes`
+  /// `Supplies`
   String get supply_chain_tab_recipes {
     return Intl.message(
-      'Recipes',
+      'Supplies',
       name: 'supply_chain_tab_recipes',
       desc: '',
       args: [],
@@ -1339,31 +1339,31 @@ class S {
     );
   }
 
-  /// `Search products`
+  /// `Search supplies`
   String get supply_chain_products_search {
     return Intl.message(
-      'Search products',
+      'Search supplies',
       name: 'supply_chain_products_search',
       desc: '',
       args: [],
     );
   }
 
-  /// `What is sold. Open a product to write what it is made of; a dish made to order shows how many its supplies allow.`
-  String get supply_chain_table_catalog_note {
+  /// `What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; a dish's recipe is written from its row in Inventory.`
+  String get supply_chain_table_supplies_note {
     return Intl.message(
-      'What is sold. Open a product to write what it is made of; a dish made to order shows how many its supplies allow.',
-      name: 'supply_chain_table_catalog_note',
+      'What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; a dish\'s recipe is written from its row in Inventory.',
+      name: 'supply_chain_table_supplies_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `Supplies: what is used to make what is sold. Open one to see where it is used and how it is bought.`
-  String get supply_chain_table_supplies_note {
+  /// `Create supplies table`
+  String get supply_chain_table_create {
     return Intl.message(
-      'Supplies: what is used to make what is sold. Open one to see where it is used and how it is bought.',
-      name: 'supply_chain_table_supplies_note',
+      'Create supplies table',
+      name: 'supply_chain_table_create',
       desc: '',
       args: [],
     );
@@ -1379,20 +1379,20 @@ class S {
     );
   }
 
-  /// `This table has no products yet`
+  /// `This table has no supplies yet`
   String get supply_chain_products_empty {
     return Intl.message(
-      'This table has no products yet',
+      'This table has no supplies yet',
       name: 'supply_chain_products_empty',
       desc: '',
       args: [],
     );
   }
 
-  /// `No product matches the search`
+  /// `No supply matches the search`
   String get supply_chain_products_no_match {
     return Intl.message(
-      'No product matches the search',
+      'No supply matches the search',
       name: 'supply_chain_products_no_match',
       desc: '',
       args: [],
@@ -1409,20 +1409,20 @@ class S {
     );
   }
 
-  /// `There are no tables yet`
+  /// `There are no supplies tables yet`
   String get supply_chain_no_tables {
     return Intl.message(
-      'There are no tables yet',
+      'There are no supplies tables yet',
       name: 'supply_chain_no_tables',
       desc: '',
       args: [],
     );
   }
 
-  /// `Create a table of what you sell, and one of supplies, in Inventory.`
+  /// `A supplies table holds what is used to make what is sold: meat, bread, cheese. What is sold lives in Inventory.`
   String get supply_chain_no_tables_note {
     return Intl.message(
-      'Create a table of what you sell, and one of supplies, in Inventory.',
+      'A supplies table holds what is used to make what is sold: meat, bread, cheese. What is sold lives in Inventory.',
       name: 'supply_chain_no_tables_note',
       desc: '',
       args: [],
@@ -9147,50 +9147,10 @@ class S {
     );
   }
 
-  /// `What does it hold?`
-  String get table_kind_title {
-    return Intl.message(
-      'What does it hold?',
-      name: 'table_kind_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What is sold`
-  String get table_kind_catalog {
-    return Intl.message(
-      'What is sold',
-      name: 'table_kind_catalog',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Products customers buy: the till, the catalog and Lyra offer them.`
-  String get table_kind_catalog_note {
-    return Intl.message(
-      'Products customers buy: the till, the catalog and Lyra offer them.',
-      name: 'table_kind_catalog_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Supplies`
-  String get table_kind_supplies {
-    return Intl.message(
-      'Supplies',
-      name: 'table_kind_supplies',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What is used to make what is sold (meat, wax). Never sold; counted with decimals. It can't be changed later.`
+  /// `What is used to make what is sold (meat, bread, cheese). Never sold; counted with decimals of its unit.`
   String get table_kind_supplies_note {
     return Intl.message(
-      'What is used to make what is sold (meat, wax). Never sold; counted with decimals. It can\'t be changed later.',
+      'What is used to make what is sold (meat, bread, cheese). Never sold; counted with decimals of its unit.',
       name: 'table_kind_supplies_note',
       desc: '',
       args: [],
@@ -14886,6 +14846,26 @@ class S {
       name: 'stock_reason_spoiled',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Recipe`
+  String get stock_summary_recipe {
+    return Intl.message(
+      'Recipe',
+      name: 'stock_summary_recipe',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recipe of {product}`
+  String stock_summary_recipe_of(Object product) {
+    return Intl.message(
+      'Recipe of $product',
+      name: 'stock_summary_recipe_of',
+      desc: '',
+      args: [product],
     );
   }
 

@@ -4,17 +4,22 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/kitchen/recipe_availability_model.dart';
+import 'package:app/services/kitchen/recipe_measure.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
-import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart';
 
 /// Status of the recipes tab's list.
 enum KitchenProductsStatus { idle, loading, ready, empty, error }
 
-/// The products of one table, with what the branch can make of each: the recipes tab.
+/// The supplies of one table, with what the branch can make of each one made by the batch (a
+/// sauce): the production line's tab.
+///
+/// **Only `supplies` tables** (`cocina-frontend.md` §2.1): what is sold lives in the inventory
+/// section, which opens a dish's recipe from its own rows; the two sections never list the
+/// same table.
 ///
 /// The backend lists no recipes (`cocina-frontend.md` §3 reads one by product), so the list is
 /// the table's stock summary and each page asks `POST /inventory/recipes/availability` for its
@@ -25,14 +30,16 @@ enum KitchenProductsStatus { idle, loading, ready, empty, error }
 /// `stock/changed` with `composite: true` rewrites a dish's [availability] (a supply was spent,
 /// a recipe edited, a dish paused); any other one, a supply's stock.
 class KitchenProductsService extends ChangeNotifier {
-  KitchenProductsService({InventorySource? inventory, StockSource? stock, bool listen = true})
+  KitchenProductsService({InventorySource? inventory, StockSource? stock, RecipeMeasure? measure, bool listen = true})
     : _inventory = inventory,
-      _stock = stock {
+      _stock = stock,
+      _measureOf = measure ?? measureRecipes {
     if (listen) _off = ConnectionService().on(StockChangedModel.event, _onStock);
   }
 
   final InventorySource? _inventory;
   final StockSource? _stock;
+  final RecipeMeasure _measureOf;
   void Function()? _off;
 
   InventorySource get _tables => _inventory ?? Sources.inventory;
@@ -64,14 +71,18 @@ class KitchenProductsService extends ChangeNotifier {
   /// What [productId]'s recipe makes now; `null` when it has none.
   RecipeAvailability? availabilityOf(String productId) => _availability[productId];
 
-  /// Reads the tables and opens the first catalog (what is sold is where recipes are written),
-  /// or [tableId] when it is one of them.
+  /// Reads the supplies tables and opens [tableId] when it is one of them (else the open one,
+  /// else the first). None is [KitchenProductsStatus.empty] with no [table]: the tab offers to
+  /// create one.
   Future<void> load({String? tableId}) async {
     _status = KitchenProductsStatus.loading;
     _notify();
 
     try {
-      _tableList = await _tables.tables();
+      _tableList = [
+        for (final table in await _tables.tables())
+          if (table.supplies) table
+      ];
     } catch (error) {
       if (kDebugMode) print("kitchen tables failed: $error");
 
@@ -81,15 +92,15 @@ class KitchenProductsService extends ChangeNotifier {
     }
 
     if (_tableList.isEmpty) {
+      _table = null;
+      _products = const [];
       _status = KitchenProductsStatus.empty;
       _notify();
       return;
     }
 
-    _table = _tableList.where((table) => table.id == tableId).firstOrNull
-      ?? _tableList.where((table) => !table.supplies && table.primary).firstOrNull
-      ?? _tableList.where((table) => !table.supplies).firstOrNull
-      ?? _tableList.first;
+    final wanted = tableId ?? _table?.id;
+    _table = _tableList.where((table) => table.id == wanted).firstOrNull ?? _tableList.first;
 
     await _read();
   }
@@ -179,7 +190,7 @@ class KitchenProductsService extends ChangeNotifier {
   /// Measures [productIds] again (a recipe saved, deleted or paused from its panel).
   Future<void> remeasure(List<String> productIds) async {
     try {
-      final fresh = await _availabilityOf(productIds);
+      final fresh = await _measureOf(productIds);
 
       _availability = {
         for (final entry in _availability.entries)
@@ -196,29 +207,11 @@ class KitchenProductsService extends ChangeNotifier {
   /// no recipes, so the list still shows; the panel reads its own.
   Future<Map<String, RecipeAvailability>> _measure(List<KitchenProduct> products) async {
     try {
-      return await _availabilityOf([for (final product in products) product.id]);
+      return await _measureOf([for (final product in products) product.id]);
     } catch (error) {
       if (kDebugMode) print("kitchen availability failed: $error");
       return const {};
     }
-  }
-
-  static Future<Map<String, RecipeAvailability>> _availabilityOf(List<String> ids) async {
-    if (ids.isEmpty) return const {};
-
-    final result = <String, RecipeAvailability>{};
-
-    for (var start = 0; start < ids.length; start += 200) {
-      final chunk = ids.sublist(start, (start + 200).clamp(0, ids.length));
-
-      result.addAll(RecipeAvailability.mapFrom(await api.post(
-        path: "/inventory/recipes/availability",
-        version: "v1",
-        data: {"PRODUCT_IDS": chunk}
-      )));
-    }
-
-    return result;
   }
 
   void _onStock(dynamic data) => receive(StockChangedModel.fromEvent(data));

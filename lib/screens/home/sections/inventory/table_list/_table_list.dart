@@ -47,8 +47,13 @@ import './view_toggle.dart';
 /// company, else the primary one, else the first. A table that is gone (deleted, another
 /// company's link) falls to the next on its own.
 ///
-/// A company with no table sees [InventoryStart] instead: the templates for its
-/// activity, a blank table and the import. The templates are read there and only there.
+/// **Only `catalog` tables** (`cocina-frontend.md` §2.1): what is sold. A company's supplies
+/// tables are the production line's, and never listed here; its «Create table» makes a
+/// catalog.
+///
+/// A company with no catalog table sees [InventoryStart] instead (whatever supplies tables it
+/// has): the templates for its activity, a blank table and the import. The templates are
+/// read there and only there.
 ///
 /// A table still being imported is not opened in either view (its columns are untyped
 /// and its rows not up yet, which reads as an import that failed): what's open shows
@@ -233,11 +238,15 @@ class _InventorySectionState extends State<InventorySection> {
   @override
   Widget build(BuildContext context) {
     final service = context.watch<TablesService>();
-    final tables = service.tables;
+    final tables = [
+      for (final table in service.tables)
+        if (!table.supplies) table
+    ];
 
-    // A reload keeps the tables it had in view: only a first read covers the section.
+    // A reload keeps the tables it had in view: only a first read covers the section. A
+    // company with supplies tables only has nothing of its own here.
     if (tables.isEmpty) {
-      return switch (service.status) {
+      return switch (service.tables.isNotEmpty ? TablesStatus.empty : service.status) {
         TablesStatus.error => Surface(child: SectionMessage(
           icon: CI.info,
           title: S.of(context).product_tables_error_title,

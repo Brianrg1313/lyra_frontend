@@ -133,7 +133,7 @@ through `Navigator.pop(context, value)`.
 - `shared/kitchen_product_picker.dart` — `KitchenProductPicker` (a `KitchenProductSearch` over every table, supplies first), `KitchenNote`. `shared/kitchen_chip.dart` — `KitchenChip`.
 
 ### `inventory/`
-- `create_table/_create_table.dart` — `CreateTableModal`: title, description, colour; where the supply chain exists, what it holds (`KIND`: what is sold or supplies, never changed after).
+- `create_table/_create_table.dart` — `CreateTableModal({supplies})`: title, description, colour; its `KIND` is the opener's, never asked (inventory: catalog; the production line: supplies).
 - `create_field/_create_field.dart` — `CreateFieldModal`: new column.
 - `rename_table/_rename_table.dart` — `RenameTableModal`.
 - `edit_table_details/_edit_table_details.dart` — `EditTableDetailsModal`: **one** header datum from the settings panel.

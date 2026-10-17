@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -6,23 +8,28 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/kitchen/kitchen_product_model.dart';
+import 'package:app/services/business/business_service.dart';
 import 'package:app/services/kitchen/kitchen_products_service.dart';
+import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/_section/more_button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_list/table_selector.dart';
+import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
 
 import './recipe_row.dart';
 
-/// The recipes tab: one table's products, each with what its recipe makes now (or that it has
-/// none), and the panel of one of them on a click — its recipe, its 86, batches, lost dishes and
-/// how it is bought.
+/// The supplies tab: one supplies table's rows (`cocina-frontend.md` §2.1), each with its stock
+/// in its unit, or what its recipe makes when it is a preparation made by the batch (a sauce),
+/// and the panel of one of them on a click — how it is bought, where it is used, its batches.
 ///
-/// A table of supplies lists too: a preparation made by the batch (a sauce) can live there, and
-/// its presentations are edited from its panel.
+/// **Supplies tables only**: what is sold is the inventory section's, which opens a dish's
+/// recipe from its own rows. With none the tab offers to create the first («New table» makes
+/// supplies here, never asked).
 class RecipesTab extends StatefulWidget {
   const RecipesTab({super.key});
 
@@ -44,6 +51,22 @@ class _RecipesTabState extends State<RecipesTab> {
       final service = context.read<KitchenProductsService>();
       if (service.status == KitchenProductsStatus.idle) service.load();
     });
+  }
+
+  /// A supplies table through the create modal, which answers its id: it opens here, and the
+  /// app's list (the inventory's, which leaves it out) reads it again.
+  Future<void> _create() async {
+    final id = await showModal(
+      context: context,
+      title: S.of(context).supply_chain_table_create,
+      builder: (BuildContext context) => const CreateTableModal(supplies: true)
+    );
+
+    if (!mounted || id is! String) return;
+
+    unawaited(context.read<TablesService>().load(context.read<BusinessService>().active.id, force: true));
+
+    await context.read<KitchenProductsService>().load(tableId: id);
   }
 
   Future<void> _open(KitchenProduct product) async {
@@ -73,12 +96,19 @@ class _RecipesTabState extends State<RecipesTab> {
             controller: _query,
             placeholder: s.supply_chain_products_search,
             onSearch: service.search
-          ))
+          )),
+          SizedBox(width: AppSize.spaceS),
+          Button(
+            width: null,
+            title: s.create_table,
+            leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
+            action: _create
+          )
         ]),
         if (table != null) Padding(
           padding: EdgeInsets.symmetric(vertical: AppSize.spaceXS),
           child: TextSmall(
-            table.supplies ? s.supply_chain_table_supplies_note : s.supply_chain_table_catalog_note,
+            s.supply_chain_table_supplies_note,
             lines: 2,
             color: ThemeColor.of(context).text.secondary
           )
@@ -104,7 +134,9 @@ class _RecipesTabState extends State<RecipesTab> {
         title: service.table == null
           ? s.supply_chain_no_tables
           : service.query.isEmpty ? s.supply_chain_products_empty : s.supply_chain_products_no_match,
-        subtitle: service.table == null ? s.supply_chain_no_tables_note : null
+        subtitle: service.table == null ? s.supply_chain_no_tables_note : null,
+        action: service.table == null ? _create : null,
+        actionLabel: service.table == null ? s.supply_chain_table_create : null
       ),
       KitchenProductsStatus.ready => ListView.separated(
         itemCount: service.products.length + (service.hasMore ? 1 : 0),

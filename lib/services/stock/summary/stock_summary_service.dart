@@ -7,6 +7,8 @@ import 'package:flutter/widgets.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/inventory/picture_import_model.dart';
 import 'package:app/services/kitchen/presentation_model.dart';
+import 'package:app/services/kitchen/recipe_availability_model.dart';
+import 'package:app/services/kitchen/recipe_measure.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
@@ -52,11 +54,18 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// table. The order outlives a search and a reread; it is dropped by a third click on its
 /// title, or when its column leaves the summary or the backend refuses it.
 ///
+/// **A catalog's dishes say what they make** ([recipes], `cocina-frontend.md` §2.1, §4): each
+/// page's ids are measured (`POST /recipes/availability`) and a product with a recipe answers
+/// ([recipeOf]). A dish made to order has no shelf (`onHand: null`): its `stock` is what its
+/// supplies allow, which the backend already writes in the row, and it is never moved by hand.
+///
 /// It is ephemeral: owned by the inventory section and discarded when leaving
 /// it. The shell remounts the section when changing company, so there is
 /// nothing to invalidate on its own account.
 class StockSummaryService extends ChangeNotifier {
-  StockSummaryService({StockSource? source, this.tableId = "", this.supplies = false}) : _injected = source {
+  StockSummaryService({StockSource? source, this.tableId = "", this.supplies = false, this.recipes = false, RecipeMeasure? measure})
+    : _injected = source,
+      _measure = measure {
     _unlistenPictures = ConnectionService().on(PictureProgress.event, _onPictures);
   }
 
@@ -74,6 +83,14 @@ class StockSummaryService extends ChangeNotifier {
   /// Whether [tableId] is a table of supplies (`KIND`): its stock is moved with up to six
   /// decimals of the unit, a catalog's in whole units (`cocina-frontend.md` §2).
   final bool supplies;
+
+  /// Whether the rows' recipes are measured: a catalog's, where the kitchen is (cloud only).
+  final bool recipes;
+
+  final RecipeMeasure? _measure;
+
+  /// What each product with a recipe makes now, by id; a product without one is not in it.
+  final Map<String, RecipeAvailability> _made = {};
 
   StockSource get _source => _injected ?? Sources.stock;
 
@@ -133,6 +150,9 @@ class StockSummaryService extends ChangeNotifier {
 
   List<StockSummaryColumn> get columns => _columns;
   List<StockSummaryRow> get rows => _rows;
+
+  /// What [productId]'s recipe makes now; `null` when it has none (or [recipes] is off).
+  RecipeAvailability? recipeOf(String productId) => _made[productId];
 
   /// How many products there are (or how many match, if searching), not how
   /// many were read.
@@ -391,6 +411,7 @@ class StockSummaryService extends ChangeNotifier {
       // what they are and the next batch still has to be the next one.
       if (!quiet) {
         _rows.clear();
+        _made.clear();
         _page = 0;
         _status = StockSummaryStatus.loading;
         notifyListeners();
@@ -479,6 +500,8 @@ class StockSummaryService extends ChangeNotifier {
 
     _rows.addAll(result.rows);
 
+    if (recipes) unawaited(_measureRows(result.rows, generation));
+
     // A batch that comes back empty is the end, whatever the total says:
     // between it being counted and the page being requested, someone could
     // have deleted rows. Without this the list would keep requesting the next
@@ -491,6 +514,26 @@ class StockSummaryService extends ChangeNotifier {
       : StockSummaryStatus.ready;
 
     notifyListeners();
+  }
+
+  /// Measures the recipes of [rows], which arrived with [generation]: a later read's rows are
+  /// not touched by an earlier answer. A failed measure leaves the rows as products (their
+  /// stock is still the backend's).
+  Future<void> _measureRows(List<StockSummaryRow> rows, int generation) async {
+    final ids = [for (final row in rows) row.id];
+    if (ids.isEmpty) return;
+
+    try {
+      final fresh = await (_measure ?? measureRecipes)(ids);
+      if (generation != _generation) return;
+
+      _made
+        ..removeWhere((id, _) => ids.contains(id))
+        ..addAll(fresh);
+      notifyListeners();
+    } catch (error) {
+      if (kDebugMode) print("summary recipes failed: $error");
+    }
   }
 
   /// What remains when a read left nothing: the one that failed and the one
