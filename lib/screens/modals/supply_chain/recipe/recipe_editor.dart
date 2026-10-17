@@ -26,13 +26,13 @@ class _LineDraft {
     double waste = 0,
     this.negotiable = false
   }) : units = kitchenUnitsFor(unit),
-       more = negotiable || waste > 0,
-       waste = InputController(key: "WASTE_$productId", pattern: "[0-9.,]", max: 6, initial: waste > 0 ? kitchenField(waste) : null) {
+       more = negotiable || waste > 0 {
+    this.waste = InputController(key: "WASTE", form: _form, pattern: "[0-9.,]", max: 6, initial: waste > 0 ? kitchenField(waste) : null);
     final best = qty == null ? null : kitchenBestUnit(qty, unit);
 
     // A new line of a weight or a volume starts on the small unit: 300 g, not 0.3 kg.
     shown = best?.unit ?? units.first;
-    this.qty = InputController(key: "QTY_$productId", pattern: "[0-9.,]", max: 16, initial: best == null ? null : kitchenField(best.qty));
+    this.qty = InputController(key: "QTY", form: _form, pattern: "[0-9.,]", max: 16, initial: best == null ? null : kitchenField(best.qty));
   }
 
   final String tableId;
@@ -50,8 +50,13 @@ class _LineDraft {
   final List<KitchenUnit> units;
   late KitchenUnit shown;
 
+  /// Owns [qty] and [waste]: an input disposes a controller without a form when it unmounts,
+  /// and the waste's is unmounted each time the line folds (its focus node reused dead breaks
+  /// the focus tree).
+  final _form = FormController();
+
   late final InputController qty;
-  final InputController waste;
+  late final InputController waste;
   bool negotiable;
 
   /// Whether its waste and «optional» are unfolded: always when it has either.
@@ -61,6 +66,7 @@ class _LineDraft {
   void dispose() {
     qty.dispose();
     waste.dispose();
+    _form.dispose();
   }
 }
 

@@ -271,6 +271,40 @@ void main() {
       expect(saved!.lines.single.qty, 250);
     });
 
+    testWidgets("a line folded and unfolded again keeps its waste and takes the focus", (tester) async {
+      RecipeDraft? saved;
+
+      await tester.pumpWidget(_app(SingleChildScrollView(child: RecipeEditor(
+        recipe: const Recipe(productId: "burger", tableId: "menu", lines: [
+          RecipeLine(id: "l1", tableId: "s", productId: "meat", name: "Meat", qty: 0.3, waste: 5)
+        ]),
+        supplies: false,
+        canEdit: true,
+        units: const {"meat": "kg"},
+        onSave: (draft) async {
+          saved = draft;
+          return true;
+        },
+        onCancel: () {}
+      ))));
+      await tester.pumpAndSettle();
+
+      // Unfolded (it has waste), folded, unfolded: its input is mounted twice on one controller.
+      await tester.tap(find.byIcon(CI.arrow_top));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(CI.arrow_down));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text("5"));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.text("5"), "10");
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(saved!.lines.single.waste, 10);
+    });
+
     testWidgets("an edit that changes no column sends no DATA", (tester) async {
       final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]]);
       final service = await _service(tester, source);
