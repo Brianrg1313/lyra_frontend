@@ -339,6 +339,16 @@ class SheetController {
 
     cursor.move(cell, editing: true);
     reveal(cell);
+
+    // The editor's `autofocus` only takes when its scope holds no focus. Coming
+    // from a selected cell —one that isn't written, or a list whose dropdown just
+    // gave the focus back— the grid holds it, so the editor opened without the
+    // caret and only a second click (on the text field itself) wrote. The focus
+    // is asked for once the editor is mounted.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_disposed || !identical(focus, node) || node.hasFocus) return;
+      node.requestFocus();
+    });
   }
 
   /// Closes the editor saving in the draft what was written. It doesn't touch
