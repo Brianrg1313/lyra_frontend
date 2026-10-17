@@ -280,6 +280,9 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 - `kitchen_api.dart` — `KitchenApi.reason` (the refusal's code), `KitchenApi.report` (floating flag; an `action` rethrown).
 - `kitchen_product_model.dart` — `KitchenProduct`: a summary row named by its first text column, `unit` (a measure column's or a "unit" column's), `stock` with decimals, `supplies`, `made`.
 - `made_consumes_model.dart` — `MadeConsumes` (`mapFrom`): what each record of a made table consumes and can be sold now, beside the rows of `records/list` (`consumes`).
+- `made_product_model.dart` — `MadeFields` (`of`: name = first `TITLE` else text, price = first `PRICE`, `others` typed in a field), `MadeProduct` (`listFrom` an aligned page: values by FIELD_ID, `consumes`).
+- `made_products_service.dart` — `MadeProductsService({tableId})` (+ status, `MadeProductDraft`): one made table's products (structure, pages of 50 with `MATCH`, `more`), the supplies' units (`unitOf`, `units`); `save` creates the name/price columns a table lacks, then the record with its `DATA` (an edit only what changed), `CONSUMES` and `BATCH` in one call, and reads the first page again. Owned by the made products view.
+- `kitchen_units.dart` — `KitchenUnit`, `kitchenUnitsFor(unit)` (g/kg, ml/l by their spellings; else only its own), `kitchenBestUnit(qty, unit)` (0.3 kg reads 300 g).
 - `recipe_model.dart` — `Recipe` (`read`, `namedAfter`: a write answers without names), `RecipeLine`, `RecipeMode` (`order`/`batch`), `RecipeUse`.
 - `recipe_measure.dart` — `RecipeMeasure`, `measureRecipes`: `POST /recipes/availability` (≤ 200 ids per call); shared by `KitchenProductsService` and `StockSummaryService`.
 - `recipe_availability_model.dart` — `RecipeAvailability` (`mapFrom`: by product, absent = no recipe; `capacity` only on a batch), `RecipeLimit`, `RecipeShort`.
@@ -291,7 +294,7 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 - `recipe_service.dart` — `RecipeService({product})` (+ `RecipeStatus`, `BatchResult`): one product's recipe (`404 recipe_not_found` = `none`), availability and presentations; save (a made product's as its record's `CONSUMES`/`BATCH` through `Sources.inventory`, then read again; a supply's preparation `PUT /recipes`), remove (`removable`: never a made one's), pause, uses, produce, discard, presentations; each write measures again. Per opened panel. `fetch` (a recipe for a modifier's removals).
 - `modifiers_service.dart` — `ModifiersService` (+ status): `GET/PUT/DELETE /inventory/modifiers`; every write rereads.
 - `kitchen_reports_service.dart` — `KitchenReportsService` (+ `KitchenReport`, status): one report and one window; only the last read counts.
-- `kitchen_product_search.dart` — `KitchenProductSearch`: every table's summary `MATCH` at once (supplies, then made, then catalog), `namesIn(tables)`.
+- `kitchen_product_search.dart` — `KitchenProductSearch`: every table's summary `MATCH` at once (supplies, then made, then catalog), `namesIn(tables)`, `productsIn(tables)` (by id, with their unit), `suppliesById`.
 - `till_kitchen_service.dart` — `TillKitchenService` (POS page, `pos.kitchen`): `load` (`GET /modifiers` once → which products `offers`), `groupsOf` (`POST /modifiers/availability`), `shortOf` (`POST /recipes/availability` → `short`); a failed read is none. Seam `seed`.
 
 ## baileys/ — WhatsApp Personal sidecar link
@@ -436,7 +439,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `TableImportStage`): list, create, rename, delete, import (then `PictureImportService.afterImport`); listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
 - `tables/table_view_service.dart` — `TableViewService` (+ `TableStructureStatus`, `TableViewStatus`,
-  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records (a made table's `consumesOf`), `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset; a made one sends what it consumes), `rereadInPlace`, `/records/images/`, `writeStock`; `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
+  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset), `/records/images/`, `writeStock`; `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
 - `tables/table_stock_mover.dart` — `TableStockMover`: the sheet's `StockMover` (moves through `StockSource`, writes the balance in the row).
 - `tables/table_lite_model.dart` — list row, `TableKind` (`catalog made supplies`; unknown = catalog).
 - `tables/table_detail_model.dart` — `TableDetailModel` and its summaries (`TableColumnsSummary`,

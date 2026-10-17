@@ -47,6 +47,15 @@ class _KitchenProductPickerState extends State<KitchenProductPicker> {
     super.dispose();
   }
 
+  /// Hands [product] over and empties the search, ready for the next one: it is picked like an
+  /// autocomplete, one after the other.
+  void _pick(KitchenProduct product) {
+    widget.onPick(product);
+    _query.textController.clear();
+    _search.search("");
+    _query.focus.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -78,7 +87,7 @@ class _KitchenProductPickerState extends State<KitchenProductPicker> {
             for (final product in results) Padding(
               padding: EdgeInsets.only(bottom: AppSize.gap / 2),
               child: FeedbackButton(
-                action: () => widget.onPick(product),
+                action: () => _pick(product),
                 color: scheme.surfaceOver,
                 padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.spaceXS),
                 child: Row(children: [

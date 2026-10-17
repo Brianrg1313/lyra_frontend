@@ -10,8 +10,6 @@ import 'package:app/services/inventory/picture_import_model.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_field_type.dart';
-import 'package:app/services/kitchen/kitchen_request.dart';
-import 'package:app/services/kitchen/made_consumes_model.dart';
 import 'package:app/services/inventory/table_record_request.dart';
 import 'package:app/services/stock/tables/table_normalize_model.dart';
 import 'package:app/services/stock/tables/table_ready_model.dart';
@@ -125,13 +123,6 @@ class TableViewService extends ChangeNotifier {
   /// purpose: from a table of thousands of rows only the ones that were looked
   /// at are present.
   final Map<int, TableRowModel> _rows = {};
-
-  /// A made table's records: what each consumes and can be sold now, by record id, as the
-  /// pages read bring them (`cocina-frontend.md` §3).
-  final Map<String, MadeConsumes> _consumes = {};
-
-  /// What record [id] of a made table consumes; `null` on any other table, or unread.
-  MadeConsumes? consumesOf(String id) => _consumes[id];
 
   /// The bookkeeping of the chunk-by-chunk read: what was read, what is on its
   /// way and where the table ends.
@@ -310,7 +301,6 @@ class TableViewService extends ChangeNotifier {
     _reloading = false;
     _staleStructure = false;
     _rows.clear();
-    _consumes.clear();
     // Another table, another page size: the bookkeeping starts from zero and
     // does not reuse the previous one.
     _paging = TablePaging();
@@ -393,15 +383,10 @@ class TableViewService extends ChangeNotifier {
   ///
   /// On error it shows the floating flag and returns `false`, leaving the draft
   /// intact to retry.
-  ///
-  /// A made record travels with what it consumes ([consumes], [batch]) in the same call: all
-  /// or nothing, the backend saves neither without the other.
   Future<bool> add(
     BuildContext context,
     Map<String, dynamic> values, {
-    List<dynamic>? row,
-    List<RecipeLineDraft>? consumes,
-    bool? batch
+    List<dynamic>? row
   }) async {
     if (_saving) return false;
 
@@ -412,12 +397,7 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final id = await _source.createRecord(createRecordRequest(
-        tableId: tableId,
-        values: values,
-        consumes: consumes,
-        batch: batch
-      ));
+      final id = await _source.createRecord(createRecordRequest(tableId: tableId, values: values));
 
       _saving = false;
 
@@ -740,10 +720,6 @@ class TableViewService extends ChangeNotifier {
     if (_paging.request(_paging.startOf(page)) == page) await _loadPage(page);
   }
 
-  /// Reads the pages in view again in place: after a made record's consumes were written from
-  /// its panel, so its figure and lines are the backend's.
-  Future<void> rereadInPlace() => _rereadPages();
-
   /// Reads again every page in the cache, keeping what it holds until the answer replaces it.
   Future<void> _rereadPages() async {
     for (final page in List<int>.from(_cached)) {
@@ -1061,7 +1037,6 @@ class TableViewService extends ChangeNotifier {
   /// which do not change.
   void _reset() {
     _rows.clear();
-    _consumes.clear();
     _cached.clear();
     _paging.reset();
     _status = TableViewStatus.idle;
@@ -1276,8 +1251,6 @@ class TableViewService extends ChangeNotifier {
     final rows = data.page
       .alignedTo(_structure.fields)
       .rows;
-
-    _consumes.addAll(data.page.consumes);
 
     // The chunk is stored in its place within the table, not at the end of
     // whatever is there: the page says where it starts.

@@ -22,9 +22,6 @@ import './sheet_theme.dart';
 /// highlight it) and whether that row's draft is traveling. **There is no
 /// button**: a written row saves itself on leaving it (see [SheetController]),
 /// and the only thing this band has to show is that the create is on its way.
-///
-/// On a made table a record's number opens what it consumes ([SheetMadeRecords]): a table
-/// may have no stock column, and the record's lines are no cell of it.
 class GutterCell extends StatelessWidget {
   const GutterCell({super.key, required this.index});
 
@@ -54,32 +51,6 @@ class GutterCell extends StatelessWidget {
       (hover) => hover.at(index)
     );
 
-    // A made record is one read with what it consumes (only a made table's page brings it).
-    final made = context.select<TableViewService, bool>((service) {
-      final id = index < service.records ? service.rowAt(index)?.id ?? "" : "";
-
-      return id.isNotEmpty && service.consumesOf(id) != null;
-    });
-
-    final cell = DecoratedBox(
-      decoration: style.gutter(fill: selected
-        ? SheetRowFill.selected
-        : hovered
-          ? SheetRowFill.over
-          : SheetRowFill.plain),
-      child: Center(child: saving
-        ? SizedBox(
-            width: AppSize.text,
-            height: AppSize.text,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: style.accent
-            )
-          )
-        // The fields row is 1, so the first record is row 2.
-        : Text("${index + 2}", style: style.number))
-    );
-
     // The number is highlighted with its row —otherwise the highlight would cut
     // off exactly where it starts— and it also turns it on: passing the mouse
     // over the number is being over that row, even though the band of numbers
@@ -87,13 +58,24 @@ class GutterCell extends StatelessWidget {
     return MouseRegion(
       onEnter: (_) => context.read<SheetHover>().enter(index),
       onExit: (_) => context.read<SheetHover>().leave(index),
-      child: made
-        ? FocusableWidget(
-            action: () => context.read<SheetController>().openMade(index),
-            message: S.of(context).made_consumes_open,
-            child: cell
-          )
-        : cell
+      child: DecoratedBox(
+        decoration: style.gutter(fill: selected
+          ? SheetRowFill.selected
+          : hovered
+            ? SheetRowFill.over
+            : SheetRowFill.plain),
+        child: Center(child: saving
+          ? SizedBox(
+              width: AppSize.text,
+              height: AppSize.text,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: style.accent
+              )
+            )
+          // The fields row is 1, so the first record is row 2.
+          : Text("${index + 2}", style: style.number))
+      )
     );
   }
 }

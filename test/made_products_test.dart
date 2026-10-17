@@ -1,24 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+
+import 'package:core/core.dart';
+import 'package:app/generated/l10n.dart';
+import 'package:app/services/home/home_service.dart';
 
 import 'package:app/services/inventory/table_record_request.dart';
+import 'package:app/services/kitchen/kitchen_product_model.dart';
+import 'package:app/services/kitchen/kitchen_product_search.dart';
 import 'package:app/services/kitchen/kitchen_request.dart';
+import 'package:app/services/kitchen/kitchen_units.dart';
 import 'package:app/services/kitchen/made_consumes_model.dart';
+import 'package:app/services/kitchen/made_product_model.dart';
+import 'package:app/services/kitchen/made_products_service.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
+import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
-import 'package:app/services/stock/tables/table_view_service.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cell.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_made.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_metrics.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
+import 'package:app/screens/home/sections/inventory/made_products/_made_products.dart';
+import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/modals/supply_chain/recipe/recipe_editor.dart';
 
 /// A made product's recipe is part of its record (`cocina-frontend.md` §3): it travels in the
-/// record's own write (`CONSUMES`, `BATCH`), comes back beside the rows of `records/list`, and
-/// the sheet asks for it before a written row is saved, never after.
+/// record's own write (`CONSUMES`, `BATCH`) and comes back beside the rows of `records/list`. A
+/// made table is a list of forms, not a sheet: a product is its name, its price and what it
+/// consumes, written in the supplies' units.
 void main() {
+  setUpAll(() {
+    ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFffffff));
+    ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
+  });
+
   group("contract", () {
     test("a made page reads what each record consumes, and keeps it once aligned", () {
       final page = TableViewModel.fromResponse({
@@ -92,127 +106,294 @@ void main() {
     });
   });
 
-  group("sheet", () {
-    const draft = (
-      mode: RecipeMode.order,
-      lines: <RecipeLineDraft>[(tableId: "s", productId: "bread", qty: 1, negotiable: false, waste: 0)],
-      names: <String, String>{"bread": "Bread"}
-    );
+  group("units", () {
+    test("a weight is written in grams or kilos and travels in the supply's own unit", () {
+      final kg = kitchenUnitsFor("kg");
 
-    testWidgets("a written row is asked what it consumes and saved with it", (tester) async {
-      final table = _Menu();
-      final asked = <String>[];
-      final controller = await _controller(tester, table, consumesFor: (name) async {
-        asked.add(name);
-        return draft;
+      expect([for (final unit in kg) unit.symbol], ["g", "kg"]);
+      expect(300 * kg.first.factor, closeTo(0.3, 1e-9));
+      expect(kitchenUnitsFor("Kilos").last.factor, 1);
+      expect(kitchenUnitsFor("g").last.factor, 1000);
+      expect([for (final unit in kitchenUnitsFor("litros")) unit.symbol], ["ml", "l"]);
+    });
+
+    test("anything else is written only in its own unit", () {
+      expect(kitchenUnitsFor("slice"), const [KitchenUnit("slice", 1)]);
+      expect(kitchenUnitsFor(""), const [KitchenUnit("", 1)]);
+    });
+
+    test("a quantity reads in the unit it reads best in", () {
+      final meat = kitchenBestUnit(0.3, "kg");
+      expect((meat.qty, meat.unit.symbol), (300, "g"));
+
+      final sack = kitchenBestUnit(2, "kg");
+      expect((sack.qty, sack.unit.symbol), (2, "kg"));
+
+      final milk = kitchenBestUnit(1500, "ml");
+      expect((milk.qty, milk.unit.symbol), (1.5, "l"));
+
+      final bread = kitchenBestUnit(1, "");
+      expect((bread.qty, bread.unit.symbol), (1, ""));
+    });
+  });
+
+  group("form", () {
+    test("the name is the title, the price the first price, the rest what a field can hold", () {
+      final fields = MadeFields.of(const [
+        TableFieldModel(id: "f-photo", name: "Photo", type: "IMAGE"),
+        TableFieldModel(id: "f-notes", name: "Notes", type: "TEXT"),
+        TableFieldModel(id: "f-name", name: "Name", type: "TITLE"),
+        TableFieldModel(id: "f-price", name: "Price", type: "PRICE"),
+        TableFieldModel(id: "f-stock", name: "Stock", type: "STOCK")
+      ]);
+
+      expect(fields.name?.id, "f-name");
+      expect(fields.price?.id, "f-price");
+      expect([for (final field in fields.others) field.id], ["f-notes"]);
+    });
+
+    test("a product is read with what it consumes", () {
+      final page = TableViewModel.fromResponse({
+        "keys": ["id", "f-name", "f-price"],
+        "values": [["burger", "Cheese burger", 8.5]],
+        "consumes": {"burger": {"mode": "order", "available": 100, "lines": [
+          {"id": "l1", "tableId": "s", "productId": "meat", "name": "Meat", "qty": 0.3}
+        ]}}
+      }, tableId: "menu").alignedTo(_fields);
+
+      final product = MadeProduct.listFrom(page).single;
+
+      expect(product.id, "burger");
+      expect(product.values, {"f-name": "Cheese burger", "f-price": "8.5"});
+      expect(product.consumes!.availability.available, 100);
+      expect(product.consumes!.recipe.lines.single.qty, 0.3);
+    });
+
+    testWidgets("a table without a name or a price gets both before its first product", (tester) async {
+      final source = _Menu(fields: const []);
+      final service = await _service(tester, source);
+
+      final saved = await service.save(
+        tester.element(find.byType(SizedBox)),
+        nameTitle: "Name",
+        priceTitle: "Price",
+        draft: _burger
+      );
+
+      expect(saved, isTrue);
+      expect([for (final field in source.createdFields) (field["NAME"], field["TYPE"], field["POSITION"])], [
+        ("Name", "TITLE", 0),
+        ("Price", "PRICE", 1)
+      ]);
+      expect(source.created.single["DATA"], {"f-name": "Cheese burger", "f-price": "8.5"});
+      expect(source.created.single["BATCH"], isFalse);
+      expect((source.created.single["CONSUMES"] as List).single, {"TABLE_ID": "s", "PRODUCT_ID": "meat", "QUANTITY": 0.3});
+      expect(service.products.single.id, "burger", reason: "the list is read again");
+      expect(service.unitOf("meat"), "kg");
+    });
+
+    testWidgets("an edit sends only the columns that changed, and every line", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]]);
+      final service = await _service(tester, source);
+
+      final saved = await service.save(
+        tester.element(find.byType(SizedBox)),
+        product: service.products.single,
+        nameTitle: "Name",
+        priceTitle: "Price",
+        draft: (name: "Cheese burger", price: "9", values: const {}, mode: RecipeMode.batch, lines: _burger.lines)
+      );
+
+      expect(saved, isTrue);
+      expect(source.createdFields, isEmpty);
+      expect(source.edited.single["ID"], "burger");
+      expect(source.edited.single["DATA"], {"f-price": "9"});
+      expect(source.edited.single["BATCH"], isTrue);
+      expect(source.edited.single["CONSUMES"], hasLength(1));
+    });
+
+    testWidgets("a made table lists its products with what each consumes, in the unit it reads best in", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]], consumes: {
+        "burger": {"mode": "order", "available": 100, "lines": [
+          {"id": "l1", "tableId": "s", "productId": "meat", "name": "Meat", "qty": 0.3},
+          {"id": "l2", "tableId": "s", "productId": "bread", "name": "Bread", "qty": 1}
+        ]}
       });
-      addTearDown(controller.dispose);
+      final service = await _service(tester, source);
 
-      controller.open(const SheetCell(0, 0));
-      controller.editor!.text = "Cheese burger";
-      controller.onChanged("Cheese burger");
-      controller.generateSku(const SheetCell(0, 1));
+      await tester.pumpWidget(_app(MadeProductsSection(
+        tableId: "menu",
+        parts: const InventoryBarParts(selector: SizedBox(), controls: []),
+        service: service
+      )));
       await tester.pumpAndSettle();
 
-      expect(asked, ["Cheese burger"]);
-      expect(table.added.single.values["f-name"], "Cheese burger");
-      expect(table.added.single.consumes!.single.productId, "bread");
-      expect(table.added.single.batch, isFalse);
+      expect(find.text("Cheese burger"), findsOneWidget);
+      expect(find.text("Meat"), findsOneWidget);
+      expect(find.text("300 g"), findsOneWidget);
+      expect(find.text("Bread"), findsOneWidget);
+      expect(find.text("×1"), findsOneWidget);
     });
 
-    testWidgets("a row whose question is closed is not saved", (tester) async {
-      final table = _Menu();
-      final controller = await _controller(tester, table, consumesFor: (_) async => null);
-      addTearDown(controller.dispose);
+    testWidgets("a line is written in grams and travels in the supply's kilos", (tester) async {
+      RecipeDraft? saved;
 
-      controller.generateSku(const SheetCell(0, 1));
+      await tester.pumpWidget(_app(SingleChildScrollView(child: RecipeEditor(
+        recipe: const Recipe(productId: "burger", tableId: "menu", lines: [
+          RecipeLine(id: "l1", tableId: "s", productId: "meat", name: "Meat", qty: 0.3)
+        ]),
+        supplies: false,
+        canEdit: true,
+        units: const {"meat": "kg"},
+        onSave: (draft) async {
+          saved = draft;
+          return true;
+        },
+        onCancel: () {}
+      ))));
       await tester.pumpAndSettle();
 
-      expect(table.added, isEmpty);
-      expect(controller.valueOf(const SheetCell(0, 1)), isNotEmpty);
+      expect(find.text("300"), findsOneWidget);
+      expect(find.text("g"), findsOneWidget);
+
+      await tester.enterText(find.text("300"), "250");
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(saved!.lines.single.qty, 0.25);
+
+      // Switched to kilos, the same figure is kilos.
+      await tester.tap(find.text("g"));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(saved!.lines.single.qty, 250);
     });
 
-    testWidgets("a record made to order opens what it consumes from its stock cell", (tester) async {
-      final table = _Menu(withBurger: true);
-      final opened = <String>[];
-      final controller = await _controller(tester, table, open: (record, name) async => opened.add("${record.id}:$name"));
-      addTearDown(controller.dispose);
+    testWidgets("an edit that changes no column sends no DATA", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]]);
+      final service = await _service(tester, source);
 
-      controller.tap(0, 2);
-      await tester.pumpAndSettle();
+      await service.save(
+        tester.element(find.byType(SizedBox)),
+        product: service.products.single,
+        nameTitle: "Name",
+        priceTitle: "Price",
+        draft: _burger
+      );
 
-      expect(controller.movesStock(const SheetCell(0, 2)), isFalse);
-      expect(controller.isMadeRecord(0), isTrue);
-      expect(opened, ["burger:Cheese burger"]);
+      expect(source.edited.single.containsKey("DATA"), isFalse);
     });
   });
 }
 
-/// A made table: a title, a SKU (its button saves a row by itself) and the stock; with
-/// [withBurger] one burger made to order, else no record.
-class _Menu extends TableViewService {
-  _Menu({this.withBurger = false});
+const _fields = [
+  TableFieldModel(id: "f-name", name: "Name", type: "TITLE"),
+  TableFieldModel(id: "f-price", name: "Price", type: "PRICE")
+];
 
-  final bool withBurger;
-  final List<({Map<String, dynamic> values, List<RecipeLineDraft>? consumes, bool? batch})> added = [];
+const MadeProductDraft _burger = (
+  name: "Cheese burger",
+  price: "8.5",
+  values: <String, String>{},
+  mode: RecipeMode.order,
+  lines: <RecipeLineDraft>[(tableId: "s", productId: "meat", qty: 0.3, negotiable: false, waste: 0)]
+);
+
+Future<MadeProductsService> _service(WidgetTester tester, _Menu source) async {
+  await tester.pumpWidget(const SizedBox());
+
+  final service = MadeProductsService(tableId: "menu", source: source, search: _Supplies());
+  addTearDown(service.dispose);
+
+  await service.load();
+  return service;
+}
+
+Widget _app(Widget child) => MaterialApp(
+  localizationsDelegates: const [
+    S.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate
+  ],
+  supportedLocales: S.delegate.supportedLocales,
+  home: Builder(builder: (context) {
+    AppSize.instance(context);
+
+    return Scaffold(body: ChangeNotifierProvider<HomeService>.value(
+      value: HomeService(),
+      child: SizedBox(width: 1200, height: 700, child: child)
+    ));
+  })
+);
+
+/// The supplies, by id: meat counted in kg.
+class _Supplies extends KitchenProductSearch {
+  @override
+  Future<Map<String, KitchenProduct>> suppliesById() async =>
+    const {"meat": KitchenProduct(id: "meat", tableId: "s", name: "Meat", unit: "kg", supplies: true)};
+}
+
+/// A made table: its columns (grown by a created field) and its records; a created record is
+/// the burger.
+class _Menu implements InventorySource {
+  _Menu({required List<TableFieldModel> fields, List<List<dynamic>>? rows, this.consumes = const {}})
+    : _fields = [...fields],
+      _rows = rows ?? [];
+
+  final List<TableFieldModel> _fields;
+  final List<List<dynamic>> _rows;
+
+  /// `records/list`'s `consumes`.
+  final Map<String, dynamic> consumes;
+  final createdFields = <Map<String, dynamic>>[];
+  final created = <Map<String, dynamic>>[];
+  final edited = <Map<String, dynamic>>[];
 
   @override
-  List<TableFieldModel> get fields => const [
-    TableFieldModel(id: "f-name", name: "Name", type: "TITLE"),
-    TableFieldModel(id: "f-sku", name: "SKU", type: "SKU"),
-    TableFieldModel(id: "f-stock", name: "Stock", type: "STOCK")
-  ];
+  Future<TableStructureModel> structure(String tableId) async =>
+    TableStructureModel(id: tableId, records: _rows.length, fields: List.of(_fields));
 
   @override
-  int get records => withBurger ? 1 : 0;
-
-  @override
-  TableRowModel? rowAt(int index) =>
-    withBurger && index == 0 ? const TableRowModel(["Cheese burger", "B1", 12], id: "burger") : null;
-
-  @override
-  MadeConsumes? consumesOf(String id) => id == "burger"
-    ? MadeConsumes.mapFrom({"burger": {"mode": "order", "available": 12, "lines": []}}, tableId: "menu")["burger"]
-    : null;
-
-  @override
-  Future<bool> add(
-    BuildContext context,
-    Map<String, dynamic> values, {
-    List<dynamic>? row,
-    List<RecipeLineDraft>? consumes,
-    bool? batch
-  }) async {
-    added.add((values: values, consumes: consumes, batch: batch));
-    return true;
+  Future<void> createField(Map<String, dynamic> request) async {
+    createdFields.add(request);
+    _fields.add(TableFieldModel(
+      id: request["TYPE"] == "TITLE" ? "f-name" : "f-price",
+      name: request["NAME"],
+      type: request["TYPE"]
+    ));
   }
 
   @override
-  Future<void> refresh() async {}
-}
+  Future<({TableViewModel page, int? total})> records(
+    String tableId, {
+    required int page,
+    required int size,
+    String match = ""
+  }) async => (
+    page: TableViewModel(
+      columns: [
+        const TableColumnModel(id: "id", name: "id"),
+        for (final field in _fields) TableColumnModel(id: field.id, name: field.name)
+      ],
+      rows: [for (final row in _rows) TableRowModel(row)],
+      consumes: MadeConsumes.mapFrom(consumes, tableId: tableId)
+    ),
+    total: _rows.length
+  );
 
-Future<SheetController> _controller(
-  WidgetTester tester,
-  _Menu table, {
-  Future<RecipeDraft?> Function(String name)? consumesFor,
-  Future<void> Function(TableRowModel record, String name)? open
-}) async {
-  late SheetController controller;
+  @override
+  Future<String> createRecord(Map<String, dynamic> request) async {
+    created.add(request);
+    _rows.add(["burger", "Cheese burger", "8.5"]);
+    return "burger";
+  }
 
-  await tester.pumpWidget(MaterialApp(home: Builder(builder: (context) {
-    controller = SheetController(
-      service: table,
-      metrics: const SheetMetrics(rowHeight: 32, gutterWidth: 40),
-      widths: SheetWidths(defaultWidth: 160, minWidth: 60),
-      context: () => context,
-      made: SheetMade(
-        consumesFor: consumesFor ?? (_) async => null,
-        open: open ?? (_, _) async {}
-      )
-    );
+  @override
+  Future<void> editRecord(Map<String, dynamic> request) async => edited.add(request);
 
-    return const SizedBox();
-  })));
-
-  return controller;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

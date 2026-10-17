@@ -7,9 +7,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/home/home_service.dart';
-import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/stock/tables/table_stock_mover.dart';
-import 'package:app/services/stock/tables/table_view_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
@@ -21,12 +19,8 @@ import 'package:app/screens/home/sections/inventory/table_view/state/sheet_curso
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_dates.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_drafts.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_hover.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_made.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_metrics.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
-import 'package:app/screens/modals/inventory/made_consumes/_made_consumes.dart';
-import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
-import 'package:app/screens/modals/supply_chain/recipe/recipe_editor.dart';
 
 import './table_header.dart';
 import './table_view_body.dart';
@@ -186,8 +180,7 @@ class TableViewSection extends StatefulWidget {
     required this.tableId,
     required this.parts,
     this.status = const [],
-    this.supplies = false,
-    this.made = false
+    this.supplies = false
   });
 
   /// Route key of a table's link (`/home/inventory/:id`): the section opening on that
@@ -202,10 +195,6 @@ class TableViewSection extends StatefulWidget {
 
   /// Whether the table holds supplies: its stock cells move with decimals of the unit.
   final bool supplies;
-
-  /// Whether the table holds made products: a written row is saved with what it consumes
-  /// (asked when it is left), and a record opens it ([SheetMade]).
-  final bool made;
 
   @override
   State<TableViewSection> createState() => _TableViewSectionState();
@@ -265,8 +254,7 @@ class _TableViewSectionState extends State<TableViewSection> {
       // The controller outlives any `build`, so the context is passed to it as
       // a function and not as a value.
       context: () => context,
-      stock: TableStockMover(table: _service, tableId: _tableId, supplies: widget.supplies),
-      made: widget.made ? SheetMade(consumesFor: _consumesFor, open: _openMade) : null
+      stock: TableStockMover(table: _service, tableId: _tableId, supplies: widget.supplies)
     );
 
     // The load is deferred to the first frame so as not to notify while the
@@ -274,25 +262,6 @@ class _TableViewSectionState extends State<TableViewSection> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _service.open(_tableId, query: _query.value);
     });
-  }
-
-  Future<RecipeDraft?> _consumesFor(String name) async {
-    if (!mounted) return null;
-
-    return showMadeConsumes(context, product: name);
-  }
-
-  /// What a made record consumes; anything written there rereads the rows in view in place,
-  /// so its figure and lines are the backend's.
-  Future<void> _openMade(TableRowModel record, String name) async {
-    if (!mounted) return;
-
-    final changed = await showRecipePanel(
-      context,
-      product: KitchenProduct(id: record.id, tableId: _tableId, name: name, made: true)
-    );
-
-    if (changed && mounted) await _service.rereadInPlace();
   }
 
   /// This table's import finished uploading its rows: it must be re-read in

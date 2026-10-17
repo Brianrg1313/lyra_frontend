@@ -44,21 +44,40 @@ class KitchenProductSearch extends ChangeNotifier {
 
   /// The names of the products of [tables] (product id → name): the first rows of each one's
   /// summary, enough to name what a saved group or option points at. What fails names nothing.
-  Future<Map<String, String>> namesIn(Set<String> tables) async {
-    final names = <String, String>{};
+  Future<Map<String, String>> namesIn(Set<String> tables) async => {
+    for (final product in (await productsIn(tables)).values)
+      if (product.name.isNotEmpty) product.id: product.name
+  };
+
+  /// The products of [tables] by id, with their unit: the first rows of each one's summary,
+  /// what a made product's lines are named and measured from. What fails gives none.
+  Future<Map<String, KitchenProduct>> productsIn(Set<String> tables, {bool supplies = false}) async {
+    final products = <String, KitchenProduct>{};
 
     await Future.wait([
       for (final table in tables)
         (_stock ?? Sources.stock).summary(page: 1, size: 200, tableId: table).then((page) {
-          for (final product in KitchenProduct.fromSummary(page)) {
-            if (product.name.isNotEmpty) names[product.id] = product.name;
+          for (final product in KitchenProduct.fromSummary(page, supplies: supplies)) {
+            products[product.id] = product;
           }
         }).catchError((Object error) {
-          if (kDebugMode) print("kitchen names in $table failed: $error");
+          if (kDebugMode) print("kitchen products in $table failed: $error");
         })
     ]);
 
-    return names;
+    return products;
+  }
+
+  /// The supplies tables' products by id ([productsIn]), the tables read once.
+  Future<Map<String, KitchenProduct>> suppliesById() async {
+    try {
+      final tables = _tables ??= await (_inventory ?? Sources.inventory).tables();
+
+      return await productsIn({for (final table in tables) if (table.supplies) table.id}, supplies: true);
+    } catch (error) {
+      if (kDebugMode) print("kitchen supplies failed: $error");
+      return const {};
+    }
   }
 
   Future<void> search(String text) async {

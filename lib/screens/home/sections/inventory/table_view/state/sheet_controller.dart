@@ -11,7 +11,6 @@ import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/sku_generator.dart';
 import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
-import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/stock/movements/stock_mover.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
@@ -22,7 +21,6 @@ import 'package:core/form/select_menu.dart';
 import 'package:core/widgets/tables/linked_scroll.dart';
 import 'package:app/screens/modals/inventory/stock_movement/_stock_movement.dart';
 import 'package:app/screens/modals/shared/image_viewer/_image_viewer.dart';
-import 'package:app/screens/modals/supply_chain/recipe/recipe_editor.dart' show RecipeDraft;
 
 import './field_edit.dart';
 import './free_column.dart';
@@ -35,7 +33,6 @@ import './sheet_drafts.dart';
 import './sheet_drag.dart';
 import './sheet_hover.dart';
 import './sheet_keys.dart';
-import './sheet_made.dart';
 import './sheet_metrics.dart';
 import './sheet_widths.dart';
 
@@ -46,7 +43,6 @@ part 'controller/sheet_field_writes.dart';
 part 'controller/sheet_option_picks.dart';
 part 'controller/sheet_image_picks.dart';
 part 'controller/sheet_stock_moves.dart';
-part 'controller/sheet_made_records.dart';
 
 /// Strip at the sides of the spreadsheet in which, while dragging a column,
 /// the band starts scrolling on its own.
@@ -92,8 +88,7 @@ class SheetController {
     required this.metrics,
     required this.widths,
     required BuildContext Function() context,
-    this.stock,
-    this.made
+    this.stock
   }) : _context = context {
     columns = SheetColumns(service);
     _onColumns();
@@ -121,10 +116,6 @@ class SheetController {
   /// What a record's stock cell moves its product through ([SheetStockMoves]); without one
   /// the stock is only read.
   final StockMover? stock;
-
-  /// A made table's ([SheetMadeRecords]): a row is created with what it consumes. `null` on
-  /// any other table.
-  final SheetMade? made;
 
   /// The context of the screen. It's needed for what leaves the spreadsheet
   /// —asking for confirmation, showing an error flag, translating— and it's
@@ -272,12 +263,6 @@ class SheetController {
   /// which is the same thing the keyboard does.
   void tap(int row, int column, {BuildContext? anchor}) {
     final cell = SheetCell(row, column);
-
-    if (_madeStock(cell)) {
-      select(cell);
-      openMade(row);
-      return;
-    }
 
     if (movesStock(cell)) {
       moveStock(cell, anchor);

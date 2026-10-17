@@ -1759,6 +1759,36 @@ class S {
     );
   }
 
+  /// `Waste and optional`
+  String get supply_chain_line_more {
+    return Intl.message(
+      'Waste and optional',
+      name: 'supply_chain_line_more',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `units`
+  String get supply_chain_line_units {
+    return Intl.message(
+      'units',
+      name: 'supply_chain_line_units',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write it in {unit}`
+  String supply_chain_line_unit_switch(Object unit) {
+    return Intl.message(
+      'Write it in $unit',
+      name: 'supply_chain_line_unit_switch',
+      desc: '',
+      args: [unit],
+    );
+  }
+
   /// `Write a quantity greater than zero`
   String get supply_chain_line_qty_invalid {
     return Intl.message(
@@ -1839,41 +1869,236 @@ class S {
     );
   }
 
-  /// `What does {product} consume?`
-  String made_consumes_title(Object product) {
+  /// `What it consumes`
+  String get made_consumes_open {
     return Intl.message(
-      'What does $product consume?',
-      name: 'made_consumes_title',
+      'What it consumes',
+      name: 'made_consumes_open',
       desc: '',
-      args: [product],
+      args: [],
     );
   }
 
-  /// `A made product is saved with what it consumes: the row is written once this is.`
-  String get made_consumes_note {
+  /// `New product`
+  String get made_product_new {
     return Intl.message(
-      'A made product is saved with what it consumes: the row is written once this is.',
-      name: 'made_consumes_note',
+      'New product',
+      name: 'made_product_new',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Product`
+  String get made_product_edit {
+    return Intl.message(
+      'Product',
+      name: 'made_product_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create product`
+  String get made_product_create {
+    return Intl.message(
+      'Create product',
+      name: 'made_product_create',
       desc: '',
       args: [],
     );
   }
 
   /// `Save product`
-  String get made_consumes_save {
+  String get made_product_save {
     return Intl.message(
       'Save product',
-      name: 'made_consumes_save',
+      name: 'made_product_save',
       desc: '',
       args: [],
     );
   }
 
-  /// `What it consumes`
-  String get made_consumes_open {
+  /// `Product created`
+  String get made_product_created {
     return Intl.message(
-      'What it consumes',
-      name: 'made_consumes_open',
+      'Product created',
+      name: 'made_product_created',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Product saved`
+  String get made_product_saved {
+    return Intl.message(
+      'Product saved',
+      name: 'made_product_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name`
+  String get made_product_name {
+    return Intl.message('Name', name: 'made_product_name', desc: '', args: []);
+  }
+
+  /// `Cheese burger`
+  String get made_product_name_placeholder {
+    return Intl.message(
+      'Cheese burger',
+      name: 'made_product_name_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price`
+  String get made_product_price {
+    return Intl.message(
+      'Price',
+      name: 'made_product_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `0.00`
+  String get made_product_price_placeholder {
+    return Intl.message(
+      '0.00',
+      name: 'made_product_price_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No options`
+  String get made_product_options_empty {
+    return Intl.message(
+      'No options',
+      name: 'made_product_options_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unnamed product`
+  String get made_product_unnamed {
+    return Intl.message(
+      'Unnamed product',
+      name: 'made_product_unnamed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Consumes nothing yet`
+  String get made_product_consumes_none {
+    return Intl.message(
+      'Consumes nothing yet',
+      name: 'made_product_consumes_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `×{qty}`
+  String made_product_line_times(Object qty) {
+    return Intl.message(
+      '×$qty',
+      name: 'made_product_line_times',
+      desc: '',
+      args: [qty],
+    );
+  }
+
+  /// `Kitchen: sold out, batches, lost dishes`
+  String get made_product_kitchen {
+    return Intl.message(
+      'Kitchen: sold out, batches, lost dishes',
+      name: 'made_product_kitchen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The table's name and price columns could not be created`
+  String get made_product_fields_error {
+    return Intl.message(
+      'The table\'s name and price columns could not be created',
+      name: 'made_product_fields_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} products`
+  String made_products_count(Object count) {
+    return Intl.message(
+      '$count products',
+      name: 'made_products_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Show more`
+  String get made_products_more {
+    return Intl.message(
+      'Show more',
+      name: 'made_products_more',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No products yet`
+  String get made_products_empty_title {
+    return Intl.message(
+      'No products yet',
+      name: 'made_products_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create one with its price and what it consumes of your supplies: how many you can make comes from what is in stock.`
+  String get made_products_empty_subtitle {
+    return Intl.message(
+      'Create one with its price and what it consumes of your supplies: how many you can make comes from what is in stock.',
+      name: 'made_products_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No product matches the search`
+  String get made_products_no_match {
+    return Intl.message(
+      'No product matches the search',
+      name: 'made_products_no_match',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The products could not be read`
+  String get made_products_error_title {
+    return Intl.message(
+      'The products could not be read',
+      name: 'made_products_error_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check the connection and try again.`
+  String get made_products_error_subtitle {
+    return Intl.message(
+      'Check the connection and try again.',
+      name: 'made_products_error_subtitle',
       desc: '',
       args: [],
     );

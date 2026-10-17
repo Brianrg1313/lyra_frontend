@@ -7,12 +7,10 @@ const String _kStockTake = "take";
 /// unfolds the two movements of the stock summary (put, take) and opens the same form.
 extension SheetStockMoves on SheetController {
   /// Whether [cell] moves its product's stock: a `STOCK` column, a record already read with
-  /// its id, and a mover the section gave. Never a made record's made to order
-  /// ([SheetMadeRecords]).
+  /// its id, and a mover the section gave.
   bool movesStock(SheetCell cell) {
     if (stock == null || cell.row == kFieldsRow || cell.row >= service.records) return false;
     if (typeAt(cell.column) != TableFieldType.stock) return false;
-    if (_madeStock(cell)) return false;
 
     return service.rowAt(cell.row)?.id.isNotEmpty ?? false;
   }

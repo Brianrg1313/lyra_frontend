@@ -124,7 +124,7 @@ through `Navigator.pop(context, value)`.
 
 ### `supply_chain/` (from the supply chain section)
 - `recipe/_recipe.dart` — `showRecipePanel(context, product)` → whether anything was written, `RecipePanel`: owns a `RecipeService`; what it makes now and the 86 switch, produce (batch) / lost dish (order), the recipe read only or in its editor, delete (a supply's preparation only, says where it is used first; never a made product's), presentations (not on a dish made to order). A made product's (from its inventory row) or a supply's; never a catalog's. Each action by its `supply_chain.recipes.*` grant.
-- `recipe/recipe_editor.dart` — `RecipeEditor({recipe, supplies, onSave})`, `RecipeDraft`: «Made by the batch» switch (not on a supply: always batch), lines (quantity, waste %, optional), the ingredient search (supplies, then made, then catalog); checks quantity > 0 (whole on anything not a supply), 0 ≤ waste < 100, one line not optional; `onSave` writes or hands the draft back.
+- `recipe/recipe_editor.dart` — `RecipeEditor({recipe, supplies, onSave, units, leading, validate})`, `RecipeDraft`: `leading` above it (a made product's fields), «Made by the batch» switch (not on a supply: always batch), lines (quantity in a unit of the ingredient's measure — g/kg, ml/l, `kitchenUnitsFor` — sent in its own; waste % and optional folded), the ingredient search (supplies, then made, then catalog; emptied on a pick); checks quantity > 0 (whole on anything not a supply), 0 ≤ waste < 100, one line not optional; `onSave` writes or hands the draft back.
 - `produce_batch/_produce_batch.dart` — `showProduceBatch` → `BatchDraft?` (quantity, lost ≤ quantity, note). Writes nothing.
 - `discard_dish/_discard_dish.dart` — `showDiscardDish` → `DiscardDraft?` (how many, the optional lines they went without, note). Writes nothing.
 - `presentations/_presentations.dart` — `showPresentationsEditor` → `List<PresentationDraft>?` (ids kept, names not repeated). Writes nothing.
@@ -134,7 +134,7 @@ through `Navigator.pop(context, value)`.
 
 ### `inventory/`
 - `create_table/_create_table.dart` — `CreateTableModal({kind})`: title, description, template; its `KIND` is the opener's (the production line: supplies), else asked between catalog and made (the inventory).
-- `made_consumes/_made_consumes.dart` — `showMadeConsumes(context, product)` → `RecipeDraft?`: what a made row being created consumes (a `RecipeEditor`), asked by the sheet before the row is saved. Writes nothing.
+- `made_product/_made_product.dart` — `showMadeProduct(context, service, product?)` → saved, `MadeProductForm`: a made product's name, price, the table's other typed columns and what it consumes (a `RecipeEditor` with them as `leading`), saved together through `MadeProductsService.save`.
 - `create_field/_create_field.dart` — `CreateFieldModal`: new column.
 - `rename_table/_rename_table.dart` — `RenameTableModal`.
 - `edit_table_details/_edit_table_details.dart` — `EditTableDetailsModal`: **one** header datum from the settings panel.
