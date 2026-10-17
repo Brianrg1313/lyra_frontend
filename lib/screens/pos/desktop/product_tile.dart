@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 import 'package:app/toolkit/lan_image.dart';
 
-// PACKAGES
-import 'package:provider/provider.dart';
-
 // SERVICES
 import 'package:app/services/catalog/currency_model.dart';
-import 'package:app/services/pos/pos_invoice_service.dart';
 import 'package:app/services/pos/pos_product_model.dart';
+
+// WIDGETS
+import './pos_kitchen.dart';
 
 /// One product of the catalog grid.
 ///
@@ -98,10 +97,10 @@ class PosProductTile extends StatelessWidget {
   /// before anything travels — the counter has to be told a number. Everything
   /// else is the backend's: the units are not there, the invoice could not be
   /// opened, the catalog moved. Those come back already worded, so they are
-  /// shown as they are rather than translated into a guess.
+  /// shown as they are rather than translated into a guess — except the two the
+  /// kitchen asks a question with (a dish's modifiers, a side that is short),
+  /// which [posRingUp] asks.
   Future<void> _add(BuildContext context) async {
-    final ticket = context.read<PosInvoiceService>();
-
     if (product.price == null) {
       FloatFlag.of(context).error(
         message: S.of(context).pos_product_no_price_flag
@@ -110,12 +109,7 @@ class PosProductTile extends StatelessWidget {
       return;
     }
 
-    if (await ticket.add(product)) return;
-    if (!context.mounted) return;
-
-    final error = ticket.error;
-
-    if (error != null) FloatFlag.of(context).fromError(error);
+    await posRingUp(context, product);
   }
 }
 

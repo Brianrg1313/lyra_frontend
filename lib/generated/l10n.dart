@@ -12998,6 +12998,76 @@ class S {
     );
   }
 
+  /// `Add to the ticket`
+  String get pos_modifiers_add {
+    return Intl.message(
+      'Add to the ticket',
+      name: 'pos_modifiers_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `None left`
+  String get pos_modifiers_none_left {
+    return Intl.message(
+      'None left',
+      name: 'pos_modifiers_none_left',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Today there is no {names}`
+  String pos_without_title(Object names) {
+    return Intl.message(
+      'Today there is no $names',
+      name: 'pos_without_title',
+      desc: '',
+      args: [names],
+    );
+  }
+
+  /// `Does the customer take it without {names}?`
+  String pos_without_message(Object names) {
+    return Intl.message(
+      'Does the customer take it without $names?',
+      name: 'pos_without_message',
+      desc: '',
+      args: [names],
+    );
+  }
+
+  /// `Without {names}`
+  String pos_without_confirm(Object names) {
+    return Intl.message(
+      'Without $names',
+      name: 'pos_without_confirm',
+      desc: '',
+      args: [names],
+    );
+  }
+
+  /// `Don't add it`
+  String get pos_without_cancel {
+    return Intl.message(
+      'Don\'t add it',
+      name: 'pos_without_cancel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `without {name}`
+  String pos_ticket_without(Object name) {
+    return Intl.message(
+      'without $name',
+      name: 'pos_ticket_without',
+      desc: '',
+      args: [name],
+    );
+  }
+
   /// `No longer set aside`
   String get pos_ticket_unheld {
     return Intl.message(

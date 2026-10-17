@@ -427,7 +427,11 @@
       "routes": ["pos"],
       "paths": ["/pos"],
       "actions": ["view", "sell", "custom_amount", "set_tax", "checkout", "cancel_ticket"],
+      "action_modes": {
+        "kitchen": ["cloud"]
+      },
       "action_notes": {
+        "kitchen": "A dish's modifiers asked before it is rung up (MODIFIERS) and a short negotiable side asked about (WITHOUT), `cocina-frontend.md` §5-6; a master knows no recipes.",
         "sell": "Add catalog products to the ticket (holds stock).",
         "custom_amount": "Line with a typed concept and price, outside the catalog.",
         "set_tax": "Change the ticket's VAT rate.",

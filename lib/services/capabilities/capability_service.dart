@@ -99,6 +99,7 @@ class CapabilityService extends ChangeNotifier {
     "connections": _online,
     "external_services": _online,
     "pos": _all,
+    "pos.kitchen": _online,
     "local_server": _all
   };
 

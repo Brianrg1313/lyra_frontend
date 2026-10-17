@@ -1,3 +1,11 @@
+/// What the customer chose on a line (`modifiers`, `cocina-frontend.md` §6): the group and
+/// option ids, the option's name and what it adds to ONE unit — already inside the line's
+/// `price`, which is the backend's.
+typedef PosLineModifier = ({String group, String option, String name, double price});
+
+/// A negotiable recipe line a dish goes without (`omitted`), named as it was that day.
+typedef PosLineOmission = ({String id, String name});
+
 /// One line of an invoice, as the backend answers it.
 ///
 /// It is what is being charged and what the ledger is holding for it, which are
@@ -19,7 +27,10 @@ class PosInvoiceLine {
     this.price = 0,
     this.taxRate = 0,
     this.total = 0,
-    this.tracked = true
+    this.tracked = true,
+    this.without = const [],
+    this.omitted = const [],
+    this.modifiers = const []
   });
 
   /// Identity of the line **within the invoice**, minted by the backend. It is
@@ -58,6 +69,14 @@ class PosInvoiceLine {
   /// POS-6); the cloud counts every product and never sends it.
   final bool tracked;
 
+  /// On a dish made to order: the negotiable recipe lines it goes without (their ids, what
+  /// `WITHOUT` sends) and their names (what the ticket prints: «without fries»).
+  final List<String> without;
+  final List<PosLineOmission> omitted;
+
+  /// What the customer chose, for every unit of the line.
+  final List<PosLineModifier> modifiers;
+
   factory PosInvoiceLine.fromJson(Map<String, dynamic> data) => PosInvoiceLine(
     lineId: (data["lineId"] ?? "").toString(),
     // Null and not empty: it is what tells a delivery charge apart from
@@ -70,7 +89,24 @@ class PosInvoiceLine {
     price: _double(data["price"]),
     taxRate: _double(data["taxRate"]),
     total: _double(data["total"]),
-    tracked: data["tracked"] != false
+    tracked: data["tracked"] != false,
+    without: [
+      for (final id in data["without"] is List ? data["without"] as List : const [])
+        if (id != null) id.toString()
+    ],
+    omitted: [
+      for (final item in data["omitted"] is List ? data["omitted"] as List : const [])
+        if (item is Map) (id: (item["id"] ?? "").toString(), name: (item["name"] ?? "").toString())
+    ],
+    modifiers: [
+      for (final item in data["modifiers"] is List ? data["modifiers"] as List : const [])
+        if (item is Map) (
+          group: (item["group"] ?? "").toString(),
+          option: (item["option"] ?? "").toString(),
+          name: (item["name"] ?? "").toString(),
+          price: _double(item["price"])
+        )
+    ]
   );
 
   static int _int(dynamic raw) => switch (raw) {

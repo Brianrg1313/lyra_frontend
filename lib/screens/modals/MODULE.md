@@ -246,6 +246,7 @@ through `Navigator.pop(context, value)`.
 All three **return a value and write nothing** (POS services live below this navigator).
 - `pos_amount/_pos_amount.dart` — `PosAmountModal({currency})`, `PosAmountEntry`: concept + price not in the catalog.
 - `pos_tax/_pos_tax.dart` — `PosTaxModal({rate})`: percentage (`16`, never `0.16`); empty = 0.
+- `pos_modifiers/_pos_modifiers.dart` — `showPosModifiers(...)` → picks or null, `PosModifiersModal({groups, currency})`: each group's rule, options greyed at `available: 0`/paused, one-choice groups swap, confirm only within every `min`–`max`; prices said, never added.
 - `pos_checkout/_pos_checkout.dart` — `PosCheckoutModal({methods, currency, total})`, `PosCheckoutEntry`: payment method, required reference where the method has one.
 
 ### `permissions/`

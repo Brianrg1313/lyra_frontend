@@ -1,3 +1,6 @@
+// SERVICES
+import 'package:app/services/pos/pos_invoice_model.dart';
+
 /// One line of the ticket **as it is drawn** at the counter.
 ///
 /// It is not a [PosProduct] and it is not the backend's line either: it is what
@@ -20,7 +23,9 @@ class PosCartLine {
     required this.quantity,
     this.productId,
     this.held = 0,
-    this.tracked = true
+    this.tracked = true,
+    this.omitted = const [],
+    this.modifiers = const []
   });
 
   /// What a key looks like before the backend has given the line its own.
@@ -67,6 +72,13 @@ class PosCartLine {
   /// zero and that says nothing about the shelf. Only a master answers false.
   final bool tracked;
 
+  /// What a dish goes without, by name («without fries»), as the backend froze it.
+  final List<String> omitted;
+
+  /// What the customer chose on it («+ cheese», «medium»). Their prices are already in
+  /// [price]: the backend's, never added here.
+  final List<PosLineModifier> modifiers;
+
   /// Whether the line was typed in and does not point at any product.
   bool get isConcept => productId == null;
 
@@ -98,7 +110,9 @@ class PosCartLine {
     quantity: value,
     productId: productId,
     held: isConcept || !tracked ? 0 : value,
-    tracked: tracked
+    tracked: tracked,
+    omitted: omitted,
+    modifiers: modifiers
   );
 
   /// The same line holding [value] units. It is what a shelf that no longer
@@ -110,6 +124,8 @@ class PosCartLine {
     quantity: quantity,
     productId: productId,
     held: value,
-    tracked: tracked
+    tracked: tracked,
+    omitted: omitted,
+    modifiers: modifiers
   );
 }

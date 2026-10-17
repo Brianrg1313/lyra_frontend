@@ -194,8 +194,9 @@ class _StockMovementModalState extends State<StockMovementModal> {
   late final _cost = InputController(
     key: "COST",
     form: _form,
+    // Not [InputType.numeric]: core forces digits only on those, and a cost
+    // has cents (`90,50` would be `9050`).
     pattern: "[0-9.,]",
-    type: InputType.numeric,
     max: 16,
     customErrors: {InputError.invalid: S.of(context).stock_move_cost_error}
   );

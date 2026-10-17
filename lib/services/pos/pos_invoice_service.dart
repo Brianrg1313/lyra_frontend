@@ -19,6 +19,14 @@ import 'package:app/toolkit/deployment.dart';
 /// a code and units taken off the shelf for it.
 enum PosInvoiceStatus { idle, opening, ready, closing, error }
 
+/// What a customer chose about a product, as a line sends it (`MODIFIERS`).
+typedef PosModifierPick = ({String group, String option});
+
+/// A write the backend refused because a negotiable line of [productId] is short
+/// (`409 negotiable_short`, `action: "confirm_without"`): nothing moved, and it is sent again
+/// with `WITHOUT` if the customer takes the dish without it (`cocina-frontend.md` §5).
+typedef PosShortWrite = ({String productId, Map<String, dynamic> body});
+
 /// **The ticket being rung up, which is an invoice on the backend.**
 ///
 /// It used to be a list in memory. It cannot be: everything that happens while a
@@ -171,6 +179,9 @@ class PosInvoiceService extends ChangeNotifier {
   /// the ones that are about the whole ticket.
   String _noticeLabel = "";
 
+  /// The write waiting for the customer to take a dish without something.
+  PosShortWrite? _short;
+
   PosInvoiceStatus get status => _status;
 
   /// The open invoice, or null when nothing has been rung up yet.
@@ -199,6 +210,14 @@ class PosInvoiceService extends ChangeNotifier {
 
   /// The product named by [notice], when it names one.
   String get noticeLabel => _noticeLabel;
+
+  /// The last write refused for a short negotiable line, until it is confirmed
+  /// ([confirmWithout]) or dropped ([dropShort]).
+  PosShortWrite? get short => _short;
+
+  /// Whether the last refusal asks for the product's modifiers (`invalid_modifiers`: a required
+  /// group not chosen, or one the till did not know about).
+  bool get asksModifiers => _reason(_error) == "invalid_modifiers";
 
   /// Whether some of what is on the ticket is no longer set aside for this
   /// customer. It is what dims nothing and warns about everything: the sale can
@@ -287,7 +306,11 @@ class PosInvoiceService extends ChangeNotifier {
   /// Either way nothing changes — the product simply does not go on the ticket,
   /// instead of going on it and being discovered missing when the customer is
   /// already paying.
-  Future<bool> add(PosProduct product) async {
+  ///
+  /// [modifiers] is what the customer chose for every unit of the line; null keeps what the
+  /// line already had (a second tap of the same dish). Its price is the backend's: the line is
+  /// drawn at the product's until the answer lands.
+  Future<bool> add(PosProduct product, {List<PosModifierPick>? modifiers}) async {
     if (product.id.isEmpty || product.price == null) return false;
 
     if (!await _ensure()) return false;
@@ -319,7 +342,36 @@ class PosInvoiceService extends ChangeNotifier {
 
     notifyListeners();
 
-    return await _write({"PRODUCT_ID": product.id, "ADD": 1, "TAX": _tax});
+    return await _write({
+      "PRODUCT_ID": product.id,
+      "ADD": 1,
+      "TAX": _tax,
+      if (modifiers != null) "MODIFIERS": [
+        for (final pick in modifiers) {"GROUP": pick.group, "OPTION": pick.option}
+      ]
+    });
+  }
+
+  /// Whether [productId] is already a line of the ticket: a tap then adds a unit with what it
+  /// was chosen with, and asks nothing.
+  bool carries(String productId) => _lines.any((line) => line.productId == productId);
+
+  /// The customer takes the dish without [lines] (recipe line ids): the refused write goes
+  /// again with `WITHOUT`, which applies to every unit of the line.
+  Future<bool> confirmWithout(List<String> lines) async {
+    final short = _short;
+    _short = null;
+
+    if (short == null || lines.isEmpty) return false;
+
+    return await _write({...short.body, "WITHOUT": lines});
+  }
+
+  /// The customer doesn't want the dish without it: the write is forgotten and the ticket
+  /// stays as the backend has it.
+  void dropShort() {
+    _short = null;
+    _error = null;
   }
 
   /// Charges an amount that is not a product: a delivery, a repair, something
@@ -740,6 +792,7 @@ class PosInvoiceService extends ChangeNotifier {
     if (invoice == null) return false;
 
     _error = null;
+    _short = null;
     _pending++;
 
     final PosInvoice updated;
@@ -751,6 +804,11 @@ class PosInvoiceService extends ChangeNotifier {
 
       _pending--;
       _fail(error);
+
+      final product = body["PRODUCT_ID"];
+      _short = error is Map && error["action"] == "confirm_without" && product is String
+        ? (productId: product, body: Map<String, dynamic>.from(body)..remove("WITHOUT"))
+        : null;
 
       // What is on screen was a guess and the guess was wrong. Reading the
       // invoice again is what puts the ticket back to what is actually held —
@@ -879,7 +937,9 @@ class PosInvoiceService extends ChangeNotifier {
           quantity: line.quantity,
           productId: line.productId,
           held: line.held,
-          tracked: line.tracked
+          tracked: line.tracked,
+          omitted: [for (final item in line.omitted) if (item.name.isNotEmpty) item.name],
+          modifiers: line.modifiers
         )
     ];
 
@@ -900,4 +960,8 @@ class PosInvoiceService extends ChangeNotifier {
   void _fail(dynamic error) {
     _error = error is Map ? Map<String, dynamic>.from(error) : null;
   }
+
+  /// The code a refusal names: the cloud says it in `message`, a master in `code`.
+  static String _reason(Map<String, dynamic>? error) =>
+    error == null ? "" : (error["code"] ?? error["message"] ?? "").toString();
 }

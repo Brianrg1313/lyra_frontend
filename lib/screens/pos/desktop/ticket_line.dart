@@ -8,6 +8,7 @@ import 'package:app/services/pos/pos_invoice_service.dart';
 
 // WIDGETS
 import './pos_currency.dart';
+import './pos_kitchen.dart';
 
 /// One line of the ticket, in two rows.
 ///
@@ -92,6 +93,18 @@ class PosTicketLine extends StatelessWidget {
               )
             )
           ]),
+          // What the customer chose and what the dish goes without: it is what
+          // the kitchen reads off the ticket («+ cheese · without fries»).
+          if (line.modifiers.isNotEmpty || line.omitted.isNotEmpty) ...[
+            SizedBox(height: AppSize.gap / 2),
+            TextSmall(
+              _extras(context),
+              lines: 2,
+              ellipsis: true,
+              multiplier: 0.85,
+              color: scheme.text.secondary
+            )
+          ],
           // Only when the shelf stopped holding what this line is charging.
           // It is written under the name and not beside the quantity because
           // it is about the product and not about the number: the units are on
@@ -152,14 +165,23 @@ class PosTicketLine extends StatelessWidget {
   /// The service has already put the line back to what the backend holds — what
   /// is left to do is tell whoever pressed the button why the number went back,
   /// which is almost always the shelf not covering the unit that was asked for.
+  ///
+  /// A dish whose side ran short asks whether it goes without it
+  /// ([posAnswerRefusal]).
   Future<void> _move(BuildContext context, Future<bool> step) async {
     if (await step) return;
     if (!context.mounted) return;
 
-    final error = cart.error;
-
-    if (error != null) FloatFlag.of(context).fromError(error);
+    await posAnswerRefusal(context, cart);
   }
+
+  /// The line's modifiers (`+ cheese $1.00`, `medium`) and what it goes without, in one
+  /// line. A modifier's price is said, not added: it is already in the line's.
+  String _extras(BuildContext context) => [
+    for (final pick in line.modifiers)
+      pick.price > 0 ? "+ ${pick.name} ${posAmount(currency, pick.price)}" : pick.name,
+    for (final name in line.omitted) S.of(context).pos_ticket_without(name)
+  ].join(" · ");
 }
 
 /// One of the two buttons that move a line's quantity.

@@ -4,7 +4,7 @@
 **Role** Point-of-sale mode: the counter for in-person sales.
 **Services** `PosService` (`/pos/`), `PosCatalogService` (`POST /pos/catalog/`),
 `PosInvoiceService` (`/pos/invoices/…`), `PosMethodsService` (`GET /pos/methods`) —
-`lib/services/pos`, all created by `PosBody` and discarded with the page.
+`lib/services/pos`; `TillKitchenService` (`lib/services/kitchen`, cloud only) — all created by `PosBody` and discarded with the page.
 
 ## Routing
 
@@ -16,7 +16,7 @@ returns to the section as it was. No in-page back button.
 
 - `_pos.dart` — `Pos extends PageBuilder`; `routeKey` and `path` on the class.
 - `desktop/_body.dart` — `PosBody`: three panels (fixed sides, flexible centre). Provides the
-  four services, opens the socket (idempotent), fires every read on the first frame incl.
+  five services, opens the socket (idempotent), fires every read on the first frame incl.
   `recover()`. Goes full screen on Windows while mounted (`window_manager`, undone on dispose).
   Desktop only — a phone POS will be a separate screen.
 - `desktop/left_panel.dart` — two stacked surfaces; top half intentionally empty (see Status).
@@ -26,14 +26,15 @@ returns to the section as it was. No in-page back button.
 - `desktop/catalog.dart` — `PosCatalog`: search + product grid, load/error/missing/empty/ready,
   infinite scroll (`_lookahead`), footer loading/retry.
 - `desktop/product_tile.dart` — `PosProductTile`: **the tile is the button** — tap adds (and
-  holds) a unit. No price → refused here; everything else refused by the backend as worded. No stock line for
+  holds) a unit through `posRingUp`. No price → refused here; everything else refused by the backend as worded. No stock line for
   a product nobody counts (`stock` null).
+- `desktop/pos_kitchen.dart` — `posRingUp` (a product that offers modifiers and isn't on the ticket asks them first; closed = nothing rung up), `posAnswerRefusal` (`negotiable_short` → «Today there is no fries» → `confirmWithout`/`dropShort`; `invalid_modifiers` → ask and ring up again; else the backend's words).
 - `desktop/pos_currency.dart` — `posCurrency(context)`, `posAmount(currency, value)`: every figure goes through it.
 - `desktop/right_panel.dart` — `PosRightPanel`: the ticket (fixed head/foot, lines scroll).
   Turns `PosTicketNotice` into a `FloatFlag`, once.
 - `desktop/ticket_header.dart` — `PosTicketHeader`: ticket code (or day count `mineSales + 1`
   before the first line), units, discard (confirm → **cancel invoice**, holds released).
-- `desktop/ticket_line.dart` — `PosTicketLine`: name/total over −,+/unit price. Steps are `ADD ±1`;
+- `desktop/ticket_line.dart` — `PosTicketLine`: name/total, a dish's modifiers and what it goes without («+ Cheese $1.00 · without fries»), over −,+/unit price; a refused step goes through `posAnswerRefusal`. Steps are `ADD ±1`;
   − at 1 removes. Inert while `isPending`. `!isHeld` shows a danger note.
 - `desktop/ticket_footer.dart` — `PosTicketFooter`: typed-in amount (`PosAmountModal`), VAT row
   (`PosTaxModal`, only place to set it), subtotal, total, checkout (`PosCheckoutModal`, dimmed while settling; done names the sale's `number` when it has one).

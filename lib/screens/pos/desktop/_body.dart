@@ -10,6 +10,7 @@ import 'package:window_manager/window_manager.dart';
 
 // SERVICES
 import 'package:app/services/connection/connection_service.dart';
+import 'package:app/services/kitchen/till_kitchen_service.dart';
 import 'package:app/services/pos/pos_catalog_service.dart';
 import 'package:app/services/pos/pos_invoice_service.dart';
 import 'package:app/services/pos/pos_methods_service.dart';
@@ -69,6 +70,9 @@ class _PosBodyState extends State<PosBody> {
   /// with a customer standing there.
   final _methods = PosMethodsService();
 
+  /// Which products ask for modifiers, and what a dish that runs short asks (cloud only).
+  final _kitchen = TillKitchenService();
+
   /// Whether this page is the one that put the window in full screen, so
   /// leaving POS only undoes what entering it did.
   bool _fullScreen = false;
@@ -103,6 +107,7 @@ class _PosBodyState extends State<PosBody> {
       _catalog.load();
       _methods.load();
       _ticket.recover();
+      _kitchen.load();
     });
   }
 
@@ -144,6 +149,7 @@ class _PosBodyState extends State<PosBody> {
     // stay held, and `recover` finds it again the next time this till opens.
     _ticket.dispose();
     _methods.dispose();
+    _kitchen.dispose();
     super.dispose();
   }
 
@@ -153,7 +159,8 @@ class _PosBodyState extends State<PosBody> {
       ChangeNotifierProvider<PosService>.value(value: _summary),
       ChangeNotifierProvider<PosCatalogService>.value(value: _catalog),
       ChangeNotifierProvider<PosInvoiceService>.value(value: _ticket),
-      ChangeNotifierProvider<PosMethodsService>.value(value: _methods)
+      ChangeNotifierProvider<PosMethodsService>.value(value: _methods),
+      ChangeNotifierProvider<TillKitchenService>.value(value: _kitchen)
     ],
     child: Padding(
       padding: EdgeInsets.all(AppSize.gap),

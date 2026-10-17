@@ -290,6 +290,7 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 - `modifiers_service.dart` — `ModifiersService` (+ status): `GET/PUT/DELETE /inventory/modifiers`; every write rereads.
 - `kitchen_reports_service.dart` — `KitchenReportsService` (+ `KitchenReport`, status): one report and one window; only the last read counts.
 - `kitchen_product_search.dart` — `KitchenProductSearch`: every table's summary `MATCH` at once (supplies first), `namesIn(tables)`.
+- `till_kitchen_service.dart` — `TillKitchenService` (POS page, `pos.kitchen`): `load` (`GET /modifiers` once → which products `offers`), `groupsOf` (`POST /modifiers/availability`), `shortOf` (`POST /recipes/availability` → `short`); a failed read is none. Seam `seed`.
 
 ## baileys/ — WhatsApp Personal sidecar link
 
@@ -509,13 +510,15 @@ Nothing here adds figures up: every total is the backend's answer.
   first line, lines via `PUT /pos/invoices/items/` (holds units), `close`, `cancel`, `recover()`
   (`?MINE=1`). Owns tax rate and totals; optimistic, reconciles when idle; failed write rereads.
   Listens to `invoice/*` and `stock/changed` → `notice`/`noticeLabel`, `isShort`. Seams `seed`/`receive`.
+  A dish: `add(product, modifiers:)` (`MODIFIERS`, null keeps the line's), `carries`; a `negotiable_short` refusal kept in `short`
+  until `confirmWithout(lines)` (same body + `WITHOUT`) or `dropShort`; `asksModifiers` (`invalid_modifiers`). Types `PosModifierPick`, `PosShortWrite`.
 - `pos_invoice_event.dart` — `PosInvoiceEvent` (the `invoice/*` names + thin payload), `PosTicketNotice`.
 - `pos_invoice_model.dart` — `PosInvoice`, `PosInvoiceLine` (`productId` null on a charge line; `qty` ≠ `held`;
-  `tracked` false only from a master).
+  `tracked` false only from a master; a dish's `without`/`omitted`/`modifiers`: `PosLineOmission`, `PosLineModifier`).
 - `pos_payment_method.dart` — `PosPaymentMethod` (`reference`, `change` flags).
 - `pos_methods_service.dart` — `PosMethodsService`: `GET /pos/methods` (channels ignored).
 - `pos_cart_line.dart` — `PosCartLine`: a line as drawn; `key` = backend `lineId` or `draft:…`
-  (`isPending`); `held` vs `quantity` (`isHeld`; always true for a charge or an untracked product).
+  (`isPending`); `held` vs `quantity` (`isHeld`; always true for a charge or an untracked product); `omitted` names, `modifiers`.
 
 ## sales/ — owned by the sales section
 
@@ -609,7 +612,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/inventory/products/records/{list,manage,images}/` · `/inventory/products/import/{structure,records}/$format/` ·
 `/inventory/products/import/images/{status,claim,deliver,fail,match,retry}/` ·
 `/inventory/stock/summary/` · `/inventory/stock/transfers{,/receive,/search}` · `/inventory/products/prices`
-`/inventory/recipes{,/$id,/availability,/pause,/uses,/produce,/discard,/consumption,/variance,/cost}` · `/inventory/modifiers` · `/inventory/presentations{,/$id}`
+`/inventory/recipes{,/$id,/availability,/pause,/uses,/produce,/discard,/consumption,/variance,/cost}` · `/inventory/modifiers{,/availability}` · `/inventory/presentations{,/$id}`
 `/sales/` · `/sales/stages/` · `/sales/detail/$id` · `/sales/fulfillment/` · `/chats/stage/`
 `/pos/` · `/pos/catalog/` · `/pos/methods/` · `/pos/invoices/{,items,close,cancel}`
 `/aries/v1/chats{,/stages,/tags,/summary,/detail/$id,/messages/$id,/messages,/read,/bot/pause,/bot/resume,/assign,/stage,/alerts/resolve}` · `/aries/v1/team{,?ID=}`
