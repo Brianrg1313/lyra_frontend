@@ -7,13 +7,14 @@ import 'package:app/services/kitchen/kitchen_units.dart';
 import 'package:app/services/kitchen/made_product_model.dart';
 import 'package:app/services/kitchen/made_products_service.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
+import 'package:app/toolkit/lan_image.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 // WIDGETS
 import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
 import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
 
-/// One made product in its table's list: its name and what it consumes («Meat 300 g · Bread ×1»)
+/// One made product in its table's list: its photo, its name and what it consumes («Meat 300 g · Bread ×1»)
 /// on the left, its price and how many can be sold now on the right (`cocina-frontend.md` §3:
 /// «Disponibles: N» and the ingredients, never a stock to write). A tap opens its form;
 /// [onKitchen], when given, its kitchen page (the 86, batches, lost dishes).
@@ -45,6 +46,8 @@ class MadeProductRow extends StatelessWidget {
       color: scheme.surfaceOver,
       padding: EdgeInsets.symmetric(horizontal: AppSize.padding, vertical: AppSize.spaceS),
       child: Row(children: [
+        _Cover(product: product),
+        SizedBox(width: AppSize.spaceS),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Flexible(child: TextMedium(name.isEmpty ? s.made_product_unnamed : name, bold: true, ellipsis: true)),
@@ -92,6 +95,38 @@ class MadeProductRow extends StatelessWidget {
     final unit = service.fields.price?.unit ?? "";
 
     return CurrencyCatalogService().resolve(unit.isEmpty ? businessService.currencyCode : unit).label(value) ?? value;
+  }
+}
+
+/// The product's thumbnail, or the box with the product glyph: the strip of photos stays even.
+class _Cover extends StatelessWidget {
+  const _Cover({required this.product});
+
+  final MadeProduct product;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final cover = product.cover;
+    final radius = AppSize.corner;
+    final empty = Center(child: Icon(CI.product, size: AppSize.text * 1.1, color: scheme.text.secondary));
+
+    return Surface(
+      width: 48,
+      height: 48,
+      radius: radius,
+      color: scheme.surface,
+      child: cover == null ? empty : ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: Image(
+          image: mediaImage(cover.thumbnail),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stack) => empty
+        )
+      )
+    );
   }
 }
 

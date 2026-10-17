@@ -28,11 +28,32 @@ typedef ModifierGroupDraft = ({
 
 /// Opens the form of a modifier group — a new one without [group]. Writes nothing: answers the
 /// draft, or `null` when closed. Without [canEdit] it is read only.
-Future<ModifierGroupDraft?> showModifierGroupForm(BuildContext context, {ModifierGroup? group, bool canEdit = true}) =>
+///
+/// Opened from a product's form, [pinned] names that product: it offers the group whatever the
+/// list says (it may not exist yet), so it is drawn first and can't be taken off; there the
+/// group is not deleted either ([deletable]), only no longer offered. A new group starts on
+/// [min] / [max] and [title].
+Future<ModifierGroupDraft?> showModifierGroupForm(
+  BuildContext context, {
+  ModifierGroup? group,
+  bool canEdit = true,
+  String? pinned,
+  bool deletable = true,
+  int min = 0,
+  int? max,
+  String? title
+}) =>
   showSideModal(
     context: context,
-    title: group == null ? S.of(context).supply_chain_modifiers_create : group.name,
-    builder: (context) => ModifierGroupModal(group: group, canEdit: canEdit)
+    title: group?.name ?? title ?? S.of(context).supply_chain_modifiers_create,
+    builder: (context) => ModifierGroupModal(
+      group: group,
+      canEdit: canEdit,
+      pinned: pinned,
+      deletable: deletable,
+      min: min,
+      max: max
+    )
   ).then((value) => value is ModifierGroupDraft ? value : null);
 
 /// One group of modifiers (`cocina-frontend.md` §6): its name, how many options a line must
@@ -43,10 +64,26 @@ Future<ModifierGroupDraft?> showModifierGroupForm(BuildContext context, {Modifie
 /// one with only a price works on any product («with ice»). Every option keeps its id when
 /// edited: open tickets name it by it.
 class ModifierGroupModal extends StatefulWidget {
-  const ModifierGroupModal({super.key, this.group, this.canEdit = true});
+  const ModifierGroupModal({
+    super.key,
+    this.group,
+    this.canEdit = true,
+    this.pinned,
+    this.deletable = true,
+    this.min = 0,
+    this.max
+  });
 
   final ModifierGroup? group;
   final bool canEdit;
+
+  /// The product whose form opened it, always among those offering it.
+  final String? pinned;
+  final bool deletable;
+
+  /// A new group's rule.
+  final int min;
+  final int? max;
 
   @override
   State<ModifierGroupModal> createState() => _ModifierGroupModalState();
@@ -56,8 +93,8 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
   final _names = KitchenProductSearch();
 
   late final _name = InputController(key: "NAME", max: 60, initial: widget.group?.name);
-  late final _min = InputController(key: "MIN", pattern: "[0-9]", max: 3, initial: "${widget.group?.min ?? 0}");
-  late final _max = InputController(key: "MAX", pattern: "[0-9]", max: 3, initial: widget.group?.max?.toString());
+  late final _min = InputController(key: "MIN", pattern: "[0-9]", max: 3, initial: "${widget.group?.min ?? widget.min}");
+  late final _max = InputController(key: "MAX", pattern: "[0-9]", max: 3, initial: (widget.group == null ? widget.max : widget.group!.max)?.toString());
 
   late final List<ModifierProduct> _products = [...?widget.group?.products];
   late final List<ModifierOptionDraft> _options = [
@@ -155,6 +192,7 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
           TextMedium(s.supply_chain_modifiers_products_title, bold: true),
           KitchenNote(text: s.supply_chain_modifiers_products_note),
           Wrap(spacing: AppSize.gap, runSpacing: AppSize.gap, children: [
+            if (widget.pinned != null) KitchenChip(label: widget.pinned!),
             for (final product in _products) KitchenChip(
               label: _nameOf(product.productId),
               onRemove: edit ? () => setState(() => _products.remove(product)) : null
@@ -193,7 +231,7 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
           if (edit) ...[
             SizedBox(height: AppSize.spaceM),
             MainButton(title: s.save, action: _submit),
-            if (widget.group != null) ...[
+            if (widget.group != null && widget.deletable) ...[
               SizedBox(height: AppSize.spaceXS),
               Button(title: s.supply_chain_modifiers_delete, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: _delete)
             ]

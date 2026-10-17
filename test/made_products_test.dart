@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -7,15 +10,19 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/home/home_service.dart';
 
+import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/inventory/table_record_request.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/kitchen/kitchen_product_search.dart';
 import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/kitchen/kitchen_units.dart';
+import 'package:app/services/kitchen/kitchen_report_model.dart';
 import 'package:app/services/kitchen/made_consumes_model.dart';
+import 'package:app/services/kitchen/made_kitchen_api.dart';
 import 'package:app/services/kitchen/made_product_model.dart';
 import 'package:app/services/kitchen/made_products_service.dart';
+import 'package:app/services/kitchen/modifier_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
@@ -227,7 +234,7 @@ void main() {
         product: service.products.single,
         nameTitle: "Name",
         priceTitle: "Price",
-        draft: (name: "Cheese burger", price: "9", values: const {}, mode: RecipeMode.batch, lines: _burger.lines)
+        draft: _draft(price: "9", mode: RecipeMode.batch)
       );
 
       expect(saved, isTrue);
@@ -331,6 +338,82 @@ void main() {
       expect(saved!.lines.single.waste, 10);
     });
 
+    testWidgets("a first description creates its column; an added detail its own", (tester) async {
+      final source = _Menu(fields: _fields);
+      final service = await _service(tester, source);
+
+      await service.save(
+        tester.element(find.byType(SizedBox)),
+        nameTitle: "Name",
+        priceTitle: "Price",
+        descriptionTitle: "Description",
+        draft: _draft(description: "Beef and cheddar", added: const {"Calories": "540"})
+      );
+
+      expect([for (final field in source.createdFields) (field["NAME"], field["TYPE"])], [
+        ("Description", "DESCRIPTION"),
+        ("Calories", "TEXT")
+      ]);
+      expect(source.created.single["DATA"], {
+        "f-Calories": "540",
+        "f-description": "Beef and cheddar",
+        "f-name": "Cheese burger",
+        "f-price": "8.5"
+      });
+    });
+
+    testWidgets("a photo goes up against the record once it exists", (tester) async {
+      // The upload travels as a file, written to the temp folder.
+      const channel = MethodChannel("plugins.flutter.io/path_provider");
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async => Directory.systemTemp.path);
+      addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, null));
+
+      final source = _Menu(fields: _fields);
+      final service = await _service(tester, source);
+      final context = tester.element(find.byType(SizedBox));
+
+      await tester.runAsync(() => service.save(
+        context,
+        nameTitle: "Name",
+        priceTitle: "Price",
+        draft: _draft(photo: MadePhoto.replace(Uint8List.fromList([1, 2, 3])))
+      ));
+
+      expect(source.images, ["add burger"]);
+    });
+
+    testWidgets("a product offers a new group, one it starts offering, and stops offering another", (tester) async {
+      const dough = ModifierGroup(id: "dough", name: "Dough", min: 1, max: 1, products: [(tableId: "menu", productId: "pizza")],
+        options: [ModifierOption(id: "thin", name: "Thin")]);
+      const sauces = ModifierGroup(id: "sauces", name: "Sauces", products: [(tableId: "menu", productId: "burger")],
+        options: [ModifierOption(id: "bbq", name: "BBQ")]);
+      const extras = ModifierGroup(id: "", name: "Extras", options: [ModifierOption(name: "Pickles", price: 0.5)]);
+
+      final kitchen = _Kitchen([dough, sauces]);
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]]);
+      final service = await _service(tester, source, kitchen: kitchen);
+
+      expect(service.groupsOf("burger").single.id, "sauces");
+
+      await service.save(
+        tester.element(find.byType(SizedBox)),
+        product: service.products.single,
+        nameTitle: "Name",
+        priceTitle: "Price",
+        draft: _draft(groups: [(group: dough, edited: false), (group: extras, edited: true)])
+      );
+
+      List<String> offering(String id) => [
+        for (final product in kitchen.saved.firstWhere((body) => (body["ID"] ?? "") == id)["PRODUCTS"] as List)
+          product["PRODUCT_ID"] as String
+      ];
+
+      expect(kitchen.saved, hasLength(3));
+      expect(offering("dough"), ["pizza", "burger"]);
+      expect(offering(""), ["burger"]);
+      expect(offering("sauces"), isEmpty);
+    });
+
     testWidgets("an edit that changes no column sends no DATA", (tester) async {
       final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]]);
       final service = await _service(tester, source);
@@ -353,18 +436,31 @@ const _fields = [
   TableFieldModel(id: "f-price", name: "Price", type: "PRICE")
 ];
 
-const MadeProductDraft _burger = (
+final MadeProductDraft _burger = _draft();
+
+MadeProductDraft _draft({
+  String price = "8.5",
+  String description = "",
+  Map<String, String> added = const {},
+  MadePhoto photo = const MadePhoto.keep(),
+  RecipeMode mode = RecipeMode.order,
+  List<MadeGroupChoice>? groups
+}) => (
   name: "Cheese burger",
-  price: "8.5",
-  values: <String, String>{},
-  mode: RecipeMode.order,
-  lines: <RecipeLineDraft>[(tableId: "s", productId: "meat", qty: 0.3, negotiable: false, waste: 0)]
+  price: price,
+  description: description,
+  values: const <String, String>{},
+  added: added,
+  photo: photo,
+  mode: mode,
+  lines: const <RecipeLineDraft>[(tableId: "s", productId: "meat", qty: 0.3, negotiable: false, waste: 0)],
+  groups: groups
 );
 
-Future<MadeProductsService> _service(WidgetTester tester, _Menu source) async {
+Future<MadeProductsService> _service(WidgetTester tester, _Menu source, {_Kitchen? kitchen}) async {
   await tester.pumpWidget(const SizedBox());
 
-  final service = MadeProductsService(tableId: "menu", source: source, search: _Supplies());
+  final service = MadeProductsService(tableId: "menu", source: source, search: _Supplies(), kitchen: kitchen ?? _Kitchen());
   addTearDown(service.dispose);
 
   await service.load();
@@ -389,6 +485,23 @@ Widget _app(Widget child) => MaterialApp(
   })
 );
 
+/// The company's modifier groups, and the bodies written to them.
+class _Kitchen extends MadeKitchenApi {
+  _Kitchen([this.known = const []]);
+
+  final List<ModifierGroup> known;
+  final saved = <Map<String, dynamic>>[];
+
+  @override
+  Future<List<ModifierGroup>> groups() async => known;
+
+  @override
+  Future<void> saveGroup(Map<String, dynamic> body) async => saved.add(body);
+
+  @override
+  Future<DishCost?> cost(String productId) async => null;
+}
+
 /// The supplies, by id: meat counted in kg.
 class _Supplies extends KitchenProductSearch {
   @override
@@ -405,6 +518,7 @@ class _Menu implements InventorySource {
 
   final List<TableFieldModel> _fields;
   final List<List<dynamic>> _rows;
+  final images = <String>[];
 
   /// `records/list`'s `consumes`.
   final Map<String, dynamic> consumes;
@@ -420,7 +534,7 @@ class _Menu implements InventorySource {
   Future<void> createField(Map<String, dynamic> request) async {
     createdFields.add(request);
     _fields.add(TableFieldModel(
-      id: request["TYPE"] == "TITLE" ? "f-name" : "f-price",
+      id: switch (request["TYPE"]) {"TITLE" => "f-name", "PRICE" => "f-price", "DESCRIPTION" => "f-description", _ => "f-${request["NAME"]}"},
       name: request["NAME"],
       type: request["TYPE"]
     ));
@@ -453,6 +567,15 @@ class _Menu implements InventorySource {
 
   @override
   Future<void> editRecord(Map<String, dynamic> request) async => edited.add(request);
+
+  @override
+  Future<List<ProductImage>> addImage(String tableId, String recordId, File file) async {
+    images.add("add $recordId");
+    return const [];
+  }
+
+  @override
+  Future<void> removeImage(String tableId, String recordId, String fileId) async => images.add("remove $recordId $fileId");
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

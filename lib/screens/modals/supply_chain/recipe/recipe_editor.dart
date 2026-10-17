@@ -27,7 +27,7 @@ class _LineDraft {
     double waste = 0,
     this.negotiable = false
   }) : units = kitchenUnitsFor(unit),
-       more = negotiable || waste > 0 {
+       more = waste > 0 {
     this.waste = InputController(key: "WASTE", form: _form, pattern: "[0-9.,]", max: 6, initial: waste > 0 ? kitchenField(waste) : null);
     final best = qty == null ? null : kitchenBestUnit(qty, unit);
 
@@ -60,7 +60,7 @@ class _LineDraft {
   late final InputController waste;
   bool negotiable;
 
-  /// Whether its waste and «optional» are unfolded: always when it has either.
+  /// Whether its waste is unfolded: always when it has one.
   bool more;
   String error = "";
 
@@ -103,6 +103,7 @@ class RecipeEditor extends StatefulWidget {
     this.saveLabel,
     this.units = const {},
     this.leading = const [],
+    this.trailing = const [],
     this.validate
   });
 
@@ -127,6 +128,9 @@ class RecipeEditor extends StatefulWidget {
 
   /// What goes above how it is made: a made product's own fields.
   final List<Widget> leading;
+
+  /// What goes under what it is made of, above the buttons: what a made product offers.
+  final List<Widget> trailing;
 
   /// Checks what [leading] holds, beside the lines; `false` does not save.
   final bool Function()? validate;
@@ -229,6 +233,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
           )
         ],
         if (_error.isNotEmpty) KitchenNote(text: _error, color: scheme.snackBar.error),
+        ...widget.trailing,
         if (widget.canEdit) ...[
           SizedBox(height: AppSize.spaceM),
           Row(children: [
@@ -290,9 +295,10 @@ class _RecipeEditorState extends State<RecipeEditor> {
   }
 }
 
-/// One line, read as a recipe reads: how much first, then of what. Its waste and whether it can
-/// go without it are folded under the arrow (`cocina-frontend.md` §3: «Más opciones»); folded,
-/// they still show beside the name, so a line never hides what it carries.
+/// One line, read as a recipe reads: how much first, then of what, then whether it can go
+/// without it («Optional», a tap away: the garnish, the pickles). Its waste is folded under the
+/// arrow (`cocina-frontend.md` §3: «Más opciones»); folded, it still shows beside the name, so a
+/// line never hides what it carries.
 class _LineRow extends StatelessWidget {
   const _LineRow({
     super.key,
@@ -338,12 +344,13 @@ class _LineRow extends StatelessWidget {
             if (!line.more && waste > 0) ...[
               SizedBox(width: AppSize.gap),
               RecipeTag(text: s.supply_chain_line_waste_of(kitchenPercent(context, waste)), color: scheme.text.secondary)
-            ],
-            if (!line.more && line.negotiable) ...[
-              SizedBox(width: AppSize.gap),
-              RecipeTag(text: s.supply_chain_line_negotiable, color: scheme.accent)
             ]
           ])),
+          SizedBox(width: AppSize.gap),
+          _OptionalToggle(
+            value: line.negotiable,
+            onChanged: enabled ? () => onNegotiable(!line.negotiable) : null
+          ),
           FocusableWidget(
             action: onMore,
             message: s.supply_chain_line_more,
@@ -375,18 +382,7 @@ class _LineRow extends StatelessWidget {
               child: Center(child: TextSmall("%", color: scheme.text.secondary))
             ),
             SizedBox(width: AppSize.spaceS),
-            Expanded(child: Tooltip(
-              message: s.supply_chain_line_negotiable_note,
-              child: Row(children: [
-                Flexible(child: TextSmall(s.supply_chain_line_negotiable, color: scheme.text.secondary, ellipsis: true)),
-                Switch(
-                  value: line.negotiable,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  activeThumbColor: scheme.primary,
-                  onChanged: enabled ? onNegotiable : null
-                )
-              ])
-            ))
+            Expanded(child: TextSmall(s.supply_chain_line_waste_note, lines: 2, color: scheme.text.secondary))
           ])
         ),
         if (line.error.isNotEmpty) Padding(
@@ -394,6 +390,41 @@ class _LineRow extends StatelessWidget {
           child: TextSmall(line.error, color: scheme.snackBar.error)
         )
       ])
+    );
+  }
+}
+
+/// Whether a line can be left out: a tag that is outlined while it can't and filled once it can,
+/// so a list of lines says at a glance which ones are the garnish.
+class _OptionalToggle extends StatelessWidget {
+  const _OptionalToggle({required this.value, required this.onChanged});
+
+  final bool value;
+  final void Function()? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final s = S.of(context);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSize.corner),
+        border: Border.all(color: value ? scheme.accent : scheme.line)
+      ),
+      child: FeedbackButton(
+        action: onChanged,
+        message: s.supply_chain_line_negotiable_note,
+        color: value ? scheme.accent.withValues(alpha: 0.14) : scheme.surface,
+        radius: AppSize.corner,
+        padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(value ? CI.check : CI.plus, size: AppSize.text * 0.85, color: value ? scheme.accent : scheme.text.secondary),
+          SizedBox(width: AppSize.gap / 2),
+          TextSmall(s.supply_chain_line_negotiable, multiplier: 0.9, color: value ? scheme.accent : scheme.text.secondary, bold: value)
+        ])
+      )
     );
   }
 }

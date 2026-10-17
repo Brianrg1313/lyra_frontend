@@ -1729,6 +1729,16 @@ class S {
     );
   }
 
+  /// `What is lost preparing it: with 10 %, 200 g spends 220 g`
+  String get supply_chain_line_waste_note {
+    return Intl.message(
+      'What is lost preparing it: with 10 %, 200 g spends 220 g',
+      name: 'supply_chain_line_waste_note',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{percent} waste`
   String supply_chain_line_waste_of(Object percent) {
     return Intl.message(
@@ -1769,10 +1779,10 @@ class S {
     );
   }
 
-  /// `Waste and optional`
+  /// `Waste`
   String get supply_chain_line_more {
     return Intl.message(
-      'Waste and optional',
+      'Waste',
       name: 'supply_chain_line_more',
       desc: '',
       args: [],
@@ -2039,6 +2049,386 @@ class S {
     return Intl.message(
       'The table\'s name and price columns could not be created',
       name: 'made_product_fields_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a photo`
+  String get made_product_photo_add {
+    return Intl.message(
+      'Add a photo',
+      name: 'made_product_photo_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change the photo`
+  String get made_product_photo_change {
+    return Intl.message(
+      'Change the photo',
+      name: 'made_product_photo_change',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove the photo`
+  String get made_product_photo_remove {
+    return Intl.message(
+      'Remove the photo',
+      name: 'made_product_photo_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Images`
+  String get made_product_photo_files {
+    return Intl.message(
+      'Images',
+      name: 'made_product_photo_files',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The photo weighs more than 10 MB`
+  String get made_product_photo_large {
+    return Intl.message(
+      'The photo weighs more than 10 MB',
+      name: 'made_product_photo_large',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Description`
+  String get made_product_description {
+    return Intl.message(
+      'Description',
+      name: 'made_product_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Beef, cheddar and the house sauce on a brioche bun`
+  String get made_product_description_placeholder {
+    return Intl.message(
+      'Beef, cheddar and the house sauce on a brioche bun',
+      name: 'made_product_description_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add to this product`
+  String get made_product_add_title {
+    return Intl.message(
+      'Add to this product',
+      name: 'made_product_add_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What it is, in words: the customer and Lyra read it`
+  String get made_product_add_description_note {
+    return Intl.message(
+      'What it is, in words: the customer and Lyra read it',
+      name: 'made_product_add_description_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A choice`
+  String get made_product_add_choice {
+    return Intl.message(
+      'A choice',
+      name: 'made_product_add_choice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The customer picks one before it is charged: the dough, the size, the doneness`
+  String get made_product_add_choice_note {
+    return Intl.message(
+      'The customer picks one before it is charged: the dough, the size, the doneness',
+      name: 'made_product_add_choice_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Extras`
+  String get made_product_add_extras {
+    return Intl.message(
+      'Extras',
+      name: 'made_product_add_extras',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What can be added on top, for a price: more pickles, extra cheese`
+  String get made_product_add_extras_note {
+    return Intl.message(
+      'What can be added on top, for a price: more pickles, extra cheese',
+      name: 'made_product_add_extras_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Another detail`
+  String get made_product_add_detail {
+    return Intl.message(
+      'Another detail',
+      name: 'made_product_add_detail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A column of your own for every product of the table: calories, prep time`
+  String get made_product_add_detail_note {
+    return Intl.message(
+      'A column of your own for every product of the table: calories, prep time',
+      name: 'made_product_add_detail_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A column of this table`
+  String get made_product_add_field_note {
+    return Intl.message(
+      'A column of this table',
+      name: 'made_product_add_field_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To choose`
+  String get made_product_choices_title {
+    return Intl.message(
+      'To choose',
+      name: 'made_product_choices_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The customer picks before the product is charged.`
+  String get made_product_choices_note {
+    return Intl.message(
+      'The customer picks before the product is charged.',
+      name: 'made_product_choices_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Extras`
+  String get made_product_extras_title {
+    return Intl.message(
+      'Extras',
+      name: 'made_product_extras_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Optional; each one adds its price to one product.`
+  String get made_product_extras_note {
+    return Intl.message(
+      'Optional; each one adds its price to one product.',
+      name: 'made_product_extras_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New choice`
+  String get made_product_group_new_choice {
+    return Intl.message(
+      'New choice',
+      name: 'made_product_group_new_choice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New extras`
+  String get made_product_group_new_extras {
+    return Intl.message(
+      'New extras',
+      name: 'made_product_group_new_extras',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Its name and options, written here`
+  String get made_product_group_new_note {
+    return Intl.message(
+      'Its name and options, written here',
+      name: 'made_product_group_new_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{rule} · {count} options, already offered elsewhere`
+  String made_product_group_use_note(Object rule, Object count) {
+    return Intl.message(
+      '$rule · $count options, already offered elsewhere',
+      name: 'made_product_group_use_note',
+      desc: '',
+      args: [rule, count],
+    );
+  }
+
+  /// `Also offered by {count} more`
+  String made_product_group_shared(Object count) {
+    return Intl.message(
+      'Also offered by $count more',
+      name: 'made_product_group_shared',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Edit`
+  String get made_product_group_edit {
+    return Intl.message(
+      'Edit',
+      name: 'made_product_group_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stop offering it here`
+  String get made_product_group_detach {
+    return Intl.message(
+      'Stop offering it here',
+      name: 'made_product_group_detach',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No options yet`
+  String get made_product_group_options_none {
+    return Intl.message(
+      'No options yet',
+      name: 'made_product_group_options_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calories`
+  String get made_product_detail_name {
+    return Intl.message(
+      'Calories',
+      name: 'made_product_detail_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Value`
+  String get made_product_detail_value {
+    return Intl.message(
+      'Value',
+      name: 'made_product_detail_value',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove`
+  String get made_product_section_remove {
+    return Intl.message(
+      'Remove',
+      name: 'made_product_section_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Costs {amount} to make`
+  String made_product_profit_cost(Object amount) {
+    return Intl.message(
+      'Costs $amount to make',
+      name: 'made_product_profit_cost',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `You earn {amount}`
+  String made_product_profit_gain(Object amount) {
+    return Intl.message(
+      'You earn $amount',
+      name: 'made_product_profit_gain',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `You lose {amount}`
+  String made_product_profit_loss(Object amount) {
+    return Intl.message(
+      'You lose $amount',
+      name: 'made_product_profit_loss',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `{percent} of the price`
+  String made_product_profit_margin(Object percent) {
+    return Intl.message(
+      '$percent of the price',
+      name: 'made_product_profit_margin',
+      desc: '',
+      args: [percent],
+    );
+  }
+
+  /// `Not counted, no purchase price yet: {names}`
+  String made_product_profit_incomplete(Object names) {
+    return Intl.message(
+      'Not counted, no purchase price yet: $names',
+      name: 'made_product_profit_incomplete',
+      desc: '',
+      args: [names],
+    );
+  }
+
+  /// `What it earns shows once its supplies are restocked with what they cost.`
+  String get made_product_profit_none {
+    return Intl.message(
+      'What it earns shows once its supplies are restocked with what they cost.',
+      name: 'made_product_profit_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What it earns shows once it is saved and its supplies have a purchase price.`
+  String get made_product_profit_new {
+    return Intl.message(
+      'What it earns shows once it is saved and its supplies have a purchase price.',
+      name: 'made_product_profit_new',
       desc: '',
       args: [],
     );

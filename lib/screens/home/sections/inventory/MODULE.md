@@ -92,7 +92,7 @@ A name still waiting draws as a plain picture glyph in its cell (`ProductImage.i
 ## made_products/ — a made table (`cocina-frontend.md` §2, §3)
 
 - `_made_products.dart` — `MadeProductsSection({tableId, parts})`: owns `MadeProductsService`; the bar (count, «New product» with `supply_chain.recipes.edit`), header search → `MATCH`, the list (`SectionMoreButton`), empty / error states; a row opens `showMadeProduct`, its kitchen icon `showRecipePanel` (`supply_chain.recipes`).
-- `made_product_row.dart` — `MadeProductRow`: name, «by the batch» tag, what it consumes as chips in the unit each reads best in («Meat 300 g», «Bread ×1»), price, what can be sold now (`recipeAvailabilityLine`).
+- `made_product_row.dart` — `MadeProductRow`: its cover, name, «by the batch» tag, what it consumes as chips in the unit each reads best in («Meat 300 g», «Bread ×1»), price, what can be sold now (`recipeAvailabilityLine`).
 
 A made product is never a sheet row: its record and what it consumes are one `records/manage` call (all or nothing), so
 they are written together in its form.
