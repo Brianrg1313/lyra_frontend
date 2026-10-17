@@ -47,8 +47,12 @@ class RecipesTab extends StatefulWidget {
 }
 
 class _RecipesTabState extends State<RecipesTab> {
-  /// Owned by its input, which disposes it: it belongs to no form.
-  final _query = InputController.search(key: "KITCHEN_PRODUCTS_SEARCH");
+  /// Owned by its input, which disposes it: it belongs to no form. The sheet unmounts that
+  /// input, so the list coming back makes a new one ([_listed]) with the search it had.
+  InputController _query = InputController.search(key: "KITCHEN_PRODUCTS_SEARCH");
+
+  /// Whether the last build drew the list, whose input still holds [_query].
+  bool _listed = true;
 
   /// The cells switch, per opened table: `null` until touched, which opens a table with no
   /// rows on the sheet ([_sheet]).
@@ -114,6 +118,8 @@ class _RecipesTabState extends State<RecipesTab> {
     final table = service.table;
 
     if (table != null && _sheet(table)) {
+      _listed = false;
+
       return TableViewSection(
         key: ValueKey("supplies_sheet_${table.id}"),
         tableId: table.id,
@@ -123,6 +129,11 @@ class _RecipesTabState extends State<RecipesTab> {
           actions: [_createButton(context)]
         )
       );
+    }
+
+    if (!_listed) {
+      _query = InputController.search(key: "KITCHEN_PRODUCTS_SEARCH", initial: service.query);
+      _listed = true;
     }
 
     return Column(

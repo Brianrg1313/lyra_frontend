@@ -6,8 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
+import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/home/home_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/inventory/picture_import_service.dart';
 import 'package:app/services/inventory/table_template_model.dart';
@@ -152,6 +154,43 @@ void main() {
     expect(find.text(S.current.supply_chain_open_sheet), findsOneWidget);
     expect(find.byType(InventoryViewToggle), findsOneWidget);
     expect(find.byType(TableViewSection), findsNothing);
+  });
+
+  testWidgets("the list comes back from the sheet with a working search", (tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final service = KitchenProductsService(listen: false, inventory: _Inventory.answering(const [_supplies]), stock: _Stock(), measure: (_) async => const {});
+    addTearDown(service.dispose);
+    await service.load();
+
+    await tester.pumpWidget(_app(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<KitchenProductsService>.value(value: service),
+          ChangeNotifierProvider<HomeService>.value(value: HomeService())
+        ],
+        child: const RecipesTab()
+      ),
+      tables: TablesService(source: _Inventory())
+    ));
+    await tester.pump();
+    tester.takeException();
+
+    // List, sheet, list, sheet, list: the search input mounts each time on a live controller.
+    for (var i = 0; i < 4; i++) {
+      await tester.tap(find.byType(InventoryViewToggle));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byType(TableViewSection), i.isEven ? findsOneWidget : findsNothing);
+
+      final error = tester.takeException();
+      expect(error.toString(), isNot(contains("disposed")));
+    }
+
+    expect(find.byType(SearchInput), findsOneWidget);
   });
 
   test("a catalog's summary measures its rows' recipes", () async {
