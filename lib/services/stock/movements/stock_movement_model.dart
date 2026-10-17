@@ -67,6 +67,10 @@ enum StockReason {
   theft(StockOperation.remove, "theft"),
   removeCorrection(StockOperation.remove, "correction"),
 
+  /// What is lost working (spilled wax, a cut gone wrong; `cocina-frontend.md` §7). The
+  /// engine doesn't know it: offered only where `inventory.purchases` is.
+  waste(StockOperation.remove, "waste"),
+
   // Returns
   customer(StockOperation.receiveReturn, "customer"),
   defective(StockOperation.receiveReturn, "defective"),
@@ -87,6 +91,10 @@ enum StockReason {
   /// The code that travels in `REASON`.
   final String key;
 
+  /// Whether only the cloud knows it: the engine's catalogue (`StockOperations.reasons`)
+  /// doesn't, so a screen offers it only where `inventory.purchases` is.
+  bool get cloudOnly => this == waste;
+
   /// How it is named on screen.
   String label(BuildContext context) => switch (this) {
     restock => S.of(context).stock_reason_restock,
@@ -97,6 +105,7 @@ enum StockReason {
     loss => S.of(context).stock_reason_loss,
     expired => S.of(context).stock_reason_expiration,
     theft => S.of(context).stock_reason_theft,
+    waste => S.of(context).stock_reason_waste,
     customer => S.of(context).stock_reason_customer,
     defective => S.of(context).stock_reason_defective,
     wrongItem => S.of(context).stock_reason_wrong_item,
@@ -139,6 +148,9 @@ enum StockReason {
 /// `available` is always `onHand - reserved`, and `returns` stays **outside**
 /// of `onHand`: what a client returned is in the store but is not merchandise
 /// yet.
+///
+/// They are [num] and not `int`: a supply counts up to six decimals of its unit
+/// (`cocina-frontend.md` §1); a catalog's product still answers whole numbers.
 class StockBalance {
   const StockBalance({
     this.onHand = 0,
@@ -147,27 +159,38 @@ class StockBalance {
     this.returns = 0
   });
 
-  final int onHand;
-  final int reserved;
-  final int available;
-  final int returns;
+  final num onHand;
+  final num reserved;
+  final num available;
+  final num returns;
 
   factory StockBalance.fromResponse(dynamic data) {
     if (data is! Map) return const StockBalance();
 
     return StockBalance(
-      onHand: _int(data["onHand"] ?? data["ON_HAND"]),
-      reserved: _int(data["reserved"] ?? data["RESERVED"]),
-      available: _int(data["available"] ?? data["AVAILABLE"]),
-      returns: _int(data["returns"] ?? data["RETURNS"])
+      onHand: stockNum(data["onHand"] ?? data["ON_HAND"]) ?? 0,
+      reserved: stockNum(data["reserved"] ?? data["RESERVED"]) ?? 0,
+      available: stockNum(data["available"] ?? data["AVAILABLE"]) ?? 0,
+      returns: stockNum(data["returns"] ?? data["RETURNS"]) ?? 0
     );
   }
+}
 
-  static int _int(dynamic raw) => switch (raw) {
-    final num value => value.toInt(),
-    final String text => int.tryParse(text) ?? 0,
-    _ => 0
-  };
+/// A stock counter as it travels: whole numbers stay [int], a supply's decimals a [double].
+num? stockNum(dynamic raw) => switch (raw) {
+  final num value => value == value.roundToDouble() ? value.round() : value,
+  final String text => stockNum(num.tryParse(text.trim())),
+  _ => null
+};
+
+/// A stock figure written: a whole number as it is, a supply's up to six decimals with no
+/// trailing zeros (`1.75`, never `1.750000`).
+String stockFigure(num value) {
+  if (value == value.roundToDouble()) return value.round().toString();
+
+  return value.toStringAsFixed(6)
+    .replaceFirst(RegExp(r"0+$"), "")
+    .replaceFirst(RegExp(r"\.$"), "");
 }
 
 /// A movement ready to be written: how much, why and against which endpoint.
@@ -180,13 +203,16 @@ class StockMovement {
     required this.operation,
     required this.quantity,
     this.reason,
-    this.note = ""
+    this.note = "",
+    this.presentation = "",
+    this.cost
   });
 
   final StockOperation operation;
 
-  /// How many units. Always positive: the sign is set by the operation.
-  final int quantity;
+  /// How many units —or presentations, with [presentation]—. Always positive:
+  /// the sign is set by the operation. Decimals only on a supply.
+  final num quantity;
 
   /// The chosen reason, or null to let the backend put its own (a manual hold
   /// has no reasons: setting aside is setting aside).
@@ -195,6 +221,16 @@ class StockMovement {
   /// The phrase explaining the movement. Optional for the backend, but it is
   /// what whoever audits this in a year reads.
   final String note;
+
+  /// The id of how it was bought («Saco» = 25 kg), or empty for units. With one,
+  /// [quantity] counts presentations and the backend adds what they hold
+  /// (`cocina-frontend.md` §8).
+  final String presentation;
+
+  /// What the **whole** purchase cost. Only a restock carries it: the backend
+  /// refuses it on any other reason (`invalid_cost`), and it is where the cost
+  /// of every dish comes from.
+  final double? cost;
 
   /// The body of the `POST`, with the table and the product that receive it.
   Map<String, dynamic> request({
@@ -206,9 +242,11 @@ class StockMovement {
     return {
       "TABLE_ID": tableId,
       "PRODUCT_ID": productId,
-      "QUANTITY": quantity,
+      "QUANTITY": stockNum(quantity) ?? quantity,
       if (reason != null) "REASON": reason!.key,
-      if (written.isNotEmpty) "NOTE": written
+      if (written.isNotEmpty) "NOTE": written,
+      if (presentation.isNotEmpty) "PRESENTATION": presentation,
+      if (cost != null && reason == StockReason.restock) "COST": stockNum(cost) ?? cost
     };
   }
 }

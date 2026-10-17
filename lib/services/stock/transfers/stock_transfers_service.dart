@@ -292,7 +292,8 @@ class StockTransfersService extends ChangeNotifier {
       for (final row in page.rows) (
         id: row.id,
         name: names[row.id] ?? row.id,
-        available: row.stock == null ? null : row.stock! - (row.reserved ?? 0),
+        // The primary table is never one of supplies (`cocina-frontend.md` §2): whole units.
+        available: row.stock == null ? null : (row.stock! - (row.reserved ?? 0)).toInt(),
         table: page.table
       )
     ];

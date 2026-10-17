@@ -14495,6 +14495,130 @@ class S {
     );
   }
 
+  /// `Waste`
+  String get stock_reason_waste {
+    return Intl.message(
+      'Waste',
+      name: 'stock_reason_waste',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter an amount between 0 and {max}, up to six decimals`
+  String stock_move_quantity_error_decimal(Object max) {
+    return Intl.message(
+      'Enter an amount between 0 and $max, up to six decimals',
+      name: 'stock_move_quantity_error_decimal',
+      desc: '',
+      args: [max],
+    );
+  }
+
+  /// `Enter an amount greater than zero, up to six decimals`
+  String get stock_move_quantity_error_decimal_free {
+    return Intl.message(
+      'Enter an amount greater than zero, up to six decimals',
+      name: 'stock_move_quantity_error_decimal_free',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{amount} available`
+  String stock_move_available_amount(Object amount) {
+    return Intl.message(
+      '$amount available',
+      name: 'stock_move_available_amount',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `{amount} reserved`
+  String stock_move_reserved_amount(Object amount) {
+    return Intl.message(
+      '$amount reserved',
+      name: 'stock_move_reserved_amount',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Total cost`
+  String get stock_move_cost {
+    return Intl.message(
+      'Total cost',
+      name: 'stock_move_cost',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What the whole purchase cost`
+  String get stock_move_cost_placeholder {
+    return Intl.message(
+      'What the whole purchase cost',
+      name: 'stock_move_cost_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter what the purchase cost, zero or more`
+  String get stock_move_cost_error {
+    return Intl.message(
+      'Enter what the purchase cost, zero or more',
+      name: 'stock_move_cost_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bought as`
+  String get stock_move_presentation {
+    return Intl.message(
+      'Bought as',
+      name: 'stock_move_presentation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Units`
+  String get stock_move_presentation_unit {
+    return Intl.message(
+      'Units',
+      name: 'stock_move_presentation_unit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} — {qty}`
+  String stock_move_presentation_option(Object name, Object qty) {
+    return Intl.message(
+      '$name — $qty',
+      name: 'stock_move_presentation_option',
+      desc: '',
+      args: [name, qty],
+    );
+  }
+
+  /// `{count} × {name} = {total}`
+  String stock_move_presentation_total(
+    Object count,
+    Object name,
+    Object total,
+  ) {
+    return Intl.message(
+      '$count × $name = $total',
+      name: 'stock_move_presentation_total',
+      desc: '',
+      args: [count, name, total],
+    );
+  }
+
   /// `Customer return`
   String get stock_reason_customer {
     return Intl.message(

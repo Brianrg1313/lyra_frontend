@@ -139,6 +139,7 @@ class StockMovementShape {
           StockReason.loss,
           StockReason.expired,
           StockReason.theft,
+          StockReason.waste,
           StockReason.removeCorrection
         ]
       ),

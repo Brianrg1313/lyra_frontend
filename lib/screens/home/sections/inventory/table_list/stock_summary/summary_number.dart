@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
-// PACKAGES
-
 // SERVICES
-
+import 'package:app/services/stock/movements/stock_movement_model.dart' show stockFigure;
 
 /// One of the three numbers that close a row: what's left, what's set aside,
 /// and how well it sells.
@@ -26,8 +24,8 @@ class SummaryNumber extends StatelessWidget {
     this.align = TextAlign.right
   });
 
-  /// The number, or null when nothing is being counted.
-  final int? value;
+  /// The number, or null when nothing is being counted. A supply's carries decimals.
+  final num? value;
 
   /// If this column's zero is something to warn about. It is in stock —zero is
   /// that nothing is left to sell— and not in reserved, where zero is normal.
@@ -55,7 +53,7 @@ class SummaryNumber extends StatelessWidget {
     }
 
     return TextMedium(
-      amount.toString(),
+      stockFigure(amount),
       multiplier: 0.9,
       bold: true,
       ellipsis: true,

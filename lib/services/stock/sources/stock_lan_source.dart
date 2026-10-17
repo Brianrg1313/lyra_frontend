@@ -2,6 +2,7 @@
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
+import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/prices/branch_price_model.dart';
@@ -63,6 +64,9 @@ class StockLanSource implements StockSource {
       if (note.isNotEmpty) "note": note
     }));
   }
+
+  @override
+  Future<List<Presentation>> presentations(String productId) async => const [];
 
   // A master is one site (plan D6): there is no other branch to send to or price for.
 

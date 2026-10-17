@@ -1,4 +1,5 @@
 // SERVICES
+import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/prices/branch_price_model.dart';
 import 'package:app/services/stock/transfers/stock_transfer_model.dart';
@@ -25,6 +26,10 @@ abstract interface class StockSource {
     required String tableId,
     required String productId
   });
+
+  /// How [productId] is bought («Saco» = 25 kg, `cocina-frontend.md` §8), for a movement to
+  /// count presentations. Empty when it has none; a master knows none.
+  Future<List<Presentation>> presentations(String productId);
 
   // Between branches (`sedes-frontend.md` §6). Cloud only: a master is one site (plan D6), so
   // its source refuses them.

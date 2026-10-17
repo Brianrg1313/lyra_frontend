@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_type.dart';
+import 'package:app/services/stock/movements/stock_movement_model.dart' show stockNum;
 
 /// A column of the stock summary, as described by
 /// `POST /inventory/stock/summary/`.
@@ -187,7 +188,7 @@ class StockSummaryRow {
   /// balance, so the page does not have to be reread for the row to tell the
   /// truth. It returns a new row and does not touch the one that was there
   /// because the list compares instances to know what to repaint.
-  StockSummaryRow withBalance({required int stock, required int reserved}) =>
+  StockSummaryRow withBalance({required num stock, required num reserved}) =>
     StockSummaryRow(id: id, values: {
       ...values,
       StockSummaryColumn.stockKey: stock,
@@ -217,20 +218,16 @@ class StockSummaryRow {
   /// Null and zero are opposite answers: zero is "there is nothing left" and
   /// null is "nobody is counting it" (the table has no stock column). That is
   /// why one is not collapsed into the other.
-  int? get stock => _int(values[StockSummaryColumn.stockKey]);
+  ///
+  /// A [num]: a supply's stock carries decimals of its unit.
+  num? get stock => stockNum(values[StockSummaryColumn.stockKey]);
 
   /// How much of what there is is set aside for someone, or null if it is not
   /// counted.
-  int? get reserved => _int(values[StockSummaryColumn.reservedKey]);
+  num? get reserved => stockNum(values[StockSummaryColumn.reservedKey]);
 
   /// What is on its way here from another branch, or null if the answer doesn't say.
-  int? get transit => _int(values[StockSummaryColumn.transitKey]);
-
-  static int? _int(dynamic raw) => switch (raw) {
-    final num value => value.toInt(),
-    final String text => int.tryParse(text),
-    _ => null
-  };
+  num? get transit => stockNum(values[StockSummaryColumn.transitKey]);
 }
 
 /// A page of the stock summary: the columns with which it is drawn and the

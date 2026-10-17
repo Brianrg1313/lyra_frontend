@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
 
@@ -28,8 +30,8 @@ Future<void> showStockMovement(
   required String productId,
   required StockCounter counter,
   required StockDirection direction,
-  required int stock,
-  required int reserved
+  required num stock,
+  required num reserved
 }) {
   final shape = StockMovementShape.of(counter: counter, direction: direction);
 
@@ -98,9 +100,9 @@ class StockMovementModal extends StatefulWidget {
   /// What the row is showing today. It is what the subtitle and the cap come
   /// from, and that is why both numbers arrive even though only one was
   /// touched: setting units aside is limited by the stock, not by what is
-  /// already reserved.
-  final int stock;
-  final int reserved;
+  /// already reserved. A supply's carry decimals.
+  final num stock;
+  final num reserved;
 
   @override
   State<StockMovementModal> createState() => _StockMovementModalState();
@@ -133,12 +135,30 @@ class _StockMovementModalState extends State<StockMovementModal> {
   /// the error is read right when it is painted.
   final _quantityErrors = <InputError, String>{};
 
+  /// A supply moves up to six decimals of its unit (`cocina-frontend.md` §1); a
+  /// catalog's product, whole units.
+  bool get _decimals => widget.service.supplies;
+
+  /// What a restock can say beyond units: how it was bought and what the
+  /// purchase cost, and waste as a reason (`inventory.purchases`). The engine
+  /// knows none of them.
+  final bool _purchases = CapabilityService().shows("inventory.purchases");
+
+  /// How the product is bought, read when the movement adds stock. Empty: units.
+  List<Presentation> _presentations = const [];
+
+  /// The chosen presentation's id; empty counts units.
+  String _presentation = "";
+
+  /// The chosen reason's name, kept to show the cost only on a purchase.
+  String? _reasonName;
+
   late final _quantity = InputController(
     key: "QUANTITY",
     form: _form,
-    pattern: "[0-9]",
+    pattern: _decimals ? "[0-9.,]" : "[0-9]",
     type: InputType.numeric,
-    max: _digits,
+    max: _decimals ? 16 : _digits,
     obligatory: true,
     customErrors: _quantityErrors
   );
@@ -170,14 +190,47 @@ class _StockMovementModalState extends State<StockMovementModal> {
     }
   );
 
+  /// What the whole purchase cost (`COST`), only on a restock.
+  late final _cost = InputController(
+    key: "COST",
+    form: _form,
+    pattern: "[0-9.,]",
+    type: InputType.numeric,
+    max: 16,
+    customErrors: {InputError.invalid: S.of(context).stock_move_cost_error}
+  );
+
+  late final _presentationController = InputController.select(key: "PRESENTATION", form: _form);
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (_purchases && _destination.operation == StockOperation.add) _readPresentations();
+  }
+
+  Future<void> _readPresentations() async {
+    final presentations = await widget.service.presentations(widget.productId);
+    if (mounted && presentations.isNotEmpty) setState(() => _presentations = presentations);
+  }
+
   @override
   void dispose() {
     _form.dispose();
     super.dispose();
   }
 
+  Presentation? get _chosen =>
+    _presentations.where((item) => item.id == _presentation).firstOrNull;
+
+  /// The cost is asked only of a purchase: on any other reason the backend
+  /// refuses it (`invalid_cost`).
+  bool get _costs => _purchases &&
+    _destination.operation == StockOperation.add &&
+    _reasonName == StockReason.restock.name;
+
   /// How much can be moved, or null when there is no cap.
-  int? get _max => switch (_destination.guard) {
+  num? get _max => switch (_destination.guard) {
     StockCounter.stock => widget.stock,
     StockCounter.reserved => widget.reserved,
     null => null
@@ -185,7 +238,10 @@ class _StockMovementModalState extends State<StockMovementModal> {
 
   /// The reasons the chosen option offers. Empty when there is nothing to
   /// ask: setting units aside is setting them aside.
-  List<StockReason> get _reasons => _destination.reasons;
+  List<StockReason> get _reasons => [
+    for (final reason in _destination.reasons)
+      if (!reason.cloudOnly || _purchases) reason
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -197,9 +253,12 @@ class _StockMovementModalState extends State<StockMovementModal> {
     _quantityErrors[InputError.empty] = S.of(context).form_empty_ma(
       S.of(context).stock_move_quantity
     );
-    _quantityErrors[InputError.invalid] = max == null
-      ? S.of(context).stock_move_quantity_error_free
-      : S.of(context).stock_move_quantity_error(max);
+    _quantityErrors[InputError.invalid] = switch ((max, _decimals)) {
+      (null, false) => S.of(context).stock_move_quantity_error_free,
+      (null, true) => S.of(context).stock_move_quantity_error_decimal_free,
+      (final num max, false) => S.of(context).stock_move_quantity_error(max.toInt()),
+      (final num max, true) => S.of(context).stock_move_quantity_error_decimal(stockFigure(max))
+    };
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -219,14 +278,19 @@ class _StockMovementModalState extends State<StockMovementModal> {
           // The same cap the submit validates, so the add button does not
           // write a number that is later going to be rejected.
           max: max,
+          decimals: _decimals,
           subtractMessage: S.of(context).stock_move_step_less(_step),
           addMessage: S.of(context).stock_move_step_more(_step),
           autofocus: true,
           // What was written stops being wrong as soon as it is corrected: an
           // error in red over a number that is already valid says nothing.
-          onChanged: (_) => _clearQuantityError(),
+          onChanged: (_) {
+            _clearQuantityError();
+            if (_chosen != null) setState(() {});
+          },
           onSubmit: _submit
         ),
+        if (_presentations.isNotEmpty) ..._bought(context),
         if (widget.shape.picks)
           ..._options(context)
         else if (_destination.hint(context) != null)
@@ -251,8 +315,15 @@ class _StockMovementModalState extends State<StockMovementModal> {
             placeholder: S.of(context).stock_move_reason_placeholder,
             emptyText: S.of(context).stock_move_reason_empty,
             controller: _reason,
-            options: StockReason.options(context, _reasons)
+            options: StockReason.options(context, _reasons),
+            onSelected: (option) => setState(() => _reasonName = option.value.toString())
           ),
+        if (_costs) Input(
+          title: S.of(context).stock_move_cost,
+          placeholder: S.of(context).stock_move_cost_placeholder,
+          controller: _cost,
+          leftIcon: Icon(CI.wallet, color: scheme.icon)
+        ),
         Input(
           title: S.of(context).stock_move_note,
           placeholder: S.of(context).stock_move_note_placeholder,
@@ -313,9 +384,47 @@ class _StockMovementModalState extends State<StockMovementModal> {
     SizedBox(height: AppSize.spaceXS)
   ];
 
+  /// How it was bought: units, or one of the product's presentations —then the
+  /// quantity counts them, and the line below says what they hold—.
+  List<Widget> _bought(BuildContext context) {
+    final chosen = _chosen;
+    final count = _parse(_quantity.text);
+
+    return [
+      SelectInput(
+        title: S.of(context).stock_move_presentation,
+        placeholder: S.of(context).stock_move_presentation_unit,
+        controller: _presentationController,
+        options: [
+          SelectOption(value: "", placeholder: S.of(context).stock_move_presentation_unit),
+          for (final item in _presentations) SelectOption(
+            value: item.id,
+            placeholder: S.of(context).stock_move_presentation_option(item.name, stockFigure(item.qty))
+          )
+        ],
+        onSelected: (option) => setState(() => _presentation = option.value.toString())
+      ),
+      if (chosen != null && count != null && count > 0) Padding(
+        padding: EdgeInsets.only(left: AppSize.spaceXS, bottom: AppSize.spaceS),
+        child: TextSmall(
+          S.of(context).stock_move_presentation_total(stockFigure(count), chosen.name, stockFigure(count * chosen.qty)),
+          color: ThemeColor.of(context).text.secondary
+        )
+      )
+    ];
+  }
+
+  /// What was typed as a number: a comma is a decimal mark too.
+  num? _parse(String text) {
+    final clean = text.trim().replaceAll(" ", "").replaceAll(",", ".");
+    if (clean.isEmpty) return null;
+
+    return _decimals ? num.tryParse(clean) : int.tryParse(clean);
+  }
+
   /// How much is left in the counter that limits [destination], or null if
   /// none limits it.
-  int? _limitOf(MovementDestination destination) =>
+  num? _limitOf(MovementDestination destination) =>
     switch (destination.guard) {
       StockCounter.stock => widget.stock,
       StockCounter.reserved => widget.reserved,
@@ -326,9 +435,11 @@ class _StockMovementModalState extends State<StockMovementModal> {
   /// not always the one that was touched: setting units aside is limited by
   /// the stock.
   String _subtitle(BuildContext context) =>
-    switch (_destination.guard ?? widget.shape.counter) {
-      StockCounter.stock => S.of(context).stock_move_available(widget.stock),
-      StockCounter.reserved => S.of(context).stock_move_reserved(widget.reserved)
+    switch ((_destination.guard ?? widget.shape.counter, _decimals)) {
+      (StockCounter.stock, false) => S.of(context).stock_move_available(widget.stock.toInt()),
+      (StockCounter.reserved, false) => S.of(context).stock_move_reserved(widget.reserved.toInt()),
+      (StockCounter.stock, true) => S.of(context).stock_move_available_amount(stockFigure(widget.stock)),
+      (StockCounter.reserved, true) => S.of(context).stock_move_reserved_amount(stockFigure(widget.reserved))
     };
 
   /// Something else was chosen for the units.
@@ -345,6 +456,7 @@ class _StockMovementModalState extends State<StockMovementModal> {
     _reason.selectedValue = null;
     _reason.textController.clear();
     _reason.status.setStatus(InputStatus.unreviewed, null);
+    _reasonName = null;
 
     _clearQuantityError();
   }
@@ -356,7 +468,7 @@ class _StockMovementModalState extends State<StockMovementModal> {
   }
 
   Future<void> _submit() async {
-    final quantity = int.tryParse(_quantity.text.trim());
+    final quantity = _parse(_quantity.text);
     final max = _max;
 
     // The quantity is validated by hand and not with the form: a numeric field
@@ -364,7 +476,11 @@ class _StockMovementModalState extends State<StockMovementModal> {
     // and code— and what has to be reviewed is not the length of what was
     // written but how much it is worth against a cap that changes with the
     // chosen option.
-    if (quantity == null || quantity <= 0 || (max != null && quantity > max)) {
+    // A supply counts up to six decimals: a seventh would be rounded away by
+    // the backend without saying so.
+    final precise = quantity != null && quantity == num.parse(quantity.toStringAsFixed(6));
+
+    if (quantity == null || quantity <= 0 || !precise || (max != null && quantity > max)) {
       _quantity.status.setStatus(
         InputStatus.error,
         quantity == null ? InputError.empty : InputError.invalid
@@ -393,6 +509,17 @@ class _StockMovementModalState extends State<StockMovementModal> {
       }
     }
 
+    double? cost;
+
+    if (_costs && _cost.text.trim().isNotEmpty) {
+      cost = double.tryParse(_cost.text.trim().replaceAll(",", "."));
+
+      if (cost == null || cost < 0) {
+        _cost.status.setStatus(InputStatus.error, InputError.invalid);
+        return;
+      }
+    }
+
     if (!_note.validate(_note)) return;
 
     _form.loading.value = true;
@@ -404,7 +531,9 @@ class _StockMovementModalState extends State<StockMovementModal> {
         operation: _destination.operation,
         quantity: quantity,
         reason: reason,
-        note: _note.text
+        note: _note.text,
+        presentation: _chosen?.id ?? "",
+        cost: cost
       )
     );
 

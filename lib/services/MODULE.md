@@ -422,7 +422,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
   `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
   `inventory.tables.normalize`.
-- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance). Used by `StockSummaryService`.
+- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance), a product's presentations (cloud; a master none). Used by `StockSummaryService`.
   `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
   `stock.move` (`operationOf`). Also transfers (search, create, update, receive) and a branch's prices (read, set, remove):
   cloud only, the LAN source throws `UnsupportedError` (a master is one site).
@@ -443,9 +443,9 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_normalizing_model.dart` / `table_ready_model.dart` — `table/normalizing` / `table/ready` notices.
 - `prices/branch_price_model.dart` — `BranchPrice` (a product's own price at a branch: `price` null = the catalog's, `inheritsDiscount`, `discount` null = no offer there), `setBranchPriceRequest` (`DISCOUNT` null with `clearDiscount`), `removeBranchPriceRequest`.
 - `prices/branch_prices_service.dart` — `BranchPricesService({productId, tableId})` (+ status): every branch's own prices of one product, `here` (the branch worked in), `canPrice` (`products.price` from the person's grant), `set`/`remove` (the header's branch only; reread after), `price/changed` for the product rereads. Owned by its panel.
-- `summary/stock_summary_service.dart` — `StockSummaryService({tableId})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`); `image/progress` naming its table is a quiet `syncColumns`.
-- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
-- `movements/stock_movement_model.dart` — `StockMovement`, `StockBalance`, `StockOperation`, `StockReason`.
+- `summary/stock_summary_service.dart` — `StockSummaryService({tableId, supplies})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`); `supplies` = moves with decimals; `presentations` (a failed read = none); `image/progress` naming its table is a quiet `syncColumns`.
+- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`: `num`, a supply's decimals), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
+- `movements/stock_movement_model.dart` — `StockMovement` (`num quantity`, `PRESENTATION`, `COST` only on `restock`), `StockBalance` (`num`), `StockOperation`, `StockReason` (`waste`), `stockNum`, `stockFigure`.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move
   (sale, restock, another till's hold), carries the balance after it; `exact` keeps a supply's decimals;
   `composite` (a dish made to order): only `available` means anything — the POS keeps its hold, the ticket ignores it.

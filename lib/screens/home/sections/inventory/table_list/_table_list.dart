@@ -302,6 +302,7 @@ class _InventorySectionState extends State<InventorySection> {
         InventoryView.summary => StockSummarySection(
           key: ValueKey("summary_${table.id}"),
           tableId: table.id,
+          supplies: table.supplies,
           parts: parts
         ),
         InventoryView.sheet => TableViewSection(

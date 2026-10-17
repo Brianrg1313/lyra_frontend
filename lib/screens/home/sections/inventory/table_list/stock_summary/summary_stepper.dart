@@ -51,10 +51,10 @@ class SummaryStepper extends StatelessWidget {
   /// The row's two numbers. Both arrive even if one is drawn: the form needs
   /// them to know how far it can move, and setting aside units is limited by
   /// stock and not by what's already reserved.
-  final int stock;
-  final int reserved;
+  final num stock;
+  final num reserved;
 
-  int get _value => counter == StockCounter.stock ? stock : reserved;
+  num get _value => counter == StockCounter.stock ? stock : reserved;
 
   /// If something can be taken from this counter.
   ///

@@ -198,7 +198,8 @@ void main() {
       for (final operation in StockOperation.values) {
         expect(StockOperations.reasons.keys, contains(StockLanSource.operationOf(operation)));
       }
-      for (final reason in StockReason.values) {
+      // A cloud-only reason (waste) is never offered against a master.
+      for (final reason in StockReason.values.where((reason) => !reason.cloudOnly)) {
         expect(StockOperations.reasons[StockLanSource.operationOf(reason.operation)], contains(reason.key));
       }
     });

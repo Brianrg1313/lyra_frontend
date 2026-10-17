@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 // SERVICES
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/inventory/picture_import_model.dart';
+import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
@@ -55,7 +56,7 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// it. The shell remounts the section when changing company, so there is
 /// nothing to invalidate on its own account.
 class StockSummaryService extends ChangeNotifier {
-  StockSummaryService({StockSource? source, this.tableId = ""}) : _injected = source {
+  StockSummaryService({StockSource? source, this.tableId = "", this.supplies = false}) : _injected = source {
     _unlistenPictures = ConnectionService().on(PictureProgress.event, _onPictures);
   }
 
@@ -69,6 +70,10 @@ class StockSummaryService extends ChangeNotifier {
 
   /// The table summarized; empty asks for the company's primary one.
   final String tableId;
+
+  /// Whether [tableId] is a table of supplies (`KIND`): its stock is moved with up to six
+  /// decimals of the unit, a catalog's in whole units (`cocina-frontend.md` §2).
+  final bool supplies;
 
   StockSource get _source => _injected ?? Sources.stock;
 
@@ -312,6 +317,17 @@ class StockSummaryService extends ChangeNotifier {
     _applyBalance(productId, balance);
 
     return true;
+  }
+
+  /// How [productId] is bought, for a movement to count presentations. A read that fails
+  /// is none: units are still a movement.
+  Future<List<Presentation>> presentations(String productId) async {
+    try {
+      return await _source.presentations(productId);
+    } catch (error) {
+      if (kDebugMode) print("presentations failed: $error");
+      return const [];
+    }
   }
 
   /// Leaves the two inventory numbers of a row as they ended up.

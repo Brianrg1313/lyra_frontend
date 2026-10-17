@@ -26,7 +26,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches and `inventory.transfers`.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
 - `pictures_button.dart` — `PicturesButton`: the imported pictures' state (downloading / without their file / failed), opens `showImportPictures`; in the bar only while something is pending or failed (`PicturesButton.shown`). The section's first frame runs `PictureImportService.check`.
-- `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts})`: owns that table's `StockSummaryService`, fixed column header over a `ListView`; header search → `MATCH`.
+- `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts, supplies})`: owns that table's `StockSummaryService` (a supplies table's moves with decimals), fixed column header over a `ListView`; header search → `MATCH`.
 - `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
 - `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched).

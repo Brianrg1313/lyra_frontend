@@ -150,13 +150,13 @@ through `Navigator.pop(context, value)`.
 - `table_settings/channels_block.dart` — `TableChannelsBlock`: channels reading this table (links to the channel edit page).
 - `table_settings/settings_id.dart` — `TableSettingsId`: hidden id, reveal + copy.
 - `table_settings/settings_format.dart` — `settingsNumber`, `settingsDate`: locale-aware formatting.
-- `stock_movement/_stock_movement.dart` — `showStockMovement(...)`, `StockMovementModal` (from a stock summary stepper).
+- `stock_movement/_stock_movement.dart` — `showStockMovement(...)`, `StockMovementModal` (from a stock summary stepper): a supply's decimals; on an add, the product's presentations («Bought as», the total they hold) and «Total cost» on a restock, both behind `inventory.purchases`.
 - `stock_movement/movement_shape.dart` — `StockMovementShape`, `StockCounter`, `StockDirection`, `MovementDestination`, `MovementDestinationKind`.
 - `stock_movement/movement_option.dart` — `MovementOption`: selectable outcome row.
 - `branch_prices/_branch_prices.dart` — `showBranchPrices(context, productId:, product:, tableId:, catalogPrice:, currency:)`, `BranchPricesModal` (owns its `BranchPricesService`): each branch with its own price/offer or the catalog's; with `products.price`, the branch worked in's price and offer % (empty keeps the product's offer, 0 takes it off), save, "use the catalog's".
 - `transfer_form/_transfer_form.dart` — `showTransferForm(context, service:)`, `TransferFormModal`: where it goes (the other branches), products found in the primary table's summary (`StockTransfersService.searchProducts`, free units beside each, one table per transfer), units, note; "save as draft" / "send now". Returns `createTransferRequest`.
 - `receive_transfer/_receive_transfer.dart` — `showReceiveTransfer(context, transfer:, nameOf:)`, `ReceiveTransferModal`: each line opens on what was sent; one counted short asks the reason (`StockShortage`, `loss` by default). Returns `TransferCount` (only the short lines).
-- `stock_movement/quantity_field.dart` — `QuantityField`: amount with step buttons.
+- `stock_movement/quantity_field.dart` — `QuantityField`: amount with step buttons (`decimals`: a supply's).
 
 ### `sales/`
 - `sale_detail/_sale_detail.dart` — `showSaleDetail(context, sale:, catalog:)` →

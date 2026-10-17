@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:app/toolkit/toolkit.dart';
 
+// SERVICES
+import 'package:app/services/stock/movements/stock_movement_model.dart' show stockFigure;
+
 // WIDGETS
 import 'package:core/form.dart';
 import 'package:core/form/style.dart';
@@ -36,6 +39,7 @@ class QuantityField extends StatefulWidget {
     this.step = 1,
     this.min = 1,
     this.max,
+    this.decimals = false,
     this.subtractMessage,
     this.addMessage,
     this.autofocus = false,
@@ -57,7 +61,11 @@ class QuantityField extends StatefulWidget {
   /// The ceiling, or null when there is none. It is the same cap the form
   /// validates when submitting, so the add button never writes a number that
   /// is later going to be rejected.
-  final int? max;
+  final num? max;
+
+  /// A supply's amount: up to six decimals, a comma or a dot as the mark. The
+  /// buttons still move whole steps.
+  final bool decimals;
 
   final String? subtractMessage;
   final String? addMessage;
@@ -98,7 +106,11 @@ class _QuantityFieldState extends State<QuantityField> {
 
   /// What is written, or null if it is not a number (the field is empty: it
   /// only admits digits).
-  int? get _value => int.tryParse(widget.controller.text.trim());
+  num? get _value {
+    final text = widget.controller.text.trim().replaceAll(",", ".");
+
+    return widget.decimals ? num.tryParse(text) : int.tryParse(text);
+  }
 
   bool get _loading => widget.controller.form.loading.value;
 
@@ -141,6 +153,7 @@ class _QuantityFieldState extends State<QuantityField> {
           controller: widget.controller,
           placeholder: widget.placeholder,
           autofocus: widget.autofocus,
+          decimals: widget.decimals,
           onChanged: widget.onChanged,
           onSubmit: widget.onSubmit
         )),
@@ -171,12 +184,12 @@ class _QuantityFieldState extends State<QuantityField> {
     final max = widget.max;
     final current = _value;
 
-    var next = current == null ? widget.step : current + delta;
+    num next = current == null ? widget.step : current + delta;
 
     if (next < widget.min) next = widget.min;
     if (max != null && next > max) next = max;
 
-    final written = next.toString();
+    final written = stockFigure(next);
 
     widget.controller.textController.value = TextEditingValue(
       text: written,
@@ -210,6 +223,7 @@ class _Box extends StatefulWidget {
     required this.controller,
     required this.placeholder,
     required this.autofocus,
+    this.decimals = false,
     this.onChanged,
     this.onSubmit
   });
@@ -217,6 +231,7 @@ class _Box extends StatefulWidget {
   final InputController controller;
   final String placeholder;
   final bool autofocus;
+  final bool decimals;
 
   final void Function(String value)? onChanged;
   final VoidCallback? onSubmit;
@@ -278,8 +293,13 @@ class _BoxState extends State<_Box> {
       style: FormStyle.text(context),
       textAlign: TextAlign.center,
       keyboardType: FormStyle.keyboardType(widget.controller.type),
-      // Units: there is no comma, no sign, nothing that is not a digit.
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      // Units: there is no comma, no sign, nothing that is not a digit. A
+      // supply's amount takes its decimal mark.
+      inputFormatters: [
+        widget.decimals
+          ? FilteringTextInputFormatter.allow(RegExp(r"[0-9.,]"))
+          : FilteringTextInputFormatter.digitsOnly
+      ],
       onChanged: widget.onChanged,
       onSubmitted: (_) => widget.onSubmit?.call(),
       decoration: InputDecoration(
