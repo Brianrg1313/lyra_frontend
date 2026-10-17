@@ -154,22 +154,27 @@ class _MadeProductFormState extends State<MadeProductForm> {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
 
+    // The name and the price are what the product is: one line, the name taking what the price
+    // leaves.
     return [
-      Input(
-        title: _nameTitle,
-        placeholder: s.made_product_name_placeholder,
-        controller: _name,
-        leftIcon: Icon(CI.product, color: scheme.icon),
-        next: _price.focus
-      ),
-      Input(
-        title: _priceTitle,
-        placeholder: s.made_product_price_placeholder,
-        controller: _price,
-        leftIcon: Icon(CI.wallet, color: scheme.icon)
-      ),
+      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(child: Input(
+          title: _nameTitle,
+          placeholder: s.made_product_name_placeholder,
+          controller: _name,
+          leftIcon: Icon(CI.product, color: scheme.icon),
+          next: _price.focus
+        )),
+        SizedBox(width: AppSize.spaceS),
+        SizedBox(width: 180, child: Input(
+          title: _priceTitle,
+          placeholder: s.made_product_price_placeholder,
+          controller: _price,
+          leftIcon: Icon(CI.wallet, color: scheme.icon)
+        ))
+      ]),
       for (final field in _fields.others) _field(context, field),
-      SizedBox(height: AppSize.spaceS)
+      SizedBox(height: AppSize.spaceM)
     ];
   }
 

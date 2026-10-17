@@ -1659,10 +1659,20 @@ class S {
     );
   }
 
-  /// `How much ONE unit takes of each ingredient, in that ingredient's unit (0.2 kg, 0.5 avocado). Waste is the percent lost while making it. Optional lines can be left out when the customer agrees.`
+  /// `How it is made`
+  String get supply_chain_mode_title {
+    return Intl.message(
+      'How it is made',
+      name: 'supply_chain_mode_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.`
   String get supply_chain_lines_note {
     return Intl.message(
-      'How much ONE unit takes of each ingredient, in that ingredient\'s unit (0.2 kg, 0.5 avocado). Waste is the percent lost while making it. Optional lines can be left out when the customer agrees.',
+      'How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.',
       name: 'supply_chain_lines_note',
       desc: '',
       args: [],
@@ -1709,10 +1719,10 @@ class S {
     );
   }
 
-  /// `Waste %`
+  /// `Waste`
   String get supply_chain_line_waste {
     return Intl.message(
-      'Waste %',
+      'Waste',
       name: 'supply_chain_line_waste',
       desc: '',
       args: [],

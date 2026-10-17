@@ -11,6 +11,7 @@ import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:core/button.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
+import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
 import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
 
 /// One line as it is being written: the ingredient, its quantity (in one of the units its own
@@ -183,41 +184,42 @@ class _RecipeEditorState extends State<RecipeEditor> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ...widget.leading,
-        if (!widget.supplies) Surface.over(
-          padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
-          child: Row(children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              TextSmall(s.supply_chain_mode_batch, bold: true),
-              TextSmall(
-                _batch ? s.supply_chain_mode_batch_note : s.supply_chain_mode_order_note,
-                lines: 3,
-                color: scheme.text.secondary
-              )
-            ])),
-            SizedBox(width: AppSize.spaceS),
-            Switch(
-              value: _batch,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              activeThumbColor: scheme.primary,
-              onChanged: widget.canEdit ? (value) => setState(() => _batch = value) : null
-            )
-          ])
-        ),
-        SizedBox(height: AppSize.spaceXS),
+        if (!widget.supplies) ...[
+          TextMedium(s.supply_chain_mode_title, bold: true),
+          SizedBox(height: AppSize.spaceXS),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            for (final batch in [false, true]) ...[
+              if (batch) SizedBox(width: AppSize.spaceS),
+              Expanded(child: _ModeTile(
+                title: batch ? s.supply_chain_mode_batch : s.supply_chain_mode_order,
+                note: batch ? s.supply_chain_mode_batch_note : s.supply_chain_mode_order_note,
+                selected: _batch == batch,
+                action: widget.canEdit ? () => setState(() => _batch = batch) : null
+              ))
+            ]
+          ]),
+          SizedBox(height: AppSize.spaceM)
+        ],
         TextMedium(s.supply_chain_lines_title, bold: true),
         KitchenNote(text: s.supply_chain_lines_note),
-        if (_lines.isEmpty)
+        if (_lines.isEmpty && !widget.canEdit)
           KitchenNote(text: s.supply_chain_lines_empty, color: scheme.text.secondary)
-        else
-          for (final line in _lines) _LineRow(
-            key: ObjectKey(line),
-            line: line,
-            enabled: widget.canEdit,
-            onRemove: () => _remove(line),
-            onNegotiable: (value) => setState(() => line.negotiable = value),
-            onUnit: (unit) => setState(() => line.shown = unit),
-            onMore: () => setState(() => line.more = !line.more)
-          ),
+        else if (_lines.isNotEmpty) Surface.over(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            for (final (index, line) in _lines.indexed) ...[
+              if (index > 0) Separator.horizontal(),
+              _LineRow(
+                key: ObjectKey(line),
+                line: line,
+                enabled: widget.canEdit,
+                onRemove: () => _remove(line),
+                onNegotiable: (value) => setState(() => line.negotiable = value),
+                onUnit: (unit) => setState(() => line.shown = unit),
+                onMore: () => setState(() => line.more = !line.more)
+              )
+            ]
+          ])
+        ),
         if (widget.canEdit) ...[
           SizedBox(height: AppSize.spaceXS),
           KitchenProductPicker(
@@ -288,8 +290,9 @@ class _RecipeEditorState extends State<RecipeEditor> {
   }
 }
 
-/// One line: the ingredient, its quantity and the unit it is written in; its waste and whether
-/// it can go without it are folded under the arrow (`cocina-frontend.md` §3: «Más opciones»).
+/// One line, read as a recipe reads: how much first, then of what. Its waste and whether it can
+/// go without it are folded under the arrow (`cocina-frontend.md` §3: «Más opciones»); folded,
+/// they still show beside the name, so a line never hides what it carries.
 class _LineRow extends StatelessWidget {
   const _LineRow({
     super.key,
@@ -308,66 +311,126 @@ class _LineRow extends StatelessWidget {
   final void Function(KitchenUnit unit) onUnit;
   final void Function() onMore;
 
+  /// The quantity's width, the waste's too: both columns line up down the list.
+  static const double _qtyWidth = 96;
+
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
     final s = S.of(context);
+    final waste = kitchenParse(line.waste.text) ?? 0;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: AppSize.gap),
-      child: Surface.over(
-        padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [
-            Icon(line.supplies == false ? CI.product : CI.warehouse, size: AppSize.text, color: scheme.icon),
-            SizedBox(width: AppSize.gap),
-            Expanded(child: TextSmall(line.name, ellipsis: true, bold: true)),
-            SizedBox(
-              width: 110,
-              child: Input(controller: line.qty, placeholder: s.supply_chain_line_qty, buttonSpace: false)
-            ),
-            SizedBox(width: AppSize.gap),
-            _UnitPicker(line: line, enabled: enabled, onUnit: onUnit),
-            FocusableWidget(
-              action: onMore,
-              message: s.supply_chain_line_more,
-              child: Padding(
-                padding: EdgeInsets.all(AppSize.gap),
-                child: Icon(line.more ? CI.arrow_top : CI.arrow_down, size: AppSize.text, color: scheme.text.secondary)
-              )
-            ),
-            if (enabled) FocusableWidget(
-              action: onRemove,
-              message: s.supply_chain_line_remove,
-              child: Padding(
-                padding: EdgeInsets.all(AppSize.gap),
-                child: Icon(CI.trash, size: AppSize.text, color: scheme.text.secondary)
-              )
-            )
-          ]),
-          if (line.more) Padding(
-            padding: EdgeInsets.only(top: AppSize.gap),
-            child: Row(children: [
-              SizedBox(
-                width: 110,
-                child: Input(controller: line.waste, placeholder: s.supply_chain_line_waste, buttonSpace: false)
-              ),
-              SizedBox(width: AppSize.spaceS),
-              Expanded(child: Tooltip(
-                message: s.supply_chain_line_negotiable_note,
-                child: Row(children: [
-                  Flexible(child: TextSmall(s.supply_chain_line_negotiable, color: scheme.text.secondary, ellipsis: true)),
-                  Switch(
-                    value: line.negotiable,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    activeThumbColor: scheme.primary,
-                    onChanged: enabled ? onNegotiable : null
-                  )
-                ])
-              ))
-            ])
+      padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          SizedBox(
+            width: _qtyWidth,
+            child: Input(controller: line.qty, placeholder: s.supply_chain_line_qty, buttonSpace: false)
           ),
-          if (line.error.isNotEmpty) TextSmall(line.error, color: scheme.snackBar.error)
+          SizedBox(width: AppSize.gap),
+          _UnitPicker(line: line, enabled: enabled, onUnit: onUnit),
+          SizedBox(width: AppSize.spaceS),
+          Icon(line.supplies == false ? CI.product : CI.warehouse, size: AppSize.text, color: scheme.icon),
+          SizedBox(width: AppSize.gap),
+          Expanded(child: Row(children: [
+            Flexible(child: TextMedium(line.name, ellipsis: true, bold: true)),
+            if (!line.more && waste > 0) ...[
+              SizedBox(width: AppSize.gap),
+              RecipeTag(text: s.supply_chain_line_waste_of(kitchenPercent(context, waste)), color: scheme.text.secondary)
+            ],
+            if (!line.more && line.negotiable) ...[
+              SizedBox(width: AppSize.gap),
+              RecipeTag(text: s.supply_chain_line_negotiable, color: scheme.accent)
+            ]
+          ])),
+          FocusableWidget(
+            action: onMore,
+            message: s.supply_chain_line_more,
+            child: Padding(
+              padding: EdgeInsets.all(AppSize.gap),
+              child: Icon(line.more ? CI.arrow_top : CI.arrow_down, size: AppSize.text, color: scheme.text.secondary)
+            )
+          ),
+          if (enabled) FocusableWidget(
+            action: onRemove,
+            message: s.supply_chain_line_remove,
+            child: Padding(
+              padding: EdgeInsets.all(AppSize.gap),
+              child: Icon(CI.trash, size: AppSize.text, color: scheme.text.secondary)
+            )
+          )
+        ]),
+        if (line.more) Padding(
+          padding: EdgeInsets.only(top: AppSize.gap),
+          child: Row(children: [
+            SizedBox(
+              width: _qtyWidth,
+              child: Input(controller: line.waste, placeholder: s.supply_chain_line_waste, buttonSpace: false)
+            ),
+            SizedBox(width: AppSize.gap),
+            // The percent sits where the unit sits above it: the waste reads as «5 %», like «150 g».
+            SizedBox(
+              width: _UnitPicker.width,
+              child: Center(child: TextSmall("%", color: scheme.text.secondary))
+            ),
+            SizedBox(width: AppSize.spaceS),
+            Expanded(child: Tooltip(
+              message: s.supply_chain_line_negotiable_note,
+              child: Row(children: [
+                Flexible(child: TextSmall(s.supply_chain_line_negotiable, color: scheme.text.secondary, ellipsis: true)),
+                Switch(
+                  value: line.negotiable,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  activeThumbColor: scheme.primary,
+                  onChanged: enabled ? onNegotiable : null
+                )
+              ])
+            ))
+          ])
+        ),
+        if (line.error.isNotEmpty) Padding(
+          padding: EdgeInsets.only(top: AppSize.gap / 2),
+          child: TextSmall(line.error, color: scheme.snackBar.error)
+        )
+      ])
+    );
+  }
+}
+
+/// One of the two ways a made product is made, side by side with the other: they exclude each
+/// other, and each says what it means for the stock before it is picked.
+class _ModeTile extends StatelessWidget {
+  const _ModeTile({required this.title, required this.note, required this.selected, required this.action});
+
+  final String title;
+  final String note;
+  final bool selected;
+  final void Function()? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSize.corner),
+        border: Border.all(color: selected ? scheme.primary : scheme.line, width: 1.5)
+      ),
+      child: FeedbackButton(
+        action: action,
+        color: selected ? scheme.surfaceOver : scheme.surface,
+        radius: AppSize.corner,
+        padding: EdgeInsets.all(AppSize.spaceS),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(selected ? CI.chack_circle : CI.circle, size: AppSize.text * 1.1, color: selected ? scheme.primary : scheme.text.secondary),
+          SizedBox(width: AppSize.gap),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            TextSmall(title, bold: true),
+            SizedBox(height: AppSize.gap / 2),
+            TextSmall(note, lines: 4, color: scheme.text.secondary)
+          ]))
         ])
       )
     );
@@ -383,7 +446,7 @@ class _UnitPicker extends StatelessWidget {
   final bool enabled;
   final void Function(KitchenUnit unit) onUnit;
 
-  static const double _width = 64;
+  static const double width = 64;
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +456,7 @@ class _UnitPicker extends StatelessWidget {
 
     if (line.units.length < 2) {
       return SizedBox(
-        width: _width,
+        width: width,
         child: Center(child: TextSmall(label, color: scheme.text.secondary, ellipsis: true))
       );
     }
@@ -401,7 +464,7 @@ class _UnitPicker extends StatelessWidget {
     final next = line.units[(line.units.indexOf(line.shown) + 1) % line.units.length];
 
     return FeedbackButton(
-      width: _width,
+      width: width,
       height: AppSize.action,
       message: s.supply_chain_line_unit_switch(next.symbol),
       action: enabled ? () => onUnit(next) : null,

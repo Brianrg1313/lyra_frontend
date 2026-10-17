@@ -6463,7 +6463,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_line_remove": MessageLookupByLibrary.simpleMessage("Remove"),
     "supply_chain_line_unit_switch": m227,
     "supply_chain_line_units": MessageLookupByLibrary.simpleMessage("units"),
-    "supply_chain_line_waste": MessageLookupByLibrary.simpleMessage("Waste %"),
+    "supply_chain_line_waste": MessageLookupByLibrary.simpleMessage("Waste"),
     "supply_chain_line_waste_invalid": MessageLookupByLibrary.simpleMessage(
       "Waste goes from 0 to less than 100",
     ),
@@ -6478,7 +6478,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "At least one line can\'t be optional: otherwise it would always read as available",
     ),
     "supply_chain_lines_note": MessageLookupByLibrary.simpleMessage(
-      "How much ONE unit takes of each ingredient, in that ingredient\'s unit (0.2 kg, 0.5 avocado). Waste is the percent lost while making it. Optional lines can be left out when the customer agrees.",
+      "How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.",
     ),
     "supply_chain_lines_title": MessageLookupByLibrary.simpleMessage(
       "What it is made of",
@@ -6500,6 +6500,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "supply_chain_mode_order_note": MessageLookupByLibrary.simpleMessage(
       "No stock of its own: how many can be made is what its supplies allow, measured at every sale. A burger, a combo.",
+    ),
+    "supply_chain_mode_title": MessageLookupByLibrary.simpleMessage(
+      "How it is made",
     ),
     "supply_chain_modifiers_at_least": m229,
     "supply_chain_modifiers_between": m230,
