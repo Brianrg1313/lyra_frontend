@@ -220,7 +220,6 @@ class _MadeProductFormState extends State<MadeProductForm> {
             units: widget.service.units,
             saveLabel: _product == null ? s.made_product_create : s.made_product_save,
             leading: _leading(context),
-            trailing: _trailing(context),
             validate: _validate,
             onSave: _save,
             onCancel: widget.onCancel
@@ -230,7 +229,9 @@ class _MadeProductFormState extends State<MadeProductForm> {
     );
   }
 
-  /// What the product is: its photo beside its name, its price and what that price earns.
+  /// What the product is (its photo beside its name, its price and what that price earns), then
+  /// the tags of what it can still be given, then what was added to it: the tags come first so
+  /// what a product can hold is seen before its recipe, and a picked section opens right under them.
   List<Widget> _leading(BuildContext context) {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
@@ -271,6 +272,7 @@ class _MadeProductFormState extends State<MadeProductForm> {
           ])
         ]))
       ]),
+      _addBar(context),
       if (_describing) MadeSection(
         title: _fields.description?.name ?? s.made_product_description,
         onRemove: () => setState(() {
@@ -284,12 +286,13 @@ class _MadeProductFormState extends State<MadeProductForm> {
           buttonSpace: false
         )
       ),
+      ..._added(context),
       SizedBox(height: AppSize.spaceM)
     ];
   }
 
-  /// What it offers and what was added to it, then the tags of what it can still be given.
-  List<Widget> _trailing(BuildContext context) {
+  /// What it offers and the columns added to it.
+  List<Widget> _added(BuildContext context) {
     final s = S.of(context);
     final choices = [for (final choice in _groups) if (choice.group.required) choice];
     final extras = [for (final choice in _groups) if (!choice.group.required) choice];
@@ -332,8 +335,15 @@ class _MadeProductFormState extends State<MadeProductForm> {
           SizedBox(width: AppSize.gap),
           Expanded(child: Input(controller: detail.value, placeholder: s.made_product_detail_value, buttonSpace: false))
         ])
-      ),
-      MadeAddBar(title: s.made_product_add_title, items: [
+      )
+    ];
+  }
+
+  /// The tags of what the product can still be given.
+  Widget _addBar(BuildContext context) {
+    final s = S.of(context);
+
+    return MadeAddBar(title: s.made_product_add_title, items: [
         if (!_describing) (
           icon: CI.documents,
           label: _fields.description?.name ?? s.made_product_description,
@@ -352,8 +362,7 @@ class _MadeProductFormState extends State<MadeProductForm> {
             action: (_) => setState(() => _shown.add(field.id))
           ),
         (icon: CI.edit, label: s.made_product_add_detail, note: s.made_product_add_detail_note, action: (_) => setState(() => _details.add(_Detail())))
-      ])
-    ];
+      ]);
   }
 
   Widget _field(BuildContext context, TableFieldModel field) {

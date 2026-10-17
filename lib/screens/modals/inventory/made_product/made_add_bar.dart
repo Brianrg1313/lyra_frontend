@@ -4,7 +4,7 @@ import 'package:app/toolkit/toolkit.dart';
 /// One thing a product can be given: a description, a choice, extras, a column.
 typedef MadeAddItem = ({IconData icon, String label, String note, void Function(BuildContext anchor) action});
 
-/// What the form can still hold and doesn't, as a row of tags at its end: a product starts as a
+/// What the form can still hold and doesn't, as a row of tags under the product's name and price: a product starts as a
 /// name, a price and what it is made of, and grows only by what is picked here, so the form is
 /// never a list of empty fields to skip. A picked tag leaves the row for its section, and comes
 /// back when that section is taken off.
