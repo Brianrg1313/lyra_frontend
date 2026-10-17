@@ -6560,6 +6560,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "supply_chain_note": MessageLookupByLibrary.simpleMessage("Note"),
     "supply_chain_note_hint": MessageLookupByLibrary.simpleMessage("Optional"),
+    "supply_chain_open_sheet": MessageLookupByLibrary.simpleMessage(
+      "Open the sheet",
+    ),
     "supply_chain_pause_note": MessageLookupByLibrary.simpleMessage(
       "Marking it sold out (86) stops its sale everywhere, whatever is left. Turn it back on when it can be made again.",
     ),
@@ -6621,6 +6624,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_produced_without": m236,
     "supply_chain_products_empty": MessageLookupByLibrary.simpleMessage(
       "This table has no supplies yet",
+    ),
+    "supply_chain_products_empty_note": MessageLookupByLibrary.simpleMessage(
+      "Write them in the sheet: one row per supply, with its unit and what is on hand.",
     ),
     "supply_chain_products_error": MessageLookupByLibrary.simpleMessage(
       "The products could not be read",

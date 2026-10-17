@@ -20,7 +20,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
   their flows live here.
 - `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view: selector and controls left, the view's status centred, the view's then the section's actions against the right edge. Every control in it is `AppSize.button` tall (core's `Button` is).
 - `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables); `table_dot.dart` — `TableDot`.
-- `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`).
+- `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`; or the opener's `sheet`/`onSwitch`, the supplies tab's).
 - `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
 - `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches and `inventory.transfers`.
@@ -45,7 +45,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 cell rebuild never rebuilds the sheet. Row 1 is the *fields* row (cursor index `-1`); body rows
 from 0. The last column is a *free column*: typing a title creates a field.
 
-- `_table_view.dart` — `TableViewSection` (`routeKey`: a table's link, which the shell maps to `InventorySection`).
+- `_table_view.dart` — `TableViewSection` (`routeKey`: a table's link, which the shell maps to `InventorySection`); also the supply chain's supplies sheet.
 - `table_view_body.dart` — `TableViewBody`: loading / error / the sheet, by the structure's status only.
 - `table_header.dart` — `TableHeader`: the section's `InventoryBar` with the import stage, read/save state, normalize.
 - `header_actions.dart` — `HeaderActions`: record-load state, search.

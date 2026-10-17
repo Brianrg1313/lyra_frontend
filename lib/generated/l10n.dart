@@ -1389,6 +1389,26 @@ class S {
     );
   }
 
+  /// `Write them in the sheet: one row per supply, with its unit and what is on hand.`
+  String get supply_chain_products_empty_note {
+    return Intl.message(
+      'Write them in the sheet: one row per supply, with its unit and what is on hand.',
+      name: 'supply_chain_products_empty_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open the sheet`
+  String get supply_chain_open_sheet {
+    return Intl.message(
+      'Open the sheet',
+      name: 'supply_chain_open_sheet',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No supply matches the search`
   String get supply_chain_products_no_match {
     return Intl.message(

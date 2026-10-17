@@ -164,6 +164,8 @@
   "supply_chain_table_create": "Create supplies table",
   "supply_chain_products_error": "The products could not be read",
   "supply_chain_products_empty": "This table has no supplies yet",
+  "supply_chain_products_empty_note": "Write them in the sheet: one row per supply, with its unit and what is on hand.",
+  "supply_chain_open_sheet": "Open the sheet",
   "supply_chain_products_no_match": "No supply matches the search",
   "supply_chain_products_more": "Load more",
   "supply_chain_no_tables": "There are no supplies tables yet",

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/kitchen/kitchen_products_service.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
@@ -17,7 +18,10 @@ import 'package:core/button.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/_section/more_button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/home/sections/inventory/table_list/table_selector.dart';
+import 'package:app/screens/home/sections/inventory/table_list/view_toggle.dart';
+import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
 
@@ -30,6 +34,11 @@ import './recipe_row.dart';
 /// **Supplies tables only**: what is sold is the inventory section's, which opens a dish's
 /// recipe from its own rows. With none the tab offers to create the first («New table» makes
 /// supplies here, never asked).
+///
+/// **The supplies are written in the sheet** (the inventory's [TableViewSection], here for a
+/// supplies table): the cells switch swaps the list for it, and a table with no rows opens on
+/// it, since the inventory never lists a supplies table and there is no other place to fill
+/// one. Back on the list, its rows are read again (the sheet wrote them).
 class RecipesTab extends StatefulWidget {
   const RecipesTab({super.key});
 
@@ -40,6 +49,26 @@ class RecipesTab extends StatefulWidget {
 class _RecipesTabState extends State<RecipesTab> {
   /// Owned by its input, which disposes it: it belongs to no form.
   final _query = InputController.search(key: "KITCHEN_PRODUCTS_SEARCH");
+
+  /// The cells switch, per opened table: `null` until touched, which opens a table with no
+  /// rows on the sheet ([_sheet]).
+  bool? _sheetPicked;
+
+  /// Whether [table] shows as the sheet: the switch's, else whether it has nothing to list.
+  bool _sheet(TableLiteModel table) => _sheetPicked ?? table.records == 0;
+
+  /// Swaps the view; the list rereads the table, whose rows the sheet may have written.
+  void _switch(bool sheet) {
+    setState(() => _sheetPicked = sheet);
+
+    final service = context.read<KitchenProductsService>();
+    if (!sheet) service.load(tableId: service.table?.id);
+  }
+
+  void _select(TableLiteModel table) {
+    setState(() => _sheetPicked = null);
+    context.read<KitchenProductsService>().open(table);
+  }
 
   @override
   void initState() {
@@ -64,6 +93,7 @@ class _RecipesTabState extends State<RecipesTab> {
 
     if (!mounted || id is! String) return;
 
+    setState(() => _sheetPicked = null);
     unawaited(context.read<TablesService>().load(context.read<BusinessService>().active.id, force: true));
 
     await context.read<KitchenProductsService>().load(tableId: id);
@@ -83,14 +113,28 @@ class _RecipesTabState extends State<RecipesTab> {
     final s = S.of(context);
     final table = service.table;
 
+    if (table != null && _sheet(table)) {
+      return TableViewSection(
+        key: ValueKey("supplies_sheet_${table.id}"),
+        tableId: table.id,
+        parts: InventoryBarParts(
+          selector: TableSelector(tables: service.tables, table: table, onSelect: _select),
+          controls: [InventoryViewToggle(sheet: true, onSwitch: _switch)],
+          actions: [_createButton(context)]
+        )
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (table != null) Row(children: [
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 280),
-            child: TableSelector(tables: service.tables, table: table, onSelect: service.open)
+            child: TableSelector(tables: service.tables, table: table, onSelect: _select)
           ),
+          SizedBox(width: AppSize.gap),
+          InventoryViewToggle(sheet: false, onSwitch: _switch),
           SizedBox(width: AppSize.spaceS),
           Expanded(child: SearchInput(
             controller: _query,
@@ -98,12 +142,7 @@ class _RecipesTabState extends State<RecipesTab> {
             onSearch: service.search
           )),
           SizedBox(width: AppSize.spaceS),
-          Button(
-            width: null,
-            title: s.create_table,
-            leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
-            action: _create
-          )
+          _createButton(context)
         ]),
         if (table != null) Padding(
           padding: EdgeInsets.symmetric(vertical: AppSize.spaceXS),
@@ -118,8 +157,16 @@ class _RecipesTabState extends State<RecipesTab> {
     );
   }
 
+  Widget _createButton(BuildContext context) => Button(
+    width: null,
+    title: S.of(context).create_table,
+    leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
+    action: _create
+  );
+
   Widget _body(BuildContext context, KitchenProductsService service) {
     final s = S.of(context);
+    final blank = service.table != null && service.query.isEmpty;
 
     return switch (service.status) {
       KitchenProductsStatus.idle || KitchenProductsStatus.loading => const Center(child: Loading()),
@@ -134,9 +181,12 @@ class _RecipesTabState extends State<RecipesTab> {
         title: service.table == null
           ? s.supply_chain_no_tables
           : service.query.isEmpty ? s.supply_chain_products_empty : s.supply_chain_products_no_match,
-        subtitle: service.table == null ? s.supply_chain_no_tables_note : null,
-        action: service.table == null ? _create : null,
-        actionLabel: service.table == null ? s.supply_chain_table_create : null
+        subtitle: service.table == null ? s.supply_chain_no_tables_note
+          : blank ? s.supply_chain_products_empty_note : null,
+        action: service.table == null ? _create
+          : blank ? () => _switch(true) : null,
+        actionLabel: service.table == null ? s.supply_chain_table_create
+          : blank ? s.supply_chain_open_sheet : null
       ),
       KitchenProductsStatus.ready => ListView.separated(
         itemCount: service.products.length + (service.hasMore ? 1 : 0),

@@ -25,6 +25,8 @@ import 'package:app/screens/home/sections/inventory/table_list/inventory_start.d
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_layout.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_product_row.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_stepper.dart';
+import 'package:app/screens/home/sections/inventory/table_list/view_toggle.dart';
+import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/home/sections/supply_chain/recipes/_recipes.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/settings/routes.dart';
@@ -128,6 +130,28 @@ void main() {
     tester.takeException();
     expect(find.text(S.current.supply_chain_no_tables), findsOneWidget);
     expect(find.text(S.current.supply_chain_table_create), findsOneWidget);
+  });
+
+  testWidgets("a supplies table with nothing listed offers its sheet, where supplies are written", (tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final service = KitchenProductsService(listen: false)..seed(tables: const [_supplies]);
+    addTearDown(service.dispose);
+
+    await tester.pumpWidget(_app(
+      ChangeNotifierProvider<KitchenProductsService>.value(value: service, child: const RecipesTab()),
+      tables: TablesService(source: _Inventory())
+    ));
+    await tester.pump();
+
+    // Same font caveat as above.
+    tester.takeException();
+    expect(find.text(S.current.supply_chain_products_empty), findsOneWidget);
+    expect(find.text(S.current.supply_chain_open_sheet), findsOneWidget);
+    expect(find.byType(InventoryViewToggle), findsOneWidget);
+    expect(find.byType(TableViewSection), findsNothing);
   });
 
   test("a catalog's summary measures its rows' recipes", () async {
