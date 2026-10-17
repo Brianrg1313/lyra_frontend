@@ -6,6 +6,7 @@ import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/prices/branch_price_model.dart';
+import 'package:app/services/stock/movements/stock_ledger_model.dart';
 import 'package:app/services/stock/transfers/stock_transfer_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
@@ -67,6 +68,10 @@ class StockLanSource implements StockSource {
 
   @override
   Future<List<Presentation>> presentations(String productId) async => const [];
+
+  @override
+  Future<StockLedgerPage> movements({required String productId, required int page, required int size}) =>
+    throw UnsupportedError("reading the ledger is cloud only");
 
   // A master is one site (plan D6): there is no other branch to send to or price for.
 

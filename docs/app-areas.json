@@ -211,7 +211,8 @@
         "transfers": ["cloud"],
         "prices": ["cloud"],
         "picture_import": ["cloud"],
-        "purchases": ["cloud"]
+        "purchases": ["cloud"],
+        "history": ["cloud"]
       },
       "action_notes": {
         "templates": "Starting tables by the company's activity, offered while it has no table (the backend's catalogue; a master has none).",
@@ -222,7 +223,8 @@
         "edit_columns": "Create, rename, retype, reorder and delete fields.",
         "edit_records": "Write cells and rows in the spreadsheet.",
         "move_stock": "Take/add stock from the stock summary.",
-        "purchases": "A restock's presentation and total cost (`PRESENTATION`, `COST`) and waste as a reason (`cocina-frontend.md` §7-8); the engine knows none."
+        "purchases": "A restock's presentation and total cost (`PRESENTATION`, `COST`) and waste as a reason (`cocina-frontend.md` §7-8); the engine knows none.",
+        "history": "A product's ledger read back: who moved it, why, for which dish, how it was bought (`cocina-frontend.md` §10); no op reads a master's."
       }
     },
     {

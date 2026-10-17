@@ -1,5 +1,6 @@
 // SERVICES
 import 'package:app/services/kitchen/presentation_model.dart';
+import 'package:app/services/stock/movements/stock_ledger_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/prices/branch_price_model.dart';
 import 'package:app/services/stock/transfers/stock_transfer_model.dart';
@@ -30,6 +31,11 @@ abstract interface class StockSource {
   /// How [productId] is bought («Saco» = 25 kg, `cocina-frontend.md` §8), for a movement to
   /// count presentations. Empty when it has none; a master knows none.
   Future<List<Presentation>> presentations(String productId);
+
+  /// A page of [productId]'s ledger at the header's branch, newest first
+  /// (`cocina-frontend.md` §10). Cloud only (`inventory.history`): a master's ledger is not
+  /// read back by any op.
+  Future<StockLedgerPage> movements({required String productId, required int page, required int size});
 
   // Between branches (`sedes-frontend.md` §6). Cloud only: a master is one site (plan D6), so
   // its source refuses them.

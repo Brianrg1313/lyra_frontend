@@ -14759,6 +14759,266 @@ class S {
     );
   }
 
+  /// `Discarded return`
+  String get stock_reason_discard {
+    return Intl.message(
+      'Discarded return',
+      name: 'stock_reason_discard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set aside`
+  String get stock_reason_hold {
+    return Intl.message(
+      'Set aside',
+      name: 'stock_reason_hold',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hold released`
+  String get stock_reason_release {
+    return Intl.message(
+      'Hold released',
+      name: 'stock_reason_release',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold (it was set aside)`
+  String get stock_reason_commit {
+    return Intl.message(
+      'Sold (it was set aside)',
+      name: 'stock_reason_commit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sent to another branch`
+  String get stock_reason_transfer_out {
+    return Intl.message(
+      'Sent to another branch',
+      name: 'stock_reason_transfer_out',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Received from another branch`
+  String get stock_reason_transfer_in {
+    return Intl.message(
+      'Received from another branch',
+      name: 'stock_reason_transfer_in',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Back from a cancelled transfer`
+  String get stock_reason_transfer_back {
+    return Intl.message(
+      'Back from a cancelled transfer',
+      name: 'stock_reason_transfer_back',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Used in a sale`
+  String get stock_reason_consumption {
+    return Intl.message(
+      'Used in a sale',
+      name: 'stock_reason_consumption',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Used in a sale (it was set aside)`
+  String get stock_reason_consumed {
+    return Intl.message(
+      'Used in a sale (it was set aside)',
+      name: 'stock_reason_consumed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Batch produced`
+  String get stock_reason_production {
+    return Intl.message(
+      'Batch produced',
+      name: 'stock_reason_production',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Used in a batch`
+  String get stock_reason_ingredient {
+    return Intl.message(
+      'Used in a batch',
+      name: 'stock_reason_ingredient',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lost from the batch`
+  String get stock_reason_batch_waste {
+    return Intl.message(
+      'Lost from the batch',
+      name: 'stock_reason_batch_waste',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dish lost`
+  String get stock_reason_spoiled {
+    return Intl.message(
+      'Dish lost',
+      name: 'stock_reason_spoiled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Movements`
+  String get stock_history_title {
+    return Intl.message(
+      'Movements',
+      name: 'stock_history_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `See its movements`
+  String get stock_history_open {
+    return Intl.message(
+      'See its movements',
+      name: 'stock_history_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing has moved yet`
+  String get stock_history_empty {
+    return Intl.message(
+      'Nothing has moved yet',
+      name: 'stock_history_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every unit that comes in or leaves shows here, with who moved it and why.`
+  String get stock_history_empty_hint {
+    return Intl.message(
+      'Every unit that comes in or leaves shows here, with who moved it and why.',
+      name: 'stock_history_empty_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The movements couldn't be read`
+  String get stock_history_error {
+    return Intl.message(
+      'The movements couldn\'t be read',
+      name: 'stock_history_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get stock_history_retry {
+    return Intl.message(
+      'Try again',
+      name: 'stock_history_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Load more`
+  String get stock_history_more {
+    return Intl.message(
+      'Load more',
+      name: 'stock_history_more',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `for {count} × {dish}`
+  String stock_history_for(Object count, Object dish) {
+    return Intl.message(
+      'for $count × $dish',
+      name: 'stock_history_for',
+      desc: '',
+      args: [count, dish],
+    );
+  }
+
+  /// `for {count} × a dish`
+  String stock_history_for_unnamed(Object count) {
+    return Intl.message(
+      'for $count × a dish',
+      name: 'stock_history_for_unnamed',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} × {name}`
+  String stock_history_pack(Object count, Object name) {
+    return Intl.message(
+      '$count × $name',
+      name: 'stock_history_pack',
+      desc: '',
+      args: [count, name],
+    );
+  }
+
+  /// `{amount} left`
+  String stock_history_left(Object amount) {
+    return Intl.message(
+      '$amount left',
+      name: 'stock_history_left',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Automatic`
+  String get stock_history_automatic {
+    return Intl.message(
+      'Automatic',
+      name: 'stock_history_automatic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An account that no longer exists`
+  String get stock_history_gone {
+    return Intl.message(
+      'An account that no longer exists',
+      name: 'stock_history_gone',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Overview`
   String get finance_tab_overview {
     return Intl.message(

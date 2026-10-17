@@ -1,5 +1,6 @@
 // SERVICES
 import 'package:app/services/kitchen/presentation_model.dart';
+import 'package:app/services/stock/movements/stock_ledger_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/prices/branch_price_model.dart';
 import 'package:app/services/stock/transfers/stock_transfer_model.dart';
@@ -47,6 +48,14 @@ class StockCloudSource implements StockSource {
   @override
   Future<List<Presentation>> presentations(String productId) async =>
     Presentation.listFrom(await api.get(path: "/inventory/presentations/$productId", version: "v1"));
+
+  @override
+  Future<StockLedgerPage> movements({required String productId, required int page, required int size}) async =>
+    StockLedgerPage.fromJson(await api.post(
+      path: "/inventory/stock/movements",
+      version: "v1",
+      data: {"PRODUCT_ID": productId, "PAGE": page, "SIZE": size}
+    ));
 
   @override
   Future<StockTransfersPage> transfers(Map<String, dynamic> request) async =>

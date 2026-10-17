@@ -5,9 +5,12 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
+import 'package:app/services/catalog/currency_model.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
 
 // WIDGETS
+import 'package:app/screens/modals/inventory/stock_history/_stock_history.dart';
 import 'package:app/screens/modals/inventory/stock_movement/_stock_movement.dart';
 
 import './summary_layout.dart';
@@ -33,13 +36,18 @@ import './summary_number.dart';
 /// when there are none, setting aside units when there's no stock left. Taking
 /// from stock stays on even at zero, because a return enters its own counter
 /// and doesn't come off the shelf.
+///
+/// The stock figure itself opens what moved it (`showStockHistory`), where the ledger is read
+/// back (`inventory.history`): the number someone doubts is the one they touch.
 class SummaryStepper extends StatelessWidget {
   const SummaryStepper({
     super.key,
     required this.productId,
     required this.counter,
     required this.stock,
-    required this.reserved
+    required this.reserved,
+    this.product = "",
+    this.currency
   });
 
   /// The row's record, which is the product the movement is written against.
@@ -53,6 +61,11 @@ class SummaryStepper extends StatelessWidget {
   /// stock and not by what's already reserved.
   final num stock;
   final num reserved;
+
+  /// How the row names the product, and the company's currency: what its movements panel
+  /// titles itself with and writes a purchase's cost in.
+  final String product;
+  final CurrencyModel? currency;
 
   num get _value => counter == StockCounter.stock ? stock : reserved;
 
@@ -72,19 +85,34 @@ class SummaryStepper extends StatelessWidget {
       message: S.of(context).stock_move_take_hint,
       action: _canTake ? () => _open(context, StockDirection.take) : null
     ),
-    Expanded(child: SummaryNumber(
-      value: _value,
-      // Only stock alerts on zero: it's what can't be sold. Zero reserved is
-      // normal in almost all products.
-      alert: counter == StockCounter.stock,
-      align: TextAlign.center
-    )),
+    Expanded(child: _figure(context)),
     _Step(
       sign: "+",
       message: S.of(context).stock_move_add_hint,
       action: _canPut ? () => _open(context, StockDirection.put) : null
     )
   ]);
+
+  Widget _figure(BuildContext context) {
+    final number = SummaryNumber(
+      value: _value,
+      // Only stock alerts on zero: it's what can't be sold. Zero reserved is
+      // normal in almost all products.
+      alert: counter == StockCounter.stock,
+      align: TextAlign.center
+    );
+
+    final currency = this.currency;
+    if (counter != StockCounter.stock || currency == null || !CapabilityService().shows("inventory.history")) {
+      return number;
+    }
+
+    return FocusableWidget(
+      action: () => showStockHistory(context, productId: productId, product: product, currency: currency),
+      message: S.of(context).stock_history_open,
+      child: number
+    );
+  }
 
   /// The service is read **here** and travels to the modal: inside the modal
   /// the tree is the root navigator's, which sits above where the inventory

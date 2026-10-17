@@ -423,7 +423,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
   `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
   `inventory.tables.normalize`.
-- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance), a product's presentations (cloud; a master none). Used by `StockSummaryService`.
+- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance), a product's presentations (cloud; a master none), a product's ledger page (`movements`, cloud only). Used by `StockSummaryService`, `StockHistoryService`.
   `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
   `stock.move` (`operationOf`). Also transfers (search, create, update, receive) and a branch's prices (read, set, remove):
   cloud only, the LAN source throws `UnsupportedError` (a master is one site).
@@ -447,6 +447,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `summary/stock_summary_service.dart` — `StockSummaryService({tableId, supplies})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`); `supplies` = moves with decimals; `presentations` (a failed read = none); `image/progress` naming its table is a quiet `syncColumns`.
 - `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`: `num`, a supply's decimals), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement` (`num quantity`, `PRESENTATION`, `COST` only on `restock`), `StockBalance` (`num`), `StockOperation`, `StockReason` (`waste`), `stockNum`, `stockFigure`.
+- `movements/stock_ledger_model.dart` — `StockLedgerEntry` (operation, reason, positive `qty` and its `sign`, actor, `madeFor`, `pack`, `cost`, `available` after), `StockLedgerPage`.
+- `movements/stock_history_service.dart` — `StockHistoryService({productId})`: `POST /inventory/stock/movements` (`PRODUCT_ID`, pages of 30); the dishes a `for` names, from the catalog tables' first rows (`KitchenProductSearch.namesIn`), once.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move
   (sale, restock, another till's hold), carries the balance after it; `exact` keeps a supply's decimals;
   `composite` (a dish made to order): only `available` means anything — the POS keeps its hold, the ticket ignores it.
@@ -611,7 +613,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
 `/inventory/products/builder/{list,structure,details,fields,normalize}/` ·
 `/inventory/products/records/{list,manage,images}/` · `/inventory/products/import/{structure,records}/$format/` ·
 `/inventory/products/import/images/{status,claim,deliver,fail,match,retry}/` ·
-`/inventory/stock/summary/` · `/inventory/stock/transfers{,/receive,/search}` · `/inventory/products/prices`
+`/inventory/stock/summary/` · `/inventory/stock/movements` · `/inventory/stock/transfers{,/receive,/search}` · `/inventory/products/prices`
 `/inventory/recipes{,/$id,/availability,/pause,/uses,/produce,/discard,/consumption,/variance,/cost}` · `/inventory/modifiers{,/availability}` · `/inventory/presentations{,/$id}`
 `/sales/` · `/sales/stages/` · `/sales/detail/$id` · `/sales/fulfillment/` · `/chats/stage/`
 `/pos/` · `/pos/catalog/` · `/pos/methods/` · `/pos/invoices/{,items,close,cancel}`

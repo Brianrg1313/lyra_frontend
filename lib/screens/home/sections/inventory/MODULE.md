@@ -31,7 +31,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
 - `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched).
 - `stock_summary/summary_header.dart` — `SummaryHeader` (a title click orders by its column: `summary_sort_title.dart` — `SummarySortTitle`); `stock_summary/summary_product_row.dart` — `SummaryProductRow`; `stock_summary/summary_line.dart` — `SummaryLine`.
-- `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`.
+- `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`; the stock figure opens `showStockHistory` (`inventory.history`).
 - `stock_summary/summary_value.dart` — `SummaryValue`; `summary_number.dart` — `SummaryNumber`; `summary_picture.dart` — `SummaryPicture`.
 
 ## transfers/ — stock between branches (`/home/inventory/transfers`, cloud only)

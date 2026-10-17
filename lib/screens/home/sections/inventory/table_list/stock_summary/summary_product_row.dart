@@ -103,17 +103,19 @@ class SummaryProductRow extends StatelessWidget {
     BranchService().choosable &&
     CapabilityService().shows("inventory.prices");
 
+  /// How the row is named: its first text column with something written.
+  String get _name => layout.fields
+    .where((field) => field.type == TableFieldType.text)
+    .map((field) => row[field.key]?.toString().trim() ?? "")
+    .firstWhere((value) => value.isNotEmpty, orElse: () => "");
+
   void _openPrices(BuildContext context, StockSummaryColumn column) {
     final raw = row[column.key];
-    final name = layout.fields
-      .where((field) => field.type == TableFieldType.text)
-      .map((field) => row[field.key]?.toString().trim() ?? "")
-      .firstWhere((value) => value.isNotEmpty, orElse: () => "");
 
     unawaited(showBranchPrices(
       context,
       productId: row.id,
-      product: name,
+      product: _name,
       tableId: context.read<StockSummaryService>().table,
       catalogPrice: raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? ""),
       currency: currency
@@ -159,7 +161,9 @@ class SummaryProductRow extends StatelessWidget {
       productId: row.id,
       counter: counter,
       stock: stock,
-      reserved: reserved
+      reserved: reserved,
+      product: _name,
+      currency: currency
     );
   }
 }
