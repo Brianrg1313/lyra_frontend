@@ -21,7 +21,7 @@ export './lan_file.dart';
 
 /// This app's version as `hello` sends it (`protocol-v1.md` §4). `test/lan_client_test.dart`
 /// keeps it equal to `pubspec.yaml`.
-const String lanAppVersion = "0.0.7";
+const String lanAppVersion = "0.0.8";
 
 /// Whether this install can use LAN mode at all: every native build, and in a browser the page
 /// a master serves (plan §3), never the cloud's.
