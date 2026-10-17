@@ -45,7 +45,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 cell rebuild never rebuilds the sheet. Row 1 is the *fields* row (cursor index `-1`); body rows
 from 0. The last column is a *free column*: typing a title creates a field.
 
-- `_table_view.dart` — `TableViewSection` (`routeKey`: a table's link, which the shell maps to `InventorySection`); also the supply chain's supplies sheet.
+- `_table_view.dart` — `TableViewSection({supplies})` (`routeKey`: a table's link, which the shell maps to `InventorySection`); also the supply chain's supplies sheet.
 - `table_view_body.dart` — `TableViewBody`: loading / error / the sheet, by the structure's status only.
 - `table_header.dart` — `TableHeader`: the section's `InventoryBar` with the import stage, read/save state, normalize.
 - `header_actions.dart` — `HeaderActions`: record-load state, search.
@@ -64,7 +64,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
   `uploading`, editor, serialized write queues (columns, rows). Its writes are `part`s in `state/controller/`, extensions on it
-  (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks`): import the controller alone.
+  (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks` `SheetStockMoves`): import the controller alone. A record's `STOCK` cell unfolds put / take and opens `showStockMovement` (`stock`: `TableStockMover`).
 - `state/sheet_columns.dart` — `SheetColumns`; `state/sheet_column.dart` — `SheetColumn`; `state/sheet_shape.dart` — `SheetShape`.
 - `state/sheet_cursor.dart` — `SheetCursor`; `state/sheet_cell.dart` — `SheetCell`, `SheetCellState`, `kFieldsRow`.
 - `state/sheet_drafts.dart` — `SheetDrafts`: unsaved rows; `state/sheet_draft.dart` — `SheetDraft`.

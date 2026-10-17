@@ -36,6 +36,14 @@
 library;
 
 /// Builds the creation body of a record.
+/// The id a record creation answers: the cloud's bare id, the engine's `{id}`; empty when
+/// neither says it.
+String createdRecordId(dynamic answer) {
+  if (answer is String) return answer;
+  if (answer is Map && answer["id"] is String) return answer["id"] as String;
+  return "";
+}
+
 Map<String, dynamic> createRecordRequest({
   required String tableId,
   required Map<String, dynamic> values

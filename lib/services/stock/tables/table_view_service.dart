@@ -9,6 +9,7 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/inventory/picture_import_model.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_request.dart';
+import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/inventory/table_record_request.dart';
 import 'package:app/services/stock/tables/table_normalize_model.dart';
 import 'package:app/services/stock/tables/table_ready_model.dart';
@@ -154,6 +155,10 @@ class TableViewService extends ChangeNotifier {
   /// fires twice; the screen manages its own load state for the button.
   bool _saving = false;
 
+  /// Records written here since the structure last counted them ([add] places them in the
+  /// sheet before the backend's count says so).
+  int _added = 0;
+
   /// What was written in the header search box, or empty if not searching. It
   /// travels in every records read (`MATCH`) and therefore **the backend does
   /// the filtering of the sheet**: it is not that the rows you have get hidden,
@@ -233,7 +238,7 @@ class TableViewService extends ChangeNotifier {
   /// structure.
   int get records => isSearching
     ? _matches
-    : _structure.records > 0 ? _structure.records : _paging.known;
+    : _structure.records > 0 ? _structure.records + _added : _paging.known;
 
   /// The record of row [index], or `null` if that row has not been read yet.
   TableRowModel? rowAt(int index) => _rows[index];
@@ -369,19 +374,19 @@ class TableViewService extends ChangeNotifier {
   /// screen does not have to pass, the service puts it). The owner company
   /// travels in the `business_id` header, like in the rest of the APIs.
   ///
-  /// Returns `true` if the creation went well. In that case the records read
-  /// become stale —there is one more, and where it lands is decided by the
-  /// backend— so they are discarded and the structure is re-read, since it is
-  /// the one that says how many there are. With [refresh] set to `false` that
-  /// is not done: the batch save uses it, which prefers to refresh a single
-  /// time at the end ([refresh]) and not after each row.
+  /// Returns `true` if the creation went well. **The sheet does not blink for it**: with
+  /// [row] (the values by slot) and the id the backend answers, the record is placed behind
+  /// the last one at once, writable, and only its page is read again in place, so what the
+  /// backend filled (a counter, the stock) arrives over a row already drawn. Without an id
+  /// (or while searching, where the new row is not of the result) the table is re-read
+  /// whole, which empties what was read.
   ///
   /// On error it shows the floating flag and returns `false`, leaving the draft
   /// intact to retry.
   Future<bool> add(
     BuildContext context,
     Map<String, dynamic> values, {
-    bool refresh = true
+    List<dynamic>? row
   }) async {
     if (_saving) return false;
 
@@ -392,15 +397,24 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _source.createRecord(createRecordRequest(tableId: tableId, values: values));
+      final id = await _source.createRecord(createRecordRequest(tableId: tableId, values: values));
 
       _saving = false;
 
-      if (refresh) {
-        await this.refresh();
-      } else {
-        notifyListeners();
+      if (row == null || id.isEmpty || isSearching) {
+        await refresh();
+        return true;
       }
+
+      final index = records;
+
+      _rows[index] = TableRowModel(row, id: id);
+      if (_structure.records > 0) _added++;
+      _paging.grow(index + 1);
+      if (_status == TableViewStatus.empty || _status == TableViewStatus.idle) _status = TableViewStatus.ready;
+      notifyListeners();
+
+      unawaited(_rereadPage(_paging.pageOf(index)));
 
       return true;
     } catch (error) {
@@ -482,6 +496,28 @@ class TableViewService extends ChangeNotifier {
       );
       return false;
     }
+  }
+
+  /// Writes [productId]'s stock as a movement left it (its `available`) in its row's `STOCK`
+  /// cells, without re-reading: the inventory engine answered the balance.
+  void writeStock(String productId, num available) {
+    final stock = [
+      for (final (slot, field) in fields.indexed)
+        if (TableFieldType.from(field.type) == TableFieldType.stock) slot
+    ];
+    if (stock.isEmpty) return;
+
+    for (final entry in _rows.entries) {
+      if (entry.value.id != productId) continue;
+
+      var row = entry.value;
+      for (final slot in stock) {
+        row = row.withValue(slot, available);
+      }
+      _rows[entry.key] = row;
+    }
+
+    notifyListeners();
   }
 
   /// Returns a cell to the value it had, after an edit that did not go through.
@@ -674,6 +710,14 @@ class TableViewService extends ChangeNotifier {
       _picturesTimer = null;
       unawaited(_rereadPages());
     });
+  }
+
+  /// Reads [page] again in place: its rows stay drawn until the answer replaces them.
+  Future<void> _rereadPage(int page) async {
+    if (page <= 0) return;
+
+    _paging.forget(page);
+    if (_paging.request(_paging.startOf(page)) == page) await _loadPage(page);
   }
 
   /// Reads again every page in the cache, keeping what it holds until the answer replaces it.
@@ -1094,6 +1138,7 @@ class TableViewService extends ChangeNotifier {
 
     _structure = structure;
     _structureStatus = TableStructureStatus.ready;
+    _added = 0;
 
     // The error a previous re-read that had not arrived set is lifted: this one
     // did arrive, so the structure is no longer stale.
@@ -1209,7 +1254,7 @@ class TableViewService extends ChangeNotifier {
 
     // The chunk is stored in its place within the table, not at the end of
     // whatever is there: the page says where it starts.
-    final start = _paging.read(page, rows.length);
+    final start = _paging.read(page, rows.length, asked: _pageSize);
     for (final (offset, row) in rows.indexed) {
       _rows[start + offset] = row;
     }
@@ -1403,12 +1448,16 @@ class TablePaging {
   ///
   /// A short —or empty— page is the end of the table: there's nothing more
   /// to request below it.
-  int read(int page, int rows) {
+  ///
+  /// A short first page says nothing about the size: with [asked] (what the request sent)
+  /// the size is that, so a row created behind a small table's last one still falls on
+  /// page 1, which is where the backend puts it.
+  int read(int page, int rows, {int? asked}) {
     _flight.remove(page);
     _failed.remove(page);
     _read.add(page);
 
-    if (_size == 0 && rows > 0) _size = rows;
+    if (_size == 0 && rows > 0) _size = asked != null && rows < asked ? asked : rows;
     if (rows == 0 || rows < _size) _end = true;
 
     final start = startOf(page);
@@ -1430,6 +1479,10 @@ class TablePaging {
 
   /// Forgets the failures so the missing pages get requested again.
   void retry() => _failed.clear();
+
+  /// The table reached [rows] records here (one was just created): the rows up to it are
+  /// read, not past the end.
+  void grow(int rows) => _known = math.max(_known, rows);
 
   /// Forgets that page [page] was read, so it can be requested again.
   ///

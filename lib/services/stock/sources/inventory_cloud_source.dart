@@ -3,6 +3,7 @@ import 'dart:io';
 // SERVICES
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/product_image.dart';
+import 'package:app/services/inventory/table_record_request.dart' show createdRecordId;
 import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/inventory/table_template_model.dart';
@@ -149,8 +150,8 @@ class InventoryCloudSource implements InventorySource {
   }
 
   @override
-  Future<void> createRecord(Map<String, dynamic> request) =>
-    api.post(path: "/inventory/products/records/manage/", version: "v1", data: request);
+  Future<String> createRecord(Map<String, dynamic> request) async =>
+    createdRecordId(await api.post(path: "/inventory/products/records/manage/", version: "v1", data: request));
 
   @override
   Future<void> editRecord(Map<String, dynamic> request) =>

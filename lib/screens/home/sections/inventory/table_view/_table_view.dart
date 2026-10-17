@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/home/home_service.dart';
+import 'package:app/services/stock/tables/table_stock_mover.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
@@ -178,7 +179,8 @@ class TableViewSection extends StatefulWidget {
     super.key,
     required this.tableId,
     required this.parts,
-    this.status = const []
+    this.status = const [],
+    this.supplies = false
   });
 
   /// Route key of a table's link (`/home/inventory/:id`): the section opening on that
@@ -190,6 +192,9 @@ class TableViewSection extends StatefulWidget {
 
   /// What the section adds to the bar's status (an upload in flight).
   final List<Widget> status;
+
+  /// Whether the table holds supplies: its stock cells move with decimals of the unit.
+  final bool supplies;
 
   @override
   State<TableViewSection> createState() => _TableViewSectionState();
@@ -248,7 +253,8 @@ class _TableViewSectionState extends State<TableViewSection> {
       ),
       // The controller outlives any `build`, so the context is passed to it as
       // a function and not as a value.
-      context: () => context
+      context: () => context,
+      stock: TableStockMover(table: _service, tableId: _tableId, supplies: widget.supplies)
     );
 
     // The load is deferred to the first frame so as not to notify while the

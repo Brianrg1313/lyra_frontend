@@ -27,7 +27,7 @@ class _FakeTable extends TableViewService {
   Future<bool> add(
     BuildContext context,
     Map<String, dynamic> values, {
-    bool refresh = true
+    List<dynamic>? row
   }) async {
     added.add(values);
     return true;

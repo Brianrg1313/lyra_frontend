@@ -60,6 +60,7 @@ extension SheetRowWrites on SheetController {
 
     final fields = service.fields;
     final values = <String, dynamic>{};
+    final row = List<dynamic>.filled(fields.length, null);
 
     draft.values.forEach((index, text) {
       if (index < 0 || index >= fields.length) return;
@@ -69,31 +70,27 @@ extension SheetRowWrites on SheetController {
       if (value.isEmpty || field.id.isEmpty) return;
 
       values[field.id] = value;
+      row[index] = value;
     });
 
     if (values.isEmpty) return;
 
     drafts.setSaving(draft, true);
 
-    // The creation goes without a re-read and the re-read is asked here below,
-    // with the row already noted as persisted: that way the draft can be
-    // removed at the same instant the table starts counting the new record.
-    final saved = await service.add(_context(), values, refresh: false);
-    if (_disposed) return;
-
-    if (!saved) {
-      drafts.setSaving(draft, false);
-      return;
-    }
-
-    // The row is already a record of the backend, but the spreadsheet still
-    // counts the previous ones: it's left where it is —and in a spinner, so
-    // nothing is written over it— until the re-read brings the new record.
+    // Noted as persisted before it travels: the service places the record (with what was
+    // written) in the same notice that counts it, and that notice is the one that removes
+    // the draft ([_onRows]), so the row never shows empty nor twice.
     _persisted = draft;
     _persistedAt = service.records;
 
-    await service.refresh();
+    final saved = await service.add(_context(), values, row: row);
     if (_disposed) return;
+
+    if (!saved) {
+      _persisted = null;
+      drafts.setSaving(draft, false);
+      return;
+    }
 
     // If the count didn't move (the re-read didn't arrive, or the table doesn't
     // tell how many records it has) nobody will remove it from [_onRows]: it's

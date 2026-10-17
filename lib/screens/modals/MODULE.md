@@ -150,7 +150,7 @@ through `Navigator.pop(context, value)`.
 - `table_settings/channels_block.dart` — `TableChannelsBlock`: channels reading this table (links to the channel edit page).
 - `table_settings/settings_id.dart` — `TableSettingsId`: hidden id, reveal + copy.
 - `table_settings/settings_format.dart` — `settingsNumber`, `settingsDate`: locale-aware formatting.
-- `stock_movement/_stock_movement.dart` — `showStockMovement(...)`, `StockMovementModal` (from a stock summary stepper): a supply's decimals; on an add, the product's presentations («Bought as», the total they hold) and «Total cost» on a restock, both behind `inventory.purchases`.
+- `stock_movement/_stock_movement.dart` — `showStockMovement(...)`, `StockMovementModal` (through a `StockMover`: a stock summary stepper, a sheet's stock cell): a supply's decimals; on an add, the product's presentations («Bought as», the total they hold) and «Total cost» on a restock, both behind `inventory.purchases`.
 - `stock_history/_stock_history.dart` — `showStockHistory(context, productId:, product:, currency:)`, `StockHistoryModal` (side panel, owns its `StockHistoryService`), `StockLedgerLine` («Used in a sale · for 2 × Burger», who, when, what was left, the note), `stockLedgerReason` (a reason read with its operation). Cloud only (`inventory.history`).
 - `stock_movement/movement_shape.dart` — `StockMovementShape`, `StockCounter`, `StockDirection`, `MovementDestination`, `MovementDestinationKind`.
 - `stock_movement/movement_option.dart` — `MovementOption`: selectable outcome row.

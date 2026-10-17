@@ -6,6 +6,7 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 // SERVICES
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/product_image.dart';
+import 'package:app/services/inventory/table_record_request.dart' show createdRecordId;
 import 'package:app/services/inventory/table_template_model.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
@@ -112,7 +113,8 @@ class InventoryLanSource implements InventorySource {
   }
 
   @override
-  Future<void> createRecord(Map<String, dynamic> request) => _lan.call(Ops.inventoryRecordsCreate, args: args(request));
+  Future<String> createRecord(Map<String, dynamic> request) async =>
+    createdRecordId(await _lan.call(Ops.inventoryRecordsCreate, args: args(request)));
 
   @override
   Future<void> editRecord(Map<String, dynamic> request) => _lan.call(Ops.inventoryRecordsEdit, args: args(request));

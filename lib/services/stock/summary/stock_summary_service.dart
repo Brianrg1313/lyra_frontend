@@ -9,6 +9,7 @@ import 'package:app/services/inventory/picture_import_model.dart';
 import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/kitchen/recipe_availability_model.dart';
 import 'package:app/services/kitchen/recipe_measure.dart';
+import 'package:app/services/stock/movements/stock_mover.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
@@ -62,7 +63,7 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// It is ephemeral: owned by the inventory section and discarded when leaving
 /// it. The shell remounts the section when changing company, so there is
 /// nothing to invalidate on its own account.
-class StockSummaryService extends ChangeNotifier {
+class StockSummaryService extends ChangeNotifier implements StockMover {
   StockSummaryService({StockSource? source, this.tableId = "", this.supplies = false, this.recipes = false, RecipeMeasure? measure})
     : _injected = source,
       _measure = measure {
@@ -82,6 +83,7 @@ class StockSummaryService extends ChangeNotifier {
 
   /// Whether [tableId] is a table of supplies (`KIND`): its stock is moved with up to six
   /// decimals of the unit, a catalog's in whole units (`cocina-frontend.md` §2).
+  @override
   final bool supplies;
 
   /// Whether the rows' recipes are measured: a catalog's, where the kitchen is (cloud only).
@@ -309,6 +311,7 @@ class StockSummaryService extends ChangeNotifier {
   /// Returns `false` if the movement did not go in; the reason was already
   /// shown in the floating flag, which is where the backend explains that there
   /// was not that much to take out.
+  @override
   Future<bool> move(
     BuildContext context, {
     required String productId,
@@ -341,6 +344,7 @@ class StockSummaryService extends ChangeNotifier {
 
   /// How [productId] is bought, for a movement to count presentations. A read that fails
   /// is none: units are still a movement.
+  @override
   Future<List<Presentation>> presentations(String productId) async {
     try {
       return await _source.presentations(productId);

@@ -69,7 +69,8 @@ abstract interface class InventorySource {
     String match = ""
   });
 
-  Future<void> createRecord(Map<String, dynamic> request);
+  /// Creates a record and returns its id (empty when the answer does not say it).
+  Future<String> createRecord(Map<String, dynamic> request);
 
   Future<void> editRecord(Map<String, dynamic> request);
 

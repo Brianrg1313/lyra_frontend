@@ -123,6 +123,7 @@ class _RecipesTabState extends State<RecipesTab> {
       return TableViewSection(
         key: ValueKey("supplies_sheet_${table.id}"),
         tableId: table.id,
+        supplies: true,
         parts: InventoryBarParts(
           selector: TableSelector(tables: service.tables, table: table, onSelect: _select),
           controls: [InventoryViewToggle(sheet: true, onSwitch: _switch)],

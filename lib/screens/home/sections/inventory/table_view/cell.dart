@@ -132,6 +132,13 @@ class SheetCellView extends StatelessWidget {
       && type.editable
       && (!record || (saved?.id.isNotEmpty ?? false));
 
+    // A record's stock is not written but moved: a tap unfolds the movements
+    // ([SheetStockMoves]), so it reads and points like something that opens.
+    final moves = record
+      && type == TableFieldType.stock
+      && controller.stock != null
+      && (saved?.id.isNotEmpty ?? false);
+
     // How the datum looks is decided by its type, not by this cell: each type
     // that displays differently has its widget in `cells/` (see [SheetCells.value]).
     final Widget content = state == SheetCellState.editing
@@ -155,7 +162,7 @@ class SheetCellView extends StatelessWidget {
           // look like one more datum, but dimmed.
           style: type.semantic
             ? style.semanticValue
-            : editable || record ? style.value : style.readOnlyValue,
+            : editable || moves || record ? style.value : style.readOnlyValue,
           row: row,
           column: position,
           // The column key, not its position: it is with it that a date
@@ -180,7 +187,9 @@ class SheetCellView extends StatelessWidget {
         // Where nothing is written —what the backend carries, a row that has not
         // arrived— neither of the two appears: offering them would be promising
         // something that does not happen.
-        cursor: editable ? type.cursor : SystemMouseCursors.basic,
+        cursor: moves
+          ? SystemMouseCursors.click
+          : editable ? type.cursor : SystemMouseCursors.basic,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           // The cell's context goes with the touch because there is a type that

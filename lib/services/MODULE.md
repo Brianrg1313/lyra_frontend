@@ -435,7 +435,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `TableImportStage`): list, create, rename, delete, import (then `PictureImportService.afterImport`); listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
 - `tables/table_view_service.dart` — `TableViewService` (+ `TableStructureStatus`, `TableViewStatus`,
-  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/`, `/records/images/`; `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
+  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset), `/records/images/`, `writeStock`; `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
+- `tables/table_stock_mover.dart` — `TableStockMover`: the sheet's `StockMover` (moves through `StockSource`, writes the balance in the row).
 - `tables/table_lite_model.dart` — list row (`supplies`: `kind: "supplies"`).
 - `tables/table_detail_model.dart` — `TableDetailModel` and its summaries (`TableColumnsSummary`,
   `TableAgentSummary`, `TableChannelsSummary`, `TableChannelReader`, `TableFieldVisibility`, …).
@@ -449,6 +450,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`: `num`, a supply's decimals), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement` (`num quantity`, `PRESENTATION`, `COST` only on `restock`), `StockBalance` (`num`), `StockOperation`, `StockReason` (`waste`), `stockNum`, `stockFigure`.
 - `movements/stock_ledger_model.dart` — `StockLedgerEntry` (operation, reason, positive `qty` and its `sign`, actor, `madeFor`, `pack`, `cost`, `available` after), `StockLedgerPage`.
+- `movements/stock_mover.dart` — `StockMover`: what the movement form writes through (`StockSummaryService`, `TableStockMover`).
 - `movements/stock_history_service.dart` — `StockHistoryService({productId})`: `POST /inventory/stock/movements` (`PRODUCT_ID`, pages of 30); the dishes a `for` names, from the catalog tables' first rows (`KitchenProductSearch.namesIn`), once.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move
   (sale, restock, another till's hold), carries the balance after it; `exact` keeps a supply's decimals;

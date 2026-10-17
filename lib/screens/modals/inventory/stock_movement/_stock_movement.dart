@@ -5,7 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
-import 'package:app/services/stock/summary/stock_summary_service.dart';
+import 'package:app/services/stock/movements/stock_mover.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
@@ -26,7 +26,7 @@ export 'movement_shape.dart' show StockCounter, StockDirection;
 /// drawing it.
 Future<void> showStockMovement(
   BuildContext context, {
-  required StockSummaryService service,
+  required StockMover service,
   required String productId,
   required StockCounter counter,
   required StockDirection direction,
@@ -90,7 +90,7 @@ class StockMovementModal extends StatefulWidget {
   /// screen.
   static const double width = 420;
 
-  final StockSummaryService service;
+  final StockMover service;
 
   /// The product being written to, which is the id of the row record.
   final String productId;
