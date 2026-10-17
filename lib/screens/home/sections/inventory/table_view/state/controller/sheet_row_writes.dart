@@ -75,6 +75,23 @@ extension SheetRowWrites on SheetController {
 
     if (values.isEmpty) return;
 
+    // A made product is saved with what it consumes, in the same call: asked now, and a row
+    // whose answer is closed stays written, to be left again.
+    RecipeDraft? consumes;
+    final made = this.made;
+
+    if (made != null) {
+      drafts.setSaving(draft, true);
+      consumes = await made.consumesFor(nameOf(row));
+
+      if (_disposed) return;
+
+      if (consumes == null) {
+        drafts.setSaving(draft, false);
+        return;
+      }
+    }
+
     drafts.setSaving(draft, true);
 
     // Noted as persisted before it travels: the service places the record (with what was
@@ -83,7 +100,13 @@ extension SheetRowWrites on SheetController {
     _persisted = draft;
     _persistedAt = service.records;
 
-    final saved = await service.add(_context(), values, row: row);
+    final saved = await service.add(
+      _context(),
+      values,
+      row: row,
+      consumes: consumes?.lines,
+      batch: consumes == null ? null : consumes.mode == RecipeMode.batch
+    );
     if (_disposed) return;
 
     if (!saved) {

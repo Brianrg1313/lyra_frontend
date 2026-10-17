@@ -146,7 +146,7 @@ class InventoryCloudSource implements InventorySource {
 
     if (data == null) throw const UnreadableAnswer("records/list");
 
-    return (page: TableViewModel.fromResponse(data), total: _totalOf(data));
+    return (page: TableViewModel.fromResponse(data, tableId: tableId), total: _totalOf(data));
   }
 
   @override

@@ -8,7 +8,10 @@ import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/kitchen/recipe_availability_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
+import 'package:app/services/inventory/table_record_request.dart';
+import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/deployment.dart';
 
 /// Status of one product's recipe: [none] is a product without one (`404 recipe_not_found`),
 /// news and not an error.
@@ -24,9 +27,12 @@ typedef BatchResult = ({double made, double lost, List<String> skipped});
 /// answers without names). Availability is read again after each write, since a recipe is what
 /// it is measured from.
 class RecipeService extends ChangeNotifier {
-  RecipeService({required this.product});
+  RecipeService({required this.product, InventorySource? records}) : _source = records;
 
   final KitchenProduct product;
+  final InventorySource? _source;
+
+  InventorySource get _records => _source ?? Sources.inventory;
 
   RecipeStatus _status = RecipeStatus.loading;
   Recipe? _recipe;
@@ -110,12 +116,31 @@ class RecipeService extends ChangeNotifier {
   }
 
   /// Creates or replaces the recipe. [names] (product id → name) names the new lines.
+  ///
+  /// A made product's recipe is part of its record (`cocina-frontend.md` §3): it is written as
+  /// the record's `CONSUMES` and `BATCH` (`PUT /inventory/products/records/manage`), which
+  /// answers only the id, so the recipe is read again. A supply's preparation is
+  /// `PUT /inventory/recipes`, which answers it.
   Future<bool> save(
     BuildContext context, {
     required RecipeMode mode,
     required List<RecipeLineDraft> lines,
     Map<String, String> names = const {}
   }) => _write(context, "saveRecipe", () async {
+    if (product.made) {
+      await _records.editRecord(editRecordRequest(
+        tableId: product.tableId,
+        id: product.id,
+        consumes: lines,
+        batch: mode == RecipeMode.batch
+      ));
+
+      final before = _recipe;
+      await _readRecipe();
+      _recipe = _recipe?.namedAfter(before, names);
+      return;
+    }
+
     final saved = Recipe.read(await api.put(
       path: _path,
       version: "v1",
@@ -127,6 +152,10 @@ class RecipeService extends ChangeNotifier {
       _status = RecipeStatus.ready;
     }
   });
+
+  /// Whether the recipe can be removed: a made product never goes without one
+  /// (`409 recipe_required`); deleting it is deleting the record.
+  bool get removable => !product.made;
 
   /// Deletes the recipe: the product has a shelf of its own again (almost always empty).
   Future<bool> remove(BuildContext context) => _write(context, "deleteRecipe", () async {

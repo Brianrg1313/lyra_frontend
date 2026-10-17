@@ -179,6 +179,6 @@ class _Inventory implements InventorySource {
   @override
   Future<List<TableLiteModel>> tables() async => const [
     TableLiteModel(id: "menu", title: "Menu"),
-    TableLiteModel(id: "pantry", title: "Pantry", supplies: true)
+    TableLiteModel(id: "pantry", title: "Pantry", kind: TableKind.supplies)
   ];
 }

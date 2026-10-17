@@ -13,7 +13,8 @@ num kitchenQuantity(double value) => value == value.roundToDouble() ? value.roun
 /// One line of a recipe being written.
 typedef RecipeLineDraft = ({String tableId, String productId, double qty, bool negotiable, double waste});
 
-/// `PUT /inventory/recipes`: creates or replaces [productId]'s recipe.
+/// `PUT /inventory/recipes`: creates or replaces [productId]'s recipe: a supply's preparation
+/// (a made record's travels with the record, `editRecordRequest`).
 Map<String, dynamic> saveRecipeRequest({
   required String tableId,
   required String productId,
@@ -23,16 +24,19 @@ Map<String, dynamic> saveRecipeRequest({
   "TABLE_ID": tableId,
   "PRODUCT_ID": productId,
   "MODE": mode.name,
-  "LINES": [
-    for (final line in lines) {
-      "TABLE_ID": line.tableId,
-      "PRODUCT_ID": line.productId,
-      "QUANTITY": kitchenQuantity(line.qty),
-      if (line.negotiable) "NEGOTIABLE": true,
-      if (line.waste > 0) "WASTE": kitchenQuantity(line.waste)
-    }
-  ]
+  "LINES": recipeLinesRequest(lines)
 };
+
+/// Lines as a recipe takes them, and a made record's `CONSUMES` (the same shape).
+List<Map<String, dynamic>> recipeLinesRequest(List<RecipeLineDraft> lines) => [
+  for (final line in lines) {
+    "TABLE_ID": line.tableId,
+    "PRODUCT_ID": line.productId,
+    "QUANTITY": kitchenQuantity(line.qty),
+    if (line.negotiable) "NEGOTIABLE": true,
+    if (line.waste > 0) "WASTE": kitchenQuantity(line.waste)
+  }
+];
 
 /// `DELETE /inventory/recipes`: the product goes back to a shelf of its own.
 Map<String, dynamic> deleteRecipeRequest({required String tableId, required String productId}) =>

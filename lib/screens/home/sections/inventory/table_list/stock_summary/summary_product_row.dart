@@ -43,10 +43,11 @@ import './summary_value.dart';
 /// a button, besides, left every movement one pixel away from going to another
 /// screen.
 ///
-/// **Where the kitchen is ([recipes]), the photo opens the product's recipe** (`cocina-frontend.md`
-/// §2.1: a dish's recipe lives on the product, in this section). A dish made to order has no
-/// shelf: its stock figure is what its supplies allow, with no buttons (the backend refuses to
-/// move it), and touching it says why («3 left — because of the bacon») by opening the recipe.
+/// **A made product's photo opens what it consumes** ([recipes], `cocina-frontend.md` §3: it is
+/// part of the record). One made to order has no shelf: its stock figure is what its supplies
+/// allow, with no buttons (the backend refuses to move it), and touching it says why («3 left —
+/// because of the bacon») by opening it. One made by the batch keeps its shelf and its
+/// buttons. A catalog product consumes nothing: its photo opens nothing.
 class SummaryProductRow extends StatelessWidget {
   const SummaryProductRow({
     super.key,
@@ -58,7 +59,7 @@ class SummaryProductRow extends StatelessWidget {
     this.recipe
   });
 
-  /// Whether the photo opens the product's recipe.
+  /// Whether the row is a made product's, whose photo opens what it consumes.
   final bool recipes;
 
   /// What the product's recipe makes now; `null` when it has none.
@@ -100,7 +101,7 @@ class SummaryProductRow extends StatelessWidget {
         image: recipes
           ? FocusableWidget(
               action: () => _openRecipe(context),
-              message: S.of(context).stock_summary_recipe,
+              message: S.of(context).made_consumes_open,
               child: SummaryPicture(row: row)
             )
           : SummaryPicture(row: row),
@@ -133,14 +134,14 @@ class SummaryProductRow extends StatelessWidget {
     .map((field) => row[field.key]?.toString().trim() ?? "")
     .firstWhere((value) => value.isNotEmpty, orElse: () => "");
 
-  /// The product's recipe panel; a recipe written, deleted or paused there rereads the rows in
-  /// view, so the dish's figure is the backend's.
+  /// What the made product consumes; written or paused there rereads the rows in view, so its
+  /// figure is the backend's.
   Future<void> _openRecipe(BuildContext context) async {
     final service = context.read<StockSummaryService>();
 
     final changed = await showRecipePanel(
       context,
-      product: KitchenProduct(id: row.id, tableId: service.table, name: _name)
+      product: KitchenProduct(id: row.id, tableId: service.table, name: _name, made: true)
     );
 
     if (changed) await service.syncColumns(service.table);

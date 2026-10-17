@@ -1,3 +1,25 @@
+/// What a table holds (`kind`, `cocina-frontend.md` §1), chosen when it is created and never
+/// changed: the backend keeps a supply's stock in millionths and a made product's stock is
+/// none of its own.
+enum TableKind {
+  /// Bought and sold as it is: its stock is counted by hand. The backend's default.
+  catalog,
+
+  /// What the company makes from its supplies: each record is written with what it consumes,
+  /// and its stock is what those allow (or its shelf, when made by the batch).
+  made,
+
+  /// What the rest is made of: never sold, counted with up to six decimals.
+  supplies;
+
+  /// Anything unknown, or nothing, is a catalog (the backend reads it the same).
+  static TableKind from(dynamic raw) => switch (raw?.toString().trim().toLowerCase()) {
+    "made" => made,
+    "supplies" => supplies,
+    _ => catalog
+  };
+}
+
 /// A product table as returned by `GET /inventory/products/builder/list/`,
 /// but only with what's needed to draw the listing: the identifier, the
 /// title, the description, and how big it is (how many columns and how many
@@ -39,10 +61,15 @@ class TableLiteModel {
   /// Flutter ARGB literal (`0xFF2196F3`) the table is tinted with, or empty.
   final String color;
 
-  /// Whether its rows are supplies (`kind: "supplies"`, `cocina-frontend.md` §2): what the
-  /// company uses to make what it sells. Never sold, never the primary table, and counted
-  /// with decimals. Anything else, or nothing, is a catalog (the backend reads it the same).
-  final bool supplies;
+  /// What its rows are ([TableKind]): the inventory lists catalogs and made products, the
+  /// production line supplies.
+  final TableKind kind;
+
+  /// Its rows are supplies: never sold, never the primary table, counted with decimals.
+  bool get supplies => kind == TableKind.supplies;
+
+  /// Its rows are made products: written with what they consume, their stock not moved by hand.
+  bool get made => kind == TableKind.made;
 
   const TableLiteModel({
     required this.id,
@@ -52,7 +79,7 @@ class TableLiteModel {
     this.records,
     this.primary = false,
     this.color = "",
-    this.supplies = false
+    this.kind = TableKind.catalog
   });
 
   /// Reads a row. Keys are checked in both conventions the backend can send
@@ -74,7 +101,7 @@ class TableLiteModel {
       json["PRIMARY"] ?? json["primary"] ?? json["is_primary"]
     ),
     color: (json["COLOR"] ?? json["color"])?.toString() ?? "",
-    supplies: (json["KIND"] ?? json["kind"])?.toString().trim().toLowerCase() == "supplies"
+    kind: TableKind.from(json["KIND"] ?? json["kind"])
   );
 
   /// Whether the row comes marked as the primary one.
@@ -120,7 +147,7 @@ class TableLiteModel {
       records: records,
       primary: primary,
       color: color,
-      supplies: supplies
+      kind: kind
     );
 
   /// Decodes the list's response without locking to a single format: it

@@ -41,6 +41,7 @@ class StockSummarySection extends StatefulWidget {
     required this.tableId,
     required this.parts,
     this.supplies = false,
+    this.made = false,
     this.status = const [],
     this.source
   });
@@ -50,6 +51,10 @@ class StockSummarySection extends StatefulWidget {
 
   /// The table is one of supplies: its stock moves with decimals.
   final bool supplies;
+
+  /// The table is one of made products: each row's stock is what it consumes allows, and the
+  /// row opens it.
+  final bool made;
 
   /// The summary's source; null reads `Sources.stock`. A seam for tests.
   final StockSource? source;
@@ -66,7 +71,7 @@ class _StockSummarySectionState extends State<StockSummarySection> {
     source: widget.source,
     tableId: widget.tableId,
     supplies: widget.supplies,
-    recipes: !widget.supplies && CapabilityService().shows("supply_chain.recipes")
+    recipes: widget.made && CapabilityService().shows("supply_chain.recipes")
   );
 
   late final ValueListenable<String> _query;

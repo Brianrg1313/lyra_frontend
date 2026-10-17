@@ -41,7 +41,9 @@ const _menu = "550e8400-e29b-41d4-a716-446655440000";
 const _pantry = "550e8400-e29b-41d4-a716-446655440001";
 
 const _catalog = TableLiteModel(id: _menu, title: "Menu", primary: true);
-const _supplies = TableLiteModel(id: _pantry, title: "Pantry", supplies: true);
+const _supplies = TableLiteModel(id: _pantry, title: "Pantry", kind: TableKind.supplies);
+const _burgers = "550e8400-e29b-41d4-a716-446655440002";
+const _made = TableLiteModel(id: _burgers, title: "Burgers", kind: TableKind.made);
 
 void main() {
   setUpAll(() {
@@ -82,6 +84,21 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text("Menu"), findsOneWidget);
     expect(find.text("Pantry"), findsNothing);
+  });
+
+  testWidgets("the inventory opens a made products table beside its catalogs", (tester) async {
+    await inventory(tester, "${HomeSection.inventory.path}/$_burgers", const [_catalog, _made, _supplies]);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text("Burgers"), findsOneWidget);
+    expect(find.text("Pantry"), findsNothing);
+  });
+
+  testWidgets("a company with made products only has them in the inventory", (tester) async {
+    await inventory(tester, HomeSection.inventory.path, const [_made]);
+
+    expect(find.byType(InventoryStart), findsNothing);
+    expect(find.text("Burgers"), findsOneWidget);
   });
 
   testWidgets("a company with supplies tables only is offered to create its products'", (tester) async {
@@ -193,7 +210,7 @@ void main() {
     expect(find.byType(SearchInput), findsOneWidget);
   });
 
-  test("a catalog's summary measures its rows' recipes", () async {
+  test("a made table's summary measures its rows' recipes", () async {
     final measured = <List<String>>[];
     final service = StockSummaryService(
       source: _Stock(),

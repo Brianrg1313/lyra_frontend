@@ -123,8 +123,10 @@ void main() {
       expect(cost.single.lines.single.unitCost, isNull);
     });
 
-    test("a table reads its kind: supplies, else a catalog", () {
+    test("a table reads its kind: supplies, made, else a catalog", () {
       expect(TableLiteModel.fromJson({"id": "t", "name": "Supplies", "kind": "supplies"}).supplies, isTrue);
+      expect(TableLiteModel.fromJson({"id": "t", "name": "Burgers", "kind": "made"}).kind, TableKind.made);
+      expect(TableLiteModel.fromJson({"id": "t", "name": "Burgers", "kind": "made"}).supplies, isFalse);
       expect(TableLiteModel.fromJson({"id": "t", "name": "Menu", "kind": "catalog"}).supplies, isFalse);
       expect(TableLiteModel.fromJson({"id": "t", "name": "Menu"}).supplies, isFalse);
     });
@@ -193,8 +195,9 @@ void main() {
       expect(kitchenWindowRequest(), isEmpty);
     });
 
-    test("a supplies table says its KIND; a catalog sends none", () {
-      expect(createTableRequest(title: "Supplies", description: "", color: "0xFF000000", supplies: true)["KIND"], "supplies");
+    test("a supplies or made table says its KIND; a catalog sends none", () {
+      expect(createTableRequest(title: "Supplies", description: "", color: "0xFF000000", kind: TableKind.supplies)["KIND"], "supplies");
+      expect(createTableRequest(title: "Menu", description: "", color: "0xFF000000", kind: TableKind.made)["KIND"], "made");
       expect(createTableRequest(title: "Menu", description: "", color: "0xFF000000").containsKey("KIND"), isFalse);
     });
   });

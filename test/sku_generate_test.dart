@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
@@ -27,7 +28,9 @@ class _FakeTable extends TableViewService {
   Future<bool> add(
     BuildContext context,
     Map<String, dynamic> values, {
-    List<dynamic>? row
+    List<dynamic>? row,
+    List<RecipeLineDraft>? consumes,
+    bool? batch
   }) async {
     added.add(values);
     return true;

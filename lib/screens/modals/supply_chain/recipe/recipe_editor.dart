@@ -5,7 +5,6 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
-import 'package:app/services/kitchen/recipe_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
@@ -44,39 +43,60 @@ class _LineDraft {
   }
 }
 
-/// What a product is made of, written: how it is made (to order or by the batch), its lines —
-/// how much ONE unit takes, whether it can go without it, what is lost making it — and the
-/// ingredient search that adds one.
+/// What a recipe being written saves: its mode, its lines and their names (product id → name),
+/// so the answer of a write is named.
+typedef RecipeDraft = ({RecipeMode mode, List<RecipeLineDraft> lines, Map<String, String> names});
+
+/// What a product is made of, written: how it is made, its lines — how much ONE unit takes,
+/// whether it can go without it, what is lost making it — and the ingredient search that adds
+/// one.
+///
+/// How it is made follows what the product is (`cocina-frontend.md` §1): a made product is made
+/// to order unless «Made by the batch» is on; a supply's preparation (the house sauce) is
+/// always by the batch, so it asks nothing.
 ///
 /// It checks here what the backend would refuse in the same terms (a quantity above zero, whole
-/// on a product for sale; waste from 0 to under 100; at least one line it can't go without), so
-/// a mistake is said beside the line. The rules only the backend knows (a recipe that contains
-/// itself, more than two levels made to order) come back as its refusal, shown as it comes.
+/// on anything counted in units; waste from 0 to under 100; at least one line it can't go
+/// without), so a mistake is said beside the line. The rules only the backend knows (a recipe
+/// that contains itself, more than two levels made to order) come back as its refusal, shown as
+/// it comes. [onSave] writes it, or hands it back (a made row being created): `false` keeps the
+/// editor open.
 class RecipeEditor extends StatefulWidget {
   const RecipeEditor({
     super.key,
-    required this.service,
+    required this.recipe,
+    required this.supplies,
     required this.canEdit,
-    required this.onSaved,
-    required this.onCancel
+    required this.onSave,
+    required this.onCancel,
+    this.exclude = const {},
+    this.saveLabel
   });
 
-  final RecipeService service;
-  final bool canEdit;
-  final void Function() onSaved;
+  /// What it is made of now; `null` writes the first.
+  final Recipe? recipe;
 
-  /// Leaves the editor without saving. On a product with no recipe, back to «no recipe».
+  /// A supply's preparation: always by the batch.
+  final bool supplies;
+  final bool canEdit;
+  final Future<bool> Function(RecipeDraft draft) onSave;
+
+  /// Leaves the editor without saving.
   final void Function() onCancel;
+
+  /// Product ids not offered as ingredients: the product itself.
+  final Set<String> exclude;
+  final String? saveLabel;
 
   @override
   State<RecipeEditor> createState() => _RecipeEditorState();
 }
 
 class _RecipeEditorState extends State<RecipeEditor> {
-  late RecipeMode _mode = widget.service.recipe?.mode ?? (widget.service.product.supplies ? RecipeMode.batch : RecipeMode.order);
+  late bool _batch = widget.supplies || widget.recipe?.mode == RecipeMode.batch;
 
   late final List<_LineDraft> _lines = [
-    for (final line in widget.service.recipe?.lines ?? const <RecipeLine>[]) _LineDraft(
+    for (final line in widget.recipe?.lines ?? const <RecipeLine>[]) _LineDraft(
       tableId: line.tableId,
       productId: line.productId,
       name: line.name,
@@ -86,13 +106,11 @@ class _RecipeEditorState extends State<RecipeEditor> {
     )
   ];
 
-  late final _modeInput = InputController.select(key: "MODE", initial: _mode.name);
   final _saving = ValueNotifier(false);
   String _error = "";
 
   @override
   void dispose() {
-    _modeInput.dispose();
     _saving.dispose();
     for (final line in _lines) {
       line.dispose();
@@ -120,27 +138,25 @@ class _RecipeEditorState extends State<RecipeEditor> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SelectInput(
-          title: s.supply_chain_mode_title,
-          placeholder: s.supply_chain_mode_order,
-          controller: _modeInput,
-          searchable: false,
-          emptyText: s.supply_chain_pick_empty,
-          onSelected: (option) => setState(() => _mode = RecipeMode.from(option.value)),
-          options: [
-            SelectOption(
-              value: RecipeMode.order.name,
-              placeholder: s.supply_chain_mode_order,
-              subtitle: s.supply_chain_mode_order_note,
-              icon: CI.fire_sqaure
-            ),
-            SelectOption(
-              value: RecipeMode.batch.name,
-              placeholder: s.supply_chain_mode_batch,
-              subtitle: s.supply_chain_mode_batch_note,
-              icon: CI.warehouse
+        if (!widget.supplies) Surface.over(
+          padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
+          child: Row(children: [
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              TextSmall(s.supply_chain_mode_batch, bold: true),
+              TextSmall(
+                _batch ? s.supply_chain_mode_batch_note : s.supply_chain_mode_order_note,
+                lines: 3,
+                color: scheme.text.secondary
+              )
+            ])),
+            SizedBox(width: AppSize.spaceS),
+            Switch(
+              value: _batch,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              activeThumbColor: scheme.primary,
+              onChanged: widget.canEdit ? (value) => setState(() => _batch = value) : null
             )
-          ]
+          ])
         ),
         SizedBox(height: AppSize.spaceXS),
         TextMedium(s.supply_chain_lines_title, bold: true),
@@ -159,7 +175,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
           SizedBox(height: AppSize.spaceXS),
           KitchenProductPicker(
             placeholder: s.supply_chain_lines_add,
-            exclude: {widget.service.product.id, for (final line in _lines) line.productId},
+            exclude: {...widget.exclude, for (final line in _lines) line.productId},
             onPick: _add
           )
         ],
@@ -169,7 +185,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
           Row(children: [
             Expanded(child: Button(title: s.cancel, action: widget.onCancel)),
             SizedBox(width: AppSize.spaceS),
-            Expanded(child: MainButton(title: s.save, loading: _saving, action: _save))
+            Expanded(child: MainButton(title: widget.saveLabel ?? s.save, loading: _saving, action: _save))
           ])
         ]
       ]
@@ -211,20 +227,13 @@ class _RecipeEditorState extends State<RecipeEditor> {
 
     _saving.value = true;
 
-    final done = await widget.service.save(
-      context,
-      mode: _mode,
+    await widget.onSave((
+      mode: _batch ? RecipeMode.batch : RecipeMode.order,
       lines: drafts,
       names: {for (final line in _lines) line.productId: line.name}
-    );
+    ));
 
-    if (!mounted) return;
-    _saving.value = false;
-
-    if (done) {
-      FloatFlag.of(context).message(s.supply_chain_recipe_saved);
-      widget.onSaved();
-    }
+    if (mounted) _saving.value = false;
   }
 }
 

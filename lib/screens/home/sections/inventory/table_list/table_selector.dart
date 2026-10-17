@@ -83,7 +83,8 @@ class TableSelector extends StatelessWidget {
   }
 
   /// What tells a table apart in the list: an import still running, then being the
-  /// primary one, then its description.
+  /// primary one, then its description; a made products' says so first (the inventory lists
+  /// them beside the catalogs).
   String? _subtitle(S s, TableLiteModel option) {
     final stage = stageOf?.call(option.id);
 
@@ -94,8 +95,12 @@ class TableSelector extends StatelessWidget {
       };
     }
 
-    if (option.primary) return s.table_primary;
+    final said = [
+      if (option.made) s.table_kind_made_tag,
+      if (option.primary) s.table_primary
+      else if (option.description.isNotEmpty) option.description
+    ];
 
-    return option.description.isEmpty ? null : option.description;
+    return said.isEmpty ? null : said.join(" · ");
   }
 }

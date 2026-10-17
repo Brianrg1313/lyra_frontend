@@ -47,11 +47,13 @@ import './view_toggle.dart';
 /// company, else the primary one, else the first. A table that is gone (deleted, another
 /// company's link) falls to the next on its own.
 ///
-/// **Only `catalog` tables** (`cocina-frontend.md` §2.1): what is sold. A company's supplies
-/// tables are the production line's, and never listed here; its «Create table» makes a
-/// catalog.
+/// **`catalog` and `made` tables** (`cocina-frontend.md` §2): what is sold, bought ready or
+/// made from supplies. A company's supplies tables are the production line's, and never listed
+/// here; its «Create table» asks which of the two it makes. A made table's records are written
+/// with what they consume (the sheet asks it when a row is written), its stock is what those
+/// allow, and a row opens what it consumes (`showRecipePanel`).
 ///
-/// A company with no catalog table sees [InventoryStart] instead (whatever supplies tables it
+/// A company with neither sees [InventoryStart] instead (whatever supplies tables it
 /// has): the templates for its activity, a blank table and the import. The templates are
 /// read there and only there.
 ///
@@ -311,12 +313,13 @@ class _InventorySectionState extends State<InventorySection> {
         InventoryView.summary => StockSummarySection(
           key: ValueKey("summary_${table.id}"),
           tableId: table.id,
-          supplies: table.supplies,
+          made: table.made,
           parts: parts
         ),
         InventoryView.sheet => TableViewSection(
           key: ValueKey("sheet_${table.id}"),
           tableId: table.id,
+          made: table.made,
           parts: parts
         )
       }

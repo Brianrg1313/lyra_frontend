@@ -13,9 +13,10 @@ enum KitchenProductSearchStatus { idle, loading, ready, error }
 /// line or the products that offer a group pick from.
 ///
 /// It looks in every table at once (the stock summary's `MATCH`, a few rows each): an
-/// ingredient is usually a supply and a dish a catalog's, and the person shouldn't have to say
-/// which. [supplies] narrows to supplies tables, [catalog] to the others. Only the latest search
-/// counts. Created by the picker that uses it.
+/// ingredient is usually a supply, sometimes another made product (the burger in a combo) or a
+/// catalog's bought ready (the can in it), and the person shouldn't have to say which.
+/// [supplies] narrows to supplies tables, [catalog] to the others (catalog and made). Only the
+/// latest search counts. Created by the picker that uses it.
 class KitchenProductSearch extends ChangeNotifier {
   KitchenProductSearch({this.supplies = true, this.catalog = true, InventorySource? inventory, StockSource? stock})
     : _inventory = inventory,
@@ -80,7 +81,7 @@ class KitchenProductSearch extends ChangeNotifier {
       final pages = await Future.wait([
         for (final table in wanted)
           (_stock ?? Sources.stock).summary(page: 1, size: _perTable, match: query, tableId: table.id)
-            .then((page) => KitchenProduct.fromSummary(page, supplies: table.supplies))
+            .then((page) => KitchenProduct.fromSummary(page, supplies: table.supplies, made: table.made))
             .catchError((Object error) {
               if (kDebugMode) print("kitchen search in ${table.id} failed: $error");
               return const <KitchenProduct>[];
@@ -89,9 +90,9 @@ class KitchenProductSearch extends ChangeNotifier {
 
       if (ticket != _ticket) return;
 
-      // Supplies first: a recipe is mostly made of them.
+      // Supplies first, then made products: a recipe is mostly made of them.
       _results = [for (final page in pages) ...page]
-        ..sort((a, b) => a.supplies == b.supplies ? 0 : a.supplies ? -1 : 1);
+        ..sort((a, b) => _rank(a).compareTo(_rank(b)));
       _status = KitchenProductSearchStatus.ready;
     } catch (error) {
       if (kDebugMode) print("kitchen search failed: $error");
@@ -103,6 +104,8 @@ class KitchenProductSearch extends ChangeNotifier {
 
     _notify();
   }
+
+  static int _rank(KitchenProduct product) => product.supplies ? 0 : product.made ? 1 : 2;
 
   void _notify() {
     if (!_disposed) notifyListeners();

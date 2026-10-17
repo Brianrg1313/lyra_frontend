@@ -1,3 +1,4 @@
+import 'package:app/services/kitchen/made_consumes_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 
 /// A column of a table, as described by a page of
@@ -74,11 +75,16 @@ class TableRowModel {
 class TableViewModel {
   const TableViewModel({
     this.columns = const [],
-    this.rows = const []
+    this.rows = const [],
+    this.consumes = const {}
   });
 
   final List<TableColumnModel> columns;
   final List<TableRowModel> rows;
+
+  /// A `made` table's page: what each record consumes and how many can be sold now, by
+  /// record id (`cocina-frontend.md` §3). Empty on any other table.
+  final Map<String, MadeConsumes> consumes;
 
   bool get isEmpty => rows.isEmpty;
 
@@ -106,7 +112,7 @@ class TableViewModel {
         TableColumnModel(id: field.id, name: field.name, type: field.type)
     ];
 
-    if (columns.isEmpty) return TableViewModel(columns: structure, rows: rows);
+    if (columns.isEmpty) return TableViewModel(columns: structure, rows: rows, consumes: consumes);
 
     final order = [for (final field in fields) _positionOf(field)];
     final identifier = _idPosition(order);
@@ -122,7 +128,8 @@ class TableViewModel {
             ],
             id: identifier < 0 ? "" : row.at(identifier)?.toString() ?? ""
           )
-      ]
+      ],
+      consumes: consumes
     );
   }
 
@@ -183,7 +190,9 @@ class TableViewModel {
   /// with the FIELD_ID, the name and the type, or as bare text (in which case
   /// only the name is known). Rows (`values`) are aligned by position with the
   /// headers.
-  factory TableViewModel.fromResponse(dynamic data) {
+  ///
+  /// [tableId] names the table a made page's `consumes` belong to.
+  factory TableViewModel.fromResponse(dynamic data, {String tableId = ""}) {
     if (data is Map) {
       final keys = data["keys"] ?? data["columns"] ?? data["fields"];
       final values = data["values"] ?? data["rows"];
@@ -192,6 +201,7 @@ class TableViewModel {
         final columns = [for (final key in keys) _column(key)];
 
         return TableViewModel(
+          consumes: MadeConsumes.mapFrom(data["consumes"], tableId: tableId),
           columns: columns,
           rows: [
             for (final row in values)
@@ -212,7 +222,16 @@ class TableViewModel {
       // Some endpoints wrap the page (and its pagination metadata) in a key:
       // go down one level to find the data.
       final inner = data["data"] ?? data["results"] ?? data["table"] ?? data["page"];
-      if (inner is List || inner is Map) return TableViewModel.fromResponse(inner);
+      if (inner is List || inner is Map) {
+        final page = TableViewModel.fromResponse(inner, tableId: tableId);
+        if (page.consumes.isNotEmpty || data["consumes"] == null) return page;
+
+        return TableViewModel(
+          columns: page.columns,
+          rows: page.rows,
+          consumes: MadeConsumes.mapFrom(data["consumes"], tableId: tableId)
+        );
+      }
     }
 
     // List of objects: each row is a map. Columns come from the first row

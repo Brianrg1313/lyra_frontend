@@ -32,7 +32,10 @@ Future<bool> showRecipePanel(BuildContext context, {required KitchenProduct prod
   return changed;
 }
 
-/// One product's kitchen page (`cocina-frontend.md` §3, §4, §7, §8).
+/// One product's kitchen page (`cocina-frontend.md` §3, §4, §7, §8): a made product's (from its
+/// inventory row: what it consumes, written as part of the record) or a supply's (how it is
+/// bought, where it is used, and its preparation when the kitchen makes it). A catalog product
+/// consumes nothing and has none.
 ///
 /// Owns its [RecipeService], read when it opens and dropped when it closes. What it offers
 /// follows the person's grants (`supply_chain.recipes.*`) and the recipe's mode: a batch is
@@ -106,12 +109,11 @@ class _RecipePanelState extends State<RecipePanel> {
         if (recipe != null) ..._made(context, recipe),
         if (_editing)
           RecipeEditor(
-            service: _service,
+            recipe: recipe,
+            supplies: widget.product.supplies,
             canEdit: _can("edit"),
-            onSaved: () => setState(() {
-              _editing = false;
-              widget.onChanged();
-            }),
+            exclude: {widget.product.id},
+            onSave: _save,
             onCancel: () => setState(() => _editing = false)
           )
         else if (recipe == null)
@@ -178,14 +180,31 @@ class _RecipePanelState extends State<RecipePanel> {
     ];
   }
 
-  /// A product with no recipe: it keeps a shelf of its own.
+  /// Writes the recipe from the editor; `false` keeps it open (the backend refused it).
+  Future<bool> _save(RecipeDraft draft) async {
+    final s = S.of(context);
+    final done = await _service.save(context, mode: draft.mode, lines: draft.lines, names: draft.names);
+
+    if (!done || !mounted) return done;
+
+    FloatFlag.of(context).message(s.supply_chain_recipe_saved);
+    setState(() => _editing = false);
+    widget.onChanged();
+
+    return true;
+  }
+
+  /// A product with no recipe: a supply bought ready (most of them), which keeps a shelf of its
+  /// own; it can be made a preparation of the kitchen. A made product always has one: none is
+  /// a read that found nothing, and writing it is the way back.
   List<Widget> _none(BuildContext context) {
     final s = S.of(context);
+    final supply = widget.product.supplies;
 
     return [
-      TextMedium(s.supply_chain_no_recipe, bold: true),
-      KitchenNote(text: s.supply_chain_no_recipe_note),
-      if (_can("edit")) Button(title: s.supply_chain_recipe_create, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => setState(() => _editing = true)),
+      TextMedium(supply ? s.supply_chain_preparation_none : s.supply_chain_no_recipe, bold: true),
+      KitchenNote(text: supply ? s.supply_chain_preparation_note : s.supply_chain_made_without_note),
+      if (_can("edit")) Button(title: supply ? s.supply_chain_preparation_create : s.supply_chain_recipe_create, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => setState(() => _editing = true)),
       SizedBox(height: AppSize.spaceS)
     ];
   }
@@ -221,8 +240,11 @@ class _RecipePanelState extends State<RecipePanel> {
         SizedBox(height: AppSize.spaceXS),
         Row(children: [
           Expanded(child: Button(title: s.supply_chain_recipe_edit, leftIcon: Icon(CI.edit, color: ThemeColor.of(context).button.text), action: () => setState(() => _editing = true))),
-          SizedBox(width: AppSize.spaceS),
-          Expanded(child: Button(title: s.supply_chain_recipe_delete, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: _delete))
+          // A made product never goes without what it consumes (`recipe_required`).
+          if (_service.removable) ...[
+            SizedBox(width: AppSize.spaceS),
+            Expanded(child: Button(title: s.supply_chain_recipe_delete, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: _delete))
+          ]
         ])
       ],
       SizedBox(height: AppSize.spaceS)
@@ -303,8 +325,8 @@ class _RecipePanelState extends State<RecipePanel> {
     FloatFlag.of(context).message(s.supply_chain_discarded);
   }
 
-  /// Deleting the recipe leaves the product with a shelf of its own (almost always empty): the
-  /// recipes that use it are said first.
+  /// Deleting a preparation leaves the supply with a shelf of its own, bought ready: the recipes
+  /// that use it are said first.
   Future<void> _delete() async {
     final s = S.of(context);
     final uses = await _service.uses();

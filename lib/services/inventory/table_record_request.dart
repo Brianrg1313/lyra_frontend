@@ -33,9 +33,15 @@
 ///   "DATA": {"a7b8c9": "24.90"}
 /// }
 /// ```
+///
+/// A record of a `made` table carries what it consumes in the same body (`CONSUMES`, and
+/// `BATCH` for «made by the batch», `cocina-frontend.md` §3): all or nothing, the record is not
+/// saved without them.
 library;
 
-/// Builds the creation body of a record.
+// SERVICES
+import 'package:app/services/kitchen/kitchen_request.dart';
+
 /// The id a record creation answers: the cloud's bare id, the engine's `{id}`; empty when
 /// neither says it.
 String createdRecordId(dynamic answer) {
@@ -44,18 +50,37 @@ String createdRecordId(dynamic answer) {
   return "";
 }
 
+/// Builds the creation body of a record; [consumes] and [batch] only on a made one.
 Map<String, dynamic> createRecordRequest({
   required String tableId,
-  required Map<String, dynamic> values
-}) => {"TABLE_ID": tableId, "DATA": values};
+  required Map<String, dynamic> values,
+  List<RecipeLineDraft>? consumes,
+  bool? batch
+}) => {
+  "TABLE_ID": tableId,
+  "DATA": values,
+  if (consumes != null) "CONSUMES": recipeLinesRequest(consumes),
+  "BATCH": ?batch
+};
 
 /// Builds the editing body of a record.
 ///
 /// [id] is the record identifier, the one that comes in the first column of
 /// the data page and that the spreadsheet does not show. Without it there is no edit
 /// possible: it is the only thing that says which row of the table is being written to.
+///
+/// On a made record [consumes] replaces the whole list (every line, not only the one that
+/// changed) and [batch] only its mode; [values] may then be left out: one of the three goes.
 Map<String, dynamic> editRecordRequest({
   required String tableId,
   required String id,
-  required Map<String, dynamic> values
-}) => {"TABLE_ID": tableId, "ID": id, "DATA": values};
+  Map<String, dynamic>? values,
+  List<RecipeLineDraft>? consumes,
+  bool? batch
+}) => {
+  "TABLE_ID": tableId,
+  "ID": id,
+  "DATA": ?values,
+  if (consumes != null) "CONSUMES": recipeLinesRequest(consumes),
+  "BATCH": ?batch
+};

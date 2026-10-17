@@ -45,6 +45,9 @@
 /// ```
 library;
 
+// SERVICES
+import 'package:app/services/stock/tables/table_lite_model.dart';
+
 /// Builds the creation body.
 ///
 /// Trims the texts and omits the description when it ends up empty, instead of
@@ -59,16 +62,15 @@ library;
 /// omitted when none was chosen, so the backend creates the table without
 /// columns just as before.
 ///
-/// [supplies] creates a table of supplies (`KIND: "supplies"`, `cocina-frontend.md` §2): what
-/// the company uses to make what it sells, never sold, counted with up to six decimals. It
-/// can't change afterwards (a supply's stock is kept in millionths), so it only travels when
-/// chosen: a catalog is the backend's default, and a master knows no other kind.
+/// [kind] is what the table holds (`KIND`, `cocina-frontend.md` §2): `made` or `supplies`. It
+/// can't change afterwards, so it only travels when it is not a catalog: that is the backend's
+/// default, and a master knows no other kind.
 Map<String, dynamic> createTableRequest({
   required String title,
   required String description,
   required String color,
   String? template,
-  bool supplies = false
+  TableKind kind = TableKind.catalog
 }) {
   final trimmed = description.trim();
 
@@ -77,7 +79,7 @@ Map<String, dynamic> createTableRequest({
     if (trimmed.isNotEmpty) "DESCRIPTION": trimmed,
     "COLOR": color,
     if (template != null && template.isNotEmpty) "TEMPLATE": template,
-    if (supplies) "KIND": "supplies"
+    if (kind != TableKind.catalog) "KIND": kind.name
   };
 }
 

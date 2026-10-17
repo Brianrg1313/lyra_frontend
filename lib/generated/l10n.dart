@@ -1349,10 +1349,10 @@ class S {
     );
   }
 
-  /// `What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; a dish's recipe is written from its row in Inventory.`
+  /// `What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; what a made product consumes is written with it, in Inventory.`
   String get supply_chain_table_supplies_note {
     return Intl.message(
-      'What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; a dish\'s recipe is written from its row in Inventory.',
+      'What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; what a made product consumes is written with it, in Inventory.',
       name: 'supply_chain_table_supplies_note',
       desc: '',
       args: [],
@@ -1489,16 +1489,6 @@ class S {
     );
   }
 
-  /// `How is it made?`
-  String get supply_chain_mode_title {
-    return Intl.message(
-      'How is it made?',
-      name: 'supply_chain_mode_title',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Sold out`
   String get supply_chain_paused {
     return Intl.message(
@@ -1524,16 +1514,6 @@ class S {
     return Intl.message(
       'No recipe',
       name: 'supply_chain_no_recipe',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Without a recipe it keeps its own stock. Write what it is made of and its stock becomes what its supplies allow.`
-  String get supply_chain_no_recipe_note {
-    return Intl.message(
-      'Without a recipe it keeps its own stock. Write what it is made of and its stock becomes what its supplies allow.',
-      name: 'supply_chain_no_recipe_note',
       desc: '',
       args: [],
     );
@@ -1789,10 +1769,10 @@ class S {
     );
   }
 
-  /// `A product for sale goes in whole units`
+  /// `A product goes in whole units`
   String get supply_chain_line_qty_whole {
     return Intl.message(
-      'A product for sale goes in whole units',
+      'A product goes in whole units',
       name: 'supply_chain_line_qty_whole',
       desc: '',
       args: [],
@@ -1814,6 +1794,86 @@ class S {
     return Intl.message(
       'Create recipe',
       name: 'supply_chain_recipe_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bought ready`
+  String get supply_chain_preparation_none {
+    return Intl.message(
+      'Bought ready',
+      name: 'supply_chain_preparation_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Most supplies are bought ready. If the kitchen makes this one by the batch from other supplies (the house sauce), write what it is made of.`
+  String get supply_chain_preparation_note {
+    return Intl.message(
+      'Most supplies are bought ready. If the kitchen makes this one by the batch from other supplies (the house sauce), write what it is made of.',
+      name: 'supply_chain_preparation_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Prepared in the kitchen`
+  String get supply_chain_preparation_create {
+    return Intl.message(
+      'Prepared in the kitchen',
+      name: 'supply_chain_preparation_create',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What it consumes could not be read. Write it again: a made product is never sold without it.`
+  String get supply_chain_made_without_note {
+    return Intl.message(
+      'What it consumes could not be read. Write it again: a made product is never sold without it.',
+      name: 'supply_chain_made_without_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What does {product} consume?`
+  String made_consumes_title(Object product) {
+    return Intl.message(
+      'What does $product consume?',
+      name: 'made_consumes_title',
+      desc: '',
+      args: [product],
+    );
+  }
+
+  /// `A made product is saved with what it consumes: the row is written once this is.`
+  String get made_consumes_note {
+    return Intl.message(
+      'A made product is saved with what it consumes: the row is written once this is.',
+      name: 'made_consumes_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save product`
+  String get made_consumes_save {
+    return Intl.message(
+      'Save product',
+      name: 'made_consumes_save',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What it consumes`
+  String get made_consumes_open {
+    return Intl.message(
+      'What it consumes',
+      name: 'made_consumes_open',
       desc: '',
       args: [],
     );
@@ -9177,6 +9237,66 @@ class S {
     );
   }
 
+  /// `What does it hold?`
+  String get table_kind_title {
+    return Intl.message(
+      'What does it hold?',
+      name: 'table_kind_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Products`
+  String get table_kind_catalog {
+    return Intl.message(
+      'Products',
+      name: 'table_kind_catalog',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bought and sold as they are: a phone, a can of soda. Their stock is counted by hand.`
+  String get table_kind_catalog_note {
+    return Intl.message(
+      'Bought and sold as they are: a phone, a can of soda. Their stock is counted by hand.',
+      name: 'table_kind_catalog_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Made products`
+  String get table_kind_made {
+    return Intl.message(
+      'Made products',
+      name: 'table_kind_made',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.`
+  String get table_kind_made_note {
+    return Intl.message(
+      'What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.',
+      name: 'table_kind_made_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Made`
+  String get table_kind_made_tag {
+    return Intl.message(
+      'Made',
+      name: 'table_kind_made_tag',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Choose a template`
   String get table_template_placeholder {
     return Intl.message(
@@ -14866,26 +14986,6 @@ class S {
       name: 'stock_reason_spoiled',
       desc: '',
       args: [],
-    );
-  }
-
-  /// `Recipe`
-  String get stock_summary_recipe {
-    return Intl.message(
-      'Recipe',
-      name: 'stock_summary_recipe',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Recipe of {product}`
-  String stock_summary_recipe_of(Object product) {
-    return Intl.message(
-      'Recipe of $product',
-      name: 'stock_summary_recipe_of',
-      desc: '',
-      args: [product],
     );
   }
 

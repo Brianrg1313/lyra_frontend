@@ -19,7 +19,8 @@ class KitchenProduct {
     this.name = "",
     this.unit = "",
     this.stock,
-    this.supplies = false
+    this.supplies = false,
+    this.made = false
   });
 
   final String id;
@@ -34,11 +35,15 @@ class KitchenProduct {
   /// A row of a supplies table: never sold, counted with decimals.
   final bool supplies;
 
+  /// A row of a made table: its recipe is part of the record (written with it, never removed),
+  /// counted in whole units.
+  final bool made;
+
   /// What a list writes for it: its name, or its id when it has none.
   String get label => name.isEmpty ? id : name;
 
   /// The rows of a summary [page], named by its first text column.
-  static List<KitchenProduct> fromSummary(StockSummaryPage page, {bool supplies = false}) {
+  static List<KitchenProduct> fromSummary(StockSummaryPage page, {bool supplies = false, bool made = false}) {
     final columns = page.columns;
     final name = columns.where((column) => !column.isImage && !column.isNumber && !column.type.united).firstOrNull;
     final measure = columns.where((column) => column.type == TableFieldType.measure && column.unit.isNotEmpty).firstOrNull;
@@ -53,7 +58,8 @@ class KitchenProduct {
           ? kitchenText(row.values[unitColumn.key])
           : measure?.unit ?? "",
         stock: kitchenNum(row.values[StockSummaryColumn.stockKey]),
-        supplies: supplies
+        supplies: supplies,
+        made: made
       )
     ];
   }

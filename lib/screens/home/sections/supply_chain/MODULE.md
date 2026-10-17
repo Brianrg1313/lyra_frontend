@@ -15,8 +15,9 @@ and provided by `_supply_chain.dart`; `RecipeService` per opened product panel.
 
 ## Invariants
 
-- Supplies and products never share a section (`cocina-frontend.md` §2.1): this one lists `supplies` tables only, the inventory
-  `catalog` ones; a dish's recipe opens from its inventory row (`SummaryProductRow`).
+- Supplies and products never share a section (`cocina-frontend.md` §2): this one lists `supplies` tables only, the inventory
+  `catalog` and `made` ones; what a made product consumes is part of its record, opened from its inventory row
+  (`SummaryProductRow`, the sheet) and never removed; here a supply's recipe is a preparation (always by the batch).
 - The backend lists no recipes: the recipes tab is a table's stock summary, and `POST /recipes/availability` over each
   page's ids is what marks a product as having one (absent = no recipe).
 - `stock/changed` with `composite: true` moves only a dish's `available`, never a shelf (`StockChangedModel.composite`).
@@ -28,7 +29,7 @@ and provided by `_supply_chain.dart`; `RecipeService` per opened product panel.
 - `kitchen_format.dart` — `kitchenQty` (≤ 6 decimals, unit), `kitchenMoney` (company currency), `kitchenPercent`, `kitchenDay`, `kitchenParse`, `kitchenField`. **Every figure of the section and its panels goes through it.**
 
 ### recipes/
-- `_recipes.dart` — `RecipesTab` (titled «Supplies»; the key stays the permission area's): supplies table selector (inventory's `TableSelector`) + cells switch + search + create (`CreateTableModal(supplies: true)`), the list or the sheet (inventory's `TableViewSection`, where supplies are written; a table with no rows opens on it), more; none → «Create supplies table»; a row opens `showRecipePanel`, then remeasures it.
+- `_recipes.dart` — `RecipesTab` (titled «Supplies»; the key stays the permission area's): supplies table selector (inventory's `TableSelector`) + cells switch + search + create (`CreateTableModal(kind: TableKind.supplies)`), the list or the sheet (inventory's `TableViewSection`, where supplies are written; a table with no rows opens on it), more; none → «Create supplies table»; a row opens `showRecipePanel`, then remeasures it.
 - `recipe_row.dart` — `RecipeRow` (name, mode tag, 86 tag, what it makes now or its stock), `recipeAvailabilityLine` («3 left — because of the bacon»), `RecipeTag`.
 
 ### modifiers/

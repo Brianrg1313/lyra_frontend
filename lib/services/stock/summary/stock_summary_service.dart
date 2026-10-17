@@ -55,10 +55,11 @@ enum StockSummaryStatus { idle, loading, ready, empty, missing, error }
 /// table. The order outlives a search and a reread; it is dropped by a third click on its
 /// title, or when its column leaves the summary or the backend refuses it.
 ///
-/// **A catalog's dishes say what they make** ([recipes], `cocina-frontend.md` §2.1, §4): each
-/// page's ids are measured (`POST /recipes/availability`) and a product with a recipe answers
-/// ([recipeOf]). A dish made to order has no shelf (`onHand: null`): its `stock` is what its
+/// **A made table's rows say what they make** ([recipes], `cocina-frontend.md` §3, §4): each
+/// page's ids are measured (`POST /recipes/availability`), and every record answers
+/// ([recipeOf]). One made to order has no shelf (`onHand: null`): its `stock` is what its
 /// supplies allow, which the backend already writes in the row, and it is never moved by hand.
+/// A catalog product consumes nothing: it is not measured.
 ///
 /// It is ephemeral: owned by the inventory section and discarded when leaving
 /// it. The shell remounts the section when changing company, so there is
@@ -86,7 +87,7 @@ class StockSummaryService extends ChangeNotifier implements StockMover {
   @override
   final bool supplies;
 
-  /// Whether the rows' recipes are measured: a catalog's, where the kitchen is (cloud only).
+  /// Whether the rows' recipes are measured: a made table's, where the kitchen is (cloud only).
   final bool recipes;
 
   final RecipeMeasure? _measure;

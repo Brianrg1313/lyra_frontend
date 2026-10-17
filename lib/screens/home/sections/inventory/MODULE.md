@@ -1,7 +1,7 @@
 # Module: inventory section
 
 **Path** `lib/screens/home/sections/inventory`
-**Role** Product tables, one open at a time (`/home/inventory`; a table's link
+**Role** Product tables (`catalog` and `made`), one open at a time (`/home/inventory`; a table's link
 `/home/inventory/:id`, `parents: ["inventory"]`, opens the same section on it). The bar's title is the
 table selector; the cells switch shows the open table as its stock summary or as the spreadsheet.
 No table → templates by the company's activity, a blank table, the import.
@@ -10,26 +10,27 @@ No table → templates by the company's activity, a blank table, the import.
 `TableTemplatesService`). `PreferencesService`: the open table per company
 (`RememberedSelection.table`) and the view per account (`inventoryView`).
 **Modals** `lib/screens/modals/inventory` (`create_table create_field import_table rename_table
-edit_table_details table_settings stock_movement`) + `modals/shared` (`image_viewer crop_image`).
+edit_table_details table_settings stock_movement made_consumes`) + `modals/shared` (`image_viewer crop_image`) +
+`modals/supply_chain/recipe` (what a made record consumes).
 
 ## table_list/ — the section
 
-- `_table_list.dart` — `InventorySection`: `catalog` tables only (supplies are the production line's; none of its own → `InventoryStart`); resolves the open table (link → remembered → primary → first), builds the
+- `_table_list.dart` — `InventorySection`: `catalog` and `made` tables (supplies are the production line's; none of its own → `InventoryStart`); create asks which of the two; resolves the open table (link → remembered → primary → first), builds the
   bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table (a table with no rows: the sheet, no switch); an importing table shows its stage
   instead (`TablesService.importStage`); no table → `InventoryStart`. The bar's right end: table options (⋯), import, create (modal);
   their flows live here.
 - `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view: selector and controls left, the view's status centred, the view's then the section's actions against the right edge. Every control in it is `AppSize.button` tall (core's `Button` is).
-- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables); `table_dot.dart` — `TableDot`.
+- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables; a made one says «Made»); `table_dot.dart` — `TableDot`.
 - `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`; or the opener's `sheet`/`onSwitch`, the supplies tab's).
 - `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
 - `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches and `inventory.transfers`.
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
 - `pictures_button.dart` — `PicturesButton`: the imported pictures' state (downloading / without their file / failed), opens `showImportPictures`; in the bar only while something is pending or failed (`PicturesButton.shown`). The section's first frame runs `PictureImportService.check`.
-- `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts, supplies})`: owns that table's `StockSummaryService` (a supplies table's moves with decimals), fixed column header over a `ListView`; header search → `MATCH`.
+- `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts, supplies, made})`: owns that table's `StockSummaryService` (a supplies table's moves with decimals; a made one's rows measured), fixed column header over a `ListView`; header search → `MATCH`.
 - `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
-- `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched); with `supply_chain.recipes` the photo opens the product's `showRecipePanel`, and a dish made to order's stock is what its supplies allow, no stepper.
+- `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched); on a made table (with `supply_chain.recipes`) the photo opens what the record consumes (`showRecipePanel`), and one made to order's stock is what its supplies allow, no stepper; a catalog row opens no recipe.
 - `stock_summary/summary_header.dart` — `SummaryHeader` (a title click orders by its column: `summary_sort_title.dart` — `SummarySortTitle`); `stock_summary/summary_product_row.dart` — `SummaryProductRow`; `stock_summary/summary_line.dart` — `SummaryLine`.
 - `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`; the stock figure opens `showStockHistory` (`inventory.history`).
 - `stock_summary/summary_value.dart` — `SummaryValue`; `summary_number.dart` — `SummaryNumber`; `summary_picture.dart` — `SummaryPicture`.
@@ -45,14 +46,14 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 cell rebuild never rebuilds the sheet. Row 1 is the *fields* row (cursor index `-1`); body rows
 from 0. The last column is a *free column*: typing a title creates a field.
 
-- `_table_view.dart` — `TableViewSection({supplies})` (`routeKey`: a table's link, which the shell maps to `InventorySection`); also the supply chain's supplies sheet.
+- `_table_view.dart` — `TableViewSection({supplies, made})` (`routeKey`: a table's link, which the shell maps to `InventorySection`); also the supply chain's supplies sheet; `made` gives the controller its `SheetMade` (`showMadeConsumes`, `showRecipePanel`).
 - `table_view_body.dart` — `TableViewBody`: loading / error / the sheet, by the structure's status only.
 - `table_header.dart` — `TableHeader`: the section's `InventoryBar` with the import stage, read/save state, normalize.
 - `header_actions.dart` — `HeaderActions`: record-load state, search.
 - `normalize_button.dart` — `NormalizeButton`: `TableViewService.normalize`; shown where `inventory.import` is.
 - `sheet.dart` — `Sheet`: frozen gutter band + data band.
 - `sheet_style.dart` — `SheetStyle`: paint data resolved once per sheet; `sheet_theme.dart` — `SheetTheme` (`InheritedWidget`); `sheet_row_fill.dart` — `SheetRowFill`.
-- `gutter.dart` — `SheetGutter`: row numbers; `gutter_cell.dart` — `GutterCell`.
+- `gutter.dart` — `SheetGutter`: row numbers; `gutter_cell.dart` — `GutterCell` (a made record's number opens what it consumes).
 - `body.dart` — `SheetBody`: records + blank rows being written.
 - `fields_row.dart` / `field_cell.dart` — row 1 and its cells.
 - `type_arrow.dart` — `TypeArrow`: field-type menu, changes a column's type.
@@ -64,7 +65,8 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
   `uploading`, editor, serialized write queues (columns, rows). Its writes are `part`s in `state/controller/`, extensions on it
-  (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks` `SheetStockMoves`): import the controller alone. A record's `STOCK` cell unfolds put / take and opens `showStockMovement` (`stock`: `TableStockMover`).
+  (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks` `SheetStockMoves` `SheetMadeRecords`): import the controller alone. A record's `STOCK` cell unfolds put / take and opens `showStockMovement` (`stock`: `TableStockMover`); a made record's made to order opens what it consumes instead (`SheetMadeRecords`).
+- `state/sheet_made.dart` — `SheetMade`: a made table's hooks (ask what a written row consumes before it is saved; open a record's).
 - `state/sheet_columns.dart` — `SheetColumns`; `state/sheet_column.dart` — `SheetColumn`; `state/sheet_shape.dart` — `SheetShape`.
 - `state/sheet_cursor.dart` — `SheetCursor`; `state/sheet_cell.dart` — `SheetCell`, `SheetCellState`, `kFieldsRow`.
 - `state/sheet_drafts.dart` — `SheetDrafts`: unsaved rows; `state/sheet_draft.dart` — `SheetDraft`.
@@ -87,6 +89,12 @@ The pictures an image column names become files behind the import (backend `Inge
 part is `PictureImportService` (`lib/services/MODULE.md`): it downloads what the cloud was refused with
 nobody asking, and the panel (`modals/inventory/import_pictures`) hands over the named files from a folder or a zip.
 A name still waiting draws as a plain picture glyph in its cell (`ProductImage.isPending`).
+
+## Made tables (`cocina-frontend.md` §3)
+
+- A made record is saved with what it consumes in the same `records/manage` call (`CONSUMES`, `BATCH`): the sheet asks
+  it (`SheetMade.consumesFor`) when a written row is left, and a row whose question is closed stays unsaved. Its cells
+  are edited like any record's (`DATA` alone keeps what it consumes).
 
 ## Conventions
 

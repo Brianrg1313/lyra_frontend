@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/inventory/table_template.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
@@ -20,18 +21,19 @@ import 'package:core/button.dart';
 /// neither knows nor creates columns on its own.
 ///
 /// It is a modal and not a screen because the form is short and fixed-size.
-/// It is opened from the inventory section ([InventorySection]) and from the production
+/// It is opened from the inventory section (`InventorySection`) and from the production
 /// line's supplies tab, which, when it closes with the new table's id, reload their tables
 /// and open that one.
 ///
-/// **The kind is the opener's, never asked** ([supplies], `cocina-frontend.md` §2.1): each
-/// section lists one kind of table only, so its «New table» makes that kind. The backend
-/// never lets it change.
+/// **The kind** (`cocina-frontend.md` §2) is the opener's when it gives one ([kind]: the
+/// production line makes supplies, never asked); the inventory lists products and made
+/// products together, so there it is asked, a catalog unless picked. The backend never lets
+/// it change.
 class CreateTableModal extends StatefulWidget {
-  const CreateTableModal({super.key, this.supplies = false});
+  const CreateTableModal({super.key, this.kind});
 
-  /// A table of supplies (`KIND: "supplies"`), else a catalog.
-  final bool supplies;
+  /// What the table holds; `null` asks between a catalog and made products.
+  final TableKind? kind;
 
   @override
   State<CreateTableModal> createState() => _CreateTableModalState();
@@ -77,6 +79,15 @@ class _CreateTableModalState extends State<CreateTableModal> {
     initial: TableTemplate.blank
   );
 
+  /// What the table holds when it is asked ([CreateTableModal.kind] null).
+  late final _kind = InputController.select(
+    key: "KIND",
+    form: _form,
+    initial: TableKind.catalog.name
+  );
+
+  TableKind get _picked => widget.kind ?? TableKind.from(_kind.value);
+
   /// The create request asks for a header color even though the form no longer
   /// asks for one, so it travels fixed: any red, literal Flutter ARGB (`0x`
   /// plus 8 hex digits, alpha first), which is the only format accepted.
@@ -97,7 +108,28 @@ class _CreateTableModalState extends State<CreateTableModal> {
       children: [
         Padding(
           padding: EdgeInsets.only(bottom: AppSize.spaceS),
-          child: TextMedium(widget.supplies ? S.of(context).table_kind_supplies_note : S.of(context).create_table_subtitle)
+          child: TextMedium(widget.kind == TableKind.supplies ? S.of(context).table_kind_supplies_note : S.of(context).create_table_subtitle)
+        ),
+        if (widget.kind == null) SelectInput(
+          title: S.of(context).table_kind_title,
+          placeholder: S.of(context).table_kind_catalog,
+          emptyText: S.of(context).table_template_empty,
+          controller: _kind,
+          searchable: false,
+          options: [
+            SelectOption(
+              value: TableKind.catalog.name,
+              placeholder: S.of(context).table_kind_catalog,
+              subtitle: S.of(context).table_kind_catalog_note,
+              icon: CI.product
+            ),
+            SelectOption(
+              value: TableKind.made.name,
+              placeholder: S.of(context).table_kind_made,
+              subtitle: S.of(context).table_kind_made_note,
+              icon: CI.fire_sqaure
+            )
+          ]
         ),
         Input(
           title: S.of(context).table_title_input,
@@ -157,6 +189,6 @@ class _CreateTableModalState extends State<CreateTableModal> {
     description: _description.value,
     color: _color,
     template: _template.value == TableTemplate.blank ? null : _template.value,
-    supplies: widget.supplies
+    kind: _picked
   );
 }

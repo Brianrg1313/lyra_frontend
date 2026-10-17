@@ -35,6 +35,9 @@ import './recipe_row.dart';
 /// recipe from its own rows. With none the tab offers to create the first («New table» makes
 /// supplies here, never asked).
 ///
+/// A supply can be a preparation (the house sauce, made by the batch from other supplies): its
+/// panel writes that recipe.
+///
 /// **The supplies are written in the sheet** (the inventory's [TableViewSection], here for a
 /// supplies table): the cells switch swaps the list for it, and a table with no rows opens on
 /// it, since the inventory never lists a supplies table and there is no other place to fill
@@ -92,7 +95,7 @@ class _RecipesTabState extends State<RecipesTab> {
     final id = await showModal(
       context: context,
       title: S.of(context).supply_chain_table_create,
-      builder: (BuildContext context) => const CreateTableModal(supplies: true)
+      builder: (BuildContext context) => const CreateTableModal(kind: TableKind.supplies)
     );
 
     if (!mounted || id is! String) return;

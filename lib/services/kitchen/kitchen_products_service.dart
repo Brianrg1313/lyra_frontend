@@ -240,7 +240,8 @@ class KitchenProductsService extends ChangeNotifier {
       name: product.name,
       unit: product.unit,
       stock: notice.exact,
-      supplies: product.supplies
+      supplies: product.supplies,
+      made: product.made
     );
 
     // A batch's shelf is its own stock: its figure follows.
