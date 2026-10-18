@@ -9889,6 +9889,26 @@ class S {
     );
   }
 
+  /// `Units`
+  String get product_table_view_unit_count {
+    return Intl.message(
+      'Units',
+      name: 'product_table_view_unit_count',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `u`
+  String get product_table_view_unit_count_symbol {
+    return Intl.message(
+      'u',
+      name: 'product_table_view_unit_count_symbol',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{count, plural, =0{No rows match your search} =1{1 row matches} other{{count} rows match}}`
   String product_table_view_search_count(num count) {
     return Intl.plural(

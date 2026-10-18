@@ -74,6 +74,7 @@ abstract final class SheetCells {
       style: style,
       alignment: alignment,
       symbol: unit,
+      counts: type == TableFieldType.measure,
       row: row,
       onPickUnit: type == TableFieldType.measure ? onPickUnit : null
     ),

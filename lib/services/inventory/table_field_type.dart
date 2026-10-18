@@ -317,8 +317,9 @@ enum TableFieldType {
     price ||
     currency ||
     discount ||
-    percentage ||
-    measure => const TextInputType.numberWithOptions(decimal: true),
+    percentage => const TextInputType.numberWithOptions(decimal: true),
+    // A measure's unit can be typed after its number («300 lt»), so it needs letters.
+    measure => TextInputType.text,
     email => TextInputType.emailAddress,
     phone => TextInputType.phone,
     url => TextInputType.url,

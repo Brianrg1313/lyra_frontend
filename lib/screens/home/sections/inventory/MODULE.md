@@ -62,12 +62,12 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).
 - `column_drag.dart` — `ColumnDrag`: carried column, drop line; `column_drag_ghost.dart` — `ColumnDragGhost`.
 - `cells/_cells.dart` — dispatch by `TableFieldType`; `boolean_cell` (switch, a tap flips it) `date_cell` `image_cell` `listed_cell`
-  (`OPTIONS`; `CATEGORIES`/`SIZES` are ticked in core's `showCheckMenu`) `price_cell` `sku_cell` `unit_cell` (number + unit/percent; a measure's unit is a button that changes the column's).
+  (`OPTIONS`; `CATEGORIES`/`SIZES` are ticked in core's `showCheckMenu`) `price_cell` `sku_cell` `unit_cell` (number + its unit/percent attached, `30l`; a measure without one counts units, `5u`; its ruler button changes the column's unit).
 - `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
   `uploading`, editor, serialized write queues (columns, rows), the table's `kind`. Its writes are `part`s in `state/controller/`, extensions on it
   (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks` `SheetStockMoves`
-  `SheetCellPicks`: a yes/no flipped, a date's calendar from its button, a measure column's unit): import the controller alone. A record's `STOCK` cell unfolds put / take and opens `showStockMovement` (`stock`: `TableStockMover`).
+  `SheetCellPicks`: a yes/no flipped, a date's calendar from its button, a measure column's unit, picked or typed after a number on leaving the cell): import the controller alone. A record's `STOCK` cell unfolds put / take and opens `showStockMovement` (`stock`: `TableStockMover`).
 - `state/sheet_columns.dart` — `SheetColumns`; `state/sheet_column.dart` — `SheetColumn`; `state/sheet_shape.dart` — `SheetShape`.
 - `state/sheet_cursor.dart` — `SheetCursor`; `state/sheet_cell.dart` — `SheetCell`, `SheetCellState`, `kFieldsRow`.
 - `state/sheet_drafts.dart` — `SheetDrafts`: unsaved rows; `state/sheet_draft.dart` — `SheetDraft`.

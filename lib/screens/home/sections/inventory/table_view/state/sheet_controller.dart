@@ -383,6 +383,7 @@ class SheetController {
 
     if (commit) {
       _normalizeDate(cell);
+      _readUnit(cell);
       this.commit();
     }
 

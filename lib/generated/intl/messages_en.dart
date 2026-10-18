@@ -5554,6 +5554,11 @@ class MessageLookup extends MessageLookupByLibrary {
         ),
     "product_table_view_title": MessageLookupByLibrary.simpleMessage("Table"),
     "product_table_view_unit": MessageLookupByLibrary.simpleMessage("Unit"),
+    "product_table_view_unit_count": MessageLookupByLibrary.simpleMessage(
+      "Units",
+    ),
+    "product_table_view_unit_count_symbol":
+        MessageLookupByLibrary.simpleMessage("u"),
     "product_table_view_unit_hint": MessageLookupByLibrary.simpleMessage(
       "Change the unit of this whole column",
     ),

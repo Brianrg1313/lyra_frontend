@@ -416,7 +416,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `import_source.dart` — `ImportSource`, `ImportSourceGroup`.
 - `product_date.dart` — `ProductDate`, `DateSeparatorFormatter`.
 - `field_boolean.dart` — `BOOLEAN` cells: `fieldBoolean` (engine boolean, numbers, written yes/no), `fieldBooleanValue`.
-- `measure_units.dart` — `measureUnits`, `MeasureUnit`, `MeasureMagnitude`: the units a `MEASURE` column is offered in.
+- `measure_units.dart` — `measureUnits`, `MeasureUnit`, `MeasureMagnitude`: the units a `MEASURE` column is offered in; `measureSymbolOf`, `splitMeasure`: a unit typed after a number («300lt», «5 uds» → units).
 - `product_image.dart` — `ProductImage`: thumbnail sizing/URLs; a stored id, an import's address, or a file name waiting for its file (`missing`, kept in the cell).
 - `picture_key.dart` — `pictureKey` (equal to the backend's `Ingest.key`), `isPictureName`, `looksLikePicture` (bytes sniff).
 - `picture_import_model.dart` — `PictureProgress` (`image/progress` and `…/status` counters, changed `tables`), `PictureImportStatus` (+ `names`, `failures`), `PictureFailure`.

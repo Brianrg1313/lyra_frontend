@@ -1028,6 +1028,8 @@
   "product_table_view_unit_weight": "Weight",
   "product_table_view_unit_volume": "Volume",
   "product_table_view_unit_length": "Length",
+  "product_table_view_unit_count": "Units",
+  "product_table_view_unit_count_symbol": "u",
   "product_table_view_search_count": "{count, plural, =0{No rows match your search} =1{1 row matches} other{{count} rows match}}",
   "product_table_view_image_view": "View image",
   "product_table_view_image_upload": "Upload image",

@@ -6,7 +6,7 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_style.dart'
 import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart';
 
 /// The cell of a number that reads **with a symbol behind it**: a measurement
-/// with its unit (`1,5 kg`) or a percentage with its sign (`16%`).
+/// with its unit (`1,5kg`) or a percentage with its sign (`16%`).
 ///
 /// It's [PriceCell]'s sibling for what isn't money, and it has to be another
 /// one for two reasons: the symbol always goes on the right —no unit is written
@@ -24,10 +24,13 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart'
 /// "consult" or "on request" shows as is: putting `kg` behind it would
 /// affirm that there's a weight there.
 ///
-/// A measure's symbol is a button ([onPickUnit]) that changes the unit of **the
-/// whole column**, like a date's format button: a column is counted in one unit,
-/// so a row in grams and the next in kilos would stop comparing at a glance.
-/// Without a unit yet, the button is a ruler.
+/// The symbol goes attached to the number (`30l`, `16%`): it is read as one word,
+/// and the cell is narrow.
+///
+/// A measure's button at its right ([onPickUnit]) changes the unit of **the
+/// whole column**, like a date's calendar button: a column is counted in one
+/// unit, so a row in grams and the next in kilos would stop comparing at a
+/// glance. A measure that declared none counts units ([counts]): `5u`.
 class UnitCell extends StatelessWidget {
   const UnitCell({
     super.key,
@@ -35,6 +38,7 @@ class UnitCell extends StatelessWidget {
     required this.style,
     required this.alignment,
     required this.symbol,
+    this.counts = false,
     this.row = 0,
     this.onPickUnit
   });
@@ -53,6 +57,10 @@ class UnitCell extends StatelessWidget {
   /// hasn't declared its own yet, and there the cell is the bare number.
   final String symbol;
 
+  /// Whether an empty [symbol] reads as units (a measure's default) instead of
+  /// as the bare number.
+  final bool counts;
+
   /// Which row of the sheet it's in: it decides the button's fill (see
   /// [SheetStyle.frameFill]).
   final int row;
@@ -68,77 +76,62 @@ class UnitCell extends StatelessWidget {
     final number = trimmed.isEmpty
       ? null
       : double.tryParse(trimmed.replaceAll(",", "."));
+    final shown = symbol.isEmpty && counts
+      ? S.of(context).product_table_view_unit_count_symbol
+      : symbol;
 
-    if (number != null && onPickUnit != null) return _picker(context);
-
-    if (number == null || symbol.isEmpty) {
-      return Text(
-        value,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: alignment,
-        style: style
-      );
-    }
-
-    return Text.rich(
-      TextSpan(children: [
-        TextSpan(text: value),
-        // The gap travels with the symbol and not loose, so it's painted in its
-        // same style (just like in [PriceCell]). The percentage goes attached
-        // —`16%`, never `16 %`— and a unit detached, which is how they're
-        // written.
-        TextSpan(
-          text: symbol == "%" ? symbol : " $symbol",
-          style: SheetTheme.of(context).symbol
+    final text = number == null || shown.isEmpty
+      ? Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: alignment,
+          style: style
         )
-      ]),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      textAlign: alignment,
-      style: style
-    );
+      : Text.rich(
+          TextSpan(children: [
+            TextSpan(text: trimmed),
+            // In its own style, gray behind the number, just like in [PriceCell].
+            TextSpan(text: shown, style: SheetTheme.of(context).symbol)
+          ]),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: alignment,
+          style: style
+        );
+
+    if (number == null || onPickUnit == null) return text;
+
+    return Row(children: [
+      Expanded(child: text),
+      SizedBox(width: AppSize.gap * .5),
+      _button(context)
+    ]);
   }
 
-  /// The number and, at its right, the column's unit as a button.
-  Widget _picker(BuildContext context) {
+  /// The column's units, as a ruler at the right of the number.
+  Widget _button(BuildContext context) {
     final sheet = SheetTheme.of(context);
-    final empty = symbol.isEmpty;
 
     // A bit taller than a letter, like the date's and the SKU's buttons: it
     // reads as a button without weighing like a toolbar one.
     final size = AppSize.text * 1.8;
 
-    return Row(children: [
-      Expanded(child: Text(
-        value,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: alignment,
-        style: style
-      )),
-      SizedBox(width: AppSize.gap * .5),
-      Tooltip(
-        message: S.of(context).product_table_view_unit_hint,
-        child: Builder(builder: (anchor) => FeedbackButton(
-          message: S.of(context).product_table_view_unit,
-          height: size,
-          width: empty ? size : null,
-          radius: sheet.frameRadius,
-          color: sheet.frameFill(row: row),
-          action: () => onPickUnit!(anchor),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: empty ? 0 : AppSize.gap),
-            child: Center(widthFactor: 1, child: empty
-              ? Icon(
-                  Icons.straighten,
-                  size: AppSize.text,
-                  color: sheet.scheme.text.primary
-                )
-              : Text(symbol, maxLines: 1, style: sheet.symbol))
-          )
+    return Tooltip(
+      message: S.of(context).product_table_view_unit_hint,
+      child: Builder(builder: (anchor) => FeedbackButton(
+        message: S.of(context).product_table_view_unit,
+        height: size,
+        width: size,
+        radius: sheet.frameRadius,
+        color: sheet.frameFill(row: row),
+        action: () => onPickUnit!(anchor),
+        child: Center(child: Icon(
+          Icons.straighten,
+          size: AppSize.text,
+          color: sheet.scheme.text.primary
         ))
-      )
-    ]);
+      ))
+    );
   }
 }

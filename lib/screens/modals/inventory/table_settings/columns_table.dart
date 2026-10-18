@@ -483,9 +483,13 @@ class _Unit extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
     final empty = field.unit.isEmpty;
+    // A measure without a unit counts units (see `UnitCell`).
+    final none = field.type == TableFieldType.measure
+      ? S.of(context).product_table_view_unit_count
+      : S.of(context).table_settings_unit_empty;
 
     return SettingsSelect(
-      label: empty ? S.of(context).table_settings_unit_empty : field.unit,
+      label: empty ? none : field.unit,
       color: empty ? scheme.text.secondary : null,
       message: S.of(context).table_settings_pick_unit,
       open: _open
@@ -498,12 +502,17 @@ class _Unit extends StatelessWidget {
       options: [
         if (field.unit.isNotEmpty) ...[
           SelectOption(value: field.unit, placeholder: field.unit),
-          SelectOption(
+          if (field.type != TableFieldType.measure) SelectOption(
             value: "",
             placeholder: S.of(anchor).table_settings_unit_none,
             icon: Icons.remove
           )
         ],
+        if (field.type == TableFieldType.measure) SelectOption(
+          value: "",
+          placeholder: S.of(anchor).product_table_view_unit_count,
+          subtitle: S.of(anchor).product_table_view_unit_count_symbol
+        ),
         if (field.type == TableFieldType.measure)
           for (final unit in measureUnits)
             if (unit.symbol != field.unit) SelectOption(value: unit.symbol, placeholder: unit.symbol),

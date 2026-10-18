@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // PACKAGES
@@ -7,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:core/kit/app_size.dart';
 import 'package:core/kit/theme_color.dart';
 
+import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/inventory/table_field_type.dart';
@@ -20,7 +22,7 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart'
 const double _kRowHeight = 32;
 const double _kCellWidth = 200;
 
-/// El bloque `currencies` de `/init`, recortado a lo que hace falta aca.
+/// The `/init` `currencies` block, trimmed to what is needed here.
 Map<String, dynamic> _catalog() => {
   "keys": [
     "code", "name", "symbol", "position", "locale", "space", "decimals", "type"
@@ -32,10 +34,10 @@ Map<String, dynamic> _catalog() => {
   ]
 };
 
-/// Monta una celda suelta con el mismo estilo que le baja la planilla.
+/// Mounts a lone cell with the same style the sheet hands down.
 ///
-/// La empresa no declara moneda: asi lo unico que puede poner un simbolo en una
-/// celda de dinero es la unidad de la columna, que es lo que se mide.
+/// The company declares no currency: so the only thing that can put a symbol in a
+/// money cell is the column's unit, which is what is measured.
 Future<void> _cell(
   WidgetTester tester, {
   required TableFieldType type,
@@ -47,6 +49,13 @@ Future<void> _cell(
     child: ChangeNotifierProvider<CurrencyCatalogService>.value(
       value: CurrencyCatalogService(),
       child: MaterialApp(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ],
+        supportedLocales: S.delegate.supportedLocales,
         home: Builder(builder: (context) {
           AppSize.instance(context);
 
@@ -81,11 +90,11 @@ Future<void> _cell(
     )
   ));
 
-  await tester.pump();
+  await tester.pumpAndSettle();
 }
 
-/// Lo que se lee en la celda, juntando los dos pesos con los que se pinta: el
-/// numero con el color del dato y el simbolo en gris.
+/// What the cell reads, joining the two weights it is painted in: the number in
+/// the datum's color and the symbol in gray.
 String _read(WidgetTester tester) =>
   tester.widget<Text>(find.byType(Text).first).textSpan?.toPlainText() ??
   tester.widget<Text>(find.byType(Text).first).data ??
@@ -100,8 +109,8 @@ void main() {
   setUp(() => CurrencyCatalogService().seed(_catalog()));
   tearDown(() => CurrencyCatalogService().clear());
 
-  group('el dinero se escribe con la moneda de su columna', () {
-    testWidgets('un precio con moneda propia lleva ese simbolo', (tester) async {
+  group("money is written with its column's currency", () {
+    testWidgets('a price with its own currency carries that symbol', (tester) async {
       await _cell(
         tester,
         type: TableFieldType.price,
@@ -112,12 +121,12 @@ void main() {
       expect(_read(tester), r"$22.23");
     });
 
-    testWidgets('un importe que no es el precio se escribe igual', (
+    testWidgets('an amount that is not the price is written the same', (
       tester
     ) async {
-      // `currency` es cualquier otro dinero —un costo, un mayorista— y se lee
-      // como un precio: lo que los separa es quien puede decirlo en voz alta,
-      // que es asunto del agente y no de la planilla.
+      // `currency` is any other money —a cost, a wholesale price— and reads
+      // like a price: what separates them is who may say it out loud, which is
+      // the agent's business and not the sheet's.
       await _cell(
         tester,
         type: TableFieldType.currency,
@@ -128,10 +137,10 @@ void main() {
       expect(_read(tester), "22,23 €");
     });
 
-    testWidgets('una moneda que el catalogo no tiene se escribe con su codigo', (
+    testWidgets('a currency the catalog lacks is written with its code', (
       tester
     ) async {
-      // Ponerle otro simbolo seria mentir sobre el dato.
+      // Any other symbol would lie about the datum.
       await _cell(
         tester,
         type: TableFieldType.price,
@@ -142,7 +151,7 @@ void main() {
       expect(_read(tester), contains("COP"));
     });
 
-    testWidgets('lo que no es un importe se muestra tal como se guardo', (
+    testWidgets('what is not an amount shows as it was saved', (
       tester
     ) async {
       await _cell(
@@ -156,8 +165,8 @@ void main() {
     });
   });
 
-  group('la medida y el porcentaje llevan su simbolo detras', () {
-    testWidgets('una medida lleva la magnitud de su columna, despegada', (
+  group('a measure and a percentage carry their symbol behind', () {
+    testWidgets("a measure carries its column's unit, attached", (
       tester
     ) async {
       await _cell(
@@ -167,24 +176,24 @@ void main() {
         unit: "kg"
       );
 
-      expect(_read(tester), "1.5 kg");
+      expect(_read(tester), "1.5kg");
     });
 
-    testWidgets('un porcentaje lleva su signo puesto y pegado', (tester) async {
-      // Ahi la unidad **es** el tipo, asi que la columna no declara ninguna.
+    testWidgets('a percentage carries its sign, attached', (tester) async {
+      // There the unit **is** the type, so the column declares none.
       await _cell(tester, type: TableFieldType.percentage, value: "16");
 
       expect(_read(tester), "16%");
     });
 
-    testWidgets('una medida sin magnitud es el numero pelado', (tester) async {
-      await _cell(tester, type: TableFieldType.measure, value: "1.5");
+    testWidgets('a measure without a unit counts units', (tester) async {
+      await _cell(tester, type: TableFieldType.measure, value: "5");
 
-      expect(find.text("1.5"), findsOneWidget);
+      expect(_read(tester), "5u");
     });
 
-    testWidgets('lo que no es un numero no lleva simbolo', (tester) async {
-      // Ponerle `kg` detras seria afirmar que ahi hay un peso.
+    testWidgets('what is not a number carries no symbol', (tester) async {
+      // A `kg` behind it would claim there is a weight there.
       await _cell(
         tester,
         type: TableFieldType.measure,
