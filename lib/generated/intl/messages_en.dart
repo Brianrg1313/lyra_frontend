@@ -5489,6 +5489,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_table_view_date_none": MessageLookupByLibrary.simpleMessage(
       "No date",
     ),
+    "product_table_view_date_pick": MessageLookupByLibrary.simpleMessage(
+      "Pick a date",
+    ),
     "product_table_view_date_short": MessageLookupByLibrary.simpleMessage(
       "Written date",
     ),

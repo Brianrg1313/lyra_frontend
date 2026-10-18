@@ -9,17 +9,14 @@ extension SheetCellPicks on SheetController {
     _writeOption(cell, fieldBooleanValue(!(fieldBoolean(rawOf(cell)) ?? false)));
   }
 
-  /// Opens the calendar of a date cell anchored to it ([anchor] is its context) and writes
-  /// the day picked. Without an anchor (a tap that doesn't pass one) the cell's text editor
-  /// opens instead; it is also what the keyboard reaches, so a date can still be typed.
+  /// Opens the calendar of a date cell anchored to its button ([anchor]) and writes the day
+  /// picked. A tap on the cell itself opens its text editor, like any other: a date can
+  /// always be typed too.
   ///
   /// A `DATETIME` keeps the time it had —picking a day changes the day— and one that had
   /// none takes this moment's: the engine refuses a datetime without its time.
-  Future<void> pickDate(SheetCell cell, BuildContext? anchor) async {
-    if (anchor == null || !anchor.mounted) {
-      open(cell);
-      return;
-    }
+  Future<void> pickDate(SheetCell cell, BuildContext anchor) async {
+    if (!anchor.mounted) return;
 
     select(cell);
 

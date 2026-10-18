@@ -135,17 +135,18 @@ void main() {
       expect(TableFieldType.image.cursor, SystemMouseCursors.click);
     });
 
-    test('a yes / no is flipped and a date opens its calendar: a button cursor', () {
+    test('a yes / no is flipped: a button cursor; a date is written: a text one', () {
       expect(TableFieldType.boolean.cursor, SystemMouseCursors.click);
-      expect(TableFieldType.date.cursor, SystemMouseCursors.click);
-      expect(TableFieldType.datetime.cursor, SystemMouseCursors.click);
+      // Its calendar opens from its own button, not from the cell.
+      expect(TableFieldType.date.cursor, SystemMouseCursors.text);
+      expect(TableFieldType.datetime.cursor, SystemMouseCursors.text);
     });
 
     test('it is the same question that decides whether a tap opens something', () {
       for (final type in TableFieldType.values) {
         expect(
           type.cursor,
-          type.picker || type.isDate ? SystemMouseCursors.click : SystemMouseCursors.text,
+          type.picker ? SystemMouseCursors.click : SystemMouseCursors.text,
           reason: type.value
         );
       }

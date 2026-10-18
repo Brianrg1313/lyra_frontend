@@ -9809,6 +9809,16 @@ class S {
     );
   }
 
+  /// `Pick a date`
+  String get product_table_view_date_pick {
+    return Intl.message(
+      'Pick a date',
+      name: 'product_table_view_date_pick',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Unit`
   String get product_table_view_unit {
     return Intl.message(

@@ -297,13 +297,6 @@ class SheetController {
       return;
     }
 
-    // A date is typed when the keyboard arrives at it, and picked in a
-    // calendar when it is tapped.
-    if (row != kFieldsRow && typeAt(column).isDate) {
-      pickDate(cell, anchor);
-      return;
-    }
-
     open(cell);
   }
 

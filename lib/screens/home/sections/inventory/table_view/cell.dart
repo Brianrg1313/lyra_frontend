@@ -179,6 +179,11 @@ class SheetCellView extends StatelessWidget {
           // row (see [UnitCell]).
           onPickUnit: editable && type == TableFieldType.measure
             ? (anchor) => controller.pickUnit(position, anchor)
+            : null,
+          // A date's calendar opens from its button; the cell itself is written (see
+          // [DateCell]).
+          onPickDate: editable && row != kFieldsRow && type.isDate
+            ? (anchor) => controller.pickDate(SheetCell(row, position), anchor)
             : null
         );
 

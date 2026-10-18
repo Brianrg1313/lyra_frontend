@@ -52,7 +52,8 @@ abstract final class SheetCells {
     String unit = "",
     bool editable = true,
     VoidCallback? onGenerateSku,
-    ValueChanged<BuildContext>? onPickUnit
+    ValueChanged<BuildContext>? onPickUnit,
+    ValueChanged<BuildContext>? onPickDate
   }) => switch (type) {
     // The two money types read the same —an amount and the symbol of its
     // currency— so the same cell draws them. What separates them is who
@@ -118,7 +119,8 @@ abstract final class SheetCells {
       style: style,
       alignment: alignment,
       row: row,
-      columnKey: columnKey
+      columnKey: columnKey,
+      onPickDate: onPickDate
     ),
     // A yes / no is a check box, flipped by a tap on the cell; it reads [raw]
     // because the engine stores a real boolean.

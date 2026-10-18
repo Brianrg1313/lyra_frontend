@@ -1020,6 +1020,7 @@
   "product_table_view_date_short_hint": "Show this column written out, as Feb 12, 2026",
   "product_table_view_date_none": "No date",
   "product_table_view_date_clear": "Clear date",
+  "product_table_view_date_pick": "Pick a date",
   "product_table_view_unit": "Unit",
   "product_table_view_unit_hint": "Change the unit of this whole column",
   "product_table_view_unit_search": "Search unit",

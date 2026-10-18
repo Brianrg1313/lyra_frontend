@@ -57,7 +57,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `body.dart` — `SheetBody`: records + blank rows being written.
 - `fields_row.dart` / `field_cell.dart` — row 1 and its cells.
 - `type_arrow.dart` — `TypeArrow`: field-type menu, changes a column's type (`STOCK` only in a catalog: `TableKind.stocked`).
-- `date_menu.dart` — `showDateMenu`, `DateMenuPick`: a date cell's calendar anchored to it (Flutter's `CalendarDatePicker`, core has none), the column's written/full switch and clear in its head.
+- `date_menu.dart` — `showDateMenu`, `DateMenuPick`: a date cell's calendar anchored to its button (the cell itself is written) (Flutter's `CalendarDatePicker`, core has none), the column's written/full switch and clear in its head.
 - `record_row.dart` — `RecordRow`; `cell.dart` — `SheetCellView`.
 - `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).
 - `column_drag.dart` — `ColumnDrag`: carried column, drop line; `column_drag_ghost.dart` — `ColumnDragGhost`.
@@ -67,7 +67,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
   `uploading`, editor, serialized write queues (columns, rows), the table's `kind`. Its writes are `part`s in `state/controller/`, extensions on it
   (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks` `SheetStockMoves`
-  `SheetCellPicks`: a yes/no flipped, a tapped date's calendar, a measure column's unit): import the controller alone. A record's `STOCK` cell unfolds put / take and opens `showStockMovement` (`stock`: `TableStockMover`).
+  `SheetCellPicks`: a yes/no flipped, a date's calendar from its button, a measure column's unit): import the controller alone. A record's `STOCK` cell unfolds put / take and opens `showStockMovement` (`stock`: `TableStockMover`).
 - `state/sheet_columns.dart` — `SheetColumns`; `state/sheet_column.dart` — `SheetColumn`; `state/sheet_shape.dart` — `SheetShape`.
 - `state/sheet_cursor.dart` — `SheetCursor`; `state/sheet_cell.dart` — `SheetCell`, `SheetCellState`, `kFieldsRow`.
 - `state/sheet_drafts.dart` — `SheetDrafts`: unsaved rows; `state/sheet_draft.dart` — `SheetDraft`.

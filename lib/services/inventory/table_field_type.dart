@@ -289,9 +289,10 @@ enum TableFieldType {
   /// separately what to do with a cell that is **not** written (a field carried by the
   /// backend, a row that has not arrived yet): none of the two goes there.
   ///
-  /// A date is typed too, but a tap opens its calendar, so it points like a button.
+  /// A date is written like any text: its calendar opens from its own button, not
+  /// from the cell.
   MouseCursor get cursor =>
-    picker || isDate ? SystemMouseCursors.click : SystemMouseCursors.text;
+    picker ? SystemMouseCursors.click : SystemMouseCursors.text;
 
   /// How the value is aligned in its cell: numbers to the right and the rest to
   /// the left, like in a spreadsheet.
