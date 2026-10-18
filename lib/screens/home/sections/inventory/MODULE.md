@@ -61,7 +61,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `record_row.dart` — `RecordRow`; `cell.dart` — `SheetCellView`.
 - `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).
 - `column_drag.dart` — `ColumnDrag`: carried column, drop line; `column_drag_ghost.dart` — `ColumnDragGhost`.
-- `cells/_cells.dart` — dispatch by `TableFieldType`; `boolean_cell` (check box, a tap flips it) `date_cell` `image_cell` `listed_cell`
+- `cells/_cells.dart` — dispatch by `TableFieldType`; `boolean_cell` (switch, a tap flips it) `date_cell` `image_cell` `listed_cell`
   (`OPTIONS`; `CATEGORIES`/`SIZES` are ticked in core's `showCheckMenu`) `price_cell` `sku_cell` `unit_cell` (number + unit/percent; a measure's unit is a button that changes the column's).
 - `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
@@ -71,7 +71,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `state/sheet_columns.dart` — `SheetColumns`; `state/sheet_column.dart` — `SheetColumn`; `state/sheet_shape.dart` — `SheetShape`.
 - `state/sheet_cursor.dart` — `SheetCursor`; `state/sheet_cell.dart` — `SheetCell`, `SheetCellState`, `kFieldsRow`.
 - `state/sheet_drafts.dart` — `SheetDrafts`: unsaved rows; `state/sheet_draft.dart` — `SheetDraft`.
-- `state/sheet_widths.dart` — `SheetWidths`; `state/sheet_metrics.dart` — `SheetMetrics` (row height, visible range, scroll-to-cell).
+- `state/sheet_widths.dart` — `SheetWidths` (a never-sized yes / no opens at `compactWidth`); `state/sheet_metrics.dart` — `SheetMetrics` (row height, visible range, scroll-to-cell).
 - `state/sheet_order.dart` — `fieldsInOrder`, `slotsOf`, `movedOrder`, `dropEdgeAt`.
 - `state/sheet_drag.dart` — `SheetDrag`; `state/sheet_hover.dart` — `SheetHover`; `state/sheet_dates.dart` — `SheetDates`.
 - `state/sheet_keys.dart` — `SheetKeyIntent`.

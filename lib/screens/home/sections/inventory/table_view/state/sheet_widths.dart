@@ -23,11 +23,16 @@ class SheetWidths {
   SheetWidths({
     required this.defaultWidth,
     required this.minWidth,
-    this.maxWidth = 1200
-  });
+    this.maxWidth = 1200,
+    double? compactWidth
+  }) : compactWidth = compactWidth ?? defaultWidth;
 
   /// Width of a column that hasn't been resized yet.
   final double defaultWidth;
+
+  /// Width of a column that hasn't been resized and whose cells hold only a mark (a
+  /// yes / no's switch): at the usual one it would be mostly blank.
+  final double compactWidth;
 
   /// Minimum width to which a column can be dragged, so it can't be collapsed
   /// until it disappears.
@@ -124,6 +129,16 @@ class SheetWidths {
   /// that column was never resized and gets the usual one.
   void adopt(String key, double width) {
     if (width <= 0 || !_pinned.add(key)) return;
+    if (!_write(key, width)) return;
+
+    _recount();
+  }
+
+  /// Measures a column that nobody sized to what its type needs ([width]), without pinning
+  /// it: a saved or dragged width still rules ([adopt], [resize]), and a column whose type
+  /// changes is measured again.
+  void suggest(String key, double width) {
+    if (_pinned.contains(key)) return;
     if (!_write(key, width)) return;
 
     _recount();

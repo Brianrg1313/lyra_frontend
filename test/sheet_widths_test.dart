@@ -3,21 +3,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
 
 SheetWidths _widths() =>
-  SheetWidths(defaultWidth: 100, minWidth: 40, maxWidth: 400)
+  SheetWidths(defaultWidth: 100, minWidth: 40, maxWidth: 400, compactWidth: 60)
     ..setKeys(["a", "b", "c"]);
 
 void main() {
-  test('una columna que no se toco mide lo de siempre', () {
+  test('a column nobody touched has the usual width', () {
     final widths = _widths();
 
     expect(widths.valueOf("a"), 100);
     expect(widths.total.value, 300);
   });
 
-  test('arrastrar solo avisa a la columna que se arrastra', () {
-    // Es toda la razon de que cada columna tenga su propio notificador: un
-    // arrastre manda un evento por frame, y con un aviso global cada uno de esos
-    // frames volveria a construir todas las celdas de la pantalla.
+  test('dragging notifies only the dragged column', () {
+    // It is the whole reason each column has its own notifier: a drag sends one
+    // event per frame, and with a global notice each of those frames would rebuild
+    // every cell on screen.
     final widths = _widths();
 
     int a = 0;
@@ -29,10 +29,10 @@ void main() {
 
     expect(widths.valueOf("a"), 125);
     expect(a, 1);
-    expect(b, 0, reason: "la columna de al lado solo se corre, no se rehace");
+    expect(b, 0, reason: "the next column only shifts, it is not rebuilt");
   });
 
-  test('una columna no se puede colapsar hasta desaparecer', () {
+  test('a column cannot be collapsed until it disappears', () {
     final widths = _widths();
 
     widths.resize("a", -500);
@@ -40,9 +40,9 @@ void main() {
     expect(widths.valueOf("a"), 40);
   });
 
-  test('en el minimo, seguir arrastrando no avisa', () {
-    // Sin esta guarda, apoyarse contra el borde seguiria repintando esa columna
-    // en cada frame del arrastre.
+  test('at the minimum, dragging further does not notify', () {
+    // Without this guard, leaning against the edge would keep repainting that
+    // column on every frame of the drag.
     final widths = _widths();
     widths.resize("a", -500);
 
@@ -54,9 +54,9 @@ void main() {
     expect(notices, 0);
   });
 
-  test('el ancho total sigue a los arrastres', () {
-    // Es lo que le da ancho a la banda desplazable: si no lo siguiera, la
-    // planilla no se podria correr hasta el final de la ultima columna.
+  test('the total width follows the drags', () {
+    // It is what gives the scrollable band its width: without it, the sheet
+    // could not be scrolled to the end of its last column.
     final widths = _widths();
 
     widths.resize("b", 60);
@@ -64,7 +64,7 @@ void main() {
     expect(widths.total.value, 360);
   });
 
-  test('agregar una columna la suma al total', () {
+  test('adding a column adds it to the total', () {
     final widths = _widths();
 
     widths.setKeys(["a", "b", "c", "d"]);
@@ -72,9 +72,9 @@ void main() {
     expect(widths.total.value, 400);
   });
 
-  test('una columna tampoco se puede estirar sin fin', () {
-    // El ancho se guarda y lo ve todo el mundo: una columna de miles de pixeles
-    // dejaria la tabla asi para todos.
+  test('a column cannot be stretched without end either', () {
+    // The width is saved and everyone sees it: a column thousands of pixels wide
+    // would leave the table that way for everyone.
     final widths = _widths();
 
     widths.resize("a", 5000);
@@ -82,7 +82,7 @@ void main() {
     expect(widths.valueOf("a"), 400);
   });
 
-  test('la columna se abre con el ancho que quedo guardado', () {
+  test('a column opens with the width it was saved with', () {
     final widths = _widths();
 
     widths.adopt("a", 250);
@@ -91,8 +91,8 @@ void main() {
     expect(widths.total.value, 450);
   });
 
-  test('una columna que nunca se arrastro mide lo de siempre', () {
-    // Asi llegan las que no tienen ancho guardado: no hay nada que adoptar.
+  test('a column never dragged has the usual width', () {
+    // That is how the ones without a saved width arrive: there is nothing to adopt.
     final widths = _widths();
 
     widths.adopt("a", 0);
@@ -100,10 +100,10 @@ void main() {
     expect(widths.valueOf("a"), 100);
   });
 
-  test('lo guardado no pisa lo que se acaba de arrastrar', () {
-    // La estructura se relee por cualquier cambio de columna (crear otra,
-    // renombrarla) y llega con el ancho que estaba guardado cuando salio la
-    // peticion: puede ser mas viejo que el arrastre que todavia esta viajando.
+  test('a saved width does not overwrite one just dragged', () {
+    // The structure is re-read on any column change (creating another, renaming
+    // one) and arrives with the width saved when the request went out: it can be
+    // older than the drag still travelling.
     final widths = _widths();
 
     widths.resize("a", 60);
@@ -112,8 +112,8 @@ void main() {
     expect(widths.valueOf("a"), 160);
   });
 
-  test('lo guardado se adopta una sola vez', () {
-    // Segunda relectura de la estructura: la columna ya la decide la pantalla.
+  test('a saved width is adopted only once', () {
+    // Second re-read of the structure: the screen already decides that column.
     final widths = _widths();
 
     widths.adopt("a", 250);
@@ -123,7 +123,7 @@ void main() {
     expect(widths.valueOf("a"), 200);
   });
 
-  test('un ancho que no se pudo guardar vuelve al que tenia', () {
+  test('a width that could not be saved goes back to the one it had', () {
     final widths = _widths();
 
     widths.resize("a", 80);
@@ -133,8 +133,8 @@ void main() {
     expect(widths.total.value, 300);
   });
 
-  test('la posicion de una columna es lo que hay a su izquierda', () {
-    // Lo usa el traer-a-la-vista al recorrer la planilla con el teclado.
+  test('the position of a column is what lies to its left', () {
+    // Bringing a cell into view uses it while the keyboard walks the sheet.
     final widths = _widths();
     widths.resize("a", 50);
 
@@ -142,5 +142,31 @@ void main() {
     expect(widths.offsetOf(1), 150);
     expect(widths.offsetOf(2), 250);
     expect(widths.widthAt(0), 150);
+  });
+
+  test('a column nobody sized takes the width its type suggests', () {
+    // A yes / no is only a switch: at the usual width it would be mostly blank.
+    final widths = _widths();
+
+    widths.suggest("a", widths.compactWidth);
+
+    expect(widths.valueOf("a"), 60);
+    expect(widths.total.value, 260);
+  });
+
+  test('a suggestion follows a type change but never a sized column', () {
+    final widths = _widths();
+
+    widths.suggest("a", widths.compactWidth);
+    widths.suggest("a", widths.defaultWidth);
+    expect(widths.valueOf("a"), 100, reason: "it stopped being a yes / no");
+
+    widths.adopt("b", 250);
+    widths.suggest("b", widths.compactWidth);
+    expect(widths.valueOf("b"), 250, reason: "a saved width rules");
+
+    widths.resize("c", 20);
+    widths.suggest("c", widths.compactWidth);
+    expect(widths.valueOf("c"), 120, reason: "a dragged width rules");
   });
 }

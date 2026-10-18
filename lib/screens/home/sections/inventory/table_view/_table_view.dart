@@ -250,6 +250,7 @@ class _TableViewSectionState extends State<TableViewSection> {
       widths: SheetWidths(
         defaultWidth: AppSize.action * 3.5,
         minWidth: AppSize.action * 1.5,
+        compactWidth: AppSize.action * 2.25,
         maxWidth: AppSize.action * 16
       ),
       // The controller outlives any `build`, so the context is passed to it as

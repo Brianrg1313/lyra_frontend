@@ -709,7 +709,8 @@ class SheetController {
 
   /// Gained or lost a column: the widths have to know which is the current
   /// list to be able to add up the spreadsheet's total width, and the columns
-  /// that appear open with the width they had saved.
+  /// that appear open with the width they had saved; the ones never sized open
+  /// as wide as their type needs (a yes / no only a switch).
   void _onColumns() {
     widths.setKeys(columns.keys);
 
@@ -719,6 +720,9 @@ class SheetController {
     // what a re-read structure brings (see [SheetWidths.adopt]).
     for (final field in columns.ordered) {
       if (field.id.isEmpty) continue;
+      widths.suggest(field.id, TableFieldType.from(field.type) == TableFieldType.boolean
+        ? widths.compactWidth
+        : widths.defaultWidth);
       widths.adopt(field.id, field.width);
     }
   }

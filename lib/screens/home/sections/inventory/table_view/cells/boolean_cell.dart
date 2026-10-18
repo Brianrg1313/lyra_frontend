@@ -7,11 +7,11 @@ import 'package:app/services/inventory/field_boolean.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart';
 
-/// The cell of a `BOOLEAN` field: a check box. A tap on the cell flips it
+/// The cell of a `BOOLEAN` field: a switch. A tap on the cell flips it
 /// (`SheetController.tap`), so there is no editor to open and nothing to type.
 ///
-/// What is neither a yes nor a no (an imported «maybe») is shown as written, next to an
-/// empty box: drawing only the box would claim a «no» nobody wrote.
+/// What is neither a yes nor a no (an imported «maybe») is shown as written, next to a
+/// switch that is off: drawing only the switch would claim a «no» nobody wrote.
 class BooleanCell extends StatelessWidget {
   const BooleanCell({
     super.key,
@@ -36,31 +36,38 @@ class BooleanCell extends StatelessWidget {
     final checked = value ?? false;
     final text = "${raw ?? ""}".trim();
 
-    // As big as a letter and a half: it has to be hit with the pointer without
+    // A track one letter and a half tall: it has to be hit with the pointer without
     // making the row taller.
-    final size = AppSize.text * 1.3;
+    final height = AppSize.text * 1.3;
+    final width = height * 1.8;
+    final inset = height * .15;
+    final knob = height - inset * 2;
+    const duration = Duration(milliseconds: 140);
 
     final box = Opacity(
       opacity: editable ? 1 : .5,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        width: size,
-        height: size,
+        duration: duration,
+        width: width,
+        height: height,
+        padding: EdgeInsets.all(inset),
         decoration: BoxDecoration(
-          color: checked ? scheme.primary : Colors.transparent,
-          border: Border.all(
-            color: checked ? scheme.primary : scheme.line,
-            width: 1.5
-          ),
-          borderRadius: BorderRadius.circular(sheet.frameRadius)
+          color: checked ? scheme.primary : scheme.line,
+          borderRadius: BorderRadius.circular(height / 2)
         ),
-        child: checked
-          ? Center(child: Icon(
-              CI.check,
-              size: size * .65,
-              color: scheme.button.text
-            ))
-          : null
+        child: AnimatedAlign(
+          duration: duration,
+          curve: Curves.easeOut,
+          alignment: checked ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: knob,
+            height: knob,
+            decoration: BoxDecoration(
+              color: scheme.button.text,
+              shape: BoxShape.circle
+            )
+          )
+        )
       )
     );
 
