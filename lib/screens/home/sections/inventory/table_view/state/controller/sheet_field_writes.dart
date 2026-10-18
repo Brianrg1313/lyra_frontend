@@ -137,7 +137,7 @@ extension SheetFieldWrites on SheetController {
 
     final picked = await showSelectMenu(
       context: anchor,
-      options: TableFieldType.menu(anchor),
+      options: TableFieldType.menu(anchor, kind: kind, current: current),
       selected: current.value,
       searchPlaceholder: S.of(anchor).table_field_type_placeholder,
       emptyText: S.of(anchor).table_field_type_empty,

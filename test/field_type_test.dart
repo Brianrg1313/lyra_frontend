@@ -120,8 +120,7 @@ void main() {
         TableFieldType.title,
         TableFieldType.description,
         TableFieldType.price,
-        TableFieldType.sku,
-        TableFieldType.date
+        TableFieldType.sku
       ]) {
         expect(type.cursor, SystemMouseCursors.text, reason: type.value);
       }
@@ -136,11 +135,17 @@ void main() {
       expect(TableFieldType.image.cursor, SystemMouseCursors.click);
     });
 
-    test('it is the same question that decides whether there is an editor', () {
+    test('a yes / no is flipped and a date opens its calendar: a button cursor', () {
+      expect(TableFieldType.boolean.cursor, SystemMouseCursors.click);
+      expect(TableFieldType.date.cursor, SystemMouseCursors.click);
+      expect(TableFieldType.datetime.cursor, SystemMouseCursors.click);
+    });
+
+    test('it is the same question that decides whether a tap opens something', () {
       for (final type in TableFieldType.values) {
         expect(
           type.cursor,
-          type.picker ? SystemMouseCursors.click : SystemMouseCursors.text,
+          type.picker || type.isDate ? SystemMouseCursors.click : SystemMouseCursors.text,
           reason: type.value
         );
       }

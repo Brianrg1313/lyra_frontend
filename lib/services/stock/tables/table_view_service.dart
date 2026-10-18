@@ -809,7 +809,8 @@ class TableViewService extends ChangeNotifier {
     TableFieldModel field, {
     String? name,
     String? type,
-    List<String>? options
+    List<String>? options,
+    String? unit
   }) async {
     // Without a FIELD_ID there is no field to edit: it is a column that was
     // seen but that the backend did not identify.
@@ -820,7 +821,8 @@ class TableViewService extends ChangeNotifier {
         id: field.id,
         name: name ?? field.name,
         type: type,
-        options: options
+        options: options,
+        unit: unit
       ));
 
       await _reloadFields();

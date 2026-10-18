@@ -6,12 +6,15 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/files/image_file.dart';
+import 'package:app/services/inventory/field_boolean.dart';
+import 'package:app/services/inventory/measure_units.dart';
 import 'package:app/services/inventory/product_date.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/sku_generator.dart';
 import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/movements/stock_mover.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
@@ -21,6 +24,7 @@ import 'package:core/form/select_menu.dart';
 import 'package:core/widgets/tables/linked_scroll.dart';
 import 'package:app/screens/modals/inventory/stock_movement/_stock_movement.dart';
 import 'package:app/screens/modals/shared/image_viewer/_image_viewer.dart';
+import 'package:app/screens/home/sections/inventory/table_view/date_menu.dart';
 
 import './field_edit.dart';
 import './free_column.dart';
@@ -43,6 +47,7 @@ part 'controller/sheet_field_writes.dart';
 part 'controller/sheet_option_picks.dart';
 part 'controller/sheet_image_picks.dart';
 part 'controller/sheet_stock_moves.dart';
+part 'controller/sheet_cell_picks.dart';
 
 /// Strip at the sides of the spreadsheet in which, while dragging a column,
 /// the band starts scrolling on its own.
@@ -88,7 +93,8 @@ class SheetController {
     required this.metrics,
     required this.widths,
     required BuildContext Function() context,
-    this.stock
+    this.stock,
+    this.kind = TableKind.catalog
   }) : _context = context {
     columns = SheetColumns(service);
     _onColumns();
@@ -116,6 +122,9 @@ class SheetController {
   /// What a record's stock cell moves its product through ([SheetStockMoves]); without one
   /// the stock is only read.
   final StockMover? stock;
+
+  /// What the table holds: it decides whether a column can be made a `STOCK` ([pickType]).
+  final TableKind kind;
 
   /// The context of the screen. It's needed for what leaves the spreadsheet
   /// —asking for confirmation, showing an error flag, translating— and it's
@@ -277,11 +286,21 @@ class SheetController {
     // The field row is always written: what's there is the column's title, not
     // a datum of its type.
     if (row != kFieldsRow && isPicker(column)) {
-      if (typeAt(column) == TableFieldType.image) {
-        pickImage(cell, anchor);
-      } else {
-        pickOption(cell, anchor);
+      switch (typeAt(column)) {
+        case TableFieldType.image:
+          pickImage(cell, anchor);
+        case TableFieldType.boolean:
+          toggleBoolean(cell);
+        default:
+          pickOption(cell, anchor);
       }
+      return;
+    }
+
+    // A date is typed when the keyboard arrives at it, and picked in a
+    // calendar when it is tapped.
+    if (row != kFieldsRow && typeAt(column).isDate) {
+      pickDate(cell, anchor);
       return;
     }
 

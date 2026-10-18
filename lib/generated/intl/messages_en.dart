@@ -5477,11 +5477,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "product_table_view_add_item": MessageLookupByLibrary.simpleMessage(
       "Add item",
     ),
+    "product_table_view_date_clear": MessageLookupByLibrary.simpleMessage(
+      "Clear date",
+    ),
     "product_table_view_date_full": MessageLookupByLibrary.simpleMessage(
       "Full date",
     ),
     "product_table_view_date_full_hint": MessageLookupByLibrary.simpleMessage(
       "Show this column with its numbers and its time",
+    ),
+    "product_table_view_date_none": MessageLookupByLibrary.simpleMessage(
+      "No date",
     ),
     "product_table_view_date_short": MessageLookupByLibrary.simpleMessage(
       "Written date",
@@ -5544,6 +5550,25 @@ class MessageLookup extends MessageLookupByLibrary {
           "Create a new random code for this item",
         ),
     "product_table_view_title": MessageLookupByLibrary.simpleMessage("Table"),
+    "product_table_view_unit": MessageLookupByLibrary.simpleMessage("Unit"),
+    "product_table_view_unit_hint": MessageLookupByLibrary.simpleMessage(
+      "Change the unit of this whole column",
+    ),
+    "product_table_view_unit_length": MessageLookupByLibrary.simpleMessage(
+      "Length",
+    ),
+    "product_table_view_unit_placeholder": MessageLookupByLibrary.simpleMessage(
+      "mm, kg, ml",
+    ),
+    "product_table_view_unit_search": MessageLookupByLibrary.simpleMessage(
+      "Search unit",
+    ),
+    "product_table_view_unit_volume": MessageLookupByLibrary.simpleMessage(
+      "Volume",
+    ),
+    "product_table_view_unit_weight": MessageLookupByLibrary.simpleMessage(
+      "Weight",
+    ),
     "product_tables_empty_subtitle": MessageLookupByLibrary.simpleMessage(
       "Create your first table to organize your products here.",
     ),

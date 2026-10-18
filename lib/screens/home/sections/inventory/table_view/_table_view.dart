@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/home/home_service.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_stock_mover.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
@@ -254,7 +255,8 @@ class _TableViewSectionState extends State<TableViewSection> {
       // The controller outlives any `build`, so the context is passed to it as
       // a function and not as a value.
       context: () => context,
-      stock: TableStockMover(table: _service, tableId: _tableId, supplies: widget.supplies)
+      stock: TableStockMover(table: _service, tableId: _tableId, supplies: widget.supplies),
+      kind: widget.supplies ? TableKind.supplies : TableKind.catalog
     );
 
     // The load is deferred to the first frame so as not to notify while the

@@ -7,7 +7,10 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/inventory/table_field_options.dart';
+import 'package:app/services/inventory/measure_units.dart';
 import 'package:app/services/inventory/table_field_type.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
+import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
 import 'package:app/services/stock/tables/table_detail_service.dart';
 
@@ -202,11 +205,17 @@ class _Field extends StatelessWidget {
   /// It is the same one as the spreadsheet ([TableFieldType.menu]) and with a
   /// search box for the same reason: there are twenty-three, and with the
   /// list open choosing becomes writing three letters instead of going over
-  /// them. Choosing the one it already had sends nothing.
+  /// them. Choosing the one it already had sends nothing. A `STOCK` is offered
+  /// only where the table's kind holds one ([TableKind.stocked]).
   Future<void> _pickType(BuildContext anchor) async {
+    final tableId = anchor.read<TableDetailService>().tableId;
+    final kind = anchor.read<TablesService?>()?.tables
+      .where((table) => table.id == tableId)
+      .firstOrNull?.kind ?? TableKind.catalog;
+
     final picked = await showSelectMenu(
       context: anchor,
-      options: TableFieldType.menu(anchor),
+      options: TableFieldType.menu(anchor, kind: kind, current: field.type),
       selected: field.type.value,
       searchPlaceholder: S.of(anchor).table_field_type_placeholder,
       emptyText: S.of(anchor).table_field_type_empty,
@@ -459,15 +468,16 @@ class _Options extends StatelessWidget {
 /// backend reads the empty as a value and not as the absence of one (see
 /// `editFieldRequest`).
 ///
-/// A measure and a stock offer the magnitudes a recipe can switch between
-/// (`kitchenUnitsFor`): a supply counted in `kg` is written in grams in a
-/// recipe, one counted in «kilos» too, but one in «kgs» only in itself.
+/// A measure offers the sheet's units ([measureUnits]); a stock only the
+/// magnitudes a recipe can switch between (`kitchenUnitsFor`): a supply counted
+/// in `kg` is written in grams in a recipe, one counted in «kilos» too, but one
+/// in «kgs» only in itself.
 class _Unit extends StatelessWidget {
   const _Unit({required this.field});
 
   final TableDetailFieldModel field;
 
-  static const List<String> _magnitudes = ["kg", "g", "l", "ml"];
+  static const List<String> _kitchen = ["kg", "g", "l", "ml"];
 
   @override
   Widget build(BuildContext context) {
@@ -494,8 +504,11 @@ class _Unit extends StatelessWidget {
             icon: Icons.remove
           )
         ],
-        if (field.type == TableFieldType.measure || field.type == TableFieldType.stock)
-          for (final unit in _magnitudes)
+        if (field.type == TableFieldType.measure)
+          for (final unit in measureUnits)
+            if (unit.symbol != field.unit) SelectOption(value: unit.symbol, placeholder: unit.symbol),
+        if (field.type == TableFieldType.stock)
+          for (final unit in _kitchen)
             if (unit != field.unit) SelectOption(value: unit, placeholder: unit)
       ],
       selected: field.unit,

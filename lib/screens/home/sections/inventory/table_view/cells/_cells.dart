@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 
+import './boolean_cell.dart';
 import './date_cell.dart';
 import './image_cell.dart';
 import './listed_cell.dart';
@@ -11,6 +12,7 @@ import './price_cell.dart';
 import './sku_cell.dart';
 import './unit_cell.dart';
 
+export 'boolean_cell.dart';
 export 'date_cell.dart';
 export 'image_cell.dart';
 export 'listed_cell.dart';
@@ -49,7 +51,8 @@ abstract final class SheetCells {
     dynamic raw,
     String unit = "",
     bool editable = true,
-    VoidCallback? onGenerateSku
+    VoidCallback? onGenerateSku,
+    ValueChanged<BuildContext>? onPickUnit
   }) => switch (type) {
     // The two money types read the same —an amount and the symbol of its
     // currency— so the same cell draws them. What separates them is who
@@ -63,12 +66,15 @@ abstract final class SheetCells {
     // A measurement carries the symbol its column declared and a percentage has its
     // own baked in: there the unit **is** the type, so the field doesn't keep
     // one (see [TableFieldType.united]). A stock reads in what its column is
-    // counted in: «10 kg».
+    // counted in: «10 kg». Only a measure's unit is picked from its cell: a
+    // stock's is what its recipe lines are written in, set in the table's settings.
     TableFieldType.measure || TableFieldType.stock => UnitCell(
       value: value,
       style: style,
       alignment: alignment,
-      symbol: unit
+      symbol: unit,
+      row: row,
+      onPickUnit: type == TableFieldType.measure ? onPickUnit : null
     ),
     TableFieldType.discount || TableFieldType.percentage => UnitCell(
       value: value,
@@ -113,6 +119,13 @@ abstract final class SheetCells {
       alignment: alignment,
       row: row,
       columnKey: columnKey
+    ),
+    // A yes / no is a check box, flipped by a tap on the cell; it reads [raw]
+    // because the engine stores a real boolean.
+    TableFieldType.boolean => BooleanCell(
+      raw: raw ?? value,
+      style: style,
+      editable: editable
     ),
     TableFieldType.sku => SkuCell(
       value: value,

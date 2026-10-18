@@ -174,6 +174,11 @@ class SheetCellView extends StatelessWidget {
           // [SkuCell].
           onGenerateSku: editable && type == TableFieldType.sku
             ? () => controller.generateSku(SheetCell(row, position))
+            : null,
+          // A measure's unit is the column's: its button changes it for every
+          // row (see [UnitCell]).
+          onPickUnit: editable && type == TableFieldType.measure
+            ? (anchor) => controller.pickUnit(position, anchor)
             : null
         );
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:app/toolkit/toolkit.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/inventory/table_view/sheet_style.dart';
@@ -22,13 +23,20 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart'
 /// The symbol is only drawn if the value **is** a number. A cell with
 /// "consult" or "on request" shows as is: putting `kg` behind it would
 /// affirm that there's a weight there.
+///
+/// A measure's symbol is a button ([onPickUnit]) that changes the unit of **the
+/// whole column**, like a date's format button: a column is counted in one unit,
+/// so a row in grams and the next in kilos would stop comparing at a glance.
+/// Without a unit yet, the button is a ruler.
 class UnitCell extends StatelessWidget {
   const UnitCell({
     super.key,
     required this.value,
     required this.style,
     required this.alignment,
-    required this.symbol
+    required this.symbol,
+    this.row = 0,
+    this.onPickUnit
   });
 
   /// The number as stored (or as just typed in the
@@ -45,12 +53,23 @@ class UnitCell extends StatelessWidget {
   /// hasn't declared its own yet, and there the cell is the bare number.
   final String symbol;
 
+  /// Which row of the sheet it's in: it decides the button's fill (see
+  /// [SheetStyle.frameFill]).
+  final int row;
+
+  /// Opens the column's units anchored to the button (the context it is
+  /// given). `null` where the unit can't be changed, and there the symbol is
+  /// plain text.
+  final ValueChanged<BuildContext>? onPickUnit;
+
   @override
   Widget build(BuildContext context) {
     final trimmed = value.trim();
     final number = trimmed.isEmpty
       ? null
       : double.tryParse(trimmed.replaceAll(",", "."));
+
+    if (number != null && onPickUnit != null) return _picker(context);
 
     if (number == null || symbol.isEmpty) {
       return Text(
@@ -79,5 +98,47 @@ class UnitCell extends StatelessWidget {
       textAlign: alignment,
       style: style
     );
+  }
+
+  /// The number and, at its right, the column's unit as a button.
+  Widget _picker(BuildContext context) {
+    final sheet = SheetTheme.of(context);
+    final empty = symbol.isEmpty;
+
+    // A bit taller than a letter, like the date's and the SKU's buttons: it
+    // reads as a button without weighing like a toolbar one.
+    final size = AppSize.text * 1.8;
+
+    return Row(children: [
+      Expanded(child: Text(
+        value,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: alignment,
+        style: style
+      )),
+      SizedBox(width: AppSize.gap * .5),
+      Tooltip(
+        message: S.of(context).product_table_view_unit_hint,
+        child: Builder(builder: (anchor) => FeedbackButton(
+          message: S.of(context).product_table_view_unit,
+          height: size,
+          width: empty ? size : null,
+          radius: sheet.frameRadius,
+          color: sheet.frameFill(row: row),
+          action: () => onPickUnit!(anchor),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: empty ? 0 : AppSize.gap),
+            child: Center(widthFactor: 1, child: empty
+              ? Icon(
+                  Icons.straighten,
+                  size: AppSize.text,
+                  color: sheet.scheme.text.primary
+                )
+              : Text(symbol, maxLines: 1, style: sheet.symbol))
+          )
+        ))
+      )
+    ]);
   }
 }

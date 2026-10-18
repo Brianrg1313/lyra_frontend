@@ -18,6 +18,11 @@ enum TableKind {
     "supplies" => supplies,
     _ => catalog
   };
+
+  /// Whether its records hold a `STOCK` column. Only a catalog does: a made product's stock is
+  /// what its supplies allow, and a supply is counted where it is used (`cocina-frontend.md` §1),
+  /// so the type menus leave `STOCK` out of the other two ([TableFieldType.menu]).
+  bool get stocked => this == catalog;
 }
 
 /// A product table as returned by `GET /inventory/products/builder/list/`,

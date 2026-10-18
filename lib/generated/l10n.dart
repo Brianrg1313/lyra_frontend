@@ -9789,6 +9789,96 @@ class S {
     );
   }
 
+  /// `No date`
+  String get product_table_view_date_none {
+    return Intl.message(
+      'No date',
+      name: 'product_table_view_date_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear date`
+  String get product_table_view_date_clear {
+    return Intl.message(
+      'Clear date',
+      name: 'product_table_view_date_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unit`
+  String get product_table_view_unit {
+    return Intl.message(
+      'Unit',
+      name: 'product_table_view_unit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change the unit of this whole column`
+  String get product_table_view_unit_hint {
+    return Intl.message(
+      'Change the unit of this whole column',
+      name: 'product_table_view_unit_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search unit`
+  String get product_table_view_unit_search {
+    return Intl.message(
+      'Search unit',
+      name: 'product_table_view_unit_search',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `mm, kg, ml`
+  String get product_table_view_unit_placeholder {
+    return Intl.message(
+      'mm, kg, ml',
+      name: 'product_table_view_unit_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weight`
+  String get product_table_view_unit_weight {
+    return Intl.message(
+      'Weight',
+      name: 'product_table_view_unit_weight',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Volume`
+  String get product_table_view_unit_volume {
+    return Intl.message(
+      'Volume',
+      name: 'product_table_view_unit_volume',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Length`
+  String get product_table_view_unit_length {
+    return Intl.message(
+      'Length',
+      name: 'product_table_view_unit_length',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{count, plural, =0{No rows match your search} =1{1 row matches} other{{count} rows match}}`
   String product_table_view_search_count(num count) {
     return Intl.plural(

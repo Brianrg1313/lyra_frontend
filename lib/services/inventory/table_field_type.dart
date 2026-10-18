@@ -4,6 +4,9 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:core/form.dart';
 
+// SERVICES
+import 'package:app/services/stock/tables/table_lite_model.dart';
+
 /// Type of information that a field of a product table stores.
 ///
 /// It serves two purposes and that is why just "text" is not enough:
@@ -257,10 +260,12 @@ enum TableFieldType {
   /// the cell: it is the same question that decides whether the cursor opens the editor or the
   /// dropdown, and both the touch and the keyboard ask it.
   ///
-  /// It is also what decides how the cell breathes: both draw their own
+  /// A [boolean] is touched too: its cell is a check box, and a tap flips it.
+  ///
+  /// It is also what decides how the cell breathes: all of them draw their own
   /// frame inside, so they get the air of a frame and not of a text
   /// (see `SheetStyle.framePadding`).
-  bool get picker => listed || this == image;
+  bool get picker => listed || this == image || this == boolean;
 
   /// Whether the field stores a date.
   ///
@@ -283,8 +288,10 @@ enum TableFieldType {
   /// property of the column, the same in all its rows. Whoever paints it decides
   /// separately what to do with a cell that is **not** written (a field carried by the
   /// backend, a row that has not arrived yet): none of the two goes there.
+  ///
+  /// A date is typed too, but a tap opens its calendar, so it points like a button.
   MouseCursor get cursor =>
-    picker ? SystemMouseCursors.click : SystemMouseCursors.text;
+    picker || isDate ? SystemMouseCursors.click : SystemMouseCursors.text;
 
   /// How the value is aligned in its cell: numbers to the right and the rest to
   /// the left, like in a spreadsheet.
@@ -337,12 +344,21 @@ enum TableFieldType {
   ///
   /// It is called [menu] and not `options` because `options` is already one of the types: the
   /// datum won the name before the list used to pick it.
-  static List<SelectOption> menu(BuildContext context) => [
-    for (final type in ordered) SelectOption(
-      value: type.value,
-      placeholder: type.label(context),
-      subtitle: type.hint(context),
-      icon: type.icon
-    )
+  ///
+  /// [stock] is offered only in a table of [kind] that holds one ([TableKind.stocked]), or to
+  /// the column that already is one ([current]): leaving it out there would read as if it had no
+  /// type.
+  static List<SelectOption> menu(
+    BuildContext context, {
+    TableKind kind = TableKind.catalog,
+    TableFieldType? current
+  }) => [
+    for (final type in ordered)
+      if (type != stock || kind.stocked || current == stock) SelectOption(
+        value: type.value,
+        placeholder: type.label(context),
+        subtitle: type.hint(context),
+        icon: type.icon
+      )
   ];
 }
