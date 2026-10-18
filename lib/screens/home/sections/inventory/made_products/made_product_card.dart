@@ -127,8 +127,7 @@ enum _Level { good, few, out }
 class _Stock {
   const _Stock(this.level, this.label, [this.limit]);
 
-  /// At or under it a product reads «Only N left»: a kitchen's shift sells that in minutes.
-  static const double few = 5;
+  static const double few = kitchenFew;
 
   final _Level level;
   final String label;

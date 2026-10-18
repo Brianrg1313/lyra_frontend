@@ -177,7 +177,6 @@
   "supply_chain_paused": "Sold out",
   "supply_chain_paused_note": "Marked sold out: it reads 0 everywhere and is not sold",
   "supply_chain_no_recipe": "No recipe",
-  "supply_chain_stock": "Stock {amount}",
   "supply_chain_left": "{amount} left",
   "supply_chain_left_limit": "{amount} left — because of the {supply}",
   "supply_chain_shelf": "{amount} in stock",

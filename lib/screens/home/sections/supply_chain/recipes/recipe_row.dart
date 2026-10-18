@@ -10,8 +10,12 @@ import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
 
 /// One product of the recipes tab: its name, how it is made, and in one line what it makes now
-/// («3 left — because of the bacon», «12 on the shelf · supplies for 200 more (wick)»), its stock
-/// when it has no recipe. Paused (86) says so in red.
+/// («3 left — because of the bacon», «12 on the shelf · supplies for 200 more (wick)»). Paused
+/// (86) says so in red.
+///
+/// The strip on its left is the menu cards' traffic light ([recipeLevelColor]), so a list of
+/// preparations is scanned for what runs short without reading; a supply bought ready has no
+/// light (nothing is made of it) and its stock stands at the right edge, where figures line up.
 class RecipeRow extends StatelessWidget {
   const RecipeRow({super.key, required this.product, required this.availability, required this.onTap});
 
@@ -26,6 +30,7 @@ class RecipeRow extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final s = S.of(context);
     final made = availability;
+    final stock = product.stock;
 
     return FeedbackButton(
       action: onTap,
@@ -33,17 +38,12 @@ class RecipeRow extends StatelessWidget {
       padding: EdgeInsets.all(AppSize.spaceS),
       child: Row(children: [
         Container(
-          width: AppSize.action,
+          width: AppSize.gap * 0.75,
           height: AppSize.action,
           decoration: BoxDecoration(
-            color: made == null ? scheme.surfaceOver : scheme.accent.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(AppSize.corner)
-          ),
-          child: Center(child: Icon(
-            made == null ? (product.supplies ? CI.warehouse : CI.product) : CI.list,
-            size: AppSize.text * 1.2,
-            color: made == null ? scheme.text.secondary : scheme.accent
-          ))
+            color: made == null ? scheme.line : recipeLevelColor(scheme, made),
+            borderRadius: BorderRadius.circular(AppSize.gap)
+          )
         ),
         SizedBox(width: AppSize.spaceS),
         Expanded(child: Column(
@@ -65,29 +65,27 @@ class RecipeRow extends StatelessWidget {
               ]
             ]),
             SizedBox(height: AppSize.gap),
-            TextSmall(_line(context), ellipsis: true, color: scheme.text.secondary)
+            TextSmall(made == null ? s.supply_chain_no_recipe : recipeAvailabilityLine(context, made),
+              ellipsis: true, color: scheme.text.secondary)
           ]
         )),
+        if (made == null && stock != null) ...[
+          SizedBox(width: AppSize.spaceS),
+          TextMedium(kitchenQty(context, stock, unit: product.unit), bold: true, textAlign: TextAlign.end)
+        ],
+        SizedBox(width: AppSize.spaceS),
         Icon(CI.arrow_right, size: AppSize.text, color: scheme.text.secondary)
       ])
     );
   }
+}
 
-  String _line(BuildContext context) {
-    final s = S.of(context);
-    final made = availability;
+/// The traffic light of what a recipe makes now: none (or paused) is critical, [kitchenFew] or
+/// fewer a warning. A batch reads its shelf, a dish made to order what its supplies allow.
+Color recipeLevelColor(SchemeColor scheme, RecipeAvailability made) {
+  if (made.paused || made.available <= 0) return scheme.chart.critical;
 
-    if (made == null) {
-      final stock = product.stock;
-
-      return [
-        s.supply_chain_no_recipe,
-        if (stock != null) s.supply_chain_stock(kitchenQty(context, stock, unit: product.unit))
-      ].join(" · ");
-    }
-
-    return recipeAvailabilityLine(context, made);
-  }
+  return made.available <= kitchenFew ? scheme.chart.warning : scheme.chart.good;
 }
 
 /// What a recipe makes now, in words (`cocina-frontend.md` §4).

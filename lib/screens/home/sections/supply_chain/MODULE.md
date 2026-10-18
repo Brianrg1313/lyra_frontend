@@ -26,19 +26,19 @@ and provided by `_supply_chain.dart`; `RecipeService` per opened product panel.
 
 - `_supply_chain.dart` — `SupplyChainSection`: the three services, `SectionTabs` + active tab body (`NoPermissionSection` / `UnavailableSection`).
 - `supply_chain_tab.dart` — `enum SupplyChainTab { recipes, modifiers, reports }`: `key icon routeKey path area`, `shown`, `opening`, `build`.
-- `kitchen_format.dart` — `kitchenQty` (≤ 6 decimals, unit), `kitchenMoney` (company currency), `kitchenPercent`, `kitchenDay`, `kitchenParse`, `kitchenField`. **Every figure of the section and its panels goes through it.**
+- `kitchen_format.dart` — `kitchenQty` (≤ 6 decimals, unit), `kitchenMoney` (company currency), `kitchenPercent`, `kitchenDay`, `kitchenParse`, `kitchenField`, `kitchenFew` (the traffic light's «few», shared with the menu cards). **Every figure of the section and its panels goes through it.**
 
 ### recipes/
 - `_recipes.dart` — `RecipesTab` (titled «Supplies»; the key stays the permission area's): supplies table selector (inventory's `TableSelector`) + cells switch + search + create (`CreateTableModal(kind: TableKind.supplies)`), the list or the sheet (inventory's `TableViewSection`, where supplies are written; a table with no rows opens on it), more; none → «Create supplies table»; a row opens `showRecipePanel`, then remeasures it.
-- `recipe_row.dart` — `RecipeRow` (name, mode tag, 86 tag, what it makes now or its stock), `recipeAvailabilityLine` («3 left — because of the bacon»), `RecipeTag`.
+- `recipe_row.dart` — `RecipeRow` (traffic-light strip, name, mode tag, 86 tag, what it makes now; a bought supply's stock at the right), `recipeAvailabilityLine` («3 left — because of the bacon»), `recipeLevelColor`, `RecipeTag`.
 
 ### modifiers/
 - `_modifiers.dart` — `ModifiersTab`: groups in order, create (`supply_chain.modifiers.edit`), a row opens `showModifierGroupForm` and writes its draft.
-- `modifier_row.dart` — `ModifierRow`, `modifierRule` («Choose one», «Up to 3»).
+- `modifier_row.dart` — `ModifierRow` (options as chips, «+N more»; products offering it at the right), `modifierRule` («Choose one», «Up to 3»).
 
 ### reports/
 - `_reports.dart` — `ReportsTab`: report chips, window (day/month/year, both ends optional), body by status.
-- `report_table.dart` — `ReportColumn`, `ReportHeader`, `ReportRow` (unfolds `details`), `ReportDetail`.
+- `report_table.dart` — `ReportColumn`, `ReportHeader`, `ReportRow` (unfolds `details`; `graphics` draws a column), `ReportDetail`.
 - `consumption_report.dart` — `ConsumptionReportView`: supplies (→ dishes), then batches.
-- `variance_report.dart` — `VarianceReportView`: largest first; `counted: false` greyed «No count in the period», never «0 %».
+- `variance_report.dart` — `VarianceReportView`: largest first, each with a `VarianceBar` (diverging, one scale); `counted: false` greyed «No count in the period», never «0 %».
 - `cost_report.dart` — `CostReportView`: cost per dish, «Incomplete cost» and the line without price.

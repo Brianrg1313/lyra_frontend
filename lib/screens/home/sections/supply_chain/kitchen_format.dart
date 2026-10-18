@@ -19,6 +19,10 @@ String kitchenQty(BuildContext context, double value, {String unit = ""}) {
   return unit.isEmpty ? text : "$text $unit";
 }
 
+/// At or under it a recipe reads «only a few left» (the warning of its traffic light): a
+/// kitchen's shift sells that in minutes. The menu's cards and the supplies list share it.
+const double kitchenFew = 5;
+
 /// An amount in the company's currency (`$1.00`). The kitchen's costs and a modifier's price
 /// have no currency of their own: they are the company's.
 String kitchenMoney(double value) =>

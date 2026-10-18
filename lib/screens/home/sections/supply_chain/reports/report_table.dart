@@ -30,7 +30,8 @@ class ReportHeader extends StatelessWidget {
 }
 
 /// One row of a report: [cells] laid out on [columns]; [muted] greys it (a supply with no count).
-/// With [onTap] it unfolds [details] under it.
+/// With [onTap] it unfolds [details] under it. A column in [graphics] is drawn by its widget
+/// instead of its text (the variance's bar).
 class ReportRow extends StatelessWidget {
   const ReportRow({
     super.key,
@@ -40,7 +41,8 @@ class ReportRow extends StatelessWidget {
     this.onTap,
     this.open = false,
     this.details = const [],
-    this.trailing
+    this.trailing,
+    this.graphics = const {}
   });
 
   final List<ReportColumn> columns;
@@ -53,6 +55,9 @@ class ReportRow extends StatelessWidget {
   /// Beside the name: a tag.
   final Widget? trailing;
 
+  /// By column index.
+  final Map<int, Widget> graphics;
+
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
@@ -61,14 +66,14 @@ class ReportRow extends StatelessWidget {
     final row = Row(children: [
       for (final (index, column) in columns.indexed) Expanded(
         flex: column.flex,
-        child: index == 0
+        child: graphics[index] ?? (index == 0
           ? Row(children: [
               if (onTap != null) Icon(open ? CI.arrow_down : CI.arrow_right, size: AppSize.text, color: scheme.text.secondary),
               if (onTap != null) SizedBox(width: AppSize.gap),
               Flexible(child: TextSmall(index < cells.length ? cells[index] : "", ellipsis: true, bold: true, color: color)),
               if (trailing != null) ...[SizedBox(width: AppSize.gap), trailing!]
             ])
-          : TextSmall(index < cells.length ? cells[index] : "", ellipsis: true, textAlign: TextAlign.end, color: color)
+          : TextSmall(index < cells.length ? cells[index] : "", ellipsis: true, textAlign: TextAlign.end, color: color))
       )
     ]);
 

@@ -20,6 +20,7 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/screens/home/sections/supply_chain/modifiers/_modifiers.dart';
 import 'package:app/screens/home/sections/supply_chain/recipes/_recipes.dart';
 import 'package:app/screens/home/sections/supply_chain/reports/_reports.dart';
+import 'package:app/screens/home/sections/supply_chain/reports/variance_report.dart';
 import 'package:app/screens/modals/supply_chain/discard_dish/_discard_dish.dart';
 import 'package:app/screens/modals/supply_chain/modifier_group/_modifier_group.dart';
 import 'package:app/screens/modals/supply_chain/presentations/_presentations.dart';
@@ -134,11 +135,16 @@ void main() {
     expect(find.text("How it is bought"), findsNothing);
   });
 
-  testWidgets("a group says its rule; a supply with no count is not a 0 %", (tester) async {
-    final modifiers = ModifiersService()..seed(const [
-      ModifierGroup(id: "g", name: "Doneness", min: 1, max: 1, options: [ModifierOption(id: "o", name: "Medium")])
+  testWidgets("a group says its rule and folds its options; variance is drawn both ways, and a supply with no count is not a 0 %", (tester) async {
+    final modifiers = ModifiersService()..seed([
+      const ModifierGroup(id: "g", name: "Doneness", min: 1, max: 1, options: [ModifierOption(id: "o", name: "Medium")]),
+      ModifierGroup(id: "x", name: "Extras", options: [
+        for (var i = 0; i < 7; i++) ModifierOption(id: "e-$i", name: "Extra $i", price: 1)
+      ])
     ]);
     final reports = KitchenReportsService()..seed(report: KitchenReport.variance, variance: const [
+      VarianceRow(productId: "meat", name: "Meat", theoretical: 10, variance: 1.2, percent: 12, counted: true),
+      VarianceRow(productId: "salt", name: "Salt", theoretical: 10, variance: -0.3, percent: -3, counted: true),
       VarianceRow(productId: "wax", name: "Wax", counted: false)
     ]);
     addTearDown(modifiers.dispose);
@@ -147,10 +153,12 @@ void main() {
     await pump(tester, const ModifiersTab(), providers: [ChangeNotifierProvider<ModifiersService>.value(value: modifiers)]);
     expect(tester.takeException(), isNull);
     expect(find.text("Choose one"), findsOneWidget);
+    expect(find.text("+2 more"), findsOneWidget);
 
     await pump(tester, const ReportsTab(), providers: [ChangeNotifierProvider<KitchenReportsService>.value(value: reports)]);
     expect(tester.takeException(), isNull);
     expect(find.text("No count in the period"), findsOneWidget);
+    expect(find.byType(VarianceBar), findsNWidgets(3));
   });
 
   testWidgets("the panels of a group, a batch, a lost dish and the presentations draw their fields", (tester) async {

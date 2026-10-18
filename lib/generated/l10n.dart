@@ -1519,16 +1519,6 @@ class S {
     );
   }
 
-  /// `Stock {amount}`
-  String supply_chain_stock(Object amount) {
-    return Intl.message(
-      'Stock $amount',
-      name: 'supply_chain_stock',
-      desc: '',
-      args: [amount],
-    );
-  }
-
   /// `{amount} left`
   String supply_chain_left(Object amount) {
     return Intl.message(
