@@ -71,7 +71,7 @@ class BooleanCell extends StatelessWidget {
       )
     );
 
-    if (value != null || text.isEmpty) return Align(alignment: Alignment.centerLeft, child: box);
+    if (value != null || text.isEmpty) return Center(child: box);
 
     return Row(children: [
       box,
