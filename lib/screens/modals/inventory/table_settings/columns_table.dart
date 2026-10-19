@@ -14,6 +14,7 @@ import 'package:app/services/stock/tables/table_detail_service.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
+import 'package:app/screens/modals/inventory/stock_column/_stock_column.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 /// The columns of the table, one below the other: what it is recognized by,
@@ -218,6 +219,11 @@ class _Field extends StatelessWidget {
 
     final type = TableFieldType.from(picked.value);
     if (type == field.type) return;
+
+    if (type == TableFieldType.stock) {
+      final records = anchor.read<TableDetailService>().detail.records;
+      if (!await confirmStockColumn(anchor, records: records) || !anchor.mounted) return;
+    }
 
     await anchor
       .read<TableDetailService>()

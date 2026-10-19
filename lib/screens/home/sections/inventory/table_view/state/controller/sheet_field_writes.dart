@@ -146,6 +146,11 @@ extension SheetFieldWrites on SheetController {
 
     if (_disposed || picked == null || picked.value == current.value) return;
 
+    if (TableFieldType.from(picked.value) == TableFieldType.stock) {
+      final context = _context();
+      if (!context.mounted || !await confirmStockColumn(context, records: service.records) || _disposed) return;
+    }
+
     await service.editField(_context(), field, type: picked.value);
   }
 }
