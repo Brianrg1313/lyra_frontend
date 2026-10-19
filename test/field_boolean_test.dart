@@ -1,11 +1,10 @@
 /// A yes / no cell reads what the engine stores and what an import wrote, and writes only
-/// `true` / `false`; only a catalog table offers a `STOCK` column.
+/// `true` / `false`.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app/services/inventory/field_boolean.dart';
-import 'package:app/services/stock/tables/table_lite_model.dart';
 
 void main() {
   test('the engine\'s boolean and its numbers are read as such', () {
@@ -35,11 +34,5 @@ void main() {
   test('a flipped cell travels as true or false', () {
     expect(fieldBooleanValue(true), "true");
     expect(fieldBooleanValue(false), "false");
-  });
-
-  test('only a catalog holds a stock column', () {
-    expect(TableKind.catalog.stocked, isTrue);
-    expect(TableKind.made.stocked, isFalse);
-    expect(TableKind.supplies.stocked, isFalse);
   });
 }

@@ -14,7 +14,6 @@ import 'package:app/services/inventory/sku_generator.dart';
 import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/movements/stock_mover.dart';
-import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
@@ -93,8 +92,7 @@ class SheetController {
     required this.metrics,
     required this.widths,
     required BuildContext Function() context,
-    this.stock,
-    this.kind = TableKind.catalog
+    this.stock
   }) : _context = context {
     columns = SheetColumns(service);
     _onColumns();
@@ -122,9 +120,6 @@ class SheetController {
   /// What a record's stock cell moves its product through ([SheetStockMoves]); without one
   /// the stock is only read.
   final StockMover? stock;
-
-  /// What the table holds: it decides whether a column can be made a `STOCK` ([pickType]).
-  final TableKind kind;
 
   /// The context of the screen. It's needed for what leaves the spreadsheet
   /// —asking for confirmation, showing an error flag, translating— and it's

@@ -5,7 +5,6 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:core/form.dart';
 
 // SERVICES
-import 'package:app/services/stock/tables/table_lite_model.dart';
 
 /// Type of information that a field of a product table stores.
 ///
@@ -347,20 +346,15 @@ enum TableFieldType {
   /// It is called [menu] and not `options` because `options` is already one of the types: the
   /// datum won the name before the list used to pick it.
   ///
-  /// [stock] is offered only in a table of [kind] that holds one ([TableKind.stocked]), or to
-  /// the column that already is one ([current]): leaving it out there would read as if it had no
-  /// type.
-  static List<SelectOption> menu(
-    BuildContext context, {
-    TableKind kind = TableKind.catalog,
-    TableFieldType? current
-  }) => [
-    for (final type in ordered)
-      if (type != stock || kind.stocked || current == stock) SelectOption(
-        value: type.value,
-        placeholder: type.label(context),
-        subtitle: type.hint(context),
-        icon: type.icon
-      )
+  /// [stock] is offered in every kind of table: a catalog counts what it sells, a supply what
+  /// is left of it, and a made product its shelf or what its supplies allow. The backend keeps
+  /// one per table (`stock_field_exists`).
+  static List<SelectOption> menu(BuildContext context) => [
+    for (final type in ordered) SelectOption(
+      value: type.value,
+      placeholder: type.label(context),
+      subtitle: type.hint(context),
+      icon: type.icon
+    )
   ];
 }

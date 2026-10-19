@@ -56,7 +56,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `gutter.dart` — `SheetGutter`: row numbers; `gutter_cell.dart` — `GutterCell`.
 - `body.dart` — `SheetBody`: records + blank rows being written.
 - `fields_row.dart` / `field_cell.dart` — row 1 and its cells.
-- `type_arrow.dart` — `TypeArrow`: field-type menu, changes a column's type (`STOCK` only in a catalog: `TableKind.stocked`).
+- `type_arrow.dart` — `TypeArrow`: field-type menu, changes a column's type.
 - `date_menu.dart` — `showDateMenu`, `DateMenuPick`: a date cell's calendar anchored to its button (the cell itself is written) (Flutter's `CalendarDatePicker`, core has none), the column's written/full switch and clear in its head.
 - `record_row.dart` — `RecordRow`; `cell.dart` — `SheetCellView`.
 - `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).

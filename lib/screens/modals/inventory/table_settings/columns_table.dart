@@ -9,8 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/measure_units.dart';
 import 'package:app/services/inventory/table_field_type.dart';
-import 'package:app/services/stock/tables/table_lite_model.dart';
-import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
 import 'package:app/services/stock/tables/table_detail_service.dart';
 
@@ -205,17 +203,11 @@ class _Field extends StatelessWidget {
   /// It is the same one as the spreadsheet ([TableFieldType.menu]) and with a
   /// search box for the same reason: there are twenty-three, and with the
   /// list open choosing becomes writing three letters instead of going over
-  /// them. Choosing the one it already had sends nothing. A `STOCK` is offered
-  /// only where the table's kind holds one ([TableKind.stocked]).
+  /// them. Choosing the one it already had sends nothing.
   Future<void> _pickType(BuildContext anchor) async {
-    final tableId = anchor.read<TableDetailService>().tableId;
-    final kind = anchor.read<TablesService?>()?.tables
-      .where((table) => table.id == tableId)
-      .firstOrNull?.kind ?? TableKind.catalog;
-
     final picked = await showSelectMenu(
       context: anchor,
-      options: TableFieldType.menu(anchor, kind: kind, current: field.type),
+      options: TableFieldType.menu(anchor),
       selected: field.type.value,
       searchPlaceholder: S.of(anchor).table_field_type_placeholder,
       emptyText: S.of(anchor).table_field_type_empty,
