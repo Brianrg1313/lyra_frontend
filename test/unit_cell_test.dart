@@ -192,6 +192,15 @@ void main() {
       expect(_read(tester), "5u");
     });
 
+    testWidgets('a stock says what it counts: units, or its unit', (tester) async {
+      // A bare «30» leaves open whether it is 30 tomatoes or 30 grams of tomato.
+      await _cell(tester, type: TableFieldType.stock, value: "30");
+      expect(_read(tester), "30u");
+
+      await _cell(tester, type: TableFieldType.stock, value: "2.5", unit: "kg");
+      expect(_read(tester), "2.5kg");
+    });
+
     testWidgets('what is not a number carries no symbol', (tester) async {
       // A `kg` behind it would claim there is a weight there.
       await _cell(

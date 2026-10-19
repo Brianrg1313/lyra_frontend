@@ -30,7 +30,8 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart'
 /// A measure's button at its right ([onPickUnit]) changes the unit of **the
 /// whole column**, like a date's calendar button: a column is counted in one
 /// unit, so a row in grams and the next in kilos would stop comparing at a
-/// glance. A measure that declared none counts units ([counts]): `5u`.
+/// glance. A measure or a stock that declared none counts units ([counts]):
+/// `5u`, so a figure never reads without saying what it counts.
 class UnitCell extends StatelessWidget {
   const UnitCell({
     super.key,
@@ -57,8 +58,8 @@ class UnitCell extends StatelessWidget {
   /// hasn't declared its own yet, and there the cell is the bare number.
   final String symbol;
 
-  /// Whether an empty [symbol] reads as units (a measure's default) instead of
-  /// as the bare number.
+  /// Whether an empty [symbol] reads as units (a measure's and a stock's
+  /// default) instead of as the bare number.
   final bool counts;
 
   /// Which row of the sheet it's in: it decides the button's fill (see
