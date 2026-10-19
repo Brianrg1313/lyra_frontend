@@ -120,7 +120,7 @@ class InventoryLanSource implements InventorySource {
   Future<void> editRecord(Map<String, dynamic> request) => _lan.call(Ops.inventoryRecordsEdit, args: args(request));
 
   @override
-  Future<void> setUnit({required String tableId, required String productId, required String unit}) =>
+  Future<void> setUnit({required String tableId, required String productId, required String unit, bool convert = false}) =>
     throw UnsupportedError("a unit per product is cloud only");
 
   /// The photo goes up first (`PUT /f`, purpose `product_image`), then the op takes it into the

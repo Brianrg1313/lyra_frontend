@@ -548,142 +548,150 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m224(count, name) => "${count} × ${name}";
 
-  static String m225(count) =>
+  static String m225(from, to) => "${from} → ${to}";
+
+  static String m226(count) =>
       "${Intl.plural(count, zero: 'Nothing available right now', one: '1 unit available', other: '${count} units available')}";
 
-  static String m226(amount) => "${amount} available";
+  static String m227(amount) => "${amount} available";
 
-  static String m227(name, qty) => "${name} — ${qty}";
+  static String m228(name, qty) => "${name} — ${qty}";
 
-  static String m228(count, name, total) => "${count} × ${name} = ${total}";
+  static String m229(count, name, total) => "${count} × ${name} = ${total}";
 
-  static String m229(max) => "Enter a whole number between 1 and ${max}";
+  static String m230(max) => "Enter a whole number between 1 and ${max}";
 
-  static String m230(max) =>
+  static String m231(max) =>
       "Enter an amount between 0 and ${max}, up to six decimals";
 
-  static String m231(count) =>
+  static String m232(count) =>
       "${Intl.plural(count, zero: 'Nothing reserved right now', one: '1 unit reserved', other: '${count} units reserved')}";
 
-  static String m232(amount) => "${amount} reserved";
-
-  static String m233(count) =>
-      "${Intl.plural(count, one: 'One less', other: '${count} less')}";
+  static String m233(amount) => "${amount} reserved";
 
   static String m234(count) =>
-      "${Intl.plural(count, one: 'One more', other: '${count} more')}";
+      "${Intl.plural(count, one: 'One less', other: '${count} less')}";
 
   static String m235(count) =>
+      "${Intl.plural(count, one: 'One more', other: '${count} more')}";
+
+  static String m236(count) =>
       "${Intl.plural(count, zero: 'No products', one: '1 product', other: '${count} products')}";
 
-  static String m236(amount) => "supplies for ${amount} more";
+  static String m237(amount) => "supplies for ${amount} more";
 
-  static String m237(amount, supply) =>
+  static String m238(amount, supply) =>
       "supplies for ${amount} more (${supply})";
 
-  static String m238(product) => "Lost ${product}";
+  static String m239(product) => "Lost ${product}";
 
-  static String m239(amount) => "${amount} left";
+  static String m240(amount) => "${amount} left";
 
-  static String m240(amount, supply) =>
+  static String m241(amount, supply) =>
       "${amount} left — because of the ${supply}";
 
-  static String m241(unit) => "Write it in ${unit}";
+  static String m242(unit) => "Write it in ${unit}";
 
-  static String m242(percent) => "${percent} waste";
+  static String m243(percent) => "${percent} waste";
 
-  static String m243(min) => "At least ${min}";
+  static String m244(min) => "At least ${min}";
 
-  static String m244(min, max) => "${min} to ${max}";
+  static String m245(min, max) => "${min} to ${max}";
 
-  static String m245(name) =>
+  static String m246(name) =>
       "“${name}” is no longer asked for. Tickets already written keep what they chose.";
 
-  static String m246(count) =>
+  static String m247(count) =>
       "${Intl.plural(count, zero: 'No product offers it', one: '1 product', other: '${count} products')}";
 
-  static String m247(line) => "Without ${line}";
+  static String m248(line) => "Without ${line}";
 
-  static String m248(max) => "Up to ${max}";
+  static String m249(max) => "Up to ${max}";
 
-  static String m249(name) => "“${name}” is repeated";
+  static String m250(name) => "“${name}” is repeated";
 
-  static String m250(product) => "Produce ${product}";
+  static String m251(product) => "Produce ${product}";
 
-  static String m251(amount) => "Batch done: ${amount} more in stock";
+  static String m252(amount) => "Batch done: ${amount} more in stock";
 
-  static String m252(supplies) => "Batch done without: ${supplies}";
+  static String m253(supplies) => "Batch done without: ${supplies}";
 
-  static String m253(product) =>
+  static String m254(product) =>
       "${product} keeps its own stock again, which is usually zero.";
 
-  static String m254(date, version) => "Updated ${date} · version ${version}";
+  static String m255(date, version) => "Updated ${date} · version ${version}";
 
-  static String m255(amount) => "${amount} each";
+  static String m256(amount) => "${amount} each";
 
-  static String m256(amount) => "${amount} in stock";
+  static String m257(amount) => "${amount} in stock";
 
-  static String m257(supplies) => "Short today, it can go without: ${supplies}";
+  static String m258(supplies) => "Short today, it can go without: ${supplies}";
 
-  static String m258(products) => "It is used in: ${products}";
+  static String m259(products) => "It is used in: ${products}";
 
-  static String m259(name) =>
+  static String m260(name) =>
       "Deleting ${name} removes its fields and everything stored in it. This can\'t be undone.";
 
-  static String m260(count) =>
+  static String m261(count) =>
       "${Intl.plural(count, zero: 'No fields', one: '1 field', other: '${count} fields')}";
 
-  static String m261(name) =>
+  static String m262(name) =>
       "Leaving the name empty deletes ${name} and everything stored in it. This can\'t be undone.";
 
-  static String m262(count) =>
+  static String m263(count) =>
       "${Intl.plural(count, one: 'visibility set on 1 column', other: 'visibility set on ${count} columns')}";
 
-  static String m263(count) =>
+  static String m264(count) =>
       "${Intl.plural(count, one: '1 column renamed', other: '${count} columns renamed')}";
 
-  static String m264(count) =>
+  static String m265(count) =>
       "${Intl.plural(count, one: '1 column retyped', other: '${count} columns retyped')}";
 
-  static String m265(count) =>
+  static String m266(count) =>
       "${Intl.plural(count, one: '1 column added to the summary', other: '${count} columns added to the summary')}";
 
-  static String m266(count) =>
+  static String m267(count) =>
       "${Intl.plural(count, zero: 'No records', one: '1 record', other: '${count} records')}";
 
-  static String m267(field) => "Add ${field}";
+  static String m268(field) => "Add ${field}";
 
-  static String m268(count) =>
+  static String m269(count) =>
       "${Intl.plural(count, zero: 'No columns', one: '1 column', other: '${count} columns')}";
 
-  static String m269(count, total) =>
+  static String m270(count, total) =>
       "Inventory summary: ${count} of ${total} columns";
 
-  static String m270(field) => "Edit ${field}";
+  static String m271(field) => "Edit ${field}";
 
-  static String m271(count) =>
+  static String m272(count) =>
       "${Intl.plural(count, one: '1 option', other: '${count} options')}";
 
-  static String m272(type, count) => "${type} · ${count}";
+  static String m273(type, count) => "${type} · ${count}";
 
-  static String m273(count) =>
+  static String m274(count) =>
       "${Intl.plural(count, one: '1 column is still plain text', other: '${count} columns are still plain text')}";
 
-  static String m274(email) =>
+  static String m275(email) =>
       "We sent a 6-digit code to ${email}. Type it to turn it on.";
 
-  static String m275(length) => "Enter the ${length}-digit code we sent to";
+  static String m276(before, after) => "${before} become ${after}";
 
-  static String m276(time) => "Resend in ${time}";
+  static String m277(before, after) => "${before} will read ${after}";
 
-  static String m277(company) =>
+  static String m278(from, to) => "Change ${from} to ${to}?";
+
+  static String m279(length) => "Enter the ${length}-digit code we sent to";
+
+  static String m280(time) => "Resend in ${time}";
+
+  static String m281(company) =>
       "Once you accept, you join ${company}\'s team and they can see your profile.";
 
-  static String m278(job, company) => "${job} at ${company}";
+  static String m282(job, company) => "${job} at ${company}";
 
-  static String m279(company) => "${company} invited you";
+  static String m283(company) => "${company} invited you";
 
-  static String m280(name) => "Welcome, ${name}";
+  static String m284(name) => "Welcome, ${name}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -6400,6 +6408,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_history_pack": m224,
     "stock_history_retry": MessageLookupByLibrary.simpleMessage("Try again"),
     "stock_history_title": MessageLookupByLibrary.simpleMessage("Movements"),
+    "stock_history_unit": m225,
     "stock_move_add_action": MessageLookupByLibrary.simpleMessage("Add"),
     "stock_move_add_hint": MessageLookupByLibrary.simpleMessage("Add units"),
     "stock_move_add_reserved": MessageLookupByLibrary.simpleMessage(
@@ -6408,8 +6417,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_move_add_stock": MessageLookupByLibrary.simpleMessage(
       "Add to stock",
     ),
-    "stock_move_available": m225,
-    "stock_move_available_amount": m226,
+    "stock_move_available": m226,
+    "stock_move_available_amount": m227,
     "stock_move_cost": MessageLookupByLibrary.simpleMessage("Total cost"),
     "stock_move_cost_error": MessageLookupByLibrary.simpleMessage(
       "Enter what the purchase cost, zero or more",
@@ -6443,14 +6452,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_move_presentation": MessageLookupByLibrary.simpleMessage(
       "Bought as",
     ),
-    "stock_move_presentation_option": m227,
-    "stock_move_presentation_total": m228,
+    "stock_move_presentation_option": m228,
+    "stock_move_presentation_total": m229,
     "stock_move_presentation_unit": MessageLookupByLibrary.simpleMessage(
       "Units",
     ),
     "stock_move_quantity": MessageLookupByLibrary.simpleMessage("Quantity"),
-    "stock_move_quantity_error": m229,
-    "stock_move_quantity_error_decimal": m230,
+    "stock_move_quantity_error": m230,
+    "stock_move_quantity_error_decimal": m231,
     "stock_move_quantity_error_decimal_free":
         MessageLookupByLibrary.simpleMessage(
           "Enter an amount greater than zero, up to six decimals",
@@ -6471,11 +6480,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_move_release_hint": MessageLookupByLibrary.simpleMessage(
       "They go back on sale.",
     ),
-    "stock_move_reserved": m231,
-    "stock_move_reserved_amount": m232,
+    "stock_move_reserved": m232,
+    "stock_move_reserved_amount": m233,
     "stock_move_saved": MessageLookupByLibrary.simpleMessage("Stock updated"),
-    "stock_move_step_less": m233,
-    "stock_move_step_more": m234,
+    "stock_move_step_less": m234,
+    "stock_move_step_more": m235,
     "stock_move_take_action": MessageLookupByLibrary.simpleMessage("Take out"),
     "stock_move_take_hint": MessageLookupByLibrary.simpleMessage(
       "Take units out",
@@ -6500,6 +6509,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "stock_reason_consumption": MessageLookupByLibrary.simpleMessage(
       "Used in a sale",
+    ),
+    "stock_reason_conversion": MessageLookupByLibrary.simpleMessage(
+      "Unit converted",
     ),
     "stock_reason_correction": MessageLookupByLibrary.simpleMessage(
       "Count correction",
@@ -6551,7 +6563,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "stock_reason_wrong_item": MessageLookupByLibrary.simpleMessage(
       "Wrong item",
     ),
-    "stock_summary_count": m235,
+    "stock_summary_count": m236,
     "stock_summary_empty_subtitle": MessageLookupByLibrary.simpleMessage(
       "This table\'s products show up here, with what\'s left of each one.",
     ),
@@ -6611,8 +6623,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "summary_title": MessageLookupByLibrary.simpleMessage("All set!"),
     "supply_chain": MessageLookupByLibrary.simpleMessage("Supply chain"),
     "supply_chain_available": MessageLookupByLibrary.simpleMessage("Available"),
-    "supply_chain_capacity": m236,
-    "supply_chain_capacity_limit": m237,
+    "supply_chain_capacity": m237,
+    "supply_chain_capacity_limit": m238,
     "supply_chain_cost_empty_note": MessageLookupByLibrary.simpleMessage(
       "There are no recipes yet.",
     ),
@@ -6623,15 +6635,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_discard_quantity": MessageLookupByLibrary.simpleMessage(
       "How many",
     ),
-    "supply_chain_discard_title": m238,
+    "supply_chain_discard_title": m239,
     "supply_chain_discard_without": MessageLookupByLibrary.simpleMessage(
       "They went without",
     ),
     "supply_chain_discarded": MessageLookupByLibrary.simpleMessage(
       "Lost dish recorded",
     ),
-    "supply_chain_left": m239,
-    "supply_chain_left_limit": m240,
+    "supply_chain_left": m240,
+    "supply_chain_left_limit": m241,
     "supply_chain_line_more": MessageLookupByLibrary.simpleMessage("Waste"),
     "supply_chain_line_negotiable": MessageLookupByLibrary.simpleMessage(
       "Optional",
@@ -6647,7 +6659,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "A product goes in whole units",
     ),
     "supply_chain_line_remove": MessageLookupByLibrary.simpleMessage("Remove"),
-    "supply_chain_line_unit_switch": m241,
+    "supply_chain_line_unit_pick": MessageLookupByLibrary.simpleMessage(
+      "Write it in another unit",
+    ),
+    "supply_chain_line_unit_switch": m242,
     "supply_chain_line_units": MessageLookupByLibrary.simpleMessage("units"),
     "supply_chain_line_waste": MessageLookupByLibrary.simpleMessage("Waste"),
     "supply_chain_line_waste_invalid": MessageLookupByLibrary.simpleMessage(
@@ -6656,7 +6671,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_line_waste_note": MessageLookupByLibrary.simpleMessage(
       "What is lost preparing it: with 10 %, 200 g spends 220 g",
     ),
-    "supply_chain_line_waste_of": m242,
+    "supply_chain_line_waste_of": m243,
     "supply_chain_lines_add": MessageLookupByLibrary.simpleMessage(
       "Search an ingredient to add",
     ),
@@ -6693,8 +6708,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_mode_title": MessageLookupByLibrary.simpleMessage(
       "How it is made",
     ),
-    "supply_chain_modifiers_at_least": m243,
-    "supply_chain_modifiers_between": m244,
+    "supply_chain_modifiers_at_least": m244,
+    "supply_chain_modifiers_between": m245,
     "supply_chain_modifiers_choose_one": MessageLookupByLibrary.simpleMessage(
       "Choose one",
     ),
@@ -6704,7 +6719,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_modifiers_delete": MessageLookupByLibrary.simpleMessage(
       "Delete group",
     ),
-    "supply_chain_modifiers_delete_message": m245,
+    "supply_chain_modifiers_delete_message": m246,
     "supply_chain_modifiers_delete_title": MessageLookupByLibrary.simpleMessage(
       "Delete the group?",
     ),
@@ -6768,7 +6783,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "supply_chain_modifiers_options_title":
         MessageLookupByLibrary.simpleMessage("Options"),
-    "supply_chain_modifiers_products": m246,
+    "supply_chain_modifiers_products": m247,
     "supply_chain_modifiers_products_add": MessageLookupByLibrary.simpleMessage(
       "Search a product to add",
     ),
@@ -6784,7 +6799,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_modifiers_remove_empty": MessageLookupByLibrary.simpleMessage(
       "The products that offer it have no recipe lines",
     ),
-    "supply_chain_modifiers_removes": m247,
+    "supply_chain_modifiers_removes": m248,
     "supply_chain_modifiers_rule": MessageLookupByLibrary.simpleMessage(
       "How many a line takes",
     ),
@@ -6800,7 +6815,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_modifiers_spends_note": MessageLookupByLibrary.simpleMessage(
       "Spends on top of the recipe, per unit. Only on dishes made to order.",
     ),
-    "supply_chain_modifiers_up_to": m248,
+    "supply_chain_modifiers_up_to": m249,
     "supply_chain_no_recipe": MessageLookupByLibrary.simpleMessage("No recipe"),
     "supply_chain_no_tables": MessageLookupByLibrary.simpleMessage(
       "There are no supplies tables yet",
@@ -6856,7 +6871,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_presentations_note": MessageLookupByLibrary.simpleMessage(
       "A presentation and what one holds in the product\'s unit: Sack = 25 kg, Box = 12 bottles. Restocking can then count sacks.",
     ),
-    "supply_chain_presentations_repeated": m249,
+    "supply_chain_presentations_repeated": m250,
     "supply_chain_presentations_saved": MessageLookupByLibrary.simpleMessage(
       "Presentations saved",
     ),
@@ -6878,9 +6893,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_produce_quantity": MessageLookupByLibrary.simpleMessage(
       "Made",
     ),
-    "supply_chain_produce_title": m250,
-    "supply_chain_produced": m251,
-    "supply_chain_produced_without": m252,
+    "supply_chain_produce_title": m251,
+    "supply_chain_produced": m252,
+    "supply_chain_produced_without": m253,
     "supply_chain_products_empty": MessageLookupByLibrary.simpleMessage(
       "This table has no supplies yet",
     ),
@@ -6905,7 +6920,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_recipe_delete": MessageLookupByLibrary.simpleMessage(
       "Delete recipe",
     ),
-    "supply_chain_recipe_delete_message": m253,
+    "supply_chain_recipe_delete_message": m254,
     "supply_chain_recipe_delete_title": MessageLookupByLibrary.simpleMessage(
       "Delete the recipe?",
     ),
@@ -6921,7 +6936,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_recipe_saved": MessageLookupByLibrary.simpleMessage(
       "Recipe saved",
     ),
-    "supply_chain_recipe_updated": m254,
+    "supply_chain_recipe_updated": m255,
     "supply_chain_reports_actual": MessageLookupByLibrary.simpleMessage(
       "Actual",
     ),
@@ -6949,7 +6964,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Write the days as day/month/year",
     ),
     "supply_chain_reports_dish": MessageLookupByLibrary.simpleMessage("Dish"),
-    "supply_chain_reports_each": m255,
+    "supply_chain_reports_each": m256,
     "supply_chain_reports_empty": MessageLookupByLibrary.simpleMessage(
       "Nothing to report in these days",
     ),
@@ -7005,8 +7020,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_reports_window_invalid": MessageLookupByLibrary.simpleMessage(
       "The first day can\'t be after the last",
     ),
-    "supply_chain_shelf": m256,
-    "supply_chain_short": m257,
+    "supply_chain_shelf": m257,
+    "supply_chain_short": m258,
     "supply_chain_sold_out": MessageLookupByLibrary.simpleMessage("Sold out"),
     "supply_chain_tab_modifiers": MessageLookupByLibrary.simpleMessage(
       "Modifiers",
@@ -7021,13 +7036,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "supply_chain_table_supplies_note": MessageLookupByLibrary.simpleMessage(
       "What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; what a made product consumes is written with it, in Inventory.",
     ),
-    "supply_chain_used_in": m258,
+    "supply_chain_used_in": m259,
     "supply_chain_uses_unknown": MessageLookupByLibrary.simpleMessage(
       "Where it is used could not be checked.",
     ),
     "table_color_title": MessageLookupByLibrary.simpleMessage("Color"),
     "table_created": MessageLookupByLibrary.simpleMessage("Table created"),
-    "table_delete_message": m259,
+    "table_delete_message": m260,
     "table_delete_title": MessageLookupByLibrary.simpleMessage(
       "Delete this table?",
     ),
@@ -7038,11 +7053,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_description_title": MessageLookupByLibrary.simpleMessage(
       "Description (optional)",
     ),
-    "table_field_count": m260,
+    "table_field_count": m261,
     "table_field_delete_confirm": MessageLookupByLibrary.simpleMessage(
       "Delete field",
     ),
-    "table_field_delete_message": m261,
+    "table_field_delete_message": m262,
     "table_field_delete_title": MessageLookupByLibrary.simpleMessage(
       "Delete this field?",
     ),
@@ -7112,24 +7127,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_normalize_message": MessageLookupByLibrary.simpleMessage(
       "We read a sample of every column and give it the type it should have — a price that compares as a number, a date that sorts, a description the AI can search by meaning — and set how much of each one a bot may see. Columns you already typed or marked yourself are left alone.",
     ),
-    "table_normalize_narrowed": m262,
+    "table_normalize_narrowed": m263,
     "table_normalize_none": MessageLookupByLibrary.simpleMessage(
       "Every column was already right",
     ),
-    "table_normalize_renamed": m263,
-    "table_normalize_retyped": m264,
+    "table_normalize_renamed": m264,
+    "table_normalize_retyped": m265,
     "table_normalize_running": MessageLookupByLibrary.simpleMessage(
       "Normalizing this table",
     ),
-    "table_normalize_summarized": m265,
+    "table_normalize_summarized": m266,
     "table_normalize_title": MessageLookupByLibrary.simpleMessage(
       "Normalize this table?",
     ),
     "table_options": MessageLookupByLibrary.simpleMessage("Table options"),
     "table_primary": MessageLookupByLibrary.simpleMessage("Primary"),
-    "table_record_count": m266,
+    "table_record_count": m267,
     "table_renamed": MessageLookupByLibrary.simpleMessage("Table renamed"),
-    "table_settings_add": m267,
+    "table_settings_add": m268,
     "table_settings_agent_filterable": MessageLookupByLibrary.simpleMessage(
       "Filterable columns",
     ),
@@ -7198,7 +7213,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_channels_title": MessageLookupByLibrary.simpleMessage(
       "Connected channels",
     ),
-    "table_settings_column_count": m268,
+    "table_settings_column_count": m269,
     "table_settings_column_field": MessageLookupByLibrary.simpleMessage(
       "Column",
     ),
@@ -7231,7 +7246,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_columns_subtitle": MessageLookupByLibrary.simpleMessage(
       "What each one holds, how much of it the AI sees and which ones the inventory summary shows. All of it is changed right here",
     ),
-    "table_settings_columns_summary_count": m269,
+    "table_settings_columns_summary_count": m270,
     "table_settings_columns_title": MessageLookupByLibrary.simpleMessage(
       "Columns",
     ),
@@ -7246,7 +7261,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_description_empty": MessageLookupByLibrary.simpleMessage(
       "No description",
     ),
-    "table_settings_edit": m270,
+    "table_settings_edit": m271,
     "table_settings_error_subtitle": MessageLookupByLibrary.simpleMessage(
       "It may have been deleted, or it belongs to another business",
     ),
@@ -7282,7 +7297,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_no_records": MessageLookupByLibrary.simpleMessage(
       "No records yet",
     ),
-    "table_settings_options": m271,
+    "table_settings_options": m272,
     "table_settings_options_empty": MessageLookupByLibrary.simpleMessage(
       "No options yet",
     ),
@@ -7320,7 +7335,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_title": MessageLookupByLibrary.simpleMessage(
       "Table settings",
     ),
-    "table_settings_type_count": m272,
+    "table_settings_type_count": m273,
     "table_settings_types": MessageLookupByLibrary.simpleMessage("Types"),
     "table_settings_unavailable": MessageLookupByLibrary.simpleMessage(
       "Not available",
@@ -7338,7 +7353,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "USD, Bs., kg",
     ),
     "table_settings_unknown": MessageLookupByLibrary.simpleMessage("Unknown"),
-    "table_settings_untyped": m273,
+    "table_settings_untyped": m274,
     "table_settings_untyped_hint": MessageLookupByLibrary.simpleMessage(
       "A column imported from a file is born as text. Giving it its real type is what lets the AI compare it, filter by it and quote it properly. You can change it in the Type column below",
     ),
@@ -7451,7 +7466,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Your recovery codes",
     ),
     "two_factor_continue": MessageLookupByLibrary.simpleMessage("Continue"),
-    "two_factor_email_sent": m274,
+    "two_factor_email_sent": m275,
     "two_factor_off_body": MessageLookupByLibrary.simpleMessage(
       "Signing in will ask only for your password or emailed code.",
     ),
@@ -7486,6 +7501,28 @@ class MessageLookup extends MessageLookupByLibrary {
     "two_factor_use_recovery": MessageLookupByLibrary.simpleMessage(
       "Use a recovery code",
     ),
+    "unit_change_confirm": MessageLookupByLibrary.simpleMessage("Change"),
+    "unit_change_convert": MessageLookupByLibrary.simpleMessage(
+      "Convert the figures",
+    ),
+    "unit_change_convert_detail": m276,
+    "unit_change_keep": MessageLookupByLibrary.simpleMessage(
+      "Keep the figures",
+    ),
+    "unit_change_keep_detail": m277,
+    "unit_change_keep_note": MessageLookupByLibrary.simpleMessage(
+      "Only the unit changes: for a unit that was wrong.",
+    ),
+    "unit_change_measure_note": MessageLookupByLibrary.simpleMessage(
+      "Every row of the column changes with it.",
+    ),
+    "unit_change_product_note": MessageLookupByLibrary.simpleMessage(
+      "Its stock in every branch, how it is bought and the recipes that use it change with it.",
+    ),
+    "unit_change_stock_note": MessageLookupByLibrary.simpleMessage(
+      "Every product counted in the column\'s unit changes with it: its stock, how it is bought and the recipes that use it. A product with its own unit keeps it.",
+    ),
+    "unit_change_title": m278,
     "unseal_button": MessageLookupByLibrary.simpleMessage("Unlock"),
     "unseal_subtitle": MessageLookupByLibrary.simpleMessage(
       "You signed in online, so the server opened your session without your password. Type your password on the server to see payment accounts, pay and documents.",
@@ -7497,7 +7534,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verify_code_continue_with_password": MessageLookupByLibrary.simpleMessage(
       "Continue and create a password",
     ),
-    "verify_code_inbox_subtitle": m275,
+    "verify_code_inbox_subtitle": m279,
     "verify_code_inbox_title": MessageLookupByLibrary.simpleMessage(
       "Check your inbox",
     ),
@@ -7507,7 +7544,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verify_code_password_notice": MessageLookupByLibrary.simpleMessage(
       "A password isn\'t required, but we recommend creating one. Your account will be as secure as you want it to be: we offer several ways to protect it, and you decide how far to go.",
     ),
-    "verify_code_resend_in": m276,
+    "verify_code_resend_in": m280,
     "verify_code_signing_in": MessageLookupByLibrary.simpleMessage(
       "Signing you in…",
     ),
@@ -7541,7 +7578,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_invitation_accept": MessageLookupByLibrary.simpleMessage(
       "Accept invitation",
     ),
-    "welcome_invitation_accept_notice": m277,
+    "welcome_invitation_accept_notice": m281,
     "welcome_invitation_action": MessageLookupByLibrary.simpleMessage("Review"),
     "welcome_invitation_branch": MessageLookupByLibrary.simpleMessage("Branch"),
     "welcome_invitation_company": MessageLookupByLibrary.simpleMessage(
@@ -7553,7 +7590,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_invitation_department": MessageLookupByLibrary.simpleMessage(
       "Department",
     ),
-    "welcome_invitation_job": m278,
+    "welcome_invitation_job": m282,
     "welcome_invitation_modal_title": MessageLookupByLibrary.simpleMessage(
       "Invitation",
     ),
@@ -7561,7 +7598,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_invitation_subtitle": MessageLookupByLibrary.simpleMessage(
       "Review the invitation to join their team.",
     ),
-    "welcome_invitation_title": m279,
+    "welcome_invitation_title": m283,
     "welcome_jobs_body": MessageLookupByLibrary.simpleMessage(
       "Job openings are coming soon. You will be able to browse them and apply from here.",
     ),
@@ -7581,7 +7618,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "welcome_subtitle": MessageLookupByLibrary.simpleMessage(
       "Lyra works around a company. Tell us how you want to start: you can change your mind later.",
     ),
-    "welcome_title": m280,
+    "welcome_title": m284,
     "write_a_description": MessageLookupByLibrary.simpleMessage(
       "Optional description...",
     ),

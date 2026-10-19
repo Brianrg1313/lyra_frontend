@@ -468,8 +468,9 @@ class _ModeTile extends StatelessWidget {
   }
 }
 
-/// The unit a line's quantity is written in: a weight or a volume switches between its two on
-/// a tap (g ↔ kg, ml ↔ l); anything else only says its own, or «units».
+/// The unit a line's quantity is written in: a weight, a volume or a length opens the units of
+/// its magnitude (450 ml of a soda counted in l, 10 oz of a meat in kg), two of them switch on
+/// a tap; anything else only says its own, or «units».
 class _UnitPicker extends StatelessWidget {
   const _UnitPicker({required this.line, required this.enabled, required this.onUnit});
 
@@ -493,14 +494,32 @@ class _UnitPicker extends StatelessWidget {
     }
 
     final next = line.units[(line.units.indexOf(line.shown) + 1) % line.units.length];
+    final menu = line.units.length > 2;
 
-    return FeedbackButton(
+    return Builder(builder: (anchor) => FeedbackButton(
       width: width,
       height: AppSize.action,
-      message: s.supply_chain_line_unit_switch(next.symbol),
-      action: enabled ? () => onUnit(next) : null,
+      message: menu ? s.supply_chain_line_unit_pick : s.supply_chain_line_unit_switch(next.symbol),
+      action: !enabled ? null : menu ? () => _pick(anchor) : () => onUnit(next),
       color: scheme.surface,
       child: Center(child: TextSmall(label, bold: true))
+    ));
+  }
+
+  Future<void> _pick(BuildContext anchor) async {
+    final picked = await showSelectMenu(
+      context: anchor,
+      options: [
+        for (final unit in line.units) SelectOption(value: unit.symbol, placeholder: unit.symbol)
+      ],
+      selected: line.shown.symbol,
+      maxOptions: 6,
+      dense: true
     );
+
+    if (picked == null) return;
+
+    final unit = line.units.where((unit) => unit.symbol == picked.value).firstOrNull;
+    if (unit != null) onUnit(unit);
   }
 }

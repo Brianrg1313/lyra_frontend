@@ -15,6 +15,7 @@ import 'package:app/services/stock/tables/table_detail_service.dart';
 // WIDGETS
 import 'package:core/form.dart';
 import 'package:app/screens/modals/inventory/stock_column/_stock_column.dart';
+import 'package:app/screens/modals/inventory/unit_change/_unit_change.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 /// The columns of the table, one below the other: what it is recognized by,
@@ -467,9 +468,12 @@ class _Options extends StatelessWidget {
 /// `editFieldRequest`).
 ///
 /// A measure and a stock offer the sheet's units ([measureUnits]), and count
-/// units without one. A recipe writes a supply in the other unit of its
-/// magnitude only in grams and millilitres (`kitchenUnitsFor`): one counted in
-/// `kg` is written in grams too, one counted in `m` only in itself.
+/// units without one. A recipe writes a supply in any unit of its magnitude
+/// (`kitchenUnitsFor`): one counted in `kg` is written in grams too.
+///
+/// While the table has rows, a unit the figures can follow (kg → g) asks whether
+/// they do ([askUnitChange]), as the sheet's ruler does; any other change of a
+/// stock asks first, since its figures stay as they are.
 class _Unit extends StatelessWidget {
   const _Unit({required this.field});
 
@@ -528,9 +532,42 @@ class _Unit extends StatelessWidget {
     if (picked == null || picked.value == field.unit) return;
     if (!anchor.mounted) return;
 
-    await anchor
-      .read<TableDetailService>()
-      .editField(anchor, field, unit: picked.value);
+    final service = anchor.read<TableDetailService>();
+    final rows = service.detail.records != 0;
+    final stock = field.type == TableFieldType.stock;
+    final factor = _counts && CapabilityService().shows("inventory.units")
+      ? measureFactor(field.unit, picked.value)
+      : null;
+    var convert = false;
+
+    if (factor != null && factor != 1 && rows) {
+      final change = await askUnitChange(
+        anchor,
+        from: field.unit,
+        to: picked.value,
+        factor: factor,
+        note: stock ? S.of(anchor).unit_change_stock_note : S.of(anchor).unit_change_measure_note
+      );
+
+      if (change == null || !anchor.mounted) return;
+      convert = change == UnitChange.convert;
+    } else if (stock && rows) {
+      final none = S.of(anchor).product_table_view_unit_count_symbol;
+      final confirmed = await showAlertModal(
+        context: anchor,
+        title: S.of(anchor).product_table_view_unit_stock_title,
+        message: S.of(anchor).product_table_view_unit_stock_message(
+          field.unit.isEmpty ? none : field.unit,
+          picked.value.isEmpty ? none : picked.value
+        ),
+        confirmText: S.of(anchor).product_table_view_unit_stock_confirm,
+        cancelText: S.of(anchor).cancel
+      );
+
+      if (!confirmed || !anchor.mounted) return;
+    }
+
+    await service.editField(anchor, field, unit: picked.value, convert: convert);
   }
 }
 

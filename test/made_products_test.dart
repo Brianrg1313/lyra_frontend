@@ -116,14 +116,16 @@ void main() {
   });
 
   group("units", () {
-    test("a weight is written in grams or kilos and travels in the supply's own unit", () {
+    test("a weight is written in any weight and travels in the supply's own unit", () {
       final kg = kitchenUnitsFor("kg");
+      double factor(String unit, String symbol) =>
+        kitchenUnitsFor(unit).firstWhere((written) => written.symbol == symbol).factor;
 
-      expect([for (final unit in kg) unit.symbol], ["g", "kg"]);
-      expect(300 * kg.first.factor, closeTo(0.3, 1e-9));
-      expect(kitchenUnitsFor("Kilos").last.factor, 1);
-      expect(kitchenUnitsFor("g").last.factor, 1000);
-      expect([for (final unit in kitchenUnitsFor("litros")) unit.symbol], ["ml", "l"]);
+      expect([for (final unit in kg) unit.symbol], ["mg", "g", "kg", "oz", "lb"]);
+      expect(300 * factor("kg", "g"), closeTo(0.3, 1e-9));
+      expect(factor("Kilos", "kg"), 1);
+      expect(factor("g", "kg"), 1000);
+      expect([for (final unit in kitchenUnitsFor("litros")) unit.symbol], ["ml", "l", "gal"]);
     });
 
     test("a supply's unit is its row's, else its stock column's, else a measure's", () {
@@ -315,8 +317,10 @@ void main() {
 
       expect(saved!.lines.single.qty, 0.25);
 
-      // Switched to kilos, the same figure is kilos.
+      // Switched to kilos from the weights' menu, the same figure is kilos.
       await tester.tap(find.text("g"));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text("kg").last);
       await tester.pumpAndSettle();
       await tester.tap(find.text(S.current.save));
       await tester.pumpAndSettle();

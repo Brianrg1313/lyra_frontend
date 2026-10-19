@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/files/image_file.dart';
 import 'package:app/services/inventory/field_boolean.dart';
 import 'package:app/services/inventory/measure_units.dart';
@@ -23,6 +24,7 @@ import 'package:core/form/select_menu.dart';
 import 'package:core/widgets/tables/linked_scroll.dart';
 import 'package:app/screens/modals/inventory/stock_column/_stock_column.dart';
 import 'package:app/screens/modals/inventory/stock_movement/_stock_movement.dart';
+import 'package:app/screens/modals/inventory/unit_change/_unit_change.dart';
 import 'package:app/screens/modals/shared/image_viewer/_image_viewer.dart';
 import 'package:app/screens/home/sections/inventory/table_view/date_menu.dart';
 

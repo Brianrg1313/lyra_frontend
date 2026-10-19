@@ -500,9 +500,11 @@ class TableViewService extends ChangeNotifier {
 
   /// Counts [row]'s product in [unit] (empty: its stock column's) against
   /// `PUT /inventory/units/`. Seen at once and sent behind, like [editRecord]: the row
-  /// goes back to the unit it had if it does not go through. Only the word changes, the
-  /// figure is the ledger's.
-  Future<bool> setUnit(BuildContext context, {required int row, required String unit}) async {
+  /// goes back to the unit it had if it does not go through. Only the word changes, unless
+  /// [convert]: then the backend carries every figure of the product to it (its balances,
+  /// presentations and the recipe lines that spend it) and the table is read again, its
+  /// stock column with them.
+  Future<bool> setUnit(BuildContext context, {required int row, required String unit, bool convert = false}) async {
     final tableId = _tableId;
     final record = _rows[row];
 
@@ -515,7 +517,8 @@ class TableViewService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _source.setUnit(tableId: tableId, productId: record.id, unit: unit);
+      await _source.setUnit(tableId: tableId, productId: record.id, unit: unit, convert: convert);
+      if (convert) await refresh();
       return true;
     } catch (error) {
       if (kDebugMode) print("setUnit failed: $error");
@@ -848,7 +851,8 @@ class TableViewService extends ChangeNotifier {
     String? name,
     String? type,
     List<String>? options,
-    String? unit
+    String? unit,
+    bool convert = false
   }) async {
     // Without a FIELD_ID there is no field to edit: it is a column that was
     // seen but that the backend did not identify.
@@ -860,10 +864,13 @@ class TableViewService extends ChangeNotifier {
         name: name ?? field.name,
         type: type,
         options: options,
-        unit: unit
+        unit: unit,
+        convert: convert
       ));
 
-      await _reloadFields();
+      // A unit converted rewrote the values themselves (a measure's, a stock's figures): what
+      // was read is stale, like after a retype.
+      convert ? await refresh() : await _reloadFields();
       return true;
     } catch (error) {
       if (kDebugMode) print("editField failed: $error");

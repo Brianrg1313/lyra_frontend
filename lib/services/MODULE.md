@@ -283,7 +283,7 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 - `made_product_model.dart` — `MadeFields` (`of`: name = first `TITLE` else text, price = first `PRICE`, image = first `IMAGE`, description = first `DESCRIPTION` else `TEXTAREA`, `others` typed in a field), `MadeProduct` (`listFrom` an aligned page: values by FIELD_ID, `images` and `cover`, `consumes`).
 - `made_products_service.dart` — `MadeProductsService({tableId, kitchen})` (+ status, `MadeProductDraft`, `MadePhoto`, `MadeGroupChoice`): one made table's products (structure, pages of 50 with `MATCH`, `more`), the supplies' units (`unitOf`, `units`), the company's modifier groups (`groups`, `groupsOf`), `costOf`; `save` creates the name/price columns a table lacks (and the description and added columns when written), then the record with its `DATA` (an edit only what changed), `CONSUMES` and `BATCH` in one call; then the photo (cover removed, the new one uploaded) and the groups it offers (new/edited with their content, the ones it joins or leaves with their products changed), a failure there reported with the product kept; reads the first page again. Owned by the made products view.
 - `made_kitchen_api.dart` — `MadeKitchenApi`: `GET`/`PUT /inventory/modifiers`, `POST /recipes/cost` for one product. Seam for tests.
-- `kitchen_units.dart` — `KitchenUnit`, `kitchenUnitsFor(unit)` (g/kg, ml/l by their spellings; else only its own), `kitchenBestUnit(qty, unit)` (0.3 kg reads 300 g).
+- `kitchen_units.dart` — `KitchenUnit`, `kitchenUnitsFor(unit)` (every unit of its magnitude, `measureUnits`; else only its own), `kitchenBestUnit(qty, unit)` (g/kg, ml/l only: 0.3 kg reads 300 g).
 - `recipe_model.dart` — `Recipe` (`read`, `namedAfter`: a write answers without names), `RecipeLine`, `RecipeMode` (`order`/`batch`), `RecipeUse`.
 - `recipe_measure.dart` — `RecipeMeasure`, `measureRecipes`: `POST /recipes/availability` (≤ 200 ids per call); shared by `KitchenProductsService` and `StockSummaryService`.
 - `recipe_availability_model.dart` — `RecipeAvailability` (`mapFrom`: by product, absent = no recipe; `capacity` only on a batch), `RecipeLimit`, `RecipeShort`.
@@ -405,7 +405,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 
 ## inventory/ — table authoring
 
-- `table_request.dart` / `table_field_request.dart` / `table_record_request.dart` — table / column / row bodies.
+- `table_request.dart` / `table_field_request.dart` / `table_record_request.dart` — table / column / row bodies (`editFieldRequest(convert:)`: `CONVERT` beside a `UNIT`).
 - `table_field_type.dart` — `TableFieldType`.
 - `table_field_options.dart` — `OPTIONS`/`CATEGORIES` rules (`sameFieldOption`, `fieldLabelsOf`, `fieldLabelsText`, `fieldLabelsValue`).
 - `table_template.dart` — `TableTemplate`: the create modal's category codes.
@@ -416,7 +416,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `import_source.dart` — `ImportSource`, `ImportSourceGroup`.
 - `product_date.dart` — `ProductDate`, `DateSeparatorFormatter`.
 - `field_boolean.dart` — `BOOLEAN` cells: `fieldBoolean` (engine boolean, numbers, written yes/no), `fieldBooleanValue`.
-- `measure_units.dart` — `measureUnits`, `MeasureUnit`, `MeasureMagnitude`: the units a `MEASURE` column is offered in; `measureSymbolOf`, `splitMeasure`: a unit typed after a number («300lt», «5 uds» → units).
+- `measure_units.dart` — `measureUnits`, `MeasureUnit` (its `size`), `MeasureMagnitude`: the units a `MEASURE` column is offered in; `measureSymbolOf`, `splitMeasure`: a unit typed after a number («300lt», «5 uds» → units); `measureUnitOf`, `measureFactor(from, to)` (null across magnitudes or an unknown word), `measureConvert` — the backend's `measures.js` table, which converts.
 - `product_image.dart` — `ProductImage`: thumbnail sizing/URLs; a stored id, an import's address, or a file name waiting for its file (`missing`, kept in the cell).
 - `picture_key.dart` — `pictureKey` (equal to the backend's `Ingest.key`), `isPictureName`, `looksLikePicture` (bytes sniff).
 - `picture_import_model.dart` — `PictureProgress` (`image/progress` and `…/status` counters, changed `tables`), `PictureImportStatus` (+ `names`, `failures`), `PictureFailure`.
@@ -426,7 +426,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 ## stock/ — reading and moving inventory
 
 - `sources/inventory_source.dart` — `InventorySource`: tables, templates (cloud only; a master answers none), structure, detail,
-  fields, records (+ match total), images, import (structure, then records), normalisation (cloud only), a product's own unit (`setUnit`, cloud only: the LAN source throws `UnsupportedError`). Used by `TablesService`, `TableDetailService`, `TableViewService`.
+  fields, records (+ match total), images, import (structure, then records), normalisation (cloud only), a product's own unit (`setUnit`, `convert`; cloud only: the LAN source throws `UnsupportedError`). Used by `TablesService`, `TableDetailService`, `TableViewService`.
   `inventory_cloud_source.dart` — REST (reads the created table's id in either shape). `inventory_lan_source.dart` —
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
   `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
@@ -442,7 +442,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `TableImportStage`): list, create, rename, delete, import (then `PictureImportService.afterImport`); listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
 - `tables/table_view_service.dart` — `TableViewService` (+ `TableStructureStatus`, `TableViewStatus`,
-  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset), `/records/images/`, `writeStock`, `setUnit` (a product's own unit, optimistic); `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
+  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset), `/records/images/`, `writeStock`, `setUnit` (a product's own unit, optimistic; `convert` re-reads the table), `editField(convert:)` (a converted unit re-reads the records); `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
 - `tables/table_stock_mover.dart` — `TableStockMover`: the sheet's `StockMover` (moves through `StockSource`, writes the balance in the row).
 - `tables/table_lite_model.dart` — list row, `TableKind` (`catalog made supplies`; unknown = catalog).
 - `tables/table_detail_model.dart` — `TableDetailModel` and its summaries (`TableColumnsSummary`,
@@ -456,7 +456,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `summary/stock_summary_service.dart` — `StockSummaryService({tableId, supplies, recipes})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`); `supplies` = moves with decimals; `recipes` = each page's recipes measured (`recipeOf`); `presentations` (a failed read = none); `image/progress` naming its table is a quiet `syncColumns`.
 - `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`: `num`, a supply's decimals; `unit`, the product's own), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement` (`num quantity`, `PRESENTATION`, `COST` only on `restock`), `StockBalance` (`num`), `StockOperation`, `StockReason` (`waste`), `stockNum`, `stockFigure`.
-- `movements/stock_ledger_model.dart` — `StockLedgerEntry` (operation, reason, positive `qty` and its `sign`, actor, `madeFor`, `pack`, `cost`, `available` after), `StockLedgerPage`.
+- `movements/stock_ledger_model.dart` — `StockLedgerEntry` (operation, reason, positive `qty` and its `sign`, actor, `madeFor`, `pack`, `unit` — a conversion's from/to/factor —, `cost`, `available` after), `StockLedgerPage`.
 - `movements/stock_mover.dart` — `StockMover`: what the movement form writes through (`StockSummaryService`, `TableStockMover`).
 - `movements/stock_history_service.dart` — `StockHistoryService({productId})`: `POST /inventory/stock/movements` (`PRODUCT_ID`, pages of 30); the dishes a `for` names, from the catalog tables' first rows (`KitchenProductSearch.namesIn`), once.
 - `movements/stock_changed_model.dart` — `stock/changed` notice: emitted for **every** stock move

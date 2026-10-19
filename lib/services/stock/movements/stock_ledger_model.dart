@@ -9,6 +9,10 @@ typedef StockLedgerFor = ({String productId, num qty, num waste, num lost});
 /// each holding [qty].
 typedef StockLedgerPack = ({String id, String name, num qty, num count});
 
+/// A product's figures carried to another unit (`unit`, `cocina-frontend.md` §8): [factor] of
+/// [to] per [from] (kg → g: 1000). Empty is units.
+typedef StockLedgerUnit = ({String from, String to, num factor});
+
 /// One line of a product's ledger (`POST /inventory/stock/movements`): what moved, why, who
 /// moved it and what was left.
 ///
@@ -25,6 +29,7 @@ class StockLedgerEntry {
     this.actorName,
     this.madeFor,
     this.pack,
+    this.unit,
     this.cost,
     this.available,
     this.date
@@ -44,6 +49,7 @@ class StockLedgerEntry {
 
   final StockLedgerFor? madeFor;
   final StockLedgerPack? pack;
+  final StockLedgerUnit? unit;
 
   /// What the whole purchase cost: a restock's, null on anything else.
   final double? cost;
@@ -64,6 +70,8 @@ class StockLedgerEntry {
     ("transfer", "transfer_in" || "transfer_back") => 1,
     ("recipe", "production") => 1,
     ("recipe", "consumption" || "consumed" || "ingredient" || "spoiled") => -1,
+    // A conversion: the shelf's figure grew into a smaller unit, or shrank into a bigger one
+    ("unit", _) => (unit?.factor ?? 1) > 1 ? 1 : -1,
     _ => 0
   };
 
@@ -71,6 +79,7 @@ class StockLedgerEntry {
     final actor = data["actor"] is Map ? data["actor"] as Map : const {};
     final made = data["for"] is Map ? data["for"] as Map : null;
     final pack = data["pack"] is Map ? data["pack"] as Map : null;
+    final unit = data["unit"] is Map ? data["unit"] as Map : null;
     final balance = data["balance"] is Map ? data["balance"] as Map : null;
     final cost = data["cost"];
 
@@ -93,6 +102,11 @@ class StockLedgerEntry {
         name: (pack["name"] ?? "").toString(),
         qty: stockNum(pack["qty"]) ?? 0,
         count: stockNum(pack["count"]) ?? 0
+      ),
+      unit: unit == null ? null : (
+        from: (unit["from"] ?? "").toString(),
+        to: (unit["to"] ?? "").toString(),
+        factor: stockNum(unit["factor"]) ?? 1
       ),
       cost: cost is num ? cost.toDouble() : null,
       available: balance == null ? null : stockNum(balance["available"]),

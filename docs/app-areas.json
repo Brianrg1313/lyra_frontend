@@ -226,7 +226,7 @@
         "move_stock": "Take/add stock from the stock summary.",
         "purchases": "A restock's presentation and total cost (`PRESENTATION`, `COST`) and waste as a reason (`cocina-frontend.md` §7-8); the engine knows none.",
         "history": "A product's ledger read back: who moved it, why, for which dish, how it was bought (`cocina-frontend.md` §10); no op reads a master's.",
-        "units": "What one product's stock is counted in when it is not its stock column's (a Pepsi in u among supplies in kg, `cocina-frontend.md` §8); a master keeps none."
+        "units": "What one product's stock is counted in when it is not its stock column's (a Pepsi in u among supplies in kg, `cocina-frontend.md` §8), and a unit change that carries the figures (`CONVERT`: a product's, a stock or measure column's); a master keeps no unit per product and converts nothing."
       }
     },
     {

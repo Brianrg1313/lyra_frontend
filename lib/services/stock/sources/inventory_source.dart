@@ -75,8 +75,9 @@ abstract interface class InventorySource {
   Future<void> editRecord(Map<String, dynamic> request);
 
   /// Sets what [productId]'s stock is counted in (`cocina-frontend.md` §8); empty takes it
-  /// back to its stock column's. Cloud only: a master keeps no unit per product.
-  Future<void> setUnit({required String tableId, required String productId, required String unit});
+  /// back to its stock column's. With [convert] its figures follow, between units of one
+  /// magnitude. Cloud only: a master keeps no unit per product.
+  Future<void> setUnit({required String tableId, required String productId, required String unit, bool convert = false});
 
   /// Adds a photo to a record; answers its whole gallery as stored.
   Future<List<ProductImage>> addImage(String tableId, String recordId, File file);

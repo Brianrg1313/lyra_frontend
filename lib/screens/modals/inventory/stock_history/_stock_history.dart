@@ -134,7 +134,9 @@ class StockLedgerLine extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final made = entry.madeFor;
     final pack = entry.pack;
+    final unit = entry.unit;
     final cost = entry.cost;
+    String named(String symbol) => symbol.isEmpty ? s.product_table_view_unit_count_symbol : symbol;
 
     final what = [
       stockLedgerReason(context, entry.operation, entry.reason),
@@ -142,6 +144,7 @@ class StockLedgerLine extends StatelessWidget {
         ? s.stock_history_for_unnamed(stockFigure(made.qty))
         : s.stock_history_for(stockFigure(made.qty), dish),
       if (pack != null && pack.name.isNotEmpty) s.stock_history_pack(stockFigure(pack.count), pack.name),
+      if (unit != null) s.stock_history_unit(named(unit.from), named(unit.to)),
       if (cost != null) posAmount(currency, cost)
     ].join(" · ");
 
@@ -219,6 +222,7 @@ String stockLedgerReason(BuildContext context, String operation, String reason) 
     ("recipe", "ingredient") => s.stock_reason_ingredient,
     ("recipe", "waste") => s.stock_reason_batch_waste,
     ("recipe", "spoiled") => s.stock_reason_spoiled,
+    ("unit", "conversion") => s.stock_reason_conversion,
     _ => reason
   };
 }

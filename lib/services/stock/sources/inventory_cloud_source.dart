@@ -158,11 +158,11 @@ class InventoryCloudSource implements InventorySource {
     api.put(path: "/inventory/products/records/manage/", version: "v1", data: request);
 
   @override
-  Future<void> setUnit({required String tableId, required String productId, required String unit}) =>
+  Future<void> setUnit({required String tableId, required String productId, required String unit, bool convert = false}) =>
     api.put(
       path: "/inventory/units/",
       version: "v1",
-      data: {"TABLE_ID": tableId, "PRODUCT_ID": productId, "UNIT": unit}
+      data: {"TABLE_ID": tableId, "PRODUCT_ID": productId, "UNIT": unit, if (convert) "CONVERT": true}
     );
 
   @override

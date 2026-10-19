@@ -54,8 +54,10 @@ extension SheetCellPicks on SheetController {
   /// Above go the unit it has and units (no `UNIT`, the default); any other is typed in the
   /// create row.
   ///
-  /// A stock asks first while its table has rows: the backend keeps the figures as they are,
-  /// so 10 kg would read 10 g, and nothing in the sheet would say they were weighed in another.
+  /// While the table has rows, a unit the figures can follow (kg → g, [measureFactor]) asks
+  /// whether they do ([askUnitChange]): a measure's values and a stock's products counted in the
+  /// column's unit are converted by the backend. Any other change keeps them, and a stock asks
+  /// first: 10 kg would read 10 u, and nothing in the sheet would say they were weighed.
   Future<void> pickUnit(int column, BuildContext anchor) async {
     final field = columns.fieldAt(column);
     if (field == null || field.id.isEmpty || !columns.canEditAt(column)) return;
@@ -93,7 +95,25 @@ extension SheetCellPicks on SheetController {
 
     if (_disposed || picked == null || picked.value == unit) return;
 
-    if (typeAt(column) == TableFieldType.stock && service.records > 0) {
+    final stock = typeAt(column) == TableFieldType.stock;
+    final factor = _factor(unit, picked.value);
+    var convert = false;
+
+    if (factor != null && service.records > 0) {
+      final context = _context();
+      if (!context.mounted) return;
+
+      final change = await askUnitChange(
+        context,
+        from: unit,
+        to: picked.value,
+        factor: factor,
+        note: stock ? S.of(context).unit_change_stock_note : S.of(context).unit_change_measure_note
+      );
+
+      if (_disposed || change == null) return;
+      convert = change == UnitChange.convert;
+    } else if (stock && service.records > 0) {
       final context = _context();
       if (!context.mounted) return;
 
@@ -113,7 +133,7 @@ extension SheetCellPicks on SheetController {
       if (_disposed || !confirmed) return;
     }
 
-    await service.editField(_context(), field, unit: picked.value);
+    await service.editField(_context(), field, unit: picked.value, convert: convert);
   }
 
   /// Opens the units of one record's stock anchored to its ruler ([anchor]) and saves the one
@@ -122,7 +142,9 @@ extension SheetCellPicks on SheetController {
   /// go the column's (picking it takes the product back to it) and units, written as `u` when
   /// the column counts in another; any other is typed in the create row.
   ///
-  /// Asks first when the product has stock, like [pickUnit]: the figure is not converted.
+  /// Between units the figures can follow (kg → g) it asks whether they do ([askUnitChange]),
+  /// even at 0: the recipes that spend it and its presentations are written in its unit too.
+  /// Any other change asks only while it has stock, like [pickUnit]: the figure stays.
   Future<void> pickRowUnit(SheetCell cell, BuildContext anchor) async {
     final record = service.rowAt(cell.row);
     final field = columns.fieldAt(cell.column);
@@ -178,8 +200,25 @@ extension SheetCellPicks on SheetController {
 
     final value = record.at(columns.slotAt(cell.column));
     final figure = value is num ? value : num.tryParse("${value ?? ""}") ?? 0;
+    final factor = _factor(now, shown(unit));
+    var convert = false;
 
-    if (figure != 0) {
+    if (factor != null) {
+      final context = _context();
+      if (!context.mounted) return;
+
+      final change = await askUnitChange(
+        context,
+        from: now,
+        to: shown(unit),
+        factor: factor,
+        figure: figure,
+        note: S.of(context).unit_change_product_note
+      );
+
+      if (_disposed || change == null) return;
+      convert = change == UnitChange.convert;
+    } else if (figure != 0) {
       final context = _context();
       if (!context.mounted) return;
 
@@ -194,7 +233,17 @@ extension SheetCellPicks on SheetController {
       if (_disposed || !confirmed) return;
     }
 
-    await service.setUnit(_context(), row: cell.row, unit: unit);
+    await service.setUnit(_context(), row: cell.row, unit: unit, convert: convert);
+  }
+
+  /// How many of [to] one [from] is when the backend can carry the figures there (cloud only:
+  /// a master converts nothing, `inventory.units`); `null` when only the word can change, and
+  /// when nothing would (the same unit written two ways).
+  double? _factor(String from, String to) {
+    if (!CapabilityService().shows("inventory.units")) return null;
+
+    final factor = measureFactor(from, to);
+    return factor == null || factor == 1 ? null : factor;
   }
 
   /// Reads a unit typed after a measure's number on leaving the cell: «300lt» leaves `300`

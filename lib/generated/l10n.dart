@@ -1799,6 +1799,16 @@ class S {
     );
   }
 
+  /// `Write it in another unit`
+  String get supply_chain_line_unit_pick {
+    return Intl.message(
+      'Write it in another unit',
+      name: 'supply_chain_line_unit_pick',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Write a quantity greater than zero`
   String get supply_chain_line_qty_invalid {
     return Intl.message(
@@ -9939,6 +9949,106 @@ class S {
     );
   }
 
+  /// `Change {from} to {to}?`
+  String unit_change_title(Object from, Object to) {
+    return Intl.message(
+      'Change $from to $to?',
+      name: 'unit_change_title',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `Convert the figures`
+  String get unit_change_convert {
+    return Intl.message(
+      'Convert the figures',
+      name: 'unit_change_convert',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{before} become {after}`
+  String unit_change_convert_detail(Object before, Object after) {
+    return Intl.message(
+      '$before become $after',
+      name: 'unit_change_convert_detail',
+      desc: '',
+      args: [before, after],
+    );
+  }
+
+  /// `Keep the figures`
+  String get unit_change_keep {
+    return Intl.message(
+      'Keep the figures',
+      name: 'unit_change_keep',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{before} will read {after}`
+  String unit_change_keep_detail(Object before, Object after) {
+    return Intl.message(
+      '$before will read $after',
+      name: 'unit_change_keep_detail',
+      desc: '',
+      args: [before, after],
+    );
+  }
+
+  /// `Only the unit changes: for a unit that was wrong.`
+  String get unit_change_keep_note {
+    return Intl.message(
+      'Only the unit changes: for a unit that was wrong.',
+      name: 'unit_change_keep_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Its stock in every branch, how it is bought and the recipes that use it change with it.`
+  String get unit_change_product_note {
+    return Intl.message(
+      'Its stock in every branch, how it is bought and the recipes that use it change with it.',
+      name: 'unit_change_product_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every product counted in the column's unit changes with it: its stock, how it is bought and the recipes that use it. A product with its own unit keeps it.`
+  String get unit_change_stock_note {
+    return Intl.message(
+      'Every product counted in the column\'s unit changes with it: its stock, how it is bought and the recipes that use it. A product with its own unit keeps it.',
+      name: 'unit_change_stock_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every row of the column changes with it.`
+  String get unit_change_measure_note {
+    return Intl.message(
+      'Every row of the column changes with it.',
+      name: 'unit_change_measure_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change`
+  String get unit_change_confirm {
+    return Intl.message(
+      'Change',
+      name: 'unit_change_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Change what this product is counted in`
   String get product_table_view_unit_row_hint {
     return Intl.message(
@@ -15904,6 +16014,16 @@ class S {
     );
   }
 
+  /// `Unit converted`
+  String get stock_reason_conversion {
+    return Intl.message(
+      'Unit converted',
+      name: 'stock_reason_conversion',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Movements`
   String get stock_history_title {
     return Intl.message(
@@ -16001,6 +16121,16 @@ class S {
       name: 'stock_history_pack',
       desc: '',
       args: [count, name],
+    );
+  }
+
+  /// `{from} → {to}`
+  String stock_history_unit(Object from, Object to) {
+    return Intl.message(
+      '$from → $to',
+      name: 'stock_history_unit',
+      desc: '',
+      args: [from, to],
     );
   }
 

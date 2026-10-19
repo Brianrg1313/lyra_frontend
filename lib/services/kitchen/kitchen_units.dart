@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:app/services/inventory/measure_units.dart';
 
 /// A unit a line's quantity can be written in, and how many of the ingredient's own unit one
 /// of it is ([factor]): with meat counted in kg, `g` is 0.001.
@@ -16,47 +17,38 @@ class KitchenUnit {
   int get hashCode => Object.hash(symbol, factor);
 }
 
-/// The two measures a kitchen writes in a smaller and a bigger unit, by the smaller one.
-const Map<String, ({String small, String big})> _families = {
-  "g": (small: "g", big: "kg"),
-  "ml": (small: "ml", big: "l")
+/// The two units a kitchen writes each magnitude in, a smaller and a bigger one.
+const Map<MeasureMagnitude, ({String small, String big})> _families = {
+  MeasureMagnitude.weight: (small: "g", big: "kg"),
+  MeasureMagnitude.volume: (small: "ml", big: "l")
 };
 
-/// How a table writes each unit, read as one of [_families] (its smaller unit, and how many of
-/// it the written one is).
-const Map<String, (String, double)> _aliases = {
-  "g": ("g", 1), "gr": ("g", 1), "grs": ("g", 1), "gram": ("g", 1), "grams": ("g", 1),
-  "gramo": ("g", 1), "gramos": ("g", 1),
-  "kg": ("g", 1000), "kgs": ("g", 1000), "kilo": ("g", 1000), "kilos": ("g", 1000),
-  "kilogram": ("g", 1000), "kilograms": ("g", 1000), "kilogramo": ("g", 1000), "kilogramos": ("g", 1000),
-  "ml": ("ml", 1), "mililitro": ("ml", 1), "mililitros": ("ml", 1), "milliliter": ("ml", 1),
-  "milliliters": ("ml", 1), "millilitre": ("ml", 1), "millilitres": ("ml", 1),
-  "l": ("ml", 1000), "lt": ("ml", 1000), "lts": ("ml", 1000), "litro": ("ml", 1000), "litros": ("ml", 1000),
-  "liter": ("ml", 1000), "liters": ("ml", 1000), "litre": ("ml", 1000), "litres": ("ml", 1000)
-};
-
-/// The units a quantity of an ingredient counted in [unit] can be written in: a weight or a
-/// volume in its smaller and bigger unit (300 g of a meat counted in kg), anything else only in
-/// its own (empty: counted in units). The backend only takes the ingredient's own unit
-/// (`cocina-frontend.md` §3), so what is written travels multiplied by its [KitchenUnit.factor].
+/// The units a quantity of an ingredient counted in [unit] can be written in: every unit of its
+/// magnitude ([measureUnits]: 300 g or 10 oz of a meat counted in kg, 450 ml of a soda counted in
+/// l), anything else only in its own (empty: counted in units). What is written travels
+/// multiplied by its [KitchenUnit.factor], in the ingredient's own unit (`cocina-frontend.md` §3).
 List<KitchenUnit> kitchenUnitsFor(String unit) {
-  final own = _aliases[unit.trim().toLowerCase()];
+  final own = measureUnitOf(unit);
   if (own == null) return [KitchenUnit(unit.trim(), 1)];
 
-  final (small, size) = own;
-  final family = _families[small]!;
-
-  return [KitchenUnit(family.small, 1 / size), KitchenUnit(family.big, 1000 / size)];
+  return [
+    for (final measure in measureUnits)
+      if (measure.magnitude == own.magnitude) KitchenUnit(measure.symbol, measure.size / own.size)
+  ];
 }
 
 /// How [qty] of an ingredient counted in [unit] reads best: below one of a big unit in the
 /// small one (0.3 kg is 300 g), a thousand or more of a small one in the big one.
+///
+/// Only the two a kitchen writes in (g and kg, ml and l): an ingredient counted in anything else
+/// reads in its own.
 ({double qty, KitchenUnit unit}) kitchenBestUnit(double qty, String unit) {
-  final units = kitchenUnitsFor(unit);
-  if (units.length == 1) return (qty: qty, unit: units.single);
+  final own = measureUnitOf(unit);
+  final family = own == null ? null : _families[own.magnitude];
+  if (own == null || family == null) return (qty: qty, unit: KitchenUnit(unit.trim(), 1));
 
-  final small = units.first;
-  final big = units.last;
+  final small = KitchenUnit(family.small, measureUnitOf(family.small)!.size / own.size);
+  final big = KitchenUnit(family.big, measureUnitOf(family.big)!.size / own.size);
   final inSmall = qty / small.factor;
   final shown = inSmall.abs() >= 1000 || inSmall == 0 ? big : small;
 

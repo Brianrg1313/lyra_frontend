@@ -136,7 +136,8 @@ Map<String, dynamic> editFieldRequest({
   String? visibility,
   bool? summary,
   List<String>? options,
-  String? unit
+  String? unit,
+  bool convert = false
 }) {
   final trimmed = description?.trim() ?? "";
 
@@ -153,7 +154,8 @@ Map<String, dynamic> editFieldRequest({
       for (final option in options)
         if (option.trim().isNotEmpty) option.trim()
     ],
-    if (unit != null) "UNIT": unit.trim()
+    if (unit != null) "UNIT": unit.trim(),
+    if (unit != null && convert) "CONVERT": true
   };
 }
 

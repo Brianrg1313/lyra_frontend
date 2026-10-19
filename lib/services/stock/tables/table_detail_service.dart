@@ -243,7 +243,8 @@ class TableDetailService extends ChangeNotifier {
     TableFieldVisibility? visibility,
     List<String>? options,
     String? unit,
-    bool? summary
+    bool? summary,
+    bool convert = false
   }) async {
     // Without a FIELD_ID there's no column to edit: it's a column that was
     // read but that the backend didn't identify.
@@ -279,7 +280,8 @@ class TableDetailService extends ChangeNotifier {
         visibility: visibility?.value,
         summary: summary,
         options: saved,
-        unit: symbol
+        unit: symbol,
+        convert: convert
       ));
     } catch (error) {
       if (kDebugMode) print("editTableField failed: $error");
