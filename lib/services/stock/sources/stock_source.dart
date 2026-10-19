@@ -28,6 +28,10 @@ abstract interface class StockSource {
     required String productId
   });
 
+  /// [productId]'s balance at the header's branch, or null when it has none yet. A master
+  /// answers null: it is one site, so the figure its sheet shows is that site's.
+  Future<StockBalance?> balance({required String tableId, required String productId});
+
   /// How [productId] is bought («Saco» = 25 kg, `cocina-frontend.md` §8), for a movement to
   /// count presentations. Empty when it has none; a master knows none.
   Future<List<Presentation>> presentations(String productId);

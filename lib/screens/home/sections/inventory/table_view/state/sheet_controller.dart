@@ -14,7 +14,8 @@ import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/sku_generator.dart';
 import 'package:app/services/inventory/table_field_options.dart';
 import 'package:app/services/inventory/table_field_type.dart';
-import 'package:app/services/stock/movements/stock_mover.dart';
+import 'package:app/services/stock/movements/stock_movement_model.dart';
+import 'package:app/services/stock/tables/table_stock_mover.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
 
@@ -122,7 +123,7 @@ class SheetController {
 
   /// What a record's stock cell moves its product through ([SheetStockMoves]); without one
   /// the stock is only read.
-  final StockMover? stock;
+  final TableStockMover? stock;
 
   /// The context of the screen. It's needed for what leaves the spreadsheet
   /// —asking for confirmation, showing an error flag, translating— and it's
@@ -270,11 +271,6 @@ class SheetController {
   /// which is the same thing the keyboard does.
   void tap(int row, int column, {BuildContext? anchor}) {
     final cell = SheetCell(row, column);
-
-    if (movesStock(cell)) {
-      moveStock(cell, anchor);
-      return;
-    }
 
     if (!canEdit(row, column)) {
       select(cell);
@@ -639,6 +635,10 @@ class SheetController {
     if (sheet == null) return false;
 
     if (row == kFieldsRow) return columns.canEditAt(column);
+
+    // A record's stock is typed, but what goes out is a correction of the inventory, not
+    // the cell ([SheetStockMoves.correctStock]).
+    if (movesStock(SheetCell(row, column))) return true;
 
     // A free column has nowhere to store until it's created, and what the
     // backend carries (counter, stock) isn't written by hand.

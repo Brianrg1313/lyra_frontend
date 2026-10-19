@@ -1601,6 +1601,8 @@
   "stock_move_saved": "Stock updated",
   "stock_move_take_hint": "Take units out",
   "stock_move_add_hint": "Add units",
+  "stock_typed_invalid": "Write the stock as a number, like 12 or 1.5",
+  "stock_typed_whole": "This table counts whole units: write the stock without decimals",
   "stock_move_step_less": "{count, plural, =1{One less} other{{count} less}}",
   "stock_move_step_more": "{count, plural, =1{One more} other{{count} more}}",
   "stock_move_dest_leave": "They leave",

@@ -135,8 +135,8 @@ class SheetCellView extends StatelessWidget {
       && type.editable
       && (!record || (saved?.id.isNotEmpty ?? false));
 
-    // A record's stock is not written but moved: a tap unfolds the movements
-    // ([SheetStockMoves]), so it reads and points like something that opens.
+    // A record's stock is typed as a correction and moved with its − and +
+    // ([SheetStockMoves]): the figure sits centered between them.
     final moves = record
       && type == TableFieldType.stock
       && controller.stock != null
@@ -156,7 +156,7 @@ class SheetCellView extends StatelessWidget {
     // How the datum looks is decided by its type, not by this cell: each type
     // that displays differently has its widget in `cells/` (see [SheetCells.value]).
     final Widget content = state == SheetCellState.editing
-      ? CellEditor(type: type, alignment: type.alignment)
+      ? CellEditor(type: type, alignment: moves ? TextAlign.center : type.alignment)
       : SheetCells.value(
           type: type,
           value: record
@@ -222,7 +222,7 @@ class SheetCellView extends StatelessWidget {
         // arrived— neither of the two appears: offering them would be promising
         // something that does not happen.
         cursor: moves
-          ? SystemMouseCursors.click
+          ? SystemMouseCursors.text
           : editable ? type.cursor : SystemMouseCursors.basic,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,

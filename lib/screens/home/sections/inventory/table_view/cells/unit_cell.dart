@@ -36,8 +36,10 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart'
 /// declared none counts units ([counts]): `5u`, so a figure never reads without
 /// saying what it counts.
 ///
-/// A record's stock also carries the stock summary's − and + at its sides ([onTake],
-/// [onPut]): the figure is the inventory's, so it is moved, never typed.
+/// A record's stock also carries the stock summary's − and + at its edges ([onTake],
+/// [onPut]), the ruler after the +, and its figure centered between them: the buttons frame
+/// the number instead of pushing it to one side. Typing the figure is a correction
+/// ([SheetStockMoves]); the − and + are the movements with a reason.
 class UnitCell extends StatelessWidget {
   const UnitCell({
     super.key,
@@ -98,12 +100,16 @@ class UnitCell extends StatelessWidget {
       ? S.of(context).product_table_view_unit_count_symbol
       : symbol;
 
+    final ruler = number != null && onPickUnit != null;
+    final steps = onTake != null && onPut != null;
+    final align = steps ? TextAlign.center : alignment;
+
     final text = number == null || shown.isEmpty
       ? Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          textAlign: alignment,
+          textAlign: align,
           style: style
         )
       : Text.rich(
@@ -114,12 +120,9 @@ class UnitCell extends StatelessWidget {
           ]),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          textAlign: alignment,
+          textAlign: align,
           style: style
         );
-
-    final ruler = number != null && onPickUnit != null;
-    final steps = onTake != null && onPut != null;
 
     if (!ruler && !steps) return text;
 
@@ -128,8 +131,8 @@ class UnitCell extends StatelessWidget {
     return Row(children: [
       if (steps) ...[_step(context, "−", S.of(context).stock_move_take_hint, onTake!), gap],
       Expanded(child: text),
-      if (ruler) ...[gap, _button(context)],
-      if (steps) ...[gap, _step(context, "+", S.of(context).stock_move_add_hint, onPut!)]
+      if (steps) ...[gap, _step(context, "+", S.of(context).stock_move_add_hint, onPut!)],
+      if (ruler) ...[gap, _button(context)]
     ]);
   }
 

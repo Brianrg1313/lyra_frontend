@@ -13,7 +13,8 @@ import 'package:app/services/stock/tables/table_view_service.dart';
 /// A row written in the sheet becomes a record where it was written, with the id the backend
 /// answered, and the rows already read stay: the sheet neither empties nor re-reads its
 /// structure for it (it blinked, and every row lost its id until the re-read came back, so
-/// a tap only selected). A stock cell's movement leaves the balance in its row.
+/// a tap only selected). A stock cell's movement leaves the balance in its row, and a
+/// figure typed in it goes in as a correction against the branch's balance.
 void main() {
   group('a created row', () {
     test('is placed behind the last record, writable, with the rows read kept', () async {
@@ -75,6 +76,46 @@ void main() {
     expect(service.rowAt(1)?.at(1), 1, reason: "another product is not touched");
     service.dispose();
   });
+
+  group('a typed stock', () {
+    Future<(TableViewService, _Stock, TableStockMover)> open({StockBalance? balance}) async {
+      final service = TableViewService(source: _Inventory());
+      await service.open("t1");
+      final stock = _Stock(branch: balance);
+
+      return (service, stock, TableStockMover(table: service, tableId: "t1", supplies: true, source: stock));
+    }
+
+    test('goes in as a correction of the difference against the branch, not the cell', () async {
+      // The cell shows the company's 3; this branch holds 2.
+      final (service, stock, mover) = await open(balance: const StockBalance(onHand: 2, available: 2));
+
+      expect(await mover.correct(_NoContext(), productId: "r1", target: 7, shown: 3), isTrue);
+      expect(stock.moved.single.operation, StockOperation.add);
+      expect(stock.moved.single.reason, StockReason.addCorrection);
+      expect(stock.moved.single.quantity, 5);
+      expect(service.rowAt(0)?.at(1), 7);
+      service.dispose();
+    });
+
+    test('below the balance is a correction out, with no float noise', () async {
+      final (service, stock, mover) = await open(balance: const StockBalance(onHand: 1.3, available: 1.3));
+
+      await mover.correct(_NoContext(), productId: "r1", target: 1.2, shown: 3);
+      expect(stock.moved.single.operation, StockOperation.remove);
+      expect(stock.moved.single.reason, StockReason.removeCorrection);
+      expect(stock.moved.single.quantity, 0.1);
+      service.dispose();
+    });
+
+    test('without a balance read, the cell is the figure; the same figure moves nothing', () async {
+      final (service, stock, mover) = await open();
+
+      expect(await mover.correct(_NoContext(), productId: "r1", target: 3, shown: 3), isTrue);
+      expect(stock.moved, isEmpty);
+      service.dispose();
+    });
+  });
 }
 
 class _Inventory implements InventorySource {
@@ -131,9 +172,19 @@ class _Inventory implements InventorySource {
 }
 
 class _Stock implements StockSource {
+  _Stock({this.branch});
+
+  final StockBalance? branch;
+  final List<StockMovement> moved = [];
+
   @override
-  Future<StockBalance> move(StockMovement movement, {required String tableId, required String productId}) async =>
-    const StockBalance(onHand: 7, available: 7);
+  Future<StockBalance?> balance({required String tableId, required String productId}) async => branch;
+
+  @override
+  Future<StockBalance> move(StockMovement movement, {required String tableId, required String productId}) async {
+    moved.add(movement);
+    return const StockBalance(onHand: 7, available: 7);
+  }
 
   @override
   Future<List<Presentation>> presentations(String productId) async => const [];

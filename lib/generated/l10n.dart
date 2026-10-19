@@ -15526,6 +15526,26 @@ class S {
     );
   }
 
+  /// `Write the stock as a number, like 12 or 1.5`
+  String get stock_typed_invalid {
+    return Intl.message(
+      'Write the stock as a number, like 12 or 1.5',
+      name: 'stock_typed_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This table counts whole units: write the stock without decimals`
+  String get stock_typed_whole {
+    return Intl.message(
+      'This table counts whole units: write the stock without decimals',
+      name: 'stock_typed_whole',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{count, plural, =1{One less} other{{count} less}}`
   String stock_move_step_less(num count) {
     return Intl.plural(

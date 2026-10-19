@@ -431,7 +431,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
   `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
   `inventory.tables.normalize`.
-- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance), a product's presentations (cloud; a master none), a product's ledger page (`movements`, cloud only). Used by `StockSummaryService`, `StockHistoryService`.
+- `sources/stock_source.dart` — `StockSource`: summary page (of a `tableId`, or the primary; in a `StockSummarySort`'s order), a movement (answers the balance), a product's balance at the branch (`balance`; a master null), a product's presentations (cloud; a master none), a product's ledger page (`movements`, cloud only). Used by `StockSummaryService`, `StockHistoryService`.
   `stock_cloud_source.dart` — REST. `stock_lan_source.dart` — `StockLanSource`: the five operations as one
   `stock.move` (`operationOf`). Also transfers (search, create, update, receive) and a branch's prices (read, set, remove):
   cloud only, the LAN source throws `UnsupportedError` (a master is one site).
@@ -443,7 +443,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
 - `tables/table_view_service.dart` — `TableViewService` (+ `TableStructureStatus`, `TableViewStatus`,
   `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset), `/records/images/`, `writeStock`, `setUnit` (a product's own unit, optimistic; `convert` re-reads the table), `editField(convert:)` (a converted unit re-reads the records); `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
-- `tables/table_stock_mover.dart` — `TableStockMover`: the sheet's `StockMover` (moves through `StockSource`, writes the balance in the row).
+- `tables/table_stock_mover.dart` — `TableStockMover`: the sheet's `StockMover` (moves through `StockSource`, writes the balance in the row); `correct` leaves a product at a typed figure (the difference against the branch's balance as an add/remove `correction`).
 - `tables/table_lite_model.dart` — list row, `TableKind` (`catalog made supplies`; unknown = catalog).
 - `tables/table_detail_model.dart` — `TableDetailModel` and its summaries (`TableColumnsSummary`,
   `TableAgentSummary`, `TableChannelsSummary`, `TableChannelReader`, `TableFieldVisibility`, …).

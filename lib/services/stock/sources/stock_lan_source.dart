@@ -67,6 +67,9 @@ class StockLanSource implements StockSource {
   }
 
   @override
+  Future<StockBalance?> balance({required String tableId, required String productId}) async => null;
+
+  @override
   Future<List<Presentation>> presentations(String productId) async => const [];
 
   @override

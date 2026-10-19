@@ -6589,6 +6589,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Stock summary",
     ),
     "stock_summary_transit": MessageLookupByLibrary.simpleMessage("On its way"),
+    "stock_typed_invalid": MessageLookupByLibrary.simpleMessage(
+      "Write the stock as a number, like 12 or 1.5",
+    ),
+    "stock_typed_whole": MessageLookupByLibrary.simpleMessage(
+      "This table counts whole units: write the stock without decimals",
+    ),
     "subscription_details_delete": MessageLookupByLibrary.simpleMessage(
       "Delete subscription",
     ),

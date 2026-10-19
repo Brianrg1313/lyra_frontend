@@ -46,6 +46,17 @@ class StockCloudSource implements StockSource {
   ));
 
   @override
+  Future<StockBalance?> balance({required String tableId, required String productId}) async {
+    final data = await api.post(
+      path: "/inventory/stock/balance",
+      version: "v1",
+      data: {"TABLE_ID": tableId, "PRODUCT_ID": productId}
+    );
+
+    return data is Map ? StockBalance.fromResponse(data) : null;
+  }
+
+  @override
   Future<List<Presentation>> presentations(String productId) async =>
     Presentation.listFrom(await api.get(path: "/inventory/presentations/$productId", version: "v1"));
 

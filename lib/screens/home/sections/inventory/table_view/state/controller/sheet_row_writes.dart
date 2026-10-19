@@ -138,6 +138,11 @@ extension SheetRowWrites on SheetController {
   void finishRecord(SheetCell cell, String text, {String? before}) {
     if (text == (before ?? _initial)) return;
 
+    if (movesStock(cell)) {
+      unawaited(correctStock(cell, text));
+      return;
+    }
+
     // Behind the fields are the free columns: there's nowhere to save there.
     final field = columns.fieldAt(cell.column);
     if (field == null || field.id.isEmpty) return;
