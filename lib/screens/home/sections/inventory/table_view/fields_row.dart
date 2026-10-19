@@ -1,7 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+// PACKAGES
+import 'package:provider/provider.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_shape.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_window.dart';
 
 import './field_cell.dart';
 import './sheet_theme.dart';
@@ -13,10 +19,10 @@ import './sheet_theme.dart';
 /// them into fields. All are resized from their right edge, and the ones that
 /// are already a field are dragged into place from the cell itself.
 ///
-/// It listens to nothing, and does not even know which the columns are: it
-/// receives the sheet's shape, so it is only rebuilt when a column is gained,
-/// lost, or moved. The title, the type, the cursor, and the width are each
-/// listened to by each cell on its own.
+/// It does not know which the columns are: it receives the sheet's shape, so it is only
+/// rebuilt when a column is gained, lost, or moved, and when other columns come into view
+/// ([SheetWindow]: it builds the same ones the body's rows do). The title, the type, the
+/// cursor, and the width are each listened to by each cell on its own.
 class FieldsRow extends StatelessWidget {
   const FieldsRow({super.key, required this.shape});
 
@@ -24,14 +30,20 @@ class FieldsRow extends StatelessWidget {
   final SheetShape shape;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: SheetTheme.of(context).rowHeight,
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final (index, key) in shape.keys.indexed)
-          FieldCell(index: index, widthKey: key)
-      ]
-    )
-  );
+  Widget build(BuildContext context) {
+    final span = context.select<SheetWindow, SheetSpan>((window) => window.span);
+    final last = math.min(span.last, shape.length - 1);
+
+    return SizedBox(
+      height: SheetTheme.of(context).rowHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (span.first > 0) SizedBox(width: span.lead),
+          for (var index = span.first; index <= last; index++)
+            FieldCell(key: ValueKey(shape.keys[index]), index: index, widthKey: shape.keys[index])
+        ]
+      )
+    );
+  }
 }

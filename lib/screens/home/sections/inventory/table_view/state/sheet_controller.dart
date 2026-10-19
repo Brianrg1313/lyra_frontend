@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -46,6 +47,7 @@ import './sheet_keys.dart';
 import './sheet_metrics.dart';
 import './sheet_selection.dart';
 import './sheet_widths.dart';
+import './sheet_window.dart';
 
 part 'controller/sheet_width_edits.dart';
 part 'controller/sheet_column_drag.dart';
@@ -114,6 +116,11 @@ class SheetController {
     service.addListener(_onRows);
     vBody.addListener(_prefetch);
 
+    horizontal.addListener(_frame);
+    widths.total.addListener(_frame);
+    drag.active.addListener(_frame);
+    cursor.addListener(_frame);
+
     _onRows();
   }
 
@@ -158,6 +165,13 @@ class SheetController {
 
   /// What was corrected, for Ctrl+Z and Ctrl+Y ([SheetUndo]).
   final SheetHistory history = SheetHistory();
+
+  /// The columns the rows build: the ones the horizontal band shows ([_frame]).
+  final SheetWindow window = SheetWindow();
+
+  /// How many digits the last row's number has: the gutter is as wide as they need, so a
+  /// table of a million rows numbers them whole.
+  final ValueNotifier<int> digits = ValueNotifier(1);
 
   late final SheetColumns columns;
 
@@ -260,8 +274,21 @@ class SheetController {
   /// reading read it.
   int _rows = 0;
 
+  /// How wide the data band is on screen; the sheet's layout says it ([measureBand]).
+  double _band = 0;
+
+  /// Where the vertical band was the last time the rows to read were asked for.
+  double _prefetchedAt = 0;
+
+  /// Waits for the vertical band to settle after a leap ([_prefetch]).
+  Timer? _settle;
+
+  /// How long a leap waits for the band to stop before reading where it landed.
+  static const Duration _settleDelay = Duration(milliseconds: 120);
+
   bool _disposed = false;
   bool _prefetchScheduled = false;
+  bool _framePending = false;
 
   int get rows => _rows;
 
@@ -762,6 +789,7 @@ class SheetController {
   /// as wide as their type needs (a yes / no only a switch).
   void _onColumns() {
     widths.setKeys(columns.keys);
+    _frame();
 
     // The width comes with the field, so the table draws itself as the last
     // one who set it up left it from the first frame. Only the first time it
@@ -800,6 +828,9 @@ class SheetController {
       ? service.records
       : service.records + drafts.length + _extraRows;
 
+    // The last number drawn is the last blank row's, below the ones in use.
+    digits.value = "${usedRows.value + metrics.minBlankRows + 1}".length;
+
     _schedulePrefetch();
   }
 
@@ -809,12 +840,29 @@ class SheetController {
   /// screen asked for data. Now the scroll triggers it, which is what really
   /// changes what's seen: with `itemExtent` the first and last visible rows
   /// come out of a division, without building anything.
+  ///
+  /// A leap of several screens at once (the scrollbar dragged across a long table) reads
+  /// nothing until the band stops: on its way it would ask for every page it passes over,
+  /// hundreds of reads of rows nobody is going to look at, each one repainting the sheet when
+  /// it lands. Scrolling row by row, or a screen at a time, reads at once.
   void _prefetch() {
     if (_disposed || !vBody.hasClients) return;
 
+    final offset = vBody.offset;
+    final viewport = vBody.position.viewportDimension;
+
+    final leap = (offset - _prefetchedAt).abs() > viewport * 2;
+    _prefetchedAt = offset;
+
+    _settle?.cancel();
+    if (leap) {
+      _settle = Timer(_settleDelay, _prefetch);
+      return;
+    }
+
     final (first, last) = metrics.rangeAt(
-      offset: vBody.offset,
-      viewport: vBody.position.viewportDimension,
+      offset: offset,
+      viewport: viewport,
       rows: _rows
     );
 
@@ -835,11 +883,61 @@ class SheetController {
     });
   }
 
+  /// The columns the rows build, from where the horizontal band is and how wide it is.
+  ///
+  /// The column being dragged stays built wherever the band goes (its cell holds the drag's
+  /// gesture), and so does the one being typed in (its editor holds what is written).
+  SheetSpan _span() => SheetSpan.of(
+    widths.edges(),
+    offset: horizontal.hasClients ? horizontal.offset : 0,
+    viewport: _band,
+    keep: [
+      if (drag.active.value) drag.source,
+      if (cursor.editing && cursor.column != null) cursor.column!
+    ]
+  );
+
+  /// The band scrolled sideways, a width or a column changed, a drag or an editor started or
+  /// ended: the rows build the columns that are seen now.
+  ///
+  /// A scroll corrected while the frame is being laid out waits for the frame to end, so no
+  /// row is told to rebuild mid-layout.
+  void _frame() {
+    if (_disposed || _band <= 0) return;
+
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      if (_framePending) return;
+
+      _framePending = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _framePending = false;
+        _frame();
+      });
+      return;
+    }
+
+    window.update(_span());
+  }
+
+  /// The data band measures [width] on screen. The sheet's layout calls it, before the rows
+  /// are built, so it is a bare assignment: they read the span in that same build.
+  void measureBand(double width) {
+    if (width == _band) return;
+
+    _band = width;
+    window.measure(_span());
+  }
+
   void dispose() {
     _disposed = true;
 
+    _settle?.cancel();
     _stopEdgeScroll();
     vBody.removeListener(_prefetch);
+    horizontal.removeListener(_frame);
+    widths.total.removeListener(_frame);
+    drag.active.removeListener(_frame);
+    cursor.removeListener(_frame);
     columns.removeListener(_onColumns);
     drafts.removeListener(_onRows);
     service.removeListener(_onRows);
@@ -852,6 +950,7 @@ class SheetController {
     horizontal.dispose();
 
     usedRows.dispose();
+    digits.dispose();
     uploading.dispose();
     widths.dispose();
     drag.dispose();
@@ -861,6 +960,7 @@ class SheetController {
     cursor.dispose();
     selection.dispose();
     history.dispose();
+    window.dispose();
     hover.dispose();
     dates.dispose();
   }

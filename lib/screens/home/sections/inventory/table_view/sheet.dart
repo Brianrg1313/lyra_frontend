@@ -37,6 +37,9 @@ import './sheet_theme.dart';
 ///
 /// The rest (the cursor, the widths, the chunks of records that keep arriving,
 /// what is written) is listened to by the cells and the rows, each to its own.
+///
+/// It also rebuilds when the last row's number gains a digit (row 100, row 1000000): the
+/// gutter widens to hold it, and the data band narrows by as much.
 class Sheet extends StatelessWidget {
   const Sheet({super.key});
 
@@ -59,74 +62,81 @@ class Sheet extends StatelessWidget {
 
     return SheetTheme(
       style: style,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // How many rows are seen at once: it is what decides how many blank
-          // rows are left over, so the sheet always reaches the bottom.
-          final visible = controller.metrics.visibleRows(constraints.maxHeight);
-          final available = math.max(
-            0.0,
-            constraints.maxWidth - style.gutterWidth
-          );
+      child: ValueListenableBuilder<int>(
+        valueListenable: controller.digits,
+        builder: (context, digits, _) => LayoutBuilder(
+          builder: (context, constraints) {
+            // How many rows are seen at once: it is what decides how many blank
+            // rows are left over, so the sheet always reaches the bottom.
+            final visible = controller.metrics.visibleRows(constraints.maxHeight);
+            final gutter = style.gutterFor(digits);
+            final available = math.max(
+              0.0,
+              constraints.maxWidth - gutter
+            );
 
-          // The automatic scrollbars of each band are turned off to show only
-          // one vertical (the whole sheet's) and one horizontal.
-          return Focus(
-            focusNode: controller.grid,
-            onKeyEvent: controller.handleKey,
-            child: ScrollConfiguration(
-              behavior: ScrollConfiguration.of(context).copyWith(
-                scrollbars: false
-              ),
-              child: Scrollbar(
-                controller: controller.vBody,
-                notificationPredicate: (n) => n.metrics.axis == Axis.vertical,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SheetGutter(visible: visible),
-                    Expanded(child: Scrollbar(
-                      controller: controller.horizontal,
-                      notificationPredicate: (n) =>
-                        n.metrics.axis == Axis.horizontal,
-                      child: SingleChildScrollView(
+            // The rows build the columns this band shows (see [SheetWindow]).
+            controller.measureBand(available);
+
+            // The automatic scrollbars of each band are turned off to show only
+            // one vertical (the whole sheet's) and one horizontal.
+            return Focus(
+              focusNode: controller.grid,
+              onKeyEvent: controller.handleKey,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  scrollbars: false
+                ),
+                child: Scrollbar(
+                  controller: controller.vBody,
+                  notificationPredicate: (n) => n.metrics.axis == Axis.vertical,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SheetGutter(visible: visible, width: gutter),
+                      Expanded(child: Scrollbar(
                         controller: controller.horizontal,
-                        scrollDirection: Axis.horizontal,
-                        child: ValueListenableBuilder<double>(
-                          valueListenable: controller.widths.total,
-                          builder: (context, total, child) => SizedBox(
-                            width: math.max(total, available),
-                            child: child
-                          ),
-                          // A column's drag is drawn on top of the grid and in
-                          // the same coordinates. It receives no touches: the
-                          // drag is carried by the cell the column was grabbed
-                          // from.
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  FieldsRow(shape: shape),
-                                  Expanded(child: SheetBody(
-                                    shape: shape,
-                                    visible: visible
-                                  ))
-                                ]
-                              ),
-                              const IgnorePointer(child: ColumnDrag())
-                            ]
+                        notificationPredicate: (n) =>
+                          n.metrics.axis == Axis.horizontal,
+                        child: SingleChildScrollView(
+                          controller: controller.horizontal,
+                          scrollDirection: Axis.horizontal,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: controller.widths.total,
+                            builder: (context, total, child) => SizedBox(
+                              width: math.max(total, available),
+                              child: child
+                            ),
+                            // A column's drag is drawn on top of the grid and in
+                            // the same coordinates. It receives no touches: the
+                            // drag is carried by the cell the column was grabbed
+                            // from.
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    FieldsRow(shape: shape),
+                                    Expanded(child: SheetBody(
+                                      shape: shape,
+                                      visible: visible
+                                    ))
+                                  ]
+                                ),
+                                const IgnorePointer(child: ColumnDrag())
+                              ]
+                            )
                           )
                         )
-                      )
-                    ))
-                  ]
+                      ))
+                    ]
+                  )
                 )
               )
-            )
-          );
-        }
+            );
+          }
+        )
       )
     );
   }

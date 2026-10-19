@@ -149,7 +149,41 @@ class SheetStyle {
   /// today).
   final TextStyle code;
 
-  /// Decoration of a body cell.
+  /// A body row's background: the zebra, the row the mouse is over or the cursor's row.
+  ///
+  /// It is the row's and not each cell's on purpose: the mouse crossing rows, or the cursor
+  /// going down one, repaints two of these and not every cell of two rows (see
+  /// [RecordRow]). The cells over it paint only their border ([line]).
+  BoxDecoration band({required int row, SheetRowFill fill = SheetRowFill.plain}) =>
+    _bands[switch (fill) {
+      SheetRowFill.plain => row.isOdd ? 1 : 0,
+      SheetRowFill.over => 2,
+      SheetRowFill.selected || SheetRowFill.range => 3
+    }];
+
+  /// What a body cell paints over its row's [band]: its border (the cursor's when
+  /// [selected]) and, inside the range selected together, the range's fill.
+  BoxDecoration line({required bool selected, bool ranged = false}) =>
+    _lines[(ranged ? 2 : 0) + (selected ? 1 : 0)];
+
+  /// How wide the gutter is when its last number has [digits] digits: never narrower than
+  /// [gutterWidth], and as wide as the number needs past it. Measured once per count.
+  double gutterFor(int digits) => _gutters.putIfAbsent(digits, () {
+    final painter = TextPainter(
+      text: TextSpan(text: "0" * digits, style: number),
+      textDirection: TextDirection.ltr,
+      maxLines: 1
+    )..layout();
+
+    final width = painter.width + cellPadding.horizontal * 2;
+    painter.dispose();
+
+    return width > gutterWidth ? width.ceilToDouble() : gutterWidth;
+  });
+
+  final Map<int, double> _gutters = {};
+
+  /// The whole look of a body cell: its row's [band] and its own [line] in one box.
   ///
   /// They are two independent things: the **border** is decided by the cursor
   /// ([selected] is this cell, not its row) and the **background** by the whole
@@ -230,6 +264,21 @@ class SheetStyle {
     scheme.table.currentCell.withValues(alpha: 0.16),
     scheme.table.background
   );
+
+  late final List<BoxDecoration> _bands = [
+    BoxDecoration(color: scheme.table.background),
+    BoxDecoration(color: scheme.table.even),
+    BoxDecoration(color: scheme.table.over),
+    BoxDecoration(color: scheme.table.rowSelected)
+  ];
+
+  /// The two borders over the row's band, and the same over the range's fill.
+  late final List<BoxDecoration> _lines = [
+    BoxDecoration(border: _line),
+    BoxDecoration(border: _selected),
+    BoxDecoration(color: _range, border: _line),
+    BoxDecoration(color: _range, border: _selected)
+  ];
 
   late final BoxDecoration _field =
     BoxDecoration(color: headerFill, border: _line);

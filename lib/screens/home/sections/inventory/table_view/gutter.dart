@@ -16,9 +16,12 @@ import './sheet_theme.dart';
 /// fields row, which is 1) and below the number of each row, which on the one
 /// being saved gives way to a spinner.
 class SheetGutter extends StatelessWidget {
-  const SheetGutter({super.key, required this.visible});
+  const SheetGutter({super.key, required this.visible, required this.width});
 
   final int visible;
+
+  /// As wide as the last row's number needs ([SheetStyle.gutterFor]).
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +35,7 @@ class SheetGutter extends StatelessWidget {
     );
 
     return SizedBox(
-      width: style.gutterWidth,
+      width: width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

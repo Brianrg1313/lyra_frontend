@@ -17,25 +17,20 @@ import 'package:app/screens/home/sections/inventory/table_view/state/sheet_colum
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_draft.dart';
-import 'package:app/screens/home/sections/inventory/table_view/state/sheet_hover.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_selection.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
 
 import './cell_editor.dart';
-import './sheet_row_fill.dart';
 import './sheet_theme.dart';
 
 /// A cell of the sheet body.
 ///
 /// It listens to exactly four things, and none of the four is the screen:
 ///
-/// - **The cursor**: how it is (its border) and whether the cursor is on its row
-///   (the background, which belongs to the whole row). Moving the cursor
-///   triggers the comparator of all visible cells and rebuilds the two rows that
-///   changed.
-/// - **Whether the mouse is over its row**, which is the same but for the
-///   pointer highlight: one boolean per cell and two rows repainted per
-///   movement.
+/// - **The cursor**: how it is (its border). Moving the cursor triggers the comparator of the
+///   visible cells and rebuilds the two that changed. Its row's background, and the mouse
+///   over it, are the row's ([RowBand]): the cell paints only over it.
+/// - **Whether it is inside the range** selected together, one boolean.
 /// - **The width of its column**, which has its own notifier: dragging the edge
 ///   of a column does not touch the others, and within this one the width is the
 ///   only thing that is redone —the content is passed as `child` and survives
@@ -95,21 +90,9 @@ class SheetCellView extends StatelessWidget {
     final style = SheetTheme.of(context);
     final controller = context.read<SheetController>();
 
-    // The two things the cursor tells a cell, in a single subscription: how it
-    // is (which decides its border) and whether the cursor is on its row (which
-    // decides the background of the whole row). They go together because both
-    // are answered from the same datum and at the same moment: asking them
-    // separately would run two comparators per cell on each cursor move.
-    final (state, inCursorRow) = context
-      .select<SheetCursor, (SheetCellState, bool)>(
-        (cursor) => (cursor.stateAt(row, position), cursor.isRow(row))
-      );
-
-    // And whether the mouse is over its row. It is a boolean, so moving the
-    // pointer from one row to another runs the comparator of the visible cells
-    // and rebuilds the two rows that changed.
-    final hovered = context.select<SheetHover, bool>(
-      (hover) => hover.at(row)
+    // How the cursor is on this cell, which decides its border.
+    final state = context.select<SheetCursor, SheetCellState>(
+      (cursor) => cursor.stateAt(row, position)
     );
 
     // And whether it is inside the range selected together: one boolean, so stretching the
@@ -251,18 +234,9 @@ class SheetCellView extends StatelessWidget {
             // even on all four sides, or top and bottom would press against the
             // grid and blend in with it.
             padding: type.picker ? style.framePadding : style.cellPadding,
-            decoration: style.cell(
-              row: row,
+            decoration: style.line(
               selected: state != SheetCellState.idle,
-              // The cursor beats the mouse: the row where you are standing shows
-              // as such even if the pointer is passing over it.
-              fill: ranged
-                ? SheetRowFill.range
-                : inCursorRow
-                  ? SheetRowFill.selected
-                  : hovered
-                    ? SheetRowFill.over
-                    : SheetRowFill.plain
+              ranged: ranged
             ),
             child: content
           )
