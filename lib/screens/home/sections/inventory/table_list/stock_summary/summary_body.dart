@@ -88,27 +88,36 @@ class SummaryBody extends StatelessWidget {
               Separator.horizontal()
             ])
           ),
-          Expanded(child: ListView.builder(
-            itemCount: rows.length + 1,
-            itemBuilder: (context, index) {
-              if (index == rows.length) return SummaryFooter(service: service);
+          // Every product row is as tall as [SummaryLayout.rowHeight], so the list knows how
+          // tall it is and where any row sits without building them: thousands of rows read
+          // scroll and jump as one screen does. The footer goes after them, at its own height.
+          Expanded(child: CustomScrollView(slivers: [
+            SliverFixedExtentList(
+              itemExtent: SummaryLayout.rowHeight,
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  // The next stretch is requested while the end of the current one is
+                  // drawn. The service makes sure asking too much does nothing.
+                  if (index >= rows.length - _lookahead) service.more();
 
-              // The next stretch is requested while the end of the current one is
-              // drawn. The service makes sure asking too much does nothing.
-              if (index >= rows.length - _lookahead) service.more();
-
-              return SummaryProductRow(
-                row: rows[index],
-                layout: layout,
-                currency: currency,
-                recipes: service.recipes,
-                recipe: service.recipeOf(rows[index].id),
-                // The zebra alternates by position in the list, just like in the
-                // spreadsheet: the odd ones are the painted ones.
-                zebra: index.isOdd
-              );
-            }
-          ))
+                  return SummaryProductRow(
+                    row: rows[index],
+                    layout: layout,
+                    currency: currency,
+                    recipes: service.recipes,
+                    recipe: service.recipeOf(rows[index].id),
+                    // The zebra alternates by position in the list, just like in the
+                    // spreadsheet: the odd ones are the painted ones.
+                    zebra: index.isOdd
+                  );
+                },
+                childCount: rows.length,
+                // A row keeps nothing of its own: what it shows comes from the service.
+                addAutomaticKeepAlives: false
+              )
+            ),
+            SliverToBoxAdapter(child: SummaryFooter(service: service))
+          ]))
         ]);
       })
     );

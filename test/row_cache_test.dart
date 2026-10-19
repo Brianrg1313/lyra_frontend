@@ -2,109 +2,131 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app/services/stock/tables/table_view_service.dart';
 
-/// El cache de filas de una tabla abierta: cuanto se guarda de lo leido y que se
-/// descarta cuando ya no entra.
+/// The row cache of an open table: how much of what was read is kept and what
+/// is dropped when it no longer fits.
 ///
-/// Importa a partir de unos cuantos miles de registros: sin techo, recorrer una
-/// tabla de punta a punta la deja entera en memoria.
+/// It matters from a few thousand records on: without a ceiling, walking a
+/// table end to end leaves it whole in memory.
 void main() {
-  group('cual pagina se descarta', () {
-    test('mientras entren en el presupuesto no se descarta ninguna', () {
+  group('which page is dropped', () {
+    test('while they fit the budget none is dropped', () {
       expect(pageToForget([1, 2, 3], around: 3, budget: 3), isNull);
     });
 
-    test('se va la mas lejana de donde se esta mirando', () {
-      // Se esta leyendo la 10: la 1 es la que menos chances tiene de volver a
-      // hacer falta.
+    test('the one farthest from where one is looking goes', () {
+      // Page 10 is being read: page 1 is the least likely to be needed again.
       expect(pageToForget([1, 8, 9, 10], around: 10, budget: 3), 1);
     });
 
-    test('subiendo se descarta la de mas abajo', () {
-      // Y no la mas vieja: descartar por antiguedad tiraria justo la pagina de
-      // al lado, que es la que se esta por volver a mirar.
+    test('going up drops the lowest one', () {
+      // And not the oldest: dropping by age would throw away exactly the page
+      // next door, the one about to be looked at again.
       expect(pageToForget([1, 2, 3, 40], around: 2, budget: 3), 40);
     });
   });
 
-  group('lo leido sobrevive a un cambio de columnas', () {
-    // Un cambio de columna relee la estructura entera. Tirar las paginas por eso
-    // significaba que tocar el titulo de una columna en la fila cincuenta mil
-    // obligaba a bajar la tabla de nuevo.
-    test('renombrar una columna no mueve ningun valor', () {
-      // Los FIELD_ID son los mismos y en el mismo orden.
+  group('how many pages are kept', () {
+    test('a narrow table keeps the most', () {
+      expect(pageBudget(fields: 12, size: 50), 200);
+    });
+
+    test('a wide one keeps fewer, so both weigh about the same', () {
+      expect(pageBudget(fields: 60, size: 50), 50);
+      expect(
+        pageBudget(fields: 60, size: 50) * 60 * 50,
+        lessThanOrEqualTo(150000),
+        reason: "the values held stay within the budget"
+      );
+    });
+
+    test('however wide, a thousand rows stay', () {
+      expect(pageBudget(fields: 500, size: 50), 20);
+    });
+
+    test('a table without fields yet keeps the most', () {
+      expect(pageBudget(fields: 0, size: 50), 200);
+    });
+  });
+
+  group('what was read survives a column change', () {
+    // A column change re-reads the whole structure. Dropping the pages for it
+    // meant that touching a column's title at row fifty thousand forced going
+    // down the table again.
+    test('renaming a column moves no value', () {
+      // The FIELD_IDs are the same and in the same order.
       expect(fieldsGrewAtEnd(["a", "b"], ["a", "b"]), isTrue);
     });
 
-    test('una columna nueva al final solo deja las filas cortas', () {
-      // Esa celda se ve vacia, que es exactamente lo que le toca a un campo
-      // recien creado.
+    test('a new column at the end only leaves the rows short', () {
+      // That cell shows empty, which is exactly what fits a newly created
+      // field.
       expect(fieldsGrewAtEnd(["a", "b"], ["a", "b", "c"]), isTrue);
     });
 
-    test('la primera columna de una tabla sin campos no tira nada', () {
+    test('the first column of a table without fields drops nothing', () {
       expect(fieldsGrewAtEnd([], ["a"]), isTrue);
     });
 
-    test('eliminar una columna corre todos los valores de lugar', () {
+    test('deleting a column moves every value', () {
       expect(fieldsGrewAtEnd(["a", "b", "c"], ["a", "c"]), isFalse);
     });
 
-    test('una columna nueva en el medio tambien', () {
+    test('a new column in the middle too', () {
       expect(fieldsGrewAtEnd(["a", "b"], ["a", "c", "b"]), isFalse);
     });
 
-    test('que el backend los devuelva en otro orden tambien', () {
+    test('the backend returning them in another order too', () {
       expect(fieldsGrewAtEnd(["a", "b"], ["b", "a"]), isFalse);
     });
   });
 
-  group('y a que los campos cambien de lugar', () {
-    // Lo que [fieldsGrewAtEnd] descarta casi siempre se puede salvar igual: los
-    // valores de una fila leida siguen ahi, solo que en otra posicion. Importa
-    // desde que las columnas se arrastran, porque si no cada arrastre tiraria
-    // las paginas que se estaban mirando.
-    test('reordenarlas solo corre los valores de lugar', () {
+  group('and the fields changing place', () {
+    // What [fieldsGrewAtEnd] discards can almost always be saved anyway: the
+    // values of a read row are still there, only in another position. It
+    // matters since columns are dragged, because otherwise each drag would
+    // throw away the pages being looked at.
+    test('reordering them only moves the values', () {
       expect(fieldsRemap(["a", "b", "c"], ["c", "a", "b"]), [2, 0, 1]);
     });
 
-    test('eliminar una columna deja las demas donde estaban', () {
+    test('deleting a column leaves the others where they were', () {
       expect(fieldsRemap(["a", "b", "c"], ["a", "c"]), [0, 2]);
     });
 
-    test('una columna nueva queda vacia', () {
-      // Es lo que le toca: todavia no hay nada cargado en ella.
-      expect(fieldsRemap(["a", "b"], ["a", "nueva", "b"]), [0, -1, 1]);
+    test('a new column stays empty', () {
+      // That is what fits it: nothing is loaded in it yet.
+      expect(fieldsRemap(["a", "b"], ["a", "new", "b"]), [0, -1, 1]);
     });
 
-    test('sin FIELD_ID no hay con que emparejarlas', () {
-      // Ahi lo unico seguro es volver a pedir las filas.
+    test('without FIELD_IDs there is nothing to match them with', () {
+      // There the only safe thing is to request the rows again.
       expect(fieldsRemap(["a", ""], ["a", "b"]), isNull);
     });
 
-    test('con ids repetidos tampoco', () {
+    test('with repeated ids neither', () {
       expect(fieldsRemap(["a", "a"], ["a"]), isNull);
     });
 
-    test('una tabla que no tenia campos no tiene nada que reacomodar', () {
-      // Sus filas no estan alineadas contra ningun campo.
+    test('a table that had no fields has nothing to rearrange', () {
+      // Its rows are not aligned to any field.
       expect(fieldsRemap([], ["a"]), isNull);
     });
   });
 
-  group('una pagina olvidada se puede volver a pedir', () {
-    test('olvidarla la saca de las leidas', () {
+  group('a forgotten page can be requested again', () {
+    test('forgetting it takes it out of the read ones', () {
       final paging = TablePaging();
       paging.read(paging.request(0), 50);
       paging.read(paging.request(900), 50);
 
-      expect(paging.request(900), 0, reason: "ya esta leida");
+      expect(paging.request(900), 0, reason: "it is already read");
 
       paging.forget(paging.pageOf(900));
 
       expect(paging.request(900), 19);
     });
 
-    test('olvidar no cambia de a cuantos se lee ni donde termina', () {
+    test('forgetting changes neither the page size nor where it ends', () {
       final paging = TablePaging();
       paging.read(paging.request(0), 50);
       paging.read(paging.request(50), 20);
@@ -116,7 +138,7 @@ void main() {
       expect(paging.known, 70);
     });
 
-    test('una pagina que fallo tambien se puede olvidar', () {
+    test('a page that failed can also be forgotten', () {
       final paging = TablePaging();
       paging.read(paging.request(0), 50);
       paging.failed(paging.request(50));

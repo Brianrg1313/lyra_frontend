@@ -71,7 +71,7 @@ enum TableViewStatus { idle, loading, ready, empty, error }
 ///
 /// What is read is **not kept forever**: a table can have hundreds of thousands
 /// of records and walking it entirely would leave it entirely in memory. A page
-/// budget is kept ([_maxCachedPages]) and, once exceeded, the page farthest
+/// budget is kept ([pageBudget]) and, once exceeded, the page farthest
 /// from the one just read is forgotten; if you go back to it, it is requested
 /// again. The budget is deliberately generous: it easily covers any reasonable
 /// round trip, and only activates when scrolling the table end to end.
@@ -184,10 +184,6 @@ class TableViewService extends ChangeNotifier {
   /// size.
   static const int _pageSize = 50;
 
-  /// How many pages are kept at once. With [_pageSize] that is ten thousand
-  /// rows in memory: far more than can be looked at, and a fixed ceiling even
-  /// if the table has hundreds of thousands of records.
-  static const int _maxCachedPages = 200;
 
   /// How long a normalization ([normalize]) is waited for.
   ///
@@ -1106,7 +1102,7 @@ class TableViewService extends ChangeNotifier {
       final page = pageToForget(
         _cached,
         around: around,
-        budget: _maxCachedPages
+        budget: pageBudget(fields: fields.length, size: _pageSize)
       );
       if (page == null) return;
 
@@ -1237,7 +1233,7 @@ class TableViewService extends ChangeNotifier {
   /// [fieldsRemap] returns.
   ///
   /// It is a pass over what is in memory, not over the table: at most it is the
-  /// [_maxCachedPages] pages of the budget, and it only runs when the fields
+  /// [pageBudget] pages, and it only runs when the fields
   /// changed place.
   void _remapRows(List<int> remap) {
     for (final index in _rows.keys.toList(growable: false)) {
@@ -1434,6 +1430,23 @@ int? pageToForget(
   }
 
   return farthest;
+}
+
+/// How many pages of [size] rows a table of [fields] columns keeps in memory ([pageToForget]).
+///
+/// The budget is in values, not in rows: a page of a sixty-column table holds five times
+/// what one of twelve does, so a wide table keeps fewer pages and both weigh about the same.
+/// Never fewer than [least] (a thousand rows at fifty a page, far more than a screen holds
+/// and enough to go up and down without reading again), nor more than [most].
+int pageBudget({
+  required int fields,
+  required int size,
+  int values = 150000,
+  int least = 20,
+  int most = 200
+}) {
+  if (fields <= 0 || size <= 0) return most;
+  return (values ~/ (fields * size)).clamp(least, most);
 }
 
 /// The bookkeeping of a table's chunked reading: how many records a page
