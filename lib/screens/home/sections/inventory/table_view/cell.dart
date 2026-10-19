@@ -175,9 +175,10 @@ class SheetCellView extends StatelessWidget {
           onGenerateSku: editable && type == TableFieldType.sku
             ? () => controller.generateSku(SheetCell(row, position))
             : null,
-          // A measure's unit is the column's: its button changes it for every
-          // row (see [UnitCell]).
-          onPickUnit: editable && type == TableFieldType.measure
+          // A measure's and a stock's unit is the column's: its button changes
+          // it for every row (see [UnitCell]). A stock is never written, but
+          // what it counts is the column's, not the figure's.
+          onPickUnit: (editable && type == TableFieldType.measure) || (isField && type == TableFieldType.stock)
             ? (anchor) => controller.pickUnit(position, anchor)
             : null,
           // A date's calendar opens from its button; the cell itself is written (see

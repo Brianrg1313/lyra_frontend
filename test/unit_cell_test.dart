@@ -42,7 +42,8 @@ Future<void> _cell(
   WidgetTester tester, {
   required TableFieldType type,
   required String value,
-  String unit = ""
+  String unit = "",
+  ValueChanged<BuildContext>? onPickUnit
 }) async {
   await tester.pumpWidget(ChangeNotifierProvider<BusinessService>(
     create: (_) => BusinessService(),
@@ -80,7 +81,8 @@ Future<void> _cell(
                   unit: unit,
                   row: 0,
                   column: 0,
-                  columnKey: "col_0"
+                  columnKey: "col_0",
+                  onPickUnit: onPickUnit
                 )
               )
             ))
@@ -199,6 +201,14 @@ void main() {
 
       await _cell(tester, type: TableFieldType.stock, value: "2.5", unit: "kg");
       expect(_read(tester), "2.5kg");
+    });
+
+    testWidgets("a stock's ruler opens its column's units", (tester) async {
+      var opened = 0;
+      await _cell(tester, type: TableFieldType.stock, value: "30", onPickUnit: (_) => opened++);
+
+      await tester.tap(find.byIcon(Icons.straighten));
+      expect(opened, 1);
     });
 
     testWidgets('what is not a number carries no symbol', (tester) async {

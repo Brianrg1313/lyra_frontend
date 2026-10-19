@@ -460,23 +460,23 @@ class _Options extends StatelessWidget {
 /// backend reads the empty as a value and not as the absence of one (see
 /// `editFieldRequest`).
 ///
-/// A measure offers the sheet's units ([measureUnits]); a stock only the
-/// magnitudes a recipe can switch between (`kitchenUnitsFor`): a supply counted
-/// in `kg` is written in grams in a recipe, one counted in «kilos» too, but one
-/// in «kgs» only in itself.
+/// A measure and a stock offer the sheet's units ([measureUnits]), and count
+/// units without one. A recipe writes a supply in the other unit of its
+/// magnitude only in grams and millilitres (`kitchenUnitsFor`): one counted in
+/// `kg` is written in grams too, one counted in `m` only in itself.
 class _Unit extends StatelessWidget {
   const _Unit({required this.field});
 
   final TableDetailFieldModel field;
 
-  static const List<String> _kitchen = ["kg", "g", "l", "ml"];
+  bool get _counts => field.type == TableFieldType.measure || field.type == TableFieldType.stock;
 
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
     final empty = field.unit.isEmpty;
-    // A measure without a unit counts units (see `UnitCell`).
-    final none = field.type == TableFieldType.measure
+    // A measure or a stock without a unit counts units (see `UnitCell`).
+    final none = _counts
       ? S.of(context).product_table_view_unit_count
       : S.of(context).table_settings_unit_empty;
 
@@ -494,23 +494,20 @@ class _Unit extends StatelessWidget {
       options: [
         if (field.unit.isNotEmpty) ...[
           SelectOption(value: field.unit, placeholder: field.unit),
-          if (field.type != TableFieldType.measure) SelectOption(
+          if (!_counts) SelectOption(
             value: "",
             placeholder: S.of(anchor).table_settings_unit_none,
             icon: Icons.remove
           )
         ],
-        if (field.type == TableFieldType.measure) SelectOption(
+        if (_counts) SelectOption(
           value: "",
           placeholder: S.of(anchor).product_table_view_unit_count,
           subtitle: S.of(anchor).product_table_view_unit_count_symbol
         ),
-        if (field.type == TableFieldType.measure)
+        if (_counts)
           for (final unit in measureUnits)
-            if (unit.symbol != field.unit) SelectOption(value: unit.symbol, placeholder: unit.symbol),
-        if (field.type == TableFieldType.stock)
-          for (final unit in _kitchen)
-            if (unit != field.unit) SelectOption(value: unit, placeholder: unit)
+            if (unit.symbol != field.unit) SelectOption(value: unit.symbol, placeholder: unit.symbol)
       ],
       selected: field.unit,
       emptyText: S.of(anchor).table_settings_unit_empty,

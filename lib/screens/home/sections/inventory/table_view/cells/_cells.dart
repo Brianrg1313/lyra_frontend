@@ -68,8 +68,7 @@ abstract final class SheetCells {
     // own baked in: there the unit **is** the type, so the field doesn't keep
     // one (see [TableFieldType.united]). A stock reads in what its column is
     // counted in: «10kg», and one that declared none counts units, «30u», as a
-    // measure does. Only a measure's unit is picked from its cell: a stock's is
-    // what its recipe lines are written in, set in the table's settings.
+    // measure does. Both pick their column's unit from the button at their right.
     TableFieldType.measure || TableFieldType.stock => UnitCell(
       value: value,
       style: style,
@@ -77,7 +76,7 @@ abstract final class SheetCells {
       symbol: unit,
       counts: true,
       row: row,
-      onPickUnit: type == TableFieldType.measure ? onPickUnit : null
+      onPickUnit: onPickUnit
     ),
     TableFieldType.discount || TableFieldType.percentage => UnitCell(
       value: value,

@@ -27,7 +27,7 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart'
 /// The symbol goes attached to the number (`30l`, `16%`): it is read as one word,
 /// and the cell is narrow.
 ///
-/// A measure's button at its right ([onPickUnit]) changes the unit of **the
+/// A measure's or a stock's button at its right ([onPickUnit]) changes the unit of **the
 /// whole column**, like a date's calendar button: a column is counted in one
 /// unit, so a row in grams and the next in kilos would stop comparing at a
 /// glance. A measure or a stock that declared none counts units ([counts]):

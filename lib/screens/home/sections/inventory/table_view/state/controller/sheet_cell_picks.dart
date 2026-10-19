@@ -48,9 +48,13 @@ extension SheetCellPicks on SheetController {
     _writeOption(cell, text);
   }
 
-  /// Opens a measure column's units anchored to the button of one of its cells ([anchor])
-  /// and saves the one picked as the column's (`UNIT`): every row reads in it. Above go the
-  /// unit it has and units (no `UNIT`, the default); any other is typed in the create row.
+  /// Opens a measure's or a stock's units anchored to the button of one of its cells
+  /// ([anchor]) and saves the one picked as the column's (`UNIT`): every row reads in it.
+  /// Above go the unit it has and units (no `UNIT`, the default); any other is typed in the
+  /// create row.
+  ///
+  /// A stock asks first while its table has rows: the backend keeps the figures as they are,
+  /// so 10 kg would read 10 g, and nothing in the sheet would say they were weighed in another.
   Future<void> pickUnit(int column, BuildContext anchor) async {
     final field = columns.fieldAt(column);
     if (field == null || field.id.isEmpty || !columns.canEditAt(column)) return;
@@ -87,6 +91,26 @@ extension SheetCellPicks on SheetController {
     );
 
     if (_disposed || picked == null || picked.value == unit) return;
+
+    if (typeAt(column) == TableFieldType.stock && service.records > 0) {
+      final context = _context();
+      if (!context.mounted) return;
+
+      final none = S.of(context).product_table_view_unit_count_symbol;
+
+      final confirmed = await showAlertModal(
+        context: context,
+        title: S.of(context).product_table_view_unit_stock_title,
+        message: S.of(context).product_table_view_unit_stock_message(
+          unit.isEmpty ? none : unit,
+          picked.value.isEmpty ? none : picked.value
+        ),
+        confirmText: S.of(context).product_table_view_unit_stock_confirm,
+        cancelText: S.of(context).cancel
+      );
+
+      if (_disposed || !confirmed) return;
+    }
 
     await service.editField(_context(), field, unit: picked.value);
   }

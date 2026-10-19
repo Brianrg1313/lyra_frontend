@@ -9909,6 +9909,36 @@ class S {
     );
   }
 
+  /// `Change what this stock counts?`
+  String get product_table_view_unit_stock_title {
+    return Intl.message(
+      'Change what this stock counts?',
+      name: 'product_table_view_unit_stock_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The figures already counted aren't converted: 10 {from} will read 10 {to}. Change it while the stock is still empty, or adjust it afterwards.`
+  String product_table_view_unit_stock_message(Object from, Object to) {
+    return Intl.message(
+      'The figures already counted aren\'t converted: 10 $from will read 10 $to. Change it while the stock is still empty, or adjust it afterwards.',
+      name: 'product_table_view_unit_stock_message',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `Change unit`
+  String get product_table_view_unit_stock_confirm {
+    return Intl.message(
+      'Change unit',
+      name: 'product_table_view_unit_stock_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{count, plural, =0{No rows match your search} =1{1 row matches} other{{count} rows match}}`
   String product_table_view_search_count(num count) {
     return Intl.plural(
