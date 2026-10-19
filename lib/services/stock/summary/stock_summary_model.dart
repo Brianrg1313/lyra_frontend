@@ -229,6 +229,13 @@ class StockSummaryRow {
 
   /// What is on its way here from another branch, or null if the answer doesn't say.
   num? get transit => stockNum(values[StockSummaryColumn.transitKey]);
+
+  /// What this product's stock is counted in when it is not its stock column's
+  /// (`cocina-frontend.md` §8), or empty: the column's.
+  String get unit => "${values[unitKey] ?? ""}".trim();
+
+  /// The row's own key for [unit]: a value of the row, not a column.
+  static const String unitKey = "unit";
 }
 
 /// A page of the stock summary: the columns with which it is drawn and the

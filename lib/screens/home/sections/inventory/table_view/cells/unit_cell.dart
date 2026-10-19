@@ -27,11 +27,17 @@ import 'package:app/screens/home/sections/inventory/table_view/sheet_theme.dart'
 /// The symbol goes attached to the number (`30l`, `16%`): it is read as one word,
 /// and the cell is narrow.
 ///
-/// A measure's or a stock's button at its right ([onPickUnit]) changes the unit of **the
-/// whole column**, like a date's calendar button: a column is counted in one
-/// unit, so a row in grams and the next in kilos would stop comparing at a
-/// glance. A measure or a stock that declared none counts units ([counts]):
-/// `5u`, so a figure never reads without saying what it counts.
+/// A measure's button at its right ([onPickUnit]) changes the unit of **the
+/// whole column**, like a date's calendar button: a column of measures is counted in
+/// one unit, so a row in grams and the next in kilos would stop comparing at a
+/// glance. A record's stock is the exception: a table of supplies weighs its meat and
+/// counts its sodas, so there the button changes what that product is counted in and
+/// the column's unit is the default ([hint] says so). A measure or a stock that
+/// declared none counts units ([counts]): `5u`, so a figure never reads without
+/// saying what it counts.
+///
+/// A record's stock also carries the stock summary's − and + at its sides ([onTake],
+/// [onPut]): the figure is the inventory's, so it is moved, never typed.
 class UnitCell extends StatelessWidget {
   const UnitCell({
     super.key,
@@ -41,7 +47,10 @@ class UnitCell extends StatelessWidget {
     required this.symbol,
     this.counts = false,
     this.row = 0,
-    this.onPickUnit
+    this.hint,
+    this.onPickUnit,
+    this.onTake,
+    this.onPut
   });
 
   /// The number as stored (or as just typed in the
@@ -70,6 +79,14 @@ class UnitCell extends StatelessWidget {
   /// given). `null` where the unit can't be changed, and there the symbol is
   /// plain text.
   final ValueChanged<BuildContext>? onPickUnit;
+
+  /// The ruler's tooltip, when it changes something other than the whole column.
+  final String? hint;
+
+  /// Open a movement of the record's stock anchored to the − or the + (the context
+  /// they are given). `null` where the figure is only read.
+  final ValueChanged<BuildContext>? onTake;
+  final ValueChanged<BuildContext>? onPut;
 
   @override
   Widget build(BuildContext context) {
@@ -101,13 +118,39 @@ class UnitCell extends StatelessWidget {
           style: style
         );
 
-    if (number == null || onPickUnit == null) return text;
+    final ruler = number != null && onPickUnit != null;
+    final steps = onTake != null && onPut != null;
+
+    if (!ruler && !steps) return text;
+
+    final gap = SizedBox(width: AppSize.gap * .5);
 
     return Row(children: [
+      if (steps) ...[_step(context, "−", S.of(context).stock_move_take_hint, onTake!), gap],
       Expanded(child: text),
-      SizedBox(width: AppSize.gap * .5),
-      _button(context)
+      if (ruler) ...[gap, _button(context)],
+      if (steps) ...[gap, _step(context, "+", S.of(context).stock_move_add_hint, onPut!)]
     ]);
+  }
+
+  /// A − or a + of the stock, sized like the ruler.
+  Widget _step(BuildContext context, String sign, String message, ValueChanged<BuildContext> action) {
+    final sheet = SheetTheme.of(context);
+    final size = AppSize.text * 1.8;
+
+    return Builder(builder: (anchor) => FeedbackButton(
+      message: message,
+      height: size,
+      width: size,
+      radius: sheet.frameRadius,
+      color: sheet.frameFill(row: row),
+      action: () => action(anchor),
+      child: Center(child: TextMedium(
+        sign,
+        bold: true,
+        color: sheet.scheme.text.secondary
+      ))
+    ));
   }
 
   /// The column's units, as a ruler at the right of the number.
@@ -119,7 +162,7 @@ class UnitCell extends StatelessWidget {
     final size = AppSize.text * 1.8;
 
     return Tooltip(
-      message: S.of(context).product_table_view_unit_hint,
+      message: hint ?? S.of(context).product_table_view_unit_hint,
       child: Builder(builder: (anchor) => FeedbackButton(
         message: S.of(context).product_table_view_unit,
         height: size,

@@ -53,6 +53,9 @@ abstract final class SheetCells {
     bool editable = true,
     VoidCallback? onGenerateSku,
     ValueChanged<BuildContext>? onPickUnit,
+    String? unitHint,
+    ValueChanged<BuildContext>? onTake,
+    ValueChanged<BuildContext>? onPut,
     ValueChanged<BuildContext>? onPickDate
   }) => switch (type) {
     // The two money types read the same —an amount and the symbol of its
@@ -68,7 +71,8 @@ abstract final class SheetCells {
     // own baked in: there the unit **is** the type, so the field doesn't keep
     // one (see [TableFieldType.united]). A stock reads in what its column is
     // counted in: «10kg», and one that declared none counts units, «30u», as a
-    // measure does. Both pick their column's unit from the button at their right.
+    // measure does. Both pick their unit from the button at their right, and a
+    // record's stock is moved from its − and +.
     TableFieldType.measure || TableFieldType.stock => UnitCell(
       value: value,
       style: style,
@@ -76,7 +80,10 @@ abstract final class SheetCells {
       symbol: unit,
       counts: true,
       row: row,
-      onPickUnit: onPickUnit
+      hint: unitHint,
+      onPickUnit: onPickUnit,
+      onTake: onTake,
+      onPut: onPut
     ),
     TableFieldType.discount || TableFieldType.percentage => UnitCell(
       value: value,

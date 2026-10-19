@@ -4,7 +4,8 @@ const String _kStockPut = "put";
 const String _kStockTake = "take";
 
 /// A record's stock cell: the figure is the inventory engine's, so instead of an editor it
-/// unfolds the two movements of the stock summary (put, take) and opens the same form.
+/// unfolds the two movements of the stock summary (put, take) and opens the same form; its −
+/// and + open it straight in one.
 extension SheetStockMoves on SheetController {
   /// Whether [cell] moves its product's stock: a `STOCK` column, a record already read with
   /// its id, and a mover the section gave.
@@ -44,6 +45,18 @@ extension SheetStockMoves on SheetController {
 
     if (_disposed || picked == null || !anchor.mounted) return;
 
+    await stepStock(cell, picked.value == _kStockTake ? StockDirection.take : StockDirection.put, anchor);
+  }
+
+  /// Opens the movement form of [cell]'s product straight in [direction]: the − and + at the
+  /// sides of a record's stock, like the stock summary's (`SummaryStepper`).
+  Future<void> stepStock(SheetCell cell, StockDirection direction, BuildContext anchor) async {
+    select(cell);
+
+    final mover = stock;
+    final record = service.rowAt(cell.row);
+    if (mover == null || record == null || !anchor.mounted) return;
+
     final value = record.at(columns.slotAt(cell.column));
 
     await showStockMovement(
@@ -51,7 +64,7 @@ extension SheetStockMoves on SheetController {
       service: mover,
       productId: record.id,
       counter: StockCounter.stock,
-      direction: picked.value == _kStockTake ? StockDirection.take : StockDirection.put,
+      direction: direction,
       stock: value is num ? value : num.tryParse("${value ?? ""}") ?? 0,
       // The sheet does not read what is set aside; it only caps setting units aside, which
       // the backend checks anyway.

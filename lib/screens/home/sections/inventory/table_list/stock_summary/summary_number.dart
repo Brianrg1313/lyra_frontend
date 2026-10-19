@@ -21,7 +21,8 @@ class SummaryNumber extends StatelessWidget {
     super.key,
     required this.value,
     this.alert = false,
-    this.align = TextAlign.right
+    this.align = TextAlign.right,
+    this.unit = ""
   });
 
   /// The number, or null when nothing is being counted. A supply's carries decimals.
@@ -39,6 +40,10 @@ class SummaryNumber extends StatelessWidget {
   /// column's edge but a button's.
   final TextAlign align;
 
+  /// What the figure is counted in, written attached to it (`300kg`) when the product
+  /// declared its own; empty where its column's header says it.
+  final String unit;
+
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
@@ -53,7 +58,7 @@ class SummaryNumber extends StatelessWidget {
     }
 
     return TextMedium(
-      stockFigure(amount),
+      "${stockFigure(amount)}$unit",
       multiplier: 0.9,
       bold: true,
       ellipsis: true,

@@ -26,6 +26,15 @@ const _page = {
 };
 
 void main() {
+  test("each row carries its product's own unit, or none", () {
+    // `units` only names the products counted in something else than their column.
+    final rows = TableViewModel.fromResponse({..._page, "units": {"r2": "u"}}).alignedTo(_fields).rows;
+
+    expect(rows.first.unit, "");
+    expect(rows.last.unit, "u");
+    expect(rows.last.withValue(0, 1).unit, "u", reason: "a written cell keeps the row's unit");
+  });
+
   test('la pagina se lee de adentro de la paginacion', () {
     final view = TableViewModel.fromResponse(_page);
 

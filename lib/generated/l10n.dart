@@ -9939,6 +9939,56 @@ class S {
     );
   }
 
+  /// `Change what this product is counted in`
+  String get product_table_view_unit_row_hint {
+    return Intl.message(
+      'Change what this product is counted in',
+      name: 'product_table_view_unit_row_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Column's ({unit})`
+  String product_table_view_unit_default(Object unit) {
+    return Intl.message(
+      'Column\'s ($unit)',
+      name: 'product_table_view_unit_default',
+      desc: '',
+      args: [unit],
+    );
+  }
+
+  /// `Turn this column into stock?`
+  String get product_table_view_stock_convert_title {
+    return Intl.message(
+      'Turn this column into stock?',
+      name: 'product_table_view_stock_convert_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stock is counted by the inventory: the figures this column has now aren't real stock, and they'll be replaced the first time a product is added or taken out. Count each product in with + afterwards.`
+  String get product_table_view_stock_convert_message {
+    return Intl.message(
+      'Stock is counted by the inventory: the figures this column has now aren\'t real stock, and they\'ll be replaced the first time a product is added or taken out. Count each product in with + afterwards.',
+      name: 'product_table_view_stock_convert_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn into stock`
+  String get product_table_view_stock_convert_confirm {
+    return Intl.message(
+      'Turn into stock',
+      name: 'product_table_view_stock_convert_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `{count, plural, =0{No rows match your search} =1{1 row matches} other{{count} rows match}}`
   String product_table_view_search_count(num count) {
     return Intl.plural(

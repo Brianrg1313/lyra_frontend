@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/inventory/table_view/cells/_cells.dart';
+import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cell.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_columns.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_controller.dart';
@@ -139,6 +142,17 @@ class SheetCellView extends StatelessWidget {
       && controller.stock != null
       && (saved?.id.isNotEmpty ?? false);
 
+    // A product counts in its own unit when it declared one, else in its column's (the
+    // default), and its ruler changes its own; elsewhere the ruler is the column's. A master
+    // keeps no unit per product, so there it stays the column's.
+    final ownUnit = record
+      && type == TableFieldType.stock
+      && (saved?.id.isNotEmpty ?? false)
+      && CapabilityService().shows("inventory.units");
+    final shownUnit = record && type == TableFieldType.stock && (saved?.unit.isNotEmpty ?? false)
+      ? saved!.unit
+      : unit;
+
     // How the datum looks is decided by its type, not by this cell: each type
     // that displays differently has its widget in `cells/` (see [SheetCells.value]).
     final Widget content = state == SheetCellState.editing
@@ -155,7 +169,7 @@ class SheetCellView extends StatelessWidget {
           alignment: type.alignment,
           // The column's symbol, for the types whose number does not bring its
           // own (see [TableFieldType.united]).
-          unit: unit,
+          unit: shownUnit,
           // The text the AI indexes by meaning always goes with the brand color,
           // whether writable or not: it is what distinguishes it from a datum
           // entered by hand. The fields the backend carries (counter, stock)
@@ -175,11 +189,20 @@ class SheetCellView extends StatelessWidget {
           onGenerateSku: editable && type == TableFieldType.sku
             ? () => controller.generateSku(SheetCell(row, position))
             : null,
-          // A measure's and a stock's unit is the column's: its button changes
-          // it for every row (see [UnitCell]). A stock is never written, but
-          // what it counts is the column's, not the figure's.
-          onPickUnit: (editable && type == TableFieldType.measure) || (isField && type == TableFieldType.stock)
-            ? (anchor) => controller.pickUnit(position, anchor)
+          // A measure's unit is the column's: its button changes it for every
+          // row (see [UnitCell]). A record's stock changes its product's; the
+          // field row's, the column's default.
+          onPickUnit: ownUnit
+            ? (anchor) => controller.pickRowUnit(SheetCell(row, position), anchor)
+            : (editable && type == TableFieldType.measure) || (isField && type == TableFieldType.stock)
+              ? (anchor) => controller.pickUnit(position, anchor)
+              : null,
+          unitHint: ownUnit ? S.of(context).product_table_view_unit_row_hint : null,
+          onTake: moves
+            ? (anchor) => controller.stepStock(SheetCell(row, position), StockDirection.take, anchor)
+            : null,
+          onPut: moves
+            ? (anchor) => controller.stepStock(SheetCell(row, position), StockDirection.put, anchor)
             : null,
           // A date's calendar opens from its button; the cell itself is written (see
           // [DateCell]).

@@ -1,7 +1,8 @@
 part of '../sheet_controller.dart';
 
 /// The cells set by a gesture of their own type: a yes / no flipped, a date picked in a
-/// calendar, and a measure column's unit picked from its button or typed after a number.
+/// calendar, a measure column's unit picked from its button or typed after a number, and what
+/// one product's stock is counted in.
 extension SheetCellPicks on SheetController {
   /// Flips a `BOOLEAN` cell. Empty or unreadable counts as «no», so the first tap is a «yes».
   void toggleBoolean(SheetCell cell) {
@@ -113,6 +114,87 @@ extension SheetCellPicks on SheetController {
     }
 
     await service.editField(_context(), field, unit: picked.value);
+  }
+
+  /// Opens the units of one record's stock anchored to its ruler ([anchor]) and saves the one
+  /// picked as that product's ([TableViewService.setUnit]): a supplies table weighs its meat in
+  /// kg and counts its sodas, so the column's unit is only the default its rows start in. Above
+  /// go the column's (picking it takes the product back to it) and units, written as `u` when
+  /// the column counts in another; any other is typed in the create row.
+  ///
+  /// Asks first when the product has stock, like [pickUnit]: the figure is not converted.
+  Future<void> pickRowUnit(SheetCell cell, BuildContext anchor) async {
+    final record = service.rowAt(cell.row);
+    final field = columns.fieldAt(cell.column);
+    if (record == null || record.id.isEmpty || field == null) return;
+
+    final strings = S.of(anchor);
+    final count = strings.product_table_view_unit_count_symbol;
+    final column = field.unit;
+    final current = record.unit;
+
+    // What the row reads in now, and what each option leaves stored: the column's is "".
+    String shown(String stored) => stored.isNotEmpty ? stored : column.isEmpty ? count : column;
+    final now = shown(current);
+
+    final picked = await showSelectMenu(
+      context: anchor,
+      options: [
+        SelectOption(
+          value: "",
+          placeholder: strings.product_table_view_unit_default(column.isEmpty ? count : column)
+        ),
+        if (column.isNotEmpty) SelectOption(
+          value: count,
+          placeholder: strings.product_table_view_unit_count,
+          subtitle: count
+        ),
+        if (current.isNotEmpty && current != count && measureSymbolOf(current) == null)
+          SelectOption(value: current, placeholder: current),
+        for (final measure in measureUnits)
+          if (measure.symbol != column) SelectOption(
+            value: measure.symbol,
+            placeholder: measure.symbol,
+            subtitle: _magnitude(anchor, measure.magnitude)
+          )
+      ],
+      selected: current,
+      searchPlaceholder: strings.product_table_view_unit_search,
+      emptyText: strings.table_settings_unit_empty,
+      maxOptions: 6,
+      dense: true,
+      createText: strings.table_settings_unit_create,
+      createPlaceholder: strings.product_table_view_unit_placeholder,
+      onCreate: (typed) async => typed.trim().isEmpty
+        ? null
+        : SelectOption(value: typed.trim(), placeholder: typed.trim())
+    );
+
+    if (_disposed || picked == null) return;
+
+    // A unit equal to the column's is the column's: stored as "", it follows the column.
+    final unit = picked.value == column ? "" : picked.value;
+    if (unit == current) return;
+
+    final value = record.at(columns.slotAt(cell.column));
+    final figure = value is num ? value : num.tryParse("${value ?? ""}") ?? 0;
+
+    if (figure != 0) {
+      final context = _context();
+      if (!context.mounted) return;
+
+      final confirmed = await showAlertModal(
+        context: context,
+        title: S.of(context).product_table_view_unit_stock_title,
+        message: S.of(context).product_table_view_unit_stock_message(now, shown(unit)),
+        confirmText: S.of(context).product_table_view_unit_stock_confirm,
+        cancelText: S.of(context).cancel
+      );
+
+      if (_disposed || !confirmed) return;
+    }
+
+    await service.setUnit(_context(), row: cell.row, unit: unit);
   }
 
   /// Reads a unit typed after a measure's number on leaving the cell: «300lt» leaves `300`

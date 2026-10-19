@@ -278,7 +278,7 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 
 - `kitchen_read.dart` — `kitchenNum` `kitchenInt` `kitchenText` `kitchenBool` `kitchenDate` `kitchenMaps` `kitchenTexts`.
 - `kitchen_api.dart` — `KitchenApi.reason` (the refusal's code), `KitchenApi.report` (floating flag; an `action` rethrown).
-- `kitchen_product_model.dart` — `KitchenProduct`: a summary row named by its first text column, `unit` (a "unit" column's per row, else the stock column's, else a measure column's), `stock` with decimals, `supplies`, `made`.
+- `kitchen_product_model.dart` — `KitchenProduct`: a summary row named by its first text column, `unit` (the product's own, else a "unit" column's per row, else the stock column's, else a measure column's), `stock` with decimals, `supplies`, `made`.
 - `made_consumes_model.dart` — `MadeConsumes` (`mapFrom`): what each record of a made table consumes and can be sold now, beside the rows of `records/list` (`consumes`).
 - `made_product_model.dart` — `MadeFields` (`of`: name = first `TITLE` else text, price = first `PRICE`, image = first `IMAGE`, description = first `DESCRIPTION` else `TEXTAREA`, `others` typed in a field), `MadeProduct` (`listFrom` an aligned page: values by FIELD_ID, `images` and `cover`, `consumes`).
 - `made_products_service.dart` — `MadeProductsService({tableId, kitchen})` (+ status, `MadeProductDraft`, `MadePhoto`, `MadeGroupChoice`): one made table's products (structure, pages of 50 with `MATCH`, `more`), the supplies' units (`unitOf`, `units`), the company's modifier groups (`groups`, `groupsOf`), `costOf`; `save` creates the name/price columns a table lacks (and the description and added columns when written), then the record with its `DATA` (an edit only what changed), `CONSUMES` and `BATCH` in one call; then the photo (cover removed, the new one uploaded) and the groups it offers (new/edited with their content, the ones it joins or leaves with their products changed), a failure there reported with the product kept; reads the first page again. Owned by the made products view.
@@ -291,7 +291,7 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 - `modifier_model.dart` — `ModifierGroup` (`max` null = all, `required` = `min` > 0), `ModifierOption` (`spends`), `ModifierProduct`, `ModifierLine`.
 - `kitchen_report_model.dart` — `ConsumptionReport`/`ConsumptionSupply`/`ConsumptionDish`/`ConsumptionBatch`, `VarianceRow` (`counted` false = no comparison), `DishCost`/`DishCostLine` (`unitCost` null = never bought with a cost).
 - `kitchen_request.dart` — `kitchenQuantity` (whole numbers as integers), recipe (`recipeLinesRequest`: also a made record's `CONSUMES`), delete, pause, produce, discard, presentations, modifier group (option ids kept) and delete bodies; `kitchenWindowRequest` (whole local days in ISO 8601).
-- `kitchen_products_service.dart` — `KitchenProductsService` (+ status): the **supplies** tables only (none = empty, no table), the open one's summary pages, their recipes measured per page, `remeasure`; `stock/changed` composite → a dish's `available`, else a row's stock. Seams `seed`/`receive`.
+- `kitchen_products_service.dart` — `KitchenProductsService` (+ status): the **supplies** tables only (none = empty, no table), the open one's summary pages, their recipes measured per page, `remeasure`; `stock/changed` composite → a dish's `available`, else a row's stock; the list's `StockMover` (a row's − and +). Seams `seed`/`receive`.
 - `recipe_service.dart` — `RecipeService({product})` (+ `RecipeStatus`, `BatchResult`): one product's recipe (`404 recipe_not_found` = `none`), availability and presentations; save (a made product's as its record's `CONSUMES`/`BATCH` through `Sources.inventory`, then read again; a supply's preparation `PUT /recipes`), remove (`removable`: never a made one's), pause, uses, produce, discard, presentations; each write measures again. Per opened panel. `fetch` (a recipe for a modifier's removals).
 - `modifiers_service.dart` — `ModifiersService` (+ status): `GET/PUT/DELETE /inventory/modifiers`; every write rereads.
 - `kitchen_reports_service.dart` — `KitchenReportsService` (+ `KitchenReport`, status): one report and one window; only the last read counts.
@@ -426,7 +426,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 ## stock/ — reading and moving inventory
 
 - `sources/inventory_source.dart` — `InventorySource`: tables, templates (cloud only; a master answers none), structure, detail,
-  fields, records (+ match total), images, import (structure, then records), normalisation (cloud only). Used by `TablesService`, `TableDetailService`, `TableViewService`.
+  fields, records (+ match total), images, import (structure, then records), normalisation (cloud only), a product's own unit (`setUnit`, cloud only: the LAN source throws `UnsupportedError`). Used by `TablesService`, `TableDetailService`, `TableViewService`.
   `inventory_cloud_source.dart` — REST (reads the created table's id in either shape). `inventory_lan_source.dart` —
   `InventoryLanSource` over `LanService`: cloud bodies' keys → the spec's (`args`), a photo uploaded then
   `inventory.images.add`; an import uploads the file (purpose `import`) for each of its two ops; `normalize` is
@@ -442,19 +442,19 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   `TableImportStage`): list, create, rename, delete, import (then `PictureImportService.afterImport`); listens to `table/normalizing|ready`.
 - `tables/table_detail_service.dart` — `TableDetailService`: `/inventory/products/builder/details/$id`.
 - `tables/table_view_service.dart` — `TableViewService` (+ `TableStructureStatus`, `TableViewStatus`,
-  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset), `/records/images/`, `writeStock`; `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
+  `TablePaging`, `fieldsGrewAtEnd`): structure, paged records, `/records/manage/` (a created record is placed with its answered id and its page re-read in place, no reset), `/records/images/`, `writeStock`, `setUnit` (a product's own unit, optimistic); `image/progress` naming its table re-reads the cached pages in place (gathered 3 s).
 - `tables/table_stock_mover.dart` — `TableStockMover`: the sheet's `StockMover` (moves through `StockSource`, writes the balance in the row).
 - `tables/table_lite_model.dart` — list row, `TableKind` (`catalog made supplies`; unknown = catalog).
 - `tables/table_detail_model.dart` — `TableDetailModel` and its summaries (`TableColumnsSummary`,
   `TableAgentSummary`, `TableChannelsSummary`, `TableChannelReader`, `TableFieldVisibility`, …).
 - `tables/table_structure_model.dart` — `TableStructureModel`, `TableFieldModel`.
-- `tables/table_view_model.dart` — `TableViewModel` (`consumes` of a made page), `TableColumnModel`, `TableRowModel`.
+- `tables/table_view_model.dart` — `TableViewModel` (`consumes` of a made page, `units` of a stocked one), `TableColumnModel`, `TableRowModel` (`unit`: the product's own, empty = its stock column's).
 - `tables/table_normalize_model.dart` — `POST .../builder/normalize/` result.
 - `tables/table_normalizing_model.dart` / `table_ready_model.dart` — `table/normalizing` / `table/ready` notices.
 - `prices/branch_price_model.dart` — `BranchPrice` (a product's own price at a branch: `price` null = the catalog's, `inheritsDiscount`, `discount` null = no offer there), `setBranchPriceRequest` (`DISCOUNT` null with `clearDiscount`), `removeBranchPriceRequest`.
 - `prices/branch_prices_service.dart` — `BranchPricesService({productId, tableId})` (+ status): every branch's own prices of one product, `here` (the branch worked in), `canPrice` (`products.price` from the person's grant), `set`/`remove` (the header's branch only; reread after), `price/changed` for the product rereads. Owned by its panel.
 - `summary/stock_summary_service.dart` — `StockSummaryService({tableId, supplies, recipes})`: `POST /inventory/stock/summary/` (`TABLE_ID`, `SORT`: `sortBy`); `supplies` = moves with decimals; `recipes` = each page's recipes measured (`recipeOf`); `presentations` (a failed read = none); `image/progress` naming its table is a quiet `syncColumns`.
-- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`: `num`, a supply's decimals), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
+- `summary/stock_summary_model.dart` — `StockSummaryPage`, `StockSummaryRow` (`stock`, `reserved`, `transit`: `num`, a supply's decimals; `unit`, the product's own), `StockSummaryColumn` (`sortable`; fixed `image stock reserved transit performance`), `StockSummarySort`.
 - `movements/stock_movement_model.dart` — `StockMovement` (`num quantity`, `PRESENTATION`, `COST` only on `restock`), `StockBalance` (`num`), `StockOperation`, `StockReason` (`waste`), `stockNum`, `stockFigure`.
 - `movements/stock_ledger_model.dart` — `StockLedgerEntry` (operation, reason, positive `qty` and its `sign`, actor, `madeFor`, `pack`, `cost`, `available` after), `StockLedgerPage`.
 - `movements/stock_mover.dart` — `StockMover`: what the movement form writes through (`StockSummaryService`, `TableStockMover`).

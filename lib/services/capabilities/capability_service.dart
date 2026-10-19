@@ -80,6 +80,7 @@ class CapabilityService extends ChangeNotifier {
     "inventory.picture_import": _online,
     "inventory.purchases": _online,
     "inventory.history": _online,
+    "inventory.units": _online,
     "services": _online,
     "channels": _online,
     "knowledge": _online,

@@ -222,7 +222,8 @@ class _RecipesTabState extends State<RecipesTab> {
           return RecipeRow(
             product: product,
             availability: service.availabilityOf(product.id),
-            onTap: () => _open(product)
+            onTap: () => _open(product),
+            mover: service
           );
         }
       )

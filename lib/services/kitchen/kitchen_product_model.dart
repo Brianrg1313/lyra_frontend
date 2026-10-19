@@ -8,9 +8,10 @@ import 'package:app/services/stock/summary/stock_summary_model.dart';
 /// A product as the supply chain lists and picks it: a row of a table's stock summary
 /// (`POST /inventory/stock/summary/`), named by its first text column.
 ///
-/// The backend gives no unit for a product (`cocina-frontend.md` §8), so [unit] is the table's
-/// when it says one: a column called "unit" holding it per row, else its stock column's (what
-/// the whole table is counted in), else a measure column's magnitude. Empty otherwise.
+/// [unit] is the product's own when it declared one (`cocina-frontend.md` §8, the row's
+/// [StockSummaryRow.unit]), else a column called "unit" holding it per row, else its stock
+/// column's (what the table counts in by default), else a measure column's magnitude. Empty
+/// otherwise.
 @immutable
 class KitchenProduct {
   const KitchenProduct({
@@ -55,9 +56,11 @@ class KitchenProduct {
         id: row.id,
         tableId: page.table,
         name: name == null ? "" : kitchenText(row.values[name.key]),
-        unit: unitColumn != null && kitchenText(row.values[unitColumn.key]).isNotEmpty
-          ? kitchenText(row.values[unitColumn.key])
-          : measure?.unit ?? "",
+        unit: row.unit.isNotEmpty
+          ? row.unit
+          : unitColumn != null && kitchenText(row.values[unitColumn.key]).isNotEmpty
+            ? kitchenText(row.values[unitColumn.key])
+            : measure?.unit ?? "",
         stock: kitchenNum(row.values[StockSummaryColumn.stockKey]),
         supplies: supplies,
         made: made

@@ -30,7 +30,7 @@ class TableColumnModel {
 /// A row of data. Values go in the same order as
 /// [TableViewModel.columns], so they're read by position.
 class TableRowModel {
-  const TableRowModel(this.values, {this.id = ""});
+  const TableRowModel(this.values, {this.id = "", this.unit = ""});
 
   final List<dynamic> values;
 
@@ -42,6 +42,10 @@ class TableRowModel {
   /// read, but there's no record to send the change to. Empty in the rows of
   /// a response that doesn't bring it.
   final String id;
+
+  /// What this product's stock is counted in when it is not its stock column's
+  /// (`PUT /inventory/units`, the page's `units`). Empty: the column's, the table's default.
+  final String unit;
 
   /// The cell's value at column [index], or `null` if the row is shorter.
   dynamic at(int index) =>
@@ -62,8 +66,11 @@ class TableRowModel {
     }
     next[index] = value;
 
-    return TableRowModel(next, id: id);
+    return TableRowModel(next, id: id, unit: unit);
   }
+
+  /// The same row counted in [unit] (empty: its column's). A new row, like [withValue].
+  TableRowModel withUnit(String unit) => TableRowModel(values, id: id, unit: unit);
 }
 
 /// A page of a table's data: the headers (the columns, with their FIELD_ID)
@@ -76,7 +83,8 @@ class TableViewModel {
   const TableViewModel({
     this.columns = const [],
     this.rows = const [],
-    this.consumes = const {}
+    this.consumes = const {},
+    this.units = const {}
   });
 
   final List<TableColumnModel> columns;
@@ -85,6 +93,10 @@ class TableViewModel {
   /// A `made` table's page: what each record consumes and how many can be sold now, by
   /// record id (`cocina-frontend.md` §3). Empty on any other table.
   final Map<String, MadeConsumes> consumes;
+
+  /// What each product that does not count in its stock column's unit is counted in, by
+  /// record id (`records/list` `units`). [alignedTo] puts each on its row ([TableRowModel.unit]).
+  final Map<String, String> units;
 
   bool get isEmpty => rows.isEmpty;
 
@@ -112,7 +124,7 @@ class TableViewModel {
         TableColumnModel(id: field.id, name: field.name, type: field.type)
     ];
 
-    if (columns.isEmpty) return TableViewModel(columns: structure, rows: rows, consumes: consumes);
+    if (columns.isEmpty) return TableViewModel(columns: structure, rows: rows, consumes: consumes, units: units);
 
     final order = [for (final field in fields) _positionOf(field)];
     final identifier = _idPosition(order);
@@ -121,15 +133,21 @@ class TableViewModel {
       columns: structure,
       rows: [
         for (final row in rows)
-          TableRowModel(
-            [
-              for (final position in order)
-                position < 0 ? null : row.at(position)
-            ],
-            id: identifier < 0 ? "" : row.at(identifier)?.toString() ?? ""
-          )
+          _aligned(row, order, identifier < 0 ? "" : row.at(identifier)?.toString() ?? "")
       ],
-      consumes: consumes
+      consumes: consumes,
+      units: units
+    );
+  }
+
+  TableRowModel _aligned(TableRowModel row, List<int> order, String id) {
+    return TableRowModel(
+      [
+        for (final position in order)
+          position < 0 ? null : row.at(position)
+      ],
+      id: id,
+      unit: units[id] ?? ""
     );
   }
 
@@ -202,6 +220,7 @@ class TableViewModel {
 
         return TableViewModel(
           consumes: MadeConsumes.mapFrom(data["consumes"], tableId: tableId),
+          units: _units(data["units"]),
           columns: columns,
           rows: [
             for (final row in values)
@@ -224,12 +243,13 @@ class TableViewModel {
       final inner = data["data"] ?? data["results"] ?? data["table"] ?? data["page"];
       if (inner is List || inner is Map) {
         final page = TableViewModel.fromResponse(inner, tableId: tableId);
-        if (page.consumes.isNotEmpty || data["consumes"] == null) return page;
+        if (data["consumes"] == null && data["units"] == null) return page;
 
         return TableViewModel(
           columns: page.columns,
           rows: page.rows,
-          consumes: MadeConsumes.mapFrom(data["consumes"], tableId: tableId)
+          consumes: page.consumes.isNotEmpty ? page.consumes : MadeConsumes.mapFrom(data["consumes"], tableId: tableId),
+          units: page.units.isNotEmpty ? page.units : _units(data["units"])
         );
       }
     }
@@ -262,6 +282,14 @@ class TableViewModel {
   /// the name and the type, or bare text that only gives the name. Keys are
   /// checked in uppercase (the contract) and lowercase (a common reading) just
   /// in case.
+  /// `units` as the page sends it: `{ <record id>: unit }`, only the products that have one.
+  static Map<String, String> _units(dynamic data) => data is Map
+    ? {
+        for (final MapEntry(:key, :value) in data.entries)
+          if (value is String && value.trim().isNotEmpty) "$key": value.trim()
+      }
+    : const {};
+
   static TableColumnModel _column(dynamic key) {
     if (key is Map) {
       final id = (key["ID"] ?? key["id"] ?? key["FIELD_ID"] ?? key["field_id"] ?? key["uuid"])?.toString() ?? "";

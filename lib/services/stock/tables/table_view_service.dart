@@ -498,6 +498,44 @@ class TableViewService extends ChangeNotifier {
     }
   }
 
+  /// Counts [row]'s product in [unit] (empty: its stock column's) against
+  /// `PUT /inventory/units/`. Seen at once and sent behind, like [editRecord]: the row
+  /// goes back to the unit it had if it does not go through. Only the word changes, the
+  /// figure is the ledger's.
+  Future<bool> setUnit(BuildContext context, {required int row, required String unit}) async {
+    final tableId = _tableId;
+    final record = _rows[row];
+
+    if (tableId == null || record == null || record.id.isEmpty) return false;
+
+    final before = record.unit;
+    if (before == unit) return true;
+
+    _rows[row] = record.withUnit(unit);
+    notifyListeners();
+
+    try {
+      await _source.setUnit(tableId: tableId, productId: record.id, unit: unit);
+      return true;
+    } catch (error) {
+      if (kDebugMode) print("setUnit failed: $error");
+
+      final current = _rows[row];
+      if (current != null && current.id == record.id) {
+        _rows[row] = current.withUnit(before);
+        notifyListeners();
+      }
+
+      if (!context.mounted) return false;
+      if (error is Map && error["action"] != null) throw error["action"];
+
+      FloatFlag.of(context).fromError(
+        error is Map && error.isNotEmpty ? error : {"message": error.toString()}
+      );
+      return false;
+    }
+  }
+
   /// Writes [productId]'s stock as a movement left it (its `available`) in its row's `STOCK`
   /// cells, without re-reading: the inventory engine answered the balance.
   void writeStock(String productId, num available) {
@@ -1190,7 +1228,8 @@ class TableViewService extends ChangeNotifier {
       _rows[index] = TableRowModel(
         [for (final position in remap) position < 0 ? null : row.at(position)],
         // The record is still the same one: what moved are its columns.
-        id: row.id
+        id: row.id,
+        unit: row.unit
       );
     }
   }

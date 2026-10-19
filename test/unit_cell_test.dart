@@ -43,7 +43,9 @@ Future<void> _cell(
   required TableFieldType type,
   required String value,
   String unit = "",
-  ValueChanged<BuildContext>? onPickUnit
+  ValueChanged<BuildContext>? onPickUnit,
+  ValueChanged<BuildContext>? onTake,
+  ValueChanged<BuildContext>? onPut
 }) async {
   await tester.pumpWidget(ChangeNotifierProvider<BusinessService>(
     create: (_) => BusinessService(),
@@ -82,7 +84,9 @@ Future<void> _cell(
                   row: 0,
                   column: 0,
                   columnKey: "col_0",
-                  onPickUnit: onPickUnit
+                  onPickUnit: onPickUnit,
+                  onTake: onTake,
+                  onPut: onPut
                 )
               )
             ))
@@ -209,6 +213,22 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.straighten));
       expect(opened, 1);
+    });
+
+    testWidgets("a record's stock is moved from its − and +", (tester) async {
+      final moved = <String>[];
+      await _cell(
+        tester,
+        type: TableFieldType.stock,
+        value: "",
+        onTake: (_) => moved.add("take"),
+        onPut: (_) => moved.add("put")
+      );
+
+      // Even empty: a stock nobody counted yet is counted in from its +.
+      await tester.tap(find.text("+"));
+      await tester.tap(find.text("−"));
+      expect(moved, ["put", "take"]);
     });
 
     testWidgets('what is not a number carries no symbol', (tester) async {

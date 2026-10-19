@@ -215,7 +215,8 @@ class SummaryProductRow extends StatelessWidget {
       stock: stock,
       reserved: reserved,
       product: _name,
-      currency: currency
+      currency: currency,
+      unit: row.unit
     );
   }
 }

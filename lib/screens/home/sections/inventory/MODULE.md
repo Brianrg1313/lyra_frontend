@@ -32,7 +32,7 @@ edit_table_details table_settings stock_movement made_product`) + `modals/shared
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
 - `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched); on a made table (with `supply_chain.recipes`) the photo opens what the record consumes (`showRecipePanel`), and one made to order's stock is what its supplies allow, no stepper; a catalog row opens no recipe.
 - `stock_summary/summary_header.dart` — `SummaryHeader` (the stock titled with its column's unit, «Stock (kg)»; a title click orders by its column: `summary_sort_title.dart` — `SummarySortTitle`); `stock_summary/summary_product_row.dart` — `SummaryProductRow`; `stock_summary/summary_line.dart` — `SummaryLine`.
-- `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement`; the stock figure opens `showStockHistory` (`inventory.history`).
+- `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement` (through `mover`, else the `StockSummaryService`; the supplies list's rows too); the stock figure opens `showStockHistory` (`inventory.history`), with the product's own `unit` attached.
 - `stock_summary/summary_value.dart` — `SummaryValue`; `summary_number.dart` — `SummaryNumber`; `summary_picture.dart` — `SummaryPicture`.
 
 ## transfers/ — stock between branches (`/home/inventory/transfers`, cloud only)
@@ -62,7 +62,7 @@ from 0. The last column is a *free column*: typing a title creates a field.
 - `cell_editor.dart` — `CellEditor`: active cell editor (raw `TextField` on purpose: inline grid editor, not a form field).
 - `column_drag.dart` — `ColumnDrag`: carried column, drop line; `column_drag_ghost.dart` — `ColumnDragGhost`.
 - `cells/_cells.dart` — dispatch by `TableFieldType`; `boolean_cell` (switch, a tap flips it) `date_cell` `image_cell` `listed_cell`
-  (`OPTIONS`; `CATEGORIES`/`SIZES` are ticked in core's `showCheckMenu`) `price_cell` `sku_cell` `unit_cell` (number + its unit/percent attached, `30l`; a measure or stock without one counts units, `5u`; its ruler button, a measure's or a stock's, changes the column's unit; a stock asks first while its table has rows).
+  (`OPTIONS`; `CATEGORIES`/`SIZES` are ticked in core's `showCheckMenu`) `price_cell` `sku_cell` `unit_cell` (number + its unit/percent attached, `30l`; a measure or stock without one counts units, `5u`; its ruler button changes a measure's column unit, a record's stock its product's own (`inventory.units`, else the column's) and the field row's stock the column's default, a stock asking first while it has figures; a record's stock has the summary's − and + at its sides).
 - `state/sheet_controller.dart` — `SheetController`: hub — `cursor drafts hover dates drag columns`,
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
   `uploading`, editor, serialized write queues (columns, rows), the table's `kind`. Its writes are `part`s in `state/controller/`, extensions on it

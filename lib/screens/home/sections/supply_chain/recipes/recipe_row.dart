@@ -5,9 +5,13 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/kitchen/recipe_availability_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
+import 'package:app/services/stock/movements/stock_mover.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_layout.dart';
+import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_stepper.dart';
 import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
+import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart';
 
 /// One product of the recipes tab: its name, how it is made, and in one line what it makes now
 /// («3 left — because of the bacon», «12 on the shelf · supplies for 200 more (wick)»). Paused
@@ -15,15 +19,20 @@ import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
 ///
 /// The strip on its left is the menu cards' traffic light ([recipeLevelColor]), so a list of
 /// preparations is scanned for what runs short without reading; a supply bought ready has no
-/// light (nothing is made of it) and its stock stands at the right edge, where figures line up.
+/// light (nothing is made of it) and its stock stands at the right edge, where figures line up,
+/// between the stock summary's − and + ([SummaryStepper]) when there is a [mover]: counting a
+/// delivery in is done from the list, not by opening each supply.
 class RecipeRow extends StatelessWidget {
-  const RecipeRow({super.key, required this.product, required this.availability, required this.onTap});
+  const RecipeRow({super.key, required this.product, required this.availability, required this.onTap, this.mover});
 
   final KitchenProduct product;
 
   /// `null`: no recipe.
   final RecipeAvailability? availability;
   final void Function() onTap;
+
+  /// What its − and + move the supply through; without one the stock is only read.
+  final StockMover? mover;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +80,22 @@ class RecipeRow extends StatelessWidget {
         )),
         if (made == null && stock != null) ...[
           SizedBox(width: AppSize.spaceS),
-          TextMedium(kitchenQty(context, stock, unit: product.unit), bold: true, textAlign: TextAlign.end)
+          if (mover == null)
+            TextMedium(kitchenQty(context, stock, unit: product.unit), bold: true, textAlign: TextAlign.end)
+          else
+            SizedBox(
+              width: SummaryLayout.numberWidth * 1.3,
+              child: SummaryStepper(
+                productId: product.id,
+                counter: StockCounter.stock,
+                stock: stock,
+                // The list does not read what is set aside; the backend caps it anyway.
+                reserved: 0,
+                product: product.label,
+                unit: product.unit,
+                mover: mover
+              )
+            )
         ],
         SizedBox(width: AppSize.spaceS),
         Icon(CI.arrow_right, size: AppSize.text, color: scheme.text.secondary)

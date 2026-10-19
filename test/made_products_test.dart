@@ -150,6 +150,26 @@ void main() {
       expect(unitOf(page(stockUnit: "kg", unitColumn: true), "bread"), "pieza");
     });
 
+    test("a product's own unit beats every column's", () {
+      // A Pepsi among supplies weighed in kg: counted in units, not grams.
+      const page = StockSummaryPage(
+        table: "s",
+        columns: [
+          StockSummaryColumn(key: "f-name", name: "Name"),
+          StockSummaryColumn(key: StockSummaryColumn.stockKey, unit: "kg", fixed: true)
+        ],
+        rows: [
+          StockSummaryRow(id: "pepsi", values: {"f-name": "Pepsi", "stock": 600, "unit": "u"}),
+          StockSummaryRow(id: "meat", values: {"f-name": "Meat", "stock": 30, "unit": null})
+        ]
+      );
+
+      final products = KitchenProduct.fromSummary(page, supplies: true);
+
+      expect(products.first.unit, "u");
+      expect(products.last.unit, "kg");
+    });
+
     test("anything else is written only in its own unit", () {
       expect(kitchenUnitsFor("slice"), const [KitchenUnit("slice", 1)]);
       expect(kitchenUnitsFor(""), const [KitchenUnit("", 1)]);

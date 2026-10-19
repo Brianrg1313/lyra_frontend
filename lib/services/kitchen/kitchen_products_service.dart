@@ -1,11 +1,16 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
+import 'package:app/services/kitchen/presentation_model.dart';
 import 'package:app/services/kitchen/recipe_availability_model.dart';
 import 'package:app/services/kitchen/recipe_measure.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
+import 'package:app/services/stock/movements/stock_mover.dart';
+import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
@@ -29,7 +34,10 @@ enum KitchenProductsStatus { idle, loading, ready, empty, error }
 /// Owned by the supply chain section (a business or branch switch remounts it). Live: a
 /// `stock/changed` with `composite: true` rewrites a dish's [availability] (a supply was spent,
 /// a recipe edited, a dish paused); any other one, a supply's stock.
-class KitchenProductsService extends ChangeNotifier {
+///
+/// Its rows' − and + move a supply through it ([StockMover]): the balance answered is written
+/// in the row, before the notice arrives.
+class KitchenProductsService extends ChangeNotifier implements StockMover {
   KitchenProductsService({InventorySource? inventory, StockSource? stock, RecipeMeasure? measure, bool listen = true})
     : _inventory = inventory,
       _stock = stock,
@@ -230,7 +238,12 @@ class KitchenProductsService extends ChangeNotifier {
       return;
     }
 
-    final index = _products.indexWhere((product) => product.id == notice.productId);
+    _writeStock(notice.productId, notice.exact);
+  }
+
+  /// Writes [productId]'s stock in its row, and a batch's shelf with it (its own stock).
+  void _writeStock(String productId, double stock) {
+    final index = _products.indexWhere((product) => product.id == productId);
     if (index < 0) return;
 
     final product = _products[index];
@@ -239,18 +252,51 @@ class KitchenProductsService extends ChangeNotifier {
       tableId: product.tableId,
       name: product.name,
       unit: product.unit,
-      stock: notice.exact,
+      stock: stock,
       supplies: product.supplies,
       made: product.made
     );
 
-    // A batch's shelf is its own stock: its figure follows.
-    final batch = _availability[notice.productId];
+    final batch = _availability[productId];
     if (batch != null) {
-      _availability = {..._availability, notice.productId: batch.withAvailable(notice.exact)};
+      _availability = {..._availability, productId: batch.withAvailable(stock)};
     }
 
     _notify();
+  }
+
+  /// This tab lists supplies only.
+  @override
+  bool get supplies => true;
+
+  @override
+  Future<bool> move(BuildContext context, {required String productId, required StockMovement movement}) async {
+    final table = _table?.id ?? "";
+    if (table.isEmpty || productId.isEmpty) return false;
+
+    try {
+      final balance = await _summary.move(movement, tableId: table, productId: productId);
+      _writeStock(productId, balance.available * 1.0);
+      return true;
+    } catch (error) {
+      if (kDebugMode) print("kitchen stockMovement failed: $error");
+
+      if (context.mounted) {
+        FloatFlag.of(context).fromError(error is Map && error.isNotEmpty ? error : {"message": error.toString()});
+      }
+
+      return false;
+    }
+  }
+
+  @override
+  Future<List<Presentation>> presentations(String productId) async {
+    try {
+      return await _summary.presentations(productId);
+    } catch (error) {
+      if (kDebugMode) print("presentations failed: $error");
+      return const [];
+    }
   }
 
   /// Seeds the list, for tests.

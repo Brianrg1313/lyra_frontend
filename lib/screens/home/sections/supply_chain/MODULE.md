@@ -30,7 +30,7 @@ and provided by `_supply_chain.dart`; `RecipeService` per opened product panel.
 
 ### recipes/
 - `_recipes.dart` — `RecipesTab` (titled «Supplies»; the key stays the permission area's): supplies table selector (inventory's `TableSelector`) + cells switch + search + create (`CreateTableModal(kind: TableKind.supplies)`), the list or the sheet (inventory's `TableViewSection`, where supplies are written; a table with no rows opens on it), more; none → «Create supplies table»; a row opens `showRecipePanel`, then remeasures it.
-- `recipe_row.dart` — `RecipeRow` (traffic-light strip, name, mode tag, 86 tag, what it makes now; a bought supply's stock at the right), `recipeAvailabilityLine` («3 left — because of the bacon»), `recipeLevelColor`, `RecipeTag`.
+- `recipe_row.dart` — `RecipeRow` (traffic-light strip, name, mode tag, 86 tag, what it makes now; a bought supply's stock at the right, between the summary's − and + — `SummaryStepper` through `KitchenProductsService`), `recipeAvailabilityLine` («3 left — because of the bacon»), `recipeLevelColor`, `RecipeTag`.
 
 ### modifiers/
 - `_modifiers.dart` — `ModifiersTab`: groups in order, create (`supply_chain.modifiers.edit`), a row opens `showModifierGroupForm` and writes its draft.

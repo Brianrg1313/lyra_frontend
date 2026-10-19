@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/catalog/currency_model.dart';
+import 'package:app/services/stock/movements/stock_mover.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
 
 // WIDGETS
@@ -39,6 +40,8 @@ import './summary_number.dart';
 ///
 /// The stock figure itself opens what moved it (`showStockHistory`), where the ledger is read
 /// back (`inventory.history`): the number someone doubts is the one they touch.
+///
+/// The supplies list draws it too, moving through its own service ([mover]).
 class SummaryStepper extends StatelessWidget {
   const SummaryStepper({
     super.key,
@@ -47,7 +50,9 @@ class SummaryStepper extends StatelessWidget {
     required this.stock,
     required this.reserved,
     this.product = "",
-    this.currency
+    this.currency,
+    this.unit = "",
+    this.mover
   });
 
   /// The row's record, which is the product the movement is written against.
@@ -66,6 +71,13 @@ class SummaryStepper extends StatelessWidget {
   /// titles itself with and writes a purchase's cost in.
   final String product;
   final CurrencyModel? currency;
+
+  /// What the product's stock is counted in when it is not its column's ([SummaryNumber.unit]).
+  final String unit;
+
+  /// What the movement is written through; without one, the stock summary's
+  /// ([StockSummaryService]).
+  final StockMover? mover;
 
   num get _value => counter == StockCounter.stock ? stock : reserved;
 
@@ -99,7 +111,8 @@ class SummaryStepper extends StatelessWidget {
       // Only stock alerts on zero: it's what can't be sold. Zero reserved is
       // normal in almost all products.
       alert: counter == StockCounter.stock,
-      align: TextAlign.center
+      align: TextAlign.center,
+      unit: counter == StockCounter.stock ? unit : ""
     );
 
     final currency = this.currency;
@@ -120,7 +133,7 @@ class SummaryStepper extends StatelessWidget {
   void _open(BuildContext context, StockDirection direction) =>
     showStockMovement(
       context,
-      service: context.read<StockSummaryService>(),
+      service: mover ?? context.read<StockSummaryService>(),
       productId: productId,
       counter: counter,
       direction: direction,
