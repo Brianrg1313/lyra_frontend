@@ -167,7 +167,8 @@ class SheetStyle {
   }) => _cells[switch (fill) {
     SheetRowFill.plain => row.isOdd ? 2 : 0,
     SheetRowFill.over => 4,
-    SheetRowFill.selected => 6
+    SheetRowFill.selected => 6,
+    SheetRowFill.range => 8
   } + (selected ? 1 : 0)];
 
   /// Fill of the frame of a cell that looks like a control (the list one).
@@ -196,7 +197,7 @@ class SheetStyle {
     switch (fill) {
       SheetRowFill.plain => _gutter,
       SheetRowFill.over => _gutterOver,
-      SheetRowFill.selected => _gutterSelected
+      SheetRowFill.selected || SheetRowFill.range => _gutterSelected
     };
 
   /// The zebra: even rows go over `table.background`, the background of any
@@ -206,8 +207,8 @@ class SheetStyle {
   /// It alternates by **position** and nothing more: the records and the blank
   /// rows below are one continuous grid, so the band keeps going and does not
   /// cut off where the loaded data ends.
-  /// The four backgrounds a row can have —the two zebra bands, the one the
-  /// mouse is over, and the cursor's— each with its two borders. The order is
+  /// The five backgrounds a cell can have —the two zebra bands, the one the
+  /// mouse is over, the cursor's row and the range's— each with its two borders. The order is
   /// the one [cell] builds: in pairs, first the grid border and then the
   /// cursor's.
   late final List<BoxDecoration> _cells = [
@@ -218,8 +219,17 @@ class SheetStyle {
     BoxDecoration(color: scheme.table.over, border: _line),
     BoxDecoration(color: scheme.table.over, border: _selected),
     BoxDecoration(color: scheme.table.rowSelected, border: _line),
-    BoxDecoration(color: scheme.table.rowSelected, border: _selected)
+    BoxDecoration(color: scheme.table.rowSelected, border: _selected),
+    BoxDecoration(color: _range, border: _line),
+    BoxDecoration(color: _range, border: _selected)
   ];
+
+  /// The range's fill: the cursor's color veiled over a row's, so the cells read as one block
+  /// marked the way the cursor is, in both themes.
+  late final Color _range = Color.alphaBlend(
+    scheme.table.currentCell.withValues(alpha: 0.16),
+    scheme.table.background
+  );
 
   late final BoxDecoration _field =
     BoxDecoration(color: headerFill, border: _line);

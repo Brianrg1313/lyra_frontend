@@ -15,5 +15,9 @@ enum SheetRowFill {
   over,
 
   /// The row where the cursor is (`table.rowSelected`).
-  selected
+  selected,
+
+  /// A cell inside the range selected together ([SheetSelection]). It is the cell's and not
+  /// its row's, and it beats the other three: the range is what the next action acts on.
+  range
 }

@@ -109,7 +109,7 @@ extension SheetOptionPicks on SheetController {
     if (_disposed) return;
     if (fieldLabelsValue(checked) == fieldLabelsValue(held)) return;
 
-    _writeOption(cell, fieldLabelsValue(checked));
+    _writeOption(cell, fieldLabelsValue(checked), before: fieldLabelsValue(held));
   }
 
   /// The options offered in a single-tag cell's dropdown.

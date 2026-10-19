@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,6 +31,7 @@ import 'package:app/screens/modals/shared/image_viewer/_image_viewer.dart';
 import 'package:app/screens/home/sections/inventory/table_view/date_menu.dart';
 
 import './field_edit.dart';
+import './sheet_actions.dart';
 import './free_column.dart';
 import './sheet_cell.dart';
 import './sheet_columns.dart';
@@ -38,9 +40,11 @@ import './sheet_dates.dart';
 import './sheet_draft.dart';
 import './sheet_drafts.dart';
 import './sheet_drag.dart';
+import './sheet_history.dart';
 import './sheet_hover.dart';
 import './sheet_keys.dart';
 import './sheet_metrics.dart';
+import './sheet_selection.dart';
 import './sheet_widths.dart';
 
 part 'controller/sheet_width_edits.dart';
@@ -51,6 +55,8 @@ part 'controller/sheet_option_picks.dart';
 part 'controller/sheet_image_picks.dart';
 part 'controller/sheet_stock_moves.dart';
 part 'controller/sheet_cell_picks.dart';
+part 'controller/sheet_undo.dart';
+part 'controller/sheet_ranges.dart';
 
 /// Strip at the sides of the spreadsheet in which, while dragging a column,
 /// the band starts scrolling on its own.
@@ -88,7 +94,7 @@ const String _kImageRemove = "remove";
 ///
 /// The class keeps the state, the cursor and the reactions; its writes live in
 /// `controller/`, one part per kind (widths, column drag, rows, fields, options,
-/// images). They are extensions declared in this library, so they reach its
+/// images, the history, the range and its menu). They are extensions declared in this library, so they reach its
 /// private state without exposing it, and callers import this file alone.
 class SheetController {
   SheetController({
@@ -146,6 +152,12 @@ class SheetController {
   /// The column being dragged out of place, while it lasts. The grid doesn't
   /// listen to it: only the ghost drawn on top does.
   final SheetDrag drag = SheetDrag();
+
+  /// The cells selected together with the cursor's ([SheetRanges]).
+  final SheetSelection selection = SheetSelection();
+
+  /// What was corrected, for Ctrl+Z and Ctrl+Y ([SheetUndo]).
+  final SheetHistory history = SheetHistory();
 
   late final SheetColumns columns;
 
@@ -269,8 +281,12 @@ class SheetController {
   /// [anchor] is for, which is the context of the tapped cell. Without it —a
   /// tap that doesn't pass it— the cell stays selected and nothing else,
   /// which is the same thing the keyboard does.
+  ///
+  /// With Shift held it stretches the range from the cursor to it instead ([stretchTo]).
   void tap(int row, int column, {BuildContext? anchor}) {
     final cell = SheetCell(row, column);
+
+    if (HardwareKeyboard.instance.isShiftPressed && stretchTo(cell)) return;
 
     if (!canEdit(row, column)) {
       select(cell);
@@ -309,6 +325,7 @@ class SheetController {
   void select(SheetCell cell) {
     close();
     _leaveRow(cell.row);
+    selection.clear();
     cursor.move(cell);
 
     grid.requestFocus();
@@ -332,6 +349,7 @@ class SheetController {
 
     close();
     _leaveRow(cell.row);
+    selection.clear();
 
     final text = valueOf(cell);
     _initial = text;
@@ -487,6 +505,7 @@ class SheetController {
   /// ([_onFocus]).
   void reset() {
     cursor.clear();
+    selection.clear();
 
     _extraRows = 0;
     _onRows();
@@ -518,6 +537,41 @@ class SheetController {
       return KeyEventResult.ignored;
     }
 
+    final keys = HardwareKeyboard.instance;
+    final command = SheetCommand.of(
+      event.logicalKey,
+      control: keys.isControlPressed || keys.isMetaPressed,
+      shift: keys.isShiftPressed,
+      writing: _writing
+    );
+
+    switch (command) {
+      // What is being typed is taken back first; once the cell holds what it opened with,
+      // the history is.
+      case SheetCommand.undo when _writing:
+        cancel();
+        return KeyEventResult.handled;
+      case SheetCommand.undo:
+        undo();
+        return KeyEventResult.handled;
+      case SheetCommand.redo:
+        redo();
+        return KeyEventResult.handled;
+      case final SheetCommand stretch when stretch.stretch != null:
+        final by = stretch.stretch!;
+        if (stretchBy(rows: by.rows, columns: by.columns)) return KeyEventResult.handled;
+      default:
+        break;
+    }
+
+    // Escape lets go of a range before it closes whatever is open above.
+    if (event.logicalKey == LogicalKeyboardKey.escape &&
+        !cursor.editing &&
+        selection.range != null) {
+      selection.clear();
+      return KeyEventResult.handled;
+    }
+
     // Without a chosen cell there's nothing to move: the keys continue their way
     // (Tab goes back to tabbing through the screen, Escape closes whatever is
     // open).
@@ -526,7 +580,7 @@ class SheetController {
 
     final intent = SheetKeyIntent.of(
       event.logicalKey,
-      shift: HardwareKeyboard.instance.isShiftPressed,
+      shift: keys.isShiftPressed,
       editing: cursor.editing
     );
 
@@ -542,6 +596,9 @@ class SheetController {
 
     return KeyEventResult.handled;
   }
+
+  /// Whether the open cell holds something typed that it didn't open with.
+  bool get _writing => cursor.editing && (editor?.text ?? _initial) != _initial;
 
   /// Moves the cursor, dragging the editor along. Going past the last row adds
   /// another blank one: the spreadsheet doesn't end.
@@ -802,6 +859,8 @@ class SheetController {
     columns.dispose();
     drafts.dispose();
     cursor.dispose();
+    selection.dispose();
+    history.dispose();
     hover.dispose();
     dates.dispose();
   }

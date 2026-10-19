@@ -19,6 +19,7 @@ import 'package:app/screens/home/sections/inventory/table_view/state/sheet_curso
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_dates.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_drafts.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_hover.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_selection.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_metrics.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
 
@@ -333,6 +334,7 @@ class _TableViewSectionState extends State<TableViewSection> {
       ChangeNotifierProvider<SheetColumns>.value(value: _controller.columns),
       ChangeNotifierProvider<SheetDrafts>.value(value: _controller.drafts),
       ChangeNotifierProvider<SheetHover>.value(value: _controller.hover),
+      ChangeNotifierProvider<SheetSelection>.value(value: _controller.selection),
       ChangeNotifierProvider<SheetDates>.value(value: _controller.dates)
     ],
     child: Surface(child: Column(children: [

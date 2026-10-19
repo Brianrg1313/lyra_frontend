@@ -6072,6 +6072,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "session_expired": MessageLookupByLibrary.simpleMessage(
       "Your session ended. Sign in again to continue.",
     ),
+    "sheet_action_redo": MessageLookupByLibrary.simpleMessage("Redo"),
+    "sheet_action_undo": MessageLookupByLibrary.simpleMessage("Undo"),
+    "sheet_history_gone": MessageLookupByLibrary.simpleMessage(
+      "That change can\'t be undone here anymore: its row or its column left the table.",
+    ),
     "shipment_address": MessageLookupByLibrary.simpleMessage("Address"),
     "shipment_address_hint": MessageLookupByLibrary.simpleMessage(
       "Where it goes",

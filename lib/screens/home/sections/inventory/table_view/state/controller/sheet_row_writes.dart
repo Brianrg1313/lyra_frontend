@@ -135,8 +135,12 @@ extension SheetRowWrites on SheetController {
   /// there's nothing for them to step on between them. The change is already
   /// seen in the spreadsheet; if it doesn't go through, the service gives the
   /// cell back what it had and says so.
+  ///
+  /// What it corrects is remembered for Ctrl+Z ([SheetUndo]); a write of several cells that
+  /// is one step goes inside `history.group`, each with its own [before].
   void finishRecord(SheetCell cell, String text, {String? before}) {
-    if (text == (before ?? _initial)) return;
+    final was = before ?? _initial;
+    if (text == was) return;
 
     if (movesStock(cell)) {
       unawaited(correctStock(cell, text));
@@ -146,6 +150,8 @@ extension SheetRowWrites on SheetController {
     // Behind the fields are the free columns: there's nowhere to save there.
     final field = columns.fieldAt(cell.column);
     if (field == null || field.id.isEmpty) return;
+
+    if (TableFieldType.from(field.type) != TableFieldType.image) _remember(cell, was, text);
 
     unawaited(service.editRecord(
       _context(),

@@ -166,7 +166,10 @@ extension SheetImagePicks on SheetController {
   /// Saves the chosen option in the cell, through the same path as the text
   /// that's written: to the draft if the row is still being put together, and
   /// as a correction of the record if it's already a row of the table.
-  void _writeOption(SheetCell cell, String value) {
+  ///
+  /// [before] is what the cell held written as it is sent, when its text isn't that: a
+  /// multi-tag cell holds a list.
+  void _writeOption(SheetCell cell, String value, {String? before}) {
     final index = draftIndex(cell.row);
 
     if (index >= 0) {
@@ -174,7 +177,7 @@ extension SheetImagePicks on SheetController {
       return;
     }
 
-    finishRecord(cell, value, before: valueOf(cell));
+    finishRecord(cell, value, before: before ?? valueOf(cell));
   }
 
   /// Builds a random SKU and saves it in [cell].

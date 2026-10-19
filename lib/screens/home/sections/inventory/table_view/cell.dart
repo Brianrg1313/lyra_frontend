@@ -18,6 +18,7 @@ import 'package:app/screens/home/sections/inventory/table_view/state/sheet_contr
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_cursor.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_draft.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_hover.dart';
+import 'package:app/screens/home/sections/inventory/table_view/state/sheet_selection.dart';
 import 'package:app/screens/home/sections/inventory/table_view/state/sheet_widths.dart';
 
 import './cell_editor.dart';
@@ -109,6 +110,12 @@ class SheetCellView extends StatelessWidget {
     // and rebuilds the two rows that changed.
     final hovered = context.select<SheetHover, bool>(
       (hover) => hover.at(row)
+    );
+
+    // And whether it is inside the range selected together: one boolean, so stretching the
+    // range rebuilds the cells that came in or went out.
+    final ranged = context.select<SheetSelection, bool>(
+      (selection) => selection.contains(row, position)
     );
 
     // The type, if the column is already a field, and the symbol with which its
@@ -233,6 +240,8 @@ class SheetCellView extends StatelessWidget {
           // purpose: the first render that hangs from it is the whole column's
           // box, which is where the dropdown has to hang from.
           onTap: () => controller.tap(row, position, anchor: context),
+          // The cells' menu, over the range when the cell is in it (see [SheetRanges.openMenu]).
+          onSecondaryTap: () => controller.openMenu(SheetCell(row, position), context),
           child: Container(
             alignment: type.alignment == TextAlign.right
               ? Alignment.centerRight
@@ -247,11 +256,13 @@ class SheetCellView extends StatelessWidget {
               selected: state != SheetCellState.idle,
               // The cursor beats the mouse: the row where you are standing shows
               // as such even if the pointer is passing over it.
-              fill: inCursorRow
-                ? SheetRowFill.selected
-                : hovered
-                  ? SheetRowFill.over
-                  : SheetRowFill.plain
+              fill: ranged
+                ? SheetRowFill.range
+                : inCursorRow
+                  ? SheetRowFill.selected
+                  : hovered
+                    ? SheetRowFill.over
+                    : SheetRowFill.plain
             ),
             child: content
           )

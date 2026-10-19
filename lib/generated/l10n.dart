@@ -9909,6 +9909,26 @@ class S {
     );
   }
 
+  /// `Undo`
+  String get sheet_action_undo {
+    return Intl.message('Undo', name: 'sheet_action_undo', desc: '', args: []);
+  }
+
+  /// `Redo`
+  String get sheet_action_redo {
+    return Intl.message('Redo', name: 'sheet_action_redo', desc: '', args: []);
+  }
+
+  /// `That change can't be undone here anymore: its row or its column left the table.`
+  String get sheet_history_gone {
+    return Intl.message(
+      'That change can\'t be undone here anymore: its row or its column left the table.',
+      name: 'sheet_history_gone',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `u`
   String get product_table_view_unit_count_symbol {
     return Intl.message(

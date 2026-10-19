@@ -243,6 +243,17 @@ class TableViewService extends ChangeNotifier {
   /// The record of row [index], or `null` if that row has not been read yet.
   TableRowModel? rowAt(int index) => _rows[index];
 
+  /// Where record [id] is drawn now, or `null` when its page isn't read (a search or a reload
+  /// left it out). What remembers a record across both keeps its id, not its row.
+  int? rowOf(String id) {
+    if (id.isEmpty) return null;
+
+    for (final entry in _rows.entries) {
+      if (entry.value.id == id) return entry.key;
+    }
+    return null;
+  }
+
   /// Makes sure the chunks covering the rows from [first] to [last] are
   /// requested.
   ///

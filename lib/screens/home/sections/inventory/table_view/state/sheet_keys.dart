@@ -109,3 +109,50 @@ SheetCell sheetDestination({
 
   return SheetCell(row, column);
 }
+
+/// What a key asks of the sheet beyond moving its cursor: the history and the range.
+///
+/// While something is being typed ([writing]: the cell's editor holds what it didn't open
+/// with) the history waits: Ctrl+Z takes back what was typed (the cell's [SheetKeyIntent.cancel]),
+/// Ctrl+Y belongs to the text, and Shift+arrows are its own moves (Shift+up and down keep
+/// going up and down, like Shift+Enter).
+enum SheetCommand {
+  undo,
+  redo,
+  stretchUp,
+  stretchDown,
+  stretchLeft,
+  stretchRight;
+
+  /// How much it stretches the range, or `null` if it doesn't.
+  ({int rows, int columns})? get stretch => switch (this) {
+    stretchUp => (rows: -1, columns: 0),
+    stretchDown => (rows: 1, columns: 0),
+    stretchLeft => (rows: 0, columns: -1),
+    stretchRight => (rows: 0, columns: 1),
+    _ => null
+  };
+
+  /// What that key asks, or `null` if it isn't one of these. [control] is Ctrl, or ⌘ on a Mac.
+  static SheetCommand? of(
+    LogicalKeyboardKey key, {
+    required bool control,
+    required bool shift,
+    required bool writing
+  }) {
+    if (control) {
+      if (key == LogicalKeyboardKey.keyZ) return shift ? (writing ? null : redo) : undo;
+      if (key == LogicalKeyboardKey.keyY) return writing ? null : redo;
+      return null;
+    }
+
+    if (!shift || writing) return null;
+
+    if (key == LogicalKeyboardKey.arrowUp) return stretchUp;
+    if (key == LogicalKeyboardKey.arrowDown) return stretchDown;
+    if (key == LogicalKeyboardKey.arrowLeft) return stretchLeft;
+    if (key == LogicalKeyboardKey.arrowRight) return stretchRight;
+
+    return null;
+  }
+}

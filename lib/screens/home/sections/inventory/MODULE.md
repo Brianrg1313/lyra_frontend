@@ -67,14 +67,18 @@ from 0. The last column is a *free column*: typing a title creates a field.
   three `ScrollController`s (`vGutter`/`vBody` linked, `horizontal`), grid `FocusNode`, `usedRows`,
   `uploading`, editor, serialized write queues (columns, rows), the table's `kind`. Its writes are `part`s in `state/controller/`, extensions on it
   (`SheetWidthEdits` `SheetColumnDrag` `SheetRowWrites` `SheetFieldWrites` `SheetOptionPicks` `SheetImagePicks` `SheetStockMoves`
-  `SheetCellPicks`: a yes/no flipped, a date's calendar from its button, a measure column's unit, picked or typed after a number on leaving the cell): import the controller alone. A record's `STOCK` cell is typed like any cell and leaving it sends a stock correction (`correctStock` → `TableStockMover.correct`); its − and + open `showStockMovement` (`stock`: `TableStockMover`).
+  `SheetCellPicks`: a yes/no flipped, a date's calendar from its button, a measure column's unit, picked or typed after a number on leaving the cell;
+  `SheetUndo`: Ctrl+Z / Ctrl+Y over a record's corrections; `SheetRanges`: the range stretched by Shift+click / Shift+arrows and the cells' menu on right click): import the controller alone. A record's `STOCK` cell is typed like any cell and leaving it sends a stock correction (`correctStock` → `TableStockMover.correct`); its − and + open `showStockMovement` (`stock`: `TableStockMover`).
 - `state/sheet_columns.dart` — `SheetColumns`; `state/sheet_column.dart` — `SheetColumn`; `state/sheet_shape.dart` — `SheetShape`.
 - `state/sheet_cursor.dart` — `SheetCursor`; `state/sheet_cell.dart` — `SheetCell`, `SheetCellState`, `kFieldsRow`.
 - `state/sheet_drafts.dart` — `SheetDrafts`: unsaved rows; `state/sheet_draft.dart` — `SheetDraft`.
 - `state/sheet_widths.dart` — `SheetWidths` (a never-sized yes / no opens at `compactWidth`); `state/sheet_metrics.dart` — `SheetMetrics` (row height, visible range, scroll-to-cell).
 - `state/sheet_order.dart` — `fieldsInOrder`, `slotsOf`, `movedOrder`, `dropEdgeAt`.
 - `state/sheet_drag.dart` — `SheetDrag`; `state/sheet_hover.dart` — `SheetHover`; `state/sheet_dates.dart` — `SheetDates`.
-- `state/sheet_keys.dart` — `SheetKeyIntent`.
+- `state/sheet_keys.dart` — `SheetKeyIntent` (cursor moves), `SheetCommand` (undo, redo, stretch the range).
+- `state/sheet_history.dart` — `SheetHistory`, `SheetChange`: undo/redo steps as closures; `group` makes one step of several writes.
+- `state/sheet_selection.dart` — `SheetSelection`, `SheetRange`: the cells selected together beyond the cursor's (body rows only).
+- `state/sheet_actions.dart` — `SheetAction`, `SheetTarget`, `sheetActions`: **the cells' menu**, general actions (no `types`) then a type's (offered when every column of the target is one of its `types`); a new action is one entry here.
 - `state/free_column.dart` — `FreeColumn`: trailing column being named.
 - `state/field_edit.dart` — `FieldEdit.of({isField, current, text})` → `create | rename | delete | none`: **the whole column-editing rule**.
 
@@ -104,5 +108,6 @@ they are written together in its form.
 
 - Never paint a sheet cell from `ThemeColor` — use `SheetTheme.of(context)`.
 - Writes go through `SheetController`'s queues, never from a widget, so edits stay ordered.
+- A record's cell correction goes through `finishRecord`, which remembers it for Ctrl+Z; an action writing several cells calls it inside `history.group`, with each cell's `before`.
 - New field type: `TableFieldType` → cell in `cells/` → register in `_cells.dart` → extend
   `table_field_request.dart` if its payload differs.
