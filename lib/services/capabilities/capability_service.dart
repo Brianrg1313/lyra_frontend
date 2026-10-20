@@ -83,6 +83,7 @@ class CapabilityService extends ChangeNotifier {
     "inventory.units": _online,
     "inventory.recipes": _online,
     "inventory.modifiers": _online,
+    "inventory.kinds": _online,
     "menu": _online,
     "services": _online,
     "channels": _online,

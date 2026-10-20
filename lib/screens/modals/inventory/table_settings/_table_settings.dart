@@ -22,6 +22,7 @@ import 'agent_block.dart';
 import 'channels_block.dart';
 import 'columns_block.dart';
 import 'columns_table.dart';
+import 'kind_block.dart';
 import 'summary_block.dart';
 
 /// Opens [tableId] settings in the side panel.
@@ -389,9 +390,9 @@ class _Details extends StatelessWidget {
         : available;
 
       // A supplies table is never sold, so no agent reads it and no channel offers it
-      // (`cocina-frontend.md` §1): its blocks would configure nothing.
-      final supplies = context.read<TablesService>().tables
-        .any((table) => table.id == detail.id && table.kind == TableKind.supplies);
+      // (`cocina-frontend.md` §1): its blocks would configure nothing. Read off the detail,
+      // which a switch repaints at once (`TableKindBlock`)
+      final supplies = detail.kind == TableKind.supplies;
 
       return ScrollableWidget(
         showBar: false,
@@ -402,7 +403,13 @@ class _Details extends StatelessWidget {
             children: [
               SizedBox(width: column, child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [TableSummaryBlock(detail: detail)]
+                children: [
+                  TableSummaryBlock(detail: detail),
+                  // Products and supplies switch with their rows as they are; the
+                  // backend that carries the stock over is the cloud's
+                  if (detail.kind != TableKind.made && CapabilityService().shows("inventory.kinds"))
+                    TableKindBlock(detail: detail)
+                ]
               )),
               SizedBox(width: column, child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

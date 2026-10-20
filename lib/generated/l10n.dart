@@ -10289,10 +10289,10 @@ class S {
     );
   }
 
-  /// `Products`
+  /// `Products: sold`
   String get table_kind_catalog {
     return Intl.message(
-      'Products',
+      'Products: sold',
       name: 'table_kind_catalog',
       desc: '',
       args: [],
@@ -10309,10 +10309,10 @@ class S {
     );
   }
 
-  /// `Supplies`
+  /// `Supplies: not sold`
   String get table_kind_supplies {
     return Intl.message(
-      'Supplies',
+      'Supplies: not sold',
       name: 'table_kind_supplies',
       desc: '',
       args: [],
@@ -13571,6 +13571,111 @@ class S {
     return Intl.message(
       'Not available',
       name: 'table_settings_unavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold or used`
+  String get table_kind_title {
+    return Intl.message(
+      'Sold or used',
+      name: 'table_kind_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whether customers can buy what this table holds. Its rows and their stock stay as they are.`
+  String get table_kind_subtitle {
+    return Intl.message(
+      'Whether customers can buy what this table holds. Its rows and their stock stay as they are.',
+      name: 'table_kind_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sold`
+  String get table_kind_label {
+    return Intl.message('Sold', name: 'table_kind_label', desc: '', args: []);
+  }
+
+  /// `The register, the catalog and the AI offer them, counted in whole units.`
+  String get table_kind_catalog_hint {
+    return Intl.message(
+      'The register, the catalog and the AI offer them, counted in whole units.',
+      name: 'table_kind_catalog_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only recipes spend them, counted with up to six decimals.`
+  String get table_kind_supplies_hint {
+    return Intl.message(
+      'Only recipes spend them, counted with up to six decimals.',
+      name: 'table_kind_supplies_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn into supplies?`
+  String get table_kind_to_supplies_title {
+    return Intl.message(
+      'Turn into supplies?',
+      name: 'table_kind_to_supplies_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The products of {name} will stop being offered at the register, in the catalog and by the AI. They can still go into the menu's recipes, and their stock stays as it is.`
+  String table_kind_to_supplies_message(Object name) {
+    return Intl.message(
+      'The products of $name will stop being offered at the register, in the catalog and by the AI. They can still go into the menu\'s recipes, and their stock stays as it is.',
+      name: 'table_kind_to_supplies_message',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Turn into supplies`
+  String get table_kind_to_supplies {
+    return Intl.message(
+      'Turn into supplies',
+      name: 'table_kind_to_supplies',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start selling?`
+  String get table_kind_to_catalog_title {
+    return Intl.message(
+      'Start selling?',
+      name: 'table_kind_to_catalog_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The register, the catalog and the AI will offer what {name} holds, counted in whole units. Their stock stays as it is.`
+  String table_kind_to_catalog_message(Object name) {
+    return Intl.message(
+      'The register, the catalog and the AI will offer what $name holds, counted in whole units. Their stock stays as it is.',
+      name: 'table_kind_to_catalog_message',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Start selling`
+  String get table_kind_to_catalog {
+    return Intl.message(
+      'Start selling',
+      name: 'table_kind_to_catalog',
       desc: '',
       args: [],
     );

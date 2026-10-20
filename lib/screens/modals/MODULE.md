@@ -149,6 +149,7 @@ through `Navigator.pop(context, value)`.
 - `import_pictures/_import_pictures.dart` — `showImportPictures(context)`, `ImportPicturesModal` (side panel): reads `…/import/images/status`, re-read when the counters move; downloading (server / devices), file names missing (first 30 + count) with "choose a folder" (desktop) and "upload a .zip" (not web), failures with "try again" (`retry`).
 - `table_settings/_table_settings.dart` — `showTableSettings(context, tableId)`, `TableSettingsModal` (side panel over list or sheet).
 - `table_settings/summary_block.dart` — `TableSummaryBlock`, `TableDatesBlock`.
+- `table_settings/kind_block.dart` — `TableKindBlock`: «Sold» — a products table turned into supplies or back, asked first (`TableDetailService.switchKind`, the list rereads); never on a menu table, cloud only (`inventory.kinds`).
 - `table_settings/columns_block.dart` — `TableColumnsBlock`; `columns_table.dart` — `TableColumnsTable` (the agent
   visibility cell only where `channels` is shown; a price, measure or stock column's unit, the last two offering kg, g, l, ml).
 - `table_settings/agent_block.dart` — `TableAgentBlock`: what the model sees and can do. With the channels block, only

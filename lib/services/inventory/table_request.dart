@@ -126,12 +126,17 @@ Map<String, dynamic> deleteTableRequest({required String id}) => {"ID": id};
 ///
 /// It is the same `NAME` key as [editTableRequest] because it is the same datum in
 /// the same backend; what changes is that here it is not required.
+///
+/// [kind] switches an inventory table between products and supplies (whether it sells,
+/// `cocina-frontend.md` §2): the backend carries its stock over or refuses the whole body.
 Map<String, dynamic> editTableDetailsRequest({
   required String id,
   String? name,
-  String? description
+  String? description,
+  String? kind
 }) => {
   "ID": id,
   if (name != null) "NAME": name.trim(),
-  if (description != null) "DESCRIPTION": description.trim()
+  if (description != null) "DESCRIPTION": description.trim(),
+  "KIND": ?kind
 };

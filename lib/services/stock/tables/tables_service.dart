@@ -677,6 +677,11 @@ class TablesService extends ChangeNotifier {
     _reload();
   }
 
+  /// Rereads the list after something only the backend knows the outcome of
+  /// changed a table: a switch between products and supplies moves it to the
+  /// other group and may hand the main table on.
+  Future<void> reload() => _reload();
+
   /// Reloads the list if rereading it makes sense.
   ///
   /// Only when one is already loaded: if it's stale (`idle`) or was never

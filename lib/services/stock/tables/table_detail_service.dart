@@ -7,6 +7,7 @@ import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart';
@@ -207,6 +208,47 @@ class TableDetailService extends ChangeNotifier {
     notifyListeners();
 
     // See the note above: the change's date is set by the backend.
+    unawaited(refresh());
+
+    return true;
+  }
+
+  /// Switches the table between products and supplies —whether it sells—,
+  /// against `PUT /inventory/products/builder/details/` with `KIND`.
+  ///
+  /// The backend carries the table's stock to the other scale (38 units stay
+  /// 38) or refuses the whole switch while something stops it: units held or
+  /// on their way, a fraction going to products, a recipe, a product that
+  /// offers modifiers (`cocina-frontend.md` §2). The refusal is the floating
+  /// banner with its reason, and the panel stays as it was.
+  ///
+  /// The kind is painted when the write came back fine, never before: until
+  /// then nothing switched. [onSwitched] is the list's turn —the inventory
+  /// section groups its tables by kind and the main table may have moved—.
+  ///
+  /// Returns `true` if the table switched.
+  Future<bool> switchKind(
+    BuildContext context,
+    TableKind kind, {
+    Future<void> Function()? onSwitched
+  }) async {
+    if (_tableId.isEmpty || kind == TableKind.made || kind == _detail.kind) return false;
+
+    try {
+      await _source.editDetail(editTableDetailsRequest(id: _tableId, kind: kind.name));
+    } catch (error) {
+      if (kDebugMode) print("switchTableKind failed: $error");
+
+      if (context.mounted) _report(context, error);
+
+      return false;
+    }
+
+    _detail = _detail.withKind(kind);
+
+    notifyListeners();
+
+    unawaited(onSwitched?.call());
     unawaited(refresh());
 
     return true;

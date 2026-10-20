@@ -5,6 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/inventory/table_field_type.dart';
+import 'package:app/services/stock/tables/table_lite_model.dart';
 
 /// How much the AI model sees of a column.
 ///
@@ -449,6 +450,7 @@ class TableDetailModel {
     this.name = "",
     this.description = "",
     this.color = "",
+    this.kind = TableKind.catalog,
     this.date,
     this.updated,
     this.records,
@@ -471,6 +473,10 @@ class TableDetailModel {
   /// ARGB literal that identifies the table (`0xFF2196F3`), exactly as it
   /// travels to the backend. Empty if none came.
   final String color;
+
+  /// What its rows are. Products and supplies switch between each other
+  /// ([TableDetailService.switchKind]); a menu table never does.
+  final TableKind kind;
 
   /// When the table was created.
   final DateTime? date;
@@ -513,6 +519,7 @@ class TableDetailModel {
       name: name ?? this.name,
       description: description ?? this.description,
       color: color,
+      kind: kind,
       date: date,
       updated: updated,
       records: records,
@@ -545,6 +552,7 @@ class TableDetailModel {
       name: name,
       description: description,
       color: color,
+      kind: kind,
       date: date,
       updated: updated,
       records: records,
@@ -555,6 +563,23 @@ class TableDetailModel {
       fields: List<TableDetailFieldModel>.from(fields)..[index] = field
     );
   }
+
+  /// The same detail as another kind of table, once the backend switched it.
+  TableDetailModel withKind(TableKind kind) => TableDetailModel(
+    id: id,
+    name: name,
+    description: description,
+    color: color,
+    kind: kind,
+    date: date,
+    updated: updated,
+    records: records,
+    lastRecord: lastRecord,
+    columns: columns,
+    agent: agent,
+    channels: channels,
+    fields: fields
+  );
 
   /// The table's color already parsed, or `null` if none came or it can't be
   /// read: it's decoration and the screen looks the same without it.
@@ -586,6 +611,7 @@ class TableDetailModel {
       name: (data["name"] ?? data["NAME"] ?? "").toString(),
       description: (data["description"] ?? data["DESCRIPTION"] ?? "").toString(),
       color: (data["color"] ?? data["COLOR"] ?? "").toString(),
+      kind: TableKind.from(data["kind"] ?? data["KIND"]),
       date: _date(data["date"] ?? data["DATE"]),
       updated: _date(data["updated"] ?? data["UPDATED"]),
       // The whole object being `null` means "couldn't be counted"; an
