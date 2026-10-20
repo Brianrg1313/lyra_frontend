@@ -44,8 +44,8 @@ typedef MadeGroupChoice = ({ModifierGroup group, bool edited});
 
 /// What the form of a made product saves: its columns' values by FIELD_ID (the name, the price
 /// and the description by their own, since their columns may not exist yet), columns to create
-/// with their value (title → value), its photo, how it is made, what it consumes and the
-/// modifier groups it offers (`null`: as they are).
+/// with their value (title → value), its photo, how it is made, what it consumes (its lines and
+/// what the customer picks) and the modifier groups it offers (`null`: as they are).
 typedef MadeProductDraft = ({
   String name,
   String price,
@@ -55,6 +55,7 @@ typedef MadeProductDraft = ({
   MadePhoto photo,
   RecipeMode mode,
   List<RecipeLineDraft> lines,
+  List<RecipeChoiceDraft> choices,
   List<MadeGroupChoice>? groups
 });
 
@@ -127,12 +128,16 @@ class MadeProductsService extends ChangeNotifier {
       if (group.products.any((product) => product.productId == productId)) group
   ];
 
-  /// What making one with [lines] costs, from what each supply costs, before it is saved: its
-  /// form costs the recipe as it is typed. `null` when it can't be told (a line the backend
-  /// refuses, a viewer without the kitchen's reports, a failed read).
-  Future<DishCost?> costOf({required RecipeMode mode, required List<RecipeLineDraft> lines}) async {
+  /// What making one with [lines] and [choices] costs, from what each supply costs, before it is
+  /// saved: its form costs the recipe as it is typed. `null` when it can't be told (a line the
+  /// backend refuses, a viewer without the kitchen's reports, a failed read).
+  Future<DishCost?> costOf({
+    required RecipeMode mode,
+    required List<RecipeLineDraft> lines,
+    List<RecipeChoiceDraft> choices = const []
+  }) async {
     try {
-      return await _kitchen.draftCost(tableId: tableId, mode: mode, lines: lines);
+      return await _kitchen.draftCost(tableId: tableId, mode: mode, lines: lines, choices: choices);
     } catch (error) {
       if (kDebugMode) print("made product cost failed: $error");
       return null;
@@ -282,6 +287,7 @@ class MadeProductsService extends ChangeNotifier {
           tableId: tableId,
           values: {for (final MapEntry(:key, :value) in values.entries) if (value.isNotEmpty) key: value},
           consumes: draft.lines,
+          choices: draft.choices,
           batch: draft.mode == RecipeMode.batch
         ));
       } else {
@@ -296,6 +302,7 @@ class MadeProductsService extends ChangeNotifier {
           id: product.id,
           values: changed.isEmpty ? null : changed,
           consumes: draft.lines,
+          choices: draft.choices,
           batch: draft.mode == RecipeMode.batch
         ));
 
@@ -326,10 +333,11 @@ class MadeProductsService extends ChangeNotifier {
     return true;
   }
 
-  /// Creates a copy of [product] named [name]: its columns, how it is made, what it consumes,
-  /// its photo and the groups it offers. `false` when its recipe was not read (a copy without
-  /// it would be sold without consuming) or the record was refused, shown as it came. Like
-  /// [save], a photo or groups failing after the record is said, and the copy stays.
+  /// Creates a copy of [product] named [name]: its columns, how it is made, what it consumes
+  /// (what the customer picks too), its photo and the groups it offers. `false` when its recipe
+  /// was not read (a copy without it would be sold without consuming) or the record was refused,
+  /// shown as it came. Like [save], a photo or groups failing after the record is said, and the
+  /// copy stays.
   Future<bool> duplicate(BuildContext context, MadeProduct product, {required String name}) async {
     final consumes = product.consumes;
     if (consumes == null) return false;
@@ -353,6 +361,8 @@ class MadeProductsService extends ChangeNotifier {
           for (final line in consumes.recipe.lines)
             (tableId: line.tableId, productId: line.productId, qty: line.qty, negotiable: line.negotiable, waste: line.waste)
         ],
+        // A new product: its choices get their own ids.
+        choices: recipeChoicesDraft(consumes.recipe.choices, keepIds: false),
         batch: consumes.recipe.mode == RecipeMode.batch
       ));
     } catch (error) {

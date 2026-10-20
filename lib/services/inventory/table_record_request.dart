@@ -51,16 +51,18 @@ String createdRecordId(dynamic answer) {
   return "";
 }
 
-/// Builds the creation body of a record; [consumes] and [batch] only on a made one.
+/// Builds the creation body of a record; [consumes] (with what the customer picks, [choices])
+/// and [batch] only on a made one.
 Map<String, dynamic> createRecordRequest({
   required String tableId,
   required Map<String, dynamic> values,
   List<RecipeLineDraft>? consumes,
+  List<RecipeChoiceDraft> choices = const [],
   bool? batch
 }) => {
   "TABLE_ID": tableId,
   "DATA": values,
-  if (consumes != null) "CONSUMES": recipeLinesRequest(consumes),
+  if (consumes != null) "CONSUMES": recipeLinesRequest(consumes, choices),
   "BATCH": ?batch
 };
 
@@ -70,19 +72,20 @@ Map<String, dynamic> createRecordRequest({
 /// the data page and that the spreadsheet does not show. Without it there is no edit
 /// possible: it is the only thing that says which row of the table is being written to.
 ///
-/// On a made record [consumes] replaces the whole list (every line, not only the one that
-/// changed) and [batch] only its mode; [values] may then be left out: one of the three goes.
+/// On a made record [consumes] and [choices] replace the whole list (every line, not only the
+/// one that changed) and [batch] only its mode; [values] may then be left out: one of the three goes.
 Map<String, dynamic> editRecordRequest({
   required String tableId,
   required String id,
   Map<String, dynamic>? values,
   List<RecipeLineDraft>? consumes,
+  List<RecipeChoiceDraft> choices = const [],
   bool? batch
 }) => {
   "TABLE_ID": tableId,
   "ID": id,
   "DATA": ?values,
-  if (consumes != null) "CONSUMES": recipeLinesRequest(consumes),
+  if (consumes != null) "CONSUMES": recipeLinesRequest(consumes, choices),
   "BATCH": ?batch
 };
 

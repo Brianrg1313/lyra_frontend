@@ -23,11 +23,16 @@ class MadeKitchenApi {
   /// What making one of a recipe being written costs, and what each line adds: nothing is saved
   /// (`POST /recipes/cost` with `TABLE_ID` and `LINES`, `cocina-frontend.md` §9). Refused like a
   /// save would be (`invalid_recipe_lines`, `unit_unrelated`).
-  Future<DishCost?> draftCost({required String tableId, required RecipeMode mode, required List<RecipeLineDraft> lines}) async {
+  Future<DishCost?> draftCost({
+    required String tableId,
+    required RecipeMode mode,
+    required List<RecipeLineDraft> lines,
+    List<RecipeChoiceDraft> choices = const []
+  }) async {
     final answer = await api.post(path: "/inventory/recipes/cost", version: "v1", data: {
       "TABLE_ID": tableId,
       "MODE": mode.name,
-      "LINES": recipeLinesRequest(lines)
+      "LINES": recipeLinesRequest(lines, choices)
     });
 
     return DishCost.listFrom(answer).firstOrNull;

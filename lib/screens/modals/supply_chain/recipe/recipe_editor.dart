@@ -72,9 +72,48 @@ class _LineDraft {
   }
 }
 
-/// What a recipe being written saves: its mode, its lines and their names (product id → name),
-/// so the answer of a write is named.
-typedef RecipeDraft = ({RecipeMode mode, List<RecipeLineDraft> lines, Map<String, String> names});
+/// A choice as it is being written ([RecipeChoice]): what it is called, how many are picked of
+/// it per unit and its options, each one a line ([_LineDraft]: what ONE pick takes).
+class _ChoiceDraft {
+  _ChoiceDraft({this.id = "", String name = "", int choose = 1, List<_LineDraft>? options}) : options = options ?? [] {
+    this.name = InputController(key: "CHOICE_NAME", form: _form, max: 60, initial: name.isEmpty ? null : name);
+    this.choose = InputController(key: "CHOICE_CHOOSE", form: _form, pattern: "[0-9]", max: 2, initial: "$choose");
+  }
+
+  /// Kept on an edit: an open ticket names its picks by it.
+  final String id;
+  final List<_LineDraft> options;
+
+  /// Owns [name] and [choose], like a line's form.
+  final _form = FormController();
+  late final InputController name;
+  late final InputController choose;
+  String error = "";
+
+  /// How many are picked, when it reads as a number the backend takes.
+  int? get picks {
+    final value = int.tryParse(choose.text.trim());
+    return value == null || value < 1 || value > kitchenMaxChoose ? null : value;
+  }
+
+  void dispose() {
+    name.dispose();
+    choose.dispose();
+    _form.dispose();
+    for (final option in options) {
+      option.dispose();
+    }
+  }
+}
+
+/// What a recipe being written saves: its mode, its lines, what the customer picks and the
+/// names of everything in them (product id → name), so the answer of a write is named.
+typedef RecipeDraft = ({
+  RecipeMode mode,
+  List<RecipeLineDraft> lines,
+  List<RecipeChoiceDraft> choices,
+  Map<String, String> names
+});
 
 /// What a product is made of, written: how it is made, its lines — how much ONE unit takes,
 /// whether it can go without it, what is lost making it — and the ingredient search that adds
@@ -86,6 +125,12 @@ typedef RecipeDraft = ({RecipeMode mode, List<RecipeLineDraft> lines, Map<String
 ///
 /// A line's quantity is written in a unit of its ingredient's measure (300 g of a meat counted
 /// in kg) and travels in the ingredient's own, which is the only one the backend takes.
+///
+/// A product made to order may also have **choices** (`cocina-frontend.md` §3): what the
+/// customer picks inside it and it can't go without, the family combo's 2 burgers among the
+/// Cheese and the Classic in any mix. Each is a card under the lines: how many are picked, what
+/// it is called and its options, each one written like a line (what ONE pick takes). A batch is
+/// made before anybody picks, so a batch has none.
 ///
 /// It checks here what the backend would refuse in the same terms (a quantity above zero, whole
 /// on anything counted in units; waste from 0 to under 100; at least one line it can't go
@@ -167,6 +212,24 @@ class _RecipeEditorState extends State<RecipeEditor> {
     )
   ];
 
+  late final List<_ChoiceDraft> _choices = [
+    for (final choice in widget.recipe?.choices ?? const <RecipeChoice>[]) _ChoiceDraft(
+      id: choice.id,
+      name: choice.name,
+      choose: choice.choose,
+      options: [
+        for (final option in choice.options) _LineDraft(
+          tableId: option.tableId,
+          productId: option.productId,
+          name: option.name,
+          unit: widget.units[option.productId] ?? "",
+          qty: option.qty,
+          waste: option.waste
+        )
+      ]
+    )
+  ];
+
   final _saving = ValueNotifier(false);
   String _error = "";
 
@@ -177,6 +240,9 @@ class _RecipeEditorState extends State<RecipeEditor> {
     for (final line in _lines) {
       _watch(line);
     }
+    for (final choice in _choices) {
+      _watchChoice(choice);
+    }
     _changed();
   }
 
@@ -185,6 +251,9 @@ class _RecipeEditorState extends State<RecipeEditor> {
     _saving.dispose();
     for (final line in _lines) {
       line.dispose();
+    }
+    for (final choice in _choices) {
+      choice.dispose();
     }
     super.dispose();
   }
@@ -208,6 +277,52 @@ class _RecipeEditorState extends State<RecipeEditor> {
     _changed();
   }
 
+  /// A dish counts in whole units, so one pick of it is one; a supply's is typed.
+  _LineDraft _option(KitchenProduct product) => _LineDraft(
+    tableId: product.tableId,
+    productId: product.id,
+    name: product.label,
+    supplies: product.supplies,
+    unit: product.unit,
+    qty: product.supplies ? null : 1
+  );
+
+  void _addChoice() {
+    setState(() => _choices.add(_watchChoice(_ChoiceDraft())));
+    _changed();
+  }
+
+  void _removeChoice(_ChoiceDraft choice) {
+    setState(() => _choices.remove(choice));
+    choice.dispose();
+    _changed();
+  }
+
+  void _addOption(_ChoiceDraft choice, KitchenProduct product) {
+    setState(() => choice.options.add(_watch(_option(product))));
+    _changed();
+  }
+
+  void _removeOption(_ChoiceDraft choice, _LineDraft option) {
+    setState(() => choice.options.remove(option));
+    option.dispose();
+    _changed();
+  }
+
+  /// A typed number of picks changes what the recipe costs, and the sentence under it.
+  _ChoiceDraft _watchChoice(_ChoiceDraft choice) {
+    choice.choose.textController.addListener(_picksChanged);
+    for (final option in choice.options) {
+      _watch(option);
+    }
+    return choice;
+  }
+
+  void _picksChanged() {
+    if (mounted) setState(() {});
+    _changed();
+  }
+
   /// A typed quantity or waste changes what the recipe costs.
   _LineDraft _watch(_LineDraft line) {
     if (widget.onChanged != null) {
@@ -228,13 +343,33 @@ class _RecipeEditorState extends State<RecipeEditor> {
           if (_read(line) case (final double qty, final double waste) when qty > 0 && waste >= 0 && waste < 100)
             (tableId: line.tableId, productId: line.productId, qty: qty, negotiable: line.negotiable, waste: waste)
       ],
+      choices: _batch ? const [] : [for (final choice in _choices) ?_costable(choice)],
       names: _names
     ));
   }
 
   RecipeMode get _mode => _batch ? RecipeMode.batch : RecipeMode.order;
 
-  Map<String, String> get _names => {for (final line in _lines) line.productId: line.name};
+  Map<String, String> get _names => {
+    for (final line in _lines) line.productId: line.name,
+    for (final choice in _choices)
+      for (final option in choice.options) option.productId: option.name
+  };
+
+  /// A choice as it is costed: once it reads whole (its picks, and two options at least that
+  /// read); `null` until then.
+  static RecipeChoiceDraft? _costable(_ChoiceDraft choice) {
+    final picks = choice.picks;
+    if (picks == null) return null;
+
+    final options = [
+      for (final option in choice.options)
+        if (_read(option) case (final double qty, final double waste) when qty > 0 && waste >= 0 && waste < 100)
+          (tableId: option.tableId, productId: option.productId, qty: qty, waste: waste)
+    ];
+
+    return options.length < 2 ? null : (id: choice.id, name: choice.name.text, choose: picks, options: options);
+  }
 
   /// A line's quantity in its ingredient's own unit, rounded where the backend rounds
   /// (millionths), and its waste; either `null` when it does not read as a number.
@@ -276,7 +411,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
         ],
         TextMedium(s.supply_chain_lines_title, bold: true),
         KitchenNote(text: s.supply_chain_lines_note),
-        if (_lines.isEmpty && !widget.canEdit)
+        if (_lines.isEmpty && _choices.isEmpty && !widget.canEdit)
           KitchenNote(text: s.supply_chain_lines_empty, color: scheme.text.secondary)
         else if (_lines.isNotEmpty) Surface.over(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -310,6 +445,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
             onPick: _add
           )
         ],
+        ..._choicesBlock(context),
         if (_error.isNotEmpty) KitchenNote(text: _error, color: scheme.snackBar.error),
         ...widget.trailing,
         if (widget.canEdit) ...[
@@ -324,6 +460,56 @@ class _RecipeEditorState extends State<RecipeEditor> {
     );
   }
 
+  /// What the customer picks: on a product made to order only (a supply's preparation and a
+  /// batch are made before anybody picks). A batch that still holds choices shows them, so its
+  /// save can say why it is refused.
+  List<Widget> _choicesBlock(BuildContext context) {
+    final s = S.of(context);
+    final offered = !widget.supplies && !_batch && widget.canEdit;
+
+    if (widget.supplies || (_choices.isEmpty && !offered)) return const [];
+
+    return [
+      SizedBox(height: AppSize.spaceM),
+      TextMedium(s.recipe_choices_title, bold: true),
+      KitchenNote(text: s.recipe_choices_note),
+      for (final (index, choice) in _choices.indexed) Padding(
+        key: ObjectKey(choice),
+        padding: EdgeInsets.only(bottom: AppSize.spaceXS),
+        child: _ChoiceCard(
+          choice: choice,
+          enabled: widget.canEdit,
+          cost: _costIndex(index) == null ? null : (widget.cost, _costIndex(index)!),
+          exclude: widget.exclude,
+          onRemove: () => _removeChoice(choice),
+          onAdd: (product) => _addOption(choice, product),
+          onRemoveOption: (option) => _removeOption(choice, option),
+          onUnit: (option, unit) {
+            setState(() => option.shown = unit);
+            _changed();
+          },
+          onMore: (option) => setState(() => option.more = !option.more)
+        )
+      ),
+      if (offered && _choices.length < kitchenMaxChoices) Align(
+        alignment: Alignment.centerLeft,
+        child: Button(
+          title: s.recipe_choice_add,
+          leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
+          action: _addChoice
+        )
+      )
+    ];
+  }
+
+  /// Where the [index]th choice sits among the costed ones (the last draft leaves out those that
+  /// don't read whole yet); `null`: it was not costed.
+  int? _costIndex(int index) {
+    if (_batch || _costable(_choices[index]) == null) return null;
+
+    return _choices.take(index).where((choice) => _costable(choice) != null).length;
+  }
+
   Future<void> _save() async {
     final s = S.of(context);
     final drafts = <RecipeLineDraft>[];
@@ -332,14 +518,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
     for (final line in _lines) {
       final (qty, waste) = _read(line);
 
-      line.error = switch ((qty, waste)) {
-        (null, _) => s.supply_chain_line_qty_invalid,
-        (final double value, _) when value <= 0 => s.supply_chain_line_qty_invalid,
-        (final double value, _) when line.supplies == false && value != value.roundToDouble() => s.supply_chain_line_qty_whole,
-        (_, null) => s.supply_chain_line_waste_invalid,
-        (_, final double value) when value < 0 || value >= 100 => s.supply_chain_line_waste_invalid,
-        _ => ""
-      };
+      line.error = _lineError(line);
 
       if (line.error.isNotEmpty) {
         valid = false;
@@ -351,18 +530,164 @@ class _RecipeEditorState extends State<RecipeEditor> {
       drafts.add((tableId: line.tableId, productId: line.productId, qty: qty!, negotiable: line.negotiable, waste: waste!));
     }
 
-    _error = _lines.isEmpty
-      ? s.supply_chain_lines_empty
-      : _lines.length == drafts.length && drafts.every((line) => line.negotiable) ? s.supply_chain_lines_essential : "";
+    final choices = <RecipeChoiceDraft>[];
+
+    for (final choice in _choices) {
+      final options = <RecipeChoiceOptionDraft>[];
+
+      for (final option in choice.options) {
+        final (qty, waste) = _read(option);
+
+        option.error = _lineError(option);
+
+        if (option.error.isNotEmpty) {
+          valid = false;
+          if (waste == null || waste < 0 || waste >= 100) option.more = true;
+          continue;
+        }
+
+        options.add((tableId: option.tableId, productId: option.productId, qty: qty!, waste: waste!));
+      }
+
+      choice.error = choice.picks == null
+        ? s.recipe_choice_choose_invalid(kitchenMaxChoose)
+        : choice.options.length < 2 ? s.recipe_choice_options_few : "";
+
+      if (choice.error.isNotEmpty) valid = false;
+
+      choices.add((id: choice.id, name: choice.name.text, choose: choice.picks ?? 1, options: options));
+    }
+
+    final splits = recipeSplits([for (final choice in choices) (choose: choice.choose, options: choice.options.length)]);
+
+    // What the customer picks is never left out: with a choice, no line has to be essential.
+    _error = _lines.isEmpty && _choices.isEmpty ? s.supply_chain_lines_empty
+      : _batch && _choices.isNotEmpty ? s.recipe_choice_batch
+      : splits > kitchenMaxSplits ? s.recipe_choice_too_many(splits, kitchenMaxSplits)
+      : _choices.isEmpty && _lines.length == drafts.length && drafts.every((line) => line.negotiable) ? s.supply_chain_lines_essential
+      : "";
 
     setState(() {});
     if (!valid || _error.isNotEmpty) return;
 
     _saving.value = true;
 
-    await widget.onSave((mode: _mode, lines: drafts, names: _names));
+    await widget.onSave((mode: _mode, lines: drafts, choices: choices, names: _names));
 
     if (mounted) _saving.value = false;
+  }
+
+  /// What is wrong with a line's (or an option's) quantity or waste; empty when nothing.
+  String _lineError(_LineDraft line) {
+    final s = S.of(context);
+
+    return switch (_read(line)) {
+      (null, _) => s.supply_chain_line_qty_invalid,
+      (final double value, _) when value <= 0 => s.supply_chain_line_qty_invalid,
+      (final double value, _) when line.supplies == false && value != value.roundToDouble() => s.supply_chain_line_qty_whole,
+      (_, null) => s.supply_chain_line_waste_invalid,
+      (_, final double value) when value < 0 || value >= 100 => s.supply_chain_line_waste_invalid,
+      _ => ""
+    };
+  }
+}
+
+/// One choice, read as a sentence: «Pick [2] [Burgers]», what that means under it, then its
+/// options as lines (what ONE pick takes, with what it costs), the search that adds one, and
+/// what is wrong with it.
+class _ChoiceCard extends StatelessWidget {
+  const _ChoiceCard({
+    required this.choice,
+    required this.enabled,
+    required this.cost,
+    required this.exclude,
+    required this.onRemove,
+    required this.onAdd,
+    required this.onRemoveOption,
+    required this.onUnit,
+    required this.onMore
+  });
+
+  final _ChoiceDraft choice;
+  final bool enabled;
+
+  /// The last costing and where this choice sits among its choices; `null`: not costed.
+  final (DishCost?, int)? cost;
+  final Set<String> exclude;
+  final void Function() onRemove;
+  final void Function(KitchenProduct product) onAdd;
+  final void Function(_LineDraft option) onRemoveOption;
+  final void Function(_LineDraft option, KitchenUnit unit) onUnit;
+  final void Function(_LineDraft option) onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final s = S.of(context);
+
+    return Surface.over(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
+          child: Row(children: [
+            Icon(CI.list, size: AppSize.text, color: scheme.icon),
+            SizedBox(width: AppSize.gap),
+            TextSmall(s.recipe_choice_pick, bold: true),
+            SizedBox(width: AppSize.gap),
+            SizedBox(width: 56, child: Input(controller: choice.choose, placeholder: "1", buttonSpace: false)),
+            SizedBox(width: AppSize.gap),
+            Expanded(child: Input(controller: choice.name, placeholder: s.recipe_choice_name, buttonSpace: false)),
+            if (enabled) FocusableWidget(
+              action: onRemove,
+              message: s.recipe_choice_remove,
+              child: Padding(
+                padding: EdgeInsets.all(AppSize.gap),
+                child: Icon(CI.trash, size: AppSize.text, color: scheme.text.secondary)
+              )
+            )
+          ])
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(AppSize.spaceS, 0, AppSize.spaceS, AppSize.gap),
+          child: TextSmall(s.recipe_choice_rule(choice.picks ?? 1), lines: 2, color: scheme.text.secondary)
+        ),
+        for (final option in choice.options) ...[
+          Separator.horizontal(),
+          _LineRow(
+            key: ObjectKey(option),
+            line: option,
+            optional: false,
+            cost: _costOf(option),
+            enabled: enabled,
+            onRemove: () => onRemoveOption(option),
+            onNegotiable: (_) {},
+            onUnit: (unit) => onUnit(option, unit),
+            onMore: () => onMore(option)
+          )
+        ],
+        if (enabled && choice.options.length < kitchenMaxOptions) Padding(
+          padding: EdgeInsets.all(AppSize.gap),
+          child: KitchenProductPicker(
+            placeholder: s.recipe_choice_add_option,
+            exclude: {...exclude, for (final option in choice.options) option.productId},
+            onPick: onAdd
+          )
+        ),
+        if (choice.error.isNotEmpty) Padding(
+          padding: EdgeInsets.fromLTRB(AppSize.spaceS, 0, AppSize.spaceS, AppSize.gap),
+          child: TextSmall(choice.error, color: scheme.snackBar.error)
+        )
+      ])
+    );
+  }
+
+  /// What one pick of [option] costs, drawn like a line's share.
+  DishCostLine? _costOf(_LineDraft option) {
+    final (dish, index) = cost ?? (null, 0);
+    final costed = dish?.optionOf(index, option.productId);
+    if (costed == null) return null;
+
+    return (productId: costed.productId, name: costed.name, qty: 0, unitCost: costed.cost, cost: costed.cost, source: null);
   }
 }
 
@@ -376,6 +701,7 @@ class _LineRow extends StatelessWidget {
     required this.line,
     required this.enabled,
     required this.onRemove,
+    this.optional = true,
     this.cost,
     required this.onNegotiable,
     required this.onUnit,
@@ -383,6 +709,9 @@ class _LineRow extends StatelessWidget {
   });
 
   final _LineDraft line;
+
+  /// Whether it can be marked «Optional»: a choice's option never is (what is picked is spent).
+  final bool optional;
 
   /// What it adds to the cost, as last costed; `null`: not costed.
   final DishCostLine? cost;
@@ -425,11 +754,13 @@ class _LineRow extends StatelessWidget {
             SizedBox(width: AppSize.gap),
             _LineCost(line: cost!)
           ],
-          SizedBox(width: AppSize.gap),
-          _OptionalToggle(
-            value: line.negotiable,
-            onChanged: enabled ? () => onNegotiable(!line.negotiable) : null
-          ),
+          if (optional) ...[
+            SizedBox(width: AppSize.gap),
+            _OptionalToggle(
+              value: line.negotiable,
+              onChanged: enabled ? () => onNegotiable(!line.negotiable) : null
+            )
+          ],
           FocusableWidget(
             action: onMore,
             message: s.supply_chain_line_more,
@@ -491,7 +822,8 @@ class _LineCost extends StatelessWidget {
 }
 
 /// What making one costs, summed under its lines like a receipt: with a supply without a price,
-/// a floor, and which ones are missing and where a price comes from.
+/// a floor, and which ones are missing and where a price comes from. With choices, the dearest
+/// pick, and between what it moves.
 class _CostTotal extends StatelessWidget {
   const _CostTotal({required this.cost});
 
@@ -513,6 +845,10 @@ class _CostTotal extends StatelessWidget {
           Expanded(child: TextMedium(missing.isEmpty ? s.made_product_cost_total : s.made_product_cost_floor, bold: true)),
           TextMedium(kitchenMoney(cost.cost), bold: true)
         ]),
+        if (cost.range case final range?) ...[
+          SizedBox(height: AppSize.gap / 2),
+          TextSmall(s.made_product_cost_range(kitchenMoney(range.min), kitchenMoney(range.max)), lines: 2, color: scheme.text.secondary)
+        ],
         if (missing.isNotEmpty) ...[
           SizedBox(height: AppSize.gap / 2),
           TextSmall(s.made_product_profit_incomplete(missing.join(", ")), lines: 2, color: scheme.snackBar.alert),

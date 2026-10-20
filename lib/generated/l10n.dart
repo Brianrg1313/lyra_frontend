@@ -1869,6 +1869,133 @@ class S {
     );
   }
 
+  /// `What the customer picks`
+  String get recipe_choices_title {
+    return Intl.message(
+      'What the customer picks',
+      name: 'recipe_choices_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Picked at the sale and never left out: 2 burgers among the Cheese and the Classic, in any mix. Each option says what one pick takes.`
+  String get recipe_choices_note {
+    return Intl.message(
+      'Picked at the sale and never left out: 2 burgers among the Cheese and the Classic, in any mix. Each option says what one pick takes.',
+      name: 'recipe_choices_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer's choice`
+  String get recipe_choice_add {
+    return Intl.message(
+      'Customer\'s choice',
+      name: 'recipe_choice_add',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick`
+  String get recipe_choice_pick {
+    return Intl.message('Pick', name: 'recipe_choice_pick', desc: '', args: []);
+  }
+
+  /// `What they pick (Burgers)`
+  String get recipe_choice_name {
+    return Intl.message(
+      'What they pick (Burgers)',
+      name: 'recipe_choice_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove this choice`
+  String get recipe_choice_remove {
+    return Intl.message(
+      'Remove this choice',
+      name: 'recipe_choice_remove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{The customer picks one of these options} other{The customer picks {count} among these options, in any mix}}`
+  String recipe_choice_rule(num count) {
+    return Intl.plural(
+      count,
+      one: 'The customer picks one of these options',
+      other: 'The customer picks $count among these options, in any mix',
+      name: 'recipe_choice_rule',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Search an option to add`
+  String get recipe_choice_add_option {
+    return Intl.message(
+      'Search an option to add',
+      name: 'recipe_choice_add_option',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick from 1 to {max}`
+  String recipe_choice_choose_invalid(Object max) {
+    return Intl.message(
+      'Pick from 1 to $max',
+      name: 'recipe_choice_choose_invalid',
+      desc: '',
+      args: [max],
+    );
+  }
+
+  /// `Add 2 options at least: with only one, it is a line of what it is made of`
+  String get recipe_choice_options_few {
+    return Intl.message(
+      'Add 2 options at least: with only one, it is a line of what it is made of',
+      name: 'recipe_choice_options_few',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A product made by the batch is made before anybody picks: make it to order, or remove its choices`
+  String get recipe_choice_batch {
+    return Intl.message(
+      'A product made by the batch is made before anybody picks: make it to order, or remove its choices',
+      name: 'recipe_choice_batch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} ways to pick, up to {max}: remove options or picks`
+  String recipe_choice_too_many(Object count, Object max) {
+    return Intl.message(
+      '$count ways to pick, up to $max: remove options or picks',
+      name: 'recipe_choice_too_many',
+      desc: '',
+      args: [count, max],
+    );
+  }
+
+  /// `{count} to pick among {options}`
+  String recipe_choice_read(Object count, Object options) {
+    return Intl.message(
+      '$count to pick among $options',
+      name: 'recipe_choice_read',
+      desc: '',
+      args: [count, options],
+    );
+  }
+
   /// `Create recipe`
   String get supply_chain_recipe_create {
     return Intl.message(
@@ -2671,6 +2798,16 @@ class S {
       name: 'made_product_cost_floor',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Between {min} and {max}, depending on what is picked: the price has to cover the dearest.`
+  String made_product_cost_range(Object min, Object max) {
+    return Intl.message(
+      'Between $min and $max, depending on what is picked: the price has to cover the dearest.',
+      name: 'made_product_cost_range',
+      desc: '',
+      args: [min, max],
     );
   }
 

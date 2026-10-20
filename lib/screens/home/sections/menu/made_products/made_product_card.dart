@@ -51,7 +51,11 @@ class MadeProductCard extends StatelessWidget {
     final name = product.valueOf(service.fields.name);
     final price = _price(product.valueOf(service.fields.price));
     final consumes = product.consumes;
-    final lines = consumes?.recipe.lines ?? const <RecipeLine>[];
+    // What the customer picks first: it is what a combo is.
+    final chips = <Widget>[
+      for (final choice in consumes?.recipe.choices ?? const <RecipeChoice>[]) _ChoiceChip(choice: choice),
+      for (final line in consumes?.recipe.lines ?? const <RecipeLine>[]) _LineChip(line: line, unit: service.unitOf(line.productId))
+    ];
     final stock = _Stock.of(context, consumes?.availability);
     final radius = AppSize.cornerInset(AppSize.spaceXS);
 
@@ -79,13 +83,13 @@ class MadeProductCard extends StatelessWidget {
               color: name.isEmpty ? scheme.text.secondary : scheme.text.primary
             ),
             SizedBox(height: AppSize.spaceXS),
-            if (lines.isEmpty)
+            if (chips.isEmpty)
               _RecipeMissing()
             else
               Wrap(spacing: AppSize.gap, runSpacing: AppSize.gap, children: [
-                for (final line in lines.take(_shownLines)) _LineChip(line: line, unit: service.unitOf(line.productId)),
-                if (lines.length > _shownLines) _Chip(child: TextSmall(
-                  s.made_product_lines_more(lines.length - _shownLines),
+                ...chips.take(_shownLines),
+                if (chips.length > _shownLines) _Chip(child: TextSmall(
+                  s.made_product_lines_more(chips.length - _shownLines),
                   multiplier: 0.9,
                   color: scheme.text.secondary
                 ))
@@ -328,6 +332,29 @@ class _LineChip extends StatelessWidget {
       Flexible(child: TextSmall(line.name.isEmpty ? line.productId : line.name, multiplier: 0.9, ellipsis: true)),
       SizedBox(width: AppSize.gap),
       TextSmall(qty, multiplier: 0.9, bold: true, color: line.negotiable ? scheme.text.secondary : null)
+    ]));
+  }
+}
+
+/// What the customer picks, by its name or else its options («Cheese / Classic»), and how many.
+class _ChoiceChip extends StatelessWidget {
+  const _ChoiceChip({required this.choice});
+
+  final RecipeChoice choice;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final label = choice.name.isNotEmpty
+      ? choice.name
+      : choice.options.map((option) => option.name.isEmpty ? option.productId : option.name).join(" / ");
+
+    return _Chip(child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(CI.list, size: AppSize.text * 0.85, color: scheme.icon),
+      SizedBox(width: AppSize.gap / 2),
+      Flexible(child: TextSmall(label, multiplier: 0.9, ellipsis: true)),
+      SizedBox(width: AppSize.gap),
+      TextSmall(S.of(context).made_product_line_times("${choice.choose}"), multiplier: 0.9, bold: true)
     ]));
   }
 }

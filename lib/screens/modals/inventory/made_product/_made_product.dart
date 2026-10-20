@@ -203,7 +203,7 @@ class _MadeProductFormState extends State<MadeProductForm> {
   /// Costs [draft] once typing pauses; the last draft asked wins. Called from the editor's
   /// `initState` too, so nothing here sets state before the timer.
   void _recipeChanged(RecipeDraft draft) {
-    final key = jsonEncode([draft.mode.name, recipeLinesRequest(draft.lines)]);
+    final key = jsonEncode([draft.mode.name, recipeLinesRequest(draft.lines, draft.choices)]);
     if (key == _costed) return;
 
     _costed = key;
@@ -211,7 +211,7 @@ class _MadeProductFormState extends State<MadeProductForm> {
     _costing = Timer(const Duration(milliseconds: 350), () async {
       final ticket = ++_costTicket;
 
-      if (draft.lines.isEmpty) {
+      if (draft.lines.isEmpty && draft.choices.isEmpty) {
         setState(() {
           _hasLines = false;
           _cost = null;
@@ -219,7 +219,7 @@ class _MadeProductFormState extends State<MadeProductForm> {
         return;
       }
 
-      final cost = await widget.service.costOf(mode: draft.mode, lines: draft.lines);
+      final cost = await widget.service.costOf(mode: draft.mode, lines: draft.lines, choices: draft.choices);
       if (!mounted || ticket != _costTicket) return;
 
       setState(() {
@@ -566,6 +566,7 @@ class _MadeProductFormState extends State<MadeProductForm> {
         photo: _photo,
         mode: draft.mode,
         lines: draft.lines,
+        choices: draft.choices,
         groups: _groupsTouched ? _groups : null
       )
     );

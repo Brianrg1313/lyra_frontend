@@ -183,7 +183,7 @@ class _RecipePanelState extends State<RecipePanel> {
   /// Writes the recipe from the editor; `false` keeps it open (the backend refused it).
   Future<bool> _save(RecipeDraft draft) async {
     final s = S.of(context);
-    final done = await _service.save(context, mode: draft.mode, lines: draft.lines, names: draft.names);
+    final done = await _service.save(context, mode: draft.mode, lines: draft.lines, choices: draft.choices, names: draft.names);
 
     if (!done || !mounted) return done;
 
@@ -232,6 +232,24 @@ class _RecipePanelState extends State<RecipePanel> {
               SizedBox(width: AppSize.spaceS),
               RecipeTag(text: s.supply_chain_line_negotiable, color: scheme.text.secondary)
             ]
+          ])
+        )
+      ),
+      for (final choice in recipe.choices) Padding(
+        padding: EdgeInsets.only(bottom: AppSize.gap / 2),
+        child: Surface.over(
+          padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.spaceXS),
+          child: Row(children: [
+            Icon(CI.list, size: AppSize.text, color: scheme.icon),
+            SizedBox(width: AppSize.gap),
+            if (choice.name.isNotEmpty) ...[
+              TextSmall(choice.name, bold: true),
+              SizedBox(width: AppSize.spaceS)
+            ],
+            Expanded(child: TextSmall(
+              s.recipe_choice_read(choice.choose, choice.options.map((option) => option.name.isEmpty ? option.productId : option.name).join(", ")),
+              lines: 2
+            ))
           ])
         )
       ),

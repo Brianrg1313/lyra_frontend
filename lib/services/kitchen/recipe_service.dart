@@ -125,6 +125,7 @@ class RecipeService extends ChangeNotifier {
     BuildContext context, {
     required RecipeMode mode,
     required List<RecipeLineDraft> lines,
+    List<RecipeChoiceDraft> choices = const [],
     Map<String, String> names = const {}
   }) => _write(context, "saveRecipe", () async {
     if (product.made) {
@@ -132,6 +133,7 @@ class RecipeService extends ChangeNotifier {
         tableId: product.tableId,
         id: product.id,
         consumes: lines,
+        choices: choices,
         batch: mode == RecipeMode.batch
       ));
 
@@ -144,7 +146,7 @@ class RecipeService extends ChangeNotifier {
     final saved = Recipe.read(await api.put(
       path: _path,
       version: "v1",
-      data: saveRecipeRequest(tableId: product.tableId, productId: product.id, mode: mode, lines: lines)
+      data: saveRecipeRequest(tableId: product.tableId, productId: product.id, mode: mode, lines: lines, choices: choices)
     ));
 
     if (saved != null) {

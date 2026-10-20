@@ -39,7 +39,8 @@ class MadeConsumes {
         tableId: tableId,
         mode: mode,
         paused: paused,
-        lines: [for (final line in kitchenMaps(value["lines"])) RecipeLine.fromJson(line)]
+        lines: [for (final line in kitchenMaps(value["lines"])) RecipeLine.fromJson(line)],
+        choices: RecipeChoice.listFrom(value["choices"])
       ),
       availability: RecipeAvailability(
         productId: id,

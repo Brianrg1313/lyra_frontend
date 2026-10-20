@@ -13,30 +13,87 @@ num kitchenQuantity(double value) => value == value.roundToDouble() ? value.roun
 /// One line of a recipe being written.
 typedef RecipeLineDraft = ({String tableId, String productId, double qty, bool negotiable, double waste});
 
+/// One option of a choice being written: what ONE pick of it takes.
+typedef RecipeChoiceOptionDraft = ({String tableId, String productId, double qty, double waste});
+
+/// A choice being written ([RecipeChoice]): [id] empty for a new one, [name] may be.
+typedef RecipeChoiceDraft = ({String id, String name, int choose, List<RecipeChoiceOptionDraft> options});
+
 /// `PUT /inventory/recipes`: creates or replaces [productId]'s recipe: a supply's preparation
 /// (a made record's travels with the record, `editRecordRequest`).
 Map<String, dynamic> saveRecipeRequest({
   required String tableId,
   required String productId,
   required RecipeMode mode,
-  required List<RecipeLineDraft> lines
+  required List<RecipeLineDraft> lines,
+  List<RecipeChoiceDraft> choices = const []
 }) => {
   "TABLE_ID": tableId,
   "PRODUCT_ID": productId,
   "MODE": mode.name,
-  "LINES": recipeLinesRequest(lines)
+  "LINES": recipeLinesRequest(lines, choices)
 };
 
-/// Lines as a recipe takes them, and a made record's `CONSUMES` (the same shape).
-List<Map<String, dynamic>> recipeLinesRequest(List<RecipeLineDraft> lines) => [
+/// Lines as a recipe takes them, and a made record's `CONSUMES` (the same shape). A choice
+/// travels as one more line, with `OPTIONS` instead of a product (`cocina-frontend.md` §3); its
+/// `ID` goes back so the open tickets that name it keep it.
+List<Map<String, dynamic>> recipeLinesRequest(List<RecipeLineDraft> lines, [List<RecipeChoiceDraft> choices = const []]) => [
   for (final line in lines) {
     "TABLE_ID": line.tableId,
     "PRODUCT_ID": line.productId,
     "QUANTITY": kitchenQuantity(line.qty),
     if (line.negotiable) "NEGOTIABLE": true,
     if (line.waste > 0) "WASTE": kitchenQuantity(line.waste)
+  },
+  for (final choice in choices) {
+    if (choice.id.isNotEmpty) "ID": choice.id,
+    if (choice.name.trim().isNotEmpty) "NAME": choice.name.trim(),
+    "QUANTITY": choice.choose,
+    "OPTIONS": [
+      for (final option in choice.options) {
+        "TABLE_ID": option.tableId,
+        "PRODUCT_ID": option.productId,
+        "QUANTITY": kitchenQuantity(option.qty),
+        if (option.waste > 0) "WASTE": kitchenQuantity(option.waste)
+      }
+    ]
   }
 ];
+
+/// The choices of a saved recipe as they are written back (a copy keeps them).
+List<RecipeChoiceDraft> recipeChoicesDraft(List<RecipeChoice> choices, {bool keepIds = true}) => [
+  for (final choice in choices) (
+    id: keepIds ? choice.id : "",
+    name: choice.name,
+    choose: choice.choose,
+    options: [
+      for (final option in choice.options)
+        (tableId: option.tableId, productId: option.productId, qty: option.qty, waste: option.waste)
+    ]
+  )
+];
+
+/// The ways ONE unit can be chosen, every choice together: [choose] picks among n options is
+/// C(choose + n − 1, n − 1). The backend refuses more than [kitchenMaxSplits].
+int recipeSplits(Iterable<({int choose, int options})> choices) {
+  var total = 1;
+
+  for (final (:choose, :options) in choices) {
+    var ways = 1;
+    for (var i = 1; i < options; i++) {
+      ways = ways * (choose + i) ~/ i;
+    }
+    total *= ways;
+  }
+
+  return total;
+}
+
+/// What the backend takes of choices (`Choices`): per recipe, per choice, and splits in all.
+const int kitchenMaxChoices = 5;
+const int kitchenMaxOptions = 10;
+const int kitchenMaxChoose = 10;
+const int kitchenMaxSplits = 200;
 
 /// `DELETE /inventory/recipes`: the product goes back to a shelf of its own.
 Map<String, dynamic> deleteRecipeRequest({required String tableId, required String productId}) =>

@@ -426,7 +426,7 @@ void main() {
       expect(find.text("g"), findsOneWidget);
 
       await tester.enterText(find.text("300"), "250");
-      await tester.tap(find.text(S.current.save));
+      await _tapSave(tester);
       await tester.pumpAndSettle();
 
       expect(saved!.lines.single.qty, 0.25);
@@ -436,7 +436,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text("kg").last);
       await tester.pumpAndSettle();
-      await tester.tap(find.text(S.current.save));
+      await _tapSave(tester);
       await tester.pumpAndSettle();
 
       expect(saved!.lines.single.qty, 250);
@@ -469,7 +469,7 @@ void main() {
       await tester.tap(find.text("5"));
       await tester.pumpAndSettle();
       await tester.enterText(find.text("5"), "10");
-      await tester.tap(find.text(S.current.save));
+      await _tapSave(tester);
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
@@ -662,6 +662,211 @@ void main() {
       expect([for (final product in kitchen.saved.single["PRODUCTS"] as List) product["PRODUCT_ID"]], ["burger", "copy"]);
     });
   });
+
+  group("choices", () {
+    /// The family combo: 2 burgers among the Cheese and the Classic, and 2 sodas.
+    const combo = {
+      "mode": "order",
+      "available": 15,
+      "lines": [{"id": "l1", "tableId": "s", "productId": "soda", "name": "Soda", "qty": 2}],
+      "choices": [{
+        "id": "c1",
+        "name": "Burgers",
+        "choose": 2,
+        "options": [
+          {"tableId": "menu", "productId": "cheese", "name": "Cheese burger", "qty": 1, "waste": 0},
+          {"tableId": "menu", "productId": "classic", "name": "Classic burger", "qty": 1, "waste": 0}
+        ]
+      }]
+    };
+
+    test("a page reads what the customer picks beside the lines, its options named", () {
+      final recipe = MadeConsumes.mapFrom({"combo": combo}, tableId: "menu")["combo"]!.recipe;
+      final choice = recipe.choices.single;
+
+      expect(recipe.lines.single.name, "Soda");
+      expect((choice.id, choice.name, choice.choose), ("c1", "Burgers", 2));
+      expect([for (final option in choice.options) option.name], ["Cheese burger", "Classic burger"]);
+      expect(Recipe.read({"productId": "combo", ...combo})!.choices.single.options.last.productId, "classic");
+    });
+
+    test("a choice travels as one more line, with OPTIONS instead of a product, and keeps its id", () {
+      final body = editRecordRequest(
+        tableId: "menu",
+        id: "combo",
+        consumes: const [(tableId: "s", productId: "soda", qty: 2, negotiable: false, waste: 0)],
+        choices: const [(id: "c1", name: " Burgers ", choose: 2, options: [
+          (tableId: "menu", productId: "cheese", qty: 1, waste: 0),
+          (tableId: "s", productId: "sauce", qty: 0.03, waste: 5)
+        ])]
+      );
+
+      expect(body["CONSUMES"], [
+        {"TABLE_ID": "s", "PRODUCT_ID": "soda", "QUANTITY": 2},
+        {"ID": "c1", "NAME": "Burgers", "QUANTITY": 2, "OPTIONS": [
+          {"TABLE_ID": "menu", "PRODUCT_ID": "cheese", "QUANTITY": 1},
+          {"TABLE_ID": "s", "PRODUCT_ID": "sauce", "QUANTITY": 0.03, "WASTE": 5}
+        ]}
+      ]);
+    });
+
+    test("the ways one unit can be picked are counted as the backend counts them", () {
+      expect(recipeSplits(const [(choose: 2, options: 2)]), 3, reason: "2+0, 1+1, 0+2");
+      expect(recipeSplits(const [(choose: 2, options: 2), (choose: 1, options: 3)]), 9);
+      expect(recipeSplits(const [(choose: 10, options: 10)]), greaterThan(kitchenMaxSplits));
+    });
+
+    testWidgets("a saved choice is edited and saved with its id; with it, no line has to be essential", (tester) async {
+      RecipeDraft? saved;
+
+      await tester.pumpWidget(_app(SingleChildScrollView(child: RecipeEditor(
+        recipe: Recipe(
+          productId: "combo",
+          tableId: "menu",
+          lines: const [RecipeLine(id: "l1", tableId: "s", productId: "fries", name: "Fries", qty: 1, negotiable: true)],
+          choices: Recipe.read({"productId": "combo", ...combo})!.choices
+        ),
+        supplies: false,
+        canEdit: true,
+        onSave: (draft) async {
+          saved = draft;
+          return true;
+        },
+        onCancel: () {}
+      ))));
+      await tester.pumpAndSettle();
+
+      expect(find.text(S.current.recipe_choices_title), findsOneWidget);
+      expect(find.text("Burgers"), findsOneWidget);
+      expect(find.text("Cheese burger"), findsOneWidget);
+      expect(find.text(S.current.recipe_choice_rule(2)), findsOneWidget);
+
+      await tester.enterText(find.text("2"), "3");
+      await tester.pumpAndSettle();
+      expect(find.text(S.current.recipe_choice_rule(3)), findsOneWidget);
+
+      await _tapSave(tester);
+      await tester.pumpAndSettle();
+
+      final choice = saved!.choices.single;
+      expect((choice.id, choice.name, choice.choose), ("c1", "Burgers", 3));
+      expect([for (final option in choice.options) (option.productId, option.qty)], [("cheese", 1.0), ("classic", 1.0)]);
+      expect(saved!.lines.single.negotiable, isTrue);
+      expect(saved!.names["classic"], "Classic burger");
+    });
+
+    testWidgets("a new choice needs two options, and a batch can't have one", (tester) async {
+      RecipeDraft? saved;
+
+      await tester.pumpWidget(_app(SingleChildScrollView(child: RecipeEditor(
+        recipe: const Recipe(productId: "combo", tableId: "menu", lines: [
+          RecipeLine(id: "l1", tableId: "s", productId: "soda", name: "Soda", qty: 1)
+        ]),
+        supplies: false,
+        canEdit: true,
+        onSave: (draft) async {
+          saved = draft;
+          return true;
+        },
+        onCancel: () {}
+      ))));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(S.current.recipe_choice_add));
+      await tester.pumpAndSettle();
+      await _tapSave(tester);
+      await tester.pumpAndSettle();
+
+      expect(saved, isNull);
+      expect(find.text(S.current.recipe_choice_options_few), findsOneWidget);
+
+      // Made by the batch, the choice stays in sight to be removed (the last bin: the soda's line
+      // has one), and none can be added.
+      await tester.ensureVisible(find.text(S.current.supply_chain_mode_batch));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.supply_chain_mode_batch));
+      await tester.pumpAndSettle();
+      expect(find.text(S.current.recipe_choice_add), findsNothing);
+
+      await _tapSave(tester);
+      await tester.pumpAndSettle();
+      expect(find.text(S.current.recipe_choice_batch), findsOneWidget);
+
+      await tester.ensureVisible(find.byIcon(CI.trash).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(CI.trash).last);
+      await tester.pumpAndSettle();
+      await _tapSave(tester);
+      await tester.pumpAndSettle();
+
+      expect(saved!.choices, isEmpty);
+      expect(saved!.mode, RecipeMode.batch);
+    });
+
+    testWidgets("the form costs the choice: what one pick of each option costs, and between what it moves", (tester) async {
+      final kitchen = _Kitchen()..costs = (lines) => const DishCost(
+        productId: "",
+        cost: 9.62,
+        price: 12,
+        profit: 2.38,
+        lines: [(productId: "soda", name: "Soda", qty: 2, unitCost: 0.5, cost: 1, source: "column")],
+        range: (min: 9.11, max: 9.62),
+        choices: [(id: "", name: "Burgers", choose: 2, options: [
+          (productId: "cheese", name: "Cheese burger", cost: 4.31, complete: true),
+          (productId: "classic", name: "Classic burger", cost: 4.06, complete: true)
+        ])]
+      );
+      final source = _Menu(fields: _fields, rows: [["combo", "Family combo", "12"]], consumes: {"combo": combo});
+      final service = await _service(tester, source, kitchen: kitchen);
+
+      await tester.pumpWidget(_app(MadeProductForm(
+        service: service,
+        product: service.products.single,
+        onSaved: () {},
+        onCancel: () {}
+      )));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      expect(kitchen.choiceDrafts.single.single.options, hasLength(2), reason: "the saved choice is costed on opening");
+      expect(find.text(kitchenMoney(4.31)), findsOneWidget);
+      expect(find.text(kitchenMoney(4.06)), findsOneWidget);
+      expect(find.text(S.current.made_product_cost_range(kitchenMoney(9.11), kitchenMoney(9.62))), findsOneWidget);
+    });
+
+    testWidgets("a card names the choice and how many are picked", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["combo", "Family combo", "12"]], consumes: {"combo": combo});
+      final service = await _service(tester, source);
+
+      await tester.pumpWidget(_app(MadeProductsSection(
+        tableId: "menu",
+        parts: const InventoryBarParts(selector: SizedBox(), controls: []),
+        service: service
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.text("Burgers"), findsOneWidget);
+      expect(find.text("×2"), findsNWidgets(2), reason: "the choice's picks and the sodas");
+    });
+
+    testWidgets("a product is saved with its choices, and a copy keeps them under new ids", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["combo", "Family combo", "12"]], consumes: {"combo": combo});
+      final service = await _service(tester, source);
+      final context = tester.element(find.byType(SizedBox));
+
+      await service.save(context, product: service.products.single, nameTitle: "Name", priceTitle: "Price", draft: _draft(
+        choices: recipeChoicesDraft(service.products.single.consumes!.recipe.choices)
+      ));
+
+      expect((source.edited.single["CONSUMES"] as List).last["ID"], "c1");
+
+      await service.duplicate(context, service.products.single, name: "Family combo (copy)");
+
+      final copied = (source.created.single["CONSUMES"] as List).last as Map;
+      expect(copied.containsKey("ID"), isFalse);
+      expect((copied["NAME"], copied["QUANTITY"], (copied["OPTIONS"] as List).length), ("Burgers", 2, 2));
+    });
+  });
 }
 
 const _fields = [
@@ -677,6 +882,7 @@ MadeProductDraft _draft({
   Map<String, String> added = const {},
   MadePhoto photo = const MadePhoto.keep(),
   RecipeMode mode = RecipeMode.order,
+  List<RecipeChoiceDraft> choices = const [],
   List<MadeGroupChoice>? groups
 }) => (
   name: "Cheese burger",
@@ -687,6 +893,7 @@ MadeProductDraft _draft({
   photo: photo,
   mode: mode,
   lines: const <RecipeLineDraft>[(tableId: "s", productId: "meat", qty: 0.3, negotiable: false, waste: 0)],
+  choices: choices,
   groups: groups
 );
 
@@ -698,6 +905,13 @@ Future<MadeProductsService> _service(WidgetTester tester, _Menu source, {_Kitche
 
   await service.load();
   return service;
+}
+
+/// The editor's save sits under everything it holds: scrolled to before the tap.
+Future<void> _tapSave(WidgetTester tester) async {
+  await tester.ensureVisible(find.text(S.current.save));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(S.current.save));
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -735,9 +949,18 @@ class _Kitchen extends MadeKitchenApi {
   DishCost? Function(List<RecipeLineDraft> lines)? costs;
   final drafts = <List<RecipeLineDraft>>[];
 
+  /// The choices of each draft costed.
+  final choiceDrafts = <List<RecipeChoiceDraft>>[];
+
   @override
-  Future<DishCost?> draftCost({required String tableId, required RecipeMode mode, required List<RecipeLineDraft> lines}) async {
+  Future<DishCost?> draftCost({
+    required String tableId,
+    required RecipeMode mode,
+    required List<RecipeLineDraft> lines,
+    List<RecipeChoiceDraft> choices = const []
+  }) async {
     drafts.add(lines);
+    choiceDrafts.add(choices);
     return costs?.call(lines);
   }
 }

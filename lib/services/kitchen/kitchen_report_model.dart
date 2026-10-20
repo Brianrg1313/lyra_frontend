@@ -158,8 +158,18 @@ class VarianceRow {
 /// `recipe` (a batch preparation, costed by its own recipe).
 typedef DishCostLine = ({String productId, String name, double qty, double? unitCost, double? cost, String? source});
 
+/// What ONE pick of a choice's option costs; [cost] `null` when nothing in it has a price.
+typedef DishCostOption = ({String productId, String name, double? cost, bool complete});
+
+/// What each option of one of the dish's choices costs, in the recipe's order.
+typedef DishCostChoice = ({String id, String name, int choose, List<DishCostOption> options});
+
 /// What making a dish costs from what each supply costs (`POST /recipes/cost`), and what its
 /// price leaves. Modifiers are not in it.
+///
+/// A dish with choices costs something different on each sale: [cost], [lines] and [losing] are
+/// those of the dearest pick (a price that covers only the cheap one loses with every customer
+/// who takes the other), [range] the cheapest and the dearest, [choices] each option's.
 @immutable
 class DishCost {
   const DishCost({
@@ -173,7 +183,9 @@ class DishCost {
     this.profit,
     this.margin,
     this.losing = false,
-    this.lines = const []
+    this.lines = const [],
+    this.range,
+    this.choices = const []
   });
 
   final String productId;
@@ -195,8 +207,17 @@ class DishCost {
   final bool losing;
   final List<DishCostLine> lines;
 
+  /// With choices, the cheapest and the dearest pick; `null` when every sale costs the same.
+  final ({double min, double max})? range;
+  final List<DishCostChoice> choices;
+
   /// The line of [productId], when it was costed.
   DishCostLine? lineOf(String productId) => lines.where((line) => line.productId == productId).firstOrNull;
+
+  /// What one pick of [productId] costs in the [index]th choice (a new choice has no id yet).
+  DishCostOption? optionOf(int index, String productId) => index < choices.length
+    ? choices[index].options.where((option) => option.productId == productId).firstOrNull
+    : null;
 
   static List<DishCost> listFrom(dynamic data) => [
     for (final dish in kitchenMaps(data)) DishCost.fromJson(dish)
@@ -232,6 +253,31 @@ class DishCost {
         cost: kitchenNum(line["cost"]),
         source: line["source"] is String ? line["source"] as String : null
       )
+    ],
+    range: _range(dish["range"]),
+    choices: [
+      for (final choice in kitchenMaps(dish["choices"])) (
+        id: kitchenText(choice["id"]),
+        name: kitchenText(choice["name"]),
+        choose: kitchenInt(choice["choose"]),
+        options: [
+          for (final option in kitchenMaps(choice["options"])) (
+            productId: kitchenText(option["productId"]),
+            name: kitchenText(option["name"]),
+            cost: kitchenNum(option["cost"]),
+            complete: option["complete"] != false
+          )
+        ]
+      )
     ]
   );
+
+  static ({double min, double max})? _range(dynamic raw) {
+    if (raw is! Map) return null;
+
+    final min = kitchenNum(raw["min"]);
+    final max = kitchenNum(raw["max"]);
+
+    return min == null || max == null ? null : (min: min, max: max);
+  }
 }

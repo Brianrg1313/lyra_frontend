@@ -65,6 +65,75 @@ class RecipeLine {
   );
 }
 
+/// One option of a [RecipeChoice]: what ONE pick of it takes (a burger: 1; a sauce: 30 g).
+@immutable
+class RecipeChoiceOption {
+  const RecipeChoiceOption({
+    required this.tableId,
+    required this.productId,
+    this.name = "",
+    this.qty = 1,
+    this.waste = 0
+  });
+
+  final String tableId;
+  final String productId;
+
+  /// Empty in the answer of a write, like a line's.
+  final String name;
+  final double qty;
+  final double waste;
+
+  factory RecipeChoiceOption.fromJson(Map json) => RecipeChoiceOption(
+    tableId: kitchenText(json["tableId"]),
+    productId: kitchenText(json["productId"]),
+    name: kitchenText(json["name"]),
+    qty: kitchenNum(json["qty"]) ?? 1,
+    waste: kitchenNum(json["waste"]) ?? 0
+  );
+
+  RecipeChoiceOption named(String name) =>
+    RecipeChoiceOption(tableId: tableId, productId: productId, name: name, qty: qty, waste: waste);
+}
+
+/// What the customer picks inside the product and it can't go without (`cocina-frontend.md` §3,
+/// «Líneas a elegir»): the family combo's 2 burgers among the Cheese and the Classic, split as the
+/// sale likes (2 and 0, 1 and 1). Neither an optional line (it is never left out) nor a modifier
+/// (it spends nothing on top): a line written with `OPTIONS`, read apart from the lines because
+/// everything that names a line id (`WITHOUT`, a modifier's `REMOVE`) means one component.
+@immutable
+class RecipeChoice {
+  const RecipeChoice({required this.id, this.name = "", this.choose = 1, this.options = const []});
+
+  /// What a sale's `CHOICES` and an open ticket name; sent back on a write to keep it.
+  final String id;
+
+  /// How the ticket and the till call it («Burgers»); may be empty.
+  final String name;
+
+  /// Picks per unit of the product (1 to 10).
+  final int choose;
+  final List<RecipeChoiceOption> options;
+
+  factory RecipeChoice.fromJson(Map json) => RecipeChoice(
+    id: kitchenText(json["id"]),
+    name: kitchenText(json["name"]),
+    choose: kitchenInt(json["choose"]),
+    options: [for (final option in kitchenMaps(json["options"])) RecipeChoiceOption.fromJson(option)]
+  );
+
+  static List<RecipeChoice> listFrom(dynamic data) => [
+    for (final choice in kitchenMaps(data)) RecipeChoice.fromJson(choice)
+  ];
+
+  RecipeChoice namedFrom(Map<String, String> names) => RecipeChoice(
+    id: id,
+    name: name,
+    choose: choose,
+    options: [for (final option in options) option.name.isEmpty ? option.named(names[option.productId] ?? "") : option]
+  );
+}
+
 /// A product's recipe (`GET /inventory/recipes/:PRODUCT_ID`): one per product.
 @immutable
 class Recipe {
@@ -75,7 +144,8 @@ class Recipe {
     this.paused = false,
     this.version = 0,
     this.updated,
-    this.lines = const []
+    this.lines = const [],
+    this.choices = const []
   });
 
   final String productId;
@@ -87,6 +157,12 @@ class Recipe {
   final int version;
   final DateTime? updated;
   final List<RecipeLine> lines;
+
+  /// What the customer picks (only on a product made to order that no other recipe contains).
+  final List<RecipeChoice> choices;
+
+  /// Whether it consumes anything at all: its lines, or what is picked.
+  bool get isEmpty => lines.isEmpty && choices.isEmpty;
 
   List<RecipeLine> get negotiable => [for (final line in lines) if (line.negotiable) line];
 
@@ -101,7 +177,8 @@ class Recipe {
       paused: kitchenBool(data["paused"]),
       version: kitchenInt(data["version"]),
       updated: kitchenDate(data["updated"]),
-      lines: [for (final line in kitchenMaps(data["lines"])) RecipeLine.fromJson(line)]
+      lines: [for (final line in kitchenMaps(data["lines"])) RecipeLine.fromJson(line)],
+      choices: RecipeChoice.listFrom(data["choices"])
     );
   }
 
@@ -111,7 +188,10 @@ class Recipe {
     final known = {
       ...names,
       for (final line in before?.lines ?? const <RecipeLine>[])
-        if (line.name.isNotEmpty) line.productId: line.name
+        if (line.name.isNotEmpty) line.productId: line.name,
+      for (final choice in before?.choices ?? const <RecipeChoice>[])
+        for (final option in choice.options)
+          if (option.name.isNotEmpty) option.productId: option.name
     };
 
     return Recipe(
@@ -121,7 +201,8 @@ class Recipe {
       paused: paused,
       version: version,
       updated: updated,
-      lines: [for (final line in lines) line.name.isEmpty ? line.named(known[line.productId] ?? "") : line]
+      lines: [for (final line in lines) line.name.isEmpty ? line.named(known[line.productId] ?? "") : line],
+      choices: [for (final choice in choices) choice.namedFrom(known)]
     );
   }
 }
