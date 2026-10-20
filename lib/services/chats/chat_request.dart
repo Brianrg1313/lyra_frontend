@@ -67,8 +67,16 @@ Map<String, dynamic> chatStageRequest({
 };
 
 /// `POST /aries/v1/chats/alerts/resolve`. Without [stage] every pending work
-/// of the chat is resolved.
-Map<String, dynamic> resolveChatRequest({required String id, String? stage}) => {
+/// of the chat is resolved. [questionId] resolves that question alone, and
+/// [answer] is what the assistant tells the customer about it, at once.
+Map<String, dynamic> resolveChatRequest({
+  required String id,
+  String? stage,
+  String? questionId,
+  String? answer
+}) => {
   "ID": id,
-  "STAGE": ?stage
+  "STAGE": ?stage,
+  "QUESTION_ID": ?questionId,
+  "ANSWER": ?answer
 };

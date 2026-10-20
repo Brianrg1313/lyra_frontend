@@ -11,12 +11,15 @@ import 'package:app/services/chats/chat_thread_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/messages/chat_format.dart';
+import 'package:app/screens/home/sections/messages/chat/chat_question.dart';
 import 'package:app/screens/home/sections/messages/tags/chat_stage_color.dart';
 
 /// The most urgent attention mark of the open conversation: what happened, the
 /// text for the team (never shown to the customer), and "mark as resolved"
 /// for pending work. A `failure` has no button: it clears itself once anybody
-/// answers.
+/// answers. Questions the assistant left with the team each get a box to
+/// answer it in ([ChatQuestionAnswer]); "mark as resolved" stays for the ones
+/// a person already told the customer by other means.
 class ChatAttentionBar extends StatelessWidget {
   const ChatAttentionBar({super.key});
 
@@ -31,6 +34,12 @@ class ChatAttentionBar extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final color = chatWaitingColor(context, attention.kind);
     final extra = attention.also.length;
+
+    // A question is answered to the assistant, which tells the customer; the
+    // other marks are only text and the "resolved" button.
+    final answerable = attention.kind == ChatWaiting.pending &&
+      attention.stage == "question" &&
+      attention.questions.isNotEmpty;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(AppSize.spaceS, 0, AppSize.spaceS, AppSize.spaceXS),
@@ -65,7 +74,14 @@ class ChatAttentionBar extends StatelessWidget {
                     color: scheme.text.secondary
                   )
                 ]),
-                if (attention.detail.isNotEmpty) ...[
+                if (answerable) ...[
+                  SizedBox(height: AppSize.gap * 0.6),
+                  TextSmall(S.of(context).messages_question_hint, color: scheme.text.secondary),
+                  for (final question in attention.questions) ...[
+                    SizedBox(height: AppSize.spaceXS),
+                    ChatQuestionAnswer(key: ValueKey(question.id), question: question)
+                  ]
+                ] else if (attention.detail.isNotEmpty) ...[
                   SizedBox(height: AppSize.gap * 0.6),
                   TextSmall(attention.detail, lines: 6, selectable: true)
                 ]

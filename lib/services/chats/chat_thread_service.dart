@@ -17,6 +17,20 @@ import 'package:app/toolkit/api.dart';
 
 enum ChatThreadStatus { idle, loading, ready, error }
 
+/// What happened to an answer given to the assistant
+/// ([ChatThreadService.answer]).
+enum ChatRelay {
+  /// The assistant is telling the customer now.
+  now,
+
+  /// The conversation is with a person: the assistant tells them when it gets
+  /// it back.
+  paused,
+
+  /// The conversation's session is over: only a person can write first.
+  closed
+}
+
 /// **One open conversation**: its detail, its history and every write a person
 /// makes on it.
 ///
@@ -342,6 +356,31 @@ class ChatThreadService extends ChangeNotifier {
     ),
     (_) => _readDetail()
   );
+
+  /// Answers one question the assistant left with the team: the backend takes
+  /// it off the list and the assistant tells the customer at once, in its own
+  /// words, without the person writing to them. Null when the write failed.
+  Future<ChatRelay?> answer({required String questionId, required String text}) async {
+    ChatRelay? relay;
+
+    final landed = await _write(
+      () => aries.post(
+        path: "/chats/alerts/resolve",
+        version: "v1",
+        data: resolveChatRequest(id: id, stage: "question", questionId: questionId, answer: text)
+      ),
+      (data) {
+        final answer = chatEvent(data);
+        relay = answer?["relayed"] != true
+          ? ChatRelay.closed
+          : answer?["paused"] == true ? ChatRelay.paused : ChatRelay.now;
+
+        return _readDetail();
+      }
+    );
+
+    return landed ? relay : null;
+  }
 
   /// Blue ticks to the customer without answering. By user action only: it
   /// tells the customer somebody is looking.

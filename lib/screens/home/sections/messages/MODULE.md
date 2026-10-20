@@ -38,7 +38,8 @@
   in place of the unanswered dot.
 - `chat/_chat.dart` — `ChatPanel({id})`: owns `ChatThreadService`; header, attention bar, messages, composer.
 - `chat/chat_header.dart` — `ChatHeader`: identity + stage, tags, take over (duration menu) / return to assistant, assign (`ChatThreadService.assignable`: who may take this chat, read on each open; a `desk_member_branch` refusal is its flag), options menu (mark read, approve the payment → `showApprovePayment` (`paid`, «Por cerrar»; a short amount allowed), close the sale (`sold`, confirmed; approves too when it was not), ended, undo (close first, then the approval), AI cost → `showChatUsage`, earlier sessions); `widgets/chat_bot_line.dart` — `ChatBotLine`: who answers + assignee; `widgets/chat_handover_button.dart` — `ChatHandoverButton`.
-- `chat/chat_attention.dart` — `ChatAttentionBar`, `chatAttentionTitle`: most urgent mark, team-only detail, resolve button for `pending`.
+- `chat/chat_attention.dart` — `ChatAttentionBar`, `chatAttentionTitle`: most urgent mark, team-only detail, resolve button for `pending`; a `question` mark lists its questions, each with its answer box.
+- `chat/chat_question.dart` — `ChatQuestionAnswer`: one question the assistant left with the team and the box a person answers it in — the answer goes to the assistant (`ChatThreadService.answer`, `QUESTION_ID` + `ANSWER`), which tells the customer at once in its own words, without pausing it; the flag says now · when given back · session over (`ChatRelay`).
 - `chat/message_list.dart` — `MessageList`: reversed `ListView`, loads older (`BEFORE`) near the top, groups runs by author.
 - `chat/message_bubble.dart` — `MessageBubble`: side by direction, fill by author, image (`FileModel` → `showImageViewer`), audio mark, ticks/queued/failed.
 - `chat/chat_composer.dart` — `ChatComposer`: `Input` + send (Enter sends); hint that replying pauses the assistant.

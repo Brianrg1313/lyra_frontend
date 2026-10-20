@@ -147,6 +147,23 @@ void main() {
     expect(detail.tags.last.since, DateTime.utc(2026, 9, 16, 18, 20, 37, 150));
   });
 
+  test('a question mark reads each question with the id its answer names', () {
+    final attention = ChatAttention.from({
+      "kind": "pending",
+      "stage": "question",
+      "detail": "¿Llegan al Cafetal?\n¿Traen dos tallas?",
+      "questions": [
+        {"id": "3f1c9a0b7e2d", "text": "¿Llegan al Cafetal?", "since": "2026-10-20T21:24:33.295Z"},
+        {"id": "a8bbef71c05a", "text": "¿Traen dos tallas?"},
+        {"id": "", "text": "no id"}
+      ]
+    })!;
+
+    expect(attention.questions.map((question) => question.id), ["3f1c9a0b7e2d", "a8bbef71c05a"]);
+    expect(attention.questions.first.since, DateTime.utc(2026, 10, 20, 21, 24, 33, 295));
+    expect(ChatAttention.from({"kind": "pending", "stage": "payment"})!.questions, isEmpty);
+  });
+
   test('a tags event replaces the open chat tags, named by its detail', () {
     thread.seed(detail: const ChatDetailModel(id: "c1", tags: [ChatTag(tag: "question")]));
 

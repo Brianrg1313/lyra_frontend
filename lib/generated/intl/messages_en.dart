@@ -5103,6 +5103,24 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "messages_options": MessageLookupByLibrary.simpleMessage("More options"),
     "messages_pending": m172,
+    "messages_question_hint": MessageLookupByLibrary.simpleMessage(
+      "Answer Lyra, not the customer: she tells them right away, in her own words.",
+    ),
+    "messages_question_placeholder": MessageLookupByLibrary.simpleMessage(
+      "Your answer for Lyra",
+    ),
+    "messages_question_relay_closed": MessageLookupByLibrary.simpleMessage(
+      "The conversation is over: write to the customer yourself",
+    ),
+    "messages_question_relay_paused": MessageLookupByLibrary.simpleMessage(
+      "Lyra will tell the customer when you give the conversation back",
+    ),
+    "messages_question_relayed": MessageLookupByLibrary.simpleMessage(
+      "Lyra is telling the customer now",
+    ),
+    "messages_question_send": MessageLookupByLibrary.simpleMessage(
+      "Send to Lyra",
+    ),
     "messages_queued_subtitle": MessageLookupByLibrary.simpleMessage(
       "The phone of this number is offline: the message leaves when it reconnects.",
     ),

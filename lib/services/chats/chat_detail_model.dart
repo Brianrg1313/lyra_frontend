@@ -12,6 +12,7 @@ class ChatAttention {
     this.partial = false,
     this.since,
     this.count = 0,
+    this.questions = const [],
     this.also = const []
   });
 
@@ -33,6 +34,10 @@ class ChatAttention {
   /// On `failure`: failed turns in a row.
   final int count;
 
+  /// On `question`: each question the assistant left with the team, answered
+  /// one by one ([ChatThreadService.answer]).
+  final List<ChatQuestion> questions;
+
   /// More work on the same conversation, less urgent.
   final List<ChatAttention> also;
 
@@ -50,6 +55,11 @@ class ChatAttention {
       partial: json["partial"] == true,
       since: chatDate(json["since"]),
       count: chatInt(json["count"]),
+      questions: [
+        if (json["questions"] is List)
+          for (final entry in json["questions"] as List)
+            ?ChatQuestion.from(entry)
+      ],
       also: [
         if (json["also"] is List)
           for (final entry in json["also"] as List)
@@ -60,6 +70,29 @@ class ChatAttention {
 
   /// Every mark on the conversation, most urgent first.
   List<ChatAttention> get all => [this, ...also];
+}
+
+/// One question the assistant promised the customer to confirm (`ask_team`).
+/// Its [id] is what an answer names (`QUESTION_ID`).
+class ChatQuestion {
+  const ChatQuestion({required this.id, required this.text, this.since});
+
+  final String id;
+
+  /// The question in the assistant's words. **Internal: never shown to the
+  /// customer.**
+  final String text;
+  final DateTime? since;
+
+  static ChatQuestion? from(dynamic json) {
+    if (json is! Map) return null;
+
+    final id = chatText(json["id"]);
+    final text = chatText(json["text"]);
+    if (id.isEmpty || text.isEmpty) return null;
+
+    return ChatQuestion(id: id, text: text, since: chatDate(json["since"]));
+  }
 }
 
 /// Payment state of the conversation.

@@ -165,6 +165,12 @@ void main() {
     test('undoing a manual stage sends STAGE null', () {
       expect(chatStageRequest(id: "c1"), {"ID": "c1", "STAGE": null});
     });
+
+    test('resolving sends only what is given; an answer names its question', () {
+      expect(resolveChatRequest(id: "c1"), {"ID": "c1"});
+      expect(resolveChatRequest(id: "c1", stage: "question", questionId: "3f1c9a0b7e2d", answer: "No, one pair"),
+        {"ID": "c1", "STAGE": "question", "QUESTION_ID": "3f1c9a0b7e2d", "ANSWER": "No, one pair"});
+    });
   });
 
   group('socket events', () {

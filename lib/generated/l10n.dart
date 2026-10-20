@@ -24049,6 +24049,66 @@ class S {
     );
   }
 
+  /// `Answer Lyra, not the customer: she tells them right away, in her own words.`
+  String get messages_question_hint {
+    return Intl.message(
+      'Answer Lyra, not the customer: she tells them right away, in her own words.',
+      name: 'messages_question_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your answer for Lyra`
+  String get messages_question_placeholder {
+    return Intl.message(
+      'Your answer for Lyra',
+      name: 'messages_question_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send to Lyra`
+  String get messages_question_send {
+    return Intl.message(
+      'Send to Lyra',
+      name: 'messages_question_send',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra is telling the customer now`
+  String get messages_question_relayed {
+    return Intl.message(
+      'Lyra is telling the customer now',
+      name: 'messages_question_relayed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra will tell the customer when you give the conversation back`
+  String get messages_question_relay_paused {
+    return Intl.message(
+      'Lyra will tell the customer when you give the conversation back',
+      name: 'messages_question_relay_paused',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The conversation is over: write to the customer yourself`
+  String get messages_question_relay_closed {
+    return Intl.message(
+      'The conversation is over: write to the customer yourself',
+      name: 'messages_question_relay_closed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The assistant could not answer a customer`
   String get messages_notice_failure_title {
     return Intl.message(
