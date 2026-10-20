@@ -11,9 +11,9 @@ import 'package:app/services/kitchen/recipe_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/table_list/supplies/recipe_row.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 import 'package:app/screens/modals/shared/option_tile.dart';
 
 /// One line as it is being written: the ingredient, its quantity (in one of the units its own
@@ -392,14 +392,14 @@ class _RecipeEditorState extends State<RecipeEditor> {
       children: [
         ...widget.leading,
         if (!widget.supplies) ...[
-          TextMedium(s.supply_chain_mode_title, bold: true),
+          TextMedium(s.kitchen_mode_title, bold: true),
           SizedBox(height: AppSize.spaceXS),
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             for (final batch in [false, true]) ...[
               if (batch) SizedBox(width: AppSize.spaceS),
               Expanded(child: OptionTile(
-                title: batch ? s.supply_chain_mode_batch : s.supply_chain_mode_order,
-                note: batch ? s.supply_chain_mode_batch_note : s.supply_chain_mode_order_note,
+                title: batch ? s.kitchen_mode_batch : s.kitchen_mode_order,
+                note: batch ? s.kitchen_mode_batch_note : s.kitchen_mode_order_note,
                 selected: _batch == batch,
                 action: widget.canEdit ? () {
                   setState(() => _batch = batch);
@@ -410,10 +410,10 @@ class _RecipeEditorState extends State<RecipeEditor> {
           ]),
           SizedBox(height: AppSize.spaceM)
         ],
-        TextMedium(s.supply_chain_lines_title, bold: true),
-        KitchenNote(text: s.supply_chain_lines_note),
+        TextMedium(s.kitchen_lines_title, bold: true),
+        KitchenNote(text: s.kitchen_lines_note),
         if (_lines.isEmpty && _choices.isEmpty && !widget.canEdit)
-          KitchenNote(text: s.supply_chain_lines_empty, color: scheme.text.secondary)
+          KitchenNote(text: s.kitchen_lines_empty, color: scheme.text.secondary)
         else if (_lines.isNotEmpty) Surface.over(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             for (final (index, line) in _lines.indexed) ...[
@@ -441,7 +441,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
         if (widget.canEdit) ...[
           SizedBox(height: AppSize.spaceXS),
           KitchenProductPicker(
-            placeholder: s.supply_chain_lines_add,
+            placeholder: s.kitchen_lines_add,
             exclude: {...widget.exclude, for (final line in _lines) line.productId},
             onPick: _add
           )
@@ -562,10 +562,10 @@ class _RecipeEditorState extends State<RecipeEditor> {
     final splits = recipeSplits([for (final choice in choices) (choose: choice.choose, options: choice.options.length)]);
 
     // What the customer picks is never left out: with a choice, no line has to be essential.
-    _error = _lines.isEmpty && _choices.isEmpty ? s.supply_chain_lines_empty
+    _error = _lines.isEmpty && _choices.isEmpty ? s.kitchen_lines_empty
       : _batch && _choices.isNotEmpty ? s.recipe_choice_batch
       : splits > kitchenMaxSplits ? s.recipe_choice_too_many(splits, kitchenMaxSplits)
-      : _choices.isEmpty && _lines.length == drafts.length && drafts.every((line) => line.negotiable) ? s.supply_chain_lines_essential
+      : _choices.isEmpty && _lines.length == drafts.length && drafts.every((line) => line.negotiable) ? s.kitchen_lines_essential
       : "";
 
     setState(() {});
@@ -583,11 +583,11 @@ class _RecipeEditorState extends State<RecipeEditor> {
     final s = S.of(context);
 
     return switch (_read(line)) {
-      (null, _) => s.supply_chain_line_qty_invalid,
-      (final double value, _) when value <= 0 => s.supply_chain_line_qty_invalid,
-      (final double value, _) when line.supplies == false && value != value.roundToDouble() => s.supply_chain_line_qty_whole,
-      (_, null) => s.supply_chain_line_waste_invalid,
-      (_, final double value) when value < 0 || value >= 100 => s.supply_chain_line_waste_invalid,
+      (null, _) => s.kitchen_line_qty_invalid,
+      (final double value, _) when value <= 0 => s.kitchen_line_qty_invalid,
+      (final double value, _) when line.supplies == false && value != value.roundToDouble() => s.kitchen_line_qty_whole,
+      (_, null) => s.kitchen_line_waste_invalid,
+      (_, final double value) when value < 0 || value >= 100 => s.kitchen_line_waste_invalid,
       _ => ""
     };
   }
@@ -737,7 +737,7 @@ class _LineRow extends StatelessWidget {
         Row(children: [
           SizedBox(
             width: _qtyWidth,
-            child: Input(controller: line.qty, placeholder: s.supply_chain_line_qty, buttonSpace: false)
+            child: Input(controller: line.qty, placeholder: s.kitchen_line_qty, buttonSpace: false)
           ),
           SizedBox(width: AppSize.gap),
           _UnitPicker(line: line, enabled: enabled, onUnit: onUnit),
@@ -748,7 +748,7 @@ class _LineRow extends StatelessWidget {
             Flexible(child: TextMedium(line.name, ellipsis: true, bold: true)),
             if (!line.more && waste > 0) ...[
               SizedBox(width: AppSize.gap),
-              RecipeTag(text: s.supply_chain_line_waste_of(kitchenPercent(context, waste)), color: scheme.text.secondary)
+              RecipeTag(text: s.kitchen_line_waste_of(kitchenPercent(context, waste)), color: scheme.text.secondary)
             ]
           ])),
           if (cost != null) ...[
@@ -764,7 +764,7 @@ class _LineRow extends StatelessWidget {
           ],
           FocusableWidget(
             action: onMore,
-            message: s.supply_chain_line_more,
+            message: s.kitchen_line_more,
             child: Padding(
               padding: EdgeInsets.all(AppSize.gap),
               child: Icon(line.more ? CI.arrow_top : CI.arrow_down, size: AppSize.text, color: scheme.text.secondary)
@@ -772,7 +772,7 @@ class _LineRow extends StatelessWidget {
           ),
           if (enabled) FocusableWidget(
             action: onRemove,
-            message: s.supply_chain_line_remove,
+            message: s.kitchen_line_remove,
             child: Padding(
               padding: EdgeInsets.all(AppSize.gap),
               child: Icon(CI.trash, size: AppSize.text, color: scheme.text.secondary)
@@ -784,7 +784,7 @@ class _LineRow extends StatelessWidget {
           child: Row(children: [
             SizedBox(
               width: _qtyWidth,
-              child: Input(controller: line.waste, placeholder: s.supply_chain_line_waste, buttonSpace: false)
+              child: Input(controller: line.waste, placeholder: s.kitchen_line_waste, buttonSpace: false)
             ),
             SizedBox(width: AppSize.gap),
             // The percent sits where the unit sits above it: the waste reads as «5 %», like «150 g».
@@ -793,7 +793,7 @@ class _LineRow extends StatelessWidget {
               child: Center(child: TextSmall("%", color: scheme.text.secondary))
             ),
             SizedBox(width: AppSize.spaceS),
-            Expanded(child: TextSmall(s.supply_chain_line_waste_note, lines: 2, color: scheme.text.secondary))
+            Expanded(child: TextSmall(s.kitchen_line_waste_note, lines: 2, color: scheme.text.secondary))
           ])
         ),
         if (line.error.isNotEmpty) Padding(
@@ -881,14 +881,14 @@ class _OptionalToggle extends StatelessWidget {
       ),
       child: FeedbackButton(
         action: onChanged,
-        message: s.supply_chain_line_negotiable_note,
+        message: s.kitchen_line_negotiable_note,
         color: value ? scheme.accent.withValues(alpha: 0.14) : scheme.surface,
         radius: AppSize.corner,
         padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(value ? CI.check : CI.plus, size: AppSize.text * 0.85, color: value ? scheme.accent : scheme.text.secondary),
           SizedBox(width: AppSize.gap / 2),
-          TextSmall(s.supply_chain_line_negotiable, multiplier: 0.9, color: value ? scheme.accent : scheme.text.secondary, bold: value)
+          TextSmall(s.kitchen_line_negotiable, multiplier: 0.9, color: value ? scheme.accent : scheme.text.secondary, bold: value)
         ])
       )
     );
@@ -911,7 +911,7 @@ class _UnitPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
     final s = S.of(context);
-    final label = line.shown.symbol.isEmpty ? s.supply_chain_line_units : line.shown.symbol;
+    final label = line.shown.symbol.isEmpty ? s.kitchen_line_units : line.shown.symbol;
 
     if (line.units.length < 2) {
       return SizedBox(
@@ -926,7 +926,7 @@ class _UnitPicker extends StatelessWidget {
     return Builder(builder: (anchor) => FeedbackButton(
       width: width,
       height: AppSize.action,
-      message: menu ? s.supply_chain_line_unit_pick : s.supply_chain_line_unit_switch(next.symbol),
+      message: menu ? s.kitchen_line_unit_pick : s.kitchen_line_unit_switch(next.symbol),
       action: !enabled ? null : menu ? () => _pick(anchor) : () => onUnit(next),
       color: scheme.surface,
       child: Center(child: TextSmall(label, bold: true))

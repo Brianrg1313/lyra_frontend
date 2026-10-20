@@ -5,8 +5,8 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/kitchen/modifier_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/table_list/supplies/recipe_row.dart';
 
 /// One group: its name, how many a line must and may take, its options as the till offers them
 /// (each a chip, its price beside its name), and at the right edge how many products offer it.
@@ -46,7 +46,7 @@ class ModifierRow extends StatelessWidget {
         ])),
         SizedBox(width: AppSize.spaceS),
         TextSmall(
-          s.supply_chain_modifiers_products(group.products.length),
+          s.kitchen_modifiers_products(group.products.length),
           textAlign: TextAlign.end,
           color: group.products.isEmpty ? scheme.snackBar.alert : scheme.text.secondary
         ),
@@ -95,8 +95,8 @@ String modifierRule(BuildContext context, ModifierGroup group) {
   final s = S.of(context);
   final max = group.max;
 
-  if (group.min == 1 && max == 1) return s.supply_chain_modifiers_choose_one;
-  if (group.min > 0) return max == null ? s.supply_chain_modifiers_at_least(group.min) : s.supply_chain_modifiers_between(group.min, max);
+  if (group.min == 1 && max == 1) return s.kitchen_modifiers_choose_one;
+  if (group.min > 0) return max == null ? s.kitchen_modifiers_at_least(group.min) : s.kitchen_modifiers_between(group.min, max);
 
-  return max == null ? s.supply_chain_modifiers_optional : s.supply_chain_modifiers_up_to(max);
+  return max == null ? s.kitchen_modifiers_optional : s.kitchen_modifiers_up_to(max);
 }

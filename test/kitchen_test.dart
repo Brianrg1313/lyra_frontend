@@ -12,7 +12,7 @@ import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 
-/// The supply chain's contract (`backend .../docs/guides/cocina-frontend.md`): recipes,
+/// The kitchen's contract (`backend .../docs/guides/cocina-frontend.md`): recipes,
 /// availability, modifiers, presentations and reports read as the backend answers them, the
 /// write bodies carry its capital keys, and a `stock/changed` of a dish made to order moves
 /// only what its supplies allow.
@@ -205,7 +205,7 @@ void main() {
   group("live", () {
     test("stock/changed of a dish made to order moves only its availability; another one a supply's stock, decimals kept", () {
       final service = KitchenProductsService(listen: false)..seed(
-        tables: const [TableLiteModel(id: "t", title: "Menu")],
+        table: const TableLiteModel(id: "t", title: "Menu", kind: TableKind.supplies),
         products: const [
           KitchenProduct(id: "burger", tableId: "t", name: "Burger"),
           KitchenProduct(id: "bacon", tableId: "t", name: "Bacon", stock: 2, supplies: true)

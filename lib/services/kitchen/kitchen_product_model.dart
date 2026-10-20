@@ -5,7 +5,7 @@ import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/kitchen/kitchen_read.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 
-/// A product as the supply chain lists and picks it: a row of a table's stock summary
+/// A product as the kitchen lists and picks it: a row of a table's stock summary
 /// (`POST /inventory/stock/summary/`), named by its first text column.
 ///
 /// [unit] is the product's own when it declared one (`cocina-frontend.md` §8, the row's

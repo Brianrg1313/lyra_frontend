@@ -16,10 +16,10 @@ import 'package:app/services/stock/tables/table_structure_model.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/home/sections/supply_chain/modifiers/modifier_row.dart';
-import 'package:app/screens/modals/supply_chain/modifier_group/_modifier_group.dart';
-import 'package:app/screens/modals/supply_chain/recipe/recipe_editor.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/modifiers/modifier_row.dart';
+import 'package:app/screens/modals/kitchen/modifier_group/_modifier_group.dart';
+import 'package:app/screens/modals/kitchen/recipe/recipe_editor.dart';
 
 import './made_add_bar.dart';
 import './made_groups.dart';
@@ -172,9 +172,9 @@ class _MadeProductFormState extends State<MadeProductForm> {
   int _costTicket = 0;
 
   /// `POST /recipes/cost` asks for the kitchen's reports.
-  final bool _costs = PermissionsService().can("supply_chain.reports.view");
+  final bool _costs = PermissionsService().can("menu.costs");
 
-  bool get _canEditGroups => PermissionsService().can("supply_chain.modifiers.edit");
+  bool get _canEditGroups => PermissionsService().can("inventory.modifiers.edit");
 
   String get _nameTitle => _fields.name?.name ?? S.of(context).made_product_name;
 
@@ -253,7 +253,7 @@ class _MadeProductFormState extends State<MadeProductForm> {
           RecipeEditor(
             recipe: consumes?.recipe,
             supplies: false,
-            canEdit: PermissionsService().can("supply_chain.recipes.edit"),
+            canEdit: PermissionsService().can("inventory.recipes.edit"),
             exclude: {if (_product != null) _product!.id},
             units: widget.service.units,
             saveLabel: _product == null ? s.made_product_create : s.made_product_save,

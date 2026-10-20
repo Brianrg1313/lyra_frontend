@@ -6,9 +6,9 @@ import 'package:app/services/kitchen/made_products_service.dart';
 import 'package:app/services/kitchen/modifier_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/home/sections/supply_chain/modifiers/modifier_row.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/modifiers/modifier_row.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 
 /// The modifier groups a product offers of one kind (`cocina-frontend.md` §6): what the customer
 /// must choose (the dough: [ModifierGroup.required]) or may add (the extras). Each one a card

@@ -61,8 +61,8 @@ class TableLiteModel {
   /// Flutter ARGB literal (`0xFF2196F3`) the table is tinted with, or empty.
   final String color;
 
-  /// What its rows are ([TableKind]): the inventory lists catalogs and made products, the
-  /// production line supplies.
+  /// What its rows are ([TableKind]): the inventory lists catalogs and supplies, the menu
+  /// made products.
   final TableKind kind;
 
   /// Its rows are supplies: never sold, never the primary table, counted with decimals.

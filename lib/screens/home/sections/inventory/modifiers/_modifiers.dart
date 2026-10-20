@@ -13,7 +13,7 @@ import 'package:app/services/permissions/permissions_service.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
-import 'package:app/screens/modals/supply_chain/modifier_group/_modifier_group.dart';
+import 'package:app/screens/modals/kitchen/modifier_group/_modifier_group.dart';
 
 import './modifier_row.dart';
 
@@ -37,7 +37,7 @@ class _ModifiersTabState extends State<ModifiersTab> {
     });
   }
 
-  bool get _canEdit => PermissionsService().can("supply_chain.modifiers.edit");
+  bool get _canEdit => PermissionsService().can("inventory.modifiers.edit");
 
   /// Opens the form —a new group without [group]— and writes what it collected.
   Future<void> _open({ModifierGroup? group}) async {
@@ -60,7 +60,7 @@ class _ModifiersTabState extends State<ModifiersTab> {
           options: draft.options
         ));
 
-    if (done) FloatFlag.of().message(draft.delete ? s.supply_chain_modifiers_deleted : s.supply_chain_modifiers_saved);
+    if (done) FloatFlag.of().message(draft.delete ? s.kitchen_modifiers_deleted : s.kitchen_modifiers_saved);
   }
 
   @override
@@ -70,12 +70,12 @@ class _ModifiersTabState extends State<ModifiersTab> {
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(children: [
-        Expanded(child: TextSmall(s.supply_chain_modifiers_note, lines: 2, color: ThemeColor.of(context).text.secondary)),
+        Expanded(child: TextSmall(s.kitchen_modifiers_note, lines: 2, color: ThemeColor.of(context).text.secondary)),
         if (_canEdit) ...[
           SizedBox(width: AppSize.spaceS),
           SizedBox(
             width: 200,
-            child: MainButton(title: s.supply_chain_modifiers_create, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => _open())
+            child: MainButton(title: s.kitchen_modifiers_create, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => _open())
           )
         ]
       ]),
@@ -84,16 +84,16 @@ class _ModifiersTabState extends State<ModifiersTab> {
         ModifiersStatus.idle || ModifiersStatus.loading => const Center(child: Loading()),
         ModifiersStatus.error => SectionMessage(
           icon: CI.info,
-          title: s.supply_chain_modifiers_error,
+          title: s.kitchen_modifiers_error,
           action: () => service.load(force: true),
           actionLabel: s.knowledge_retry
         ),
         ModifiersStatus.empty => SectionMessage(
           icon: CI.plus,
-          title: s.supply_chain_modifiers_empty,
-          subtitle: s.supply_chain_modifiers_empty_note,
+          title: s.kitchen_modifiers_empty,
+          subtitle: s.kitchen_modifiers_empty_note,
           action: _canEdit ? () => _open() : null,
-          actionLabel: _canEdit ? s.supply_chain_modifiers_create : null,
+          actionLabel: _canEdit ? s.kitchen_modifiers_create : null,
           actionIcon: CI.plus
         ),
         ModifiersStatus.ready => ListView.separated(

@@ -23,9 +23,8 @@ import './made_products/_made_products.dart';
 /// The menu: what the company makes from its supplies and sells (a burger, a combo, a candle),
 /// **one `made` table at a time** (`cocina-frontend.md` §2, §3).
 ///
-/// Its own section so the three stages read apart: the inventory holds what is bought and
-/// counted, the supply chain the supplies and their preparations, and this what is assembled
-/// from them. The tables are the inventory's (`TablesService`, the same grants): only the kind
+/// Its own section, apart from the inventory's products and supplies: a made product is
+/// written as a form with what it consumes, never as a sheet's row. The tables are the inventory's (`TablesService`, the same grants): only the kind
 /// tells them apart, so the bar's selector, options and create are the inventory's, and a made
 /// table is never listed there.
 ///

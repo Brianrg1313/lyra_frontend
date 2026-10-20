@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
-import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/home/home_service.dart';
@@ -22,21 +21,22 @@ import 'package:app/services/stock/summary/stock_summary_service.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/screens/home/sections/_sections.dart';
-import 'package:app/screens/home/sections/inventory/table_list/_table_list.dart';
+import 'package:app/screens/home/sections/inventory/_inventory.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_start.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_layout.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_product_row.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_stepper.dart';
-import 'package:app/screens/home/sections/inventory/table_list/view_toggle.dart';
-import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
-import 'package:app/screens/home/sections/supply_chain/recipes/_recipes.dart';
+import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
+import 'package:app/screens/home/sections/inventory/table_list/supplies/_supplies.dart';
+import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/settings/routes.dart';
 
-/// Supplies and products are different tables, and no table shows in both sections
-/// (`cocina-frontend.md` §2.1): the inventory lists catalogs only, the menu made products only,
-/// the production line supplies only, each with its own empty state; and a catalog's dish made to order shows in its stock
-/// column what its supplies allow, with no buttons (it has no shelf to move).
+/// Supplies and products are different tables in one section, and no table shows in two
+/// (`cocina-frontend.md` §2): the inventory lists catalogs and supplies, asking the kind of a new
+/// one, and the menu made products only; a supplies table's list reads the table it was opened
+/// on; and a catalog's dish made to order shows in its stock column what its supplies allow, with
+/// no buttons (it has no shelf to move).
 const _menu = "550e8400-e29b-41d4-a716-446655440000";
 const _pantry = "550e8400-e29b-41d4-a716-446655440001";
 
@@ -78,12 +78,12 @@ void main() {
     return tables;
   }
 
-  testWidgets("the inventory never opens a supplies table, not even by its link", (tester) async {
+  testWidgets("the inventory opens a supplies table beside its catalogs, by its link", (tester) async {
     await inventory(tester, "${HomeSection.inventory.path}/$_pantry", const [_catalog, _supplies]);
 
     expect(tester.takeException(), isNull);
-    expect(find.text("Menu"), findsOneWidget);
-    expect(find.text("Pantry"), findsNothing);
+    expect(find.text("Pantry"), findsOneWidget);
+    expect(find.text("Menu"), findsNothing);
   });
 
   testWidgets("the inventory never opens a made products table, not even by its link: it is the menu's", (tester) async {
@@ -102,54 +102,49 @@ void main() {
     expect(find.text("Burgers"), findsNothing);
   });
 
-  testWidgets("a company with supplies tables only is offered to create its products'", (tester) async {
+  testWidgets("a company with supplies tables only opens them, not the start", (tester) async {
     await inventory(tester, HomeSection.inventory.path, const [_supplies]);
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(InventoryStart), findsOneWidget);
-    expect(find.text("Pantry"), findsNothing);
+    expect(find.byType(InventoryStart), findsNothing);
+    expect(find.text("Pantry"), findsOneWidget);
   });
 
-  test("the production line reads the supplies tables only", () async {
-    final stock = _Stock();
-    final service = KitchenProductsService(listen: false, inventory: _Inventory.answering(const [_catalog, _supplies]), stock: stock, measure: (_) async => const {});
-    addTearDown(service.dispose);
-
-    await service.load(tableId: _menu);
-
-    expect(service.tables.map((table) => table.id), [_pantry]);
-    expect(service.table!.id, _pantry);
-    expect(stock.summarized, [_pantry]);
-
-    final none = KitchenProductsService(listen: false, inventory: _Inventory.answering(const [_catalog]), stock: stock, measure: (_) async => const {});
-    addTearDown(none.dispose);
-
-    await none.load();
-
-    expect(none.status, KitchenProductsStatus.empty);
-    expect(none.table, isNull);
-    expect(stock.summarized, [_pantry]);
-  });
-
-  testWidgets("with no supplies table the tab offers to create one", (tester) async {
+  testWidgets("a new inventory table asks what it holds, says it is for good, and sends it", (tester) async {
     tester.view.physicalSize = const Size(1400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final service = KitchenProductsService(listen: false)..seed();
-    addTearDown(service.dispose);
+    final source = _Inventory.answering(const []);
+    final tables = TablesService(source: source);
+    addTearDown(tables.dispose);
 
-    await tester.pumpWidget(_app(
-      ChangeNotifierProvider<KitchenProductsService>.value(value: service, child: const RecipesTab()),
-      tables: TablesService(source: _Inventory())
-    ));
+    await tester.pumpWidget(_app(const SingleChildScrollView(child: CreateTableModal()), tables: tables));
     await tester.pump();
 
-    // No overflow check: the test font draws every letter as wide as it is tall, and the
-    // section message's button is a fixed width that the real font's label fits in.
-    tester.takeException();
-    expect(find.text(S.current.supply_chain_no_tables), findsOneWidget);
-    expect(find.text(S.current.supply_chain_table_create), findsOneWidget);
+    expect(find.text(S.current.table_kind_catalog), findsOneWidget);
+    expect(find.text(S.current.create_table_kind_fixed), findsOneWidget);
+
+    await tester.enterText(find.byType(EditableText).first, "Pantry");
+    await tester.tap(find.text(S.current.table_kind_supplies));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.create_table));
+    await tester.pumpAndSettle();
+
+    expect(source.created.single["TITLE"], "Pantry");
+    expect(source.created.single["KIND"], "supplies");
+  });
+
+  test("a supplies table's list reads the table it is opened on", () async {
+    final stock = _Stock();
+    final service = KitchenProductsService(listen: false, stock: stock, measure: (_) async => const {});
+    addTearDown(service.dispose);
+
+    await service.open(_supplies);
+
+    expect(service.table!.id, _pantry);
+    expect(stock.summarized, [_pantry]);
+    expect(service.products.map((product) => product.id), ["burger", "salt"]);
   });
 
   testWidgets("a supplies table with nothing listed offers its sheet, where supplies are written", (tester) async {
@@ -157,58 +152,23 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final service = KitchenProductsService(listen: false)..seed(tables: const [_supplies]);
+    final service = KitchenProductsService(listen: false)..seed(table: _supplies);
     addTearDown(service.dispose);
 
     await tester.pumpWidget(_app(
-      ChangeNotifierProvider<KitchenProductsService>.value(value: service, child: const RecipesTab()),
-      tables: TablesService(source: _Inventory())
-    ));
-    await tester.pump();
-
-    // Same font caveat as above.
-    tester.takeException();
-    expect(find.text(S.current.supply_chain_products_empty), findsOneWidget);
-    expect(find.text(S.current.supply_chain_open_sheet), findsOneWidget);
-    expect(find.byType(InventoryViewToggle), findsOneWidget);
-    expect(find.byType(TableViewSection), findsNothing);
-  });
-
-  testWidgets("the list comes back from the sheet with a working search", (tester) async {
-    tester.view.physicalSize = const Size(1400, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
-    final service = KitchenProductsService(listen: false, inventory: _Inventory.answering(const [_supplies]), stock: _Stock(), measure: (_) async => const {});
-    addTearDown(service.dispose);
-    await service.load();
-
-    await tester.pumpWidget(_app(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<KitchenProductsService>.value(value: service),
-          ChangeNotifierProvider<HomeService>.value(value: HomeService())
-        ],
-        child: const RecipesTab()
+      ChangeNotifierProvider<HomeService>.value(
+        value: HomeService(),
+        child: SuppliesSection(table: _supplies, parts: const InventoryBarParts(selector: SizedBox(), controls: []), service: service)
       ),
       tables: TablesService(source: _Inventory())
     ));
     await tester.pump();
+
+    // No overflow check: the test font draws every letter as wide as it is tall, and the
+    // section message's button is a fixed width that the real font's label fits in.
     tester.takeException();
-
-    // List, sheet, list, sheet, list: the search input mounts each time on a live controller.
-    for (var i = 0; i < 4; i++) {
-      await tester.tap(find.byType(InventoryViewToggle));
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.byType(TableViewSection), i.isEven ? findsOneWidget : findsNothing);
-
-      final error = tester.takeException();
-      expect(error.toString(), isNot(contains("disposed")));
-    }
-
-    expect(find.byType(SearchInput), findsOneWidget);
+    expect(find.text(S.current.kitchen_products_empty), findsOneWidget);
+    expect(find.text(S.current.kitchen_open_sheet), findsOneWidget);
   });
 
   test("a made table's summary measures its rows' recipes", () async {
@@ -320,8 +280,17 @@ class _Inventory implements InventorySource {
 
   final answer = Completer<List<TableLiteModel>>();
 
+  /// The bodies of the tables created.
+  final created = <Map<String, dynamic>>[];
+
   @override
   Future<List<TableLiteModel>> tables() => answer.future;
+
+  @override
+  Future<String> createTable(Map<String, dynamic> request) async {
+    created.add(request);
+    return "pantry-2";
+  }
 
   @override
   Future<List<TableTemplateModel>> templates() async => const [];

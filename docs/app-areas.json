@@ -227,7 +227,36 @@
         "purchases": "A restock's presentation and total cost (`PRESENTATION`, `COST`) and waste as a reason (`cocina-frontend.md` §7-8); the engine knows none.",
         "history": "A product's ledger read back: who moved it, why, for which dish, how it was bought (`cocina-frontend.md` §10); no op reads a master's.",
         "units": "What one product's stock is counted in when it is not its stock column's (a Pepsi in u among supplies in kg, `cocina-frontend.md` §8), and a unit change that carries the figures (`CONVERT`: a product's, a stock or measure column's); a master keeps no unit per product and converts nothing."
-      }
+      },
+      "children": [
+        {
+          "key": "inventory.recipes",
+          "title": "Kitchen",
+          "modes": ["cloud"],
+          "routes": [],
+          "paths": [],
+          "actions": ["view", "edit", "pause", "produce", "discard", "presentations"],
+          "action_notes": {
+            "view": "What a product is made of and how many can be made now (`kitchen`): a supply's panel from its row in the inventory, a dish's kitchen page from the menu. Without it a supplies table is still listed and its stock moved (`inventory.move_stock`).",
+            "edit": "Create, replace and delete a recipe (`kitchen.recipes`).",
+            "pause": "The 86: a product off whatever it has left (`kitchen.pause`).",
+            "produce": "Make a batch of a preparation, with what was lost of it (`kitchen.produce`).",
+            "discard": "A dish made to order and lost spends its supplies (`kitchen.discard`).",
+            "presentations": "How a product is bought: «Saco» = 25 kg (`inventory.presentations`)."
+          }
+        },
+        {
+          "key": "inventory.modifiers",
+          "title": "Modifiers",
+          "modes": ["cloud"],
+          "routes": ["inventory_modifiers"],
+          "paths": ["/home/inventory/modifiers"],
+          "actions": ["view", "edit"],
+          "action_notes": {
+            "edit": "Create, edit and delete groups of modifiers: extras, término (`kitchen.modifiers`)."
+          }
+        }
+      ]
     },
     {
       "key": "menu",
@@ -236,11 +265,12 @@
       "scope": "company",
       "routes": ["menu"],
       "paths": ["/home/menu"],
-      "actions": ["view", "create_table", "edit_table", "delete_table"],
+      "actions": ["view", "create_table", "edit_table", "delete_table", "costs"],
       "action_notes": {
         "view": "The `made` tables (`cocina-frontend.md` §2): what is made from the supplies and sold, each product a card with what it consumes. The inventory's tables, so its grants (`products`).",
         "create_table": "A new made products' table.",
-        "edit_table": "Rename and settings of a made table."
+        "edit_table": "Rename and settings of a made table.",
+        "costs": "What a dish costs and what its price leaves, on its card and its form (`kitchen.reports`)."
       }
     },
     {
@@ -335,55 +365,6 @@
           "actions": ["view", "create", "edit", "delete", "manage_currencies"],
           "action_notes": {
             "manage_currencies": "Add/edit exchange currencies and custom rates. The main currency is never written from the app."
-          }
-        }
-      ]
-    },
-    {
-      "key": "supply_chain",
-      "title": "Supply chain",
-      "modes": ["cloud"],
-      "scope": "company",
-      "routes": ["supply_chain"],
-      "paths": ["/home/supply_chain"],
-      "actions": ["view"],
-      "children": [
-        {
-          "key": "supply_chain.recipes",
-          "title": "Recipes",
-          "modes": ["cloud"],
-          "routes": ["supply_chain_recipes"],
-          "paths": ["/home/supply_chain/recipes"],
-          "actions": ["view", "edit", "pause", "produce", "discard", "presentations"],
-          "action_notes": {
-            "view": "What each product is made of and how many can be made now (`kitchen`), over the tables and their stock summary.",
-            "edit": "Create, replace and delete a recipe (`kitchen.recipes`).",
-            "pause": "The 86: a product off whatever it has left (`kitchen.pause`).",
-            "produce": "Make a batch of a preparation, with what was lost of it (`kitchen.produce`).",
-            "discard": "A dish made to order and lost spends its supplies (`kitchen.discard`).",
-            "presentations": "How a product is bought: «Saco» = 25 kg (`inventory.presentations`)."
-          }
-        },
-        {
-          "key": "supply_chain.modifiers",
-          "title": "Modifiers",
-          "modes": ["cloud"],
-          "routes": ["supply_chain_modifiers"],
-          "paths": ["/home/supply_chain/modifiers"],
-          "actions": ["view", "edit"],
-          "action_notes": {
-            "edit": "Create, edit and delete groups of modifiers: extras, término (`kitchen.modifiers`)."
-          }
-        },
-        {
-          "key": "supply_chain.reports",
-          "title": "Reports",
-          "modes": ["cloud"],
-          "routes": ["supply_chain_reports"],
-          "paths": ["/home/supply_chain/reports"],
-          "actions": ["view"],
-          "action_notes": {
-            "view": "Theoretical consumption, variance and cost per dish (`kitchen.reports`)."
           }
         }
       ]

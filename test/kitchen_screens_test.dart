@@ -8,8 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/kitchen/kitchen_products_service.dart';
-import 'package:app/services/kitchen/kitchen_report_model.dart';
-import 'package:app/services/kitchen/kitchen_reports_service.dart';
+import 'package:app/services/home/home_service.dart';
 import 'package:app/services/kitchen/modifier_model.dart';
 import 'package:app/services/kitchen/modifiers_service.dart';
 import 'package:app/services/kitchen/presentation_model.dart';
@@ -17,21 +16,20 @@ import 'package:app/services/kitchen/recipe_availability_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/kitchen/recipe_service.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
-import 'package:app/screens/home/sections/supply_chain/modifiers/_modifiers.dart';
-import 'package:app/screens/home/sections/supply_chain/recipes/_recipes.dart';
-import 'package:app/screens/home/sections/supply_chain/reports/_reports.dart';
-import 'package:app/screens/home/sections/supply_chain/reports/variance_report.dart';
-import 'package:app/screens/modals/supply_chain/discard_dish/_discard_dish.dart';
-import 'package:app/screens/modals/supply_chain/modifier_group/_modifier_group.dart';
-import 'package:app/screens/modals/supply_chain/presentations/_presentations.dart';
-import 'package:app/screens/modals/supply_chain/produce_batch/_produce_batch.dart';
-import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
+import 'package:app/screens/home/sections/inventory/modifiers/_modifiers.dart';
+import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
+import 'package:app/screens/home/sections/inventory/table_list/supplies/_supplies.dart';
+import 'package:app/screens/modals/kitchen/discard_dish/_discard_dish.dart';
+import 'package:app/screens/modals/kitchen/modifier_group/_modifier_group.dart';
+import 'package:app/screens/modals/kitchen/presentations/_presentations.dart';
+import 'package:app/screens/modals/kitchen/produce_batch/_produce_batch.dart';
+import 'package:app/screens/modals/kitchen/recipe/_recipe.dart';
 
-/// The supply chain's screens draw what their services hold, at a desktop width, without
-/// overflowing: a product says what its recipe makes now and why («— because of the bacon»), a
+/// The kitchen's screens draw what their services hold, at a desktop width, without
+/// overflowing: a supply says what its recipe makes now and why («— because of the bacon»), a
 /// paused one is sold out, one without a recipe offers to create it, a batch offers to produce,
-/// a dish made to order to record a lost one, a group says its rule, and a supply without a
-/// count in the window is not a «0 %». No test here reads the network: every service is seeded.
+/// a dish made to order to record a lost one, and a group says its rule. No test here reads the
+/// network: every service is seeded.
 void main() {
   setUpAll(() {
     ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFffffff));
@@ -65,9 +63,10 @@ void main() {
   const candle = KitchenProduct(id: "candle", tableId: "menu", name: "Candle");
   const salt = KitchenProduct(id: "salt", tableId: "menu", name: "Salt", stock: 3);
 
-  testWidgets("the recipes tab says what each product makes now, and why", (tester) async {
+  testWidgets("a supplies table's list says what each product makes now, and why", (tester) async {
+    const table = TableLiteModel(id: "menu", title: "Pantry", kind: TableKind.supplies);
     final service = KitchenProductsService(listen: false)..seed(
-      tables: const [TableLiteModel(id: "menu", title: "Menu", primary: true)],
+      table: table,
       products: const [burger, candle, salt],
       availability: const {
         "burger": RecipeAvailability(productId: "burger", available: 3, limit: RecipeLimit(productId: "bacon", name: "bacon")),
@@ -76,7 +75,11 @@ void main() {
     );
     addTearDown(service.dispose);
 
-    await pump(tester, const RecipesTab(), providers: [ChangeNotifierProvider<KitchenProductsService>.value(value: service)]);
+    await pump(
+      tester,
+      SuppliesSection(table: table, parts: const InventoryBarParts(selector: SizedBox(), controls: []), service: service),
+      providers: [ChangeNotifierProvider<HomeService>.value(value: HomeService())]
+    );
 
     expect(tester.takeException(), isNull);
     expect(find.text("3 left — because of the bacon"), findsOneWidget);
@@ -135,30 +138,19 @@ void main() {
     expect(find.text("How it is bought"), findsNothing);
   });
 
-  testWidgets("a group says its rule and folds its options; variance is drawn both ways, and a supply with no count is not a 0 %", (tester) async {
+  testWidgets("a group says its rule and folds its options", (tester) async {
     final modifiers = ModifiersService()..seed([
       const ModifierGroup(id: "g", name: "Doneness", min: 1, max: 1, options: [ModifierOption(id: "o", name: "Medium")]),
       ModifierGroup(id: "x", name: "Extras", options: [
         for (var i = 0; i < 7; i++) ModifierOption(id: "e-$i", name: "Extra $i", price: 1)
       ])
     ]);
-    final reports = KitchenReportsService()..seed(report: KitchenReport.variance, variance: const [
-      VarianceRow(productId: "meat", name: "Meat", theoretical: 10, variance: 1.2, percent: 12, counted: true),
-      VarianceRow(productId: "salt", name: "Salt", theoretical: 10, variance: -0.3, percent: -3, counted: true),
-      VarianceRow(productId: "wax", name: "Wax", counted: false)
-    ]);
     addTearDown(modifiers.dispose);
-    addTearDown(reports.dispose);
 
     await pump(tester, const ModifiersTab(), providers: [ChangeNotifierProvider<ModifiersService>.value(value: modifiers)]);
     expect(tester.takeException(), isNull);
     expect(find.text("Choose one"), findsOneWidget);
     expect(find.text("+2 more"), findsOneWidget);
-
-    await pump(tester, const ReportsTab(), providers: [ChangeNotifierProvider<KitchenReportsService>.value(value: reports)]);
-    expect(tester.takeException(), isNull);
-    expect(find.text("No count in the period"), findsOneWidget);
-    expect(find.byType(VarianceBar), findsNWidgets(3));
   });
 
   testWidgets("the panels of a group, a batch, a lost dish and the presentations draw their fields", (tester) async {

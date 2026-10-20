@@ -11,8 +11,8 @@ import 'package:app/services/kitchen/recipe_service.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_chip.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_chip.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 
 import './modifier_option_card.dart';
 
@@ -45,7 +45,7 @@ Future<ModifierGroupDraft?> showModifierGroupForm(
 }) =>
   showSideModal(
     context: context,
-    title: group?.name ?? title ?? S.of(context).supply_chain_modifiers_create,
+    title: group?.name ?? title ?? S.of(context).kitchen_modifiers_create,
     builder: (context) => ModifierGroupModal(
       group: group,
       canEdit: canEdit,
@@ -177,20 +177,20 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
         padding: EdgeInsets.only(bottom: AppSize.padding),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          KitchenNote(text: s.supply_chain_modifiers_form_note),
-          Input(title: s.supply_chain_modifiers_name, placeholder: s.supply_chain_modifiers_name_hint, controller: _name),
+          KitchenNote(text: s.kitchen_modifiers_form_note),
+          Input(title: s.kitchen_modifiers_name, placeholder: s.kitchen_modifiers_name_hint, controller: _name),
           InputRow(
-            title: s.supply_chain_modifiers_rule,
+            title: s.kitchen_modifiers_rule,
             spacing: AppSize.gap,
             children: [
-              Input(placeholder: s.supply_chain_modifiers_min, controller: _min),
-              Input(placeholder: s.supply_chain_modifiers_max, controller: _max)
+              Input(placeholder: s.kitchen_modifiers_min, controller: _min),
+              Input(placeholder: s.kitchen_modifiers_max, controller: _max)
             ]
           ),
-          KitchenNote(text: s.supply_chain_modifiers_rule_note),
+          KitchenNote(text: s.kitchen_modifiers_rule_note),
           SizedBox(height: AppSize.spaceXS),
-          TextMedium(s.supply_chain_modifiers_products_title, bold: true),
-          KitchenNote(text: s.supply_chain_modifiers_products_note),
+          TextMedium(s.kitchen_modifiers_products_title, bold: true),
+          KitchenNote(text: s.kitchen_modifiers_products_note),
           Wrap(spacing: AppSize.gap, runSpacing: AppSize.gap, children: [
             if (widget.pinned != null) KitchenChip(label: widget.pinned!),
             for (final product in _products) KitchenChip(
@@ -201,15 +201,15 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
           if (edit) ...[
             SizedBox(height: AppSize.gap),
             KitchenProductPicker(
-              placeholder: s.supply_chain_modifiers_products_add,
+              placeholder: s.kitchen_modifiers_products_add,
               supplies: false,
               exclude: {for (final product in _products) product.productId},
               onPick: _addProduct
             )
           ],
           SizedBox(height: AppSize.spaceS),
-          TextMedium(s.supply_chain_modifiers_options_title, bold: true),
-          KitchenNote(text: s.supply_chain_modifiers_options_note),
+          TextMedium(s.kitchen_modifiers_options_title, bold: true),
+          KitchenNote(text: s.kitchen_modifiers_options_note),
           for (final option in _options) ModifierOptionCard(
             key: ObjectKey(option),
             option: option,
@@ -223,7 +223,7 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
             })
           ),
           if (edit) Button(
-            title: s.supply_chain_modifiers_option_add,
+            title: s.kitchen_modifiers_option_add,
             leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text),
             action: () => setState(() => _options.add(ModifierOptionDraft.of(null)))
           ),
@@ -233,7 +233,7 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
             MainButton(title: s.save, action: _submit),
             if (widget.group != null && widget.deletable) ...[
               SizedBox(height: AppSize.spaceXS),
-              Button(title: s.supply_chain_modifiers_delete, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: _delete)
+              Button(title: s.kitchen_modifiers_delete, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: _delete)
             ]
           ]
         ]
@@ -250,15 +250,15 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
 
     for (final option in _options) {
       final built = option.build();
-      if (built == null) return setState(() => _error = s.supply_chain_modifiers_option_invalid);
+      if (built == null) return setState(() => _error = s.kitchen_modifiers_option_invalid);
 
       options.add(built);
     }
 
     final error = name.isEmpty
-      ? s.supply_chain_modifiers_name_empty
-      : options.isEmpty ? s.supply_chain_modifiers_options_empty
-      : max != null && (max < min || max < 1) || min > options.length ? s.supply_chain_modifiers_rule_invalid
+      ? s.kitchen_modifiers_name_empty
+      : options.isEmpty ? s.kitchen_modifiers_options_empty
+      : max != null && (max < min || max < 1) || min > options.length ? s.kitchen_modifiers_rule_invalid
       : "";
 
     if (error.isNotEmpty) return setState(() => _error = error);
@@ -272,9 +272,9 @@ class _ModifierGroupModalState extends State<ModifierGroupModal> {
 
     final confirmed = await showAlertModal(
       context: context,
-      title: s.supply_chain_modifiers_delete_title,
-      message: s.supply_chain_modifiers_delete_message(group.name),
-      confirmText: s.supply_chain_modifiers_delete,
+      title: s.kitchen_modifiers_delete_title,
+      message: s.kitchen_modifiers_delete_message(group.name),
+      confirmText: s.kitchen_modifiers_delete,
       cancelText: s.cancel
     );
 

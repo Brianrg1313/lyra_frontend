@@ -16,7 +16,7 @@ import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/screens/home/sections/_sections.dart';
-import 'package:app/screens/home/sections/inventory/table_list/_table_list.dart';
+import 'package:app/screens/home/sections/inventory/_inventory.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_start.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';

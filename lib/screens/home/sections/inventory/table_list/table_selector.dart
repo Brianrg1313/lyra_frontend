@@ -13,6 +13,10 @@ import './table_dot.dart';
 /// The open table, in the place of the section's title, and the switch to another: the
 /// same anchor as the header's business selector, unfolding the company's tables.
 /// Creating and importing are the bar's own buttons, not options of this list.
+///
+/// Where the list mixes kinds (the inventory's products and supplies, `cocina-frontend.md` §2)
+/// each table says its kind first in its row: two tables of one name, one of each, are told
+/// apart before they are opened.
 class TableSelector extends StatelessWidget {
   const TableSelector({
     super.key,
@@ -82,9 +86,24 @@ class TableSelector extends StatelessWidget {
     }
   }
 
-  /// What tells a table apart in the list: an import still running, then being the
-  /// primary one, then its description.
+  /// What tells a table apart in the list: its kind where the list mixes them, then an import
+  /// still running, being the primary one or its description.
   String? _subtitle(S s, TableLiteModel option) {
+    final detail = _detail(s, option);
+    final mixed = tables.any((other) => other.kind != tables.first.kind);
+
+    if (!mixed) return detail;
+
+    final kind = switch (option.kind) {
+      TableKind.supplies => s.table_kind_supplies,
+      TableKind.made => s.menu,
+      TableKind.catalog => s.table_kind_catalog
+    };
+
+    return detail == null ? kind : "$kind · $detail";
+  }
+
+  String? _detail(S s, TableLiteModel option) {
     final stage = stageOf?.call(option.id);
 
     if (stage != null) {

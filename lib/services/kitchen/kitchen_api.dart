@@ -4,7 +4,8 @@ import 'package:app/toolkit/toolkit.dart' show FloatFlag;
 
 /// What the kitchen's services share about a refusal.
 ///
-/// The supply chain is cloud only (`docs/app-areas.json`), so its services call `api`
+/// The kitchen is cloud only (`docs/app-areas.json`: `inventory.recipes`, `inventory.modifiers`,
+/// the menu), so its services call `api`
 /// themselves, like the channels and the knowledge.
 abstract final class KitchenApi {
   /// The code a refusal names (`recipe_not_found`, `negotiable_short`): the cloud says it in

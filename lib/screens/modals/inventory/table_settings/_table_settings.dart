@@ -388,6 +388,11 @@ class _Details extends StatelessWidget {
         ? ((available - AppSize.spaceM) / 2).floorToDouble()
         : available;
 
+      // A supplies table is never sold, so no agent reads it and no channel offers it
+      // (`cocina-frontend.md` §1): its blocks would configure nothing.
+      final supplies = context.read<TablesService>().tables
+        .any((table) => table.id == detail.id && table.kind == TableKind.supplies);
+
       return ScrollableWidget(
         showBar: false,
         children: [
@@ -403,7 +408,7 @@ class _Details extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Agents and channels are the cloud's (I-5): not offered, not drawn.
-                  if (CapabilityService().shows("channels")) ...[
+                  if (CapabilityService().shows("channels") && !supplies) ...[
                     TableAgentBlock(detail: detail),
                     TableChannelsBlock(detail: detail)
                   ],

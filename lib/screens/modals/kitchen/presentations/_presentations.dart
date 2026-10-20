@@ -8,8 +8,8 @@ import 'package:app/services/kitchen/presentation_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 
 /// Edits how a product is bought (`PUT /inventory/presentations`). Answers every presentation
 /// as it should be (none = remove them all), or `null` when closed. Writes nothing.
@@ -19,7 +19,7 @@ Future<List<PresentationDraft>?> showPresentationsEditor(
   String unit = ""
 }) => showModal(
   context: context,
-  title: S.of(context).supply_chain_presentations_title,
+  title: S.of(context).kitchen_presentations_title,
   builder: (context) => PresentationsModal(presentations: presentations, unit: unit)
 ).then((value) => value is List<PresentationDraft> ? value : null);
 
@@ -73,11 +73,11 @@ class _PresentationsModalState extends State<PresentationsModal> {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 440),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        KitchenNote(text: s.supply_chain_presentations_note),
+        KitchenNote(text: s.kitchen_presentations_note),
         for (final row in _rows) Row(key: ObjectKey(row), children: [
-          Expanded(child: Input(controller: row.name, placeholder: s.supply_chain_presentation_name, buttonSpace: false)),
+          Expanded(child: Input(controller: row.name, placeholder: s.kitchen_presentation_name, buttonSpace: false)),
           SizedBox(width: AppSize.gap),
-          SizedBox(width: 120, child: Input(controller: row.qty, placeholder: s.supply_chain_presentation_qty, buttonSpace: false)),
+          SizedBox(width: 120, child: Input(controller: row.qty, placeholder: s.kitchen_presentation_qty, buttonSpace: false)),
           if (widget.unit.isNotEmpty) ...[
             SizedBox(width: AppSize.gap),
             TextSmall(widget.unit, color: scheme.text.secondary)
@@ -87,7 +87,7 @@ class _PresentationsModalState extends State<PresentationsModal> {
               _rows.remove(row);
               row.dispose();
             }),
-            message: s.supply_chain_line_remove,
+            message: s.kitchen_line_remove,
             child: Padding(
               padding: EdgeInsets.all(AppSize.gap),
               child: Icon(CI.trash, size: AppSize.text, color: scheme.text.secondary)
@@ -95,7 +95,7 @@ class _PresentationsModalState extends State<PresentationsModal> {
           )
         ]),
         SizedBox(height: AppSize.gap),
-        Button(title: s.supply_chain_presentation_add, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => setState(() => _rows.add(_Row()))),
+        Button(title: s.kitchen_presentation_add, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => setState(() => _rows.add(_Row()))),
         if (_error.isNotEmpty) KitchenNote(text: _error, color: scheme.snackBar.error),
         SizedBox(height: AppSize.spaceS),
         MainButton(title: s.save, action: _submit)
@@ -112,8 +112,8 @@ class _PresentationsModalState extends State<PresentationsModal> {
       final name = row.name.text.trim();
       final qty = kitchenParse(row.qty.text);
 
-      if (name.isEmpty || qty == null || qty <= 0) return setState(() => _error = s.supply_chain_presentations_invalid);
-      if (!names.add(name.toLowerCase())) return setState(() => _error = s.supply_chain_presentations_repeated(name));
+      if (name.isEmpty || qty == null || qty <= 0) return setState(() => _error = s.kitchen_presentations_invalid);
+      if (!names.add(name.toLowerCase())) return setState(() => _error = s.kitchen_presentations_repeated(name));
 
       drafts.add((id: row.id, name: name, qty: qty));
     }

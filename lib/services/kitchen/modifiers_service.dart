@@ -12,7 +12,7 @@ enum ModifiersStatus { idle, loading, ready, empty, error }
 
 /// The company's modifier groups (`/inventory/modifiers`): «Extras», «Término de la carne».
 ///
-/// Owned by the supply chain section. Every write rereads the list: the order (`position`) and
+/// Owned by the inventory section (its modifiers tab). Every write rereads the list: the order (`position`) and
 /// the ids of new options are the backend's to say.
 class ModifiersService extends ChangeNotifier {
   ModifiersStatus _status = ModifiersStatus.idle;

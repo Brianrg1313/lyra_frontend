@@ -10,10 +10,10 @@ import 'package:app/services/stock/movements/stock_mover.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_layout.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/summary_stepper.dart';
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
 import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart';
 
-/// One product of the recipes tab: its name, how it is made, and in one line what it makes now
+/// One supply of a supplies table's list ([SuppliesSection]): its name, how it is made, and in one line what it makes now
 /// («3 left — because of the bacon», «12 on the shelf · supplies for 200 more (wick)»). Paused
 /// (86) says so in red.
 ///
@@ -23,13 +23,14 @@ import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart'
 /// between the stock summary's − and + ([SummaryStepper]) when there is a [mover]: counting a
 /// delivery in is done from the list, not by opening each supply.
 class RecipeRow extends StatelessWidget {
-  const RecipeRow({super.key, required this.product, required this.availability, required this.onTap, this.mover});
+  const RecipeRow({super.key, required this.product, required this.availability, this.onTap, this.mover});
 
   final KitchenProduct product;
 
   /// `null`: no recipe.
   final RecipeAvailability? availability;
-  final void Function() onTap;
+  /// Opens its kitchen panel; `null` without `inventory.recipes` (the row only moves stock).
+  final void Function()? onTap;
 
   /// What its − and + move the supply through; without one the stock is only read.
   final StockMover? mover;
@@ -64,17 +65,17 @@ class RecipeRow extends StatelessWidget {
               if (made != null) ...[
                 SizedBox(width: AppSize.spaceS),
                 RecipeTag(
-                  text: made.mode == RecipeMode.batch ? s.supply_chain_mode_batch : s.supply_chain_mode_order,
+                  text: made.mode == RecipeMode.batch ? s.kitchen_mode_batch : s.kitchen_mode_order,
                   color: scheme.accent
                 )
               ],
               if (made?.paused ?? false) ...[
                 SizedBox(width: AppSize.gap),
-                RecipeTag(text: s.supply_chain_paused, color: scheme.snackBar.error)
+                RecipeTag(text: s.kitchen_paused, color: scheme.snackBar.error)
               ]
             ]),
             SizedBox(height: AppSize.gap),
-            TextSmall(made == null ? s.supply_chain_no_recipe : recipeAvailabilityLine(context, made),
+            TextSmall(made == null ? s.kitchen_no_recipe : recipeAvailabilityLine(context, made),
               ellipsis: true, color: scheme.text.secondary)
           ]
         )),
@@ -117,24 +118,24 @@ String recipeAvailabilityLine(BuildContext context, RecipeAvailability made) {
   final s = S.of(context);
   final limit = made.limit?.name ?? "";
 
-  if (made.paused) return s.supply_chain_paused_note;
+  if (made.paused) return s.kitchen_paused_note;
 
   if (made.mode == RecipeMode.batch) {
-    final shelf = s.supply_chain_shelf(kitchenQty(context, made.available));
+    final shelf = s.kitchen_shelf(kitchenQty(context, made.available));
     final capacity = made.capacity;
 
     if (capacity == null) return shelf;
 
     final more = limit.isEmpty
-      ? s.supply_chain_capacity(kitchenQty(context, capacity))
-      : s.supply_chain_capacity_limit(kitchenQty(context, capacity), limit);
+      ? s.kitchen_capacity(kitchenQty(context, capacity))
+      : s.kitchen_capacity_limit(kitchenQty(context, capacity), limit);
 
     return "$shelf · $more";
   }
 
   final left = kitchenQty(context, made.available);
 
-  return limit.isEmpty ? s.supply_chain_left(left) : s.supply_chain_left_limit(left, limit);
+  return limit.isEmpty ? s.kitchen_left(left) : s.kitchen_left_limit(left, limit);
 }
 
 /// A short tag beside a name: how it is made, paused.

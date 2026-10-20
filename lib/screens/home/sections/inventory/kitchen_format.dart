@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 // SERVICES
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
-/// How the supply chain writes its figures. Every quantity, amount and day of the section and
-/// of its panels goes through here, so `0,0333 kg` reads the same in a recipe and in a report.
+/// How the kitchen writes its figures — a supplies table's list, the menu's cards and every
+/// kitchen panel — so `0,0333 kg` reads the same in a recipe and on a card.
 
 String _locale(BuildContext context) => Localizations.localeOf(context).toString();
 

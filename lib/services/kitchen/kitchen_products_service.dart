@@ -11,52 +11,44 @@ import 'package:app/services/kitchen/recipe_measure.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
 import 'package:app/services/stock/movements/stock_mover.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
-import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/toolkit/deployment.dart';
 
-/// Status of the recipes tab's list.
+/// Status of a supplies table's list.
 enum KitchenProductsStatus { idle, loading, ready, empty, error }
 
 /// The supplies of one table, with what the branch can make of each one made by the batch (a
-/// sauce): the production line's tab.
-///
-/// **Only `supplies` tables** (`cocina-frontend.md` §2.1): what is sold lives in the inventory
-/// section, which opens a dish's recipe from its own rows; the two sections never list the
-/// same table.
+/// sauce): the inventory's view of a `supplies` table (`SuppliesSection`, `cocina-frontend.md`
+/// §2). The inventory picks the table ([open]); this never lists another kind.
 ///
 /// The backend lists no recipes (`cocina-frontend.md` §3 reads one by product), so the list is
 /// the table's stock summary and each page asks `POST /inventory/recipes/availability` for its
 /// ids: a product with a recipe answers (how many can be made, what runs out first, its 86), one
 /// without is skipped. That makes the availability the mark of «has a recipe».
 ///
-/// Owned by the supply chain section (a business or branch switch remounts it). Live: a
+/// Owned by the supplies view, one per open table (a business or branch switch remounts it). Live: a
 /// `stock/changed` with `composite: true` rewrites a dish's [availability] (a supply was spent,
 /// a recipe edited, a dish paused); any other one, a supply's stock.
 ///
 /// Its rows' − and + move a supply through it ([StockMover]): the balance answered is written
 /// in the row, before the notice arrives.
 class KitchenProductsService extends ChangeNotifier implements StockMover {
-  KitchenProductsService({InventorySource? inventory, StockSource? stock, RecipeMeasure? measure, bool listen = true})
-    : _inventory = inventory,
-      _stock = stock,
+  KitchenProductsService({StockSource? stock, RecipeMeasure? measure, bool listen = true})
+    : _stock = stock,
       _measureOf = measure ?? measureRecipes {
     if (listen) _off = ConnectionService().on(StockChangedModel.event, _onStock);
   }
 
-  final InventorySource? _inventory;
   final StockSource? _stock;
   final RecipeMeasure _measureOf;
   void Function()? _off;
 
-  InventorySource get _tables => _inventory ?? Sources.inventory;
   StockSource get _summary => _stock ?? Sources.stock;
 
   static const int _size = 50;
 
   KitchenProductsStatus _status = KitchenProductsStatus.idle;
-  List<TableLiteModel> _tableList = const [];
   TableLiteModel? _table;
   List<KitchenProduct> _products = const [];
   Map<String, RecipeAvailability> _availability = const {};
@@ -68,7 +60,6 @@ class KitchenProductsService extends ChangeNotifier implements StockMover {
   bool _disposed = false;
 
   KitchenProductsStatus get status => _status;
-  List<TableLiteModel> get tables => _tableList;
   TableLiteModel? get table => _table;
   List<KitchenProduct> get products => _products;
   String get query => _query;
@@ -79,48 +70,15 @@ class KitchenProductsService extends ChangeNotifier implements StockMover {
   /// What [productId]'s recipe makes now; `null` when it has none.
   RecipeAvailability? availabilityOf(String productId) => _availability[productId];
 
-  /// Reads the supplies tables and opens [tableId] when it is one of them (else the open one,
-  /// else the first). None is [KitchenProductsStatus.empty] with no [table]: the tab offers to
-  /// create one.
-  Future<void> load({String? tableId}) async {
-    _status = KitchenProductsStatus.loading;
-    _notify();
-
-    try {
-      _tableList = [
-        for (final table in await _tables.tables())
-          if (table.supplies) table
-      ];
-    } catch (error) {
-      if (kDebugMode) print("kitchen tables failed: $error");
-
-      _status = KitchenProductsStatus.error;
-      _notify();
-      return;
-    }
-
-    if (_tableList.isEmpty) {
-      _table = null;
-      _products = const [];
-      _status = KitchenProductsStatus.empty;
-      _notify();
-      return;
-    }
-
-    final wanted = tableId ?? _table?.id;
-    _table = _tableList.where((table) => table.id == wanted).firstOrNull ?? _tableList.first;
-
-    await _read();
-  }
-
-  /// Shows [table]'s products.
+  /// Shows [table]'s supplies, from the first page and with no search.
   Future<void> open(TableLiteModel table) async {
-    if (table.id == _table?.id) return;
-
     _table = table;
     _query = "";
     await _read();
   }
+
+  /// Reads the open table's first page again, showing it loading (the error state's retry).
+  Future<void> load() => _read();
 
   /// Products of the open table matching [text] (the summary's `MATCH`).
   Future<void> search(String text) async {
@@ -265,7 +223,7 @@ class KitchenProductsService extends ChangeNotifier implements StockMover {
     _notify();
   }
 
-  /// This tab lists supplies only.
+  /// This list holds supplies only.
   @override
   bool get supplies => true;
 
@@ -302,12 +260,11 @@ class KitchenProductsService extends ChangeNotifier implements StockMover {
   /// Seeds the list, for tests.
   @visibleForTesting
   void seed({
-    List<TableLiteModel> tables = const [],
+    TableLiteModel? table,
     List<KitchenProduct> products = const [],
     Map<String, RecipeAvailability> availability = const {}
   }) {
-    _tableList = tables;
-    _table = tables.firstOrNull;
+    _table = table;
     _products = products;
     _availability = availability;
     _total = products.length;

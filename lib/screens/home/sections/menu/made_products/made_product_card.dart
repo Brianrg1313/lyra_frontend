@@ -13,7 +13,7 @@ import 'package:app/toolkit/lan_image.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 // WIDGETS
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
 
 /// One made product as a menu shows it, for people who recognize a dish by its photo before its
 /// name: the photo on top with how many can be sold now stamped on it (a colour and its words,
@@ -149,7 +149,7 @@ class _Stock {
 
     final s = S.of(context);
 
-    if (made.paused) return _Stock(_Level.out, s.supply_chain_sold_out);
+    if (made.paused) return _Stock(_Level.out, s.kitchen_sold_out);
 
     final amount = kitchenQty(context, made.available);
     final level = made.available <= 0 ? _Level.out : made.available <= few ? _Level.few : _Level.good;
@@ -208,7 +208,7 @@ class _Photo extends StatelessWidget {
       borderRadius: BorderRadius.circular(radius),
       child: Stack(fit: StackFit.expand, children: [
         ColoredBox(color: scheme.surface, child: out ? ColorFiltered(colorFilter: _grey, child: picture) : picture),
-        if (batch) Positioned(top: inset, left: inset, child: _Stamp(text: S.of(context).supply_chain_mode_batch)),
+        if (batch) Positioned(top: inset, left: inset, child: _Stamp(text: S.of(context).kitchen_mode_batch)),
         if (stock != null) Positioned(left: inset, bottom: inset, right: inset, child: Align(
           alignment: Alignment.centerLeft,
           child: _Stamp(text: stock!.label, color: stock!.color(scheme), filled: out)

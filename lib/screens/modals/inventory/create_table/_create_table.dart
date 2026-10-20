@@ -22,22 +22,22 @@ import 'package:app/screens/modals/shared/option_tile.dart';
 /// neither knows nor creates columns on its own.
 ///
 /// It is a modal and not a screen because the form is short and fixed-size.
-/// It is opened from the inventory section (`InventorySection`), the menu (`MenuSection`) and
-/// the production line's supplies tab, which, when it closes with the new table's id, reload
-/// their tables and open that one.
+/// It is opened from the inventory (`InventoryTables`) and the menu (`MenuSection`), which,
+/// when it closes with the new table's id, reload their tables and open that one.
 ///
-/// **The kind** (`cocina-frontend.md` §2) is the opener's, never asked: each section lists one
-/// kind (the inventory catalogs, the menu made products, the production line supplies). The
-/// backend never lets it change.
+/// **The kind** (`cocina-frontend.md` §2): the menu's is fixed ([kind] `made`, never asked);
+/// the inventory lists products and supplies together, so it passes none and the form asks
+/// between the two, saying it can't be changed afterwards — the backend never lets it change,
+/// since a supply's stock is kept in millionths of its unit.
 ///
 /// A menu is spoken of as a menu (its name's examples, «Create menu») and picks what it starts
 /// with between two tiles, [TableTemplate.blank] or [TableTemplate.menu], instead of the
 /// catalog's template list.
 class CreateTableModal extends StatefulWidget {
-  const CreateTableModal({super.key, required this.kind});
+  const CreateTableModal({super.key, this.kind});
 
-  /// What the table holds.
-  final TableKind kind;
+  /// What the table holds; `null` asks between [TableKind.catalog] and [TableKind.supplies].
+  final TableKind? kind;
 
   @override
   State<CreateTableModal> createState() => _CreateTableModalState();
@@ -88,7 +88,10 @@ class _CreateTableModalState extends State<CreateTableModal> {
   /// plus 8 hex digits, alpha first), which is the only format accepted.
   static const _color = "0xFFF87171";
 
-  bool get _menu => widget.kind == TableKind.made;
+  /// The kind picked, or the opener's.
+  late TableKind _kind = widget.kind ?? TableKind.catalog;
+
+  bool get _menu => _kind == TableKind.made;
 
   /// What a menu starts with ([TableTemplate.blank] or [TableTemplate.menu]).
   String _start = TableTemplate.blank;
@@ -104,14 +107,32 @@ class _CreateTableModalState extends State<CreateTableModal> {
     final s = S.of(context);
 
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: _menu ? 440 : 380),
+      constraints: BoxConstraints(maxWidth: _menu || widget.kind == null ? 440 : 380),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
+          if (widget.kind == null) ...[
+            TextMedium(s.create_table_kind, bold: true),
+            SizedBox(height: AppSize.spaceXS),
+            IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              for (final kind in const [TableKind.catalog, TableKind.supplies]) ...[
+                if (kind == TableKind.supplies) SizedBox(width: AppSize.spaceS),
+                Expanded(child: OptionTile(
+                  title: kind == TableKind.supplies ? s.table_kind_supplies : s.table_kind_catalog,
+                  note: kind == TableKind.supplies ? s.table_kind_supplies_note : s.table_kind_catalog_note,
+                  selected: _kind == kind,
+                  action: () => setState(() => _kind = kind)
+                ))
+              ]
+            ])),
+            Padding(
+              padding: EdgeInsets.only(top: AppSize.spaceXS, bottom: AppSize.spaceS),
+              child: TextSmall(s.create_table_kind_fixed, lines: 2, color: ThemeColor.of(context).text.secondary)
+            )
+          ] else Padding(
             padding: EdgeInsets.only(bottom: AppSize.spaceS),
-            child: TextMedium(switch (widget.kind) {
+            child: TextMedium(switch (_kind) {
               TableKind.supplies => s.table_kind_supplies_note,
               TableKind.made => s.menu_create_note,
               TableKind.catalog => s.create_table_subtitle
@@ -194,7 +215,7 @@ class _CreateTableModalState extends State<CreateTableModal> {
       description: _description.value,
       color: _color,
       template: template == TableTemplate.blank ? null : template,
-      kind: widget.kind
+      kind: _kind
     );
   }
 }

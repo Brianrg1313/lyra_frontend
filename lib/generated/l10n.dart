@@ -1344,6 +1344,26 @@ class S {
     );
   }
 
+  /// `Tables`
+  String get inventory_tab_tables {
+    return Intl.message(
+      'Tables',
+      name: 'inventory_tab_tables',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Modifiers`
+  String get inventory_tab_modifiers {
+    return Intl.message(
+      'Modifiers',
+      name: 'inventory_tab_modifiers',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Start your inventory`
   String get inventory_start_title {
     return Intl.message(
@@ -1429,541 +1449,461 @@ class S {
     return Intl.message('Reports', name: 'report', desc: '', args: []);
   }
 
-  /// `Supply chain`
-  String get supply_chain {
-    return Intl.message(
-      'Supply chain',
-      name: 'supply_chain',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Supplies`
-  String get supply_chain_tab_recipes {
-    return Intl.message(
-      'Supplies',
-      name: 'supply_chain_tab_recipes',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Modifiers`
-  String get supply_chain_tab_modifiers {
-    return Intl.message(
-      'Modifiers',
-      name: 'supply_chain_tab_modifiers',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Reports`
-  String get supply_chain_tab_reports {
-    return Intl.message(
-      'Reports',
-      name: 'supply_chain_tab_reports',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Search supplies`
-  String get supply_chain_products_search {
-    return Intl.message(
-      'Search supplies',
-      name: 'supply_chain_products_search',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; what a made product consumes is written with it, in Inventory.`
-  String get supply_chain_table_supplies_note {
-    return Intl.message(
-      'What is used to make what is sold, in its unit. Open one to see how it is bought and where it is used; what a made product consumes is written with it, in Inventory.',
-      name: 'supply_chain_table_supplies_note',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Create supplies table`
-  String get supply_chain_table_create {
+  String get kitchen_table_create {
     return Intl.message(
       'Create supplies table',
-      name: 'supply_chain_table_create',
+      name: 'kitchen_table_create',
       desc: '',
       args: [],
     );
   }
 
   /// `The products could not be read`
-  String get supply_chain_products_error {
+  String get kitchen_products_error {
     return Intl.message(
       'The products could not be read',
-      name: 'supply_chain_products_error',
+      name: 'kitchen_products_error',
       desc: '',
       args: [],
     );
   }
 
   /// `This table has no supplies yet`
-  String get supply_chain_products_empty {
+  String get kitchen_products_empty {
     return Intl.message(
       'This table has no supplies yet',
-      name: 'supply_chain_products_empty',
+      name: 'kitchen_products_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `Write them in the sheet: one row per supply, with its unit and what is on hand.`
-  String get supply_chain_products_empty_note {
+  String get kitchen_products_empty_note {
     return Intl.message(
       'Write them in the sheet: one row per supply, with its unit and what is on hand.',
-      name: 'supply_chain_products_empty_note',
+      name: 'kitchen_products_empty_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Open the sheet`
-  String get supply_chain_open_sheet {
+  String get kitchen_open_sheet {
     return Intl.message(
       'Open the sheet',
-      name: 'supply_chain_open_sheet',
+      name: 'kitchen_open_sheet',
       desc: '',
       args: [],
     );
   }
 
   /// `No supply matches the search`
-  String get supply_chain_products_no_match {
+  String get kitchen_products_no_match {
     return Intl.message(
       'No supply matches the search',
-      name: 'supply_chain_products_no_match',
+      name: 'kitchen_products_no_match',
       desc: '',
       args: [],
     );
   }
 
   /// `Load more`
-  String get supply_chain_products_more {
+  String get kitchen_products_more {
     return Intl.message(
       'Load more',
-      name: 'supply_chain_products_more',
+      name: 'kitchen_products_more',
       desc: '',
       args: [],
     );
   }
 
   /// `There are no supplies tables yet`
-  String get supply_chain_no_tables {
+  String get kitchen_no_tables {
     return Intl.message(
       'There are no supplies tables yet',
-      name: 'supply_chain_no_tables',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `A supplies table holds what is used to make what is sold: meat, bread, cheese. What is sold lives in Inventory.`
-  String get supply_chain_no_tables_note {
-    return Intl.message(
-      'A supplies table holds what is used to make what is sold: meat, bread, cheese. What is sold lives in Inventory.',
-      name: 'supply_chain_no_tables_note',
+      name: 'kitchen_no_tables',
       desc: '',
       args: [],
     );
   }
 
   /// `Made to order`
-  String get supply_chain_mode_order {
+  String get kitchen_mode_order {
     return Intl.message(
       'Made to order',
-      name: 'supply_chain_mode_order',
+      name: 'kitchen_mode_order',
       desc: '',
       args: [],
     );
   }
 
   /// `No stock of its own: how many can be made is what its supplies allow, measured at every sale. A burger, a combo.`
-  String get supply_chain_mode_order_note {
+  String get kitchen_mode_order_note {
     return Intl.message(
       'No stock of its own: how many can be made is what its supplies allow, measured at every sale. A burger, a combo.',
-      name: 'supply_chain_mode_order_note',
+      name: 'kitchen_mode_order_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Made by batch`
-  String get supply_chain_mode_batch {
+  String get kitchen_mode_batch {
     return Intl.message(
       'Made by batch',
-      name: 'supply_chain_mode_batch',
+      name: 'kitchen_mode_batch',
       desc: '',
       args: [],
     );
   }
 
   /// `Its own stock, which rises when the kitchen produces a batch. A sauce, a candle.`
-  String get supply_chain_mode_batch_note {
+  String get kitchen_mode_batch_note {
     return Intl.message(
       'Its own stock, which rises when the kitchen produces a batch. A sauce, a candle.',
-      name: 'supply_chain_mode_batch_note',
+      name: 'kitchen_mode_batch_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Sold out`
-  String get supply_chain_paused {
-    return Intl.message(
-      'Sold out',
-      name: 'supply_chain_paused',
-      desc: '',
-      args: [],
-    );
+  String get kitchen_paused {
+    return Intl.message('Sold out', name: 'kitchen_paused', desc: '', args: []);
   }
 
   /// `Marked sold out: it reads 0 everywhere and is not sold`
-  String get supply_chain_paused_note {
+  String get kitchen_paused_note {
     return Intl.message(
       'Marked sold out: it reads 0 everywhere and is not sold',
-      name: 'supply_chain_paused_note',
+      name: 'kitchen_paused_note',
       desc: '',
       args: [],
     );
   }
 
   /// `No recipe`
-  String get supply_chain_no_recipe {
+  String get kitchen_no_recipe {
     return Intl.message(
       'No recipe',
-      name: 'supply_chain_no_recipe',
+      name: 'kitchen_no_recipe',
       desc: '',
       args: [],
     );
   }
 
   /// `{amount} left`
-  String supply_chain_left(Object amount) {
+  String kitchen_left(Object amount) {
     return Intl.message(
       '$amount left',
-      name: 'supply_chain_left',
+      name: 'kitchen_left',
       desc: '',
       args: [amount],
     );
   }
 
   /// `{amount} left — because of the {supply}`
-  String supply_chain_left_limit(Object amount, Object supply) {
+  String kitchen_left_limit(Object amount, Object supply) {
     return Intl.message(
       '$amount left — because of the $supply',
-      name: 'supply_chain_left_limit',
+      name: 'kitchen_left_limit',
       desc: '',
       args: [amount, supply],
     );
   }
 
   /// `{amount} in stock`
-  String supply_chain_shelf(Object amount) {
+  String kitchen_shelf(Object amount) {
     return Intl.message(
       '$amount in stock',
-      name: 'supply_chain_shelf',
+      name: 'kitchen_shelf',
       desc: '',
       args: [amount],
     );
   }
 
   /// `supplies for {amount} more`
-  String supply_chain_capacity(Object amount) {
+  String kitchen_capacity(Object amount) {
     return Intl.message(
       'supplies for $amount more',
-      name: 'supply_chain_capacity',
+      name: 'kitchen_capacity',
       desc: '',
       args: [amount],
     );
   }
 
   /// `supplies for {amount} more ({supply})`
-  String supply_chain_capacity_limit(Object amount, Object supply) {
+  String kitchen_capacity_limit(Object amount, Object supply) {
     return Intl.message(
       'supplies for $amount more ($supply)',
-      name: 'supply_chain_capacity_limit',
+      name: 'kitchen_capacity_limit',
       desc: '',
       args: [amount, supply],
     );
   }
 
   /// `Short today, it can go without: {supplies}`
-  String supply_chain_short(Object supplies) {
+  String kitchen_short(Object supplies) {
     return Intl.message(
       'Short today, it can go without: $supplies',
-      name: 'supply_chain_short',
+      name: 'kitchen_short',
       desc: '',
       args: [supplies],
     );
   }
 
   /// `How many can be made could not be read`
-  String get supply_chain_made_unknown {
+  String get kitchen_made_unknown {
     return Intl.message(
       'How many can be made could not be read',
-      name: 'supply_chain_made_unknown',
+      name: 'kitchen_made_unknown',
       desc: '',
       args: [],
     );
   }
 
   /// `Available`
-  String get supply_chain_available {
+  String get kitchen_available {
     return Intl.message(
       'Available',
-      name: 'supply_chain_available',
+      name: 'kitchen_available',
       desc: '',
       args: [],
     );
   }
 
   /// `Sold out`
-  String get supply_chain_sold_out {
+  String get kitchen_sold_out {
     return Intl.message(
       'Sold out',
-      name: 'supply_chain_sold_out',
+      name: 'kitchen_sold_out',
       desc: '',
       args: [],
     );
   }
 
   /// `Marking it sold out (86) stops its sale everywhere, whatever is left. Turn it back on when it can be made again.`
-  String get supply_chain_pause_note {
+  String get kitchen_pause_note {
     return Intl.message(
       'Marking it sold out (86) stops its sale everywhere, whatever is left. Turn it back on when it can be made again.',
-      name: 'supply_chain_pause_note',
+      name: 'kitchen_pause_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Produce batch`
-  String get supply_chain_produce {
+  String get kitchen_produce {
     return Intl.message(
       'Produce batch',
-      name: 'supply_chain_produce',
+      name: 'kitchen_produce',
       desc: '',
       args: [],
     );
   }
 
   /// `Lost dish`
-  String get supply_chain_discard {
+  String get kitchen_discard {
     return Intl.message(
       'Lost dish',
-      name: 'supply_chain_discard',
+      name: 'kitchen_discard',
       desc: '',
       args: [],
     );
   }
 
   /// `What it is made of`
-  String get supply_chain_lines_title {
+  String get kitchen_lines_title {
     return Intl.message(
       'What it is made of',
-      name: 'supply_chain_lines_title',
+      name: 'kitchen_lines_title',
       desc: '',
       args: [],
     );
   }
 
   /// `How it is made`
-  String get supply_chain_mode_title {
+  String get kitchen_mode_title {
     return Intl.message(
       'How it is made',
-      name: 'supply_chain_mode_title',
+      name: 'kitchen_mode_title',
       desc: '',
       args: [],
     );
   }
 
   /// `How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.`
-  String get supply_chain_lines_note {
+  String get kitchen_lines_note {
     return Intl.message(
       'How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.',
-      name: 'supply_chain_lines_note',
+      name: 'kitchen_lines_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Add at least one ingredient`
-  String get supply_chain_lines_empty {
+  String get kitchen_lines_empty {
     return Intl.message(
       'Add at least one ingredient',
-      name: 'supply_chain_lines_empty',
+      name: 'kitchen_lines_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `Search an ingredient to add`
-  String get supply_chain_lines_add {
+  String get kitchen_lines_add {
     return Intl.message(
       'Search an ingredient to add',
-      name: 'supply_chain_lines_add',
+      name: 'kitchen_lines_add',
       desc: '',
       args: [],
     );
   }
 
   /// `At least one line can't be optional: otherwise it would always read as available`
-  String get supply_chain_lines_essential {
+  String get kitchen_lines_essential {
     return Intl.message(
       'At least one line can\'t be optional: otherwise it would always read as available',
-      name: 'supply_chain_lines_essential',
+      name: 'kitchen_lines_essential',
       desc: '',
       args: [],
     );
   }
 
   /// `Quantity`
-  String get supply_chain_line_qty {
+  String get kitchen_line_qty {
     return Intl.message(
       'Quantity',
-      name: 'supply_chain_line_qty',
+      name: 'kitchen_line_qty',
       desc: '',
       args: [],
     );
   }
 
   /// `Waste`
-  String get supply_chain_line_waste {
+  String get kitchen_line_waste {
     return Intl.message(
       'Waste',
-      name: 'supply_chain_line_waste',
+      name: 'kitchen_line_waste',
       desc: '',
       args: [],
     );
   }
 
   /// `What is lost preparing it: with 10 %, 200 g spends 220 g`
-  String get supply_chain_line_waste_note {
+  String get kitchen_line_waste_note {
     return Intl.message(
       'What is lost preparing it: with 10 %, 200 g spends 220 g',
-      name: 'supply_chain_line_waste_note',
+      name: 'kitchen_line_waste_note',
       desc: '',
       args: [],
     );
   }
 
   /// `{percent} waste`
-  String supply_chain_line_waste_of(Object percent) {
+  String kitchen_line_waste_of(Object percent) {
     return Intl.message(
       '$percent waste',
-      name: 'supply_chain_line_waste_of',
+      name: 'kitchen_line_waste_of',
       desc: '',
       args: [percent],
     );
   }
 
   /// `Optional`
-  String get supply_chain_line_negotiable {
+  String get kitchen_line_negotiable {
     return Intl.message(
       'Optional',
-      name: 'supply_chain_line_negotiable',
+      name: 'kitchen_line_negotiable',
       desc: '',
       args: [],
     );
   }
 
   /// `It can be sold without it when the customer agrees (a garnish): running out of it never makes the dish unavailable.`
-  String get supply_chain_line_negotiable_note {
+  String get kitchen_line_negotiable_note {
     return Intl.message(
       'It can be sold without it when the customer agrees (a garnish): running out of it never makes the dish unavailable.',
-      name: 'supply_chain_line_negotiable_note',
+      name: 'kitchen_line_negotiable_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Remove`
-  String get supply_chain_line_remove {
+  String get kitchen_line_remove {
     return Intl.message(
       'Remove',
-      name: 'supply_chain_line_remove',
+      name: 'kitchen_line_remove',
       desc: '',
       args: [],
     );
   }
 
   /// `Waste`
-  String get supply_chain_line_more {
-    return Intl.message(
-      'Waste',
-      name: 'supply_chain_line_more',
-      desc: '',
-      args: [],
-    );
+  String get kitchen_line_more {
+    return Intl.message('Waste', name: 'kitchen_line_more', desc: '', args: []);
   }
 
   /// `units`
-  String get supply_chain_line_units {
+  String get kitchen_line_units {
     return Intl.message(
       'units',
-      name: 'supply_chain_line_units',
+      name: 'kitchen_line_units',
       desc: '',
       args: [],
     );
   }
 
   /// `Write it in {unit}`
-  String supply_chain_line_unit_switch(Object unit) {
+  String kitchen_line_unit_switch(Object unit) {
     return Intl.message(
       'Write it in $unit',
-      name: 'supply_chain_line_unit_switch',
+      name: 'kitchen_line_unit_switch',
       desc: '',
       args: [unit],
     );
   }
 
   /// `Write it in another unit`
-  String get supply_chain_line_unit_pick {
+  String get kitchen_line_unit_pick {
     return Intl.message(
       'Write it in another unit',
-      name: 'supply_chain_line_unit_pick',
+      name: 'kitchen_line_unit_pick',
       desc: '',
       args: [],
     );
   }
 
   /// `Write a quantity greater than zero`
-  String get supply_chain_line_qty_invalid {
+  String get kitchen_line_qty_invalid {
     return Intl.message(
       'Write a quantity greater than zero',
-      name: 'supply_chain_line_qty_invalid',
+      name: 'kitchen_line_qty_invalid',
       desc: '',
       args: [],
     );
   }
 
   /// `A product goes in whole units`
-  String get supply_chain_line_qty_whole {
+  String get kitchen_line_qty_whole {
     return Intl.message(
       'A product goes in whole units',
-      name: 'supply_chain_line_qty_whole',
+      name: 'kitchen_line_qty_whole',
       desc: '',
       args: [],
     );
   }
 
   /// `Waste goes from 0 to less than 100`
-  String get supply_chain_line_waste_invalid {
+  String get kitchen_line_waste_invalid {
     return Intl.message(
       'Waste goes from 0 to less than 100',
-      name: 'supply_chain_line_waste_invalid',
+      name: 'kitchen_line_waste_invalid',
       desc: '',
       args: [],
     );
@@ -2097,50 +2037,50 @@ class S {
   }
 
   /// `Create recipe`
-  String get supply_chain_recipe_create {
+  String get kitchen_recipe_create {
     return Intl.message(
       'Create recipe',
-      name: 'supply_chain_recipe_create',
+      name: 'kitchen_recipe_create',
       desc: '',
       args: [],
     );
   }
 
   /// `Bought ready`
-  String get supply_chain_preparation_none {
+  String get kitchen_preparation_none {
     return Intl.message(
       'Bought ready',
-      name: 'supply_chain_preparation_none',
+      name: 'kitchen_preparation_none',
       desc: '',
       args: [],
     );
   }
 
   /// `Most supplies are bought ready. If the kitchen makes this one by the batch from other supplies (the house sauce), write what it is made of.`
-  String get supply_chain_preparation_note {
+  String get kitchen_preparation_note {
     return Intl.message(
       'Most supplies are bought ready. If the kitchen makes this one by the batch from other supplies (the house sauce), write what it is made of.',
-      name: 'supply_chain_preparation_note',
+      name: 'kitchen_preparation_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Prepared in the kitchen`
-  String get supply_chain_preparation_create {
+  String get kitchen_preparation_create {
     return Intl.message(
       'Prepared in the kitchen',
-      name: 'supply_chain_preparation_create',
+      name: 'kitchen_preparation_create',
       desc: '',
       args: [],
     );
   }
 
   /// `What it consumes could not be read. Write it again: a made product is never sold without it.`
-  String get supply_chain_made_without_note {
+  String get kitchen_made_without_note {
     return Intl.message(
       'What it consumes could not be read. Write it again: a made product is never sold without it.',
-      name: 'supply_chain_made_without_note',
+      name: 'kitchen_made_without_note',
       desc: '',
       args: [],
     );
@@ -3012,1120 +2952,770 @@ class S {
   }
 
   /// `Edit recipe`
-  String get supply_chain_recipe_edit {
+  String get kitchen_recipe_edit {
     return Intl.message(
       'Edit recipe',
-      name: 'supply_chain_recipe_edit',
+      name: 'kitchen_recipe_edit',
       desc: '',
       args: [],
     );
   }
 
   /// `Delete recipe`
-  String get supply_chain_recipe_delete {
+  String get kitchen_recipe_delete {
     return Intl.message(
       'Delete recipe',
-      name: 'supply_chain_recipe_delete',
+      name: 'kitchen_recipe_delete',
       desc: '',
       args: [],
     );
   }
 
   /// `Delete the recipe?`
-  String get supply_chain_recipe_delete_title {
+  String get kitchen_recipe_delete_title {
     return Intl.message(
       'Delete the recipe?',
-      name: 'supply_chain_recipe_delete_title',
+      name: 'kitchen_recipe_delete_title',
       desc: '',
       args: [],
     );
   }
 
   /// `{product} keeps its own stock again, which is usually zero.`
-  String supply_chain_recipe_delete_message(Object product) {
+  String kitchen_recipe_delete_message(Object product) {
     return Intl.message(
       '$product keeps its own stock again, which is usually zero.',
-      name: 'supply_chain_recipe_delete_message',
+      name: 'kitchen_recipe_delete_message',
       desc: '',
       args: [product],
     );
   }
 
   /// `It is used in: {products}`
-  String supply_chain_used_in(Object products) {
+  String kitchen_used_in(Object products) {
     return Intl.message(
       'It is used in: $products',
-      name: 'supply_chain_used_in',
+      name: 'kitchen_used_in',
       desc: '',
       args: [products],
     );
   }
 
   /// `Where it is used could not be checked.`
-  String get supply_chain_uses_unknown {
+  String get kitchen_uses_unknown {
     return Intl.message(
       'Where it is used could not be checked.',
-      name: 'supply_chain_uses_unknown',
+      name: 'kitchen_uses_unknown',
       desc: '',
       args: [],
     );
   }
 
   /// `Recipe saved`
-  String get supply_chain_recipe_saved {
+  String get kitchen_recipe_saved {
     return Intl.message(
       'Recipe saved',
-      name: 'supply_chain_recipe_saved',
+      name: 'kitchen_recipe_saved',
       desc: '',
       args: [],
     );
   }
 
   /// `Recipe deleted`
-  String get supply_chain_recipe_deleted {
+  String get kitchen_recipe_deleted {
     return Intl.message(
       'Recipe deleted',
-      name: 'supply_chain_recipe_deleted',
+      name: 'kitchen_recipe_deleted',
       desc: '',
       args: [],
     );
   }
 
   /// `The recipe could not be read`
-  String get supply_chain_recipe_error {
+  String get kitchen_recipe_error {
     return Intl.message(
       'The recipe could not be read',
-      name: 'supply_chain_recipe_error',
+      name: 'kitchen_recipe_error',
       desc: '',
       args: [],
     );
   }
 
   /// `Updated {date} · version {version}`
-  String supply_chain_recipe_updated(Object date, Object version) {
+  String kitchen_recipe_updated(Object date, Object version) {
     return Intl.message(
       'Updated $date · version $version',
-      name: 'supply_chain_recipe_updated',
+      name: 'kitchen_recipe_updated',
       desc: '',
       args: [date, version],
     );
   }
 
   /// `How it is bought`
-  String get supply_chain_presentations_title {
+  String get kitchen_presentations_title {
     return Intl.message(
       'How it is bought',
-      name: 'supply_chain_presentations_title',
+      name: 'kitchen_presentations_title',
       desc: '',
       args: [],
     );
   }
 
   /// `A presentation and what one holds in the product's unit: Sack = 25 kg, Box = 12 bottles. Restocking can then count sacks.`
-  String get supply_chain_presentations_note {
+  String get kitchen_presentations_note {
     return Intl.message(
       'A presentation and what one holds in the product\'s unit: Sack = 25 kg, Box = 12 bottles. Restocking can then count sacks.',
-      name: 'supply_chain_presentations_note',
+      name: 'kitchen_presentations_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Bought by the unit`
-  String get supply_chain_presentations_empty {
+  String get kitchen_presentations_empty {
     return Intl.message(
       'Bought by the unit',
-      name: 'supply_chain_presentations_empty',
+      name: 'kitchen_presentations_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `Edit presentations`
-  String get supply_chain_presentations_edit {
+  String get kitchen_presentations_edit {
     return Intl.message(
       'Edit presentations',
-      name: 'supply_chain_presentations_edit',
+      name: 'kitchen_presentations_edit',
       desc: '',
       args: [],
     );
   }
 
   /// `Presentations saved`
-  String get supply_chain_presentations_saved {
+  String get kitchen_presentations_saved {
     return Intl.message(
       'Presentations saved',
-      name: 'supply_chain_presentations_saved',
+      name: 'kitchen_presentations_saved',
       desc: '',
       args: [],
     );
   }
 
   /// `Every presentation needs a name and a quantity greater than zero`
-  String get supply_chain_presentations_invalid {
+  String get kitchen_presentations_invalid {
     return Intl.message(
       'Every presentation needs a name and a quantity greater than zero',
-      name: 'supply_chain_presentations_invalid',
+      name: 'kitchen_presentations_invalid',
       desc: '',
       args: [],
     );
   }
 
   /// `“{name}” is repeated`
-  String supply_chain_presentations_repeated(Object name) {
+  String kitchen_presentations_repeated(Object name) {
     return Intl.message(
       '“$name” is repeated',
-      name: 'supply_chain_presentations_repeated',
+      name: 'kitchen_presentations_repeated',
       desc: '',
       args: [name],
     );
   }
 
   /// `Name (Sack)`
-  String get supply_chain_presentation_name {
+  String get kitchen_presentation_name {
     return Intl.message(
       'Name (Sack)',
-      name: 'supply_chain_presentation_name',
+      name: 'kitchen_presentation_name',
       desc: '',
       args: [],
     );
   }
 
   /// `Holds`
-  String get supply_chain_presentation_qty {
+  String get kitchen_presentation_qty {
     return Intl.message(
       'Holds',
-      name: 'supply_chain_presentation_qty',
+      name: 'kitchen_presentation_qty',
       desc: '',
       args: [],
     );
   }
 
   /// `Add presentation`
-  String get supply_chain_presentation_add {
+  String get kitchen_presentation_add {
     return Intl.message(
       'Add presentation',
-      name: 'supply_chain_presentation_add',
+      name: 'kitchen_presentation_add',
       desc: '',
       args: [],
     );
   }
 
   /// `Produce {product}`
-  String supply_chain_produce_title(Object product) {
+  String kitchen_produce_title(Object product) {
     return Intl.message(
       'Produce $product',
-      name: 'supply_chain_produce_title',
+      name: 'kitchen_produce_title',
       desc: '',
       args: [product],
     );
   }
 
   /// `The supplies of the whole batch are spent, with their waste. The stock rises by what is made minus what was lost.`
-  String get supply_chain_produce_note {
+  String get kitchen_produce_note {
     return Intl.message(
       'The supplies of the whole batch are spent, with their waste. The stock rises by what is made minus what was lost.',
-      name: 'supply_chain_produce_note',
+      name: 'kitchen_produce_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Made`
-  String get supply_chain_produce_quantity {
+  String get kitchen_produce_quantity {
     return Intl.message(
       'Made',
-      name: 'supply_chain_produce_quantity',
+      name: 'kitchen_produce_quantity',
       desc: '',
       args: [],
     );
   }
 
   /// `Lost from the batch`
-  String get supply_chain_produce_lost {
+  String get kitchen_produce_lost {
     return Intl.message(
       'Lost from the batch',
-      name: 'supply_chain_produce_lost',
+      name: 'kitchen_produce_lost',
       desc: '',
       args: [],
     );
   }
 
   /// `What was lost goes from 0 to what was made`
-  String get supply_chain_produce_lost_invalid {
+  String get kitchen_produce_lost_invalid {
     return Intl.message(
       'What was lost goes from 0 to what was made',
-      name: 'supply_chain_produce_lost_invalid',
+      name: 'kitchen_produce_lost_invalid',
       desc: '',
       args: [],
     );
   }
 
   /// `Batch done: {amount} more in stock`
-  String supply_chain_produced(Object amount) {
+  String kitchen_produced(Object amount) {
     return Intl.message(
       'Batch done: $amount more in stock',
-      name: 'supply_chain_produced',
+      name: 'kitchen_produced',
       desc: '',
       args: [amount],
     );
   }
 
   /// `Batch done without: {supplies}`
-  String supply_chain_produced_without(Object supplies) {
+  String kitchen_produced_without(Object supplies) {
     return Intl.message(
       'Batch done without: $supplies',
-      name: 'supply_chain_produced_without',
+      name: 'kitchen_produced_without',
       desc: '',
       args: [supplies],
     );
   }
 
   /// `Lost {product}`
-  String supply_chain_discard_title(Object product) {
+  String kitchen_discard_title(Object product) {
     return Intl.message(
       'Lost $product',
-      name: 'supply_chain_discard_title',
+      name: 'kitchen_discard_title',
       desc: '',
       args: [product],
     );
   }
 
   /// `A dish that burned or fell: its supplies leave as lost, tied to the dish.`
-  String get supply_chain_discard_note {
+  String get kitchen_discard_note {
     return Intl.message(
       'A dish that burned or fell: its supplies leave as lost, tied to the dish.',
-      name: 'supply_chain_discard_note',
+      name: 'kitchen_discard_note',
       desc: '',
       args: [],
     );
   }
 
   /// `How many`
-  String get supply_chain_discard_quantity {
+  String get kitchen_discard_quantity {
     return Intl.message(
       'How many',
-      name: 'supply_chain_discard_quantity',
+      name: 'kitchen_discard_quantity',
       desc: '',
       args: [],
     );
   }
 
   /// `They went without`
-  String get supply_chain_discard_without {
+  String get kitchen_discard_without {
     return Intl.message(
       'They went without',
-      name: 'supply_chain_discard_without',
+      name: 'kitchen_discard_without',
       desc: '',
       args: [],
     );
   }
 
   /// `Lost dish recorded`
-  String get supply_chain_discarded {
+  String get kitchen_discarded {
     return Intl.message(
       'Lost dish recorded',
-      name: 'supply_chain_discarded',
+      name: 'kitchen_discarded',
       desc: '',
       args: [],
     );
   }
 
   /// `Note`
-  String get supply_chain_note {
-    return Intl.message('Note', name: 'supply_chain_note', desc: '', args: []);
+  String get kitchen_note {
+    return Intl.message('Note', name: 'kitchen_note', desc: '', args: []);
   }
 
   /// `Optional`
-  String get supply_chain_note_hint {
+  String get kitchen_note_hint {
     return Intl.message(
       'Optional',
-      name: 'supply_chain_note_hint',
+      name: 'kitchen_note_hint',
       desc: '',
       args: [],
     );
   }
 
   /// `The products could not be searched`
-  String get supply_chain_pick_error {
+  String get kitchen_pick_error {
     return Intl.message(
       'The products could not be searched',
-      name: 'supply_chain_pick_error',
+      name: 'kitchen_pick_error',
       desc: '',
       args: [],
     );
   }
 
   /// `No product matches`
-  String get supply_chain_pick_empty {
+  String get kitchen_pick_empty {
     return Intl.message(
       'No product matches',
-      name: 'supply_chain_pick_empty',
+      name: 'kitchen_pick_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `What a customer chooses about a product: extras, the meat's doneness, the bread. The till asks for them before charging.`
-  String get supply_chain_modifiers_note {
+  String get kitchen_modifiers_note {
     return Intl.message(
       'What a customer chooses about a product: extras, the meat\'s doneness, the bread. The till asks for them before charging.',
-      name: 'supply_chain_modifiers_note',
+      name: 'kitchen_modifiers_note',
       desc: '',
       args: [],
     );
   }
 
   /// `New group`
-  String get supply_chain_modifiers_create {
+  String get kitchen_modifiers_create {
     return Intl.message(
       'New group',
-      name: 'supply_chain_modifiers_create',
+      name: 'kitchen_modifiers_create',
       desc: '',
       args: [],
     );
   }
 
   /// `The modifiers could not be read`
-  String get supply_chain_modifiers_error {
+  String get kitchen_modifiers_error {
     return Intl.message(
       'The modifiers could not be read',
-      name: 'supply_chain_modifiers_error',
+      name: 'kitchen_modifiers_error',
       desc: '',
       args: [],
     );
   }
 
   /// `There are no modifiers yet`
-  String get supply_chain_modifiers_empty {
+  String get kitchen_modifiers_empty {
     return Intl.message(
       'There are no modifiers yet',
-      name: 'supply_chain_modifiers_empty',
+      name: 'kitchen_modifiers_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `Create a group like “Extras” or “Doneness” and pick the products that offer it.`
-  String get supply_chain_modifiers_empty_note {
+  String get kitchen_modifiers_empty_note {
     return Intl.message(
       'Create a group like “Extras” or “Doneness” and pick the products that offer it.',
-      name: 'supply_chain_modifiers_empty_note',
+      name: 'kitchen_modifiers_empty_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Group saved`
-  String get supply_chain_modifiers_saved {
+  String get kitchen_modifiers_saved {
     return Intl.message(
       'Group saved',
-      name: 'supply_chain_modifiers_saved',
+      name: 'kitchen_modifiers_saved',
       desc: '',
       args: [],
     );
   }
 
   /// `Group deleted`
-  String get supply_chain_modifiers_deleted {
+  String get kitchen_modifiers_deleted {
     return Intl.message(
       'Group deleted',
-      name: 'supply_chain_modifiers_deleted',
+      name: 'kitchen_modifiers_deleted',
       desc: '',
       args: [],
     );
   }
 
   /// `{count, plural, =0{No product offers it} =1{1 product} other{{count} products}}`
-  String supply_chain_modifiers_products(num count) {
+  String kitchen_modifiers_products(num count) {
     return Intl.plural(
       count,
       zero: 'No product offers it',
       one: '1 product',
       other: '$count products',
-      name: 'supply_chain_modifiers_products',
+      name: 'kitchen_modifiers_products',
       desc: '',
       args: [count],
     );
   }
 
   /// `Choose one`
-  String get supply_chain_modifiers_choose_one {
+  String get kitchen_modifiers_choose_one {
     return Intl.message(
       'Choose one',
-      name: 'supply_chain_modifiers_choose_one',
+      name: 'kitchen_modifiers_choose_one',
       desc: '',
       args: [],
     );
   }
 
   /// `At least {min}`
-  String supply_chain_modifiers_at_least(Object min) {
+  String kitchen_modifiers_at_least(Object min) {
     return Intl.message(
       'At least $min',
-      name: 'supply_chain_modifiers_at_least',
+      name: 'kitchen_modifiers_at_least',
       desc: '',
       args: [min],
     );
   }
 
   /// `{min} to {max}`
-  String supply_chain_modifiers_between(Object min, Object max) {
+  String kitchen_modifiers_between(Object min, Object max) {
     return Intl.message(
       '$min to $max',
-      name: 'supply_chain_modifiers_between',
+      name: 'kitchen_modifiers_between',
       desc: '',
       args: [min, max],
     );
   }
 
   /// `Optional`
-  String get supply_chain_modifiers_optional {
+  String get kitchen_modifiers_optional {
     return Intl.message(
       'Optional',
-      name: 'supply_chain_modifiers_optional',
+      name: 'kitchen_modifiers_optional',
       desc: '',
       args: [],
     );
   }
 
   /// `Up to {max}`
-  String supply_chain_modifiers_up_to(Object max) {
+  String kitchen_modifiers_up_to(Object max) {
     return Intl.message(
       'Up to $max',
-      name: 'supply_chain_modifiers_up_to',
+      name: 'kitchen_modifiers_up_to',
       desc: '',
       args: [max],
     );
   }
 
   /// `Tickets already written keep what they chose, even if the group changes or is deleted.`
-  String get supply_chain_modifiers_form_note {
+  String get kitchen_modifiers_form_note {
     return Intl.message(
       'Tickets already written keep what they chose, even if the group changes or is deleted.',
-      name: 'supply_chain_modifiers_form_note',
+      name: 'kitchen_modifiers_form_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Name`
-  String get supply_chain_modifiers_name {
+  String get kitchen_modifiers_name {
     return Intl.message(
       'Name',
-      name: 'supply_chain_modifiers_name',
+      name: 'kitchen_modifiers_name',
       desc: '',
       args: [],
     );
   }
 
   /// `Extras`
-  String get supply_chain_modifiers_name_hint {
+  String get kitchen_modifiers_name_hint {
     return Intl.message(
       'Extras',
-      name: 'supply_chain_modifiers_name_hint',
+      name: 'kitchen_modifiers_name_hint',
       desc: '',
       args: [],
     );
   }
 
   /// `Write the group's name`
-  String get supply_chain_modifiers_name_empty {
+  String get kitchen_modifiers_name_empty {
     return Intl.message(
       'Write the group\'s name',
-      name: 'supply_chain_modifiers_name_empty',
+      name: 'kitchen_modifiers_name_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `How many a line takes`
-  String get supply_chain_modifiers_rule {
+  String get kitchen_modifiers_rule {
     return Intl.message(
       'How many a line takes',
-      name: 'supply_chain_modifiers_rule',
+      name: 'kitchen_modifiers_rule',
       desc: '',
       args: [],
     );
   }
 
   /// `At least (0)`
-  String get supply_chain_modifiers_min {
+  String get kitchen_modifiers_min {
     return Intl.message(
       'At least (0)',
-      name: 'supply_chain_modifiers_min',
+      name: 'kitchen_modifiers_min',
       desc: '',
       args: [],
     );
   }
 
   /// `At most (all)`
-  String get supply_chain_modifiers_max {
+  String get kitchen_modifiers_max {
     return Intl.message(
       'At most (all)',
-      name: 'supply_chain_modifiers_max',
+      name: 'kitchen_modifiers_max',
       desc: '',
       args: [],
     );
   }
 
   /// `1 and 1 is “choose one”: the till can't charge without it, and Lyra can't sell that product yet.`
-  String get supply_chain_modifiers_rule_note {
+  String get kitchen_modifiers_rule_note {
     return Intl.message(
       '1 and 1 is “choose one”: the till can\'t charge without it, and Lyra can\'t sell that product yet.',
-      name: 'supply_chain_modifiers_rule_note',
+      name: 'kitchen_modifiers_rule_note',
       desc: '',
       args: [],
     );
   }
 
   /// `At most can't be less than at least, and at least can't exceed the options`
-  String get supply_chain_modifiers_rule_invalid {
+  String get kitchen_modifiers_rule_invalid {
     return Intl.message(
       'At most can\'t be less than at least, and at least can\'t exceed the options',
-      name: 'supply_chain_modifiers_rule_invalid',
+      name: 'kitchen_modifiers_rule_invalid',
       desc: '',
       args: [],
     );
   }
 
   /// `Products that offer it`
-  String get supply_chain_modifiers_products_title {
+  String get kitchen_modifiers_products_title {
     return Intl.message(
       'Products that offer it',
-      name: 'supply_chain_modifiers_products_title',
+      name: 'kitchen_modifiers_products_title',
       desc: '',
       args: [],
     );
   }
 
   /// `The group is asked for when one of these is rung up.`
-  String get supply_chain_modifiers_products_note {
+  String get kitchen_modifiers_products_note {
     return Intl.message(
       'The group is asked for when one of these is rung up.',
-      name: 'supply_chain_modifiers_products_note',
+      name: 'kitchen_modifiers_products_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Search a product to add`
-  String get supply_chain_modifiers_products_add {
+  String get kitchen_modifiers_products_add {
     return Intl.message(
       'Search a product to add',
-      name: 'supply_chain_modifiers_products_add',
+      name: 'kitchen_modifiers_products_add',
       desc: '',
       args: [],
     );
   }
 
   /// `Options`
-  String get supply_chain_modifiers_options_title {
+  String get kitchen_modifiers_options_title {
     return Intl.message(
       'Options',
-      name: 'supply_chain_modifiers_options_title',
+      name: 'kitchen_modifiers_options_title',
       desc: '',
       args: [],
     );
   }
 
   /// `The price is added to one unit. Extras and removed lines only work on a dish made to order; an option with only a price works on any product.`
-  String get supply_chain_modifiers_options_note {
+  String get kitchen_modifiers_options_note {
     return Intl.message(
       'The price is added to one unit. Extras and removed lines only work on a dish made to order; an option with only a price works on any product.',
-      name: 'supply_chain_modifiers_options_note',
+      name: 'kitchen_modifiers_options_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Add at least one option`
-  String get supply_chain_modifiers_options_empty {
+  String get kitchen_modifiers_options_empty {
     return Intl.message(
       'Add at least one option',
-      name: 'supply_chain_modifiers_options_empty',
+      name: 'kitchen_modifiers_options_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `Add option`
-  String get supply_chain_modifiers_option_add {
+  String get kitchen_modifiers_option_add {
     return Intl.message(
       'Add option',
-      name: 'supply_chain_modifiers_option_add',
+      name: 'kitchen_modifiers_option_add',
       desc: '',
       args: [],
     );
   }
 
   /// `Option (Extra cheese)`
-  String get supply_chain_modifiers_option_name {
+  String get kitchen_modifiers_option_name {
     return Intl.message(
       'Option (Extra cheese)',
-      name: 'supply_chain_modifiers_option_name',
+      name: 'kitchen_modifiers_option_name',
       desc: '',
       args: [],
     );
   }
 
   /// `Price`
-  String get supply_chain_modifiers_option_price {
+  String get kitchen_modifiers_option_price {
     return Intl.message(
       'Price',
-      name: 'supply_chain_modifiers_option_price',
+      name: 'kitchen_modifiers_option_price',
       desc: '',
       args: [],
     );
   }
 
   /// `Available. Off, it shows greyed out at the till.`
-  String get supply_chain_modifiers_option_paused_note {
+  String get kitchen_modifiers_option_paused_note {
     return Intl.message(
       'Available. Off, it shows greyed out at the till.',
-      name: 'supply_chain_modifiers_option_paused_note',
+      name: 'kitchen_modifiers_option_paused_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Every option needs a name, a price of zero or more, and its extras a quantity greater than zero`
-  String get supply_chain_modifiers_option_invalid {
+  String get kitchen_modifiers_option_invalid {
     return Intl.message(
       'Every option needs a name, a price of zero or more, and its extras a quantity greater than zero',
-      name: 'supply_chain_modifiers_option_invalid',
+      name: 'kitchen_modifiers_option_invalid',
       desc: '',
       args: [],
     );
   }
 
   /// `+ What it spends`
-  String get supply_chain_modifiers_extra_add {
+  String get kitchen_modifiers_extra_add {
     return Intl.message(
       '+ What it spends',
-      name: 'supply_chain_modifiers_extra_add',
+      name: 'kitchen_modifiers_extra_add',
       desc: '',
       args: [],
     );
   }
 
   /// `− What it removes from the recipe`
-  String get supply_chain_modifiers_remove_add {
+  String get kitchen_modifiers_remove_add {
     return Intl.message(
       '− What it removes from the recipe',
-      name: 'supply_chain_modifiers_remove_add',
+      name: 'kitchen_modifiers_remove_add',
       desc: '',
       args: [],
     );
   }
 
   /// `The products that offer it have no recipe lines`
-  String get supply_chain_modifiers_remove_empty {
+  String get kitchen_modifiers_remove_empty {
     return Intl.message(
       'The products that offer it have no recipe lines',
-      name: 'supply_chain_modifiers_remove_empty',
+      name: 'kitchen_modifiers_remove_empty',
       desc: '',
       args: [],
     );
   }
 
   /// `Without {line}`
-  String supply_chain_modifiers_removes(Object line) {
+  String kitchen_modifiers_removes(Object line) {
     return Intl.message(
       'Without $line',
-      name: 'supply_chain_modifiers_removes',
+      name: 'kitchen_modifiers_removes',
       desc: '',
       args: [line],
     );
   }
 
   /// `Spends on top of the recipe, per unit. Only on dishes made to order.`
-  String get supply_chain_modifiers_spends_note {
+  String get kitchen_modifiers_spends_note {
     return Intl.message(
       'Spends on top of the recipe, per unit. Only on dishes made to order.',
-      name: 'supply_chain_modifiers_spends_note',
+      name: 'kitchen_modifiers_spends_note',
       desc: '',
       args: [],
     );
   }
 
   /// `Delete group`
-  String get supply_chain_modifiers_delete {
+  String get kitchen_modifiers_delete {
     return Intl.message(
       'Delete group',
-      name: 'supply_chain_modifiers_delete',
+      name: 'kitchen_modifiers_delete',
       desc: '',
       args: [],
     );
   }
 
   /// `Delete the group?`
-  String get supply_chain_modifiers_delete_title {
+  String get kitchen_modifiers_delete_title {
     return Intl.message(
       'Delete the group?',
-      name: 'supply_chain_modifiers_delete_title',
+      name: 'kitchen_modifiers_delete_title',
       desc: '',
       args: [],
     );
   }
 
   /// `“{name}” is no longer asked for. Tickets already written keep what they chose.`
-  String supply_chain_modifiers_delete_message(Object name) {
+  String kitchen_modifiers_delete_message(Object name) {
     return Intl.message(
       '“$name” is no longer asked for. Tickets already written keep what they chose.',
-      name: 'supply_chain_modifiers_delete_message',
+      name: 'kitchen_modifiers_delete_message',
       desc: '',
       args: [name],
-    );
-  }
-
-  /// `Consumption`
-  String get supply_chain_reports_consumption {
-    return Intl.message(
-      'Consumption',
-      name: 'supply_chain_reports_consumption',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Variance`
-  String get supply_chain_reports_variance {
-    return Intl.message(
-      'Variance',
-      name: 'supply_chain_reports_variance',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cost per dish`
-  String get supply_chain_reports_cost {
-    return Intl.message(
-      'Cost per dish',
-      name: 'supply_chain_reports_cost',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What this branch spent of each supply according to the recipes. Open a supply to see the dishes that spent it.`
-  String get supply_chain_reports_consumption_note {
-    return Intl.message(
-      'What this branch spent of each supply according to the recipes. Open a supply to see the dishes that spent it.',
-      name: 'supply_chain_reports_consumption_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What really left against what the recipes explain. Positive is missing supply nobody recorded. Count the stock at the close, then open this from the previous count's day.`
-  String get supply_chain_reports_variance_note {
-    return Intl.message(
-      'What really left against what the recipes explain. Positive is missing supply nobody recorded. Count the stock at the close, then open this from the previous count\'s day.',
-      name: 'supply_chain_reports_variance_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What each dish costs at the average price paid for its supplies in every branch (the last 90 days unless dates are set). Restocks without a total cost don't count.`
-  String get supply_chain_reports_cost_note {
-    return Intl.message(
-      'What each dish costs at the average price paid for its supplies in every branch (the last 90 days unless dates are set). Restocks without a total cost don\'t count.',
-      name: 'supply_chain_reports_cost_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `From`
-  String get supply_chain_reports_from {
-    return Intl.message(
-      'From',
-      name: 'supply_chain_reports_from',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `To`
-  String get supply_chain_reports_to {
-    return Intl.message(
-      'To',
-      name: 'supply_chain_reports_to',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Apply`
-  String get supply_chain_reports_apply {
-    return Intl.message(
-      'Apply',
-      name: 'supply_chain_reports_apply',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Write the days as day/month/year`
-  String get supply_chain_reports_day_invalid {
-    return Intl.message(
-      'Write the days as day/month/year',
-      name: 'supply_chain_reports_day_invalid',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The first day can't be after the last`
-  String get supply_chain_reports_window_invalid {
-    return Intl.message(
-      'The first day can\'t be after the last',
-      name: 'supply_chain_reports_window_invalid',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The report could not be read`
-  String get supply_chain_reports_error {
-    return Intl.message(
-      'The report could not be read',
-      name: 'supply_chain_reports_error',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Nothing to report in these days`
-  String get supply_chain_reports_empty {
-    return Intl.message(
-      'Nothing to report in these days',
-      name: 'supply_chain_reports_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `There are no recipes yet.`
-  String get supply_chain_cost_empty_note {
-    return Intl.message(
-      'There are no recipes yet.',
-      name: 'supply_chain_cost_empty_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Supply`
-  String get supply_chain_reports_supply {
-    return Intl.message(
-      'Supply',
-      name: 'supply_chain_reports_supply',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Used`
-  String get supply_chain_reports_used {
-    return Intl.message(
-      'Used',
-      name: 'supply_chain_reports_used',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Waste`
-  String get supply_chain_reports_waste {
-    return Intl.message(
-      'Waste',
-      name: 'supply_chain_reports_waste',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lost dishes`
-  String get supply_chain_reports_spoiled {
-    return Intl.message(
-      'Lost dishes',
-      name: 'supply_chain_reports_spoiled',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Batch`
-  String get supply_chain_reports_batch {
-    return Intl.message(
-      'Batch',
-      name: 'supply_chain_reports_batch',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Produced`
-  String get supply_chain_reports_produced {
-    return Intl.message(
-      'Produced',
-      name: 'supply_chain_reports_produced',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lost`
-  String get supply_chain_reports_lost {
-    return Intl.message(
-      'Lost',
-      name: 'supply_chain_reports_lost',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Actual`
-  String get supply_chain_reports_actual {
-    return Intl.message(
-      'Actual',
-      name: 'supply_chain_reports_actual',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Recipes`
-  String get supply_chain_reports_theoretical {
-    return Intl.message(
-      'Recipes',
-      name: 'supply_chain_reports_theoretical',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Variance`
-  String get supply_chain_reports_variance_column {
-    return Intl.message(
-      'Variance',
-      name: 'supply_chain_reports_variance_column',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No count in the period`
-  String get supply_chain_reports_not_counted {
-    return Intl.message(
-      'No count in the period',
-      name: 'supply_chain_reports_not_counted',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Opening`
-  String get supply_chain_reports_opening {
-    return Intl.message(
-      'Opening',
-      name: 'supply_chain_reports_opening',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Received`
-  String get supply_chain_reports_received {
-    return Intl.message(
-      'Received',
-      name: 'supply_chain_reports_received',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sent to another branch`
-  String get supply_chain_reports_sent {
-    return Intl.message(
-      'Sent to another branch',
-      name: 'supply_chain_reports_sent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Closing`
-  String get supply_chain_reports_closing {
-    return Intl.message(
-      'Closing',
-      name: 'supply_chain_reports_closing',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sold directly`
-  String get supply_chain_reports_sold {
-    return Intl.message(
-      'Sold directly',
-      name: 'supply_chain_reports_sold',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Dish`
-  String get supply_chain_reports_dish {
-    return Intl.message(
-      'Dish',
-      name: 'supply_chain_reports_dish',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cost`
-  String get supply_chain_reports_cost_column {
-    return Intl.message(
-      'Cost',
-      name: 'supply_chain_reports_cost_column',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Incomplete cost`
-  String get supply_chain_reports_incomplete {
-    return Intl.message(
-      'Incomplete cost',
-      name: 'supply_chain_reports_incomplete',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Never bought with a cost`
-  String get supply_chain_reports_no_price {
-    return Intl.message(
-      'Never bought with a cost',
-      name: 'supply_chain_reports_no_price',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `{amount} each`
-  String supply_chain_reports_each(Object amount) {
-    return Intl.message(
-      '$amount each',
-      name: 'supply_chain_reports_each',
-      desc: '',
-      args: [amount],
     );
   }
 
@@ -10674,6 +10264,56 @@ class S {
     return Intl.message(
       'Template',
       name: 'table_template_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What it holds`
+  String get create_table_kind {
+    return Intl.message(
+      'What it holds',
+      name: 'create_table_kind',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It can't be changed once the table is created: a supply is counted with decimals of its unit, a product in whole units.`
+  String get create_table_kind_fixed {
+    return Intl.message(
+      'It can\'t be changed once the table is created: a supply is counted with decimals of its unit, a product in whole units.',
+      name: 'create_table_kind_fixed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Products`
+  String get table_kind_catalog {
+    return Intl.message(
+      'Products',
+      name: 'table_kind_catalog',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What you buy and sell as it is: phones, clothes, cans. Counted in whole units.`
+  String get table_kind_catalog_note {
+    return Intl.message(
+      'What you buy and sell as it is: phones, clothes, cans. Counted in whole units.',
+      name: 'table_kind_catalog_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Supplies`
+  String get table_kind_supplies {
+    return Intl.message(
+      'Supplies',
+      name: 'table_kind_supplies',
       desc: '',
       args: [],
     );

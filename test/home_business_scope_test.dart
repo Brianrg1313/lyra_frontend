@@ -6,7 +6,7 @@ import 'package:app/screens/home/sections/_section/page_switcher.dart';
 import 'package:app/screens/home/sections/business/_business_detail.dart';
 import 'package:app/screens/home/sections/business/business_tab.dart';
 import 'package:app/screens/home/sections/channels/form/_channel_form.dart';
-import 'package:app/screens/home/sections/inventory/table_list/_table_list.dart';
+import 'package:app/screens/home/sections/inventory/_inventory.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 
 Key? _keyOf(String currentKey, HomeSection section, String? businessId) =>

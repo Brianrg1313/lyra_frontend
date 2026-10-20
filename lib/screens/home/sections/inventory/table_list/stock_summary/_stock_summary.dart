@@ -71,7 +71,7 @@ class _StockSummarySectionState extends State<StockSummarySection> {
     source: widget.source,
     tableId: widget.tableId,
     supplies: widget.supplies,
-    recipes: widget.made && CapabilityService().shows("supply_chain.recipes")
+    recipes: widget.made && CapabilityService().shows("inventory.recipes")
   );
 
   late final ValueListenable<String> _query;

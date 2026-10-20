@@ -6,23 +6,13 @@ import 'package:app/services/preferences/preferences_service.dart';
 
 /// The cells switch: on, the open table shows every cell (the sheet); off, its stock
 /// summary. The choice is the account's (`PreferencesService`): the next table, and the
-/// next time, open the same way.
-///
-/// Given [sheet] and [onSwitch], it is the opener's instead (the production line's supplies,
-/// whose other view is its own list and not the inventory's summary).
+/// next time, open the same way. A supplies table's summary is its own list
+/// (`SuppliesSection`), switched the same way.
 class InventoryViewToggle extends StatelessWidget {
-  const InventoryViewToggle({super.key, this.sheet, this.onSwitch});
-
-  final bool? sheet;
-  final ValueChanged<bool>? onSwitch;
+  const InventoryViewToggle({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final sheet = this.sheet;
-    final onSwitch = this.onSwitch;
-
-    if (sheet != null && onSwitch != null) return _button(context, sheet, onSwitch);
-
     return ValueListenableBuilder<InventoryView>(
       valueListenable: PreferencesService().inventoryView,
       builder: (context, view, _) => _button(

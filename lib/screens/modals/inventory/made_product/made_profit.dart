@@ -5,7 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/kitchen/kitchen_report_model.dart';
 
 // WIDGETS
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
 
 /// What the product earns, beside its price: the price as it is being typed, less what making it
 /// costs from what each supply costs (`POST /recipes/cost`, `cocina-frontend.md` §9). Nothing to

@@ -18,6 +18,7 @@ import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:core/button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
+import 'package:app/screens/home/sections/inventory/table_list/supplies/_supplies.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
@@ -30,8 +31,7 @@ import './table_options.dart';
 import './table_selector.dart';
 import './view_toggle.dart';
 
-/// Inventory: the content of the `inventory` section of the home, **one table at a
-/// time**.
+/// The inventory's tables (`InventorySection`'s first tab), **one table at a time**.
 ///
 /// The bar's title is the open table ([TableSelector]): picking another one switches
 /// the whole section to it. The bar's right end carries the open table's options
@@ -47,25 +47,27 @@ import './view_toggle.dart';
 /// company, else the primary one, else the first. A table that is gone (deleted, another
 /// company's link) falls to the next on its own.
 ///
-/// **`catalog` tables only** (`cocina-frontend.md` §2): what is bought and counted. A company's
-/// supplies tables are the production line's and its `made` ones the menu's (`MenuSection`),
-/// and neither is listed here, so «Create table» always makes a catalog.
+/// **`catalog` and `supplies` tables** (`cocina-frontend.md` §2): what is bought and sold as it
+/// is, and what the rest is made of. They share the selector, catalogs first, each marked with
+/// its kind, and «Create table» asks which one (it never changes afterwards). A supplies table's
+/// summary is its own list ([SuppliesSection]: what a preparation makes now, its kitchen panel);
+/// its sheet moves stock with decimals. The `made` tables are the menu's (`MenuSection`).
 ///
-/// A company with none sees [InventoryStart] instead (whatever supplies or made tables it
-/// has): the templates for its activity, a blank table and the import. The templates are
-/// read there and only there.
+/// A company with neither sees [InventoryStart] instead (whatever made tables it has): the
+/// templates for its activity, a blank table and the import. The templates are read there and
+/// only there.
 ///
 /// A table still being imported is not opened in either view (its columns are untyped
 /// and its rows not up yet, which reads as an import that failed): what's open shows
 /// what the import is up to until it lands.
-class InventorySection extends StatefulWidget {
-  const InventorySection({super.key});
+class InventoryTables extends StatefulWidget {
+  const InventoryTables({super.key});
 
   @override
-  State<InventorySection> createState() => _InventorySectionState();
+  State<InventoryTables> createState() => _InventoryTablesState();
 }
 
-class _InventorySectionState extends State<InventorySection> {
+class _InventoryTablesState extends State<InventoryTables> {
   /// The table asked for: the link's, a pick or a just created one. What opens is
   /// resolved against the list on each build ([_open]).
   String? _picked;
@@ -149,12 +151,12 @@ class _InventorySectionState extends State<InventorySection> {
     }
   }
 
-  /// A blank table through the create modal, which answers its id.
+  /// A blank table through the create modal, which asks its kind and answers its id.
   Future<void> _createWithModal() async {
     final id = await showModal(
       context: context,
       title: S.of(context).create_table,
-      builder: (BuildContext context) => const CreateTableModal(kind: TableKind.catalog)
+      builder: (BuildContext context) => const CreateTableModal()
     );
 
     if (!mounted || id is! String) return;
@@ -239,12 +241,13 @@ class _InventorySectionState extends State<InventorySection> {
   Widget build(BuildContext context) {
     final service = context.watch<TablesService>();
     final tables = [
-      for (final table in service.tables)
-        if (table.kind == TableKind.catalog) table
+      for (final kind in const [TableKind.catalog, TableKind.supplies])
+        for (final table in service.tables)
+          if (table.kind == kind) table
     ];
 
     // A reload keeps the tables it had in view: only a first read covers the section. A
-    // company with supplies or made tables only has nothing of its own here.
+    // company with made tables only has nothing of its own here.
     if (tables.isEmpty) {
       return switch (service.tables.isNotEmpty ? TablesStatus.empty : service.status) {
         TablesStatus.error => Surface(child: SectionMessage(
@@ -305,9 +308,16 @@ class _InventorySectionState extends State<InventorySection> {
       ]));
     }
 
+    final supplies = table.kind == TableKind.supplies;
+
     return ValueListenableBuilder<InventoryView>(
       valueListenable: PreferencesService().inventoryView,
       builder: (context, view, _) => switch (blank ? InventoryView.sheet : view) {
+        InventoryView.summary when supplies => SuppliesSection(
+          key: ValueKey("supplies_${table.id}"),
+          table: table,
+          parts: parts
+        ),
         InventoryView.summary => StockSummarySection(
           key: ValueKey("summary_${table.id}"),
           tableId: table.id,
@@ -316,6 +326,7 @@ class _InventorySectionState extends State<InventorySection> {
         InventoryView.sheet => TableViewSection(
           key: ValueKey("sheet_${table.id}"),
           tableId: table.id,
+          supplies: supplies,
           parts: parts
         )
       }

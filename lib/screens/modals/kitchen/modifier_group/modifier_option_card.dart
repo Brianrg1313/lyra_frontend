@@ -7,9 +7,9 @@ import 'package:app/services/kitchen/modifier_model.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_chip.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_chip.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 
 /// An extra an option spends, as typed.
 class ModifierExtraDraft {
@@ -118,7 +118,7 @@ class _ModifierOptionCardState extends State<ModifierOptionCard> {
     final checked = await showCheckMenu(
       context: anchor,
       checked: _option.remove.toList(),
-      emptyText: s.supply_chain_modifiers_remove_empty,
+      emptyText: s.kitchen_modifiers_remove_empty,
       options: [
         for (final line in widget.removable) SelectOption(value: line.id, placeholder: line.label)
       ]
@@ -140,11 +140,11 @@ class _ModifierOptionCardState extends State<ModifierOptionCard> {
         padding: EdgeInsets.all(AppSize.spaceS),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
-            Expanded(child: Input(controller: _option.name, placeholder: s.supply_chain_modifiers_option_name, buttonSpace: false)),
+            Expanded(child: Input(controller: _option.name, placeholder: s.kitchen_modifiers_option_name, buttonSpace: false)),
             SizedBox(width: AppSize.gap),
-            SizedBox(width: 110, child: Input(controller: _option.price, placeholder: s.supply_chain_modifiers_option_price, buttonSpace: false)),
+            SizedBox(width: 110, child: Input(controller: _option.price, placeholder: s.kitchen_modifiers_option_price, buttonSpace: false)),
             Tooltip(
-              message: s.supply_chain_modifiers_option_paused_note,
+              message: s.kitchen_modifiers_option_paused_note,
               child: Switch(
                 value: !_option.paused,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -154,7 +154,7 @@ class _ModifierOptionCardState extends State<ModifierOptionCard> {
             ),
             if (enabled) FocusableWidget(
               action: widget.onRemove,
-              message: s.supply_chain_line_remove,
+              message: s.kitchen_line_remove,
               child: Padding(
                 padding: EdgeInsets.all(AppSize.gap),
                 child: Icon(CI.trash, size: AppSize.text, color: scheme.text.secondary)
@@ -167,13 +167,13 @@ class _ModifierOptionCardState extends State<ModifierOptionCard> {
               Icon(CI.plus, size: AppSize.text, color: scheme.icon),
               SizedBox(width: AppSize.gap),
               Expanded(child: TextSmall(widget.nameOf(line.productId), ellipsis: true)),
-              SizedBox(width: 110, child: Input(controller: line.qty, placeholder: s.supply_chain_line_qty, buttonSpace: false)),
+              SizedBox(width: 110, child: Input(controller: line.qty, placeholder: s.kitchen_line_qty, buttonSpace: false)),
               if (enabled) FocusableWidget(
                 action: () => setState(() {
                   _option.lines.remove(line);
                   line.qty.dispose();
                 }),
-                message: s.supply_chain_line_remove,
+                message: s.kitchen_line_remove,
                 child: Padding(
                   padding: EdgeInsets.all(AppSize.gap),
                   child: Icon(CI.trash, size: AppSize.text, color: scheme.text.secondary)
@@ -185,7 +185,7 @@ class _ModifierOptionCardState extends State<ModifierOptionCard> {
             padding: EdgeInsets.only(top: AppSize.gap),
             child: Wrap(spacing: AppSize.gap, runSpacing: AppSize.gap, children: [
               for (final id in _option.remove) KitchenChip(
-                label: s.supply_chain_modifiers_removes(labels[id] ?? id),
+                label: s.kitchen_modifiers_removes(labels[id] ?? id),
                 onRemove: enabled ? () => setState(() => _option.remove.remove(id)) : null
               )
             ])
@@ -195,22 +195,22 @@ class _ModifierOptionCardState extends State<ModifierOptionCard> {
             Row(children: [
               FocusableWidget(
                 action: () => setState(() => _picking = !_picking),
-                child: TextSmall(s.supply_chain_modifiers_extra_add, color: scheme.primary)
+                child: TextSmall(s.kitchen_modifiers_extra_add, color: scheme.primary)
               ),
               SizedBox(width: AppSize.spaceS),
               if (widget.removable.isNotEmpty) Builder(builder: (anchor) => FocusableWidget(
                 action: () => _pickRemove(anchor),
-                child: TextSmall(s.supply_chain_modifiers_remove_add, color: scheme.primary)
+                child: TextSmall(s.kitchen_modifiers_remove_add, color: scheme.primary)
               ))
             ]),
             if (_picking) KitchenProductPicker(
-              placeholder: s.supply_chain_lines_add,
+              placeholder: s.kitchen_lines_add,
               exclude: {for (final line in _option.lines) line.productId},
               onPick: _addExtra
             )
           ],
           if (_option.lines.isNotEmpty || _option.remove.isNotEmpty)
-            KitchenNote(text: s.supply_chain_modifiers_spends_note)
+            KitchenNote(text: s.kitchen_modifiers_spends_note)
         ])
       )
     );

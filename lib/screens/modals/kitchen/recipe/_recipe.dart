@@ -9,12 +9,12 @@ import 'package:app/services/permissions/permissions_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
-import 'package:app/screens/modals/supply_chain/discard_dish/_discard_dish.dart';
-import 'package:app/screens/modals/supply_chain/presentations/_presentations.dart';
-import 'package:app/screens/modals/supply_chain/produce_batch/_produce_batch.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/home/sections/inventory/table_list/supplies/recipe_row.dart';
+import 'package:app/screens/modals/kitchen/discard_dish/_discard_dish.dart';
+import 'package:app/screens/modals/kitchen/presentations/_presentations.dart';
+import 'package:app/screens/modals/kitchen/produce_batch/_produce_batch.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 
 import './recipe_editor.dart';
 
@@ -38,7 +38,7 @@ Future<bool> showRecipePanel(BuildContext context, {required KitchenProduct prod
 /// consumes nothing and has none.
 ///
 /// Owns its [RecipeService], read when it opens and dropped when it closes. What it offers
-/// follows the person's grants (`supply_chain.recipes.*`) and the recipe's mode: a batch is
+/// follows the person's grants (`inventory.recipes.*`) and the recipe's mode: a batch is
 /// produced, a dish made to order is lost; a dish made to order has no presentations (it is
 /// never bought).
 class RecipePanel extends StatefulWidget {
@@ -76,7 +76,7 @@ class _RecipePanelState extends State<RecipePanel> {
     super.dispose();
   }
 
-  bool _can(String action) => PermissionsService().can("supply_chain.recipes.$action");
+  bool _can(String action) => PermissionsService().can("inventory.recipes.$action");
 
   @override
   Widget build(BuildContext context) => ConstrainedBox(
@@ -92,7 +92,7 @@ class _RecipePanelState extends State<RecipePanel> {
         return Padding(padding: EdgeInsets.all(AppSize.spaceL), child: const Center(child: Loading()));
       case RecipeStatus.error:
         return Column(mainAxisSize: MainAxisSize.min, children: [
-          KitchenNote(text: s.supply_chain_recipe_error),
+          KitchenNote(text: s.kitchen_recipe_error),
           Button(title: s.knowledge_retry, action: _service.load)
         ]);
       case RecipeStatus.none:
@@ -138,27 +138,27 @@ class _RecipePanelState extends State<RecipePanel> {
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               RecipeTag(
-                text: recipe.mode == RecipeMode.batch ? s.supply_chain_mode_batch : s.supply_chain_mode_order,
+                text: recipe.mode == RecipeMode.batch ? s.kitchen_mode_batch : s.kitchen_mode_order,
                 color: scheme.accent
               ),
               if (recipe.paused) ...[
                 SizedBox(width: AppSize.gap),
-                RecipeTag(text: s.supply_chain_paused, color: scheme.snackBar.error)
+                RecipeTag(text: s.kitchen_paused, color: scheme.snackBar.error)
               ]
             ]),
             SizedBox(height: AppSize.gap),
-            TextMedium(made == null ? s.supply_chain_made_unknown : recipeAvailabilityLine(context, made), lines: 2),
+            TextMedium(made == null ? s.kitchen_made_unknown : recipeAvailabilityLine(context, made), lines: 2),
             if (made != null && made.short.isNotEmpty) TextSmall(
-              s.supply_chain_short(made.short.map((line) => line.name).where((name) => name.isNotEmpty).join(", ")),
+              s.kitchen_short(made.short.map((line) => line.name).where((name) => name.isNotEmpty).join(", ")),
               lines: 2,
               color: scheme.text.secondary
             )
           ])),
           SizedBox(width: AppSize.spaceS),
           Tooltip(
-            message: s.supply_chain_pause_note,
+            message: s.kitchen_pause_note,
             child: Row(mainAxisSize: MainAxisSize.min, children: [
-              TextSmall(recipe.paused ? s.supply_chain_sold_out : s.supply_chain_available, color: scheme.text.secondary),
+              TextSmall(recipe.paused ? s.kitchen_sold_out : s.kitchen_available, color: scheme.text.secondary),
               Switch(
                 value: !recipe.paused,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -172,9 +172,9 @@ class _RecipePanelState extends State<RecipePanel> {
       SizedBox(height: AppSize.spaceXS),
       Row(children: [
         if (recipe.mode == RecipeMode.batch && _can("produce"))
-          Expanded(child: Button(title: s.supply_chain_produce, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => _produce(recipe))),
+          Expanded(child: Button(title: s.kitchen_produce, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => _produce(recipe))),
         if (recipe.mode == RecipeMode.order && _can("discard"))
-          Expanded(child: Button(title: s.supply_chain_discard, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: () => _discard(recipe)))
+          Expanded(child: Button(title: s.kitchen_discard, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: () => _discard(recipe)))
       ]),
       SizedBox(height: AppSize.spaceS)
     ];
@@ -187,7 +187,7 @@ class _RecipePanelState extends State<RecipePanel> {
 
     if (!done || !mounted) return done;
 
-    FloatFlag.of(context).message(s.supply_chain_recipe_saved);
+    FloatFlag.of(context).message(s.kitchen_recipe_saved);
     setState(() => _editing = false);
     widget.onChanged();
 
@@ -202,9 +202,9 @@ class _RecipePanelState extends State<RecipePanel> {
     final supply = widget.product.supplies;
 
     return [
-      TextMedium(supply ? s.supply_chain_preparation_none : s.supply_chain_no_recipe, bold: true),
-      KitchenNote(text: supply ? s.supply_chain_preparation_note : s.supply_chain_made_without_note),
-      if (_can("edit")) Button(title: supply ? s.supply_chain_preparation_create : s.supply_chain_recipe_create, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => setState(() => _editing = true)),
+      TextMedium(supply ? s.kitchen_preparation_none : s.kitchen_no_recipe, bold: true),
+      KitchenNote(text: supply ? s.kitchen_preparation_note : s.kitchen_made_without_note),
+      if (_can("edit")) Button(title: supply ? s.kitchen_preparation_create : s.kitchen_recipe_create, leftIcon: Icon(CI.plus, color: ThemeColor.of(context).button.text), action: () => setState(() => _editing = true)),
       SizedBox(height: AppSize.spaceS)
     ];
   }
@@ -215,7 +215,7 @@ class _RecipePanelState extends State<RecipePanel> {
     final s = S.of(context);
 
     return [
-      TextMedium(s.supply_chain_lines_title, bold: true),
+      TextMedium(s.kitchen_lines_title, bold: true),
       SizedBox(height: AppSize.gap),
       for (final line in recipe.lines) Padding(
         padding: EdgeInsets.only(bottom: AppSize.gap / 2),
@@ -226,11 +226,11 @@ class _RecipePanelState extends State<RecipePanel> {
             TextSmall(kitchenQty(context, line.qty)),
             if (line.waste > 0) ...[
               SizedBox(width: AppSize.spaceS),
-              TextSmall(s.supply_chain_line_waste_of(kitchenPercent(context, line.waste)), color: scheme.text.secondary)
+              TextSmall(s.kitchen_line_waste_of(kitchenPercent(context, line.waste)), color: scheme.text.secondary)
             ],
             if (line.negotiable) ...[
               SizedBox(width: AppSize.spaceS),
-              RecipeTag(text: s.supply_chain_line_negotiable, color: scheme.text.secondary)
+              RecipeTag(text: s.kitchen_line_negotiable, color: scheme.text.secondary)
             ]
           ])
         )
@@ -253,15 +253,15 @@ class _RecipePanelState extends State<RecipePanel> {
           ])
         )
       ),
-      if (recipe.updated != null) KitchenNote(text: s.supply_chain_recipe_updated(kitchenDay(context, recipe.updated!), recipe.version)),
+      if (recipe.updated != null) KitchenNote(text: s.kitchen_recipe_updated(kitchenDay(context, recipe.updated!), recipe.version)),
       if (_can("edit")) ...[
         SizedBox(height: AppSize.spaceXS),
         Row(children: [
-          Expanded(child: Button(title: s.supply_chain_recipe_edit, leftIcon: Icon(CI.edit, color: ThemeColor.of(context).button.text), action: () => setState(() => _editing = true))),
+          Expanded(child: Button(title: s.kitchen_recipe_edit, leftIcon: Icon(CI.edit, color: ThemeColor.of(context).button.text), action: () => setState(() => _editing = true))),
           // A made product never goes without what it consumes (`recipe_required`).
           if (_service.removable) ...[
             SizedBox(width: AppSize.spaceS),
-            Expanded(child: Button(title: s.supply_chain_recipe_delete, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: _delete))
+            Expanded(child: Button(title: s.kitchen_recipe_delete, leftIcon: Icon(CI.trash, color: ThemeColor.of(context).button.text), action: _delete))
           ]
         ])
       ],
@@ -280,10 +280,10 @@ class _RecipePanelState extends State<RecipePanel> {
 
     return [
       SizedBox(height: AppSize.spaceS),
-      TextMedium(s.supply_chain_presentations_title, bold: true),
-      KitchenNote(text: s.supply_chain_presentations_note),
+      TextMedium(s.kitchen_presentations_title, bold: true),
+      KitchenNote(text: s.kitchen_presentations_note),
       if (items.isEmpty)
-        KitchenNote(text: s.supply_chain_presentations_empty)
+        KitchenNote(text: s.kitchen_presentations_empty)
       else
         for (final item in items) Padding(
           padding: EdgeInsets.only(bottom: AppSize.gap / 2),
@@ -297,7 +297,7 @@ class _RecipePanelState extends State<RecipePanel> {
         ),
       if (_can("presentations")) ...[
         SizedBox(height: AppSize.gap),
-        Button(title: s.supply_chain_presentations_edit, leftIcon: Icon(CI.edit, color: ThemeColor.of(context).button.text), action: _editPresentations)
+        Button(title: s.kitchen_presentations_edit, leftIcon: Icon(CI.edit, color: ThemeColor.of(context).button.text), action: _editPresentations)
       ]
     ];
   }
@@ -324,9 +324,9 @@ class _RecipePanelState extends State<RecipePanel> {
     widget.onChanged();
 
     if (result.skipped.isEmpty) {
-      FloatFlag.of(context).message(s.supply_chain_produced(kitchenQty(context, result.made)));
+      FloatFlag.of(context).message(s.kitchen_produced(kitchenQty(context, result.made)));
     } else {
-      FloatFlag.of(context).alert(message: s.supply_chain_produced_without(result.skipped.join(", ")));
+      FloatFlag.of(context).alert(message: s.kitchen_produced_without(result.skipped.join(", ")));
     }
   }
 
@@ -340,7 +340,7 @@ class _RecipePanelState extends State<RecipePanel> {
 
     if (!done || !mounted) return;
     widget.onChanged();
-    FloatFlag.of(context).message(s.supply_chain_discarded);
+    FloatFlag.of(context).message(s.kitchen_discarded);
   }
 
   /// Deleting a preparation leaves the supply with a shelf of its own, bought ready: the recipes
@@ -355,13 +355,13 @@ class _RecipePanelState extends State<RecipePanel> {
 
     final confirmed = await showAlertModal(
       context: context,
-      title: s.supply_chain_recipe_delete_title,
+      title: s.kitchen_recipe_delete_title,
       message: [
-        s.supply_chain_recipe_delete_message(widget.product.label),
-        if (names.isNotEmpty) s.supply_chain_used_in(names.join(", ")),
-        if (uses == null) s.supply_chain_uses_unknown
+        s.kitchen_recipe_delete_message(widget.product.label),
+        if (names.isNotEmpty) s.kitchen_used_in(names.join(", ")),
+        if (uses == null) s.kitchen_uses_unknown
       ].join("\n\n"),
-      confirmText: s.supply_chain_recipe_delete,
+      confirmText: s.kitchen_recipe_delete,
       cancelText: s.cancel
     );
 
@@ -371,7 +371,7 @@ class _RecipePanelState extends State<RecipePanel> {
 
     if (!done || !mounted) return;
     widget.onChanged();
-    FloatFlag.of(context).message(s.supply_chain_recipe_deleted);
+    FloatFlag.of(context).message(s.kitchen_recipe_deleted);
   }
 
   Future<void> _editPresentations() async {
@@ -386,6 +386,6 @@ class _RecipePanelState extends State<RecipePanel> {
 
     final done = await _service.savePresentations(context, drafts);
 
-    if (done && mounted) FloatFlag.of(context).message(s.supply_chain_presentations_saved);
+    if (done && mounted) FloatFlag.of(context).message(s.kitchen_presentations_saved);
   }
 }

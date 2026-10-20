@@ -22,7 +22,7 @@ import 'package:app/screens/home/sections/_section/more_button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/modals/inventory/made_product/_made_product.dart';
-import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
+import 'package:app/screens/modals/kitchen/recipe/_recipe.dart';
 
 import './made_product_card.dart';
 import './made_product_new_card.dart';
@@ -33,7 +33,7 @@ import './made_product_new_card.dart';
 /// supplies and measured in their unit; how many can be made with them is the backend's.
 ///
 /// Owns the table's [MadeProductsService]; the header search narrows it (`MATCH`). With
-/// `supply_chain.recipes` a product also opens its kitchen page (the 86, batches, lost dishes).
+/// `inventory.recipes` a product also opens its kitchen page (the 86, batches, lost dishes).
 class MadeProductsSection extends StatefulWidget {
   const MadeProductsSection({super.key, required this.tableId, required this.parts, this.service});
 
@@ -80,7 +80,7 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
     _debounce = Timer(const Duration(milliseconds: 350), () => _service.search(_query.value));
   }
 
-  bool get _canWrite => PermissionsService().can("supply_chain.recipes.edit");
+  bool get _canWrite => PermissionsService().can("inventory.recipes.edit");
 
   /// The backend deletes a record with `products.delete`, apart from writing one.
   bool get _canDelete => PermissionsService().can("products.delete");
@@ -210,7 +210,7 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
     }
 
     final products = _service.products;
-    final kitchen = CapabilityService().shows("supply_chain.recipes");
+    final kitchen = CapabilityService().shows("inventory.recipes");
     final tiles = <Widget>[
       if (_canWrite) MadeProductNewCard(onCreate: _open),
       for (final product in products) ContextMenuRegion(

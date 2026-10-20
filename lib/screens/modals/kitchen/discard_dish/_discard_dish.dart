@@ -8,7 +8,7 @@ import 'package:app/services/kitchen/recipe_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 
 /// Dishes lost: how many, what they went without, a note.
 typedef DiscardDraft = ({int quantity, List<String> without, String note});
@@ -18,7 +18,7 @@ typedef DiscardDraft = ({int quantity, List<String> without, String note});
 Future<DiscardDraft?> showDiscardDish(BuildContext context, {required KitchenProduct product, required Recipe recipe}) =>
   showModal(
     context: context,
-    title: S.of(context).supply_chain_discard_title(product.label),
+    title: S.of(context).kitchen_discard_title(product.label),
     builder: (context) => DiscardDishModal(recipe: recipe)
   ).then((value) => value is DiscardDraft ? value : null);
 
@@ -55,11 +55,11 @@ class _DiscardDishModalState extends State<DiscardDishModal> {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 380),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        KitchenNote(text: s.supply_chain_discard_note),
-        Input(title: s.supply_chain_discard_quantity, placeholder: "1", controller: _quantity, next: _note.focus),
+        KitchenNote(text: s.kitchen_discard_note),
+        Input(title: s.kitchen_discard_quantity, placeholder: "1", controller: _quantity, next: _note.focus),
         if (negotiable.isNotEmpty) ...[
           SizedBox(height: AppSize.gap),
-          TextSmall(s.supply_chain_discard_without, bold: true),
+          TextSmall(s.kitchen_discard_without, bold: true),
           for (final line in negotiable) Row(children: [
             Checkbox(
               value: _without.contains(line.id),
@@ -69,10 +69,10 @@ class _DiscardDishModalState extends State<DiscardDishModal> {
             Expanded(child: TextSmall(line.name.isEmpty ? line.productId : line.name, ellipsis: true))
           ])
         ],
-        Input(title: s.supply_chain_note, placeholder: s.supply_chain_note_hint, controller: _note),
+        Input(title: s.kitchen_note, placeholder: s.kitchen_note_hint, controller: _note),
         if (_error.isNotEmpty) KitchenNote(text: _error, color: scheme.snackBar.error),
         SizedBox(height: AppSize.spaceS),
-        MainButton(title: s.supply_chain_discard, action: _submit)
+        MainButton(title: s.kitchen_discard, action: _submit)
       ])
     );
   }
@@ -81,7 +81,7 @@ class _DiscardDishModalState extends State<DiscardDishModal> {
     final quantity = int.tryParse(_quantity.text.trim());
 
     if (quantity == null || quantity <= 0) {
-      return setState(() => _error = S.of(context).supply_chain_line_qty_invalid);
+      return setState(() => _error = S.of(context).kitchen_line_qty_invalid);
     }
 
     Navigator.pop(context, (quantity: quantity, without: _without.toList(), note: _note.text));

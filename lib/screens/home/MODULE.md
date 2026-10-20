@@ -52,8 +52,8 @@
   `notificationRoute(notification)`: the section of its `area`, `null` for one about none.
 - `header/branch_selector.dart` — `BranchSelector`: the branch worked in (`BranchService`), beside the business; `showSelectMenu` of the person's branches; drawn only with more than one.
 - `sections/_sections.dart` — **section registry**: `enum HomeSection` (`key path icon area`; `dashboard
-  business employees inventory menu supplyChain services channels knowledge connections messages deliveries sales finance lyraBusiness marketing report externalServices
-  server`), groups `.home` (dashboard, business, employees; untitled) `.operations` (sales, messages, deliveries, services) `.resources` (inventory, menu, supplyChain, channels, knowledge)
+  business employees inventory menu services channels knowledge connections messages deliveries sales finance lyraBusiness marketing report externalServices
+  server`), groups `.home` (dashboard, business, employees; untitled) `.operations` (sales, messages, deliveries, services) `.resources` (inventory, menu, channels, knowledge)
   `.management` (finance first, lyraBusiness, marketing, report) `.integrations` (connections, externalServices, `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
   `needsBusiness`, `area` (the key; employees keeps `business.employees`), `granted(businessId)` (employees: every member), `build()`; `homeContent(currentKey, section, businessId, {branchId})` (incl. sub-pages).
 - `sections/_section/` — widgets shared by every section (none is a section itself).
@@ -78,7 +78,7 @@
 
 ## Sections with their own module
 
-`sections/{business,employees,inventory,menu,supply_chain,channels,knowledge,connections,messages,deliveries,sales,finance,local_server}/MODULE.md`.
+`sections/{business,employees,inventory,menu,channels,knowledge,connections,messages,deliveries,sales,finance,local_server}/MODULE.md`.
 
 ## Adding a section
 

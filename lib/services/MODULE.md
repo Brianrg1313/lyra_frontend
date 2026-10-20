@@ -272,7 +272,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   empty = clear), `toggleKnowledgeRequest`, `deleteKnowledgeRequest`, `splitKnowledgeTags`.
 - `knowledge_product_search.dart` — `KnowledgeProductSearch`: `POST /knowledge/products/` (`SEARCH`), only the latest answer counts.
 
-## kitchen/ — recipes, modifiers and the kitchen's reports (supply chain section; cloud only, `api` direct)
+## kitchen/ — recipes, modifiers, what a dish costs (inventory's supplies and modifiers, the menu; cloud only, `api` direct)
 
 Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. Tables and summaries through `Sources`.
 
@@ -289,12 +289,11 @@ Contract: `E:/andromeda/backend/projects/lyra/docs/guides/cocina-frontend.md`. T
 - `recipe_availability_model.dart` — `RecipeAvailability` (`mapFrom`: by product, absent = no recipe; `capacity` only on a batch), `RecipeLimit`, `RecipeShort`.
 - `presentation_model.dart` — `Presentation`.
 - `modifier_model.dart` — `ModifierGroup` (`max` null = all, `required` = `min` > 0), `ModifierOption` (`spends`), `ModifierProduct`, `ModifierLine`.
-- `kitchen_report_model.dart` — `ConsumptionReport`/`ConsumptionSupply`/`ConsumptionDish`/`ConsumptionBatch`, `VarianceRow` (`counted` false = no comparison), `DishCost`/`DishCostLine` (`unitCost` null = no price: no cost column figure, no restock with a cost; `source` column · purchases · recipe; `price profit margin losing`; with choices the dearest pick, `range` and each option's cost `choices`/`optionOf`; `mapFrom` a made page's `costs`).
+- `kitchen_report_model.dart` — `ConsumptionReport`/`ConsumptionSupply`/`ConsumptionDish`/`ConsumptionBatch`, `VarianceRow` (`counted` false = no comparison), `DishCost`/`DishCostLine` (the menu's costs; the consumption and variance readers wait for the reports section, `docs/task-kitchen-reports.md`) (`unitCost` null = no price: no cost column figure, no restock with a cost; `source` column · purchases · recipe; `price profit margin losing`; with choices the dearest pick, `range` and each option's cost `choices`/`optionOf`; `mapFrom` a made page's `costs`).
 - `kitchen_request.dart` — `kitchenQuantity` (whole numbers as integers), recipe (`recipeLinesRequest`: also a made record's `CONSUMES`; a choice is one more line with `OPTIONS`, its `ID` kept; `recipeChoicesDraft`, `recipeSplits` and the `kitchenMax*` limits of choices), delete, pause, produce, discard, presentations, modifier group (option ids kept) and delete bodies; `kitchenWindowRequest` (whole local days in ISO 8601).
-- `kitchen_products_service.dart` — `KitchenProductsService` (+ status): the **supplies** tables only (none = empty, no table), the open one's summary pages, their recipes measured per page, `remeasure`; `stock/changed` composite → a dish's `available`, else a row's stock; the list's `StockMover` (a row's − and +). Seams `seed`/`receive`.
+- `kitchen_products_service.dart` — `KitchenProductsService` (+ status): one **supplies** table, the one the inventory `open`s (`load` reads it again), its summary pages, their recipes measured per page, `remeasure`; `stock/changed` composite → a dish's `available`, else a row's stock; the list's `StockMover` (a row's − and +). Seams `seed`/`receive`.
 - `recipe_service.dart` — `RecipeService({product})` (+ `RecipeStatus`, `BatchResult`): one product's recipe (`404 recipe_not_found` = `none`), availability and presentations; save (a made product's as its record's `CONSUMES`/`BATCH` through `Sources.inventory`, then read again; a supply's preparation `PUT /recipes`), remove (`removable`: never a made one's), pause, uses, produce, discard, presentations; each write measures again. Per opened panel. `fetch` (a recipe for a modifier's removals).
 - `modifiers_service.dart` — `ModifiersService` (+ status): `GET/PUT/DELETE /inventory/modifiers`; every write rereads.
-- `kitchen_reports_service.dart` — `KitchenReportsService` (+ `KitchenReport`, status): one report and one window; only the last read counts.
 - `kitchen_product_search.dart` — `KitchenProductSearch`: every table's summary `MATCH` at once (supplies, then made, then catalog), `namesIn(tables)`, `productsIn(tables)` (by id, with their unit), `suppliesById`.
 - `till_kitchen_service.dart` — `TillKitchenService` (POS page, `pos.kitchen`): `load` (`GET /modifiers` once → which products `offers`), `groupsOf` (`POST /modifiers/availability`), `shortOf` (`POST /recipes/availability` → `short`); a failed read is none. Seam `seed`.
 

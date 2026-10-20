@@ -8,7 +8,7 @@ import 'package:app/services/pos/pos_invoice_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
-import 'package:app/screens/home/sections/supply_chain/modifiers/modifier_row.dart' show modifierRule;
+import 'package:app/screens/home/sections/inventory/modifiers/modifier_row.dart' show modifierRule;
 import 'package:app/screens/pos/desktop/pos_currency.dart';
 
 /// Asks what the customer chooses about [product] before it goes on the ticket

@@ -20,7 +20,7 @@ import 'package:app/screens/home/sections/employees/employee_detail/_employee_de
 import 'package:app/screens/home/sections/employees/employee_detail/employee_part.dart';
 import 'package:app/screens/home/sections/employees/own_settings/own_section.dart';
 import 'package:app/screens/home/sections/finance/finance_tab.dart';
-import 'package:app/screens/home/sections/supply_chain/supply_chain_tab.dart';
+import 'package:app/screens/home/sections/inventory/inventory_tab.dart';
 import 'package:app/screens/home/sections/inventory/transfers/_transfers.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/home/sections/sales/sales_tab.dart';
@@ -163,15 +163,6 @@ final List<ScreenRoute> routes = [
     shell: Home.shell,
     page: (_) => const Home()
   )),
-  // The supply chain's tabs, on the money page's criteria: one route each, no id.
-  ...SupplyChainTab.values.map((tab) => ScreenRoute(
-    animation: _animation,
-    key: tab.routeKey,
-    url: tab.path,
-    parents: ["supply_chain"],
-    shell: Home.shell,
-    page: (_) => const Home()
-  )),
   // Each tab of the sales board is its own route, on the same criteria as the
   // money page's: the shell learns of a screen change from `Navis.currentKey`,
   // so one route with a `:tab` argument would switch lists without repainting.
@@ -194,6 +185,17 @@ final List<ScreenRoute> routes = [
   // It's the only route that hangs off a table: its settings are a side
   // panel (`showTableSettings`) that opens on top of the list or the sheet,
   // so the URL stays that of whatever was left underneath.
+  // The inventory's tabs past its tables (the tables are the section's own route), on the
+  // money page's criteria: one route each, no id; fixed segments, so before a table's `:id`.
+  for (final tab in InventoryTab.values)
+    if (tab != InventoryTab.tables) ScreenRoute(
+      animation: _animation,
+      key: tab.routeKey,
+      url: tab.path,
+      parents: ["inventory"],
+      shell: Home.shell,
+      page: (_) => const Home()
+    ),
   // The transfers between branches: a fixed segment, so it goes before a table's `:id`.
   ScreenRoute(
     animation: _animation,

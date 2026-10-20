@@ -87,8 +87,8 @@ void main() {
     Navis.defineRoutes(routes);
   });
 
-  test('the menu sits right under the inventory, before the supply chain', () {
-    expect(HomeSection.resources.take(3), [HomeSection.inventory, HomeSection.menu, HomeSection.supplyChain]);
+  test('the menu sits right under the inventory', () {
+    expect(HomeSection.resources.take(2), [HomeSection.inventory, HomeSection.menu]);
   });
 
   testWidgets('a company with catalogs only is offered its first menu', (tester) async {

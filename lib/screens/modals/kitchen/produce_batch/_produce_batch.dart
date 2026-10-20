@@ -7,8 +7,8 @@ import 'package:app/services/kitchen/kitchen_product_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
-import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/home/sections/inventory/kitchen_format.dart';
+import 'package:app/screens/modals/kitchen/shared/kitchen_product_picker.dart';
 
 /// What a batch is: how many were made, how many of them went wrong, a note.
 typedef BatchDraft = ({double quantity, double lost, String note});
@@ -18,7 +18,7 @@ typedef BatchDraft = ({double quantity, double lost, String note});
 Future<BatchDraft?> showProduceBatch(BuildContext context, {required KitchenProduct product}) =>
   showModal(
     context: context,
-    title: S.of(context).supply_chain_produce_title(product.label),
+    title: S.of(context).kitchen_produce_title(product.label),
     builder: (context) => const ProduceBatchModal()
   ).then((value) => value is BatchDraft ? value : null);
 
@@ -52,13 +52,13 @@ class _ProduceBatchModalState extends State<ProduceBatchModal> {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 380),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        KitchenNote(text: s.supply_chain_produce_note),
-        Input(title: s.supply_chain_produce_quantity, placeholder: "100", controller: _quantity, next: _lost.focus),
-        Input(title: s.supply_chain_produce_lost, placeholder: "0", controller: _lost, next: _note.focus),
-        Input(title: s.supply_chain_note, placeholder: s.supply_chain_note_hint, controller: _note),
+        KitchenNote(text: s.kitchen_produce_note),
+        Input(title: s.kitchen_produce_quantity, placeholder: "100", controller: _quantity, next: _lost.focus),
+        Input(title: s.kitchen_produce_lost, placeholder: "0", controller: _lost, next: _note.focus),
+        Input(title: s.kitchen_note, placeholder: s.kitchen_note_hint, controller: _note),
         if (_error.isNotEmpty) KitchenNote(text: _error, color: ThemeColor.of(context).snackBar.error),
         SizedBox(height: AppSize.spaceS),
-        MainButton(title: s.supply_chain_produce, action: _submit)
+        MainButton(title: s.kitchen_produce, action: _submit)
       ])
     );
   }
@@ -69,8 +69,8 @@ class _ProduceBatchModalState extends State<ProduceBatchModal> {
     final lost = _lost.text.trim().isEmpty ? 0.0 : kitchenParse(_lost.text);
 
     final error = quantity == null || quantity <= 0
-      ? s.supply_chain_line_qty_invalid
-      : lost == null || lost < 0 || lost > quantity ? s.supply_chain_produce_lost_invalid : "";
+      ? s.kitchen_line_qty_invalid
+      : lost == null || lost < 0 || lost > quantity ? s.kitchen_produce_lost_invalid : "";
 
     if (error.isNotEmpty) return setState(() => _error = error);
 

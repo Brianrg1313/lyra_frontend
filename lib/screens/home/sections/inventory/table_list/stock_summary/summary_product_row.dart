@@ -20,8 +20,8 @@ import 'package:app/services/stock/summary/stock_summary_model.dart';
 // WIDGETS
 import 'package:app/screens/modals/inventory/branch_prices/_branch_prices.dart';
 import 'package:app/screens/modals/inventory/stock_movement/movement_shape.dart';
-import 'package:app/screens/modals/supply_chain/recipe/_recipe.dart';
-import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
+import 'package:app/screens/modals/kitchen/recipe/_recipe.dart';
+import 'package:app/screens/home/sections/inventory/table_list/supplies/recipe_row.dart';
 
 import './summary_layout.dart';
 import './summary_line.dart';

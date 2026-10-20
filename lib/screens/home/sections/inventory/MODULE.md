@@ -1,26 +1,50 @@
 # Module: inventory section
 
 **Path** `lib/screens/home/sections/inventory`
-**Role** `catalog` tables, one open at a time (`/home/inventory`; a table's link
-`/home/inventory/:id`, `parents: ["inventory"]`, opens the same section on it). The bar's title is the
-table selector; the cells switch shows the open table as its stock summary or as the spreadsheet.
-`made` tables are the menu's (`sections/menu`), `supplies` the supply chain's. No catalog → templates by the company's activity, a blank table, the import.
+**Role** `catalog` and `supplies` tables (`cocina-frontend.md` §2: the kind asked when one is created, never
+changed), one open at a time (`/home/inventory`; a table's link `/home/inventory/:id`, `parents: ["inventory"]`,
+opens the same section on it), and the company's modifier groups (`/home/inventory/modifiers`, cloud only). The
+bar's title is the table selector; the cells switch shows the open table as its stock summary (a supplies table's
+own list) or as the spreadsheet. `made` tables are the menu's (`sections/menu`). Neither catalog nor supplies →
+templates by the company's activity, a blank table, the import.
 **Services** `TablesService`, `TableViewService`, `TableDetailService`, `StockSummaryService`
 (`lib/services/stock`), `StockTransfersService` (transfers page) + `lib/services/inventory` (field types, imports, SKUs, dates, images,
 `TableTemplatesService`). `PreferencesService`: the open table per company
 (`RememberedSelection.table`) and the view per account (`inventoryView`).
 **Modals** `lib/screens/modals/inventory` (`create_table create_field import_table rename_table
-edit_table_details table_settings stock_movement`) + `modals/shared` (`image_viewer crop_image`).
+edit_table_details table_settings stock_movement`) + `modals/kitchen` (a supply's panel, a modifier group) +
+`modals/shared` (`image_viewer crop_image`).
+
+## The section
+
+- `_inventory.dart` — `InventorySection`: owns `ModifiersService`; `SectionTabs` over `InventoryTab.shown` (none drawn
+  with one tab: a master) and the open tab from `Navis.currentKey`: the tables (`InventoryTables`) or, in a `Surface`,
+  `ModifiersTab` (`UnavailableSection` / `NoPermissionSection` otherwise).
+- `inventory_tab.dart` — `enum InventoryTab { tables, modifiers }`: `routeKey` (tables = the section's, `inventory_<key>`
+  else), `path`, `area` (`inventory`, `inventory.<key>`), `shown`, `of(currentKey)` (a table's link is the tables),
+  `granted`, `title`. Routes for every tab but the tables in `routes.dart`, before a table's `:id`.
+- `kitchen_format.dart` — `kitchenQty` (≤ 6 decimals, unit), `kitchenMoney` (company currency), `kitchenPercent`,
+  `kitchenDay`, `kitchenParse`, `kitchenField`, `kitchenFew` (the traffic light's «few», shared with the menu cards).
+  **Every kitchen figure (supplies list, menu cards, kitchen panels) goes through it.**
+
+## modifiers/ — the modifiers tab (`inventory.modifiers`, cloud only)
+
+- `_modifiers.dart` — `ModifiersTab`: groups in order, create (`inventory.modifiers.edit`), a row opens `showModifierGroupForm` and writes its draft.
+- `modifier_row.dart` — `ModifierRow` (options as chips, «+N more»; products offering it at the right), `modifierRule` («Choose one», «Up to 3»).
 
 ## table_list/ — the section
 
-- `_table_list.dart` — `InventorySection`: `catalog` tables only (none of its own → `InventoryStart`); create makes a catalog; resolves the open table (link → remembered → primary → first), builds the
+- `_table_list.dart` — `InventoryTables`: `catalog` then `supplies` tables (neither → `InventoryStart`); create asks the kind (`CreateTableModal()`); a supplies table's summary is `SuppliesSection`, its sheet `TableViewSection(supplies: true)`; resolves the open table (link → remembered → primary → first), builds the
   bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table (a table with no rows: the sheet, no switch); an importing table shows its stage
   instead (`TablesService.importStage`); no table → `InventoryStart`. The bar's right end: table options (⋯), import, create (modal);
   their flows live here.
 - `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view: selector and controls left, the view's status centred, the view's then the section's actions against the right edge. Every control in it is `AppSize.button` tall (core's `Button` is).
-- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables it is given; also the menu's and the supplies tab's); `table_dot.dart` — `TableDot`.
-- `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`; or the opener's `sheet`/`onSwitch`, the supplies tab's).
+- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables it is given; also the menu's): where kinds mix, each row's subtitle starts with its kind; `table_dot.dart` — `TableDot`.
+- `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`), the same for catalogs and supplies.
+- `supplies/_supplies.dart` — `SuppliesSection({table, parts, service?})`: owns that table's `KitchenProductsService` (measured only with
+  `inventory.recipes`), the bar with its count, header search → `MATCH`, `RecipeRow`s (a row opens `showRecipePanel` with
+  `inventory.recipes`, then remeasures it), `SectionMoreButton`; nothing listed → «Open the sheet» (the cells switch's preference).
+- `supplies/recipe_row.dart` — `RecipeRow` (traffic-light strip, name, mode tag, 86 tag, what it makes now; a bought supply's stock at the right, between the summary's − and + — `SummaryStepper` through `KitchenProductsService`), `recipeAvailabilityLine` («3 left — because of the bacon»), `recipeLevelColor`, `RecipeTag`.
 - `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
 - `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
 - `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches, `inventory.transfers` and `transfers` (the menu passes `false`).
@@ -29,7 +53,7 @@ edit_table_details table_settings stock_movement`) + `modals/shared` (`image_vie
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts, supplies, made})`: owns that table's `StockSummaryService` (a supplies table's moves with decimals; a made one's rows measured), fixed column header over the rows (`SliverFixedExtentList` at `SummaryLayout.rowHeight`, the footer after them); header search → `MATCH`.
 - `stock_summary/summary_bar.dart` — `SummaryBar`; `stock_summary/summary_body.dart` — `SummaryBody` (states, header, list); `stock_summary/summary_footer.dart` — `SummaryFooter`.
 - `stock_summary/summary_layout.dart` — `SummaryLayout`: the single source of column geometry (header and rows): short types at their own width (`widthOf`), texts share the rest; measured on the list's width, it leaves out what doesn't fit.
-- `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched); on a made table (with `supply_chain.recipes`) the photo opens what the record consumes (`showRecipePanel`), and one made to order's stock is what its supplies allow, no stepper; a catalog row opens no recipe.
+- `stock_summary/summary_product_row.dart` — a price cell opens `showBranchPrices` with several branches and `inventory.prices` (the row itself stays untouched); on a made table (with `inventory.recipes`) the photo opens what the record consumes (`showRecipePanel`), and one made to order's stock is what its supplies allow, no stepper; a catalog row opens no recipe.
 - `stock_summary/summary_header.dart` — `SummaryHeader` (the stock titled with its column's unit, «Stock (kg)»; a title click orders by its column: `summary_sort_title.dart` — `SummarySortTitle`); `stock_summary/summary_product_row.dart` — `SummaryProductRow`; `stock_summary/summary_line.dart` — `SummaryLine`.
 - `stock_summary/summary_stepper.dart` — `SummaryStepper`: take/add; opens `showStockMovement` (through `mover`, else the `StockSummaryService`; the supplies list's rows too); the stock figure opens `showStockHistory` (`inventory.history`), with the product's own `unit` attached.
 - `stock_summary/summary_value.dart` — `SummaryValue`; `summary_number.dart` — `SummaryNumber`; `summary_picture.dart` — `SummaryPicture`.
@@ -46,7 +70,7 @@ cell rebuild never rebuilds the sheet. Built in both directions only where seen:
 columns by `SheetWindow` (each row builds the band's columns plus one each side, a blank for the ones to their left). Row 1 is the *fields* row (cursor index `-1`); body rows
 from 0. The last column is a *free column*: typing a title creates a field.
 
-- `_table_view.dart` — `TableViewSection({supplies})` (`routeKey`: a table's link, which the shell maps to `InventorySection`); also the supply chain's supplies sheet.
+- `_table_view.dart` — `TableViewSection({supplies})` (`routeKey`: a table's link, which the shell maps to `InventorySection`); `supplies`: a supplies table's sheet (stock with decimals).
 - `table_view_body.dart` — `TableViewBody`: loading / error / the sheet, by the structure's status only.
 - `table_header.dart` — `TableHeader`: the section's `InventoryBar` with the import stage, read/save state, normalize.
 - `header_actions.dart` — `HeaderActions`: record-load state, search.
@@ -95,6 +119,14 @@ The pictures an image column names become files behind the import (backend `Inge
 part is `PictureImportService` (`lib/services/MODULE.md`): it downloads what the cloud was refused with
 nobody asking, and the panel (`modals/inventory/import_pictures`) hands over the named files from a folder or a zip.
 A name still waiting draws as a plain picture glyph in its cell (`ProductImage.isPending`).
+
+## Kitchen invariants
+
+- A table is listed in one section only (`cocina-frontend.md` §2): `catalog` and `supplies` here, `made` in the menu.
+  What a made product consumes is written in its form in the menu; here a supply's recipe is a preparation (by the batch).
+- The backend lists no recipes: a supplies list asks `POST /recipes/availability` over each page's ids, and an answer is
+  what marks a product as having one (absent = no recipe).
+- `stock/changed` with `composite: true` moves only a dish's `available`, never a shelf (`StockChangedModel.composite`).
 
 ## Conventions
 
