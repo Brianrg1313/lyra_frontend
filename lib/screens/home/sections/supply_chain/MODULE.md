@@ -16,7 +16,7 @@ and provided by `_supply_chain.dart`; `RecipeService` per opened product panel.
 ## Invariants
 
 - Supplies and products never share a section (`cocina-frontend.md` §2): this one lists `supplies` tables only, the inventory
-  `catalog` and `made` ones; what a made product consumes is part of its record, written in its form in the inventory
+  `catalog` ones and the menu `made` ones; what a made product consumes is part of its record, written in its form in the menu
   (`MadeProductsSection`) and never removed; here a supply's recipe is a preparation (always by the batch).
 - The backend lists no recipes: the recipes tab is a table's stock summary, and `POST /recipes/availability` over each
   page's ids is what marks a product as having one (absent = no recipe).

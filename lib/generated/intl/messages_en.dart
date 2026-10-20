@@ -4604,6 +4604,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "No product matches the search",
     ),
     "marketing": MessageLookupByLibrary.simpleMessage("Marketing"),
+    "menu": MessageLookupByLibrary.simpleMessage("Menu"),
+    "menu_create": MessageLookupByLibrary.simpleMessage("New menu"),
+    "menu_empty_subtitle": MessageLookupByLibrary.simpleMessage(
+      "Put together what you sell made from your supplies: dishes, combos, products of your own. Each one says what it consumes, and its stock is what those allow.",
+    ),
+    "menu_empty_title": MessageLookupByLibrary.simpleMessage("No menu yet"),
     "messages": MessageLookupByLibrary.simpleMessage("Messages"),
     "messages_all_sessions": MessageLookupByLibrary.simpleMessage(
       "Show earlier conversations",
@@ -7114,20 +7120,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Each field is a column of the table. Its type tells the AI what information it holds and shapes how it is filled in when adding stock.",
     ),
     "table_fields_title": MessageLookupByLibrary.simpleMessage("Fields"),
-    "table_kind_catalog": MessageLookupByLibrary.simpleMessage("Products"),
-    "table_kind_catalog_note": MessageLookupByLibrary.simpleMessage(
-      "Bought and sold as they are: a phone, a can of soda. Their stock is counted by hand.",
-    ),
-    "table_kind_made": MessageLookupByLibrary.simpleMessage("Made products"),
     "table_kind_made_note": MessageLookupByLibrary.simpleMessage(
       "What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.",
     ),
-    "table_kind_made_tag": MessageLookupByLibrary.simpleMessage("Made"),
     "table_kind_supplies_note": MessageLookupByLibrary.simpleMessage(
       "What is used to make what is sold (meat, bread, cheese). Never sold; counted with decimals of its unit.",
-    ),
-    "table_kind_title": MessageLookupByLibrary.simpleMessage(
-      "What does it hold?",
     ),
     "table_normalize": MessageLookupByLibrary.simpleMessage(
       "Normalize columns",

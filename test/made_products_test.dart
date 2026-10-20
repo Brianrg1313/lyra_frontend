@@ -28,7 +28,7 @@ import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
-import 'package:app/screens/home/sections/inventory/made_products/_made_products.dart';
+import 'package:app/screens/home/sections/menu/made_products/_made_products.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/modals/supply_chain/recipe/recipe_editor.dart';
 

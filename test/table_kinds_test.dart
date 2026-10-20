@@ -34,8 +34,8 @@ import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/settings/routes.dart';
 
 /// Supplies and products are different tables, and no table shows in both sections
-/// (`cocina-frontend.md` §2.1): the inventory lists catalogs only, the production line supplies
-/// only, each with its own empty state; and a catalog's dish made to order shows in its stock
+/// (`cocina-frontend.md` §2.1): the inventory lists catalogs only, the menu made products only,
+/// the production line supplies only, each with its own empty state; and a catalog's dish made to order shows in its stock
 /// column what its supplies allow, with no buttons (it has no shelf to move).
 const _menu = "550e8400-e29b-41d4-a716-446655440000";
 const _pantry = "550e8400-e29b-41d4-a716-446655440001";
@@ -86,19 +86,20 @@ void main() {
     expect(find.text("Pantry"), findsNothing);
   });
 
-  testWidgets("the inventory opens a made products table beside its catalogs", (tester) async {
+  testWidgets("the inventory never opens a made products table, not even by its link: it is the menu's", (tester) async {
     await inventory(tester, "${HomeSection.inventory.path}/$_burgers", const [_catalog, _made, _supplies]);
 
     expect(tester.takeException(), isNull);
-    expect(find.text("Burgers"), findsOneWidget);
+    expect(find.text("Menu"), findsOneWidget);
+    expect(find.text("Burgers"), findsNothing);
     expect(find.text("Pantry"), findsNothing);
   });
 
-  testWidgets("a company with made products only has them in the inventory", (tester) async {
+  testWidgets("a company with made products only is offered to create its inventory", (tester) async {
     await inventory(tester, HomeSection.inventory.path, const [_made]);
 
-    expect(find.byType(InventoryStart), findsNothing);
-    expect(find.text("Burgers"), findsOneWidget);
+    expect(find.byType(InventoryStart), findsOneWidget);
+    expect(find.text("Burgers"), findsNothing);
   });
 
   testWidgets("a company with supplies tables only is offered to create its products'", (tester) async {

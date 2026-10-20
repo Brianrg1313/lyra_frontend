@@ -15,6 +15,9 @@ enum RememberedSelection {
   /// The product table open in the inventory section (its header's selector).
   table,
 
+  /// The made products' table open in the menu section.
+  menu,
+
   /// The branch the person works in (`BranchService`, the header's branch selector).
   branch
 }

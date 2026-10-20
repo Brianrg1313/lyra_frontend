@@ -18,7 +18,6 @@ import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:core/button.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
-import 'package:app/screens/home/sections/inventory/made_products/_made_products.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/screens/modals/inventory/import_table/_import_table.dart';
@@ -48,13 +47,11 @@ import './view_toggle.dart';
 /// company, else the primary one, else the first. A table that is gone (deleted, another
 /// company's link) falls to the next on its own.
 ///
-/// **`catalog` and `made` tables** (`cocina-frontend.md` §2): what is sold, bought ready or
-/// made from supplies. A company's supplies tables are the production line's, and never listed
-/// here; its «Create table» asks which of the two it makes. A made table is not a sheet: it opens
-/// as its products ([MadeProductsSection]), each one a form with its name, its price and what it
-/// consumes, without the cells switch nor the import (`409 made_not_importable`).
+/// **`catalog` tables only** (`cocina-frontend.md` §2): what is bought and counted. A company's
+/// supplies tables are the production line's and its `made` ones the menu's (`MenuSection`),
+/// and neither is listed here, so «Create table» always makes a catalog.
 ///
-/// A company with neither sees [InventoryStart] instead (whatever supplies tables it
+/// A company with none sees [InventoryStart] instead (whatever supplies or made tables it
 /// has): the templates for its activity, a blank table and the import. The templates are
 /// read there and only there.
 ///
@@ -157,7 +154,7 @@ class _InventorySectionState extends State<InventorySection> {
     final id = await showModal(
       context: context,
       title: S.of(context).create_table,
-      builder: (BuildContext context) => const CreateTableModal()
+      builder: (BuildContext context) => const CreateTableModal(kind: TableKind.catalog)
     );
 
     if (!mounted || id is! String) return;
@@ -243,11 +240,11 @@ class _InventorySectionState extends State<InventorySection> {
     final service = context.watch<TablesService>();
     final tables = [
       for (final table in service.tables)
-        if (!table.supplies) table
+        if (table.kind == TableKind.catalog) table
     ];
 
     // A reload keeps the tables it had in view: only a first read covers the section. A
-    // company with supplies tables only has nothing of its own here.
+    // company with supplies or made tables only has nothing of its own here.
     if (tables.isEmpty) {
       return switch (service.tables.isNotEmpty ? TablesStatus.empty : service.status) {
         TablesStatus.error => Surface(child: SectionMessage(
@@ -269,7 +266,7 @@ class _InventorySectionState extends State<InventorySection> {
 
     final table = _open(tables);
     final stage = service.importStage(table.id);
-    final blank = !table.made && _blank(table);
+    final blank = _blank(table);
 
     final parts = InventoryBarParts(
       selector: TableSelector(
@@ -278,13 +275,12 @@ class _InventorySectionState extends State<InventorySection> {
         onSelect: (table) => _select(table.id),
         stageOf: service.importStage
       ),
-      // A blank table has only the sheet: the switch would have nothing to switch to. A made
-      // one has neither.
-      controls: [if (!blank && !table.made) const InventoryViewToggle()],
+      // A blank table has only the sheet: the switch would have nothing to switch to.
+      controls: [if (!blank) const InventoryViewToggle()],
       actions: [
         if (PicturesButton.shown(context.watch<PictureImportService>())) const PicturesButton(),
         TableOptionsButton(table: table),
-        if (_importAction != null && !table.made) ImportButton(action: _import, loading: _importing),
+        if (_importAction != null) ImportButton(action: _import, loading: _importing),
         Button(
           width: null,
           title: S.of(context).create_table,
@@ -307,10 +303,6 @@ class _InventorySectionState extends State<InventorySection> {
           subtitle: S.of(context).import_table_busy
         ))
       ]));
-    }
-
-    if (table.made) {
-      return MadeProductsSection(key: ValueKey("made_${table.id}"), tableId: table.id, parts: parts);
     }
 
     return ValueListenableBuilder<InventoryView>(

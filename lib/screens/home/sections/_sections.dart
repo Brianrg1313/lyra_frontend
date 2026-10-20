@@ -24,6 +24,7 @@ import './inventory/table_list/_table_list.dart';
 import './inventory/table_view/_table_view.dart';
 import './inventory/transfers/_transfers.dart';
 import './knowledge/_knowledge.dart';
+import './menu/_menu.dart';
 import './messages/_messages.dart';
 import './sales/_sales.dart';
 import './supply_chain/_supply_chain.dart';
@@ -40,6 +41,7 @@ enum HomeSection {
   business(key: "business", path: "/home/business", icon: CI.store),
   employees(key: "employees", path: "/home/employees", icon: CI.employee),
   inventory(key: "inventory", path: "/home/inventory", icon: CI.shop),
+  menu(key: "menu", path: "/home/menu", icon: CI.fire_sqaure),
   supplyChain(key: "supply_chain", path: "/home/supply_chain", icon: CI.warehouse),
   services(key: "services", path: "/home/services", icon: CI.task_list),
   channels(key: "channels", path: "/home/channels", icon: CI.ia),
@@ -95,11 +97,16 @@ enum HomeSection {
   /// Resources group of the side bar: what the company sells and what Lyra
   /// knows about it.
   ///
+  /// [menu] follows [inventory] and precedes [supplyChain]: what is bought and
+  /// counted, what is assembled from it and sold, and the supplies' own line,
+  /// each its own place so none reads as another's mode.
+  ///
   /// [knowledge] follows [channels]: the channels decide where Lyra answers,
   /// the frequent questions what she knows when a customer asks how the
   /// business works.
   static const List<HomeSection> resources = [
     inventory,
+    menu,
     supplyChain,
     channels,
     knowledge
@@ -153,6 +160,7 @@ enum HomeSection {
     business => S.of(context).business,
     employees => S.of(context).employees,
     inventory => S.of(context).inventory,
+    menu => S.of(context).menu,
     supplyChain => S.of(context).supply_chain,
     services => S.of(context).services,
     channels => S.of(context).channels,
@@ -211,6 +219,7 @@ enum HomeSection {
   /// business would not remount it.
   Widget build() => switch (this) {
     inventory => const InventorySection(),
+    menu => const MenuSection(),
     supplyChain => const SupplyChainSection(),
     channels => const ChannelsSection(),
     knowledge => const KnowledgeSection(),

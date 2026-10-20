@@ -1,30 +1,29 @@
 # Module: inventory section
 
 **Path** `lib/screens/home/sections/inventory`
-**Role** Product tables (`catalog` and `made`), one open at a time (`/home/inventory`; a table's link
+**Role** `catalog` tables, one open at a time (`/home/inventory`; a table's link
 `/home/inventory/:id`, `parents: ["inventory"]`, opens the same section on it). The bar's title is the
-table selector; the cells switch shows the open table as its stock summary or as the spreadsheet; a
-`made` table is neither: a list of products, each one a form. No table → templates by the company's activity, a blank table, the import.
+table selector; the cells switch shows the open table as its stock summary or as the spreadsheet.
+`made` tables are the menu's (`sections/menu`), `supplies` the supply chain's. No catalog → templates by the company's activity, a blank table, the import.
 **Services** `TablesService`, `TableViewService`, `TableDetailService`, `StockSummaryService`
 (`lib/services/stock`), `StockTransfersService` (transfers page) + `lib/services/inventory` (field types, imports, SKUs, dates, images,
 `TableTemplatesService`). `PreferencesService`: the open table per company
 (`RememberedSelection.table`) and the view per account (`inventoryView`).
 **Modals** `lib/screens/modals/inventory` (`create_table create_field import_table rename_table
-edit_table_details table_settings stock_movement made_product`) + `modals/shared` (`image_viewer crop_image`) +
-`modals/supply_chain/recipe` (what a made product consumes, its kitchen page).
+edit_table_details table_settings stock_movement`) + `modals/shared` (`image_viewer crop_image`).
 
 ## table_list/ — the section
 
-- `_table_list.dart` — `InventorySection`: `catalog` and `made` tables (supplies are the production line's; none of its own → `InventoryStart`); create asks which of the two; resolves the open table (link → remembered → primary → first), builds the
-  bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table (a table with no rows: the sheet, no switch), a made one `MadeProductsSection` (no switch, no import); an importing table shows its stage
+- `_table_list.dart` — `InventorySection`: `catalog` tables only (none of its own → `InventoryStart`); create makes a catalog; resolves the open table (link → remembered → primary → first), builds the
+  bar's parts, mounts `StockSummarySection` or `TableViewSection` keyed by table (a table with no rows: the sheet, no switch); an importing table shows its stage
   instead (`TablesService.importStage`); no table → `InventoryStart`. The bar's right end: table options (⋯), import, create (modal);
   their flows live here.
 - `inventory_bar.dart` — `InventoryBar`, `InventoryBarParts`: the section's bar, drawn by each view: selector and controls left, the view's status centred, the view's then the section's actions against the right edge. Every control in it is `AppSize.button` tall (core's `Button` is).
-- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables; a made one says «Made»); `table_dot.dart` — `TableDot`.
+- `table_selector.dart` — `TableSelector` (`showSelectMenu` over the tables it is given; also the menu's and the supplies tab's); `table_dot.dart` — `TableDot`.
 - `view_toggle.dart` — `InventoryViewToggle`: the cells switch (`PreferencesService.inventoryView`; or the opener's `sheet`/`onSwitch`, the supplies tab's).
 - `inventory_start.dart` — `InventoryStart`: no table yet; owns `TableTemplatesService` (read only here, where `inventory.templates` is), template cards, blank card, import.
 - `widgets/inventory_template_card.dart` — `InventoryTemplateCard`; `widgets/inventory_blank_card.dart` — `InventoryBlankCard`; `widgets/inventory_start_card.dart` — `InventoryStartCard` (their shared frame).
-- `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches and `inventory.transfers`.
+- `table_options.dart` — `TableOptionsButton`: rename / settings / delete of the open table, and the transfers page (with `BadgePlace.inventoryTransfers` on the button) only with several branches, `inventory.transfers` and `transfers` (the menu passes `false`).
 - `import_button.dart` — `ImportButton`: opens the import modal; shown where `inventory.import` is (`CapabilityService`).
 - `pictures_button.dart` — `PicturesButton`: the imported pictures' state (downloading / without their file / failed), opens `showImportPictures`; in the bar only while something is pending or failed (`PicturesButton.shown`). The section's first frame runs `PictureImportService.check`.
 - `stock_summary/_stock_summary.dart` — `StockSummarySection({tableId, parts, supplies, made})`: owns that table's `StockSummaryService` (a supplies table's moves with decimals; a made one's rows measured), fixed column header over the rows (`SliverFixedExtentList` at `SummaryLayout.rowHeight`, the footer after them); header search → `MATCH`.
@@ -96,15 +95,6 @@ The pictures an image column names become files behind the import (backend `Inge
 part is `PictureImportService` (`lib/services/MODULE.md`): it downloads what the cloud was refused with
 nobody asking, and the panel (`modals/inventory/import_pictures`) hands over the named files from a folder or a zip.
 A name still waiting draws as a plain picture glyph in its cell (`ProductImage.isPending`).
-
-## made_products/ — a made table (`cocina-frontend.md` §2, §3)
-
-- `_made_products.dart` — `MadeProductsSection({tableId, parts})`: owns `MadeProductsService`; the bar (count, «New product» with `supply_chain.recipes.edit`), header search → `MATCH`, the products as a grid of cards (as many columns as fit `MadeProductCard.extent`, each row as tall as its tallest), the new card first when one can write, `SectionMoreButton`, empty / error states; a card opens `showMadeProduct`, its «Kitchen» button `showRecipePanel` (`supply_chain.recipes`).
-- `made_product_card.dart` — `MadeProductCard`: its photo (greyed when none can be sold) stamped with «by the batch» and how many can be sold now as a traffic light (left / only N left / sold out; a batch's ready), name, what it consumes as chips in the unit each reads best in («Meat 300 g», «Bread ×1», the rest «+N more»; none: «Add what it is made of»), what runs out first when few or none are left, price at the foot.
-- `made_product_new_card.dart` — `MadeProductNewCard`: the grid's «New product» card.
-
-A made product is never a sheet row: its record and what it consumes are one `records/manage` call (all or nothing), so
-they are written together in its form.
 
 ## Conventions
 

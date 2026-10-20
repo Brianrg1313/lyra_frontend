@@ -31,7 +31,7 @@ import './recipe_row.dart';
 /// in its unit, or what its recipe makes when it is a preparation made by the batch (a sauce),
 /// and the panel of one of them on a click — how it is bought, where it is used, its batches.
 ///
-/// **Supplies tables only**: what is sold is the inventory section's, which opens a dish's
+/// **Supplies tables only**: what is made and sold is the menu's (`MenuSection`), which opens a dish's
 /// recipe from its own rows. With none the tab offers to create the first («New table» makes
 /// supplies here, never asked).
 ///

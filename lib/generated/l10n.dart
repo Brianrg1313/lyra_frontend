@@ -1174,6 +1174,36 @@ class S {
     return Intl.message('Inventory', name: 'inventory', desc: '', args: []);
   }
 
+  /// `Menu`
+  String get menu {
+    return Intl.message('Menu', name: 'menu', desc: '', args: []);
+  }
+
+  /// `New menu`
+  String get menu_create {
+    return Intl.message('New menu', name: 'menu_create', desc: '', args: []);
+  }
+
+  /// `No menu yet`
+  String get menu_empty_title {
+    return Intl.message(
+      'No menu yet',
+      name: 'menu_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Put together what you sell made from your supplies: dishes, combos, products of your own. Each one says what it consumes, and its stock is what those allow.`
+  String get menu_empty_subtitle {
+    return Intl.message(
+      'Put together what you sell made from your supplies: dishes, combos, products of your own. Each one says what it consumes, and its stock is what those allow.',
+      name: 'menu_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Switch table`
   String get inventory_table_selector {
     return Intl.message(
@@ -10282,61 +10312,11 @@ class S {
     );
   }
 
-  /// `What does it hold?`
-  String get table_kind_title {
-    return Intl.message(
-      'What does it hold?',
-      name: 'table_kind_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Products`
-  String get table_kind_catalog {
-    return Intl.message(
-      'Products',
-      name: 'table_kind_catalog',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Bought and sold as they are: a phone, a can of soda. Their stock is counted by hand.`
-  String get table_kind_catalog_note {
-    return Intl.message(
-      'Bought and sold as they are: a phone, a can of soda. Their stock is counted by hand.',
-      name: 'table_kind_catalog_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Made products`
-  String get table_kind_made {
-    return Intl.message(
-      'Made products',
-      name: 'table_kind_made',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.`
   String get table_kind_made_note {
     return Intl.message(
       'What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.',
       name: 'table_kind_made_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Made`
-  String get table_kind_made_tag {
-    return Intl.message(
-      'Made',
-      name: 'table_kind_made_tag',
       desc: '',
       args: [],
     );

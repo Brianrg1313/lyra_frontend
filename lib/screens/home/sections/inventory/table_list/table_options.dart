@@ -39,9 +39,13 @@ import 'package:app/screens/modals/inventory/table_settings/_table_settings.dart
 /// field and one Enter, and sending it to the whole settings card for that
 /// would be changing screens to write one word.
 class TableOptionsButton extends StatelessWidget {
-  const TableOptionsButton({super.key, required this.table, this.size});
+  const TableOptionsButton({super.key, required this.table, this.size, this.transfers = true});
 
   final TableLiteModel table;
+
+  /// Whether the way to the transfers may be offered: the menu's tables are never moved
+  /// between branches, only the supplies they spend.
+  final bool transfers;
 
   /// How much the button measures; by default that of a button, like the rest of the bar.
   final double? size;
@@ -65,15 +69,15 @@ class TableOptionsButton extends StatelessWidget {
         ))
       );
 
-      return _transfers
+      return _offersTransfers
         ? BadgeCorner(place: BadgePlace.inventoryTransfers, dot: true, outside: true, child: button)
         : button;
     }
   );
 
   /// Whether the transfers between branches are offered here.
-  static bool get _transfers =>
-    BranchService().choosable && CapabilityService().shows("inventory.transfers");
+  bool get _offersTransfers =>
+    transfers && BranchService().choosable && CapabilityService().shows("inventory.transfers");
 
   /// Opens the dropdown anchored to the button. Without a search box and
   /// without a form's size ([dense]): they're three options, not a list.
@@ -97,7 +101,7 @@ class TableOptionsButton extends StatelessWidget {
           placeholder: S.of(context).delete_table,
           icon: CI.trash
         ),
-        if (_transfers) SelectOption(
+        if (_offersTransfers) SelectOption(
           value: "transfers",
           placeholder: S.of(context).inventory_transfers_open,
           leading: BadgeCorner(

@@ -230,6 +230,20 @@
       }
     },
     {
+      "key": "menu",
+      "title": "Menu",
+      "modes": ["cloud"],
+      "scope": "company",
+      "routes": ["menu"],
+      "paths": ["/home/menu"],
+      "actions": ["view", "create_table", "edit_table", "delete_table"],
+      "action_notes": {
+        "view": "The `made` tables (`cocina-frontend.md` §2): what is made from the supplies and sold, each product a card with what it consumes. The inventory's tables, so its grants (`products`).",
+        "create_table": "A new made products' table.",
+        "edit_table": "Rename and settings of a made table."
+      }
+    },
+    {
       "key": "services",
       "title": "Services",
       "modes": ["cloud"],
