@@ -31,6 +31,7 @@ Banned (never introduce new usages):
 | `Scaffold` `AppBar` `Card` `Divider` | `PageBuilder` `Skeleton` `Header` `Surface` `Separator` |
 | `Text` | `TextSmall` `TextMedium` `TextLarge` |
 | `SnackBar` `ScaffoldMessenger` | `FloatFlag` |
+| `showMenu` `MenuAnchor` `ContextMenuController`, menus on `onSecondaryTap`/`onLongPress` | `ContextMenuRegion` (+ `ContextItem`/`ContextSeparator`/`ContextHeader`), `showContextMenu` |
 | `DataTable` `Table` | `DataTableView` + `TableColumn`/`TableController`/`TableStyle` |
 | `CircularProgressIndicator` | `Loading` (raw one only for pre-existing sized inline spinners) |
 | `Image.network(url)` | `Image(image: mediaImage(url))` (`toolkit/lan_image.dart`: a master's files come over its channel) |
@@ -52,6 +53,7 @@ the single import for screens; never import `package:core/core.dart` directly.
   `Sparkline` `Navis` `ScreenRoute` `RouteAnimation` `ThemeColor` `SchemeColor` `AppSize`
   `AppController` `Responsive` `DeviceSelector` `CI` (icon font) `Str` `FloatFlag`
   `showModal` `showSideModal` `showAlertModal` `ModalHeader` `ModalSide` `AlertModal`
+  `ContextMenuRegion` `ContextItem` `ContextSeparator` `ContextHeader` `showContextMenu`
 - **`package:core/button.dart`**: `Button` `MainButton` `FeedbackButton`
 - **`package:core/form.dart`**: `Input` `SearchInput` `SelectInput` `SelectOption` `CodeInput`
   `InputRow` `InputController` `FormController` `InputValidator` `InputType` `InputStatus`

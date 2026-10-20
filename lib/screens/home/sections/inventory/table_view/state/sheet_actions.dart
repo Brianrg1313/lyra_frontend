@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
@@ -34,6 +35,7 @@ class SheetAction {
     required this.label,
     required this.run,
     this.icon,
+    this.shortcut,
     this.types,
     this.shown
   });
@@ -43,6 +45,9 @@ class SheetAction {
 
   final String Function(BuildContext context) label;
   final IconData? icon;
+
+  /// The keys that do the same in the grid (`sheet_keys.dart`), written beside it.
+  final SingleActivator? shortcut;
 
   /// The column types it is for; `null`: every one.
   final Set<TableFieldType>? types;
@@ -64,6 +69,7 @@ final List<SheetAction> sheetActions = [
     id: "undo",
     label: (context) => S.of(context).sheet_action_undo,
     icon: Icons.undo,
+    shortcut: const SingleActivator(LogicalKeyboardKey.keyZ, control: true),
     shown: (sheet, _) => sheet.history.canUndo,
     run: (sheet, _) => sheet.undo()
   ),
@@ -71,6 +77,7 @@ final List<SheetAction> sheetActions = [
     id: "redo",
     label: (context) => S.of(context).sheet_action_redo,
     icon: Icons.redo,
+    shortcut: const SingleActivator(LogicalKeyboardKey.keyY, control: true),
     shown: (sheet, _) => sheet.history.canRedo,
     run: (sheet, _) => sheet.redo()
   )

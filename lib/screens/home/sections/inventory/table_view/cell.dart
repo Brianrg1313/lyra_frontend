@@ -214,31 +214,33 @@ class SheetCellView extends StatelessWidget {
         cursor: moves
           ? SystemMouseCursors.text
           : editable ? type.cursor : SystemMouseCursors.basic,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          // The cell's context goes with the touch because there is a type that
-          // opens something anchored to it: a list unfolds its options where the
-          // cell is, and that needs to know what place of the screen it
-          // occupies. It is this context and not the `GestureDetector`'s on
-          // purpose: the first render that hangs from it is the whole column's
-          // box, which is where the dropdown has to hang from.
-          onTap: () => controller.tap(row, position, anchor: context),
-          // The cells' menu, over the range when the cell is in it (see [SheetRanges.openMenu]).
-          onSecondaryTap: () => controller.openMenu(SheetCell(row, position), context),
-          child: Container(
-            alignment: type.alignment == TextAlign.right
-              ? Alignment.centerRight
-              : Alignment.centerLeft,
-            // The types that are chosen draw their own frame inside (see
-            // [SelectCell]), so instead of a text's air they get a frame's:
-            // even on all four sides, or top and bottom would press against the
-            // grid and blend in with it.
-            padding: type.picker ? style.framePadding : style.cellPadding,
-            decoration: style.line(
-              selected: state != SheetCellState.idle,
-              ranged: ranged
-            ),
-            child: content
+        // The cells' menu, over the range when the cell is in it (see [SheetRanges.menuEntries]).
+        child: ContextMenuRegion(
+          entries: (_) => controller.menuEntries(SheetCell(row, position), context),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // The cell's context goes with the touch because there is a type that
+            // opens something anchored to it: a list unfolds its options where the
+            // cell is, and that needs to know what place of the screen it
+            // occupies. It is this context and not the `GestureDetector`'s on
+            // purpose: the first render that hangs from it is the whole column's
+            // box, which is where the dropdown has to hang from.
+            onTap: () => controller.tap(row, position, anchor: context),
+            child: Container(
+              alignment: type.alignment == TextAlign.right
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+              // The types that are chosen draw their own frame inside (see
+              // [SelectCell]), so instead of a text's air they get a frame's:
+              // even on all four sides, or top and bottom would press against the
+              // grid and blend in with it.
+              padding: type.picker ? style.framePadding : style.cellPadding,
+              decoration: style.line(
+                selected: state != SheetCellState.idle,
+                ranged: ranged
+              ),
+              child: content
+            )
           )
         )
       )

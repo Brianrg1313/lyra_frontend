@@ -33,12 +33,12 @@ extension SheetRanges on SheetController {
     ));
   }
 
-  /// Opens the cells' menu anchored to the cell right-clicked ([anchor] is its context).
+  /// The cells' menu for a right click (or a long press) on [cell] (see [ContextMenuRegion]).
   ///
   /// Inside the range it acts on the range; anywhere else that cell is selected first, the way
   /// a spreadsheet does, and the menu acts on it alone. What it offers is [sheetActions] that
   /// fit the target ([SheetAction.offers]); with none it doesn't open.
-  Future<void> openMenu(SheetCell cell, BuildContext anchor) async {
+  List<ContextEntry> menuEntries(SheetCell cell, BuildContext context) {
     final range = selection.range;
     final target = range != null && range.contains(cell.row, cell.column)
       ? range
@@ -51,27 +51,16 @@ extension SheetRanges on SheetController {
       types: [for (var column = target.left; column <= target.right; column++) typeAt(column)]
     );
 
-    final offered = [
+    return [
       for (final action in sheetActions)
-        if (action.offers(this, aimed)) action
+        if (action.offers(this, aimed)) ContextItem(
+          label: action.label(context),
+          icon: action.icon,
+          shortcut: action.shortcut,
+          onSelected: () {
+            if (!_disposed) action.run(this, aimed);
+          }
+        )
     ];
-
-    if (offered.isEmpty || !anchor.mounted) return;
-
-    final picked = await showSelectMenu(
-      context: anchor,
-      options: [
-        for (final action in offered)
-          SelectOption(value: action.id, placeholder: action.label(anchor), icon: action.icon)
-      ],
-      maxOptions: offered.length,
-      dense: true
-    );
-
-    if (_disposed || picked == null) return;
-
-    for (final action in offered) {
-      if (action.id == picked.value) return action.run(this, aimed);
-    }
   }
 }
