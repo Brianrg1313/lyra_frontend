@@ -13,6 +13,7 @@ import 'package:app/services/stock/tables/tables_service.dart';
 // WIDGETS
 import 'package:core/form.dart';
 import 'package:core/button.dart';
+import 'package:app/screens/modals/shared/option_tile.dart';
 
 /// Creating a product table. Replaces the old creation sub-page: now the table
 /// is created with its header (title, description and color) in a single
@@ -28,6 +29,10 @@ import 'package:core/button.dart';
 /// **The kind** (`cocina-frontend.md` §2) is the opener's, never asked: each section lists one
 /// kind (the inventory catalogs, the menu made products, the production line supplies). The
 /// backend never lets it change.
+///
+/// A menu is spoken of as a menu (its name's examples, «Create menu») and picks what it starts
+/// with between two tiles, [TableTemplate.blank] or [TableTemplate.menu], instead of the
+/// catalog's template list.
 class CreateTableModal extends StatefulWidget {
   const CreateTableModal({super.key, required this.kind});
 
@@ -83,6 +88,11 @@ class _CreateTableModalState extends State<CreateTableModal> {
   /// plus 8 hex digits, alpha first), which is the only format accepted.
   static const _color = "0xFFF87171";
 
+  bool get _menu => widget.kind == TableKind.made;
+
+  /// What a menu starts with ([TableTemplate.blank] or [TableTemplate.menu]).
+  String _start = TableTemplate.blank;
+
   @override
   void dispose() {
     _form.dispose();
@@ -90,48 +100,67 @@ class _CreateTableModalState extends State<CreateTableModal> {
   }
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 380),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(bottom: AppSize.spaceS),
-          child: TextMedium(switch (widget.kind) {
-            TableKind.supplies => S.of(context).table_kind_supplies_note,
-            TableKind.made => S.of(context).table_kind_made_note,
-            TableKind.catalog => S.of(context).create_table_subtitle
-          })
-        ),
-        Input(
-          title: S.of(context).table_title_input,
-          placeholder: S.of(context).table_title_placeholder,
-          controller: _title,
-          leftIcon: Icon(CI.list, color: ThemeColor.of(context).icon),
-          next: _description.focus
-        ),
-        Input(
-          title: S.of(context).table_description_title,
-          placeholder: S.of(context).table_description_placeholder,
-          controller: _description,
-          leftIcon: Icon(CI.pen, color: ThemeColor.of(context).icon)
-        ),
-        SelectInput(
-          title: S.of(context).table_template_title,
-          placeholder: S.of(context).table_template_placeholder,
-          emptyText: S.of(context).table_template_empty,
-          controller: _template,
-          options: TableTemplate.options(context)
-        ),
-        SizedBox(height: AppSize.spaceM),
-        Button(
-          title: S.of(context).create_table,
-          loading: _form.loading,
-          action: _submit
-        )
-      ])
-  );
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: _menu ? 440 : 380),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(bottom: AppSize.spaceS),
+            child: TextMedium(switch (widget.kind) {
+              TableKind.supplies => s.table_kind_supplies_note,
+              TableKind.made => s.menu_create_note,
+              TableKind.catalog => s.create_table_subtitle
+            })
+          ),
+          Input(
+            title: s.table_title_input,
+            placeholder: _menu ? s.menu_create_name_placeholder : s.table_title_placeholder,
+            controller: _title,
+            leftIcon: Icon(CI.list, color: ThemeColor.of(context).icon),
+            next: _description.focus
+          ),
+          Input(
+            title: s.table_description_title,
+            placeholder: _menu ? s.menu_create_description_placeholder : s.table_description_placeholder,
+            controller: _description,
+            leftIcon: Icon(CI.pen, color: ThemeColor.of(context).icon)
+          ),
+          if (_menu) ...[
+            SizedBox(height: AppSize.spaceS),
+            TextMedium(s.menu_create_start, bold: true),
+            SizedBox(height: AppSize.spaceXS),
+            IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              for (final start in [TableTemplate.blank, TableTemplate.menu]) ...[
+                if (start == TableTemplate.menu) SizedBox(width: AppSize.spaceS),
+                Expanded(child: OptionTile(
+                  title: start == TableTemplate.menu ? s.menu_create_dishes : s.menu_create_blank,
+                  note: start == TableTemplate.menu ? s.menu_create_dishes_note : s.menu_create_blank_note,
+                  selected: _start == start,
+                  action: () => setState(() => _start = start)
+                ))
+              ]
+            ]))
+          ] else SelectInput(
+            title: s.table_template_title,
+            placeholder: s.table_template_placeholder,
+            emptyText: s.table_template_empty,
+            controller: _template,
+            options: TableTemplate.options(context)
+          ),
+          SizedBox(height: AppSize.spaceM),
+          Button(
+            title: _menu ? s.menu_create_action : s.create_table,
+            loading: _form.loading,
+            action: _submit
+          )
+        ])
+    );
+  }
 
   void _submit() {
     if (!_form.validate()) return;
@@ -142,7 +171,7 @@ class _CreateTableModalState extends State<CreateTableModal> {
       .then((id) {
         if (!mounted) return;
         _form.loading.value = false;
-        FloatFlag.of(context).message(S.of(context).table_created);
+        FloatFlag.of(context).message(_menu ? S.of(context).menu_created : S.of(context).table_created);
         // The id goes back to whoever opened it, which opens the new table.
         Navigator.pop(context, id);
       })
@@ -157,11 +186,15 @@ class _CreateTableModalState extends State<CreateTableModal> {
   /// Request body. The texts are read from the controllers; the color is the
   /// fixed one from [_color]. If a template rubric was chosen its code is
   /// sent, and it is the backend that creates its columns along with the table.
-  Map<String, dynamic> _payload() => createTableRequest(
-    title: _title.value,
-    description: _description.value,
-    color: _color,
-    template: _template.value == TableTemplate.blank ? null : _template.value,
-    kind: widget.kind
-  );
+  Map<String, dynamic> _payload() {
+    final template = _menu ? _start : _template.value;
+
+    return createTableRequest(
+      title: _title.value,
+      description: _description.value,
+      color: _color,
+      template: template == TableTemplate.blank ? null : template,
+      kind: widget.kind
+    );
+  }
 }

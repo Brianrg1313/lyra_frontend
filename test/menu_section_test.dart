@@ -13,6 +13,7 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/menu/_menu.dart';
+import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
 import 'package:app/toolkit/settings/routes.dart';
 
 /// The menu reads the inventory's tables and keeps the made products' only (the inventory's
@@ -22,8 +23,17 @@ class _Inventory implements InventorySource {
 
   final List<TableLiteModel> answer;
 
+  /// The bodies of the tables created.
+  final created = <Map<String, dynamic>>[];
+
   @override
   Future<List<TableLiteModel>> tables() async => answer;
+
+  @override
+  Future<String> createTable(Map<String, dynamic> request) async {
+    created.add(request);
+    return "menu-1";
+  }
 
   @override
   Future<List<TableTemplateModel>> templates() async => const [];
@@ -32,8 +42,9 @@ class _Inventory implements InventorySource {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-Future<void> _mount(WidgetTester tester, Widget section, List<TableLiteModel> answer) async {
-  final tables = TablesService(source: _Inventory(answer));
+Future<_Inventory> _mount(WidgetTester tester, Widget section, List<TableLiteModel> answer) async {
+  final source = _Inventory(answer);
+  final tables = TablesService(source: source);
   addTearDown(tables.dispose);
 
   await tester.pumpWidget(MaterialApp(
@@ -63,6 +74,8 @@ Future<void> _mount(WidgetTester tester, Widget section, List<TableLiteModel> an
 
   await tester.pump();
   await tester.pump();
+
+  return source;
 }
 
 void main() {
@@ -88,5 +101,22 @@ void main() {
     expect(find.text(S.current.menu_create), findsOneWidget);
     expect(find.text("Precios"), findsNothing);
     expect(find.text("Insumos"), findsNothing);
+  });
+
+  testWidgets("a new menu starts with its name and price, or with a restaurant's columns, never a catalog's", (tester) async {
+    final source = await _mount(tester, const CreateTableModal(kind: TableKind.made), const []);
+
+    expect(find.text(S.current.menu_create_blank), findsOneWidget);
+    expect(find.text(S.current.table_template_title), findsNothing, reason: "no clothing nor shoes for a menu");
+
+    await tester.enterText(find.byType(EditableText).first, "Lunch");
+    await tester.tap(find.text(S.current.menu_create_dishes));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.menu_create_action));
+    await tester.pumpAndSettle();
+
+    expect(source.created.single["TITLE"], "Lunch");
+    expect(source.created.single["TEMPLATE"], "MENU");
+    expect(source.created.single["KIND"], "made");
   });
 }

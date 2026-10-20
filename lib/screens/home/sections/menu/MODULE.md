@@ -10,7 +10,7 @@ sold (dishes, combos), each product a card and a form with what it consumes. Clo
 
 ## Files
 
-- `_menu.dart` — `MenuSection`: the `made` tables (remembered → first); the inventory's `InventoryBar` parts (`TableSelector`, `TableOptionsButton` without transfers, «New menu»: `CreateTableModal(kind: TableKind.made)`) over `MadeProductsSection`; none → `SectionMessage` offering the first.
+- `_menu.dart` — `MenuSection`: the `made` tables (remembered → first); the inventory's `InventoryBar` parts (`TableSelector`, `TableOptionsButton` without transfers, «New menu»: `CreateTableModal(kind: TableKind.made)`, blank or restaurant dishes) over `MadeProductsSection`; none → `SectionMessage` offering the first.
 
 ## made_products/ — a made table
 

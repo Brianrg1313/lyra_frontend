@@ -26,6 +26,12 @@ class TableTemplate {
 
   static const blank = "BLANK";
 
+  /// The backend's restaurant menu (category, portion, prep time): the only start a menu
+  /// (`made` table) is offered besides [blank]. The others are a catalog's columns (sizes,
+  /// brands), and the bakery's and drinks' carry a `stock` column a made product never has:
+  /// what it can sell is what its supplies allow.
+  static const menu = "MENU";
+
   static List<TableTemplate> all(BuildContext context) => [
     TableTemplate(value: blank, label: S.of(context).table_template_blank),
     TableTemplate(value: "CLOTHING", label: S.of(context).table_template_clothing),

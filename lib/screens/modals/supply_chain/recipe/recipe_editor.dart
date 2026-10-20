@@ -14,6 +14,7 @@ import 'package:core/form.dart';
 import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
 import 'package:app/screens/home/sections/supply_chain/recipes/recipe_row.dart';
 import 'package:app/screens/modals/supply_chain/shared/kitchen_product_picker.dart';
+import 'package:app/screens/modals/shared/option_tile.dart';
 
 /// One line as it is being written: the ingredient, its quantity (in one of the units its own
 /// can be written in, [shown]) and its waste as typed.
@@ -396,7 +397,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             for (final batch in [false, true]) ...[
               if (batch) SizedBox(width: AppSize.spaceS),
-              Expanded(child: _ModeTile(
+              Expanded(child: OptionTile(
                 title: batch ? s.supply_chain_mode_batch : s.supply_chain_mode_order,
                 note: batch ? s.supply_chain_mode_batch_note : s.supply_chain_mode_order_note,
                 selected: _batch == batch,
@@ -888,45 +889,6 @@ class _OptionalToggle extends StatelessWidget {
           Icon(value ? CI.check : CI.plus, size: AppSize.text * 0.85, color: value ? scheme.accent : scheme.text.secondary),
           SizedBox(width: AppSize.gap / 2),
           TextSmall(s.supply_chain_line_negotiable, multiplier: 0.9, color: value ? scheme.accent : scheme.text.secondary, bold: value)
-        ])
-      )
-    );
-  }
-}
-
-/// One of the two ways a made product is made, side by side with the other: they exclude each
-/// other, and each says what it means for the stock before it is picked.
-class _ModeTile extends StatelessWidget {
-  const _ModeTile({required this.title, required this.note, required this.selected, required this.action});
-
-  final String title;
-  final String note;
-  final bool selected;
-  final void Function()? action;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSize.corner),
-        border: Border.all(color: selected ? scheme.primary : scheme.line, width: 1.5)
-      ),
-      child: FeedbackButton(
-        action: action,
-        color: selected ? scheme.surfaceOver : scheme.surface,
-        radius: AppSize.corner,
-        padding: EdgeInsets.all(AppSize.spaceS),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(selected ? CI.chack_circle : CI.circle, size: AppSize.text * 1.1, color: selected ? scheme.primary : scheme.text.secondary),
-          SizedBox(width: AppSize.gap),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            TextSmall(title, bold: true),
-            SizedBox(height: AppSize.gap / 2),
-            TextSmall(note, lines: 4, color: scheme.text.secondary)
-          ]))
         ])
       )
     );

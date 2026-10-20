@@ -4659,6 +4659,28 @@ class MessageLookup extends MessageLookupByLibrary {
     "marketing": MessageLookupByLibrary.simpleMessage("Marketing"),
     "menu": MessageLookupByLibrary.simpleMessage("Menu"),
     "menu_create": MessageLookupByLibrary.simpleMessage("New menu"),
+    "menu_create_action": MessageLookupByLibrary.simpleMessage("Create menu"),
+    "menu_create_blank": MessageLookupByLibrary.simpleMessage("Name and price"),
+    "menu_create_blank_note": MessageLookupByLibrary.simpleMessage(
+      "Only what every product needs. Add more columns whenever you want.",
+    ),
+    "menu_create_description_placeholder": MessageLookupByLibrary.simpleMessage(
+      "When or where it is served",
+    ),
+    "menu_create_dishes": MessageLookupByLibrary.simpleMessage(
+      "Restaurant dishes",
+    ),
+    "menu_create_dishes_note": MessageLookupByLibrary.simpleMessage(
+      "Also a category, the portion and how long it takes to prepare.",
+    ),
+    "menu_create_name_placeholder": MessageLookupByLibrary.simpleMessage(
+      "Lunch, Drinks, Combos",
+    ),
+    "menu_create_note": MessageLookupByLibrary.simpleMessage(
+      "Group what you make and sell. You add the dishes next, each with what it uses from your supplies.",
+    ),
+    "menu_create_start": MessageLookupByLibrary.simpleMessage("Start with"),
+    "menu_created": MessageLookupByLibrary.simpleMessage("Menu created"),
     "menu_empty_subtitle": MessageLookupByLibrary.simpleMessage(
       "Put together what you sell made from your supplies: dishes, combos, products of your own. Each one says what it consumes, and its stock is what those allow.",
     ),

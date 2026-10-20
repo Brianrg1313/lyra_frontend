@@ -1184,6 +1184,106 @@ class S {
     return Intl.message('New menu', name: 'menu_create', desc: '', args: []);
   }
 
+  /// `Group what you make and sell. You add the dishes next, each with what it uses from your supplies.`
+  String get menu_create_note {
+    return Intl.message(
+      'Group what you make and sell. You add the dishes next, each with what it uses from your supplies.',
+      name: 'menu_create_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lunch, Drinks, Combos`
+  String get menu_create_name_placeholder {
+    return Intl.message(
+      'Lunch, Drinks, Combos',
+      name: 'menu_create_name_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When or where it is served`
+  String get menu_create_description_placeholder {
+    return Intl.message(
+      'When or where it is served',
+      name: 'menu_create_description_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start with`
+  String get menu_create_start {
+    return Intl.message(
+      'Start with',
+      name: 'menu_create_start',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name and price`
+  String get menu_create_blank {
+    return Intl.message(
+      'Name and price',
+      name: 'menu_create_blank',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only what every product needs. Add more columns whenever you want.`
+  String get menu_create_blank_note {
+    return Intl.message(
+      'Only what every product needs. Add more columns whenever you want.',
+      name: 'menu_create_blank_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restaurant dishes`
+  String get menu_create_dishes {
+    return Intl.message(
+      'Restaurant dishes',
+      name: 'menu_create_dishes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Also a category, the portion and how long it takes to prepare.`
+  String get menu_create_dishes_note {
+    return Intl.message(
+      'Also a category, the portion and how long it takes to prepare.',
+      name: 'menu_create_dishes_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create menu`
+  String get menu_create_action {
+    return Intl.message(
+      'Create menu',
+      name: 'menu_create_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Menu created`
+  String get menu_created {
+    return Intl.message(
+      'Menu created',
+      name: 'menu_created',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No menu yet`
   String get menu_empty_title {
     return Intl.message(

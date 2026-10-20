@@ -408,7 +408,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `table_request.dart` / `table_field_request.dart` / `table_record_request.dart` — table / column / row bodies (`editFieldRequest(convert:)`: `CONVERT` beside a `UNIT`).
 - `table_field_type.dart` — `TableFieldType`.
 - `table_field_options.dart` — `OPTIONS`/`CATEGORIES` rules (`sameFieldOption`, `fieldLabelsOf`, `fieldLabelsText`, `fieldLabelsValue`).
-- `table_template.dart` — `TableTemplate`: the create modal's category codes.
+- `table_template.dart` — `TableTemplate`: the create modal's category codes; `menu` the only one a menu is offered besides `blank`.
 - `table_template_model.dart` — `TableTemplateModel`, `TableTemplateField`: a starting table of `GET .../builder/templates/`.
 - `table_templates_service.dart` — `TableTemplatesService` (+ status): the templates for the company's activity; owned by the inventory section's empty state.
 - `import_file.dart` — `ImportFormat`, `importExtensions` (the cloud's `kImportExtensions`, a master's
