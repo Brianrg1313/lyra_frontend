@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/home/home_service.dart';
 
@@ -42,6 +44,13 @@ void main() {
   setUpAll(() {
     ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFffffff));
     ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
+    // The delete's confirmation is a modal, which asks whether this is a phone.
+    DeviceInfoPlusWindowsPlugin.registerWith();
+    TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('dev.fluttercommunity.plus/package_info'),
+      (_) async => {'appName': '', 'packageName': '', 'version': '0', 'buildNumber': '0'}
+    );
+    return AppController().instance(false);
   });
 
   group("contract", () {
@@ -558,6 +567,101 @@ void main() {
       expect(source.edited.single.containsKey("DATA"), isFalse);
     });
   });
+
+  group("card menu", () {
+    Future<void> rightClick(WidgetTester tester, String text) async {
+      await tester.tap(find.text(text), buttons: kSecondaryButton, kind: PointerDeviceKind.mouse);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets("a right click on a card offers to edit, duplicate and delete it", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"], ["fries", "Fries", "1"]], consumes: {
+        "burger": {"mode": "order", "available": 10, "lines": []}
+      });
+      final service = await _service(tester, source);
+
+      await tester.pumpWidget(_app(MadeProductsSection(
+        tableId: "menu",
+        parts: const InventoryBarParts(selector: SizedBox(), controls: []),
+        service: service
+      )));
+      await tester.pumpAndSettle();
+
+      await rightClick(tester, "Cheese burger");
+
+      expect(find.text(S.current.edit), findsOneWidget);
+      expect(find.text(S.current.made_product_duplicate), findsOneWidget);
+      expect(find.text(S.current.made_product_delete), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+
+      // Fries' recipe was not read: a copy would be sold without consuming.
+      await rightClick(tester, "Fries");
+      await tester.tap(find.text(S.current.made_product_duplicate));
+      await tester.pumpAndSettle();
+
+      expect(source.created, isEmpty);
+
+      // A finger holds the card instead: the same menu, and the card's own tap does not open it.
+      await tester.longPress(find.text("Cheese burger"));
+      await tester.pumpAndSettle();
+
+      expect(find.text(S.current.made_product_delete), findsOneWidget);
+      expect(find.text(S.current.made_product_save), findsNothing);
+    });
+
+    testWidgets("delete asks first, then the product leaves the list", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"], ["fries", "Fries", "1"]]);
+      final service = await _service(tester, source);
+
+      await tester.pumpWidget(_app(MadeProductsSection(
+        tableId: "menu",
+        parts: const InventoryBarParts(selector: SizedBox(), controls: []),
+        service: service
+      )));
+      await tester.pumpAndSettle();
+
+      await rightClick(tester, "Fries");
+      await tester.tap(find.text(S.current.made_product_delete));
+      await tester.pumpAndSettle();
+
+      expect(find.text(S.current.made_product_delete_title), findsOneWidget);
+      expect(source.deleted, isEmpty, reason: "nothing goes before it is confirmed");
+
+      await tester.tap(find.text(S.current.made_product_delete).last);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      expect(source.deleted, ["menu fries"]);
+      expect(find.text("Fries"), findsNothing);
+      expect(find.text("Cheese burger"), findsOneWidget);
+    });
+
+    testWidgets("a copy keeps the columns, the recipe, its mode and the groups it offers", (tester) async {
+      const sauces = ModifierGroup(id: "sauces", name: "Sauces", products: [(tableId: "menu", productId: "burger")],
+        options: [ModifierOption(id: "bbq", name: "BBQ")]);
+      final kitchen = _Kitchen([sauces]);
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]], consumes: {
+        "burger": {"mode": "batch", "available": 4, "lines": [
+          {"id": "l1", "tableId": "s", "productId": "meat", "name": "Meat", "qty": 0.3, "waste": 5}
+        ]}
+      });
+      final service = await _service(tester, source, kitchen: kitchen);
+
+      final done = await service.duplicate(
+        tester.element(find.byType(SizedBox)),
+        service.products.single,
+        name: "Cheese burger (copy)"
+      );
+
+      expect(done, isTrue);
+      expect(source.created.single["DATA"], {"f-price": "8.5", "f-name": "Cheese burger (copy)"});
+      expect(source.created.single["BATCH"], isTrue);
+      expect(source.created.single["CONSUMES"], [{"TABLE_ID": "s", "PRODUCT_ID": "meat", "QUANTITY": 0.3, "WASTE": 5}]);
+      expect([for (final product in kitchen.saved.single["PRODUCTS"] as List) product["PRODUCT_ID"]], ["burger", "copy"]);
+    });
+  });
 }
 
 const _fields = [
@@ -664,6 +768,7 @@ class _Menu implements InventorySource {
   final createdFields = <Map<String, dynamic>>[];
   final created = <Map<String, dynamic>>[];
   final edited = <Map<String, dynamic>>[];
+  final deleted = <String>[];
 
   @override
   Future<TableStructureModel> structure(String tableId) async =>
@@ -701,12 +806,21 @@ class _Menu implements InventorySource {
   @override
   Future<String> createRecord(Map<String, dynamic> request) async {
     created.add(request);
-    _rows.add(["burger", "Cheese burger", "8.5"]);
-    return "burger";
+
+    // A second record is a copy of the first.
+    final id = _rows.isEmpty ? "burger" : "copy";
+    _rows.add([id, "Cheese burger", "8.5"]);
+    return id;
   }
 
   @override
   Future<void> editRecord(Map<String, dynamic> request) async => edited.add(request);
+
+  @override
+  Future<void> deleteRecord(String tableId, String id) async {
+    deleted.add("$tableId $id");
+    _rows.removeWhere((row) => row.first == id);
+  }
 
   @override
   Future<List<ProductImage>> addImage(String tableId, String recordId, File file) async {

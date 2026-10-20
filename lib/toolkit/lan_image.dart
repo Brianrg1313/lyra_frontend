@@ -3,13 +3,30 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
+// PACKAGES
+import 'package:http/http.dart' as http;
+
 // SERVICES
+import 'package:app/generated/l10n.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
 
 /// The image behind [url], wherever it lives: a master's file (`lyra-file:` addresses, which
 /// `CdnService` gives in `local` mode) comes over the master's channel, anything else from the
 /// network. Screens draw `Image(image: mediaImage(url))` and never know the mode.
 ImageProvider mediaImage(String url) => LanFileImage.parse(url) ?? NetworkImage(url);
+
+/// The bytes behind [url], from wherever [mediaImage] would draw them: a photo uploaded again
+/// (a duplicated product's) is not shared with the record it came from, whose deletion would
+/// take it.
+Future<Uint8List> mediaBytes(String url) async {
+  final lan = LanFileImage.parse(url);
+  if (lan != null) return lanService.download(lan.id, size: lan.size);
+
+  final answer = await http.get(Uri.parse(url));
+  if (answer.statusCode != 200) throw {"message": S.current.connectionError};
+
+  return answer.bodyBytes;
+}
 
 /// A file of the master (`protocol-v1.md` §6), downloaded with this session over the pinned
 /// channel: `Image.network` can't, since the master's certificate chains to the installation CA

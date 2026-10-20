@@ -20,6 +20,7 @@ import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/lan_image.dart' show mediaBytes;
 
 enum MadeProductsStatus { loading, ready, empty, error }
 
@@ -319,6 +320,78 @@ class MadeProductsService extends ChangeNotifier {
       }
 
       _groups = await _readGroups();
+    }
+
+    await _first();
+    return true;
+  }
+
+  /// Creates a copy of [product] named [name]: its columns, how it is made, what it consumes,
+  /// its photo and the groups it offers. `false` when its recipe was not read (a copy without
+  /// it would be sold without consuming) or the record was refused, shown as it came. Like
+  /// [save], a photo or groups failing after the record is said, and the copy stays.
+  Future<bool> duplicate(BuildContext context, MadeProduct product, {required String name}) async {
+    final consumes = product.consumes;
+    if (consumes == null) return false;
+
+    final cover = product.cover;
+    final String id;
+
+    try {
+      final values = {
+        for (final field in [_fields.price, _fields.description, ..._fields.others])
+          if (field != null && product.valueOf(field).isNotEmpty) field.id: product.valueOf(field),
+        if (_fields.name != null) _fields.name!.id: name,
+        // A company's own address is a value, copied as one; a stored photo is uploaded again.
+        if (cover != null && !cover.isStored && _fields.image != null) _fields.image!.id: ProductImage.valuesOf([cover])
+      };
+
+      id = await _inventory.createRecord(createRecordRequest(
+        tableId: tableId,
+        values: values,
+        consumes: [
+          for (final line in consumes.recipe.lines)
+            (tableId: line.tableId, productId: line.productId, qty: line.qty, negotiable: line.negotiable, waste: line.waste)
+        ],
+        batch: consumes.recipe.mode == RecipeMode.batch
+      ));
+    } catch (error) {
+      if (context.mounted) KitchenApi.report(context, "duplicateMadeProduct", error);
+      return false;
+    }
+
+    if (cover != null && cover.isStored) {
+      try {
+        await _photo(id, null, MadePhoto.replace(await mediaBytes(cover.url)));
+      } catch (error) {
+        if (context.mounted) KitchenApi.report(context, "madeProductPhoto", error);
+      }
+    }
+
+    final groups = groupsOf(product.id);
+
+    if (groups.isNotEmpty) {
+      try {
+        await _offer(id, [for (final group in groups) (group: group, edited: false)]);
+      } catch (error) {
+        if (context.mounted) KitchenApi.report(context, "madeProductGroups", error);
+      }
+
+      _groups = await _readGroups();
+    }
+
+    await _first();
+    return true;
+  }
+
+  /// Deletes [product] (the backend marks it deleted: it leaves every screen and Lyra stops
+  /// offering it). `false` when it was refused, shown as it came.
+  Future<bool> remove(BuildContext context, MadeProduct product) async {
+    try {
+      await _inventory.deleteRecord(tableId, product.id);
+    } catch (error) {
+      if (context.mounted) KitchenApi.report(context, "deleteMadeProduct", error);
+      return false;
     }
 
     await _first();

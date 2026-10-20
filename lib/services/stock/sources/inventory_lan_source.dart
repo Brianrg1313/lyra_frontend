@@ -120,6 +120,10 @@ class InventoryLanSource implements InventorySource {
   Future<void> editRecord(Map<String, dynamic> request) => _lan.call(Ops.inventoryRecordsEdit, args: args(request));
 
   @override
+  Future<void> deleteRecord(String tableId, String id) =>
+    _lan.call(Ops.inventoryRecordsDelete, args: {"tableId": tableId, "id": id});
+
+  @override
   Future<void> setUnit({required String tableId, required String productId, required String unit, bool convert = false}) =>
     throw UnsupportedError("a unit per product is cloud only");
 

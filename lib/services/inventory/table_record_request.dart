@@ -1,6 +1,7 @@
 /// Bodies of the write operations for a **record** (a row) of a product
-/// table: creation (`POST /v1/inventory/products/records/manage/`) and editing
-/// (`PUT /v1/inventory/products/records/manage/`).
+/// table: creation (`POST /v1/inventory/products/records/manage/`), editing
+/// (`PUT /v1/inventory/products/records/manage/`) and deletion
+/// (`DELETE /v1/inventory/products/records/manage/`).
 ///
 /// They live apart from the screen for the same reason as the columns ones (see
 /// `table_field_request.dart`): they are the contract with the backend, what is built
@@ -83,4 +84,11 @@ Map<String, dynamic> editRecordRequest({
   "DATA": ?values,
   if (consumes != null) "CONSUMES": recipeLinesRequest(consumes),
   "BATCH": ?batch
+};
+
+/// Builds the deletion body of a record: the backend marks it deleted (it is never physically
+/// removed) and the table scopes it to the company that owns it.
+Map<String, dynamic> deleteRecordRequest({required String tableId, required String id}) => {
+  "TABLE_ID": tableId,
+  "ID": id
 };

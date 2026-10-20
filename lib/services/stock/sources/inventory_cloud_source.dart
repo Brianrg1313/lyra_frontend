@@ -3,7 +3,7 @@ import 'dart:io';
 // SERVICES
 import 'package:app/services/inventory/import_file.dart';
 import 'package:app/services/inventory/product_image.dart';
-import 'package:app/services/inventory/table_record_request.dart' show createdRecordId;
+import 'package:app/services/inventory/table_record_request.dart' show createdRecordId, deleteRecordRequest;
 import 'package:app/services/inventory/table_field_request.dart';
 import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/inventory/table_template_model.dart';
@@ -156,6 +156,13 @@ class InventoryCloudSource implements InventorySource {
   @override
   Future<void> editRecord(Map<String, dynamic> request) =>
     api.put(path: "/inventory/products/records/manage/", version: "v1", data: request);
+
+  @override
+  Future<void> deleteRecord(String tableId, String id) => api.delete(
+    path: "/inventory/products/records/manage/",
+    version: "v1",
+    data: deleteRecordRequest(tableId: tableId, id: id)
+  );
 
   @override
   Future<void> setUnit({required String tableId, required String productId, required String unit, bool convert = false}) =>

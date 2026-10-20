@@ -74,6 +74,8 @@ abstract interface class InventorySource {
 
   Future<void> editRecord(Map<String, dynamic> request);
 
+  Future<void> deleteRecord(String tableId, String id);
+
   /// Sets what [productId]'s stock is counted in (`cocina-frontend.md` §8); empty takes it
   /// back to its stock column's. With [convert] its figures follow, between units of one
   /// magnitude. Cloud only: a master keeps no unit per product.

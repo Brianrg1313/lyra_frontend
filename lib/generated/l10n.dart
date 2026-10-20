@@ -1989,6 +1989,76 @@ class S {
     );
   }
 
+  /// `Duplicate`
+  String get made_product_duplicate {
+    return Intl.message(
+      'Duplicate',
+      name: 'made_product_duplicate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Product duplicated`
+  String get made_product_duplicated {
+    return Intl.message(
+      'Product duplicated',
+      name: 'made_product_duplicated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} (copy)`
+  String made_product_copy_name(Object name) {
+    return Intl.message(
+      '$name (copy)',
+      name: 'made_product_copy_name',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Delete`
+  String get made_product_delete {
+    return Intl.message(
+      'Delete',
+      name: 'made_product_delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete this product?`
+  String get made_product_delete_title {
+    return Intl.message(
+      'Delete this product?',
+      name: 'made_product_delete_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} leaves the menu and Lyra stops offering it. This can't be undone.`
+  String made_product_delete_message(Object name) {
+    return Intl.message(
+      '$name leaves the menu and Lyra stops offering it. This can\'t be undone.',
+      name: 'made_product_delete_message',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `Product deleted`
+  String get made_product_deleted {
+    return Intl.message(
+      'Product deleted',
+      name: 'made_product_deleted',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Name`
   String get made_product_name {
     return Intl.message('Name', name: 'made_product_name', desc: '', args: []);

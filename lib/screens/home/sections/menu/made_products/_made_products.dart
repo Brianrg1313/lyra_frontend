@@ -82,6 +82,9 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
 
   bool get _canWrite => PermissionsService().can("supply_chain.recipes.edit");
 
+  /// The backend deletes a record with `products.delete`, apart from writing one.
+  bool get _canDelete => PermissionsService().can("products.delete");
+
   Future<void> _open([MadeProduct? product]) => showMadeProduct(context, service: _service, product: product);
 
   Future<void> _kitchen(MadeProduct product) async {
@@ -93,6 +96,59 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
     ));
 
     if (changed && mounted) _service.refresh();
+  }
+
+  /// What a right click or a long press on [product]'s card offers. Duplicating needs what it
+  /// consumes, read with the page: a copy without it would be sold without consuming.
+  List<ContextEntry> _entries(MadeProduct product) {
+    final s = S.of(context);
+    final name = product.valueOf(_service.fields.name);
+
+    return [
+      ContextHeader(name.isEmpty ? s.made_product_unnamed : name),
+      if (_canWrite) ...[
+        ContextItem(label: s.edit, icon: CI.edit, onSelected: () => _open(product)),
+        ContextItem(
+          label: s.made_product_duplicate,
+          icon: CI.copy,
+          enabled: product.consumes != null,
+          onSelected: () => _duplicate(product)
+        )
+      ],
+      if (_canDelete) ...[
+        const ContextSeparator(),
+        ContextItem(label: s.made_product_delete, icon: CI.trash, danger: true, onSelected: () => _delete(product))
+      ]
+    ];
+  }
+
+  Future<void> _duplicate(MadeProduct product) async {
+    final s = S.of(context);
+    final name = product.valueOf(_service.fields.name);
+    final done = await _service.duplicate(
+      context,
+      product,
+      name: s.made_product_copy_name(name.isEmpty ? s.made_product_unnamed : name)
+    );
+
+    if (done && mounted) FloatFlag.of(context).message(s.made_product_duplicated);
+  }
+
+  Future<void> _delete(MadeProduct product) async {
+    final s = S.of(context);
+    final name = product.valueOf(_service.fields.name);
+    final confirmed = await showAlertModal(
+      context: context,
+      title: s.made_product_delete_title,
+      message: s.made_product_delete_message(name.isEmpty ? s.made_product_unnamed : name),
+      confirmText: s.made_product_delete,
+      cancelText: s.cancel
+    );
+
+    if (!confirmed || !mounted) return;
+
+    final done = await _service.remove(context, product);
+    if (done && mounted) FloatFlag.of(context).message(s.made_product_deleted);
   }
 
   @override
@@ -157,12 +213,15 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
     final kitchen = CapabilityService().shows("supply_chain.recipes");
     final tiles = <Widget>[
       if (_canWrite) MadeProductNewCard(onCreate: _open),
-      for (final product in products) MadeProductCard(
+      for (final product in products) ContextMenuRegion(
         key: ValueKey(product.id),
-        product: product,
-        service: _service,
-        onOpen: () => _open(product),
-        onKitchen: kitchen ? () => _kitchen(product) : null
+        entries: (_) => _entries(product),
+        child: MadeProductCard(
+          product: product,
+          service: _service,
+          onOpen: () => _open(product),
+          onKitchen: kitchen ? () => _kitchen(product) : null
+        )
       )
     ];
 

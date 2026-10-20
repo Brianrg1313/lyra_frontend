@@ -38,7 +38,7 @@ backend, routes and theme. No UI.
 - `lan_web.dart` — browser transport: WebSockets to the page's origin, a non-extractable WebCrypto key in IndexedDB,
   `fetch` for `/f`.
 - `lan_file.dart` — `LanFileResponse`, `LanFileUnreachable` (both transports' `fileRequest`).
-- `lan_image.dart` — `mediaImage(url)` (what screens draw an image address with), `LanFileImage` (a master's file over
+- `lan_image.dart` — `mediaImage(url)` (what screens draw an image address with), `mediaBytes(url)` (the same image's bytes, to upload again), `LanFileImage` (a master's file over
   its channel, cached by id and size; `address`, `parse`).
 - `lan_key.dart` — `LanDeviceKey` (a pairing key: signs, PEM or none, `keep`), `PemDeviceKey`.
 - `lan_found.dart` — `LanFound` (a master mDNS found), `LanPairingSocket`.
