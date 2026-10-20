@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/kitchen/kitchen_read.dart';
+import 'package:app/services/kitchen/kitchen_report_model.dart';
 import 'package:app/services/kitchen/made_consumes_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
@@ -68,11 +69,11 @@ class MadeFields {
 }
 
 /// One product of a `made` table as its list and its form read it: its values by FIELD_ID, its
-/// photos and what it consumes, from the same `records/list` page (`consumes`,
-/// `cocina-frontend.md` §3).
+/// photos, what it consumes and what that costs, from the same `records/list` page (`consumes`,
+/// `costs`, `cocina-frontend.md` §3, §9).
 @immutable
 class MadeProduct {
-  const MadeProduct({required this.id, this.values = const {}, this.images = const [], this.consumes});
+  const MadeProduct({required this.id, this.values = const {}, this.images = const [], this.consumes, this.cost});
 
   final String id;
 
@@ -85,6 +86,10 @@ class MadeProduct {
 
   /// `null` when the page did not say it (a product written elsewhere, a read cut short).
   final MadeConsumes? consumes;
+
+  /// What making one costs and what its price leaves; `null` when the page did not say it (no
+  /// recipe, or a viewer without the kitchen's reports).
+  final DishCost? cost;
 
   /// What its list and its form draw: the first photo there is something of to draw.
   ProductImage? get cover => images.where((image) => !image.isPending).firstOrNull;
@@ -105,7 +110,8 @@ class MadeProduct {
               if (column.id.isNotEmpty && row.at(index) != null) column.id: kitchenText(row.at(index))
           },
           images: slot < 0 ? const [] : ProductImage.from(row.at(slot)),
-          consumes: page.consumes[row.id]
+          consumes: page.consumes[row.id],
+          cost: page.costs[row.id]
         )
     ];
   }

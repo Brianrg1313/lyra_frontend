@@ -126,11 +126,12 @@ class MadeProductsService extends ChangeNotifier {
       if (group.products.any((product) => product.productId == productId)) group
   ];
 
-  /// What making [productId] costs, at the average price paid for its supplies; `null` when it
-  /// can't be told (no recipe, a failed read).
-  Future<DishCost?> costOf(String productId) async {
+  /// What making one with [lines] costs, from what each supply costs, before it is saved: its
+  /// form costs the recipe as it is typed. `null` when it can't be told (a line the backend
+  /// refuses, a viewer without the kitchen's reports, a failed read).
+  Future<DishCost?> costOf({required RecipeMode mode, required List<RecipeLineDraft> lines}) async {
     try {
-      return await _kitchen.cost(productId);
+      return await _kitchen.draftCost(tableId: tableId, mode: mode, lines: lines);
     } catch (error) {
       if (kDebugMode) print("made product cost failed: $error");
       return null;

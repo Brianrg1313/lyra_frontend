@@ -3,6 +3,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/kitchen/kitchen_product_model.dart';
+import 'package:app/services/kitchen/kitchen_report_model.dart';
 import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/kitchen/kitchen_units.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
@@ -91,6 +92,10 @@ typedef RecipeDraft = ({RecipeMode mode, List<RecipeLineDraft> lines, Map<String
 /// without), so a mistake is said beside the line. The rules only the backend knows (a recipe
 /// that contains itself, more than two levels made to order) come back as its refusal, shown as
 /// it comes. [onSave] writes it, or hands it back: `false` keeps the editor open.
+///
+/// With [onChanged], every change hands what reads so far (a line with no valid quantity yet is
+/// left out, silently): a made product's form costs it as it is written, and gives [cost] back,
+/// drawn beside each line and as a total under them.
 class RecipeEditor extends StatefulWidget {
   const RecipeEditor({
     super.key,
@@ -104,7 +109,9 @@ class RecipeEditor extends StatefulWidget {
     this.units = const {},
     this.leading = const [],
     this.trailing = const [],
-    this.validate
+    this.validate,
+    this.onChanged,
+    this.cost
   });
 
   /// What it is made of now; `null` writes the first.
@@ -135,6 +142,12 @@ class RecipeEditor extends StatefulWidget {
   /// Checks what [leading] holds, beside the lines; `false` does not save.
   final bool Function()? validate;
 
+  /// What reads so far, on every change of the lines or the mode, and once at the start.
+  final void Function(RecipeDraft draft)? onChanged;
+
+  /// What [onChanged]'s last draft costs: each line's share and the total. `null`: none drawn.
+  final DishCost? cost;
+
   @override
   State<RecipeEditor> createState() => _RecipeEditorState();
 }
@@ -158,6 +171,16 @@ class _RecipeEditorState extends State<RecipeEditor> {
   String _error = "";
 
   @override
+  void initState() {
+    super.initState();
+
+    for (final line in _lines) {
+      _watch(line);
+    }
+    _changed();
+  }
+
+  @override
   void dispose() {
     _saving.dispose();
     for (final line in _lines) {
@@ -166,18 +189,62 @@ class _RecipeEditorState extends State<RecipeEditor> {
     super.dispose();
   }
 
-  void _add(KitchenProduct product) => setState(() => _lines.add(_LineDraft(
-    tableId: product.tableId,
-    productId: product.id,
-    name: product.label,
-    supplies: product.supplies,
-    unit: product.unit
-  )));
+  void _add(KitchenProduct product) {
+    final line = _LineDraft(
+      tableId: product.tableId,
+      productId: product.id,
+      name: product.label,
+      supplies: product.supplies,
+      unit: product.unit
+    );
 
-  void _remove(_LineDraft line) => setState(() {
-    _lines.remove(line);
+    setState(() => _lines.add(_watch(line)));
+    _changed();
+  }
+
+  void _remove(_LineDraft line) {
+    setState(() => _lines.remove(line));
     line.dispose();
-  });
+    _changed();
+  }
+
+  /// A typed quantity or waste changes what the recipe costs.
+  _LineDraft _watch(_LineDraft line) {
+    if (widget.onChanged != null) {
+      line.qty.textController.addListener(_changed);
+      line.waste.textController.addListener(_changed);
+    }
+    return line;
+  }
+
+  void _changed() {
+    final onChanged = widget.onChanged;
+    if (onChanged == null) return;
+
+    onChanged((
+      mode: _mode,
+      lines: [
+        for (final line in _lines)
+          if (_read(line) case (final double qty, final double waste) when qty > 0 && waste >= 0 && waste < 100)
+            (tableId: line.tableId, productId: line.productId, qty: qty, negotiable: line.negotiable, waste: waste)
+      ],
+      names: _names
+    ));
+  }
+
+  RecipeMode get _mode => _batch ? RecipeMode.batch : RecipeMode.order;
+
+  Map<String, String> get _names => {for (final line in _lines) line.productId: line.name};
+
+  /// A line's quantity in its ingredient's own unit, rounded where the backend rounds
+  /// (millionths), and its waste; either `null` when it does not read as a number.
+  static (double?, double?) _read(_LineDraft line) {
+    final typed = kitchenParse(line.qty.text);
+    final qty = typed == null ? null : double.parse((typed * line.shown.factor).toStringAsFixed(6));
+    final waste = line.waste.text.trim().isEmpty ? 0.0 : kitchenParse(line.waste.text);
+
+    return (qty, waste);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +265,10 @@ class _RecipeEditorState extends State<RecipeEditor> {
                 title: batch ? s.supply_chain_mode_batch : s.supply_chain_mode_order,
                 note: batch ? s.supply_chain_mode_batch_note : s.supply_chain_mode_order_note,
                 selected: _batch == batch,
-                action: widget.canEdit ? () => setState(() => _batch = batch) : null
+                action: widget.canEdit ? () {
+                  setState(() => _batch = batch);
+                  _changed();
+                } : null
               ))
             ]
           ]),
@@ -215,12 +285,20 @@ class _RecipeEditorState extends State<RecipeEditor> {
               _LineRow(
                 key: ObjectKey(line),
                 line: line,
+                cost: widget.cost?.lineOf(line.productId),
                 enabled: widget.canEdit,
                 onRemove: () => _remove(line),
                 onNegotiable: (value) => setState(() => line.negotiable = value),
-                onUnit: (unit) => setState(() => line.shown = unit),
+                onUnit: (unit) {
+                  setState(() => line.shown = unit);
+                  _changed();
+                },
                 onMore: () => setState(() => line.more = !line.more)
               )
+            ],
+            if (widget.cost != null) ...[
+              Separator.horizontal(),
+              _CostTotal(cost: widget.cost!)
             ]
           ])
         ),
@@ -252,10 +330,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
     var valid = widget.validate?.call() ?? true;
 
     for (final line in _lines) {
-      final typed = kitchenParse(line.qty.text);
-      // In the ingredient's own unit, rounded where the backend rounds (millionths).
-      final qty = typed == null ? null : double.parse((typed * line.shown.factor).toStringAsFixed(6));
-      final waste = line.waste.text.trim().isEmpty ? 0.0 : kitchenParse(line.waste.text);
+      final (qty, waste) = _read(line);
 
       line.error = switch ((qty, waste)) {
         (null, _) => s.supply_chain_line_qty_invalid,
@@ -285,11 +360,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
 
     _saving.value = true;
 
-    await widget.onSave((
-      mode: _batch ? RecipeMode.batch : RecipeMode.order,
-      lines: drafts,
-      names: {for (final line in _lines) line.productId: line.name}
-    ));
+    await widget.onSave((mode: _mode, lines: drafts, names: _names));
 
     if (mounted) _saving.value = false;
   }
@@ -305,12 +376,16 @@ class _LineRow extends StatelessWidget {
     required this.line,
     required this.enabled,
     required this.onRemove,
+    this.cost,
     required this.onNegotiable,
     required this.onUnit,
     required this.onMore
   });
 
   final _LineDraft line;
+
+  /// What it adds to the cost, as last costed; `null`: not costed.
+  final DishCostLine? cost;
   final bool enabled;
   final void Function() onRemove;
   final void Function(bool value) onNegotiable;
@@ -346,6 +421,10 @@ class _LineRow extends StatelessWidget {
               RecipeTag(text: s.supply_chain_line_waste_of(kitchenPercent(context, waste)), color: scheme.text.secondary)
             ]
           ])),
+          if (cost != null) ...[
+            SizedBox(width: AppSize.gap),
+            _LineCost(line: cost!)
+          ],
           SizedBox(width: AppSize.gap),
           _OptionalToggle(
             value: line.negotiable,
@@ -389,6 +468,56 @@ class _LineRow extends StatelessWidget {
           padding: EdgeInsets.only(top: AppSize.gap / 2),
           child: TextSmall(line.error, color: scheme.snackBar.error)
         )
+      ])
+    );
+  }
+}
+
+/// What a line adds to the cost, or that its supply has no price (and so is not counted).
+class _LineCost extends StatelessWidget {
+  const _LineCost({required this.line});
+
+  final DishCostLine line;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final cost = line.cost;
+
+    if (cost == null) return TextSmall(S.of(context).made_product_line_no_price, multiplier: 0.9, color: scheme.snackBar.alert);
+
+    return TextSmall(kitchenMoney(cost), color: scheme.text.secondary);
+  }
+}
+
+/// What making one costs, summed under its lines like a receipt: with a supply without a price,
+/// a floor, and which ones are missing and where a price comes from.
+class _CostTotal extends StatelessWidget {
+  const _CostTotal({required this.cost});
+
+  final DishCost cost;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final s = S.of(context);
+    final missing = [
+      for (final line in cost.lines)
+        if (line.unitCost == null) line.name.isEmpty ? line.productId : line.name
+    ];
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.spaceXS),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          Expanded(child: TextMedium(missing.isEmpty ? s.made_product_cost_total : s.made_product_cost_floor, bold: true)),
+          TextMedium(kitchenMoney(cost.cost), bold: true)
+        ]),
+        if (missing.isNotEmpty) ...[
+          SizedBox(height: AppSize.gap / 2),
+          TextSmall(s.made_product_profit_incomplete(missing.join(", ")), lines: 2, color: scheme.snackBar.alert),
+          TextSmall(s.made_product_cost_where, lines: 3, color: scheme.text.secondary)
+        ]
       ])
     );
   }

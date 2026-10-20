@@ -3,6 +3,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/catalog/currency_catalog_service.dart';
+import 'package:app/services/kitchen/kitchen_report_model.dart';
 import 'package:app/services/kitchen/kitchen_units.dart';
 import 'package:app/services/kitchen/made_product_model.dart';
 import 'package:app/services/kitchen/made_products_service.dart';
@@ -16,8 +17,9 @@ import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
 
 /// One made product as a menu shows it, for people who recognize a dish by its photo before its
 /// name: the photo on top with how many can be sold now stamped on it (a colour and its words,
-/// never the colour alone), then its name, what it is made of and its price
-/// (`cocina-frontend.md` §3: what is left and the ingredients, never a stock to write).
+/// never the colour alone), then its name, what it is made of, its price and, to whoever may read
+/// the kitchen's reports, what making it costs and what that leaves (`cocina-frontend.md` §3, §9:
+/// what is left and the ingredients, never a stock to write).
 ///
 /// A product nobody can sell has its photo greyed, so a sold-out dish is spotted across the
 /// grid without reading. A tap opens its form; [onKitchen], when given, its kitchen page (the
@@ -96,6 +98,10 @@ class MadeProductCard extends StatelessWidget {
         ),
         // The price sits at the card's foot in every card of a row, whatever is above it.
         const Spacer(),
+        if (product.cost != null) Padding(
+          padding: EdgeInsets.fromLTRB(AppSize.spaceXS, AppSize.spaceS, AppSize.spaceXS, 0),
+          child: _Cost(cost: product.cost!)
+        ),
         Padding(
           padding: EdgeInsets.fromLTRB(AppSize.spaceXS, AppSize.spaceS, 0, 0),
           child: Row(children: [
@@ -242,6 +248,33 @@ class _Stamp extends StatelessWidget {
         ))
       ])
     );
+  }
+}
+
+/// What making one costs, and what its price leaves of it: a loss in red, said in words.
+class _Cost extends StatelessWidget {
+  const _Cost({required this.cost});
+
+  final DishCost cost;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final s = S.of(context);
+    final profit = cost.profit;
+    final margin = cost.margin;
+
+    if (cost.losing && profit != null) {
+      return TextSmall(s.made_product_card_losing(kitchenMoney(-profit)), bold: true, ellipsis: true, color: scheme.snackBar.error);
+    }
+
+    final text = !cost.complete
+      ? s.made_product_profit_cost_floor(kitchenMoney(cost.cost))
+      : margin == null
+        ? s.made_product_profit_cost(kitchenMoney(cost.cost))
+        : s.made_product_card_margin(kitchenMoney(cost.cost), kitchenPercent(context, margin));
+
+    return TextSmall(text, multiplier: 0.9, ellipsis: true, color: scheme.text.secondary);
   }
 }
 

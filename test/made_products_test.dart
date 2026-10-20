@@ -29,6 +29,8 @@ import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 import 'package:app/screens/home/sections/menu/made_products/_made_products.dart';
+import 'package:app/screens/home/sections/supply_chain/kitchen_format.dart';
+import 'package:app/screens/modals/inventory/made_product/_made_product.dart';
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/modals/supply_chain/recipe/recipe_editor.dart';
 
@@ -222,6 +224,109 @@ void main() {
       expect(product.values, {"f-name": "Cheese burger", "f-price": "8.5"});
       expect(product.consumes!.availability.available, 100);
       expect(product.consumes!.recipe.lines.single.qty, 0.3);
+    });
+
+    test("a product is read with what it costs and what its price leaves", () {
+      final page = TableViewModel.fromResponse({
+        "keys": ["id", "f-name", "f-price"],
+        "values": [["burger", "Cheese burger", 8.5]],
+        "costs": {"burger": {"cost": 2.19, "complete": true, "price": 8.5, "profit": 6.31, "margin": 74.24, "losing": false}}
+      }, tableId: "menu").alignedTo(_fields);
+
+      final cost = MadeProduct.listFrom(page).single.cost!;
+
+      expect(cost.productId, "burger");
+      expect((cost.cost, cost.complete, cost.profit, cost.margin, cost.losing), (2.19, true, 6.31, 74.24, false));
+    });
+
+    testWidgets("the recipe is costed as it is written: each line, the total and what the price leaves", (tester) async {
+      final kitchen = _Kitchen()..costs = (lines) {
+        final meat = lines.single.qty;
+        return DishCost(productId: "", cost: meat * 5, lines: [
+          (productId: "meat", name: "Meat", qty: meat, unitCost: 5, cost: meat * 5, source: "column")
+        ]);
+      };
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]], consumes: {
+        "burger": {"mode": "order", "available": 100, "lines": [
+          {"id": "l1", "tableId": "s", "productId": "meat", "name": "Meat", "qty": 0.3}
+        ]}
+      });
+      final service = await _service(tester, source, kitchen: kitchen);
+
+      await tester.pumpWidget(_app(MadeProductForm(
+        service: service,
+        product: service.products.single,
+        onSaved: () {},
+        onCancel: () {}
+      )));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      expect(kitchen.drafts.single.single.qty, 0.3, reason: "the saved recipe is costed on opening");
+      expect(find.text(S.current.made_product_cost_total), findsOneWidget);
+      expect(find.text(kitchenMoney(1.5)), findsNWidgets(2), reason: "the line and the total");
+      expect(find.text(S.current.made_product_profit_gain(kitchenMoney(7))), findsOneWidget);
+
+      await tester.enterText(find.text("300"), "200");
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      expect(kitchen.drafts.last.single.qty, 0.2);
+      expect(find.text(kitchenMoney(1)), findsNWidgets(2));
+      expect(find.text(S.current.made_product_profit_gain(kitchenMoney(7.5))), findsOneWidget);
+
+      // A price under the cost is a loss.
+      await tester.enterText(find.text("8.5"), "0.5");
+      await tester.pumpAndSettle();
+
+      expect(find.text(S.current.made_product_profit_loss(kitchenMoney(0.5))), findsOneWidget);
+    });
+
+    testWidgets("a supply without a price is named and the total is a floor", (tester) async {
+      final kitchen = _Kitchen()..costs = (lines) => const DishCost(productId: "", cost: 1.5, complete: false, lines: [
+        (productId: "meat", name: "Meat", qty: 0.3, unitCost: 5, cost: 1.5, source: "purchases"),
+        (productId: "bread", name: "Bread", qty: 1, unitCost: null, cost: null, source: null)
+      ]);
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"]], consumes: {
+        "burger": {"mode": "order", "available": 100, "lines": [
+          {"id": "l1", "tableId": "s", "productId": "meat", "name": "Meat", "qty": 0.3},
+          {"id": "l2", "tableId": "s", "productId": "bread", "name": "Bread", "qty": 1}
+        ]}
+      });
+      final service = await _service(tester, source, kitchen: kitchen);
+
+      await tester.pumpWidget(_app(MadeProductForm(
+        service: service,
+        product: service.products.single,
+        onSaved: () {},
+        onCancel: () {}
+      )));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      expect(find.text(S.current.made_product_line_no_price), findsOneWidget);
+      expect(find.text(S.current.made_product_cost_floor), findsOneWidget);
+      expect(find.text(S.current.made_product_profit_incomplete("Bread")), findsOneWidget);
+      expect(find.text(S.current.made_product_profit_cost_floor(kitchenMoney(1.5))), findsOneWidget);
+    });
+
+    testWidgets("a card says what the product costs, and a loss in words", (tester) async {
+      final source = _Menu(fields: _fields, rows: [["burger", "Cheese burger", "8.5"], ["fries", "Fries", "1"]], costs: {
+        "burger": {"cost": 2.19, "complete": true, "price": 8.5, "profit": 6.31, "margin": 74.2, "losing": false},
+        "fries": {"cost": 1.4, "complete": true, "price": 1, "profit": -0.4, "margin": -40, "losing": true}
+      });
+      final service = await _service(tester, source);
+
+      await tester.pumpWidget(_app(MadeProductsSection(
+        tableId: "menu",
+        parts: const InventoryBarParts(selector: SizedBox(), controls: []),
+        service: service
+      )));
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(MadeProductsSection));
+      expect(find.text(S.current.made_product_card_margin(kitchenMoney(2.19), kitchenPercent(context, 74.2))), findsOneWidget);
+      expect(find.text(S.current.made_product_card_losing(kitchenMoney(0.4))), findsOneWidget);
     });
 
     testWidgets("a table without a name or a price gets both before its first product", (tester) async {
@@ -522,8 +627,15 @@ class _Kitchen extends MadeKitchenApi {
   @override
   Future<void> saveGroup(Map<String, dynamic> body) async => saved.add(body);
 
+  /// What a draft costs: the answer of [costs], or none.
+  DishCost? Function(List<RecipeLineDraft> lines)? costs;
+  final drafts = <List<RecipeLineDraft>>[];
+
   @override
-  Future<DishCost?> cost(String productId) async => null;
+  Future<DishCost?> draftCost({required String tableId, required RecipeMode mode, required List<RecipeLineDraft> lines}) async {
+    drafts.add(lines);
+    return costs?.call(lines);
+  }
 }
 
 /// The supplies, by id: meat counted in kg.
@@ -536,7 +648,7 @@ class _Supplies extends KitchenProductSearch {
 /// A made table: its columns (grown by a created field) and its records; a created record is
 /// the burger.
 class _Menu implements InventorySource {
-  _Menu({required List<TableFieldModel> fields, List<List<dynamic>>? rows, this.consumes = const {}})
+  _Menu({required List<TableFieldModel> fields, List<List<dynamic>>? rows, this.consumes = const {}, this.costs = const {}})
     : _fields = [...fields],
       _rows = rows ?? [];
 
@@ -546,6 +658,9 @@ class _Menu implements InventorySource {
 
   /// `records/list`'s `consumes`.
   final Map<String, dynamic> consumes;
+
+  /// `records/list`'s `costs`.
+  final Map<String, dynamic> costs;
   final createdFields = <Map<String, dynamic>>[];
   final created = <Map<String, dynamic>>[];
   final edited = <Map<String, dynamic>>[];
@@ -577,7 +692,8 @@ class _Menu implements InventorySource {
         for (final field in _fields) TableColumnModel(id: field.id, name: field.name)
       ],
       rows: [for (final row in _rows) TableRowModel(row)],
-      consumes: MadeConsumes.mapFrom(consumes, tableId: tableId)
+      consumes: MadeConsumes.mapFrom(consumes, tableId: tableId),
+      costs: DishCost.mapFrom(costs)
     ),
     total: _rows.length
   );

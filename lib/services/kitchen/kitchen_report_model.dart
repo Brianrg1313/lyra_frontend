@@ -152,12 +152,14 @@ class VarianceRow {
   ];
 }
 
-/// One ingredient of a dish's cost. [unitCost] and [cost] are `null` for a supply never bought
-/// with a cost in the window.
-typedef DishCostLine = ({String productId, String name, double qty, double? unitCost, double? cost});
+/// One ingredient of a dish's cost. [unitCost] and [cost] are `null` for a supply with no price:
+/// no cost column with a figure, no purchase with a cost in the window. [source] says where
+/// [unitCost] came from: `column` (its table's cost column), `purchases` (the average paid),
+/// `recipe` (a batch preparation, costed by its own recipe).
+typedef DishCostLine = ({String productId, String name, double qty, double? unitCost, double? cost, String? source});
 
-/// What making a dish costs at the average price paid for its supplies (`POST /recipes/cost`).
-/// Modifiers are not in it.
+/// What making a dish costs from what each supply costs (`POST /recipes/cost`), and what its
+/// price leaves. Modifiers are not in it.
 @immutable
 class DishCost {
   const DishCost({
@@ -167,6 +169,10 @@ class DishCost {
     this.mode = RecipeMode.order,
     this.cost = 0,
     this.complete = true,
+    this.price,
+    this.profit,
+    this.margin,
+    this.losing = false,
     this.lines = const []
   });
 
@@ -178,25 +184,54 @@ class DishCost {
   /// The sum of the lines with a price: with [complete] false, a floor.
   final double cost;
   final bool complete;
+
+  /// The product's price (its `price` column less its `discount`), what it leaves and that as a
+  /// percent of the price; `null` with no price, and on a draft costed without one.
+  final double? price;
+  final double? profit;
+  final double? margin;
+
+  /// Whether it sells below what it costs.
+  final bool losing;
   final List<DishCostLine> lines;
 
+  /// The line of [productId], when it was costed.
+  DishCostLine? lineOf(String productId) => lines.where((line) => line.productId == productId).firstOrNull;
+
   static List<DishCost> listFrom(dynamic data) => [
-    for (final dish in kitchenMaps(data)) DishCost(
-      productId: kitchenText(dish["productId"]),
-      tableId: kitchenText(dish["tableId"]),
-      name: kitchenText(dish["name"]),
-      mode: RecipeMode.from(dish["mode"]),
-      cost: kitchenNum(dish["cost"]) ?? 0,
-      complete: dish["complete"] != false,
-      lines: [
-        for (final line in kitchenMaps(dish["lines"])) (
-          productId: kitchenText(line["productId"]),
-          name: kitchenText(line["name"]),
-          qty: kitchenNum(line["qty"]) ?? 0,
-          unitCost: kitchenNum(line["unitCost"]),
-          cost: kitchenNum(line["cost"])
-        )
-      ]
-    )
+    for (final dish in kitchenMaps(data)) DishCost.fromJson(dish)
   ];
+
+  /// `records/list` `costs` of a made table's page, by record id: the totals, without lines.
+  static Map<String, DishCost> mapFrom(dynamic data) {
+    if (data is! Map) return const {};
+
+    return {
+      for (final MapEntry(:key, :value) in data.entries)
+        if (value is Map) key.toString(): DishCost.fromJson({...value, "productId": key.toString()})
+    };
+  }
+
+  factory DishCost.fromJson(Map dish) => DishCost(
+    productId: kitchenText(dish["productId"]),
+    tableId: kitchenText(dish["tableId"]),
+    name: kitchenText(dish["name"]),
+    mode: RecipeMode.from(dish["mode"]),
+    cost: kitchenNum(dish["cost"]) ?? 0,
+    complete: dish["complete"] != false,
+    price: kitchenNum(dish["price"]),
+    profit: kitchenNum(dish["profit"]),
+    margin: kitchenNum(dish["margin"]),
+    losing: kitchenBool(dish["losing"]),
+    lines: [
+      for (final line in kitchenMaps(dish["lines"])) (
+        productId: kitchenText(line["productId"]),
+        name: kitchenText(line["name"]),
+        qty: kitchenNum(line["qty"]) ?? 0,
+        unitCost: kitchenNum(line["unitCost"]),
+        cost: kitchenNum(line["cost"]),
+        source: line["source"] is String ? line["source"] as String : null
+      )
+    ]
+  );
 }

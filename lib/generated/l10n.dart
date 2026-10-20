@@ -2534,33 +2534,103 @@ class S {
     );
   }
 
-  /// `Not counted, no purchase price yet: {names}`
+  /// `Costs at least {amount} to make`
+  String made_product_profit_cost_floor(Object amount) {
+    return Intl.message(
+      'Costs at least $amount to make',
+      name: 'made_product_profit_cost_floor',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Not counted, no price yet: {names}`
   String made_product_profit_incomplete(Object names) {
     return Intl.message(
-      'Not counted, no purchase price yet: $names',
+      'Not counted, no price yet: $names',
       name: 'made_product_profit_incomplete',
       desc: '',
       args: [names],
     );
   }
 
-  /// `What it earns shows once its supplies are restocked with what they cost.`
+  /// `What it earns shows once its supplies have a price.`
   String get made_product_profit_none {
     return Intl.message(
-      'What it earns shows once its supplies are restocked with what they cost.',
+      'What it earns shows once its supplies have a price.',
       name: 'made_product_profit_none',
       desc: '',
       args: [],
     );
   }
 
-  /// `What it earns shows once it is saved and its supplies have a purchase price.`
+  /// `Add what it is made of to see what it costs and what it earns.`
   String get made_product_profit_new {
     return Intl.message(
-      'What it earns shows once it is saved and its supplies have a purchase price.',
+      'Add what it is made of to see what it costs and what it earns.',
       name: 'made_product_profit_new',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `No price`
+  String get made_product_line_no_price {
+    return Intl.message(
+      'No price',
+      name: 'made_product_line_no_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cost to make one`
+  String get made_product_cost_total {
+    return Intl.message(
+      'Cost to make one',
+      name: 'made_product_cost_total',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cost to make one, at least`
+  String get made_product_cost_floor {
+    return Intl.message(
+      'Cost to make one, at least',
+      name: 'made_product_cost_floor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A supply's price is its table's cost column ("Unit cost", "Purchase price"), or what was paid for it when restocked with the total cost.`
+  String get made_product_cost_where {
+    return Intl.message(
+      'A supply\'s price is its table\'s cost column ("Unit cost", "Purchase price"), or what was paid for it when restocked with the total cost.',
+      name: 'made_product_cost_where',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Costs {cost} · {margin} margin`
+  String made_product_card_margin(Object cost, Object margin) {
+    return Intl.message(
+      'Costs $cost · $margin margin',
+      name: 'made_product_card_margin',
+      desc: '',
+      args: [cost, margin],
+    );
+  }
+
+  /// `Loses {amount} on each`
+  String made_product_card_losing(Object amount) {
+    return Intl.message(
+      'Loses $amount on each',
+      name: 'made_product_card_losing',
+      desc: '',
+      args: [amount],
     );
   }
 

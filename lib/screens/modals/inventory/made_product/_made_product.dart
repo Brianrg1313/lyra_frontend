@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/inventory/table_field_type.dart';
 import 'package:app/services/kitchen/kitchen_report_model.dart';
+import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/kitchen/made_product_model.dart';
 import 'package:app/services/kitchen/made_products_service.dart';
 import 'package:app/services/kitchen/modifier_model.dart';
@@ -74,6 +78,9 @@ class _Detail {
 /// The record and its recipe are one write, all or nothing; the photo and the modifier groups
 /// follow it ([MadeProductsService.save]). The consumption is [RecipeEditor]'s, with the
 /// product's fields above it and what it offers under it, so one button saves everything.
+///
+/// To whoever may read the kitchen's reports, the recipe is costed as it is written (each line,
+/// the total, what the price leaves), so a product that loses money is seen before it is saved.
 class MadeProductForm extends StatefulWidget {
   const MadeProductForm({
     super.key,
@@ -152,7 +159,20 @@ class _MadeProductFormState extends State<MadeProductForm> {
 
   bool _groupsTouched = false;
 
+  /// What the recipe as written costs; `null` before the first answer, with no lines, or when
+  /// it can't be told.
   DishCost? _cost;
+
+  /// Whether the lines have something to cost.
+  bool _hasLines = false;
+
+  /// The draft last asked for, as its body: a focus or a caret moving notifies the editor too.
+  String _costed = "";
+  Timer? _costing;
+  int _costTicket = 0;
+
+  /// `POST /recipes/cost` asks for the kitchen's reports.
+  final bool _costs = PermissionsService().can("supply_chain.reports.view");
 
   bool get _canEditGroups => PermissionsService().can("supply_chain.modifiers.edit");
 
@@ -180,20 +200,38 @@ class _MadeProductFormState extends State<MadeProductForm> {
     options: group.options
   );
 
-  @override
-  void initState() {
-    super.initState();
+  /// Costs [draft] once typing pauses; the last draft asked wins. Called from the editor's
+  /// `initState` too, so nothing here sets state before the timer.
+  void _recipeChanged(RecipeDraft draft) {
+    final key = jsonEncode([draft.mode.name, recipeLinesRequest(draft.lines)]);
+    if (key == _costed) return;
 
-    final product = _product;
-    if (product != null) {
-      widget.service.costOf(product.id).then((cost) {
-        if (mounted) setState(() => _cost = cost);
+    _costed = key;
+    _costing?.cancel();
+    _costing = Timer(const Duration(milliseconds: 350), () async {
+      final ticket = ++_costTicket;
+
+      if (draft.lines.isEmpty) {
+        setState(() {
+          _hasLines = false;
+          _cost = null;
+        });
+        return;
+      }
+
+      final cost = await widget.service.costOf(mode: draft.mode, lines: draft.lines);
+      if (!mounted || ticket != _costTicket) return;
+
+      setState(() {
+        _hasLines = true;
+        _cost = cost;
       });
-    }
+    });
   }
 
   @override
   void dispose() {
+    _costing?.cancel();
     _form.dispose();
     for (final detail in _details) {
       detail.dispose();
@@ -221,6 +259,8 @@ class _MadeProductFormState extends State<MadeProductForm> {
             saveLabel: _product == null ? s.made_product_create : s.made_product_save,
             leading: _leading(context),
             validate: _validate,
+            onChanged: _costs ? _recipeChanged : null,
+            cost: _cost,
             onSave: _save,
             onCancel: widget.onCancel
           )
@@ -265,9 +305,9 @@ class _MadeProductFormState extends State<MadeProductForm> {
             )),
             SizedBox(width: AppSize.spaceS),
             // Lined up with the price's box, under its title.
-            Expanded(child: Padding(
+            if (_costs) Expanded(child: Padding(
               padding: EdgeInsets.only(top: AppSize.text * 1.6),
-              child: MadeProfit(price: _price.textController, cost: _cost, saved: _product != null)
+              child: MadeProfit(price: _price.textController, cost: _cost, lines: _hasLines)
             ))
           ])
         ]))

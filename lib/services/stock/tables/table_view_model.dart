@@ -1,3 +1,4 @@
+import 'package:app/services/kitchen/kitchen_report_model.dart';
 import 'package:app/services/kitchen/made_consumes_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 
@@ -84,6 +85,7 @@ class TableViewModel {
     this.columns = const [],
     this.rows = const [],
     this.consumes = const {},
+    this.costs = const {},
     this.units = const {}
   });
 
@@ -93,6 +95,10 @@ class TableViewModel {
   /// A `made` table's page: what each record consumes and how many can be sold now, by
   /// record id (`cocina-frontend.md` §3). Empty on any other table.
   final Map<String, MadeConsumes> consumes;
+
+  /// A `made` table's page, to whoever may read the kitchen's reports: what each record costs
+  /// to make and what its price leaves, by record id (`cocina-frontend.md` §9). Empty otherwise.
+  final Map<String, DishCost> costs;
 
   /// What each product that does not count in its stock column's unit is counted in, by
   /// record id (`records/list` `units`). [alignedTo] puts each on its row ([TableRowModel.unit]).
@@ -124,7 +130,7 @@ class TableViewModel {
         TableColumnModel(id: field.id, name: field.name, type: field.type)
     ];
 
-    if (columns.isEmpty) return TableViewModel(columns: structure, rows: rows, consumes: consumes, units: units);
+    if (columns.isEmpty) return TableViewModel(columns: structure, rows: rows, consumes: consumes, costs: costs, units: units);
 
     final order = [for (final field in fields) _positionOf(field)];
     final identifier = _idPosition(order);
@@ -136,6 +142,7 @@ class TableViewModel {
           _aligned(row, order, identifier < 0 ? "" : row.at(identifier)?.toString() ?? "")
       ],
       consumes: consumes,
+      costs: costs,
       units: units
     );
   }
@@ -220,6 +227,7 @@ class TableViewModel {
 
         return TableViewModel(
           consumes: MadeConsumes.mapFrom(data["consumes"], tableId: tableId),
+          costs: DishCost.mapFrom(data["costs"]),
           units: _units(data["units"]),
           columns: columns,
           rows: [
@@ -243,12 +251,13 @@ class TableViewModel {
       final inner = data["data"] ?? data["results"] ?? data["table"] ?? data["page"];
       if (inner is List || inner is Map) {
         final page = TableViewModel.fromResponse(inner, tableId: tableId);
-        if (data["consumes"] == null && data["units"] == null) return page;
+        if (data["consumes"] == null && data["costs"] == null && data["units"] == null) return page;
 
         return TableViewModel(
           columns: page.columns,
           rows: page.rows,
           consumes: page.consumes.isNotEmpty ? page.consumes : MadeConsumes.mapFrom(data["consumes"], tableId: tableId),
+          costs: page.costs.isNotEmpty ? page.costs : DishCost.mapFrom(data["costs"]),
           units: page.units.isNotEmpty ? page.units : _units(data["units"])
         );
       }
