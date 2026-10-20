@@ -128,8 +128,14 @@ class PreferencesService {
   String? get lastPath => _read<String>(_userKey("path"));
 
   /// Where to land after the session resolves when no deep link asks for
-  /// something else.
-  String get homePath => lastPath ?? "/home";
+  /// something else. A recorded page whose route no longer exists lands on
+  /// `/home`: Navis ignores a path it cannot match, so the app stayed on its
+  /// loading screen forever (`/home/supply_chain` after the section merged
+  /// into the inventory).
+  String get homePath {
+    final path = lastPath;
+    return path != null && Navis().match(path) != null ? path : "/home";
+  }
 
   /// Only home pages are recorded: the login, the pre-start pages and the POS
   /// are not places to come back to on their own. A page that no longer

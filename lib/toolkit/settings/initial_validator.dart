@@ -32,7 +32,9 @@ Future<String?> initialValidator() async {
     return page;
   }
 
-  if (deepLink != null) {
+  // A link to a route that no longer exists would leave the app on its loading screen (Navis
+  // ignores a path it cannot match), like a recorded page does (`PreferencesService.homePath`).
+  if (deepLink != null && Navis().match(deepLink) != null) {
     return deepLink;
   }
 
