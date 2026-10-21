@@ -36,6 +36,9 @@ dependencies:
   web: ^1.1.1
   http: ^1.6.0
   archive: ^4.0.7
+  genui: ^0.10.4
+  flutter_markdown_plus: ^1.0.12
+  json_schema_builder: ^0.1.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

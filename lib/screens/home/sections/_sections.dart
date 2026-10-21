@@ -17,6 +17,7 @@ import './channels/_channels.dart';
 import './channels/form/_channel_form.dart';
 import './connections/_connections.dart';
 import './connections/form/_connection_form.dart';
+import './dashboard/_dashboard.dart';
 import './deliveries/_deliveries.dart';
 import './finance/_finance.dart';
 import './local_server/_local_server.dart';
@@ -214,6 +215,7 @@ enum HomeSection {
   /// —its tabs—, so building it here would leave it without a key and changing
   /// business would not remount it.
   Widget build() => switch (this) {
+    dashboard => const DashboardSection(),
     inventory => const InventorySection(),
     menu => const MenuSection(),
     channels => const ChannelsSection(),

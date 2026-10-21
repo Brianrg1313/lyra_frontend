@@ -15,7 +15,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
 - App-wide services: `lib/toolkit/settings/initial_builder.dart`. Scoped ones are created by
   their screen: `SignInService`/`SignUpService` (auth pages), `money/` (finance section),
   `sales/` (sales section), `pos/` (POS page). Their state belongs to the active company and
-  is dropped on leaving. `chats/` (messages section) and `maps/` (deliveries section) too.
+  is dropped on leaving. `chats/` (messages section), `maps/` (deliveries section) and `assistant/` (the home) too.
 - Socket seams for tests: `seed(...)` / `receive(...)`, `@visibleForTesting`.
 - `<domain>/sources/` — the data-source seam (`docs/plan-offline-lan.md` §7.1):
   `<x>_source.dart` (`abstract interface class XSource`, returns models, throws the normalised
@@ -387,6 +387,13 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   the first one only; 409 → `hasPassword`). Writes rethrow the backend's error.
 - `employment_record_model.dart` — `EmploymentRecord`: a row of `GET /profile/employments` (compressed, company nested).
 - `account_history_service.dart` — `AccountHistoryService` (+ status): the work history. Seam `seed`.
+
+## assistant/ — the home's chat with the assistant (owned by `AssistantPanel`; placeholder source, no backend yet)
+
+- `assistant_service.dart` — `AssistantService({catalogs, source?, onNavigate?})`: GenUI `Conversation` over an `A2uiTransportAdapter` and a `SurfaceController`; `turns`, `busy`, `send`, `stop`, `clear`, `surface(id)`; a surface's `navigate` event calls `onNavigate`, any other event is a user turn.
+- `assistant_turn.dart` — `AssistantTurn` (`user`/`assistant`, `AssistantTurnState`, ordered `parts`: `AssistantPart` text or surface id), `write`/`show`/`close`.
+- `sources/assistant_source.dart` — `AssistantSource.reply(AssistantRequest)`: the model's raw stream (text with A2UI JSON blocks).
+- `sources/assistant_demo_source.dart` — `AssistantDemoSource({pace})`: canned answers by keyword with `lyra.catalog.v1` surfaces; every figure an example.
 
 ## home/
 

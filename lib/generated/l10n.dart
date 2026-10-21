@@ -29392,6 +29392,641 @@ class S {
       args: [],
     );
   }
+
+  /// `Lyra`
+  String get assistant_name {
+    return Intl.message('Lyra', name: 'assistant_name', desc: '', args: []);
+  }
+
+  /// `Preview`
+  String get assistant_preview {
+    return Intl.message(
+      'Preview',
+      name: 'assistant_preview',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New chat`
+  String get assistant_new_chat {
+    return Intl.message(
+      'New chat',
+      name: 'assistant_new_chat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What can I do for you?`
+  String get assistant_welcome_title {
+    return Intl.message(
+      'What can I do for you?',
+      name: 'assistant_welcome_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ask about your business or tell me what to change: I answer here, with the figures and the controls to act on them.`
+  String get assistant_welcome_subtitle {
+    return Intl.message(
+      'Ask about your business or tell me what to change: I answer here, with the figures and the controls to act on them.',
+      name: 'assistant_welcome_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Today's sales`
+  String get assistant_suggestion_sales_title {
+    return Intl.message(
+      'Today\'s sales',
+      name: 'assistant_suggestion_sales_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How are today's sales going?`
+  String get assistant_suggestion_sales_prompt {
+    return Intl.message(
+      'How are today\'s sales going?',
+      name: 'assistant_suggestion_sales_prompt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Low stock`
+  String get assistant_suggestion_stock_title {
+    return Intl.message(
+      'Low stock',
+      name: 'assistant_suggestion_stock_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What is running low?`
+  String get assistant_suggestion_stock_prompt {
+    return Intl.message(
+      'What is running low?',
+      name: 'assistant_suggestion_stock_prompt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `My team`
+  String get assistant_suggestion_team_title {
+    return Intl.message(
+      'My team',
+      name: 'assistant_suggestion_team_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who is working right now?`
+  String get assistant_suggestion_team_prompt {
+    return Intl.message(
+      'Who is working right now?',
+      name: 'assistant_suggestion_team_prompt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What you can do`
+  String get assistant_suggestion_help_title {
+    return Intl.message(
+      'What you can do',
+      name: 'assistant_suggestion_help_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `What can you do for me?`
+  String get assistant_suggestion_help_prompt {
+    return Intl.message(
+      'What can you do for me?',
+      name: 'assistant_suggestion_help_prompt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ask Lyra anything`
+  String get assistant_composer_placeholder {
+    return Intl.message(
+      'Ask Lyra anything',
+      name: 'assistant_composer_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Attach`
+  String get assistant_composer_attach {
+    return Intl.message(
+      'Attach',
+      name: 'assistant_composer_attach',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dictate`
+  String get assistant_composer_voice {
+    return Intl.message(
+      'Dictate',
+      name: 'assistant_composer_voice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send`
+  String get assistant_send {
+    return Intl.message('Send', name: 'assistant_send', desc: '', args: []);
+  }
+
+  /// `Stop`
+  String get assistant_stop {
+    return Intl.message('Stop', name: 'assistant_stop', desc: '', args: []);
+  }
+
+  /// `Lyra can make mistakes. Check what matters before acting on it.`
+  String get assistant_disclaimer {
+    return Intl.message(
+      'Lyra can make mistakes. Check what matters before acting on it.',
+      name: 'assistant_disclaimer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Thinking`
+  String get assistant_thinking {
+    return Intl.message(
+      'Thinking',
+      name: 'assistant_thinking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy`
+  String get assistant_copy {
+    return Intl.message('Copy', name: 'assistant_copy', desc: '', args: []);
+  }
+
+  /// `Copied`
+  String get assistant_copied {
+    return Intl.message('Copied', name: 'assistant_copied', desc: '', args: []);
+  }
+
+  /// `Stopped`
+  String get assistant_stopped {
+    return Intl.message(
+      'Stopped',
+      name: 'assistant_stopped',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The answer could not be completed`
+  String get assistant_failed {
+    return Intl.message(
+      'The answer could not be completed',
+      name: 'assistant_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coming soon`
+  String get assistant_soon {
+    return Intl.message(
+      'Coming soon',
+      name: 'assistant_soon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chose “{label}”`
+  String assistant_action(Object label) {
+    return Intl.message(
+      'Chose “$label”',
+      name: 'assistant_action',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `Here is how today is going so far. Sales are **12% above** the same hour last week.`
+  String get assistant_demo_sales_intro {
+    return Intl.message(
+      'Here is how today is going so far. Sales are **12% above** the same hour last week.',
+      name: 'assistant_demo_sales_intro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Want me to compare it with last week or break it down by branch?`
+  String get assistant_demo_sales_outro {
+    return Intl.message(
+      'Want me to compare it with last week or break it down by branch?',
+      name: 'assistant_demo_sales_outro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Revenue`
+  String get assistant_demo_revenue {
+    return Intl.message(
+      'Revenue',
+      name: 'assistant_demo_revenue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Orders`
+  String get assistant_demo_orders {
+    return Intl.message(
+      'Orders',
+      name: 'assistant_demo_orders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Average ticket`
+  String get assistant_demo_ticket {
+    return Intl.message(
+      'Average ticket',
+      name: 'assistant_demo_ticket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open sales`
+  String get assistant_demo_open_sales {
+    return Intl.message(
+      'Open sales',
+      name: 'assistant_demo_open_sales',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Compare with last week`
+  String get assistant_demo_compare {
+    return Intl.message(
+      'Compare with last week',
+      name: 'assistant_demo_compare',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Three products will run out before the next restock if they keep selling at this pace:`
+  String get assistant_demo_stock_intro {
+    return Intl.message(
+      'Three products will run out before the next restock if they keep selling at this pace:',
+      name: 'assistant_demo_stock_intro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I can draft the purchase order with the usual quantities.`
+  String get assistant_demo_stock_outro {
+    return Intl.message(
+      'I can draft the purchase order with the usual quantities.',
+      name: 'assistant_demo_stock_outro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draft purchase order`
+  String get assistant_demo_order {
+    return Intl.message(
+      'Draft purchase order',
+      name: 'assistant_demo_order',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open inventory`
+  String get assistant_demo_open_inventory {
+    return Intl.message(
+      'Open inventory',
+      name: 'assistant_demo_open_inventory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `**4 of 12** people are signed in right now.`
+  String get assistant_demo_team_intro {
+    return Intl.message(
+      '**4 of 12** people are signed in right now.',
+      name: 'assistant_demo_team_intro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open employees`
+  String get assistant_demo_open_team {
+    return Intl.message(
+      'Open employees',
+      name: 'assistant_demo_open_team',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I will be able to read and change most of the app for you. For example:\n\n- **Answer questions** about sales, stock, money and customers\n- **Open** any section or record\n- **Prepare** orders, reports and messages for you to confirm\n\nPick one to try:`
+  String get assistant_demo_help_intro {
+    return Intl.message(
+      'I will be able to read and change most of the app for you. For example:\n\n- **Answer questions** about sales, stock, money and customers\n- **Open** any section or record\n- **Prepare** orders, reports and messages for you to confirm\n\nPick one to try:',
+      name: 'assistant_demo_help_intro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is a preview: I am not connected to your business yet, so every figure here is an example. Try one of these:`
+  String get assistant_demo_generic {
+    return Intl.message(
+      'This is a preview: I am not connected to your business yet, so every figure here is an example. Try one of these:',
+      name: 'assistant_demo_generic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Done with “{label}”. This is a preview: nothing changed in your business.`
+  String assistant_demo_done(Object label) {
+    return Intl.message(
+      'Done with “$label”. This is a preview: nothing changed in your business.',
+      name: 'assistant_demo_done',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `At a glance`
+  String get dashboard_summary_title {
+    return Intl.message(
+      'At a glance',
+      name: 'dashboard_summary_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sample data`
+  String get dashboard_summary_sample {
+    return Intl.message(
+      'Sample data',
+      name: 'dashboard_summary_sample',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales today`
+  String get dashboard_sales_today {
+    return Intl.message(
+      'Sales today',
+      name: 'dashboard_sales_today',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `vs last week`
+  String get dashboard_vs_last_week {
+    return Intl.message(
+      'vs last week',
+      name: 'dashboard_vs_last_week',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New messages`
+  String get dashboard_new_messages {
+    return Intl.message(
+      'New messages',
+      name: 'dashboard_new_messages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Online now`
+  String get dashboard_online_employees {
+    return Intl.message(
+      'Online now',
+      name: 'dashboard_online_employees',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `of {total} people`
+  String dashboard_online_of(Object total) {
+    return Intl.message(
+      'of $total people',
+      name: 'dashboard_online_of',
+      desc: '',
+      args: [total],
+    );
+  }
+
+  /// `Pending deliveries`
+  String get dashboard_pending_deliveries {
+    return Intl.message(
+      'Pending deliveries',
+      name: 'dashboard_pending_deliveries',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales in process`
+  String get dashboard_open_sales {
+    return Intl.message(
+      'Sales in process',
+      name: 'dashboard_open_sales',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription`
+  String get dashboard_subscription_title {
+    return Intl.message(
+      'Subscription',
+      name: 'dashboard_subscription_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Renews in {days} days`
+  String dashboard_subscription_renews(Object days) {
+    return Intl.message(
+      'Renews in $days days',
+      name: 'dashboard_subscription_renews',
+      desc: '',
+      args: [days],
+    );
+  }
+
+  /// `Assistant credits`
+  String get dashboard_usage_ai {
+    return Intl.message(
+      'Assistant credits',
+      name: 'dashboard_usage_ai',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `WhatsApp conversations`
+  String get dashboard_usage_conversations {
+    return Intl.message(
+      'WhatsApp conversations',
+      name: 'dashboard_usage_conversations',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Storage`
+  String get dashboard_usage_storage {
+    return Intl.message(
+      'Storage',
+      name: 'dashboard_usage_storage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{used} of {total}`
+  String dashboard_usage_of(Object used, Object total) {
+    return Intl.message(
+      '$used of $total',
+      name: 'dashboard_usage_of',
+      desc: '',
+      args: [used, total],
+    );
+  }
+
+  /// `Low stock`
+  String get dashboard_low_stock_title {
+    return Intl.message(
+      'Low stock',
+      name: 'dashboard_low_stock_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} left`
+  String dashboard_units_left(Object count) {
+    return Intl.message(
+      '$count left',
+      name: 'dashboard_units_left',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `View all`
+  String get dashboard_view_all {
+    return Intl.message(
+      'View all',
+      name: 'dashboard_view_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Packaging boxes`
+  String get dashboard_sample_product_1 {
+    return Intl.message(
+      'Packaging boxes',
+      name: 'dashboard_sample_product_1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receipt paper rolls`
+  String get dashboard_sample_product_2 {
+    return Intl.message(
+      'Receipt paper rolls',
+      name: 'dashboard_sample_product_2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cleaning supplies`
+  String get dashboard_sample_product_3 {
+    return Intl.message(
+      'Cleaning supplies',
+      name: 'dashboard_sample_product_3',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Front desk`
+  String get dashboard_sample_person_1 {
+    return Intl.message(
+      'Front desk',
+      name: 'dashboard_sample_person_1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manager`
+  String get dashboard_sample_person_2 {
+    return Intl.message(
+      'Manager',
+      name: 'dashboard_sample_person_2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Warehouse`
+  String get dashboard_sample_person_3 {
+    return Intl.message(
+      'Warehouse',
+      name: 'dashboard_sample_person_3',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -66,7 +66,7 @@
 - `sections/_section/no_business.dart` — `NoBusinessSection`.
 - `sections/_section/unavailable.dart` — `UnavailableSection({capability, surface})`: a section or tab (`surface: false`) the deployment mode lacks, or locked until the internet answers; a session on the master alone offers "sign in online" (`showOnlineSignIn`) once the backend answers (`HybridService.canGoOnline`), otherwise nothing to ask for.
 - `sections/_section/no_permission.dart` — `NoPermissionSection({permission, title, surface = true})`: shown by `homeContent` in place of a section without `<key>.view`, and by business/finance/sales in place of a tab (`surface: false`); owns a `PermissionRequestsService`, offers "Request access" unless one is pending.
-- `sections/_section/placeholder.dart` — `SectionPlaceholder`: `dashboard services lyraBusiness marketing report externalServices`.
+- `sections/_section/placeholder.dart` — `SectionPlaceholder`: `services lyraBusiness marketing report externalServices`.
 - `sections/_section/filter_chip.dart` — `SectionFilterChip({title, isActive, action, icon?, leading?, trailing?})`: one control of a
   filter bar (sales, payments), label cut at a fixed width. `sections/_section/filter_menu_chip.dart` — `SectionMenuChip`: one that
   opens `showSelectMenu` under itself (`emptyText`, `maxOptions`).
@@ -78,7 +78,7 @@
 
 ## Sections with their own module
 
-`sections/{business,employees,inventory,menu,channels,knowledge,connections,messages,deliveries,sales,finance,local_server}/MODULE.md`.
+`sections/{dashboard,business,employees,inventory,menu,channels,knowledge,connections,messages,deliveries,sales,finance,local_server}/MODULE.md`.
 
 ## Adding a section
 
