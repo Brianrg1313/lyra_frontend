@@ -119,7 +119,8 @@ Widget initialBuilder(Widget app) => MultiProvider(
     // `baileys_server` holds and their live status. App-wide because a
     // session, once started, keeps running independently of which screen is
     // open — same reasoning as `ConnectionService`.
-    ChangeNotifierProvider(create: (_) => BaileysService()),
+    // Not lazy: with `BAILEYS_DEV_SESSION` it links the number at boot.
+    ChangeNotifierProvider(lazy: false, create: (_) => BaileysService()..follow(businessService, clientService)),
     // The connections (accounts for outside services) follow the same pair
     // as the channels, and for the same reasons: the list's cache has to
     // survive navigation between the list and an account's form...

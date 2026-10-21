@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:core/kit/controller.dart';
 
 // SERVICES
+import 'package:app/services/business/business_service.dart';
 import 'package:app/services/database/database_service.dart';
 import 'package:app/toolkit/api.dart';
 
@@ -52,17 +53,62 @@ class BaileysService extends ChangeNotifier {
   final _launcher = const BaileysLauncher(host: _host, port: _port);
   BaileysClient? _client;
 
+  /// The one session every channel maps to in a debug build run with
+  /// `--dart-define=BAILEYS_DEV_SESSION=<id>`, instead of the channel's own id.
+  ///
+  /// A session's auth folder is named after its id, and a channel's id dies
+  /// with the database: a developer wiping it twice a day was scanning a new
+  /// QR each time. Under a fixed id the folder outlives every wipe, and the
+  /// backend creates the new company's channel when the number announces
+  /// itself (`whatsapp_personal/session`, which in `DEV` also takes the
+  /// number from whichever company had it). See [follow].
+  static const _devSession =
+    kDebugMode ? String.fromEnvironment("BAILEYS_DEV_SESSION") : "";
+
   final Map<String, BaileysSessionStatus> _statuses = {};
 
   StreamSubscription<BaileysEvent>? _events;
   bool _watchingEvents = false;
+
+  BusinessService? _business;
+  Listenable? _following;
+  String? _followed;
+
+  String _session(String channelId) =>
+    _devSession.isEmpty ? channelId : _devSession;
+
+  /// With a [_devSession], links the number to every company the session
+  /// activates — at boot, on a switch, on a new one — with nobody opening the
+  /// channels section: pushing the session to the sidecar re-announces the
+  /// number, and the backend gives it to that company. A no-op otherwise.
+  ///
+  /// [session] too, because a sign in seeds the businesses without them
+  /// notifying (`BusinessService.seed`); the session's own update does.
+  void follow(BusinessService business, Listenable session) {
+    if (_devSession.isEmpty) return;
+
+    _business = business;
+    _following = Listenable.merge([business, session])..addListener(_onBusiness);
+    _onBusiness();
+  }
+
+  void _onBusiness() {
+    final id = _business?.activeId;
+    if (id == null || id == _followed) return;
+    _followed = id;
+
+    activate(_devSession).then(
+      (status) => debugPrint("[baileys] $_devSession follows $id: ${status.state.name}"),
+      onError: (error) => debugPrint("[baileys] $_devSession could not follow $id: $error")
+    );
+  }
 
   /// The status last read for [channelId] — a channel's own id doubles as
   /// its session id, since a channel already **is** one WhatsApp number.
   /// [BaileysSessionStatus.unknown] before anything has been read, which
   /// reads as "off" everywhere a switch consumes it.
   BaileysSessionStatus statusOf(String channelId) =>
-    _statuses[channelId] ?? BaileysSessionStatus.unknown;
+    _statuses[_session(channelId)] ?? BaileysSessionStatus.unknown;
 
   /// Best-effort refresh for a batch of channel ids, called once the channel
   /// grid loads so switches show the right state without anyone having
@@ -73,7 +119,7 @@ class BaileysService extends ChangeNotifier {
   /// session, not something to surface as an error, and this never launches
   /// the server on its own — see the class note.
   Future<void> refresh(Iterable<String> channelIds) async {
-    final ids = channelIds.toSet();
+    final ids = channelIds.map(_session).toSet();
     if (ids.isEmpty) return;
 
     try {
@@ -117,8 +163,8 @@ class BaileysService extends ChangeNotifier {
     // and the QR scan that got it there is the moment nobody wants to repeat.
     await _identify(client);
 
-    final status = await client.ensureStarted(channelId);
-    _statuses[channelId] = status;
+    final status = await client.ensureStarted(_session(channelId));
+    _statuses[_session(channelId)] = status;
     notifyListeners();
 
     _watchEvents();
@@ -179,9 +225,9 @@ class BaileysService extends ChangeNotifier {
   /// "disconnects the number for good".
   Future<BaileysSessionStatus> deactivate(String channelId) async {
     final client = await _ensureClient();
-    final status = await client.stop(channelId);
+    final status = await client.stop(_session(channelId));
 
-    _statuses[channelId] = status;
+    _statuses[_session(channelId)] = status;
     notifyListeners();
 
     return status;
@@ -216,7 +262,7 @@ class BaileysService extends ChangeNotifier {
     BaileysSessionStatus status;
 
     try {
-      status = await client.logout(channelId);
+      status = await client.logout(_session(channelId));
     } on BaileysClientException catch (error) {
       if (!error.message.contains("404")) rethrow;
 
@@ -228,7 +274,7 @@ class BaileysService extends ChangeNotifier {
       // WhatsApp to drop the device — there is no socket left to tell it
       // through, and the phone's own linked-devices list is where that is
       // undone in that case.
-      await client.remove(channelId);
+      await client.remove(_session(channelId));
 
       status = const BaileysSessionStatus(
         id: "",
@@ -236,7 +282,7 @@ class BaileysService extends ChangeNotifier {
       );
     }
 
-    _statuses[channelId] = status;
+    _statuses[_session(channelId)] = status;
     notifyListeners();
 
     return status;
@@ -258,7 +304,7 @@ class BaileysService extends ChangeNotifier {
 
       BaileysSessionStatus? status;
       try {
-        status = await client.getStatus(channelId);
+        status = await client.getStatus(_session(channelId));
       } catch (_) {
         // A single failed poll (a blip on localhost) is not worth ending the
         // watch over — the next tick tries again.
@@ -266,7 +312,7 @@ class BaileysService extends ChangeNotifier {
       }
       if (status == null) continue;
 
-      _statuses[channelId] = status;
+      _statuses[_session(channelId)] = status;
       notifyListeners();
 
       yield status;
@@ -358,6 +404,9 @@ class BaileysService extends ChangeNotifier {
     _events = null;
 
     _statuses.clear();
+    // The next sign in may come back to the same company, and it has to be
+    // announced again on that session.
+    _followed = null;
     notifyListeners();
 
     final client = _client;
@@ -372,6 +421,7 @@ class BaileysService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _following?.removeListener(_onBusiness);
     _watchingEvents = false;
     _events?.cancel();
     _events = null;

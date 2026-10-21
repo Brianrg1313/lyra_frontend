@@ -304,7 +304,7 @@ See `baileys_server/MODULE.md` for the server side.
 - `baileys_service.dart` — `BaileysService` (app-wide, idle until a WhatsApp Personal channel asks):
   `activate(id)` (launch if needed + start), `deactivate(id)` (soft stop), `refresh(ids)` (silent
   read on grid load), `watch(id, until:)` (pairing poll), `unlink(id)` (hard stop, auth wiped,
-  new QR needed; falls back to `remove`), `signOut()` (sessions keep running, sidecar credentials cleared). Subscribes to `/events` → `statusOf`, logs inbound
+  new QR needed; falls back to `remove`), `signOut()` (sessions keep running, sidecar credentials cleared). `follow(business, session)`: with `--dart-define=BAILEYS_DEV_SESSION=<id>` (debug) every channel maps to that one session, started for each company activated. Subscribes to `/events` → `statusOf`, logs inbound
   messages in debug. Owns the control API key (generated once, secure storage, passed as
   `CONTROL_API_KEY` on spawn). `_identify(client)` pushes this app's session to the sidecar before
   every activation/refresh — the only credential the backend accepts from it.
