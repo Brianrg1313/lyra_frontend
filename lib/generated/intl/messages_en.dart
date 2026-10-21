@@ -374,7 +374,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Between ${min} and ${max}, depending on what is picked: the price has to cover the dearest.";
 
   static String m149(name) =>
-      "${name} leaves the menu and Lyra stops offering it. This can\'t be undone.";
+      "${name} leaves its list and Lyra stops offering it. This can\'t be undone.";
 
   static String m150(count) => "Also offered by ${count} more";
 
@@ -4058,7 +4058,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Waste goes from 0 to less than 100",
     ),
     "kitchen_line_waste_note": MessageLookupByLibrary.simpleMessage(
-      "What is lost preparing it: with 10 %, 200 g spends 220 g",
+      "What is lost making it: with 10 %, 200 g spends 220 g",
     ),
     "kitchen_line_waste_of": m110,
     "kitchen_lines_add": MessageLookupByLibrary.simpleMessage(
@@ -4213,7 +4213,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Open the sheet",
     ),
     "kitchen_pause_note": MessageLookupByLibrary.simpleMessage(
-      "Marking it sold out (86) stops its sale everywhere, whatever is left. Turn it back on when it can be made again.",
+      "Marking it sold out stops its sale everywhere, whatever is left. Turn it back on when it can be made again.",
     ),
     "kitchen_paused": MessageLookupByLibrary.simpleMessage("Sold out"),
     "kitchen_paused_note": MessageLookupByLibrary.simpleMessage(
@@ -4792,7 +4792,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Another detail",
     ),
     "made_product_add_detail_note": MessageLookupByLibrary.simpleMessage(
-      "A column of your own for every product of the table: calories, prep time",
+      "A column of your own for every product of the table: a size, a material, a warranty",
     ),
     "made_product_add_extras": MessageLookupByLibrary.simpleMessage("Extras"),
     "made_product_add_extras_note": MessageLookupByLibrary.simpleMessage(
@@ -4970,8 +4970,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "marketing": MessageLookupByLibrary.simpleMessage("Marketing"),
     "menu": MessageLookupByLibrary.simpleMessage("Catalog"),
-    "menu_create": MessageLookupByLibrary.simpleMessage("New menu"),
-    "menu_create_action": MessageLookupByLibrary.simpleMessage("Create menu"),
+    "menu_create": MessageLookupByLibrary.simpleMessage("New list"),
+    "menu_create_action": MessageLookupByLibrary.simpleMessage("Create list"),
     "menu_create_blank": MessageLookupByLibrary.simpleMessage("Name and price"),
     "menu_create_blank_note": MessageLookupByLibrary.simpleMessage(
       "Only what every product needs. Add more columns whenever you want.",
@@ -4990,11 +4990,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Group what you make and sell. You add its products next, each with what it uses from your supplies.",
     ),
     "menu_create_start": MessageLookupByLibrary.simpleMessage("Start with"),
-    "menu_created": MessageLookupByLibrary.simpleMessage("Menu created"),
+    "menu_created": MessageLookupByLibrary.simpleMessage("List created"),
     "menu_empty_subtitle": MessageLookupByLibrary.simpleMessage(
       "Put together what you sell made from your supplies: bundles, assembled or prepared products, products of your own. Each one says what it consumes, and its stock is what those allow.",
     ),
-    "menu_empty_title": MessageLookupByLibrary.simpleMessage("No menu yet"),
+    "menu_empty_title": MessageLookupByLibrary.simpleMessage("No lists yet"),
     "messages": MessageLookupByLibrary.simpleMessage("Messages"),
     "messages_all_sessions": MessageLookupByLibrary.simpleMessage(
       "Show earlier conversations",

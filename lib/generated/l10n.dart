@@ -1179,9 +1179,9 @@ class S {
     return Intl.message('Catalog', name: 'menu', desc: '', args: []);
   }
 
-  /// `New menu`
+  /// `New list`
   String get menu_create {
-    return Intl.message('New menu', name: 'menu_create', desc: '', args: []);
+    return Intl.message('New list', name: 'menu_create', desc: '', args: []);
   }
 
   /// `Group what you make and sell. You add its products next, each with what it uses from your supplies.`
@@ -1264,30 +1264,30 @@ class S {
     );
   }
 
-  /// `Create menu`
+  /// `Create list`
   String get menu_create_action {
     return Intl.message(
-      'Create menu',
+      'Create list',
       name: 'menu_create_action',
       desc: '',
       args: [],
     );
   }
 
-  /// `Menu created`
+  /// `List created`
   String get menu_created {
     return Intl.message(
-      'Menu created',
+      'List created',
       name: 'menu_created',
       desc: '',
       args: [],
     );
   }
 
-  /// `No menu yet`
+  /// `No lists yet`
   String get menu_empty_title {
     return Intl.message(
-      'No menu yet',
+      'No lists yet',
       name: 'menu_empty_title',
       desc: '',
       args: [],
@@ -1684,10 +1684,10 @@ class S {
     );
   }
 
-  /// `Marking it sold out (86) stops its sale everywhere, whatever is left. Turn it back on when it can be made again.`
+  /// `Marking it sold out stops its sale everywhere, whatever is left. Turn it back on when it can be made again.`
   String get kitchen_pause_note {
     return Intl.message(
-      'Marking it sold out (86) stops its sale everywhere, whatever is left. Turn it back on when it can be made again.',
+      'Marking it sold out stops its sale everywhere, whatever is left. Turn it back on when it can be made again.',
       name: 'kitchen_pause_note',
       desc: '',
       args: [],
@@ -1794,10 +1794,10 @@ class S {
     );
   }
 
-  /// `What is lost preparing it: with 10 %, 200 g spends 220 g`
+  /// `What is lost making it: with 10 %, 200 g spends 220 g`
   String get kitchen_line_waste_note {
     return Intl.message(
-      'What is lost preparing it: with 10 %, 200 g spends 220 g',
+      'What is lost making it: with 10 %, 200 g spends 220 g',
       name: 'kitchen_line_waste_note',
       desc: '',
       args: [],
@@ -2206,10 +2206,10 @@ class S {
     );
   }
 
-  /// `{name} leaves the menu and Lyra stops offering it. This can't be undone.`
+  /// `{name} leaves its list and Lyra stops offering it. This can't be undone.`
   String made_product_delete_message(Object name) {
     return Intl.message(
-      '$name leaves the menu and Lyra stops offering it. This can\'t be undone.',
+      '$name leaves its list and Lyra stops offering it. This can\'t be undone.',
       name: 'made_product_delete_message',
       desc: '',
       args: [name],
@@ -2561,10 +2561,10 @@ class S {
     );
   }
 
-  /// `A column of your own for every product of the table: calories, prep time`
+  /// `A column of your own for every product of the table: a size, a material, a warranty`
   String get made_product_add_detail_note {
     return Intl.message(
-      'A column of your own for every product of the table: calories, prep time',
+      'A column of your own for every product of the table: a size, a material, a warranty',
       name: 'made_product_add_detail_note',
       desc: '',
       args: [],
