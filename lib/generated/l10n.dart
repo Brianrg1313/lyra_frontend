@@ -1539,10 +1539,10 @@ class S {
     );
   }
 
-  /// `No stock of its own: how many can be made is what its supplies allow, measured at every sale. A burger, a combo.`
+  /// `No stock of its own: how many can be made is what its supplies allow, measured at every sale. A custom order, a bundle.`
   String get kitchen_mode_order_note {
     return Intl.message(
-      'No stock of its own: how many can be made is what its supplies allow, measured at every sale. A burger, a combo.',
+      'No stock of its own: how many can be made is what its supplies allow, measured at every sale. A custom order, a bundle.',
       name: 'kitchen_mode_order_note',
       desc: '',
       args: [],
@@ -1919,10 +1919,10 @@ class S {
     );
   }
 
-  /// `Picked at the sale and never left out: 2 burgers among the Cheese and the Classic, in any mix. Each option says what one pick takes.`
+  /// `Picked at the sale and never left out: 2 accessories among the Black and the White, in any mix. Each option says what one pick takes.`
   String get recipe_choices_note {
     return Intl.message(
-      'Picked at the sale and never left out: 2 burgers among the Cheese and the Classic, in any mix. Each option says what one pick takes.',
+      'Picked at the sale and never left out: 2 accessories among the Black and the White, in any mix. Each option says what one pick takes.',
       name: 'recipe_choices_note',
       desc: '',
       args: [],
@@ -2521,10 +2521,10 @@ class S {
     );
   }
 
-  /// `The customer picks one before it is charged: the dough, the size, the doneness`
+  /// `The customer picks one before it is charged: the size, the color, the material`
   String get made_product_add_choice_note {
     return Intl.message(
-      'The customer picks one before it is charged: the dough, the size, the doneness',
+      'The customer picks one before it is charged: the size, the color, the material',
       name: 'made_product_add_choice_note',
       desc: '',
       args: [],
@@ -2541,10 +2541,10 @@ class S {
     );
   }
 
-  /// `What can be added on top, for a price: more pickles, extra cheese`
+  /// `What can be added on top, for a price: gift wrap, an extended warranty`
   String get made_product_add_extras_note {
     return Intl.message(
-      'What can be added on top, for a price: more pickles, extra cheese',
+      'What can be added on top, for a price: gift wrap, an extended warranty',
       name: 'made_product_add_extras_note',
       desc: '',
       args: [],
@@ -3306,10 +3306,10 @@ class S {
     );
   }
 
-  /// `What a customer chooses about a product: extras, the meat's doneness, the bread. The till asks for them before charging.`
+  /// `What a customer chooses about a product: extras, the size, the color. The till asks for them before charging.`
   String get kitchen_modifiers_note {
     return Intl.message(
-      'What a customer chooses about a product: extras, the meat\'s doneness, the bread. The till asks for them before charging.',
+      'What a customer chooses about a product: extras, the size, the color. The till asks for them before charging.',
       name: 'kitchen_modifiers_note',
       desc: '',
       args: [],
@@ -3346,10 +3346,10 @@ class S {
     );
   }
 
-  /// `Create a group like “Extras” or “Doneness” and pick the products that offer it.`
+  /// `Create a group like “Extras” or “Size” and pick the products that offer it.`
   String get kitchen_modifiers_empty_note {
     return Intl.message(
-      'Create a group like “Extras” or “Doneness” and pick the products that offer it.',
+      'Create a group like “Extras” or “Size” and pick the products that offer it.',
       name: 'kitchen_modifiers_empty_note',
       desc: '',
       args: [],
@@ -10319,20 +10319,20 @@ class S {
     );
   }
 
-  /// `What is used to make what is sold (meat, bread, cheese). Never sold; counted with decimals of its unit.`
+  /// `What is used to make what is sold (materials, parts, packaging). Never sold; counted with decimals of its unit.`
   String get table_kind_supplies_note {
     return Intl.message(
-      'What is used to make what is sold (meat, bread, cheese). Never sold; counted with decimals of its unit.',
+      'What is used to make what is sold (materials, parts, packaging). Never sold; counted with decimals of its unit.',
       name: 'table_kind_supplies_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.`
+  /// `What you make from your supplies: a bundle, a custom order, a candle. Each one is written with what it consumes, and its stock is what those allow.`
   String get table_kind_made_note {
     return Intl.message(
-      'What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.',
+      'What you make from your supplies: a bundle, a custom order, a candle. Each one is written with what it consumes, and its stock is what those allow.',
       name: 'table_kind_made_note',
       desc: '',
       args: [],

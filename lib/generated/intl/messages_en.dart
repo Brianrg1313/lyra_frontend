@@ -4088,7 +4088,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "kitchen_mode_order": MessageLookupByLibrary.simpleMessage("Made to order"),
     "kitchen_mode_order_note": MessageLookupByLibrary.simpleMessage(
-      "No stock of its own: how many can be made is what its supplies allow, measured at every sale. A burger, a combo.",
+      "No stock of its own: how many can be made is what its supplies allow, measured at every sale. A custom order, a bundle.",
     ),
     "kitchen_mode_title": MessageLookupByLibrary.simpleMessage(
       "How it is made",
@@ -4115,7 +4115,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "There are no modifiers yet",
     ),
     "kitchen_modifiers_empty_note": MessageLookupByLibrary.simpleMessage(
-      "Create a group like “Extras” or “Doneness” and pick the products that offer it.",
+      "Create a group like “Extras” or “Size” and pick the products that offer it.",
     ),
     "kitchen_modifiers_error": MessageLookupByLibrary.simpleMessage(
       "The modifiers could not be read",
@@ -4140,7 +4140,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Extras",
     ),
     "kitchen_modifiers_note": MessageLookupByLibrary.simpleMessage(
-      "What a customer chooses about a product: extras, the meat\'s doneness, the bread. The till asks for them before charging.",
+      "What a customer chooses about a product: extras, the size, the color. The till asks for them before charging.",
     ),
     "kitchen_modifiers_option_add": MessageLookupByLibrary.simpleMessage(
       "Add option",
@@ -4783,7 +4783,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "made_product_add_choice": MessageLookupByLibrary.simpleMessage("A choice"),
     "made_product_add_choice_note": MessageLookupByLibrary.simpleMessage(
-      "The customer picks one before it is charged: the dough, the size, the doneness",
+      "The customer picks one before it is charged: the size, the color, the material",
     ),
     "made_product_add_description_note": MessageLookupByLibrary.simpleMessage(
       "What it is, in words: the customer and Lyra read it",
@@ -4796,7 +4796,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "made_product_add_extras": MessageLookupByLibrary.simpleMessage("Extras"),
     "made_product_add_extras_note": MessageLookupByLibrary.simpleMessage(
-      "What can be added on top, for a price: more pickles, extra cheese",
+      "What can be added on top, for a price: gift wrap, an extended warranty",
     ),
     "made_product_add_field_note": MessageLookupByLibrary.simpleMessage(
       "A column of this table",
@@ -6061,7 +6061,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "recipe_choice_rule": m217,
     "recipe_choice_too_many": m218,
     "recipe_choices_note": MessageLookupByLibrary.simpleMessage(
-      "Picked at the sale and never left out: 2 burgers among the Cheese and the Classic, in any mix. Each option says what one pick takes.",
+      "Picked at the sale and never left out: 2 accessories among the Black and the White, in any mix. Each option says what one pick takes.",
     ),
     "recipe_choices_title": MessageLookupByLibrary.simpleMessage(
       "What the customer picks",
@@ -7146,7 +7146,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "table_kind_label": MessageLookupByLibrary.simpleMessage("Sold"),
     "table_kind_made_note": MessageLookupByLibrary.simpleMessage(
-      "What you make from your supplies: a burger, a combo, a candle. Each one is written with what it consumes, and its stock is what those allow.",
+      "What you make from your supplies: a bundle, a custom order, a candle. Each one is written with what it consumes, and its stock is what those allow.",
     ),
     "table_kind_subtitle": MessageLookupByLibrary.simpleMessage(
       "Whether customers can buy what this table holds. Its rows and their stock stay as they are.",
@@ -7158,7 +7158,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Only recipes spend them, counted with up to six decimals.",
     ),
     "table_kind_supplies_note": MessageLookupByLibrary.simpleMessage(
-      "What is used to make what is sold (meat, bread, cheese). Never sold; counted with decimals of its unit.",
+      "What is used to make what is sold (materials, parts, packaging). Never sold; counted with decimals of its unit.",
     ),
     "table_kind_title": MessageLookupByLibrary.simpleMessage("Sold or used"),
     "table_kind_to_catalog": MessageLookupByLibrary.simpleMessage(
