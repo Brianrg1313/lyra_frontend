@@ -103,20 +103,20 @@ void main() {
     expect(find.text("Insumos"), findsNothing);
   });
 
-  testWidgets("a new menu starts with its name and price, or with a restaurant's columns, never a catalog's", (tester) async {
+  testWidgets("a new menu starts with its name and price, or with the details of any trade, never a catalog's", (tester) async {
     final source = await _mount(tester, const CreateTableModal(kind: TableKind.made), const []);
 
     expect(find.text(S.current.menu_create_blank), findsOneWidget);
     expect(find.text(S.current.table_template_title), findsNothing, reason: "no clothing nor shoes for a menu");
 
-    await tester.enterText(find.byType(EditableText).first, "Lunch");
-    await tester.tap(find.text(S.current.menu_create_dishes));
+    await tester.enterText(find.byType(EditableText).first, "Featured");
+    await tester.tap(find.text(S.current.menu_create_details));
     await tester.pumpAndSettle();
     await tester.tap(find.text(S.current.menu_create_action));
     await tester.pumpAndSettle();
 
-    expect(source.created.single["TITLE"], "Lunch");
-    expect(source.created.single["TEMPLATE"], "MENU");
+    expect(source.created.single["TITLE"], "Featured");
+    expect(source.created.single["TEMPLATE"], "MADE");
     expect(source.created.single["KIND"], "made");
   });
 }

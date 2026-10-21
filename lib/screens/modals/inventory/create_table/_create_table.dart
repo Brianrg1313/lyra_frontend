@@ -31,7 +31,7 @@ import 'package:app/screens/modals/shared/option_tile.dart';
 /// since a supply's stock is kept in millionths of its unit.
 ///
 /// A menu is spoken of as a menu (its name's examples, «Create menu») and picks what it starts
-/// with between two tiles, [TableTemplate.blank] or [TableTemplate.menu], instead of the
+/// with between two tiles, [TableTemplate.blank] or [TableTemplate.made], instead of the
 /// catalog's template list.
 class CreateTableModal extends StatefulWidget {
   const CreateTableModal({super.key, this.kind});
@@ -93,7 +93,7 @@ class _CreateTableModalState extends State<CreateTableModal> {
 
   bool get _menu => _kind == TableKind.made;
 
-  /// What a menu starts with ([TableTemplate.blank] or [TableTemplate.menu]).
+  /// What a menu starts with ([TableTemplate.blank] or [TableTemplate.made]).
   String _start = TableTemplate.blank;
 
   @override
@@ -156,11 +156,11 @@ class _CreateTableModalState extends State<CreateTableModal> {
             TextMedium(s.menu_create_start, bold: true),
             SizedBox(height: AppSize.spaceXS),
             IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              for (final start in [TableTemplate.blank, TableTemplate.menu]) ...[
-                if (start == TableTemplate.menu) SizedBox(width: AppSize.spaceS),
+              for (final start in [TableTemplate.blank, TableTemplate.made]) ...[
+                if (start == TableTemplate.made) SizedBox(width: AppSize.spaceS),
                 Expanded(child: OptionTile(
-                  title: start == TableTemplate.menu ? s.menu_create_dishes : s.menu_create_blank,
-                  note: start == TableTemplate.menu ? s.menu_create_dishes_note : s.menu_create_blank_note,
+                  title: start == TableTemplate.made ? s.menu_create_details : s.menu_create_blank,
+                  note: start == TableTemplate.made ? s.menu_create_details_note : s.menu_create_blank_note,
                   selected: _start == start,
                   action: () => setState(() => _start = start)
                 ))
