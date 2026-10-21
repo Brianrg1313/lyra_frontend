@@ -31,9 +31,10 @@ import 'package:app/screens/home/sections/channels/form/widgets/data_table_selec
 /// questions or run marketing, and whoever is connecting a channel needs to
 /// know that is coming so they do not rebuild it later.
 ///
-/// Once the product table is chosen, **which one** has to be said: the
-/// business has several and the channel reads from one. The id is stored, not
-/// the name, so renaming the table does not disconnect the channel.
+/// Once the product table is chosen, **which ones** have to be said: the
+/// business has several and the channel may read more than one (a catalog and
+/// its combos). The ids are stored, not the names, so renaming a table does
+/// not disconnect the channel.
 class DataPicker extends StatelessWidget {
   const DataPicker({super.key, required this.controller});
 

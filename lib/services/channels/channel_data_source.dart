@@ -70,8 +70,8 @@ enum ChannelDataSource {
       ChannelAgentRole.agent => const [knowledgeBase]
     };
 
-  /// `true` if, when choosing this source, you also have to say which one:
-  /// the product tables are several, and the channel reads from one.
+  /// `true` if, when choosing this source, you also have to say which ones:
+  /// the product tables are several, and the channel reads the ones chosen.
   bool get needsTable => this == productTable;
 
   String title(BuildContext context) => switch (this) {

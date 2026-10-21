@@ -11829,10 +11829,10 @@ class S {
     );
   }
 
-  /// `Answers prices, stock and product details from one of your tables`
+  /// `Answers prices, stock and product details from the tables you pick`
   String get channel_source_table_hint {
     return Intl.message(
-      'Answers prices, stock and product details from one of your tables',
+      'Answers prices, stock and product details from the tables you pick',
       name: 'channel_source_table_hint',
       desc: '',
       args: [],
@@ -11884,36 +11884,6 @@ class S {
     return Intl.message(
       'Soon',
       name: 'channel_source_soon',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Which table`
-  String get channel_source_table_select {
-    return Intl.message(
-      'Which table',
-      name: 'channel_source_table_select',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Choose a product table`
-  String get channel_source_table_placeholder {
-    return Intl.message(
-      'Choose a product table',
-      name: 'channel_source_table_placeholder',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No table matches your search`
-  String get channel_source_table_empty {
-    return Intl.message(
-      'No table matches your search',
-      name: 'channel_source_table_empty',
       desc: '',
       args: [],
     );
@@ -13861,10 +13831,10 @@ class S {
     );
   }
 
-  /// `Pick it as a channel's data source to have that bot answer with it`
+  /// `Choose below which channels answer with it`
   String get table_settings_channels_none_hint {
     return Intl.message(
-      'Pick it as a channel\'s data source to have that bot answer with it',
+      'Choose below which channels answer with it',
       name: 'table_settings_channels_none_hint',
       desc: '',
       args: [],
@@ -13896,6 +13866,36 @@ class S {
     return Intl.message(
       'These bots have no data source configured, so they read every table this business has — including this one, without anybody having chosen it',
       name: 'table_settings_channels_open_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose channels`
+  String get table_settings_channels_pick {
+    return Intl.message(
+      'Choose channels',
+      name: 'table_settings_channels_pick',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This business has no channels yet`
+  String get table_settings_channels_pick_empty {
+    return Intl.message(
+      'This business has no channels yet',
+      name: 'table_settings_channels_pick_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The channels could not be read. Try again`
+  String get table_settings_channels_unreadable {
+    return Intl.message(
+      'The channels could not be read. Try again',
+      name: 'table_settings_channels_unreadable',
       desc: '',
       args: [],
     );

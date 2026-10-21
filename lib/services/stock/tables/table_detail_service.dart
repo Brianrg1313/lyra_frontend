@@ -254,6 +254,46 @@ class TableDetailService extends ChangeNotifier {
     return true;
   }
 
+  /// Rewrites which channels read the table being looked at, against
+  /// `PUT /inventory/products/builder/details/` with `CHANNELS`.
+  ///
+  /// [channels] **replaces** the set: a channel left out stops reading this
+  /// table, and an empty list disconnects it from every one. Its other tables
+  /// stay linked — this is the same link a channel's form writes, seen from the
+  /// table, which is how a channel ends up reading a catalog and the combos
+  /// made of it at once.
+  ///
+  /// Nothing is painted before the reread: which channels end up reading it is
+  /// the backend's answer (a channel left with no tables at all reads every one,
+  /// and comes back under `open`), so the panel shows that and not a guess.
+  /// [onReached] is the channel list's turn: its cards name the tables each
+  /// channel answers from.
+  ///
+  /// Returns `true` if the change went through.
+  Future<bool> reach(
+    BuildContext context,
+    List<String> channels, {
+    VoidCallback? onReached
+  }) async {
+    if (_tableId.isEmpty) return false;
+
+    try {
+      await _source.editDetail(editTableDetailsRequest(id: _tableId, channels: channels));
+    } catch (error) {
+      if (kDebugMode) print("reachTableChannels failed: $error");
+
+      if (context.mounted) _report(context, error);
+
+      return false;
+    }
+
+    onReached?.call();
+
+    await refresh();
+
+    return true;
+  }
+
   /// Changes a column's type, visibility, options, or summary flag, against
   /// `PUT /inventory/products/builder/fields/`.
   ///

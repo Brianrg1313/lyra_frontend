@@ -50,10 +50,12 @@ Every block is one `ChannelFormRow` (label left, controls, one note); single cho
 - `widgets/option_chip.dart` — `OptionChip` (button-tall choice; `multiple` swaps the icon for a check), `OptionChips` (wrap).
 - `widgets/network_tile.dart` — `NetworkTile`: the network's large square tile.
 - `FormBlock`, `OptionCard`, `OptionGrid` (`sections/_section/form/`, home module): connections and `ChannelAccount` only.
-- `widgets/data_table_select.dart` — `DataTableSelect` (the data picker's table select); `widgets/payment_picker_note.dart` — `PaymentPickerNote`.
+- `widgets/data_table_select.dart` — `DataTableSelect`: the data picker's tables, multi-select chips (`ChannelFormController.tables`, supplies tables not offered); `widgets/payment_picker_note.dart` — `PaymentPickerNote`.
 - `widgets/missing_banner.dart` — `MissingBanner`: what the channel still needs.
 
 ## Note
+
+- `TABLES` replaces a channel's whole set, and a table's settings link channels too (`TableChannelsBlock`): the form holds **every** table a channel reads, or its next save unlinks the ones it did not show.
 
 `connections/` mirrors `form/` file-for-file. **Intentional duplicates**: the two catalogs
 describe different things; do not merge them.

@@ -58,11 +58,7 @@ class ChannelFormController {
     source.addListener(_recompute);
     tools.addListener(_recompute);
     methods.addListener(_recompute);
-
-    // Touching `table` here is what creates it (it is `late`), which is the
-    // point: a select whose listener were attached only once it got drawn
-    // would miss the value [apply] puts in it.
-    table.textController.addListener(_recompute);
+    tables.addListener(_recompute);
   }
 
   /// Id of the channel being edited, or empty if one is being created.
@@ -137,13 +133,14 @@ class ChannelFormController {
   /// when switching networks.
   final _fields = <String, InputController>{};
 
-  /// Product table chosen as the data source. It is a select and not a text
-  /// field: the table's id is stored, not its name, so renaming it does not
+  /// Product tables chosen as the data source, by id: renaming one does not
   /// disconnect the channel.
-  late final table = InputController.select(
-    key: ChannelDataSource.tableSettingKey,
-    form: configForm
-  );
+  ///
+  /// **Several, not one.** A catalog and the combos made of it are two tables
+  /// one number sells from, and the table's own settings link a channel to
+  /// more than one (`TableChannelsBlock`) — a form that could hold a single
+  /// table would drop the others on the next save of this channel.
+  final tables = ValueNotifier<Set<String>>(const {});
 
   /// Controller of the [field] field, creating it the first time.
   ///
@@ -225,23 +222,11 @@ class ChannelFormController {
       channel.setting(ChannelDataSource.settingKey)
     );
 
-    // Which table: from `tables`, the real link, not from a settings key. The
-    // picker is still single-select, so only the first one (if the channel
-    // somehow carries more than one) is shown.
-    //
-    // **The name goes in with the id**, and that is not decoration: core's
-    // select paints the `textController` and, finding it empty next to a
-    // `selectedValue`, resolves the label out of its options and writes it
-    // itself — while mounting, which is mid-build. That write is harmless on
-    // a first mount and an assertion the moment a second widget is listening
-    // to the same controller. Handing it both leaves it nothing to write.
-    if (channel.tables.isEmpty) {
-      table.selectedValue = null;
-      table.textController.text = "";
-    } else {
-      table.selectedValue = channel.tables.first.id;
-      table.textController.text = channel.tables.first.name;
-    }
+    // Which tables: from `tables`, the real link, not from a settings key.
+    tables.value = {
+      for (final table in channel.tables)
+        if (table.id.isNotEmpty) table.id
+    };
 
     tools.value = {
       for (final tool in ChannelTool.values)
@@ -282,11 +267,7 @@ class ChannelFormController {
   /// one is already configured. Same reasoning as leaving it blank on a save.
   ///
   /// Every input follows on its own once this ran, but only if whoever called
-  /// it also rebuilds: the text fields read their controller, and core's
-  /// select resyncs the option it has highlighted from `selectedValue` on
-  /// every rebuild (its options list is rebuilt too, which is what it watches
-  /// for). Without that rebuild the select would go on offering the table
-  /// that was just discarded as the chosen one.
+  /// it also rebuilds: the text fields read their controller.
   ///
   /// What must **not** be done is remounting them: these controllers are
   /// shared with the widgets being replaced, and a fresh select writing its
@@ -322,7 +303,7 @@ class ChannelFormController {
     return [
       role.value.value,
       source.value.value,
-      tableId,
+      ...tableIds,
       for (final tool in ChannelTool.values)
         if (tools.value.contains(tool)) tool.settingKey,
       // Sorted: a `Set` does not promise an order, and two identical
@@ -339,7 +320,7 @@ class ChannelFormController {
   /// Settings that travel in `SETTINGS`: the network's flat fields plus this
   /// app's own data-source category and tools.
   ///
-  /// The role and the chosen table are **not** in here any more: `ROLE` and
+  /// The role and the chosen tables are **not** in here any more: `ROLE` and
   /// `TABLES` are real backend fields now and travel top-level (see
   /// [payload]). The data-source category, though, has no backend column of
   /// its own — the runtime only knows *which* tables, not *why* — so it keeps
@@ -382,13 +363,10 @@ class ChannelFormController {
     return credentials;
   }
 
-  /// Id of the chosen product table, or empty if none was chosen.
-  String get tableId => table.selectedValue?.trim() ?? "";
-
-  /// `TABLES` for the write: the one chosen table, or none. The picker is
-  /// single-select even though the backend accepts several — sending a list
-  /// of at most one is what that shape looks like from here.
-  List<String> get tableIds => tableId.isEmpty ? const [] : [tableId];
+  /// `TABLES` for the write: the chosen tables, in a stable order. Sorted for
+  /// the same reason as [methodIds]: ticking the same two in another order is
+  /// no change.
+  List<String> get tableIds => tables.value.toList()..sort();
 
   /// `PAYMENT_METHODS` for the write: the chosen accounts, in a stable order.
   /// The backend replaces the whole selection with whatever this carries, so
@@ -427,6 +405,15 @@ class ChannelFormController {
     tools.value = next;
   }
 
+  /// Reads a product table from this channel, or stops reading it.
+  void toggleTable(String id) {
+    final next = Set<String>.from(tables.value);
+
+    if (!next.remove(id)) next.add(id);
+
+    tables.value = next;
+  }
+
   /// Offers a payment account through this channel, or stops offering it.
   void toggleMethod(String id) {
     final next = Set<String>.from(methods.value);
@@ -437,14 +424,14 @@ class ChannelFormController {
   }
 
   /// Corrects the data source when it falls outside what the current role
-  /// allows, see [ChannelDataSource.allowedFor]. Chosen table stays only if
-  /// the source that goes with it is still the one showing.
+  /// allows, see [ChannelDataSource.allowedFor]. Chosen tables stay only if
+  /// the source that goes with them is still the one showing.
   void _syncSource() {
     final allowed = ChannelDataSource.allowedFor(role.value);
     if (allowed.contains(source.value)) return;
 
     source.value = allowed.first;
-    if (!source.value.needsTable) table.selectedValue = null;
+    if (!source.value.needsTable) tables.value = const {};
   }
 
   /// Marks the form as busy. The inputs lock themselves by listening to the
@@ -460,6 +447,7 @@ class ChannelFormController {
     source.removeListener(_recompute);
     tools.removeListener(_recompute);
     methods.removeListener(_recompute);
+    tables.removeListener(_recompute);
 
     status.dispose();
     provider.dispose();
@@ -467,6 +455,7 @@ class ChannelFormController {
     source.dispose();
     tools.dispose();
     methods.dispose();
+    tables.dispose();
     saving.dispose();
     dirty.dispose();
 
@@ -480,8 +469,6 @@ class ChannelFormController {
     for (final input in _fields.values) {
       input.dispose();
     }
-
-    table.dispose();
 
     _fields.clear();
     configForm.inputs.clear();

@@ -100,5 +100,16 @@ void main() {
       // servicio ni lo manda: la funcion no inventa claves para tapar el caso.
       expect(editTableDetailsRequest(id: "a1b2c3"), {"ID": "a1b2c3"});
     });
+
+    test('CHANNELS travels only when picked, and an empty pick is a value', () {
+      // `[]` disconnects the table from every channel; leaving the key out
+      // leaves them alone. The two bodies must never be confused.
+      expect(
+        editTableDetailsRequest(id: "a1b2c3", channels: ["c1", "c2"]),
+        {"ID": "a1b2c3", "CHANNELS": ["c1", "c2"]}
+      );
+      expect(editTableDetailsRequest(id: "a1b2c3", channels: const []), {"ID": "a1b2c3", "CHANNELS": []});
+      expect(editTableDetailsRequest(id: "a1b2c3", name: "Combos").containsKey("CHANNELS"), isFalse);
+    });
   });
 }

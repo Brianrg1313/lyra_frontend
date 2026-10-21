@@ -5,10 +5,15 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/business/business_service.dart';
 import 'package:app/services/channels/channel_catalog_service.dart';
+import 'package:app/services/channels/channels_service.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
+import 'package:app/services/stock/tables/table_detail_service.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
+import 'package:core/form.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 /// The channels that read this table.
@@ -29,6 +34,11 @@ import 'package:app/screens/modals/shared/settings/settings_block.dart';
 /// From the channel catalog, **only the already-resolved name and icon** of
 /// each network are taken and not the whole provider: the catalog is read once
 /// and does not change, so this stops listening to it as soon as it arrived.
+///
+/// **The channels are also chosen from here** ([_ReachButton]), not only on
+/// the channel's form: a table of combos made of the catalog has to reach the
+/// same number the catalog does, and saying it from the table is one pick
+/// instead of a trip through every channel.
 class TableChannelsBlock extends StatelessWidget {
   const TableChannelsBlock({super.key, required this.detail});
 
@@ -36,13 +46,26 @@ class TableChannelsBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
     final channels = detail.channels;
 
     return SettingsBlock(
       title: S.of(context).table_settings_channels_title,
       subtitle: S.of(context).table_settings_channels_subtitle,
-      child: !channels.reached
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _readers(context, channels),
+          SizedBox(height: AppSize.spaceS),
+          _ReachButton(linked: [for (final reader in channels.linked) reader.id])
+        ]
+      )
+    );
+  }
+
+  Widget _readers(BuildContext context, TableChannelsSummary channels) {
+    final scheme = ThemeColor.of(context);
+
+    return !channels.reached
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -76,9 +99,103 @@ class TableChannelsBlock extends StatelessWidget {
                 )
               ]
             ]
-          )
-    );
+          );
   }
+}
+
+/// Picks which channels read this table: a check list of every channel of
+/// the company, the ones that chose it already ticked.
+///
+/// Only the ones that **chose** it come ticked, never the `open` ones: those
+/// read it because they chose nothing, and ticking one here is what gives it
+/// its first table — after which it reads this one and no other.
+///
+/// The company's channels come from [ChannelsService], the cache the channels
+/// section uses, read on the tap and not when the panel opens: most visits to
+/// a table's settings never change who reads it.
+class _ReachButton extends StatefulWidget {
+  const _ReachButton({required this.linked});
+
+  final List<String> linked;
+
+  @override
+  State<_ReachButton> createState() => _ReachButtonState();
+}
+
+class _ReachButtonState extends State<_ReachButton> {
+  final _busy = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _busy.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pick(BuildContext anchor) async {
+    if (_busy.value) return;
+
+    final channels = context.read<ChannelsService>();
+    final catalog = context.read<ChannelCatalogService>();
+    final business = context.read<BusinessService>().active.id;
+
+    _busy.value = true;
+
+    await channels.load(business);
+
+    if (!mounted || !anchor.mounted) return;
+
+    _busy.value = false;
+
+    if (channels.status == ChannelsStatus.error) {
+      FloatFlag.of(context).error(message: S.of(context).table_settings_channels_unreadable);
+      return;
+    }
+
+    final checked = await showCheckMenu(
+      context: anchor,
+      checked: widget.linked,
+      emptyText: S.of(context).table_settings_channels_pick_empty,
+      options: [
+        for (final channel in channels.channels) SelectOption(
+          value: channel.id,
+          // A channel no longer needs a name: without one it is its network,
+          // which is how its card names it too.
+          placeholder: channel.name.isNotEmpty
+            ? channel.name
+            : catalog.byCode(channel.provider)?.name ?? channel.provider,
+          subtitle: channel.scopeName.isEmpty ? null : channel.scopeName,
+          icon: catalog.byCode(channel.provider)?.icon ?? CI.link
+        )
+      ]
+    );
+
+    if (!mounted) return;
+
+    // Closed without touching anything: the same set, in any order, is no
+    // write — the backend rereads and re-routes every channel it is sent.
+    final before = widget.linked.toSet();
+    if (checked.length == before.length && checked.every(before.contains)) return;
+
+    _busy.value = true;
+
+    await context.read<TableDetailService>().reach(
+      context,
+      checked,
+      onReached: () => channels.load(business, force: true)
+    );
+
+    if (mounted) _busy.value = false;
+  }
+
+  @override
+  Widget build(BuildContext context) => Builder(
+    builder: (anchor) => Button(
+      title: S.of(context).table_settings_channels_pick,
+      leftIcon: Icon(CI.link, color: ThemeColor.of(context).icon),
+      loading: _busy,
+      action: () => _pick(anchor)
+    )
+  );
 }
 
 /// One of the two lists, with its title and —when it is necessary to explain
@@ -115,9 +232,9 @@ class _Group extends StatelessWidget {
 /// A bot that reads the table: the icon of its network, what it is called, in
 /// what state it is and why it counts answers.
 ///
-/// **It is touched and takes to its configuration** (`/home/channels/:id`),
-/// which is the only thing that can be done about it: from which channel a
-/// table is read is chosen on the channel side, in its data source.
+/// **It is touched and takes to its configuration** (`/home/channels/:id`):
+/// whether it reads this table is [_ReachButton]'s, everything else about it
+/// is the channel's.
 class _ReaderRow extends StatelessWidget {
   const _ReaderRow({required this.reader});
 

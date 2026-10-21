@@ -9,12 +9,16 @@ import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/stock/tables/tables_service.dart';
 
 // WIDGETS
-import 'package:core/form.dart';
 import 'package:app/screens/home/badges/badge_mark.dart';
 import 'package:app/screens/home/sections/channels/form/state/channel_form_controller.dart';
+import 'package:app/screens/home/sections/channels/form/widgets/option_chip.dart';
 
-/// Which product table. [TablesService] brings them, which is the same cache
+/// Which product tables. [TablesService] brings them, which is the same cache
 /// the products section uses, so normally they are already loaded.
+///
+/// **Several can be chosen**: a catalog and the combos made of it are two
+/// tables one channel sells from. A supplies table is not offered — it is
+/// never sold, so no channel reads it (`cocina-frontend.md` §1).
 ///
 /// If the business has none it is said, instead of showing an empty dropdown:
 /// what needs to be done is create a table, and that is not solved from this
@@ -36,7 +40,12 @@ class DataTableSelect extends StatelessWidget {
       );
     }
 
-    if (service.tables.isEmpty) {
+    final sold = [
+      for (final table in service.tables)
+        if (!table.supplies) table
+    ];
+
+    if (sold.isEmpty) {
       return Padding(
         padding: EdgeInsets.only(top: AppSize.spaceXS),
         child: Row(children: [
@@ -62,23 +71,17 @@ class DataTableSelect extends StatelessWidget {
       );
     }
 
-    return SelectInput(
-      title: S.of(context).channel_source_table_select,
-      placeholder: S.of(context).channel_source_table_placeholder,
-      emptyText: S.of(context).channel_source_table_empty,
-      controller: controller.table,
-      leftIcon: Icon(CI.list, color: ThemeColor.of(context).icon),
-      options: [
-        for (final table in service.tables)
-          SelectOption(
-            value: table.id,
-            placeholder: table.title,
-            // The description helps distinguish two tables with similar names,
-            // which is the case where one hesitates.
-            subtitle: table.description.isEmpty ? null : table.description,
-            icon: CI.list
-          )
-      ]
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: controller.tables,
+      builder: (context, selected, _) => OptionChips(children: [
+        for (final table in sold) OptionChip(
+          icon: CI.list,
+          title: table.title,
+          selected: selected.contains(table.id),
+          multiple: true,
+          action: () => controller.toggleTable(table.id)
+        )
+      ])
     );
   }
 }

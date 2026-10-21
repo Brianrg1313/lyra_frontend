@@ -334,7 +334,7 @@ class _ChannelFormSectionState extends State<ChannelFormSection>
       return;
     }
 
-    if (_controller.source.value.needsTable && _controller.tableId.isEmpty) {
+    if (_controller.source.value.needsTable && _controller.tableIds.isEmpty) {
       FloatFlag.of(context).error(
         message: S.of(context).channel_source_missing
       );

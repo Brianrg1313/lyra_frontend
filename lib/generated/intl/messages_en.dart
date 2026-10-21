@@ -2233,17 +2233,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "channel_source_table": MessageLookupByLibrary.simpleMessage(
       "Product table",
     ),
-    "channel_source_table_empty": MessageLookupByLibrary.simpleMessage(
-      "No table matches your search",
-    ),
     "channel_source_table_hint": MessageLookupByLibrary.simpleMessage(
-      "Answers prices, stock and product details from one of your tables",
-    ),
-    "channel_source_table_placeholder": MessageLookupByLibrary.simpleMessage(
-      "Choose a product table",
-    ),
-    "channel_source_table_select": MessageLookupByLibrary.simpleMessage(
-      "Which table",
+      "Answers prices, stock and product details from the tables you pick",
     ),
     "channel_source_title": MessageLookupByLibrary.simpleMessage("Data"),
     "channel_state_paused": MessageLookupByLibrary.simpleMessage("Paused"),
@@ -7256,7 +7247,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "No bot reads this table",
     ),
     "table_settings_channels_none_hint": MessageLookupByLibrary.simpleMessage(
-      "Pick it as a channel\'s data source to have that bot answer with it",
+      "Choose below which channels answer with it",
     ),
     "table_settings_channels_open": MessageLookupByLibrary.simpleMessage(
       "Read every table",
@@ -7264,11 +7255,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "table_settings_channels_open_hint": MessageLookupByLibrary.simpleMessage(
       "These bots have no data source configured, so they read every table this business has — including this one, without anybody having chosen it",
     ),
+    "table_settings_channels_pick": MessageLookupByLibrary.simpleMessage(
+      "Choose channels",
+    ),
+    "table_settings_channels_pick_empty": MessageLookupByLibrary.simpleMessage(
+      "This business has no channels yet",
+    ),
     "table_settings_channels_subtitle": MessageLookupByLibrary.simpleMessage(
       "The bots answering with this table",
     ),
     "table_settings_channels_title": MessageLookupByLibrary.simpleMessage(
       "Connected channels",
+    ),
+    "table_settings_channels_unreadable": MessageLookupByLibrary.simpleMessage(
+      "The channels could not be read. Try again",
     ),
     "table_settings_column_count": m280,
     "table_settings_column_field": MessageLookupByLibrary.simpleMessage(

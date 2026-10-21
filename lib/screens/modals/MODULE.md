@@ -154,7 +154,7 @@ through `Navigator.pop(context, value)`.
   visibility cell only where `channels` is shown; a price, measure or stock column's unit, the last two offering kg, g, l, ml).
 - `table_settings/agent_block.dart` — `TableAgentBlock`: what the model sees and can do. With the channels block, only
   where `channels` is shown (`CapabilityService`).
-- `table_settings/channels_block.dart` — `TableChannelsBlock`: channels reading this table (links to the channel edit page).
+- `table_settings/channels_block.dart` — `TableChannelsBlock`: channels reading this table (links to the channel edit page); «Choose channels» picks them (`TableDetailService.reach`, `CHANNELS`).
 - `table_settings/settings_id.dart` — `TableSettingsId`: hidden id, reveal + copy.
 - `table_settings/settings_format.dart` — `settingsNumber`, `settingsDate`: locale-aware formatting.
 - `stock_movement/_stock_movement.dart` — `showStockMovement(...)`, `StockMovementModal` (through a `StockMover`: a stock summary stepper, a sheet's stock cell): a supply's decimals; on an add, the product's presentations («Bought as», the total they hold) and «Total cost» on a restock, both behind `inventory.purchases`.

@@ -129,14 +129,20 @@ Map<String, dynamic> deleteTableRequest({required String id}) => {"ID": id};
 ///
 /// [kind] switches an inventory table between products and supplies (whether it sells,
 /// `cocina-frontend.md` §2): the backend carries its stock over or refuses the whole body.
+///
+/// [channels] is a picker and not a patch: the ids sent **replace** the channels that read
+/// the table, and an empty list disconnects it from every one — which is why `null` (not
+/// touched) and `[]` are two different bodies.
 Map<String, dynamic> editTableDetailsRequest({
   required String id,
   String? name,
   String? description,
-  String? kind
+  String? kind,
+  List<String>? channels
 }) => {
   "ID": id,
   if (name != null) "NAME": name.trim(),
   if (description != null) "DESCRIPTION": description.trim(),
-  "KIND": ?kind
+  "KIND": ?kind,
+  "CHANNELS": ?channels
 };

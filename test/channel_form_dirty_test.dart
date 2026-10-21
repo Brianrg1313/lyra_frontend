@@ -53,7 +53,7 @@ void main() {
 
     expect(controller.dirty.value, isFalse);
     expect(controller.role.value, ChannelAgentRole.seller);
-    expect(controller.tableId, "t1");
+    expect(controller.tableIds, ["t1"]);
   });
 
   test('changing the role raises the bar, putting it back takes it away', () {
@@ -132,7 +132,7 @@ void main() {
 
     expect(controller.dirty.value, isFalse);
     expect(controller.role.value, ChannelAgentRole.seller);
-    expect(controller.tableId, "t1");
+    expect(controller.tableIds, ["t1"]);
     expect(
       controller.valueOf("access_token"),
       isEmpty,

@@ -128,16 +128,14 @@ class _CreateChannelModalState extends State<CreateChannelModal> {
     _tables = null;
 
     if (!_controller.source.value.needsTable) return;
-    if (_controller.tableId.isNotEmpty || tables.tables.isEmpty) return;
+    if (_controller.tableIds.isNotEmpty || tables.tables.isEmpty) return;
 
     final main = tables.tables.firstWhere(
       (table) => table.primary,
       orElse: () => tables.tables.first
     );
 
-    // The name with the id: see [ChannelFormController.apply].
-    _controller.table.selectedValue = main.id;
-    _controller.table.textController.text = main.title;
+    _controller.tables.value = {main.id};
   }
 
   @override
@@ -213,7 +211,7 @@ class _CreateChannelModalState extends State<CreateChannelModal> {
   /// Reading "a product table" without saying which leaves the agent with
   /// nothing to read: not half-configured, misconfigured.
   bool _hasTable() {
-    if (!_controller.source.value.needsTable || _controller.tableId.isNotEmpty) return true;
+    if (!_controller.source.value.needsTable || _controller.tableIds.isNotEmpty) return true;
 
     FloatFlag.of(context).error(message: S.of(context).channel_source_missing);
     return false;
