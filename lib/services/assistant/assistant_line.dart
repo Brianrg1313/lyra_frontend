@@ -28,7 +28,8 @@ class AssistantCall {
   /// `done`, `failed` or `confirm` (held for the person's yes).
   final String status;
 
-  /// `read`, `write`, `destructive`…
+  /// `read`, `write`, `destructive`…; `app` for a tool this app ran
+  /// (`app.open`, `app.view`).
   final String? effect;
 
   bool get failed => status == "failed";

@@ -8,6 +8,7 @@ import 'package:genui/genui.dart' as genui;
 
 // SERVICES
 import 'package:app/services/connection/connection_service.dart';
+import './assistant_app_tools.dart';
 import './assistant_line.dart';
 import './assistant_turn.dart';
 import './sources/assistant_cloud_source.dart';
@@ -32,18 +33,25 @@ enum AssistantStatus { idle, loading, ready, error }
 /// between its sentences. A control pressed on a surface comes back through
 /// the same loop as the person's next message.
 ///
+/// The tools this app runs for the assistant (open a screen, say what it
+/// shows) are [AssistantAppTools]'s, app-wide: each message declares them.
+///
 /// Section-scoped: the home creates it and disposes it. Cloud only.
 class AssistantService extends ChangeNotifier {
   AssistantService({
     required Iterable<genui.Catalog> catalogs,
     AssistantSource? source,
     this.onNavigate,
+    AssistantAppTools? tools,
     bool live = true
-  }) : _source = source ?? const AssistantCloudSource() {
+  }) : _source = source ?? const AssistantCloudSource(),
+       _tools = tools ?? (live ? AssistantAppTools.instance : null) {
     controller = genui.SurfaceController(catalogs: catalogs);
     _transport = genui.A2uiTransportAdapter(onSend: _onSend);
     _conversation = genui.Conversation(controller: controller, transport: _transport);
     _events = _conversation.events.listen(_onEvent);
+
+    _tools?.start();
 
     if (live) {
       final connection = ConnectionService();
@@ -60,6 +68,9 @@ class AssistantService extends ChangeNotifier {
   static const String messageEvent = "assistant/message";
 
   final AssistantSource _source;
+
+  /// What this screen runs for the assistant; none in tests that do not ask.
+  final AssistantAppTools? _tools;
 
   /// Opens an app path a surface asked for (a `navigate` event with a `path`).
   /// The screen's, since a service holds no navigation.
@@ -152,7 +163,7 @@ class AssistantService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final batch = await _source.send(message);
+      final batch = await _source.send(message, app: _tools?.declared());
       if (generation != _generation) return;
 
       _apply(batch);

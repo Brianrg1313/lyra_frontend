@@ -8,6 +8,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_service.dart';
+import 'package:app/services/assistant/assistant_app_tools.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
@@ -52,10 +53,21 @@ class Home extends PageBuilder {
   /// handshake is the credential, not being on `/home`: without a loaded
   /// session the server would reject the connection and the client would keep
   /// retrying.
+  ///
+  /// It also hands the panel's assistant how to open a screen
+  /// ([AssistantAppTools.openWith]): the shell is what stays mounted when the
+  /// chat that asked is left behind.
   @override
   void initialized(BuildContext context) {
     if (!context.read<ClientService>().isAuthenticated) return;
     unawaited(ConnectionService().open());
+
+    final business = context.read<BusinessService>();
+    AssistantAppTools.instance.openWith(
+      navigate: Navis.navigate,
+      screens: () => HomeSection.openable(business.activeId),
+      business: () => business.activeId
+    );
   }
 
   /// It listens to the **active business** in addition to the open screen:

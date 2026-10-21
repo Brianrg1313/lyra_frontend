@@ -19,8 +19,8 @@ class AssistantCloudSource implements AssistantSource {
     AssistantBatch.fromJson(await api.get(path: _path, version: "v1"));
 
   @override
-  Future<AssistantBatch> send(String message) async => AssistantBatch.fromJson(
-    await api.post(path: _path, version: "v1", data: {"MESSAGE": message}, timeout: _answer)
+  Future<AssistantBatch> send(String message, {Map<String, Object?>? app}) async => AssistantBatch.fromJson(
+    await api.post(path: _path, version: "v1", data: {"MESSAGE": message, "APP": ?app}, timeout: _answer)
   );
 
   @override
@@ -30,4 +30,11 @@ class AssistantCloudSource implements AssistantSource {
 
   @override
   Future<void> close() => api.delete(path: _path, version: "v1");
+
+  /// A screen's answer to a tool the assistant asked of it (`assistant/tool`).
+  static Future<void> answerTool(String id, {Object? data, String? error}) => api.post(
+    path: "${_path}tool/",
+    version: "v1",
+    data: {"ID": id, if (error == null) "DATA": data else "ERROR": error}
+  );
 }

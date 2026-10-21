@@ -29,7 +29,7 @@
 ## Files
 
 - `_home.dart` — `Home extends PageBuilder`, `static const shell = "home"`. `initialized` opens the
-  socket (`ConnectionService().open()`, idempotent) when authenticated; `_OfferOnline` (on `HybridService` and `CapabilityService`) joins a master's
+  socket (`ConnectionService().open()`, idempotent) when authenticated and hands the assistant's `open` tool its navigation and screens (`AssistantAppTools.openWith`, `HomeSection.openable`); `_OfferOnline` (on `HybridService` and `CapabilityService`) joins a master's
   company with its company online whenever `HybridService.shouldAskLink` turns true (`askLinkCompany`), and opens the online sign in once a session on the master alone can go online (`HybridService.shouldOfferOnline`). `_AskBranch` opens `showBranchPicker` when `BranchService.shouldAsk`. Listens to `Navis.currentKey` + `BusinessService.activeId` + `BranchService` (`activeId`, `settled`), and
   rebuilds on `PermissionsService` and `CapabilityService` (the internet or "work offline" lock a section in place).
 - `desktop/_body.dart` — `DesktopBody`: side bar + header + content.
@@ -55,7 +55,7 @@
   business employees inventory menu services channels knowledge connections messages deliveries sales finance lyraBusiness marketing report externalServices
   server`), groups `.home` (dashboard, business, employees; untitled) `.operations` (sales, messages, deliveries, services) `.resources` (inventory, menu, channels, knowledge)
   `.management` (finance first, lyraBusiness, marketing, report) `.integrations` (connections, externalServices, `server`, key `local_server`, only on a master's devices); `byKey`, `containing`, `isCurrent`, `title(context)`,
-  `needsBusiness`, `area` (the key; employees keeps `business.employees`), `granted(businessId)` (employees: every member), `build()`; `homeContent(currentKey, section, businessId, {branchId})` (incl. sub-pages).
+  `needsBusiness`, `area` (the key; employees keeps `business.employees`), `granted(businessId)` (employees: every member), `build()`, `openable(businessId)` (the paths the panel's assistant may open: shown, granted, not a placeholder); `homeContent(currentKey, section, businessId, {branchId})` (incl. sub-pages).
 - `sections/_section/` — widgets shared by every section (none is a section itself).
 - `sections/_section/section_tabs.dart` — `SectionTabs<T>({tabs, active, icon, title, onTab, isLocked?, badge?})` (locked = lock icon, still opens; `badge` = a tab's `BadgePlace`, a dot after its title): tab bar used
   by business, finance and sales. **Reuse it for any new tabbed section.**

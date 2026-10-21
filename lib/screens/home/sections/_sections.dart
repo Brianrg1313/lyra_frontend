@@ -207,6 +207,18 @@ enum HomeSection {
   bool granted(String businessId) =>
     this == employees || PermissionsService().canOpen(area, business: businessId);
 
+  /// The paths the panel's assistant may open for this person
+  /// (`AssistantAppTools`): what the side bar opens unlocked — shown by the
+  /// deployment mode, granted, with a business when it needs one — and built;
+  /// a placeholder has nothing to show.
+  static List<String> openable(String? businessId) => [
+    for (final section in values)
+      if (CapabilityService().shows(section.area) &&
+          section.build() is! SectionPlaceholder &&
+          (businessId == null ? !section.needsBusiness : section.granted(businessId)))
+        section.path
+  ];
+
   /// Section content.
   ///
   /// There is no case for [business]: its content is assembled by [homeContent],

@@ -392,11 +392,12 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 
 Backend contract: `docs/guides/asistente-frontend.md` in the backend (`/lyra/v1/harness/assistant`).
 
-- `assistant_service.dart` — `AssistantService({catalogs, source?, onNavigate?, live})`: `load` (the conversation whole), `send` (optimistic line, then the server's), `confirm` (a pending's yes/no), `clear` (closes it); `turns` (+ the thinking mark while `busy`), `pending`, `status`; socket `assistant/working`/`assistant/message` (`receive`, the tests' seam), reread on reconnect. An answer's A2UI fences go to GenUI's `SurfaceController`; a surface's `navigate` event calls `onNavigate`, any other is the person's message.
+- `assistant_service.dart` — `AssistantService({catalogs, source?, onNavigate?, tools?, live})`: `load` (the conversation whole), `send` (optimistic line, then the server's, with `tools.declared()` as `APP`), `confirm` (a pending's yes/no), `clear` (closes it); `turns` (+ the thinking mark while `busy`), `pending`, `status`; socket `assistant/working`/`assistant/message` (`receive`, the tests' seam), reread on reconnect. An answer's A2UI fences go to GenUI's `SurfaceController`; a surface's `navigate` event calls `onNavigate`, any other is the person's message.
+- `assistant_app_tools.dart` — `AssistantAppTools.instance` (app-wide singleton, `start` once; `.test(answer:)`): the tools the assistant asks this app to run over `assistant/tool` (§7 of the guide), answered only for its own `client` (`POST …/assistant/tool`, `AssistantCloudSource.answerTool`); `view` (built in: `Navis.currentKey` + the `glance`s left in the active company), `open` (`openWith` by the shell: navigates after answering, only to `screens()`); `declared()` is a message's `APP`.
 - `assistant_line.dart` — `AssistantLine` (`person`/`assistant`/`event`, `calls`, `outcome`), `AssistantCall`, `AssistantPending` (`summary`, `expires`), `AssistantBatch` (`thread`, `lines`, `pending`: every answer and socket payload).
 - `assistant_turn.dart` — `AssistantTurn` (`user`/`assistant`/`event`, `waiting`/`done`/`failed` + `reason`, ordered `parts`: `AssistantPart` text or surface id, `calls`).
-- `sources/assistant_source.dart` — `AssistantSource`: `read`, `send`, `confirm`, `close` (whole answers, no stream).
-- `sources/assistant_cloud_source.dart` — `AssistantCloudSource`: the REST calls (`send` waits 200 s: a run lasts up to 180).
+- `sources/assistant_source.dart` — `AssistantSource`: `read`, `send` (+ `app`), `confirm`, `close` (whole answers, no stream).
+- `sources/assistant_cloud_source.dart` — `AssistantCloudSource`: the REST calls (`send` waits 200 s: a run lasts up to 180); static `answerTool`.
 - `sources/assistant_demo_source.dart` — `AssistantDemoSource({pace})`: canned answers with `lyra.catalog.v1` surfaces and one pending, in memory; tests and `--dart-define=LYRA_ASSISTANT_DEMO=true` (debug).
 
 ## home/

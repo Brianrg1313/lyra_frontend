@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -7,6 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/assistant/assistant_app_tools.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
 import 'package:app/services/business/business_location_service.dart';
@@ -77,6 +80,12 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   /// The shipment whose panel was opened last, named on its pin.
   String? _litShipment;
 
+  /// What the map shows, left for the panel's assistant (`app_view`) a moment
+  /// after it settles; it outlives the section: «el punto que marqué» is said
+  /// from the home's chat, with this section gone.
+  Timer? _glancing;
+  StreamSubscription<MapEvent>? _moves;
+
   /// The open map: `null` for the shared one; per branch, the one picked, or
   /// the first (the main one) when none was or it is gone.
   String? get _owner {
@@ -105,10 +114,17 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
       _areas.load();
       if (_board) _shipments.load();
     });
+
+    _editor.addListener(_glance);
+    _areas.addListener(_glance);
+    _branches.addListener(_glance);
+    _moves = _map.mapEventStream.listen((_) => _glance());
   }
 
   @override
   void dispose() {
+    _glancing?.cancel();
+    _moves?.cancel();
     _editor.dispose();
     _location.dispose();
     _tiles.dispose();
@@ -149,7 +165,48 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
 
     _editor.clearProbe();
     setState(() => _view = view);
+    _glance();
   }
+
+  void _glance() {
+    _glancing?.cancel();
+    _glancing = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+
+      final MapCamera camera;
+
+      try {
+        camera = _map.camera;
+      } catch (_) {
+        return; // Not drawn yet: nothing to tell
+      }
+
+      final owner = _owner;
+      final editing = _editor.editing;
+      final probe = _editor.probe;
+      Map<String, double> point(LatLng at) => {"latitude": _round(at.latitude), "longitude": _round(at.longitude)};
+
+      AssistantAppTools.instance.glance("deliveries", {
+        "view": _view.name,
+        "center": point(camera.center),
+        "zoom": double.parse(camera.zoom.toStringAsFixed(1)),
+        "tapped": ?(probe == null ? null : point(probe)),
+        "scope": _areas.areas?.scope.name,
+        "branch": owner == null ? null : {
+          "id": owner,
+          "name": ?_branches.branches.where((branch) => branch.id == owner).firstOrNull?.name
+        },
+        if (_editor.isOpen) "editing": {
+          "method": _editor.method.name,
+          "area": ?(editing == null ? null : {"id": editing.id, "name": editing.name}),
+          "center": ?(_editor.center == null ? null : point(_editor.center!))
+        }
+      });
+    });
+  }
+
+  /// A coordinate at the 6 decimals the backend keeps.
+  static double _round(double value) => double.parse(value.toStringAsFixed(6));
 
   /// Opens [shipment]'s panel, moving the map to where it goes.
   Future<void> _openShipment(Shipment shipment) async {

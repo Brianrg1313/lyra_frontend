@@ -34,7 +34,7 @@ class AssistantDemoSource implements AssistantSource {
     AssistantBatch(thread: _thread, lines: List.of(_lines), pending: _pending.values.toList());
 
   @override
-  Future<AssistantBatch> send(String message) async {
+  Future<AssistantBatch> send(String message, {Map<String, Object?>? app}) async {
     if (pace > Duration.zero) await Future<void>.delayed(pace);
 
     _thread ??= "demo_thread";

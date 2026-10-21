@@ -69,7 +69,7 @@ class _Fake implements AssistantSource {
   Future<AssistantBatch> read() async => thread;
 
   @override
-  Future<AssistantBatch> send(String message) {
+  Future<AssistantBatch> send(String message, {Map<String, Object?>? app}) {
     if (failure case final error?) return Future.error(error);
     return (reply = Completer()).future;
   }

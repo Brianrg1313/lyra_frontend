@@ -14,8 +14,9 @@ abstract interface class AssistantSource {
 
   /// One message; answers the new lines (the person's and the assistant's) and
   /// what it now waits to be confirmed. Throws the normalised error
-  /// (`assistant_busy` while the previous one is being answered).
-  Future<AssistantBatch> send(String message);
+  /// (`assistant_busy` while the previous one is being answered). [app] is
+  /// what this screen runs for the assistant (`AssistantAppTools.declared`).
+  Future<AssistantBatch> send(String message, {Map<String, Object?>? app});
 
   /// The person's yes or no on a pending; answers its `event` line.
   Future<AssistantBatch> confirm(String id, {required bool yes});
