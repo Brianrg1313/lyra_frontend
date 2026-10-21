@@ -19,7 +19,10 @@
       "scope": "account",
       "routes": ["dashboard"],
       "paths": ["/home"],
-      "actions": ["view"],
+      "actions": ["view", "assistant"],
+      "action_modes": {
+        "assistant": ["cloud", "hybrid"]
+      },
       "status": "placeholder"
     },
     {

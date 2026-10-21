@@ -388,12 +388,16 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `employment_record_model.dart` — `EmploymentRecord`: a row of `GET /profile/employments` (compressed, company nested).
 - `account_history_service.dart` — `AccountHistoryService` (+ status): the work history. Seam `seed`.
 
-## assistant/ — the home's chat with the assistant (owned by `AssistantPanel`; placeholder source, no backend yet)
+## assistant/ — the home's chat with the panel's assistant (owned by `AssistantPanel`; cloud only)
 
-- `assistant_service.dart` — `AssistantService({catalogs, source?, onNavigate?})`: GenUI `Conversation` over an `A2uiTransportAdapter` and a `SurfaceController`; `turns`, `busy`, `send`, `stop`, `clear`, `surface(id)`; a surface's `navigate` event calls `onNavigate`, any other event is a user turn.
-- `assistant_turn.dart` — `AssistantTurn` (`user`/`assistant`, `AssistantTurnState`, ordered `parts`: `AssistantPart` text or surface id), `write`/`show`/`close`.
-- `sources/assistant_source.dart` — `AssistantSource.reply(AssistantRequest)`: the model's raw stream (text with A2UI JSON blocks).
-- `sources/assistant_demo_source.dart` — `AssistantDemoSource({pace})`: canned answers by keyword with `lyra.catalog.v1` surfaces; every figure an example.
+Backend contract: `docs/guides/asistente-frontend.md` in the backend (`/lyra/v1/harness/assistant`).
+
+- `assistant_service.dart` — `AssistantService({catalogs, source?, onNavigate?, live})`: `load` (the conversation whole), `send` (optimistic line, then the server's), `confirm` (a pending's yes/no), `clear` (closes it); `turns` (+ the thinking mark while `busy`), `pending`, `status`; socket `assistant/working`/`assistant/message` (`receive`, the tests' seam), reread on reconnect. An answer's A2UI fences go to GenUI's `SurfaceController`; a surface's `navigate` event calls `onNavigate`, any other is the person's message.
+- `assistant_line.dart` — `AssistantLine` (`person`/`assistant`/`event`, `calls`, `outcome`), `AssistantCall`, `AssistantPending` (`summary`, `expires`), `AssistantBatch` (`thread`, `lines`, `pending`: every answer and socket payload).
+- `assistant_turn.dart` — `AssistantTurn` (`user`/`assistant`/`event`, `waiting`/`done`/`failed` + `reason`, ordered `parts`: `AssistantPart` text or surface id, `calls`).
+- `sources/assistant_source.dart` — `AssistantSource`: `read`, `send`, `confirm`, `close` (whole answers, no stream).
+- `sources/assistant_cloud_source.dart` — `AssistantCloudSource`: the REST calls (`send` waits 200 s: a run lasts up to 180).
+- `sources/assistant_demo_source.dart` — `AssistantDemoSource({pace})`: canned answers with `lyra.catalog.v1` surfaces and one pending, in memory; tests and `--dart-define=LYRA_ASSISTANT_DEMO=true` (debug).
 
 ## home/
 

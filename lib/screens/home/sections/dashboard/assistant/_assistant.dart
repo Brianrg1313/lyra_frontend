@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -6,9 +7,14 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/assistant/assistant_service.dart';
+import 'package:app/services/assistant/sources/assistant_demo_source.dart';
+import 'package:app/services/assistant/sources/assistant_source.dart';
+import 'package:app/services/capabilities/capability_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import './assistant_composer.dart';
+import './assistant_confirm.dart';
 import './assistant_orb.dart';
 import './assistant_turn_view.dart';
 import './assistant_welcome.dart';
@@ -23,6 +29,10 @@ import './catalog/lyra_catalog.dart';
 class AssistantPanel extends StatefulWidget {
   const AssistantPanel({super.key});
 
+  /// What the panel answers from instead of the cloud, in tests.
+  @visibleForTesting
+  static AssistantSource? sourceOverride;
+
   /// Widest the thread and the composer get.
   static double get maxWidth => AppSize.picture * 16;
 
@@ -31,12 +41,37 @@ class AssistantPanel extends StatefulWidget {
 }
 
 class _AssistantPanelState extends State<AssistantPanel> {
+  /// A debug build run with `--dart-define=LYRA_ASSISTANT_DEMO=true` answers
+  /// from the preview source: the catalog without a model run (each is billed).
+  static const bool _demo = kDebugMode && bool.fromEnvironment("LYRA_ASSISTANT_DEMO");
+
+  late final AssistantSource? _override = AssistantPanel.sourceOverride ?? (_demo ? AssistantDemoSource() : null);
+
   late final AssistantService _service = AssistantService(
     catalogs: [LyraCatalog.build()],
-    onNavigate: Navis.navigate
+    source: _override,
+    onNavigate: Navis.navigate,
+    live: _override == null
   );
 
   final GlobalKey<AssistantComposerState> _composer = GlobalKey();
+
+  /// The assistant runs on the cloud (the harness): a master's install alone
+  /// has none.
+  bool get _available => _override != null || CapabilityService().cloudServices;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_available) _load();
+  }
+
+  Future<void> _load() async {
+    await _service.load();
+    if (!mounted || _service.status != AssistantStatus.error) return;
+
+    FloatFlag.of(context).error(message: S.of(context).assistant_load_failed);
+  }
 
   @override
   void dispose() {
@@ -59,23 +94,39 @@ class _AssistantPanelState extends State<AssistantPanel> {
     final scheme = ThemeColor.of(context);
     final motion = MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 520);
 
+    if (!_available) {
+      return Surface(child: SectionMessage(
+        icon: CI.cloud_disconected,
+        title: S.of(context).assistant_offline_title,
+        subtitle: S.of(context).assistant_offline_message
+      ));
+    }
+
     return ChangeNotifierProvider<AssistantService>.value(
       value: _service,
-      child: Surface(child: LayoutBuilder(builder: (context, constraints) => Selector<AssistantService, bool>(
-        selector: (_, service) => service.isEmpty,
-        builder: (context, empty, _) => Column(
+      child: Surface(child: LayoutBuilder(builder: (context, constraints) => Selector<AssistantService, (bool, bool)>(
+        selector: (_, service) => (service.isEmpty, service.status == AssistantStatus.loading),
+        builder: (context, state, _) {
+          final (blank, loading) = state;
+          // While the conversation is read, neither the greeting nor the
+          // suggestions: an open thread would replace them a moment later.
+          final empty = blank && !loading;
+
+          return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Bar(onNew: _new),
+            _Bar(onNew: _new, preview: _demo),
             // Empty, the greeting hugs the composer from above and the
             // suggestions hold it up from below, near the middle. The first
             // message collapses them and the composer glides to the bottom:
             // the chat's one orchestrated motion.
             Expanded(child: AnimatedSwitcher(
               duration: motion ~/ 2,
-              child: empty
-                ? const Align(key: ValueKey("greeting"), alignment: Alignment.bottomCenter, child: AssistantGreeting())
-                : const _Thread(key: ValueKey("thread"))
+              child: loading && blank
+                ? const Center(key: ValueKey("loading"), child: Loading())
+                : empty
+                  ? const Align(key: ValueKey("greeting"), alignment: Alignment.bottomCenter, child: AssistantGreeting())
+                  : const _Thread(key: ValueKey("thread"))
             )),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSize.spaceM),
@@ -100,7 +151,8 @@ class _AssistantPanelState extends State<AssistantPanel> {
               child: TextSmall(S.of(context).assistant_disclaimer, color: scheme.text.secondary, textAlign: TextAlign.center, multiplier: 0.9)
             )
           ]
-        )
+          );
+        }
       )))
     );
   }
@@ -123,9 +175,12 @@ class _Centered extends StatelessWidget {
 
 /// The panel's top: who it is and a new chat once there is one.
 class _Bar extends StatelessWidget {
-  const _Bar({required this.onNew});
+  const _Bar({required this.onNew, required this.preview});
 
   final VoidCallback onNew;
+
+  /// Answering from the preview source: the tag says nothing is real.
+  final bool preview;
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +197,7 @@ class _Bar extends StatelessWidget {
           SizedBox(width: AppSize.spaceXS),
           TextMedium(s.assistant_name, bold: true, multiplier: 1.15),
           SizedBox(width: AppSize.gap * 1.4),
-          Container(
+          if (preview) Container(
             padding: EdgeInsets.symmetric(horizontal: AppSize.gap * 1.4, vertical: AppSize.gap * 0.4),
             decoration: BoxDecoration(
               color: scheme.primary.withValues(alpha: 0.12),
@@ -224,16 +279,21 @@ class _ThreadState extends State<_Thread> {
 
   @override
   Widget build(BuildContext context) {
-    final turns = context.watch<AssistantService>().turns;
+    final service = context.watch<AssistantService>();
+    final turns = service.turns;
+    final pending = service.pending;
 
     return ListView.builder(
       controller: _scroll,
       padding: EdgeInsets.fromLTRB(AppSize.spaceM, 0, AppSize.spaceM, AppSize.spaceM),
-      itemCount: turns.length,
-      itemBuilder: (context, index) => _Centered(
-        key: ValueKey(turns[index].id),
-        child: AssistantTurnView(turn: turns[index])
-      )
+      // What waits for a yes goes last: it is what the latest answer asked.
+      itemCount: turns.length + pending.length,
+      itemBuilder: (context, index) => index < turns.length
+        ? _Centered(key: ValueKey(turns[index].id), child: AssistantTurnView(turn: turns[index]))
+        : _Centered(
+            key: ValueKey("pending_${pending[index - turns.length].id}"),
+            child: AssistantConfirm(pending: pending[index - turns.length])
+          )
     );
   }
 }

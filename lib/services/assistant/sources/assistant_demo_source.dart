@@ -2,75 +2,119 @@ import 'dart:convert';
 
 // SERVICES
 import 'package:app/generated/l10n.dart';
+import '../assistant_line.dart';
 import './assistant_source.dart';
 
-/// **Placeholder** answers while the assistant has no backend: canned replies
-/// picked by keyword, streamed word by word like a model would, each with an
-/// A2UI surface built from the Lyra catalog
-/// (`screens/home/sections/dashboard/assistant/catalog/lyra_catalog.dart`).
+/// **Preview** answers with no backend: canned replies picked by keyword,
+/// each with an A2UI surface built from the Lyra catalog
+/// (`screens/home/sections/dashboard/assistant/catalog/lyra_catalog.dart`),
+/// kept in memory like the server keeps its conversation.
 ///
-/// Every figure is an example. Replaced by the cloud's source once the
-/// assistant's endpoint exists; the service does not change.
+/// What the tests drive the chat with, and what a debug build run with
+/// `--dart-define=LYRA_ASSISTANT_DEMO=true` answers with: the catalog can be
+/// worked on without a model run (each one is billed). Every figure is an
+/// example. "Draft purchase order" leaves a pending, to exercise the yes/no.
 class AssistantDemoSource implements AssistantSource {
-  AssistantDemoSource({this.pace = const Duration(milliseconds: 22)});
+  AssistantDemoSource({this.pace = const Duration(milliseconds: 600)});
 
-  /// Pause between words. Zero in tests.
+  /// How long an answer takes. Zero in tests.
   final Duration pace;
 
   /// The catalog the surfaces are drawn from (`LyraCatalog.id`).
   static const String catalogId = "lyra.catalog.v1";
 
   int _surfaces = 0;
+  int _ids = 0;
+  String? _thread;
+  final List<AssistantLine> _lines = [];
+  final Map<String, AssistantPending> _pending = {};
 
   @override
-  Stream<String> reply(AssistantRequest request) async* {
-    final s = S.current;
+  Future<AssistantBatch> read() async =>
+    AssistantBatch(thread: _thread, lines: List.of(_lines), pending: _pending.values.toList());
 
-    if (request.action case final action?) {
-      switch (action) {
-        case "ask":
-          // A suggestion button: answered as if it had been typed.
-          yield* reply(AssistantRequest(prompt: request.context["prompt"] as String? ?? request.prompt));
-        default:
-          yield* _words(s.assistant_demo_done(request.prompt));
-      }
-      return;
+  @override
+  Future<AssistantBatch> send(String message) async {
+    if (pace > Duration.zero) await Future<void>.delayed(pace);
+
+    _thread ??= "demo_thread";
+
+    final s = S.current;
+    final person = _line(AssistantLineRole.person, message);
+    final pending = <AssistantPending>[];
+    final AssistantLine answer;
+
+    if (message == s.assistant_demo_order) {
+      final held = AssistantPending(
+        id: "demo_pending_${_ids++}",
+        summary: s.assistant_demo_order_summary,
+        operation: "purchases.create",
+        expires: DateTime.now().add(const Duration(minutes: 5))
+      );
+      _pending[held.id] = held;
+      pending.add(held);
+      answer = _line(AssistantLineRole.assistant, s.assistant_demo_order_ask, calls: const [
+        AssistantCall(operation: "stock.summary", status: "done", effect: "read"),
+        AssistantCall(operation: "purchases.create", status: "confirm", effect: "write")
+      ]);
+    } else {
+      answer = _line(AssistantLineRole.assistant, _reply(s, message.toLowerCase()), calls: const [
+        AssistantCall(operation: "sales.list", status: "done", effect: "read")
+      ]);
     }
 
-    final prompt = request.prompt.toLowerCase();
+    return AssistantBatch(thread: _thread, lines: [person, answer], pending: pending);
+  }
+
+  @override
+  Future<AssistantBatch> confirm(String id, {required bool yes}) async {
+    final held = _pending.remove(id);
+    if (held == null) throw {"message": "harness_confirmation_not_found"};
+
+    final event = _line(AssistantLineRole.event, held.summary, operation: held.operation, outcome: yes ? "done" : "declined");
+    return AssistantBatch(thread: _thread, lines: [event]);
+  }
+
+  @override
+  Future<void> close() async {
+    _thread = null;
+    _lines.clear();
+    _pending.clear();
+  }
+
+  AssistantLine _line(AssistantLineRole role, String text, {List<AssistantCall> calls = const [], String? operation, String? outcome}) {
+    final line = AssistantLine(
+      id: "demo_${_ids++}",
+      role: role,
+      text: text,
+      date: DateTime.now(),
+      calls: calls,
+      operation: operation,
+      outcome: outcome
+    );
+    _lines.add(line);
+    return line;
+  }
+
+  String _reply(S s, String prompt) {
+    if (prompt == s.assistant_demo_compare.toLowerCase()) return s.assistant_demo_done(s.assistant_demo_compare);
 
     if (_has(prompt, const ["sale", "sold", "revenue", "venta", "vend"])) {
-      yield* _words(s.assistant_demo_sales_intro);
-      yield _surface(_sales(s));
-      yield* _words(s.assistant_demo_sales_outro);
-    } else if (_has(prompt, const ["stock", "low", "inventor", "run", "agot"])) {
-      yield* _words(s.assistant_demo_stock_intro);
-      yield _surface(_stock(s));
-      yield* _words(s.assistant_demo_stock_outro);
-    } else if (_has(prompt, const ["team", "employee", "working", "who", "emplead", "equipo"])) {
-      yield* _words(s.assistant_demo_team_intro);
-      yield _surface(_team(s));
-    } else if (_has(prompt, const ["what can", "help", "puedes", "ayuda"])) {
-      yield* _words(s.assistant_demo_help_intro);
-      yield _surface(_suggestions(s));
-    } else {
-      yield* _words(s.assistant_demo_generic);
-      yield _surface(_suggestions(s));
+      return [s.assistant_demo_sales_intro, _surface(_sales(s)), s.assistant_demo_sales_outro].join("\n");
     }
+    if (_has(prompt, const ["stock", "low", "inventor", "run", "agot"])) {
+      return [s.assistant_demo_stock_intro, _surface(_stock(s)), s.assistant_demo_stock_outro].join("\n");
+    }
+    if (_has(prompt, const ["team", "employee", "working", "who", "emplead", "equipo"])) {
+      return [s.assistant_demo_team_intro, _surface(_team(s))].join("\n");
+    }
+    if (_has(prompt, const ["what can", "help", "puedes", "ayuda"])) {
+      return [s.assistant_demo_help_intro, _surface(_suggestions(s))].join("\n");
+    }
+    return [s.assistant_demo_generic, _surface(_suggestions(s))].join("\n");
   }
 
   bool _has(String prompt, List<String> words) => words.any(prompt.contains);
-
-  Stream<String> _words(String text) async* {
-    final parts = RegExp(r"\S+\s*|\s+").allMatches(text);
-
-    for (final part in parts) {
-      if (pace > Duration.zero) await Future<void>.delayed(pace);
-      yield part.group(0)!;
-    }
-
-    yield "\n\n";
-  }
 
   /// One A2UI surface as the model writes it: a fenced JSON list with its
   /// `createSurface` and its `updateComponents`.

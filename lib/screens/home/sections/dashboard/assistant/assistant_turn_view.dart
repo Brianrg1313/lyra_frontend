@@ -7,6 +7,7 @@ import 'package:genui/genui.dart' as genui;
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/assistant/assistant_line.dart';
 import 'package:app/services/assistant/assistant_service.dart';
 import 'package:app/services/assistant/assistant_turn.dart';
 
@@ -23,7 +24,11 @@ class AssistantTurnView extends StatelessWidget {
   final AssistantTurn turn;
 
   @override
-  Widget build(BuildContext context) => turn.isUser ? _UserTurn(turn: turn) : _AnswerTurn(turn: turn);
+  Widget build(BuildContext context) => switch (turn.role) {
+    AssistantRole.user => _UserTurn(turn: turn),
+    AssistantRole.assistant => _AnswerTurn(turn: turn),
+    AssistantRole.event => _EventTurn(turn: turn)
+  };
 }
 
 class _UserTurn extends StatelessWidget {
@@ -79,13 +84,13 @@ class _AnswerTurn extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.only(top: AppSize.gap * 0.4),
-            child: AssistantOrb(size: AppSize.text * 1.9, active: turn.isStreaming)
+            child: AssistantOrb(size: AppSize.text * 1.9, active: turn.isWaiting)
           ),
           SizedBox(width: AppSize.spaceS),
           Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (turn.isEmpty && turn.isStreaming) const _Thinking(),
+              if (turn.isWaiting) const _Thinking(),
               for (final part in turn.parts) Padding(
                 padding: EdgeInsets.only(bottom: AppSize.spaceXS),
                 child: part.isSurface
@@ -148,7 +153,7 @@ class _ThinkingState extends State<_Thinking> with SingleTickerProviderStateMixi
   }
 }
 
-/// Under a closed answer: how it ended, when not normally, and copy.
+/// Under a closed answer: what it ran, why it failed, and copy.
 class _Footer extends StatelessWidget {
   const _Footer({required this.turn});
 
@@ -156,15 +161,15 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (turn.isStreaming) return const SizedBox.shrink();
+    if (turn.isWaiting) return const SizedBox.shrink();
 
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
 
-    final note = switch (turn.state) {
-      AssistantTurnState.stopped => (s.assistant_stopped, scheme.text.secondary),
-      AssistantTurnState.failed => (s.assistant_failed, scheme.chart.critical),
-      _ => null
+    final failure = turn.state != AssistantTurnState.failed ? null : switch (turn.reason) {
+      "assistant_busy" => s.assistant_busy,
+      "harness_unavailable" => s.assistant_unavailable,
+      _ => s.assistant_failed
     };
 
     return Row(children: [
@@ -179,10 +184,70 @@ class _Footer extends StatelessWidget {
           child: Icon(CI.copy, size: AppSize.text * 1.1, color: scheme.text.secondary)
         )
       ),
-      if (note case (final text, final color)) Padding(
-        padding: EdgeInsets.only(left: AppSize.gap),
-        child: TextSmall(text, color: color)
-      )
+      if (turn.calls.isNotEmpty) _Calls(calls: turn.calls),
+      if (failure != null) Flexible(child: Padding(
+        padding: EdgeInsets.only(top: AppSize.gap),
+        child: TextSmall(failure, color: scheme.chart.critical, lines: 2)
+      ))
     ]);
+  }
+}
+
+/// What the assistant ran to answer, in a word; the operations on hover.
+class _Calls extends StatelessWidget {
+  const _Calls({required this.calls});
+
+  final List<AssistantCall> calls;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final failed = calls.any((call) => call.failed);
+    final color = failed ? scheme.chart.warning : scheme.text.secondary;
+
+    return FocusableWidget(
+      message: calls.map((call) => call.failed ? "${call.operation} ✕" : call.operation).join(", "),
+      child: Padding(
+        padding: EdgeInsets.all(AppSize.gap),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(CI.ia, size: AppSize.text, color: color),
+          SizedBox(width: AppSize.gap),
+          TextSmall(S.of(context).assistant_calls(calls.length), color: color)
+        ])
+      )
+    );
+  }
+}
+
+/// What a confirmation's button did, centred in the thread like a note: it
+/// is the app's, not a turn of either side.
+class _EventTurn extends StatelessWidget {
+  const _EventTurn({required this.turn});
+
+  final AssistantTurn turn;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final scheme = ThemeColor.of(context);
+
+    final (icon, color, text) = switch (turn.outcome) {
+      "done" => (CI.chekmark, scheme.chart.good, s.assistant_event_done(turn.text)),
+      "failed" => (Icons.close_rounded, scheme.chart.critical, s.assistant_event_failed(turn.text)),
+      "expired" => (Icons.schedule_rounded, scheme.text.secondary, s.assistant_event_expired(turn.text)),
+      _ => (Icons.close_rounded, scheme.text.secondary, s.assistant_event_declined(turn.text))
+    };
+
+    return Padding(
+      padding: EdgeInsets.only(top: AppSize.spaceM),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: AppSize.text, color: color),
+          SizedBox(width: AppSize.gap),
+          Flexible(child: TextSmall(text, color: scheme.text.secondary, lines: 3, textAlign: TextAlign.center))
+        ]
+      )
+    );
   }
 }

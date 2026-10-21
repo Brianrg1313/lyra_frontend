@@ -29573,9 +29573,14 @@ class S {
     return Intl.message('Send', name: 'assistant_send', desc: '', args: []);
   }
 
-  /// `Stop`
-  String get assistant_stop {
-    return Intl.message('Stop', name: 'assistant_stop', desc: '', args: []);
+  /// `Lyra is working on it`
+  String get assistant_working {
+    return Intl.message(
+      'Lyra is working on it',
+      name: 'assistant_working',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Lyra can make mistakes. Check what matters before acting on it.`
@@ -29608,23 +29613,165 @@ class S {
     return Intl.message('Copied', name: 'assistant_copied', desc: '', args: []);
   }
 
-  /// `Stopped`
-  String get assistant_stopped {
+  /// `The answer could not be completed. Try again.`
+  String get assistant_failed {
     return Intl.message(
-      'Stopped',
-      name: 'assistant_stopped',
+      'The answer could not be completed. Try again.',
+      name: 'assistant_failed',
       desc: '',
       args: [],
     );
   }
 
-  /// `The answer could not be completed`
-  String get assistant_failed {
+  /// `Lyra is still answering your previous message.`
+  String get assistant_busy {
     return Intl.message(
-      'The answer could not be completed',
-      name: 'assistant_failed',
+      'Lyra is still answering your previous message.',
+      name: 'assistant_busy',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Lyra is not available right now. Try again in a moment.`
+  String get assistant_unavailable {
+    return Intl.message(
+      'Lyra is not available right now. Try again in a moment.',
+      name: 'assistant_unavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra works online`
+  String get assistant_offline_title {
+    return Intl.message(
+      'Lyra works online',
+      name: 'assistant_offline_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect this device to the internet to ask Lyra for something.`
+  String get assistant_offline_message {
+    return Intl.message(
+      'Connect this device to the internet to ask Lyra for something.',
+      name: 'assistant_offline_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your conversation with Lyra could not be read.`
+  String get assistant_load_failed {
+    return Intl.message(
+      'Your conversation with Lyra could not be read.',
+      name: 'assistant_load_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, one{Ran 1 action} other{Ran {count} actions}}`
+  String assistant_calls(num count) {
+    return Intl.plural(
+      count,
+      one: 'Ran 1 action',
+      other: 'Ran $count actions',
+      name: 'assistant_calls',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Confirmed: {summary}`
+  String assistant_event_done(Object summary) {
+    return Intl.message(
+      'Confirmed: $summary',
+      name: 'assistant_event_done',
+      desc: '',
+      args: [summary],
+    );
+  }
+
+  /// `Declined: {summary}`
+  String assistant_event_declined(Object summary) {
+    return Intl.message(
+      'Declined: $summary',
+      name: 'assistant_event_declined',
+      desc: '',
+      args: [summary],
+    );
+  }
+
+  /// `Could not be done: {summary}`
+  String assistant_event_failed(Object summary) {
+    return Intl.message(
+      'Could not be done: $summary',
+      name: 'assistant_event_failed',
+      desc: '',
+      args: [summary],
+    );
+  }
+
+  /// `Expired before an answer: {summary}`
+  String assistant_event_expired(Object summary) {
+    return Intl.message(
+      'Expired before an answer: $summary',
+      name: 'assistant_event_expired',
+      desc: '',
+      args: [summary],
+    );
+  }
+
+  /// `Lyra asks you to confirm`
+  String get assistant_confirm_title {
+    return Intl.message(
+      'Lyra asks you to confirm',
+      name: 'assistant_confirm_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm`
+  String get assistant_confirm_yes {
+    return Intl.message(
+      'Confirm',
+      name: 'assistant_confirm_yes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Decline`
+  String get assistant_confirm_no {
+    return Intl.message(
+      'Decline',
+      name: 'assistant_confirm_no',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This request expired. Ask Lyra again if you still want it.`
+  String get assistant_confirm_expired {
+    return Intl.message(
+      'This request expired. Ask Lyra again if you still want it.',
+      name: 'assistant_confirm_expired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expires in {minutes} min`
+  String assistant_confirm_expires(Object minutes) {
+    return Intl.message(
+      'Expires in $minutes min',
+      name: 'assistant_confirm_expires',
+      desc: '',
+      args: [minutes],
     );
   }
 
@@ -29805,6 +29952,26 @@ class S {
       name: 'assistant_demo_done',
       desc: '',
       args: [label],
+    );
+  }
+
+  /// `I have the purchase order ready with the usual quantities. Confirm it and I will create it.`
+  String get assistant_demo_order_ask {
+    return Intl.message(
+      'I have the purchase order ready with the usual quantities. Confirm it and I will create it.',
+      name: 'assistant_demo_order_ask',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create a purchase order for 3 products (preview: nothing is written)`
+  String get assistant_demo_order_summary {
+    return Intl.message(
+      'Create a purchase order for 3 products (preview: nothing is written)',
+      name: 'assistant_demo_order_summary',
+      desc: '',
+      args: [],
     );
   }
 

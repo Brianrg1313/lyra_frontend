@@ -11,7 +11,8 @@ import 'package:app/services/assistant/assistant_service.dart';
 import 'package:core/form.dart';
 
 /// Where the person writes to the assistant. Enter sends; while an answer is
-/// being written the send button stops it instead.
+/// coming the button turns and waits (the server's run cannot be stopped, and
+/// a second message would be refused).
 ///
 /// Attaching and dictating are drawn but not wired yet ("coming soon"): the
 /// assistant's backend decides what it reads.
@@ -65,8 +66,8 @@ class AssistantComposerState extends State<AssistantComposer> {
         valueListenable: _controller.textController,
         builder: (context, value, _) => _SendButton(
           busy: busy,
-          enabled: busy || value.text.trim().isNotEmpty,
-          action: busy ? context.read<AssistantService>().stop : _send
+          enabled: !busy && value.text.trim().isNotEmpty,
+          action: _send
         )
       )
     ]);
@@ -119,24 +120,25 @@ class _SendButton extends StatelessWidget {
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 160),
-      opacity: enabled ? 1 : 0.4,
+      opacity: enabled || busy ? 1 : 0.4,
       // Solid, not a gradient under the button: `FeedbackButton` paints its
       // own fill, which hid one.
       child: SizedBox.square(
         dimension: AppSize.action,
         child: FeedbackButton(
           action: enabled ? action : null,
-          message: busy ? s.assistant_stop : s.assistant_send,
+          message: busy ? s.assistant_working : s.assistant_send,
           radius: AppSize.action,
           color: scheme.primary,
           child: Center(child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 160),
-            child: Icon(
-              busy ? Icons.stop_rounded : CI.arrow_top,
-              key: ValueKey(busy),
-              size: AppSize.text * (busy ? 1.7 : 1.6),
-              color: scheme.surface
-            )
+            child: busy
+              ? SizedBox.square(
+                  key: const ValueKey("busy"),
+                  dimension: AppSize.text * 1.4,
+                  child: Loading(color: scheme.surface)
+                )
+              : Icon(CI.arrow_top, key: const ValueKey("send"), size: AppSize.text * 1.6, color: scheme.surface)
           ))
         )
       )

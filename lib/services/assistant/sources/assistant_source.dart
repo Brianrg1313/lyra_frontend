@@ -1,26 +1,25 @@
-/// What the assistant is asked in one turn.
-///
-/// [action] is set when the person pressed a control of a surface instead of
-/// typing: its event name, with the label it showed in [prompt] and what the
-/// control carried in [context].
-class AssistantRequest {
-  const AssistantRequest({
-    required this.prompt,
-    this.action,
-    this.context = const {}
-  });
+// SERVICES
+import '../assistant_line.dart';
 
-  final String prompt;
-  final String? action;
-  final Map<String, Object?> context;
-}
-
-/// Where the assistant's answers come from.
+/// Where the panel's assistant lives (`docs/guides/asistente-frontend.md` in
+/// the backend): one open conversation per person and company, kept on the
+/// server.
 ///
-/// An answer is the model's raw output: text chunks with A2UI messages
-/// (`createSurface`, `updateComponents`…) inlined as JSON blocks, which
-/// GenUI's `A2uiTransportAdapter` splits into the chat's text and its
-/// surfaces. A source only streams; parsing and state are the service's.
-abstract class AssistantSource {
-  Stream<String> reply(AssistantRequest request);
+/// An answer comes **whole**, when the assistant has finished (its run can
+/// take a couple of minutes): no stream, and nothing to stop it with. Its text
+/// may carry A2UI blocks; splitting them out is the service's.
+abstract interface class AssistantSource {
+  /// The open conversation, whole (`thread` null when there is none).
+  Future<AssistantBatch> read();
+
+  /// One message; answers the new lines (the person's and the assistant's) and
+  /// what it now waits to be confirmed. Throws the normalised error
+  /// (`assistant_busy` while the previous one is being answered).
+  Future<AssistantBatch> send(String message);
+
+  /// The person's yes or no on a pending; answers its `event` line.
+  Future<AssistantBatch> confirm(String id, {required bool yes});
+
+  /// Closes the conversation: the next message starts a new one.
+  Future<void> close();
 }

@@ -54,6 +54,7 @@ class CapabilityService extends ChangeNotifier {
   /// in `hybrid` open while the internet is.
   static const Map<String, Set<DeploymentMode>> modes = {
     "dashboard": _all,
+    "dashboard.assistant": _notLocal,
     "account": _all,
     "account.security": _online,
     "account.history": _online,
