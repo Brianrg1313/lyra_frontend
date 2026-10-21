@@ -4,14 +4,18 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/_sections.dart';
 import 'package:app/screens/home/sections/dashboard/widgets/usage_bar.dart';
-import './summary_card.dart';
+import './summary_parts.dart';
 
 /// **The home's summary**, beside the assistant: what a glance should tell
 /// (today's sales, what waits, who is in, what the subscription has used and
-/// what is running out), each card opening the section it summarises.
+/// what is running out), each part opening the section it summarises.
+///
+/// One sheet read top to bottom like a shift report, not a stack of cards:
+/// the figures are set in the register's face (Bebas) and carry the
+/// hierarchy, colour only says a state (live, running out, near the limit).
 ///
 /// **Placeholder**: every figure is [_Sample]'s, and the header says so. Each
-/// card is fed by its service once the reads exist (sales board, chats,
+/// part is fed by its service once the reads exist (sales board, chats,
 /// presence, shipments, billing usage, stock summary).
 class SummaryPanel extends StatelessWidget {
   const SummaryPanel({super.key});
@@ -24,91 +28,73 @@ class SummaryPanel extends StatelessWidget {
 
     void open(HomeSection section) => Navis.navigate(section.path);
 
-    return Column(
+    return Surface(child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(AppSize.gap, AppSize.spaceXS, AppSize.gap, AppSize.spaceXS),
+          padding: EdgeInsets.fromLTRB(AppSize.spaceM, AppSize.spaceS, AppSize.spaceM, AppSize.gap),
           child: Row(children: [
-            Expanded(child: TextMedium(s.dashboard_summary_title, multiplier: 1.4, bold: true, ellipsis: true)),
+            Expanded(child: TextInter(s.dashboard_summary_title, multiplier: 1.4, bold: true, ellipsis: true)),
             TextSmall(s.dashboard_summary_sample, color: scheme.text.secondary)
           ])
         ),
         Expanded(child: ScrollableWidget(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          padding: EdgeInsets.fromLTRB(AppSize.gap, 0, AppSize.gap, AppSize.spaceS),
           children: [
-            StatTile(
-              label: s.dashboard_sales_today,
-              value: _Sample.salesToday,
-              format: money,
+            SummarySales(
+              value: money(_Sample.salesToday),
               delta: _Sample.salesDelta,
-              deltaLabel: s.dashboard_vs_last_week,
               trend: _Sample.salesTrend,
-              icon: CI.sale,
               onTap: () => open(HomeSection.sales)
             ),
-            SizedBox(height: AppSize.gap),
-            _Pair(
-              SummaryTile(
-                icon: CI.chat,
-                value: "${_Sample.newMessages}",
-                label: s.dashboard_new_messages,
-                color: scheme.chart.at(1),
-                onTap: () => open(HomeSection.messages)
-              ),
-              SummaryTile(
-                icon: CI.employee,
-                value: "${_Sample.online}",
-                label: s.dashboard_online_employees,
-                caption: s.dashboard_online_of(_Sample.people),
-                color: scheme.chart.good,
-                live: true,
-                onTap: () => open(HomeSection.employees)
-              )
+            const SummaryRule(),
+            SummaryCount(
+              value: _Sample.newMessages,
+              label: s.dashboard_new_messages,
+              onTap: () => open(HomeSection.messages)
             ),
-            SizedBox(height: AppSize.gap),
-            _Pair(
-              SummaryTile(
-                icon: CI.delivery,
-                value: "${_Sample.deliveries}",
-                label: s.dashboard_pending_deliveries,
-                color: scheme.chart.at(3),
-                onTap: () => open(HomeSection.deliveries)
-              ),
-              SummaryTile(
-                icon: CI.receipt,
-                value: "${_Sample.salesInProcess}",
-                label: s.dashboard_open_sales,
-                color: scheme.chart.at(4),
-                onTap: () => open(HomeSection.sales)
-              )
+            SummaryCount(
+              value: _Sample.online,
+              label: s.dashboard_online_employees,
+              caption: s.dashboard_online_of(_Sample.people),
+              live: true,
+              onTap: () => open(HomeSection.employees)
             ),
-            SizedBox(height: AppSize.gap),
-            SummaryCard(
-              icon: CI.wallet,
+            SummaryCount(
+              value: _Sample.deliveries,
+              label: s.dashboard_pending_deliveries,
+              onTap: () => open(HomeSection.deliveries)
+            ),
+            SummaryCount(
+              value: _Sample.salesInProcess,
+              label: s.dashboard_open_sales,
+              onTap: () => open(HomeSection.sales)
+            ),
+            const SummaryRule(),
+            SummaryBlock(
               title: s.dashboard_subscription_title,
-              trailing: s.dashboard_subscription_renews(_Sample.renewsIn),
-              child: Column(children: [
+              note: s.dashboard_subscription_renews(_Sample.renewsIn),
+              children: [
                 _Usage(label: s.dashboard_usage_ai, used: money(_Sample.creditsUsed), total: money(_Sample.creditsTotal), fraction: _Sample.creditsUsed / _Sample.creditsTotal),
                 _Usage(label: s.dashboard_usage_conversations, used: "${_Sample.conversationsUsed}", total: "${_Sample.conversationsTotal}", fraction: _Sample.conversationsUsed / _Sample.conversationsTotal),
                 _Usage(label: s.dashboard_usage_storage, used: "${_Sample.storageUsed} GB", total: "${_Sample.storageTotal} GB", fraction: _Sample.storageUsed / _Sample.storageTotal)
-              ])
+              ]
             ),
-            SizedBox(height: AppSize.gap),
-            SummaryCard(
-              icon: CI.inventory,
+            const SummaryRule(),
+            SummaryBlock(
               title: s.dashboard_low_stock_title,
               onMore: () => open(HomeSection.inventory),
-              child: Column(children: [
+              children: [
                 _Stock(name: s.dashboard_sample_product_1, left: 4, of: 50),
                 _Stock(name: s.dashboard_sample_product_2, left: 9, of: 50),
                 _Stock(name: s.dashboard_sample_product_3, left: 15, of: 50)
-              ])
+              ]
             )
           ]
         ))
       ]
-    );
+    ));
   }
 }
 
@@ -132,24 +118,6 @@ abstract final class _Sample {
   static const double storageTotal = 5;
 }
 
-/// Two tiles side by side, the same height.
-class _Pair extends StatelessWidget {
-  const _Pair(this.left, this.right);
-
-  final Widget left;
-  final Widget right;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Expanded(child: left),
-      SizedBox(width: AppSize.gap),
-      Expanded(child: right)
-    ]
-  );
-}
-
 /// What a plan has used: the bar fills as it is spent and warms up near the
 /// limit.
 class _Usage extends StatelessWidget {
@@ -170,7 +138,7 @@ class _Usage extends StatelessWidget {
       value: fraction,
       color: fraction >= 0.9
         ? scheme.chart.critical
-        : fraction >= 0.7 ? scheme.chart.warning : scheme.primary
+        : fraction >= 0.7 ? scheme.chart.warning : scheme.text.primary
     );
   }
 }

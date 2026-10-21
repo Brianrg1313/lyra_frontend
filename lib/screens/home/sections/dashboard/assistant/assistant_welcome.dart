@@ -4,10 +4,43 @@ import 'package:app/toolkit/toolkit.dart';
 // WIDGETS
 import './assistant_orb.dart';
 
-/// The empty chat: the mark, the question and a few things to ask, each one
-/// sent as if typed ([onAsk]).
-class AssistantWelcome extends StatelessWidget {
-  const AssistantWelcome({super.key, required this.onAsk});
+/// Above the composer while the chat is empty: the mark, a greeting for the
+/// hour and the question. It sits right on top of the field, the way the big
+/// chat apps open: what to do is to write.
+class AssistantGreeting extends StatelessWidget {
+  const AssistantGreeting({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final scheme = ThemeColor.of(context);
+    final hour = DateTime.now().hour;
+
+    final greeting = hour < 12
+      ? s.assistant_greeting_morning
+      : hour < 19 ? s.assistant_greeting_afternoon : s.assistant_greeting_evening;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppSize.spaceM),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AssistantOrb(size: AppSize.picture),
+          SizedBox(height: AppSize.spaceM),
+          TextInter(greeting, multiplier: 2.4, bold: true, textAlign: TextAlign.center, lines: 2),
+          SizedBox(height: AppSize.gap),
+          TextMedium(s.assistant_welcome_title, multiplier: 1.2, color: scheme.text.secondary, textAlign: TextAlign.center, lines: 2)
+        ]
+      )
+    );
+  }
+}
+
+/// Under the composer while the chat is empty: a few things to ask, each sent
+/// as if typed ([onAsk]). Chips, not cards: they are shortcuts to a sentence,
+/// and the whole prompt shows on hover.
+class AssistantSuggestions extends StatelessWidget {
+  const AssistantSuggestions({super.key, required this.onAsk});
 
   final void Function(String prompt) onAsk;
 
@@ -23,89 +56,29 @@ class AssistantWelcome extends StatelessWidget {
       (CI.ia, s.assistant_suggestion_help_title, s.assistant_suggestion_help_prompt)
     ];
 
-    return Center(child: SingleChildScrollView(
-      padding: EdgeInsets.all(AppSize.spaceM),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AssistantOrb(size: AppSize.picture * 1.3),
-          SizedBox(height: AppSize.spaceL),
-          TextMedium(s.assistant_welcome_title, multiplier: 2.2, bold: true, textAlign: TextAlign.center, lines: 2),
-          SizedBox(height: AppSize.spaceXS),
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: AppSize.picture * 9),
-            child: TextMedium(
-              s.assistant_welcome_subtitle,
-              color: scheme.text.secondary,
-              textAlign: TextAlign.center,
-              lines: 3
-            )
-          ),
-          SizedBox(height: AppSize.spaceL),
-          LayoutBuilder(builder: (context, constraints) {
-            // Two columns while each card keeps room for its prompt.
-            final columns = constraints.maxWidth > AppSize.picture * 8 ? 2 : 1;
-            final width = (constraints.maxWidth - AppSize.spaceXS * (columns - 1)) / columns;
-
-            return Wrap(
-              spacing: AppSize.spaceXS,
-              runSpacing: AppSize.spaceXS,
-              children: [
-                for (final (icon, title, prompt) in suggestions) SizedBox(
-                  width: width,
-                  child: _Suggestion(icon: icon, title: title, prompt: prompt, onTap: () => onAsk(prompt))
-                )
-              ]
-            );
-          })
-        ]
-      )
-    ));
-  }
-}
-
-class _Suggestion extends StatelessWidget {
-  const _Suggestion({
-    required this.icon,
-    required this.title,
-    required this.prompt,
-    required this.onTap
-  });
-
-  final IconData icon;
-  final String title;
-  final String prompt;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-    final radius = AppSize.cornerInset(AppSize.gap);
-
-    return FeedbackButton(
-      action: onTap,
-      radius: radius,
-      color: scheme.surfaceOver,
-      padding: EdgeInsets.all(AppSize.spaceS),
-      child: Row(children: [
-        Container(
-          width: AppSize.button,
-          height: AppSize.button,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: AppSize.gap * 1.6,
+      runSpacing: AppSize.gap * 1.6,
+      children: [
+        for (final (icon, title, prompt) in suggestions) DecoratedBox(
           decoration: BoxDecoration(
-            color: scheme.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(AppSize.cornerInset(AppSize.gap, radius))
+            border: Border.all(color: scheme.line),
+            borderRadius: BorderRadius.circular(AppSize.action)
           ),
-          child: Icon(icon, size: AppSize.text * 1.3, color: scheme.primary)
-        ),
-        SizedBox(width: AppSize.spaceXS),
-        Expanded(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextMedium(title, bold: true, ellipsis: true),
-            TextSmall(prompt, color: scheme.text.secondary, ellipsis: true)
-          ]
-        ))
-      ])
+          child: FeedbackButton(
+            action: () => onAsk(prompt),
+            message: prompt,
+            radius: AppSize.action,
+            padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.gap * 1.8),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(icon, size: AppSize.text * 1.2, color: scheme.text.secondary),
+              SizedBox(width: AppSize.gap * 1.6),
+              TextMedium(title)
+            ])
+          )
+        )
+      ]
     );
   }
 }

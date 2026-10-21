@@ -46,39 +46,30 @@ class AssistantComposerState extends State<AssistantComposer> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final scheme = ThemeColor.of(context);
     final busy = context.select<AssistantService, bool>((service) => service.busy);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(children: [
-          Expanded(child: Input(
-            controller: _controller,
-            placeholder: s.assistant_composer_placeholder,
-            buttonSpace: false,
-            autofocus: true,
-            radius: AppSize.corner,
-            onSubmit: _send,
-            leading: _RoundIcon(icon: CI.plus, message: s.assistant_composer_attach, action: _soon)
-          )),
-          SizedBox(width: AppSize.gap),
-          _RoundIcon(icon: CI.microphone, message: s.assistant_composer_voice, action: _soon, filled: true),
-          SizedBox(width: AppSize.gap),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: _controller.textController,
-            builder: (context, value, _) => _SendButton(
-              busy: busy,
-              enabled: busy || value.text.trim().isNotEmpty,
-              action: busy ? context.read<AssistantService>().stop : _send
-            )
-          )
-        ]),
-        SizedBox(height: AppSize.gap * 1.4),
-        TextSmall(s.assistant_disclaimer, color: scheme.text.secondary, textAlign: TextAlign.center, multiplier: 0.9)
-      ]
-    );
+    return Row(children: [
+      Expanded(child: Input(
+        controller: _controller,
+        placeholder: s.assistant_composer_placeholder,
+        buttonSpace: false,
+        autofocus: true,
+        radius: AppSize.action,
+        onSubmit: _send,
+        leading: _RoundIcon(icon: CI.plus, message: s.assistant_composer_attach, action: _soon)
+      )),
+      SizedBox(width: AppSize.gap),
+      _RoundIcon(icon: CI.microphone, message: s.assistant_composer_voice, action: _soon, filled: true),
+      SizedBox(width: AppSize.gap),
+      ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _controller.textController,
+        builder: (context, value, _) => _SendButton(
+          busy: busy,
+          enabled: busy || value.text.trim().isNotEmpty,
+          action: busy ? context.read<AssistantService>().stop : _send
+        )
+      )
+    ]);
   }
 }
 
@@ -129,28 +120,21 @@ class _SendButton extends StatelessWidget {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 160),
       opacity: enabled ? 1 : 0.4,
-      child: Container(
-        width: AppSize.action,
-        height: AppSize.action,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [scheme.primary, scheme.accent]
-          ),
-          boxShadow: enabled ? [BoxShadow(color: scheme.primary.withValues(alpha: 0.35), blurRadius: AppSize.spaceXS)] : null
-        ),
+      // Solid, not a gradient under the button: `FeedbackButton` paints its
+      // own fill, which hid one.
+      child: SizedBox.square(
+        dimension: AppSize.action,
         child: FeedbackButton(
           action: enabled ? action : null,
           message: busy ? s.assistant_stop : s.assistant_send,
           radius: AppSize.action,
+          color: scheme.primary,
           child: Center(child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 160),
             child: Icon(
               busy ? Icons.stop_rounded : CI.arrow_top,
               key: ValueKey(busy),
-              size: AppSize.text * (busy ? 1.7 : 1.4),
+              size: AppSize.text * (busy ? 1.7 : 1.6),
               color: scheme.surface
             )
           ))

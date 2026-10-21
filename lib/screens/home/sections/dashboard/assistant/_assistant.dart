@@ -49,32 +49,61 @@ class _AssistantPanelState extends State<AssistantPanel> {
     _composer.currentState?.focus();
   }
 
+  void _new() {
+    _service.clear();
+    _composer.currentState?.focus();
+  }
+
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<AssistantService>.value(
-    value: _service,
-    child: Surface(child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _Bar(onNew: () {
-          _service.clear();
-          _composer.currentState?.focus();
-        }),
-        Expanded(child: Selector<AssistantService, bool>(
-          selector: (_, service) => service.isEmpty,
-          builder: (context, empty, _) => AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: empty
-              ? _Centered(key: const ValueKey("welcome"), child: AssistantWelcome(onAsk: _ask))
-              : const _Thread(key: ValueKey("thread"))
-          )
-        )),
-        Padding(
-          padding: EdgeInsets.fromLTRB(AppSize.spaceM, AppSize.gap, AppSize.spaceM, AppSize.spaceS),
-          child: _Centered(child: AssistantComposer(key: _composer))
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+    final motion = MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 520);
+
+    return ChangeNotifierProvider<AssistantService>.value(
+      value: _service,
+      child: Surface(child: LayoutBuilder(builder: (context, constraints) => Selector<AssistantService, bool>(
+        selector: (_, service) => service.isEmpty,
+        builder: (context, empty, _) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Bar(onNew: _new),
+            // Empty, the greeting hugs the composer from above and the
+            // suggestions hold it up from below, near the middle. The first
+            // message collapses them and the composer glides to the bottom:
+            // the chat's one orchestrated motion.
+            Expanded(child: AnimatedSwitcher(
+              duration: motion ~/ 2,
+              child: empty
+                ? const Align(key: ValueKey("greeting"), alignment: Alignment.bottomCenter, child: AssistantGreeting())
+                : const _Thread(key: ValueKey("thread"))
+            )),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSize.spaceM),
+              child: _Centered(child: AssistantComposer(key: _composer))
+            ),
+            AnimatedContainer(
+              duration: motion,
+              curve: Curves.easeInOutCubic,
+              height: empty ? constraints.maxHeight * 0.36 : 0,
+              child: ClipRect(child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(AppSize.spaceM, AppSize.spaceS, AppSize.spaceM, 0),
+                child: AnimatedOpacity(
+                  duration: motion ~/ 3,
+                  opacity: empty ? 1 : 0,
+                  child: _Centered(child: AssistantSuggestions(onAsk: _ask))
+                )
+              ))
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(AppSize.spaceM, AppSize.gap * 1.6, AppSize.spaceM, AppSize.spaceS),
+              child: TextSmall(S.of(context).assistant_disclaimer, color: scheme.text.secondary, textAlign: TextAlign.center, multiplier: 0.9)
+            )
+          ]
         )
-      ]
-    ))
-  );
+      )))
+    );
+  }
 }
 
 class _Centered extends StatelessWidget {

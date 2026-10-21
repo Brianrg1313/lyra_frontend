@@ -29428,11 +29428,31 @@ class S {
     );
   }
 
-  /// `Ask about your business or tell me what to change: I answer here, with the figures and the controls to act on them.`
-  String get assistant_welcome_subtitle {
+  /// `Good morning`
+  String get assistant_greeting_morning {
     return Intl.message(
-      'Ask about your business or tell me what to change: I answer here, with the figures and the controls to act on them.',
-      name: 'assistant_welcome_subtitle',
+      'Good morning',
+      name: 'assistant_greeting_morning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Good afternoon`
+  String get assistant_greeting_afternoon {
+    return Intl.message(
+      'Good afternoon',
+      name: 'assistant_greeting_afternoon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Good evening`
+  String get assistant_greeting_evening {
+    return Intl.message(
+      'Good evening',
+      name: 'assistant_greeting_evening',
       desc: '',
       args: [],
     );

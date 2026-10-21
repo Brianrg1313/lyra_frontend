@@ -1023,6 +1023,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "assistant_failed": MessageLookupByLibrary.simpleMessage(
       "The answer could not be completed",
     ),
+    "assistant_greeting_afternoon": MessageLookupByLibrary.simpleMessage(
+      "Good afternoon",
+    ),
+    "assistant_greeting_evening": MessageLookupByLibrary.simpleMessage(
+      "Good evening",
+    ),
+    "assistant_greeting_morning": MessageLookupByLibrary.simpleMessage(
+      "Good morning",
+    ),
     "assistant_name": MessageLookupByLibrary.simpleMessage("Lyra"),
     "assistant_new_chat": MessageLookupByLibrary.simpleMessage("New chat"),
     "assistant_preview": MessageLookupByLibrary.simpleMessage("Preview"),
@@ -1055,9 +1064,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "My team",
     ),
     "assistant_thinking": MessageLookupByLibrary.simpleMessage("Thinking"),
-    "assistant_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Ask about your business or tell me what to change: I answer here, with the figures and the controls to act on them.",
-    ),
     "assistant_welcome_title": MessageLookupByLibrary.simpleMessage(
       "What can I do for you?",
     ),

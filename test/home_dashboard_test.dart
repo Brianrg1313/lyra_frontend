@@ -67,6 +67,19 @@ void main() {
     expect(find.text(S.current.dashboard_summary_title), findsOneWidget);
     expect(find.text(S.current.dashboard_subscription_title), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    // A suggestion is sent as typed: the greeting gives way to the thread.
+    await tester.tap(find.text(S.current.assistant_suggestion_sales_title));
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text(S.current.assistant_suggestion_sales_prompt), findsOneWidget);
+    expect(find.text(S.current.assistant_welcome_title), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    // Unmounted, the panel's service stops the demo answer's timers.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets("an answer interleaves its text and its surface", (tester) async {

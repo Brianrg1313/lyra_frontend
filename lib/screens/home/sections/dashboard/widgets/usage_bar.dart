@@ -22,7 +22,7 @@ class UsageBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
-    final height = AppSize.gap * 1.2;
+    final height = AppSize.gap * 0.8;
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppSize.gap * 0.6),
