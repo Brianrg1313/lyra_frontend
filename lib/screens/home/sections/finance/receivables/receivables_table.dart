@@ -114,7 +114,7 @@ class ReceivablesTable extends StatelessWidget {
             // them: its zero is the good news, not the alarm.
             color: sale.outstanding <= 0
               ? scheme.snackBar.success
-              : scheme.snackBar.alert
+              : scheme.chart.serious
           )
         ),
         TableColumn(

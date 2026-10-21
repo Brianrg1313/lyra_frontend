@@ -73,7 +73,7 @@ class MoneySummaryCards extends StatelessWidget {
           icon: CI.invoice_list,
           title: S.of(context).finance_credit,
           amount: moneyLabel(summary.credit.total, currency),
-          accent: scheme.snackBar.alert,
+          accent: scheme.chart.serious,
           detail: S.of(context).finance_credit_hint
         )
       ]

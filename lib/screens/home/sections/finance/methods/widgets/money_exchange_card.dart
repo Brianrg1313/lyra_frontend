@@ -83,7 +83,7 @@ class MoneyExchangeCard extends StatelessWidget {
             if (exchange.rate == null)
               TextSmall(
                 S.of(context).finance_currency_no_rate,
-                color: scheme.snackBar.alert
+                color: scheme.chart.serious
               )
             else
               TextMedium(

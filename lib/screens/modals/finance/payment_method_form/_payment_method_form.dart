@@ -944,7 +944,7 @@ class _NoRails extends StatelessWidget {
       child: Surface.over(
         padding: EdgeInsets.all(AppSize.spaceXS),
         child: Row(children: [
-          Icon(CI.info, size: AppSize.text, color: scheme.snackBar.alert),
+          Icon(CI.info, size: AppSize.text, color: scheme.chart.serious),
           SizedBox(width: AppSize.gap),
           Expanded(child: TextSmall(
             S.of(context).finance_method_no_rails,
@@ -1006,7 +1006,7 @@ class _Note extends StatelessWidget {
           Icon(
             icon,
             size: AppSize.text,
-            color: alert ? scheme.snackBar.alert : scheme.icon
+            color: alert ? scheme.chart.serious : scheme.icon
           ),
           SizedBox(width: AppSize.gap),
           Expanded(child: TextSmall(

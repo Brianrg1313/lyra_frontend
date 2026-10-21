@@ -39,7 +39,7 @@ class ReceivablesTotals extends StatelessWidget {
         _Total(
           title: S.of(context).finance_receivables_outstanding,
           amount: moneyLabel(totals.outstanding, currency),
-          color: scheme.snackBar.alert
+          color: scheme.chart.serious
         )
       ]
     );

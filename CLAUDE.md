@@ -166,7 +166,9 @@ sections share `shell: Home.shell`.
 **Theming** — `ThemeColor.of(context)`: `primary accent text subtitle background modal line
 lineOver surface surfaceOver surfaceFeedback navBar input keyboard shadow button icon table
 snackBar chart`. Sizes from `AppSize`: `action button picture corner gap spaceXS spaceS spaceM
-padding spaceL text flag`, plus `AppSize.cornerInset(gap, [base])`.
+padding spaceL text flag`, plus `AppSize.cornerInset(gap, [base])`. `snackBar.*` are `FloatFlag` backgrounds (`alert` and
+`notification` are black in both themes): a state on text or an icon takes
+`chart.good/warning/serious/critical`.
 
 **Errors** — `FloatFlag.showFromError(e)` for api failures (the api layer normalizes to
 `{message, action}`); `FloatFlag.of(context).error/.alert/.notification/.message` otherwise.

@@ -48,7 +48,7 @@ class ModifierRow extends StatelessWidget {
         TextSmall(
           s.kitchen_modifiers_products(group.products.length),
           textAlign: TextAlign.end,
-          color: group.products.isEmpty ? scheme.snackBar.alert : scheme.text.secondary
+          color: group.products.isEmpty ? scheme.chart.serious : scheme.text.secondary
         ),
         SizedBox(width: AppSize.spaceS),
         Icon(CI.arrow_right, size: AppSize.text, color: scheme.text.secondary)

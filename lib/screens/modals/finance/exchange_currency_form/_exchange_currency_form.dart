@@ -357,7 +357,7 @@ class _Disclaimer extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(CI.info, size: AppSize.text, color: scheme.snackBar.alert),
+            Icon(CI.info, size: AppSize.text, color: scheme.chart.serious),
             SizedBox(width: AppSize.gap),
             Expanded(child: TextSmall(
               S.of(context).finance_currency_custom_disclaimer,

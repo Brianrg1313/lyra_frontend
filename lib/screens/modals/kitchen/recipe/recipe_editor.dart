@@ -816,7 +816,7 @@ class _LineCost extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final cost = line.cost;
 
-    if (cost == null) return TextSmall(S.of(context).made_product_line_no_price, multiplier: 0.9, color: scheme.snackBar.alert);
+    if (cost == null) return TextSmall(S.of(context).made_product_line_no_price, multiplier: 0.9, color: scheme.chart.serious);
 
     return TextSmall(kitchenMoney(cost), color: scheme.text.secondary);
   }
@@ -852,7 +852,7 @@ class _CostTotal extends StatelessWidget {
         ],
         if (missing.isNotEmpty) ...[
           SizedBox(height: AppSize.gap / 2),
-          TextSmall(s.made_product_profit_incomplete(missing.join(", ")), lines: 2, color: scheme.snackBar.alert),
+          TextSmall(s.made_product_profit_incomplete(missing.join(", ")), lines: 2, color: scheme.chart.serious),
           TextSmall(s.made_product_cost_where, lines: 3, color: scheme.text.secondary)
         ]
       ])
