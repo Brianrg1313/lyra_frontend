@@ -132,7 +132,7 @@ void main() {
 
     expect(stockLedgerReason(context, "remove", "waste"), "Waste");
     expect(stockLedgerReason(context, "recipe", "waste"), "Lost from the batch");
-    expect(stockLedgerReason(context, "recipe", "spoiled"), "Dish lost");
+    expect(stockLedgerReason(context, "recipe", "spoiled"), S.current.stock_reason_spoiled);
     expect(stockLedgerReason(context, "later", "unknown"), "unknown");
   });
 }

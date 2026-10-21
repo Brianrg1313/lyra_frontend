@@ -613,9 +613,9 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m252(email) =>
       "We sent a code to ${email}. Enter it with your name and your account is ready.";
 
-  static String m253(count, dish) => "for ${count} × ${dish}";
+  static String m253(count, product) => "for ${count} × ${product}";
 
-  static String m254(count) => "for ${count} × a dish";
+  static String m254(count) => "for ${count} × a product";
 
   static String m255(amount) => "${amount} left";
 
@@ -664,7 +664,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "The register, the catalog and the AI will offer what ${name} holds, counted in whole units. Their stock stays as it is.";
 
   static String m273(name) =>
-      "The products of ${name} will stop being offered at the register, in the catalog and by the AI. They can still go into the menu\'s recipes, and their stock stays as it is.";
+      "The products of ${name} will stop being offered at the register, in the catalog and by the AI. They can still go into the recipes of what the company makes, and their stock stays as it is.";
 
   static String m274(count) =>
       "${Intl.plural(count, one: 'visibility set on 1 column', other: 'visibility set on ${count} columns')}";
@@ -4019,9 +4019,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "kitchen_available": MessageLookupByLibrary.simpleMessage("Available"),
     "kitchen_capacity": m104,
     "kitchen_capacity_limit": m105,
-    "kitchen_discard": MessageLookupByLibrary.simpleMessage("Lost dish"),
+    "kitchen_discard": MessageLookupByLibrary.simpleMessage("Lost unit"),
     "kitchen_discard_note": MessageLookupByLibrary.simpleMessage(
-      "A dish that burned or fell: its supplies leave as lost, tied to the dish.",
+      "A unit that broke, spoiled or came out wrong: its supplies leave as lost, tied to the product.",
     ),
     "kitchen_discard_quantity": MessageLookupByLibrary.simpleMessage(
       "How many",
@@ -4031,14 +4031,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "They went without",
     ),
     "kitchen_discarded": MessageLookupByLibrary.simpleMessage(
-      "Lost dish recorded",
+      "Lost unit recorded",
     ),
     "kitchen_left": m107,
     "kitchen_left_limit": m108,
     "kitchen_line_more": MessageLookupByLibrary.simpleMessage("Waste"),
     "kitchen_line_negotiable": MessageLookupByLibrary.simpleMessage("Optional"),
     "kitchen_line_negotiable_note": MessageLookupByLibrary.simpleMessage(
-      "It can be sold without it when the customer agrees (a garnish): running out of it never makes the dish unavailable.",
+      "It can be sold without it when the customer agrees (a gift wrap, a sticker): running out of it never makes the product unavailable.",
     ),
     "kitchen_line_qty": MessageLookupByLibrary.simpleMessage("Quantity"),
     "kitchen_line_qty_invalid": MessageLookupByLibrary.simpleMessage(
@@ -4065,13 +4065,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Search a supply to add",
     ),
     "kitchen_lines_empty": MessageLookupByLibrary.simpleMessage(
-      "Add at least one ingredient",
+      "Add at least one supply",
     ),
     "kitchen_lines_essential": MessageLookupByLibrary.simpleMessage(
       "At least one line can\'t be optional: otherwise it would always read as available",
     ),
     "kitchen_lines_note": MessageLookupByLibrary.simpleMessage(
-      "How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.",
+      "How much one takes of each supply. The arrow holds the waste, the percent lost making it, and whether it can go without it.",
     ),
     "kitchen_lines_title": MessageLookupByLibrary.simpleMessage(
       "What it is made of",
@@ -4084,7 +4084,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "kitchen_mode_batch": MessageLookupByLibrary.simpleMessage("Made by batch"),
     "kitchen_mode_batch_note": MessageLookupByLibrary.simpleMessage(
-      "Its own stock, which rises when the kitchen produces a batch. A sauce, a candle.",
+      "Its own stock, which rises when a batch is made. A blend, a candle, a print run.",
     ),
     "kitchen_mode_order": MessageLookupByLibrary.simpleMessage("Made to order"),
     "kitchen_mode_order_note": MessageLookupByLibrary.simpleMessage(
@@ -4165,7 +4165,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Add at least one option",
     ),
     "kitchen_modifiers_options_note": MessageLookupByLibrary.simpleMessage(
-      "The price is added to one unit. Extras and removed lines only work on a dish made to order; an option with only a price works on any product.",
+      "The price is added to one unit. Extras and removed lines only work on a product made to order; an option with only a price works on any product.",
     ),
     "kitchen_modifiers_options_title": MessageLookupByLibrary.simpleMessage(
       "Options",
@@ -4200,7 +4200,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Group saved",
     ),
     "kitchen_modifiers_spends_note": MessageLookupByLibrary.simpleMessage(
-      "Spends on top of the recipe, per unit. Only on dishes made to order.",
+      "Spends on top of the recipe, per unit. Only on products made to order.",
     ),
     "kitchen_modifiers_up_to": m116,
     "kitchen_no_recipe": MessageLookupByLibrary.simpleMessage("No recipe"),
@@ -4226,13 +4226,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "The products could not be searched",
     ),
     "kitchen_preparation_create": MessageLookupByLibrary.simpleMessage(
-      "Prepared in the kitchen",
+      "Made in-house",
     ),
     "kitchen_preparation_none": MessageLookupByLibrary.simpleMessage(
       "Bought ready",
     ),
     "kitchen_preparation_note": MessageLookupByLibrary.simpleMessage(
-      "Most supplies are bought ready. If the kitchen makes this one by the batch from other supplies (the house sauce), write what it is made of.",
+      "Most supplies are bought ready. If the company makes this one by the batch from other supplies (a blend, a mix), write what it is made of.",
     ),
     "kitchen_presentation_add": MessageLookupByLibrary.simpleMessage(
       "Add presentation",
@@ -4824,7 +4824,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Cost to make one",
     ),
     "made_product_cost_where": MessageLookupByLibrary.simpleMessage(
-      "A supply\'s price is its table\'s cost column (\"Unit cost\", \"Purchase price\"), or what was paid for it when restocked with the total cost.",
+      "A supply\'s price is its table\'s cost column (\"Unit cost\", \"Purchase price\"), else what was paid for it when restocked with the total cost, else what it sells for.",
     ),
     "made_product_create": MessageLookupByLibrary.simpleMessage(
       "Create product",
@@ -4880,10 +4880,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "made_product_group_shared": m150,
     "made_product_group_use_note": m151,
     "made_product_kitchen": MessageLookupByLibrary.simpleMessage(
-      "Kitchen: sold out, batches, lost dishes",
+      "Production: sold out, batches, lost units",
     ),
     "made_product_kitchen_short": MessageLookupByLibrary.simpleMessage(
-      "Kitchen",
+      "Production",
     ),
     "made_product_left": m152,
     "made_product_left_few": m153,
@@ -4979,22 +4979,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "menu_create_description_placeholder": MessageLookupByLibrary.simpleMessage(
       "What it groups",
     ),
-    "menu_create_dishes": MessageLookupByLibrary.simpleMessage(
-      "Restaurant dishes",
-    ),
-    "menu_create_dishes_note": MessageLookupByLibrary.simpleMessage(
-      "Also a category, the portion and how long it takes to prepare.",
+    "menu_create_details": MessageLookupByLibrary.simpleMessage("With details"),
+    "menu_create_details_note": MessageLookupByLibrary.simpleMessage(
+      "Also a category, its presentation and how long it takes to make.",
     ),
     "menu_create_name_placeholder": MessageLookupByLibrary.simpleMessage(
       "Featured, Seasonal, Bundles",
     ),
     "menu_create_note": MessageLookupByLibrary.simpleMessage(
-      "Group what you make and sell. You add the dishes next, each with what it uses from your supplies.",
+      "Group what you make and sell. You add its products next, each with what it uses from your supplies.",
     ),
     "menu_create_start": MessageLookupByLibrary.simpleMessage("Start with"),
     "menu_created": MessageLookupByLibrary.simpleMessage("Menu created"),
     "menu_empty_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Put together what you sell made from your supplies: dishes, combos, products of your own. Each one says what it consumes, and its stock is what those allow.",
+      "Put together what you sell made from your supplies: bundles, assembled or prepared products, products of your own. Each one says what it consumes, and its stock is what those allow.",
     ),
     "menu_empty_title": MessageLookupByLibrary.simpleMessage("No menu yet"),
     "messages": MessageLookupByLibrary.simpleMessage("Messages"),
@@ -5455,7 +5453,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Recipes, what each product is made of, and where a supply is used.",
     ),
     "permission_kitchen_discard": MessageLookupByLibrary.simpleMessage(
-      "Record lost dishes",
+      "Record lost units",
     ),
     "permission_kitchen_modifiers": MessageLookupByLibrary.simpleMessage(
       "Create, edit and delete modifiers",
@@ -5472,7 +5470,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "permission_kitchen_reports": MessageLookupByLibrary.simpleMessage(
       "See consumption, variance and cost reports",
     ),
-    "permission_kitchen_title": MessageLookupByLibrary.simpleMessage("Kitchen"),
+    "permission_kitchen_title": MessageLookupByLibrary.simpleMessage(
+      "Production",
+    ),
     "permission_knowledge_create": MessageLookupByLibrary.simpleMessage(
       "Add answers",
     ),
@@ -6992,7 +6992,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Approved return",
     ),
     "stock_reason_sale": MessageLookupByLibrary.simpleMessage("Sale"),
-    "stock_reason_spoiled": MessageLookupByLibrary.simpleMessage("Dish lost"),
+    "stock_reason_spoiled": MessageLookupByLibrary.simpleMessage("Unit lost"),
     "stock_reason_theft": MessageLookupByLibrary.simpleMessage("Theft"),
     "stock_reason_transfer_back": MessageLookupByLibrary.simpleMessage(
       "Back from a cancelled transfer",

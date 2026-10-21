@@ -104,7 +104,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text("12 in stock · supplies for 200 more (wick)"), findsOneWidget);
     expect(find.text("Produce batch"), findsOneWidget);
-    expect(find.text("Lost dish"), findsNothing);
+    expect(find.text(S.current.kitchen_discard), findsNothing);
     expect(find.text("Sack"), findsOneWidget);
 
     await tester.tap(find.text("Edit recipe"));
@@ -121,7 +121,7 @@ void main() {
     expect(find.text("Create recipe"), findsOneWidget);
   });
 
-  testWidgets("a dish made to order offers to record a lost one, not to produce", (tester) async {
+  testWidgets("a dish made to order offers to record a lost unit, not to produce", (tester) async {
     final dish = RecipeService(product: burger)..seed(
       recipe: const Recipe(productId: "burger", tableId: "menu", lines: [
         RecipeLine(id: "l-1", tableId: "s", productId: "bacon", name: "Bacon", qty: 0.2)
@@ -133,7 +133,7 @@ void main() {
     await pump(tester, RecipePanel(product: burger, onChanged: () {}, service: dish));
 
     expect(tester.takeException(), isNull);
-    expect(find.text("Lost dish"), findsOneWidget);
+    expect(find.text(S.current.kitchen_discard), findsOneWidget);
     expect(find.text("Produce batch"), findsNothing);
     expect(find.text("How it is bought"), findsNothing);
   });

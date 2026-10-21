@@ -1184,10 +1184,10 @@ class S {
     return Intl.message('New menu', name: 'menu_create', desc: '', args: []);
   }
 
-  /// `Group what you make and sell. You add the dishes next, each with what it uses from your supplies.`
+  /// `Group what you make and sell. You add its products next, each with what it uses from your supplies.`
   String get menu_create_note {
     return Intl.message(
-      'Group what you make and sell. You add the dishes next, each with what it uses from your supplies.',
+      'Group what you make and sell. You add its products next, each with what it uses from your supplies.',
       name: 'menu_create_note',
       desc: '',
       args: [],
@@ -1244,21 +1244,21 @@ class S {
     );
   }
 
-  /// `Restaurant dishes`
-  String get menu_create_dishes {
+  /// `With details`
+  String get menu_create_details {
     return Intl.message(
-      'Restaurant dishes',
-      name: 'menu_create_dishes',
+      'With details',
+      name: 'menu_create_details',
       desc: '',
       args: [],
     );
   }
 
-  /// `Also a category, the portion and how long it takes to prepare.`
-  String get menu_create_dishes_note {
+  /// `Also a category, its presentation and how long it takes to make.`
+  String get menu_create_details_note {
     return Intl.message(
-      'Also a category, the portion and how long it takes to prepare.',
-      name: 'menu_create_dishes_note',
+      'Also a category, its presentation and how long it takes to make.',
+      name: 'menu_create_details_note',
       desc: '',
       args: [],
     );
@@ -1294,10 +1294,10 @@ class S {
     );
   }
 
-  /// `Put together what you sell made from your supplies: dishes, combos, products of your own. Each one says what it consumes, and its stock is what those allow.`
+  /// `Put together what you sell made from your supplies: bundles, assembled or prepared products, products of your own. Each one says what it consumes, and its stock is what those allow.`
   String get menu_empty_subtitle {
     return Intl.message(
-      'Put together what you sell made from your supplies: dishes, combos, products of your own. Each one says what it consumes, and its stock is what those allow.',
+      'Put together what you sell made from your supplies: bundles, assembled or prepared products, products of your own. Each one says what it consumes, and its stock is what those allow.',
       name: 'menu_empty_subtitle',
       desc: '',
       args: [],
@@ -1559,10 +1559,10 @@ class S {
     );
   }
 
-  /// `Its own stock, which rises when the kitchen produces a batch. A sauce, a candle.`
+  /// `Its own stock, which rises when a batch is made. A blend, a candle, a print run.`
   String get kitchen_mode_batch_note {
     return Intl.message(
-      'Its own stock, which rises when the kitchen produces a batch. A sauce, a candle.',
+      'Its own stock, which rises when a batch is made. A blend, a candle, a print run.',
       name: 'kitchen_mode_batch_note',
       desc: '',
       args: [],
@@ -1704,10 +1704,10 @@ class S {
     );
   }
 
-  /// `Lost dish`
+  /// `Lost unit`
   String get kitchen_discard {
     return Intl.message(
-      'Lost dish',
+      'Lost unit',
       name: 'kitchen_discard',
       desc: '',
       args: [],
@@ -1734,20 +1734,20 @@ class S {
     );
   }
 
-  /// `How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.`
+  /// `How much one takes of each supply. The arrow holds the waste, the percent lost making it, and whether it can go without it.`
   String get kitchen_lines_note {
     return Intl.message(
-      'How much one takes of each ingredient. The arrow holds the waste, the percent lost making it, and whether it can go without it.',
+      'How much one takes of each supply. The arrow holds the waste, the percent lost making it, and whether it can go without it.',
       name: 'kitchen_lines_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `Add at least one ingredient`
+  /// `Add at least one supply`
   String get kitchen_lines_empty {
     return Intl.message(
-      'Add at least one ingredient',
+      'Add at least one supply',
       name: 'kitchen_lines_empty',
       desc: '',
       args: [],
@@ -1824,10 +1824,10 @@ class S {
     );
   }
 
-  /// `It can be sold without it when the customer agrees (a garnish): running out of it never makes the dish unavailable.`
+  /// `It can be sold without it when the customer agrees (a gift wrap, a sticker): running out of it never makes the product unavailable.`
   String get kitchen_line_negotiable_note {
     return Intl.message(
-      'It can be sold without it when the customer agrees (a garnish): running out of it never makes the dish unavailable.',
+      'It can be sold without it when the customer agrees (a gift wrap, a sticker): running out of it never makes the product unavailable.',
       name: 'kitchen_line_negotiable_note',
       desc: '',
       args: [],
@@ -2056,20 +2056,20 @@ class S {
     );
   }
 
-  /// `Most supplies are bought ready. If the kitchen makes this one by the batch from other supplies (the house sauce), write what it is made of.`
+  /// `Most supplies are bought ready. If the company makes this one by the batch from other supplies (a blend, a mix), write what it is made of.`
   String get kitchen_preparation_note {
     return Intl.message(
-      'Most supplies are bought ready. If the kitchen makes this one by the batch from other supplies (the house sauce), write what it is made of.',
+      'Most supplies are bought ready. If the company makes this one by the batch from other supplies (a blend, a mix), write what it is made of.',
       name: 'kitchen_preparation_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `Prepared in the kitchen`
+  /// `Made in-house`
   String get kitchen_preparation_create {
     return Intl.message(
-      'Prepared in the kitchen',
+      'Made in-house',
       name: 'kitchen_preparation_create',
       desc: '',
       args: [],
@@ -2321,10 +2321,10 @@ class S {
     );
   }
 
-  /// `Kitchen`
+  /// `Production`
   String get made_product_kitchen_short {
     return Intl.message(
-      'Kitchen',
+      'Production',
       name: 'made_product_kitchen_short',
       desc: '',
       args: [],
@@ -2401,10 +2401,10 @@ class S {
     );
   }
 
-  /// `Kitchen: sold out, batches, lost dishes`
+  /// `Production: sold out, batches, lost units`
   String get made_product_kitchen {
     return Intl.message(
-      'Kitchen: sold out, batches, lost dishes',
+      'Production: sold out, batches, lost units',
       name: 'made_product_kitchen',
       desc: '',
       args: [],
@@ -2851,10 +2851,10 @@ class S {
     );
   }
 
-  /// `A supply's price is its table's cost column ("Unit cost", "Purchase price"), or what was paid for it when restocked with the total cost.`
+  /// `A supply's price is its table's cost column ("Unit cost", "Purchase price"), else what was paid for it when restocked with the total cost, else what it sells for.`
   String get made_product_cost_where {
     return Intl.message(
-      'A supply\'s price is its table\'s cost column ("Unit cost", "Purchase price"), or what was paid for it when restocked with the total cost.',
+      'A supply\'s price is its table\'s cost column ("Unit cost", "Purchase price"), else what was paid for it when restocked with the total cost, else what it sells for.',
       name: 'made_product_cost_where',
       desc: '',
       args: [],
@@ -3231,10 +3231,10 @@ class S {
     );
   }
 
-  /// `A dish that burned or fell: its supplies leave as lost, tied to the dish.`
+  /// `A unit that broke, spoiled or came out wrong: its supplies leave as lost, tied to the product.`
   String get kitchen_discard_note {
     return Intl.message(
-      'A dish that burned or fell: its supplies leave as lost, tied to the dish.',
+      'A unit that broke, spoiled or came out wrong: its supplies leave as lost, tied to the product.',
       name: 'kitchen_discard_note',
       desc: '',
       args: [],
@@ -3261,10 +3261,10 @@ class S {
     );
   }
 
-  /// `Lost dish recorded`
+  /// `Lost unit recorded`
   String get kitchen_discarded {
     return Intl.message(
-      'Lost dish recorded',
+      'Lost unit recorded',
       name: 'kitchen_discarded',
       desc: '',
       args: [],
@@ -3569,10 +3569,10 @@ class S {
     );
   }
 
-  /// `The price is added to one unit. Extras and removed lines only work on a dish made to order; an option with only a price works on any product.`
+  /// `The price is added to one unit. Extras and removed lines only work on a product made to order; an option with only a price works on any product.`
   String get kitchen_modifiers_options_note {
     return Intl.message(
-      'The price is added to one unit. Extras and removed lines only work on a dish made to order; an option with only a price works on any product.',
+      'The price is added to one unit. Extras and removed lines only work on a product made to order; an option with only a price works on any product.',
       name: 'kitchen_modifiers_options_note',
       desc: '',
       args: [],
@@ -3679,10 +3679,10 @@ class S {
     );
   }
 
-  /// `Spends on top of the recipe, per unit. Only on dishes made to order.`
+  /// `Spends on top of the recipe, per unit. Only on products made to order.`
   String get kitchen_modifiers_spends_note {
     return Intl.message(
-      'Spends on top of the recipe, per unit. Only on dishes made to order.',
+      'Spends on top of the recipe, per unit. Only on products made to order.',
       name: 'kitchen_modifiers_spends_note',
       desc: '',
       args: [],
@@ -13631,10 +13631,10 @@ class S {
     );
   }
 
-  /// `The products of {name} will stop being offered at the register, in the catalog and by the AI. They can still go into the menu's recipes, and their stock stays as it is.`
+  /// `The products of {name} will stop being offered at the register, in the catalog and by the AI. They can still go into the recipes of what the company makes, and their stock stays as it is.`
   String table_kind_to_supplies_message(Object name) {
     return Intl.message(
-      'The products of $name will stop being offered at the register, in the catalog and by the AI. They can still go into the menu\'s recipes, and their stock stays as it is.',
+      'The products of $name will stop being offered at the register, in the catalog and by the AI. They can still go into the recipes of what the company makes, and their stock stays as it is.',
       name: 'table_kind_to_supplies_message',
       desc: '',
       args: [name],
@@ -16146,10 +16146,10 @@ class S {
     );
   }
 
-  /// `Dish lost`
+  /// `Unit lost`
   String get stock_reason_spoiled {
     return Intl.message(
-      'Dish lost',
+      'Unit lost',
       name: 'stock_reason_spoiled',
       desc: '',
       args: [],
@@ -16236,20 +16236,20 @@ class S {
     );
   }
 
-  /// `for {count} × {dish}`
-  String stock_history_for(Object count, Object dish) {
+  /// `for {count} × {product}`
+  String stock_history_for(Object count, Object product) {
     return Intl.message(
-      'for $count × $dish',
+      'for $count × $product',
       name: 'stock_history_for',
       desc: '',
-      args: [count, dish],
+      args: [count, product],
     );
   }
 
-  /// `for {count} × a dish`
+  /// `for {count} × a product`
   String stock_history_for_unnamed(Object count) {
     return Intl.message(
-      'for $count × a dish',
+      'for $count × a product',
       name: 'stock_history_for_unnamed',
       desc: '',
       args: [count],
@@ -25403,10 +25403,10 @@ class S {
     );
   }
 
-  /// `Kitchen`
+  /// `Production`
   String get permission_kitchen_title {
     return Intl.message(
-      'Kitchen',
+      'Production',
       name: 'permission_kitchen_title',
       desc: '',
       args: [],
@@ -25453,10 +25453,10 @@ class S {
     );
   }
 
-  /// `Record lost dishes`
+  /// `Record lost units`
   String get permission_kitchen_discard {
     return Intl.message(
-      'Record lost dishes',
+      'Record lost units',
       name: 'permission_kitchen_discard',
       desc: '',
       args: [],
