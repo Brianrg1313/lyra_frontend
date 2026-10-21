@@ -255,6 +255,15 @@
           "action_notes": {
             "edit": "Create, edit and delete groups of modifiers: extras, término (`kitchen.modifiers`)."
           }
+        },
+        {
+          "key": "inventory.kinds",
+          "title": "Table kind",
+          "modes": ["cloud"],
+          "routes": [],
+          "paths": [],
+          "actions": [],
+          "action_notes": {}
         }
       ]
     },
