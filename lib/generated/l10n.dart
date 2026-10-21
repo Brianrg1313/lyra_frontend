@@ -1174,9 +1174,9 @@ class S {
     return Intl.message('Inventory', name: 'inventory', desc: '', args: []);
   }
 
-  /// `Menu`
+  /// `Catalog`
   String get menu {
-    return Intl.message('Menu', name: 'menu', desc: '', args: []);
+    return Intl.message('Catalog', name: 'menu', desc: '', args: []);
   }
 
   /// `New menu`
@@ -1194,20 +1194,20 @@ class S {
     );
   }
 
-  /// `Lunch, Drinks, Combos`
+  /// `Featured, Seasonal, Bundles`
   String get menu_create_name_placeholder {
     return Intl.message(
-      'Lunch, Drinks, Combos',
+      'Featured, Seasonal, Bundles',
       name: 'menu_create_name_placeholder',
       desc: '',
       args: [],
     );
   }
 
-  /// `When or where it is served`
+  /// `What it groups`
   String get menu_create_description_placeholder {
     return Intl.message(
-      'When or where it is served',
+      'What it groups',
       name: 'menu_create_description_placeholder',
       desc: '',
       args: [],
@@ -1754,10 +1754,10 @@ class S {
     );
   }
 
-  /// `Search an ingredient to add`
+  /// `Search a supply to add`
   String get kitchen_lines_add {
     return Intl.message(
-      'Search an ingredient to add',
+      'Search a supply to add',
       name: 'kitchen_lines_add',
       desc: '',
       args: [],
@@ -1944,10 +1944,10 @@ class S {
     return Intl.message('Pick', name: 'recipe_choice_pick', desc: '', args: []);
   }
 
-  /// `What they pick (Burgers)`
+  /// `What they pick (Accessories)`
   String get recipe_choice_name {
     return Intl.message(
-      'What they pick (Burgers)',
+      'What they pick (Accessories)',
       name: 'recipe_choice_name',
       desc: '',
       args: [],
@@ -2231,10 +2231,10 @@ class S {
     return Intl.message('Name', name: 'made_product_name', desc: '', args: []);
   }
 
-  /// `Cheese burger`
+  /// `Gift box`
   String get made_product_name_placeholder {
     return Intl.message(
-      'Cheese burger',
+      'Gift box',
       name: 'made_product_name_placeholder',
       desc: '',
       args: [],
@@ -2481,10 +2481,10 @@ class S {
     );
   }
 
-  /// `Beef, cheddar and the house sauce on a brioche bun`
+  /// `What it is, what it comes with and what sets it apart`
   String get made_product_description_placeholder {
     return Intl.message(
-      'Beef, cheddar and the house sauce on a brioche bun',
+      'What it is, what it comes with and what sets it apart',
       name: 'made_product_description_placeholder',
       desc: '',
       args: [],
@@ -2701,10 +2701,10 @@ class S {
     );
   }
 
-  /// `Calories`
+  /// `Size`
   String get made_product_detail_name {
     return Intl.message(
-      'Calories',
+      'Size',
       name: 'made_product_detail_name',
       desc: '',
       args: [],
@@ -3599,10 +3599,10 @@ class S {
     );
   }
 
-  /// `Option (Extra cheese)`
+  /// `Option (Gift wrap)`
   String get kitchen_modifiers_option_name {
     return Intl.message(
-      'Option (Extra cheese)',
+      'Option (Gift wrap)',
       name: 'kitchen_modifiers_option_name',
       desc: '',
       args: [],

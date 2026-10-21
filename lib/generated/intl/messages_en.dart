@@ -4062,7 +4062,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "kitchen_line_waste_of": m110,
     "kitchen_lines_add": MessageLookupByLibrary.simpleMessage(
-      "Search an ingredient to add",
+      "Search a supply to add",
     ),
     "kitchen_lines_empty": MessageLookupByLibrary.simpleMessage(
       "Add at least one ingredient",
@@ -4149,7 +4149,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Every option needs a name, a price of zero or more, and its extras a quantity greater than zero",
     ),
     "kitchen_modifiers_option_name": MessageLookupByLibrary.simpleMessage(
-      "Option (Extra cheese)",
+      "Option (Gift wrap)",
     ),
     "kitchen_modifiers_option_paused_note":
         MessageLookupByLibrary.simpleMessage(
@@ -4845,11 +4845,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "made_product_description_placeholder":
         MessageLookupByLibrary.simpleMessage(
-          "Beef, cheddar and the house sauce on a brioche bun",
+          "What it is, what it comes with and what sets it apart",
         ),
-    "made_product_detail_name": MessageLookupByLibrary.simpleMessage(
-      "Calories",
-    ),
+    "made_product_detail_name": MessageLookupByLibrary.simpleMessage("Size"),
     "made_product_detail_value": MessageLookupByLibrary.simpleMessage("Value"),
     "made_product_duplicate": MessageLookupByLibrary.simpleMessage("Duplicate"),
     "made_product_duplicated": MessageLookupByLibrary.simpleMessage(
@@ -4896,7 +4894,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "made_product_lines_more": m155,
     "made_product_name": MessageLookupByLibrary.simpleMessage("Name"),
     "made_product_name_placeholder": MessageLookupByLibrary.simpleMessage(
-      "Cheese burger",
+      "Gift box",
     ),
     "made_product_new": MessageLookupByLibrary.simpleMessage("New product"),
     "made_product_new_note": MessageLookupByLibrary.simpleMessage(
@@ -4971,7 +4969,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "No product matches the search",
     ),
     "marketing": MessageLookupByLibrary.simpleMessage("Marketing"),
-    "menu": MessageLookupByLibrary.simpleMessage("Menu"),
+    "menu": MessageLookupByLibrary.simpleMessage("Catalog"),
     "menu_create": MessageLookupByLibrary.simpleMessage("New menu"),
     "menu_create_action": MessageLookupByLibrary.simpleMessage("Create menu"),
     "menu_create_blank": MessageLookupByLibrary.simpleMessage("Name and price"),
@@ -4979,7 +4977,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Only what every product needs. Add more columns whenever you want.",
     ),
     "menu_create_description_placeholder": MessageLookupByLibrary.simpleMessage(
-      "When or where it is served",
+      "What it groups",
     ),
     "menu_create_dishes": MessageLookupByLibrary.simpleMessage(
       "Restaurant dishes",
@@ -4988,7 +4986,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Also a category, the portion and how long it takes to prepare.",
     ),
     "menu_create_name_placeholder": MessageLookupByLibrary.simpleMessage(
-      "Lunch, Drinks, Combos",
+      "Featured, Seasonal, Bundles",
     ),
     "menu_create_note": MessageLookupByLibrary.simpleMessage(
       "Group what you make and sell. You add the dishes next, each with what it uses from your supplies.",
@@ -6050,7 +6048,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "recipe_choice_choose_invalid": m215,
     "recipe_choice_name": MessageLookupByLibrary.simpleMessage(
-      "What they pick (Burgers)",
+      "What they pick (Accessories)",
     ),
     "recipe_choice_options_few": MessageLookupByLibrary.simpleMessage(
       "Add 2 options at least: with only one, it is a line of what it is made of",

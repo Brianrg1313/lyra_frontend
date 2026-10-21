@@ -155,8 +155,10 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
   Widget build(BuildContext context) => ChangeNotifierProvider<MadeProductsService>.value(
     value: _service,
     child: Surface(child: Column(children: [
+      // The section's actions first and «New product» last, against the edge: the inverse of the
+      // inventory's order, where the section's create is what stays last.
       ListenableBuilder(listenable: _service, builder: (context, _) => InventoryBar(
-        parts: widget.parts,
+        parts: InventoryBarParts(selector: widget.parts.selector, controls: widget.parts.controls),
         status: [
           if (_service.status == MadeProductsStatus.ready && _service.total != null) TextSmall(
             S.of(context).made_products_count(_service.total!),
@@ -165,6 +167,7 @@ class _MadeProductsSectionState extends State<MadeProductsSection> {
           )
         ],
         actions: [
+          ...widget.parts.actions,
           if (_canWrite) Button(
             width: null,
             title: S.of(context).made_product_new,
