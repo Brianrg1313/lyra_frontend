@@ -67,9 +67,11 @@ class _PendingModalState extends State<PendingModal> {
     unawaited(_open());
   }
 
+  /// Deferred: `dispose` runs while the tree is locked, and the feed notifying then would mark
+  /// its provider scope dirty mid-finalize.
   @override
   void dispose() {
-    _notifications.markSeen();
+    scheduleMicrotask(_notifications.markSeen);
     super.dispose();
   }
 
