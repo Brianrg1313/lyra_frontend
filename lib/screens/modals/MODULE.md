@@ -131,7 +131,7 @@ through `Navigator.pop(context, value)`.
 - `presentations/_presentations.dart` — `showPresentationsEditor` → `List<PresentationDraft>?` (ids kept, names not repeated). Writes nothing.
 - `modifier_group/_modifier_group.dart` — `showModifierGroupForm(context, group?, canEdit, pinned?, deletable, min, max, title?)` → `ModifierGroupDraft?` (or `delete`): name, min/max, the products that offer it (named from their tables, their recipes read for removals; `pinned`, the product whose form opened it, drawn first and fixed), options. Writes nothing.
 - `modifier_group/modifier_option_card.dart` — `ModifierOptionCard`, `ModifierOptionDraft` (keeps its id), `ModifierExtraDraft`: name, price, pause, extras per unit, recipe lines it removes (`showCheckMenu`).
-- `shared/kitchen_product_picker.dart` — `KitchenProductPicker` (a `KitchenProductSearch` over every table, supplies first), `KitchenNote`. `shared/kitchen_chip.dart` — `KitchenChip`.
+- `shared/kitchen_product_picker.dart` — `KitchenProductPicker` (a `KitchenProductSearch` over every table, supplies first; answers in a dropdown under the box, named by title only), `KitchenNote`. `shared/kitchen_chip.dart` — `KitchenChip`.
 
 ### `inventory/`
 - `create_table/_create_table.dart` — `CreateTableModal({kind})`: title, description, template; the menu's `KIND` is fixed (`made`), the inventory's (none given) is asked between products and supplies as two `OptionTile`s, with the note that it can't change. A menu is worded as one («Create menu») and starts from two `OptionTile`s, name and price (blank) or restaurant dishes (`TableTemplate.menu`), never the catalog's templates.

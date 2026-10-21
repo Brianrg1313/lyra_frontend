@@ -38,10 +38,6 @@ class KitchenProductSearch extends ChangeNotifier {
   KitchenProductSearchStatus get status => _status;
   List<KitchenProduct> get results => _results;
 
-  /// The table [product] is a row of, when read.
-  TableLiteModel? tableOf(KitchenProduct product) =>
-    _tables?.where((table) => table.id == product.tableId).firstOrNull;
-
   /// The names of the products of [tables] (product id → name): the first rows of each one's
   /// summary, enough to name what a saved group or option points at. What fails names nothing.
   Future<Map<String, String>> namesIn(Set<String> tables) async => {

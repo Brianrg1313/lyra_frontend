@@ -236,6 +236,13 @@ class StockSummaryRow {
 
   /// The row's own key for [unit]: a value of the row, not a column.
   static const String unitKey = "unit";
+
+  /// What a person calls this product: its table's first title column, whether the summary
+  /// shows it or not. Empty on a table without one (or a backend that doesn't send it).
+  String get name => "${values[nameKey] ?? ""}".trim();
+
+  /// The row's own key for [name]: a value of the row, not a column.
+  static const String nameKey = "name";
 }
 
 /// A page of the stock summary: the columns with which it is drawn and the

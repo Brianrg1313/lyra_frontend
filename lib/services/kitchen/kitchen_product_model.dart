@@ -6,7 +6,9 @@ import 'package:app/services/kitchen/kitchen_read.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 
 /// A product as the kitchen lists and picks it: a row of a table's stock summary
-/// (`POST /inventory/stock/summary/`), named by its first text column.
+/// (`POST /inventory/stock/summary/`), named by its title ([StockSummaryRow.name]), else by the
+/// first title or text column the summary shows. The first text column alone named a hardware
+/// table's parts by their SKU.
 ///
 /// [unit] is the product's own when it declared one (`cocina-frontend.md` §8, the row's
 /// [StockSummaryRow.unit]), else a column called "unit" holding it per row, else its stock
@@ -43,10 +45,11 @@ class KitchenProduct {
   /// What a list writes for it: its name, or its id when it has none.
   String get label => name.isEmpty ? id : name;
 
-  /// The rows of a summary [page], named by its first text column.
+  /// The rows of a summary [page], named by their title.
   static List<KitchenProduct> fromSummary(StockSummaryPage page, {bool supplies = false, bool made = false}) {
     final columns = page.columns;
-    final name = columns.where((column) => !column.isImage && !column.isNumber && !column.type.united).firstOrNull;
+    final name = columns.where((column) => column.type == TableFieldType.title).firstOrNull ??
+      columns.where((column) => !column.isImage && !column.isNumber && !column.type.united).firstOrNull;
     final stock = columns.where((column) => column.isStock && column.unit.isNotEmpty).firstOrNull;
     final measure = stock ?? columns.where((column) => column.type == TableFieldType.measure && column.unit.isNotEmpty).firstOrNull;
     final unitColumn = columns.where((column) => _unitNames.contains(column.name.trim().toLowerCase())).firstOrNull;
@@ -55,7 +58,7 @@ class KitchenProduct {
       for (final row in page.rows) KitchenProduct(
         id: row.id,
         tableId: page.table,
-        name: name == null ? "" : kitchenText(row.values[name.key]),
+        name: row.name.isNotEmpty ? row.name : name == null ? "" : kitchenText(row.values[name.key]),
         unit: row.unit.isNotEmpty
           ? row.unit
           : unitColumn != null && kitchenText(row.values[unitColumn.key]).isNotEmpty
