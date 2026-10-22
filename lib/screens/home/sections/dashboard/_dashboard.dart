@@ -5,8 +5,8 @@ import 'package:app/toolkit/toolkit.dart';
 import './assistant/_assistant.dart';
 import './summary/_summary.dart';
 
-/// **The home** (`/home`): the assistant's chat on three fifths, the summary
-/// cards on the other two.
+/// **The home** (`/home`): the assistant's chat on two thirds, the summary
+/// cards on the other one.
 ///
 /// The chat is the main way into the app, so it gets the room; the summary is
 /// what one glances at before asking. Both are placeholders until their
@@ -19,9 +19,9 @@ class DashboardSection extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      const Expanded(flex: 3, child: AssistantPanel()),
+      const Expanded(flex: 2, child: AssistantPanel()),
       SizedBox(width: AppSize.gap),
-      const Expanded(flex: 2, child: SummaryPanel())
+      const Expanded(flex: 1, child: SummaryPanel())
     ]
   );
 }

@@ -1,7 +1,7 @@
 # Module: dashboard section
 
 **Path** `lib/screens/home/sections/dashboard`
-**Role** The home (`/home`): the panel assistant's chat on 3/5 (GenUI, `package:genui`), summary cards on 2/5.
+**Role** The home (`/home`): the panel assistant's chat on 2/3 (GenUI, `package:genui`), summary cards on 1/3.
 **Services** `AssistantService` (`lib/services/assistant`), created by `AssistantPanel`, not app-wide.
 **Backend** the chat: `/lyra/v1/harness/assistant` (cloud only: `dashboard.assistant`; a master alone shows a notice). The cards: none yet, `_Sample` (placeholders).
 
