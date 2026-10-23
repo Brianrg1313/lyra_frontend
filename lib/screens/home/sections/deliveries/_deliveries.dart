@@ -76,9 +76,19 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   final MapController _map = MapController();
   late final AreaEditor _editor = AreaEditor(map: _map);
 
-  /// The branch the panel is filtered by, `null` for all of them: the branch
-  /// worked in on opening, since its deliveries are the ones the board reads.
-  late String? _branch = _board ? BranchService().activeId : null;
+  /// The branch the panel is filtered by, `null` for all of them (how it
+  /// opens), or the one picked on the board before working in it remounted
+  /// the desk ([_carried]).
+  late String? _branch = _takeCarried();
+
+  /// The branch [_work] switched to, read once by the desk it remounts.
+  static String? _carried;
+
+  static String? _takeCarried() {
+    final branch = _carried;
+    _carried = null;
+    return branch;
+  }
 
   /// The panel's search and branch fields, kept here so a flow or an area
   /// being shaped, which hide them, leave them as they were.
@@ -218,7 +228,10 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   void _work(String branch) {
     final working = BranchService();
 
-    if (_board && branch != working.activeId && working.byId(branch) != null) working.select(branch);
+    if (!_board || branch == working.activeId || working.byId(branch) == null) return;
+
+    _carried = branch;
+    working.select(branch);
   }
 
   /// Writes [_branch] into the panel's field.

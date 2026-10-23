@@ -148,7 +148,7 @@ class DeliveriesPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextLarge(S.of(context).deliveries, ellipsis: true),
+        TextInter(S.of(context).deliveries, multiplier: 1.4, bold: true),
         SizedBox(height: AppSize.gap * 0.5),
         TextSmall(
           S.of(context).deliveries_subtitle,
