@@ -18489,11 +18489,241 @@ class S {
     );
   }
 
-  /// `Settings`
-  String get deliveries_settings {
+  /// `New delivery method`
+  String get deliveries_method_new {
     return Intl.message(
-      'Settings',
-      name: 'deliveries_settings',
+      'New delivery method',
+      name: 'deliveries_method_new',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery methods`
+  String get deliveries_method_title {
+    return Intl.message(
+      'Delivery methods',
+      name: 'deliveries_method_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How your orders reach your customers. Add every method you use: your assistant offers them when a customer asks.`
+  String get deliveries_method_subtitle {
+    return Intl.message(
+      'How your orders reach your customers. Add every method you use: your assistant offers them when a customer asks.',
+      name: 'deliveries_method_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How do you deliver?`
+  String get deliveries_method_how {
+    return Intl.message(
+      'How do you deliver?',
+      name: 'deliveries_method_how',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your own deliveries`
+  String get deliveries_method_own {
+    return Intl.message(
+      'Your own deliveries',
+      name: 'deliveries_method_own',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your own couriers carry the order, inside the areas you draw on the map`
+  String get deliveries_method_own_note {
+    return Intl.message(
+      'Your own couriers carry the order, inside the areas you draw on the map',
+      name: 'deliveries_method_own_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery apps`
+  String get deliveries_method_platform {
+    return Intl.message(
+      'Delivery apps',
+      name: 'deliveries_method_platform',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An app picks the order up at your business and carries it`
+  String get deliveries_method_platform_note {
+    return Intl.message(
+      'An app picks the order up at your business and carries it',
+      name: 'deliveries_method_platform_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Parcel services`
+  String get deliveries_method_courier {
+    return Intl.message(
+      'Parcel services',
+      name: 'deliveries_method_courier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A shipping company sends it across the country or abroad`
+  String get deliveries_method_courier_note {
+    return Intl.message(
+      'A shipping company sends it across the country or abroad',
+      name: 'deliveries_method_courier_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You have {count} delivery methods, the most a business can have. Remove one to add another.`
+  String deliveries_method_limit(Object count) {
+    return Intl.message(
+      'You have $count delivery methods, the most a business can have. Remove one to add another.',
+      name: 'deliveries_method_limit',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Your delivery methods`
+  String get deliveries_method_yours {
+    return Intl.message(
+      'Your delivery methods',
+      name: 'deliveries_method_yours',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No delivery methods yet`
+  String get deliveries_method_yours_empty {
+    return Intl.message(
+      'No delivery methods yet',
+      name: 'deliveries_method_yours_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick one above to start delivering.`
+  String get deliveries_method_yours_empty_note {
+    return Intl.message(
+      'Pick one above to start delivering.',
+      name: 'deliveries_method_yours_empty_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pickup`
+  String get deliveries_method_pickup {
+    return Intl.message(
+      'Pickup',
+      name: 'deliveries_method_pickup',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on`
+  String get deliveries_method_turn_on {
+    return Intl.message(
+      'Turn on',
+      name: 'deliveries_method_turn_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Back to delivery methods`
+  String get deliveries_method_back {
+    return Intl.message(
+      'Back to delivery methods',
+      name: 'deliveries_method_back',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who carries it, how far it goes, what it costs and how long it takes.`
+  String get deliveries_method_edit_note {
+    return Intl.message(
+      'Who carries it, how far it goes, what it costs and how long it takes.',
+      name: 'deliveries_method_edit_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `For all your deliveries`
+  String get deliveries_method_general {
+    return Intl.message(
+      'For all your deliveries',
+      name: 'deliveries_method_general',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `These hold for every delivery method, not only this one.`
+  String get deliveries_method_general_note {
+    return Intl.message(
+      'These hold for every delivery method, not only this one.',
+      name: 'deliveries_method_general_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Where you deliver`
+  String get deliveries_method_area {
+    return Intl.message(
+      'Where you deliver',
+      name: 'deliveries_method_area',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your delivery areas are drawn on the map.`
+  String get deliveries_method_area_note {
+    return Intl.message(
+      'Your delivery areas are drawn on the map.',
+      name: 'deliveries_method_area_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draw on the map`
+  String get deliveries_method_area_open {
+    return Intl.message(
+      'Draw on the map',
+      name: 'deliveries_method_area_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery method saved`
+  String get deliveries_method_saved {
+    return Intl.message(
+      'Delivery method saved',
+      name: 'deliveries_method_saved',
       desc: '',
       args: [],
     );
@@ -19759,46 +19989,6 @@ class S {
       name: 'shipping_closed_reopen_everywhere',
       desc: '',
       args: [day],
-    );
-  }
-
-  /// `Delivery settings`
-  String get deliveries_settings_title {
-    return Intl.message(
-      'Delivery settings',
-      name: 'deliveries_settings_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What your assistant tells a customer who asks about delivery.`
-  String get deliveries_settings_subtitle {
-    return Intl.message(
-      'What your assistant tells a customer who asks about delivery.',
-      name: 'deliveries_settings_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Pickup`
-  String get deliveries_settings_pickup {
-    return Intl.message(
-      'Pickup',
-      name: 'deliveries_settings_pickup',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Select delivery area`
-  String get deliveries_area {
-    return Intl.message(
-      'Select delivery area',
-      name: 'deliveries_area',
-      desc: '',
-      args: [],
     );
   }
 
@@ -22037,46 +22227,6 @@ class S {
     );
   }
 
-  /// `Delivery`
-  String get business_delivery_section_general {
-    return Intl.message(
-      'Delivery',
-      name: 'business_delivery_section_general',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Ways you deliver`
-  String get business_delivery_section_options {
-    return Intl.message(
-      'Ways you deliver',
-      name: 'business_delivery_section_options',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Delivers to customers`
-  String get business_delivery_delivers {
-    return Intl.message(
-      'Delivers to customers',
-      name: 'business_delivery_delivers',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `What your assistant answers when someone asks if you deliver. While it isn't set, it never tells a customer no.`
-  String get business_delivery_delivers_note {
-    return Intl.message(
-      'What your assistant answers when someone asks if you deliver. While it isn\'t set, it never tells a customer no.',
-      name: 'business_delivery_delivers_note',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Pickup at the business`
   String get business_delivery_pickup {
     return Intl.message(
@@ -22147,16 +22297,6 @@ class S {
     return Intl.message(
       'No option matches your search',
       name: 'business_delivery_select_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Delivery areas`
-  String get business_delivery_meeting {
-    return Intl.message(
-      'Delivery areas',
-      name: 'business_delivery_meeting',
       desc: '',
       args: [],
     );
@@ -22237,36 +22377,6 @@ class S {
     return Intl.message(
       'Orders placed before 2 pm leave the same day',
       name: 'business_delivery_notes_hint',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add a way to deliver`
-  String get business_delivery_add {
-    return Intl.message(
-      'Add a way to deliver',
-      name: 'business_delivery_add',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Way to deliver`
-  String get business_delivery_empty {
-    return Intl.message(
-      'Way to deliver',
-      name: 'business_delivery_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Nothing yet. Add your own riders, a delivery app or a parcel carrier.`
-  String get business_delivery_empty_note {
-    return Intl.message(
-      'Nothing yet. Add your own riders, a delivery app or a parcel carrier.',
-      name: 'business_delivery_empty_note',
       desc: '',
       args: [],
     );
@@ -22601,36 +22711,6 @@ class S {
       name: 'business_delivery_remove_message',
       desc: '',
       args: [name],
-    );
-  }
-
-  /// `New way to deliver`
-  String get business_delivery_create_title {
-    return Intl.message(
-      'New way to deliver',
-      name: 'business_delivery_create_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit way to deliver`
-  String get business_delivery_edit_title {
-    return Intl.message(
-      'Edit way to deliver',
-      name: 'business_delivery_edit_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Who carries the order, how far it goes, what it costs and how long it takes. It's what your customers are told when they ask.`
-  String get business_delivery_form_subtitle {
-    return Intl.message(
-      'Who carries the order, how far it goes, what it costs and how long it takes. It\'s what your customers are told when they ask.',
-      name: 'business_delivery_form_subtitle',
-      desc: '',
-      args: [],
     );
   }
 

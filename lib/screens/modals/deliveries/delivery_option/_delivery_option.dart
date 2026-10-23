@@ -15,28 +15,6 @@ import 'package:core/form.dart';
 
 import 'zone_rows.dart';
 
-/// Opens the panel that adds a way of delivering, or edits [option].
-///
-/// Returns the body of the write —`createDeliveryOptionRequest` without an
-/// [option], `updateDeliveryOptionRequest` with one— or `null` when it was
-/// closed without saving.
-Future<Map<String, dynamic>?> showDeliveryOptionForm(
-  BuildContext context, {
-  required DeliveryCatalog? catalog,
-  required String currency,
-  DeliveryOption? option
-}) => showSideModal(
-  context: context,
-  title: option == null
-    ? S.of(context).business_delivery_create_title
-    : S.of(context).business_delivery_edit_title,
-  builder: (context) => DeliveryOptionFormModal(
-    catalog: catalog,
-    currency: currency,
-    option: option
-  )
-).then((value) => value is Map<String, dynamic> ? value : null);
-
 /// One way the company delivers: who carries the order, how far it reaches,
 /// what it costs and how long it takes.
 ///
@@ -56,14 +34,19 @@ Future<Map<String, dynamic>?> showDeliveryOptionForm(
 /// thousand, a time up to thirty days), so a mistake is said beside the field
 /// and not as an error code after the panel closed.
 ///
-/// It **returns the request body and writes nothing**: the delivery service is
-/// provided by the delivery settings panel, which this one stacks on and is not under.
-class DeliveryOptionFormModal extends StatefulWidget {
-  const DeliveryOptionFormModal({
+/// It **hands the request body to [onSubmit] and writes nothing**: the
+/// delivery method panel it is a step of owns the service and the writes
+/// that go with it (see `DeliveryMethodModal`).
+class DeliveryOptionForm extends StatefulWidget {
+  const DeliveryOptionForm({
     super.key,
     required this.catalog,
     required this.currency,
-    this.option
+    required this.onSubmit,
+    this.option,
+    this.mode,
+    this.extra,
+    this.saving = false
   });
 
   /// What the form picks from. `null` when the catalog could not be read: the
@@ -77,11 +60,26 @@ class DeliveryOptionFormModal extends StatefulWidget {
   /// The option being edited, or `null` when one is being added.
   final DeliveryOption? option;
 
+  /// Who carries a new option, already picked on the step before: the mode
+  /// picker is then not drawn. `null` on an edit, which can still change it.
+  final DeliveryMode? mode;
+
+  /// The body of the write — `createDeliveryOptionRequest` without an
+  /// [option], `updateDeliveryOptionRequest` with one.
+  final void Function(Map<String, dynamic> request) onSubmit;
+
+  /// Drawn after the option's own fields and before saving, given the reach
+  /// picked so far: what holds for every delivery, which the panel saves.
+  final Widget Function(BuildContext context, DeliveryCoverage? reach)? extra;
+
+  /// A write is under way: the save button spins and does not answer.
+  final bool saving;
+
   @override
-  State<DeliveryOptionFormModal> createState() => _DeliveryOptionFormModalState();
+  State<DeliveryOptionForm> createState() => _DeliveryOptionFormState();
 }
 
-class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
+class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
   /// The fields that are always drawn.
   ///
   /// What depends on an earlier answer —the carrier, the radius, the zones— is
@@ -106,7 +104,7 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
 
   /// The picked mode: it decides which carriers are offered and whether one
   /// has to be named.
-  late DeliveryMode? _mode = _option?.mode;
+  late DeliveryMode? _mode = _option?.mode ?? widget.mode;
 
   /// The picked reach, or `null` on a creation that did not pick one — which
   /// is the mode's own ([DeliveryMode.reach]), as the backend defaults it.
@@ -149,7 +147,7 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
     key: "MODE",
     form: _form,
     obligatory: true,
-    initial: _option?.mode.value,
+    initial: (_option?.mode ?? widget.mode)?.value,
     customErrors: {
       InputError.empty: S.of(context).form_empty_ma(
         S.of(context).business_delivery_mode
@@ -252,6 +250,15 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
     }
   }
 
+  /// [DeliveryOptionForm.saving], as the save button listens to it.
+  late final _saving = ValueNotifier(widget.saving);
+
+  @override
+  void didUpdateWidget(DeliveryOptionForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _saving.value = widget.saving;
+  }
+
   @override
   void dispose() {
     for (final controller in _providers.values) {
@@ -264,12 +271,10 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
 
     _radius.dispose();
     _branch.dispose();
+    _saving.dispose();
     _form.dispose();
     super.dispose();
   }
-
-  /// Same width as the rest of the panels of this app.
-  static const double _width = 420;
 
   @override
   Widget build(BuildContext context) {
@@ -277,144 +282,135 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
     final mode = _mode;
     final currency = CurrencyCatalogService().resolve(widget.currency);
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: _width, maxWidth: _width),
-      child: ScrollableWidget(
-        padding: EdgeInsets.only(bottom: AppSize.padding),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(bottom: AppSize.spaceS),
-            child: TextSmall(
-              S.of(context).business_delivery_form_subtitle,
-              lines: 3,
-              color: scheme.text.secondary
-            )
-          ),
-          // Said and not hidden: a picker that silently lost its carriers looks
-          // like one where the company's are not supported.
-          if (widget.catalog == null)
-            _Notice(text: S.of(context).business_delivery_no_catalog)
-          else if (_catalog.country.isEmpty)
-            _Notice(text: S.of(context).business_delivery_no_country),
-          SelectInput(
-            title: S.of(context).business_delivery_mode,
-            placeholder: S.of(context).business_delivery_mode_placeholder,
-            controller: _modeInput,
-            options: [
-              for (final entry in _modes) SelectOption(
-                value: entry.value,
-                placeholder: entry.label(context),
-                subtitle: entry.description(context),
-                icon: entry.icon
-              )
-            ],
-            emptyText: S.of(context).business_delivery_select_empty,
-            searchable: false,
-            leftIcon: Icon(CI.delivery, color: scheme.icon),
-            onSelected: _onMode
-          ),
-          if (mode != null && mode.namesCarrier) _carrier(context, mode),
-          Input(
-            title: _nameRequired
-              ? S.of(context).business_delivery_label_carrier
-              : _optional(context, S.of(context).business_delivery_label),
-            placeholder: S.of(context).business_delivery_label_hint,
-            controller: _label,
-            leftIcon: Icon(CI.bookmark, color: scheme.icon)
-          ),
-          SelectInput(
-            title: S.of(context).business_delivery_coverage,
-            // What a creation that picks nothing gets is written where the
-            // answer goes, so leaving it empty is a choice and not a gap.
-            placeholder: mode == null
-              ? S.of(context).business_delivery_coverage_placeholder
-              : S.of(context).business_delivery_coverage_default(
-                  mode.reach.label(context)
-                ),
-            controller: _coverageInput,
-            options: [
-              for (final entry in _coverages) SelectOption(
-                value: entry.value,
-                placeholder: entry.label(context),
-                subtitle: entry.description(context)
-              )
-            ],
-            emptyText: S.of(context).business_delivery_select_empty,
-            searchable: false,
-            leftIcon: Icon(CI.globe_shopping, color: scheme.icon),
-            onSelected: (option) => setState(
-              () => _coverage = DeliveryCoverage.from(option.value)
-            )
-          ),
-          if (_reach != null && _reach != DeliveryCoverage.local && _asksBranch)
-            _branchInput(context),
-          if (_reach == DeliveryCoverage.local) ...[
-            Input(
-              title: _optional(context, S.of(context).business_delivery_radius_title),
-              placeholder: S.of(context).business_delivery_radius_hint,
-              controller: _radius,
-              leftIcon: Icon(CI.globe_shopping, color: scheme.icon)
-            ),
-            ZoneRows(
-              title: _optional(context, S.of(context).business_delivery_zones),
-              zones: _zones,
-              onAdd: _addZone,
-              onRemove: _removeZone
+    return ScrollableWidget(
+      padding: EdgeInsets.only(bottom: AppSize.padding),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Said and not hidden: a picker that silently lost its carriers looks
+        // like one where the company's are not supported.
+        if (widget.catalog == null)
+          _Notice(text: S.of(context).business_delivery_no_catalog)
+        else if (_catalog.country.isEmpty)
+          _Notice(text: S.of(context).business_delivery_no_country),
+        // A new option's mode is the card picked on the step before.
+        if (widget.mode == null) SelectInput(
+          title: S.of(context).business_delivery_mode,
+          placeholder: S.of(context).business_delivery_mode_placeholder,
+          controller: _modeInput,
+          options: [
+            for (final entry in _modes) SelectOption(
+              value: entry.value,
+              placeholder: entry.label(context),
+              subtitle: entry.description(context),
+              icon: entry.icon
             )
           ],
-          Input(
-            title: _optional(context, S.of(context).business_delivery_fee),
-            placeholder: S.of(context).business_delivery_fee_hint(currency.symbol),
-            controller: _fee,
-            leftIcon: Icon(CI.wallet, color: scheme.icon)
-          ),
-          Input(
-            title: _optional(context, S.of(context).business_delivery_free_from_title),
-            placeholder: S.of(context).business_delivery_free_from_hint,
-            controller: _freeFrom,
-            leftIcon: Icon(CI.gift, color: scheme.icon)
-          ),
-          InputRow(
-            title: _optional(context, S.of(context).business_delivery_eta),
-            spacing: AppSize.gap,
-            children: [
-              Input(
-                flex: 2,
-                placeholder: S.of(context).business_delivery_eta_min,
-                controller: _etaMin
+          emptyText: S.of(context).business_delivery_select_empty,
+          searchable: false,
+          leftIcon: Icon(CI.delivery, color: scheme.icon),
+          onSelected: _onMode
+        ),
+        if (mode != null && mode.namesCarrier) _carrier(context, mode),
+        Input(
+          title: _nameRequired
+            ? S.of(context).business_delivery_label_carrier
+            : _optional(context, S.of(context).business_delivery_label),
+          placeholder: S.of(context).business_delivery_label_hint,
+          controller: _label,
+          leftIcon: Icon(CI.bookmark, color: scheme.icon)
+        ),
+        SelectInput(
+          title: S.of(context).business_delivery_coverage,
+          // What a creation that picks nothing gets is written where the
+          // answer goes, so leaving it empty is a choice and not a gap.
+          placeholder: mode == null
+            ? S.of(context).business_delivery_coverage_placeholder
+            : S.of(context).business_delivery_coverage_default(
+                mode.reach.label(context)
               ),
-              Input(
-                flex: 2,
-                placeholder: S.of(context).business_delivery_eta_max,
-                controller: _etaMax
-              ),
-              SelectInput(
-                flex: 3,
-                placeholder: S.of(context).business_delivery_eta_unit,
-                controller: _etaUnit,
-                options: [
-                  for (final unit in DeliveryEtaUnit.values) SelectOption(
-                    value: unit.name,
-                    placeholder: unit.label(context)
-                  )
-                ],
-                emptyText: S.of(context).business_delivery_select_empty,
-                searchable: false
-              )
-            ]
-          ),
+          controller: _coverageInput,
+          options: [
+            for (final entry in _coverages) SelectOption(
+              value: entry.value,
+              placeholder: entry.label(context),
+              subtitle: entry.description(context)
+            )
+          ],
+          emptyText: S.of(context).business_delivery_select_empty,
+          searchable: false,
+          leftIcon: Icon(CI.globe_shopping, color: scheme.icon),
+          onSelected: (option) => setState(
+            () => _coverage = DeliveryCoverage.from(option.value)
+          )
+        ),
+        if (_reach != null && _reach != DeliveryCoverage.local && _asksBranch)
+          _branchInput(context),
+        if (_reach == DeliveryCoverage.local) ...[
           Input(
-            title: _optional(context, S.of(context).business_delivery_option_notes),
-            placeholder: S.of(context).business_delivery_option_notes_hint,
-            controller: _notes,
-            leftIcon: Icon(CI.edit, color: scheme.icon),
-            onSubmit: _submit
+            title: _optional(context, S.of(context).business_delivery_radius_title),
+            placeholder: S.of(context).business_delivery_radius_hint,
+            controller: _radius,
+            leftIcon: Icon(CI.globe_shopping, color: scheme.icon)
           ),
-          SizedBox(height: AppSize.spaceM),
-          Button(title: S.of(context).save, action: _submit)
-        ]
-      )
+          ZoneRows(
+            title: _optional(context, S.of(context).business_delivery_zones),
+            zones: _zones,
+            onAdd: _addZone,
+            onRemove: _removeZone
+          )
+        ],
+        Input(
+          title: _optional(context, S.of(context).business_delivery_fee),
+          placeholder: S.of(context).business_delivery_fee_hint(currency.symbol),
+          controller: _fee,
+          leftIcon: Icon(CI.wallet, color: scheme.icon)
+        ),
+        Input(
+          title: _optional(context, S.of(context).business_delivery_free_from_title),
+          placeholder: S.of(context).business_delivery_free_from_hint,
+          controller: _freeFrom,
+          leftIcon: Icon(CI.gift, color: scheme.icon)
+        ),
+        InputRow(
+          title: _optional(context, S.of(context).business_delivery_eta),
+          spacing: AppSize.gap,
+          children: [
+            Input(
+              flex: 2,
+              placeholder: S.of(context).business_delivery_eta_min,
+              controller: _etaMin
+            ),
+            Input(
+              flex: 2,
+              placeholder: S.of(context).business_delivery_eta_max,
+              controller: _etaMax
+            ),
+            SelectInput(
+              flex: 3,
+              placeholder: S.of(context).business_delivery_eta_unit,
+              controller: _etaUnit,
+              options: [
+                for (final unit in DeliveryEtaUnit.values) SelectOption(
+                  value: unit.name,
+                  placeholder: unit.label(context)
+                )
+              ],
+              emptyText: S.of(context).business_delivery_select_empty,
+              searchable: false
+            )
+          ]
+        ),
+        Input(
+          title: _optional(context, S.of(context).business_delivery_option_notes),
+          placeholder: S.of(context).business_delivery_option_notes_hint,
+          controller: _notes,
+          leftIcon: Icon(CI.edit, color: scheme.icon),
+          onSubmit: _submit
+        ),
+        ?widget.extra?.call(context, _reach),
+        SizedBox(height: AppSize.spaceM),
+        Button(title: S.of(context).save, action: _submit, loading: _saving)
+      ]
     );
   }
 
@@ -549,9 +545,9 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
 
   /// Reads the form and closes with the body.
   void _submit() {
-    if (!_form.validate()) return;
+    if (widget.saving || !_form.validate()) return;
 
-    final mode = DeliveryMode.from(_modeInput.value);
+    final mode = _mode;
 
     if (mode == null) return;
 
@@ -626,7 +622,7 @@ class _DeliveryOptionFormModalState extends State<DeliveryOptionFormModal> {
       return;
     }
 
-    Navigator.pop(context, _isEdit
+    widget.onSubmit(_isEdit
       ? updateDeliveryOptionRequest(
           from: _option!,
           mode: mode,

@@ -5,7 +5,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 
-/// How the figures of the delivery settings are written.
+/// How the figures of the delivery methods are written.
 ///
 /// Nothing the backend stores about delivery is a sentence: codes, and numbers
 /// in one unit each —the company's currency, kilometres, minutes—. This is

@@ -14,7 +14,7 @@ enum BusinessDeliveryStatus { idle, loading, ready, error }
 /// (`/business/delivery/`, `/business/delivery/options/`) and the carriers it
 /// may pick from (`/business/delivery/providers/`).
 ///
-/// Provided by the delivery settings panel (`DeliverySettingsModal`), not
+/// Provided by the delivery methods panel (`DeliveryMethodModal`), not
 /// app-wide: every endpoint answers for the business in the `business_id`
 /// header, and each opening of the panel reads it afresh.
 ///

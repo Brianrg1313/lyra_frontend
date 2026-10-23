@@ -20,7 +20,7 @@ import 'package:app/screens/home/sections/deliveries/area/widgets/area_layers.da
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_list.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_map_picker.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_probe.dart';
-import 'package:app/screens/modals/deliveries/delivery_settings/_delivery_settings.dart';
+import 'package:app/screens/modals/deliveries/delivery_method/_delivery_method.dart';
 
 import './shipments/shipment_list.dart';
 import './widgets/panel_halves.dart';
@@ -31,8 +31,9 @@ enum DeliveriesView { shipments, areas }
 
 /// The panel over the desk's map.
 ///
-/// While looking: the section's title with its settings beside it (how the
-/// company delivers, a side panel over the map), then one of two views. The
+/// While looking: the section's title with "New delivery method" beside it
+/// (how the company delivers, a side panel over the map, which can close onto
+/// the areas), then one of two views. The
 /// branch's deliveries (`ShipmentList`), the daily work, open first; the
 /// areas show where it delivers (shared or per branch, and per branch whose
 /// map is open), "Add area" and the open map's areas. A tap on the map says
@@ -93,7 +94,10 @@ class DeliveriesPanel extends StatelessWidget {
           Expanded(child: TextLarge(S.of(context).deliveries, ellipsis: true)),
           SizedBox(width: AppSize.gap),
           FeedbackButton(
-            action: () => showDeliverySettings(context),
+            action: () => showDeliveryMethod(
+              context,
+              onArea: () => onView(DeliveriesView.areas)
+            ),
             height: AppSize.action,
             padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS),
             radius: AppSize.corner,
@@ -102,9 +106,9 @@ class DeliveriesPanel extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(CI.setting, size: AppSize.text, color: scheme.icon),
+                Icon(CI.plus, size: AppSize.text, color: scheme.icon),
                 SizedBox(width: AppSize.gap),
-                TextSmall(S.of(context).deliveries_settings, bold: true)
+                TextSmall(S.of(context).deliveries_method_new, bold: true)
               ]
             )
           )

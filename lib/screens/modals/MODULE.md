@@ -194,26 +194,28 @@ through `Navigator.pop(context, value)`.
   after a mode; sends only what changed (no-diff submit refused).
 
 ### `deliveries/` (from the deliveries desk)
-- `delivery_settings/_delivery_settings.dart` — `showDeliverySettings(context)` ("Select delivery area" only closes it:
-  the areas are on the desk), `DeliverySettingsModal`: side panel, **owns its `BusinessDeliveryService`**.
-- `delivery_settings/settings_body.dart` — `DeliverySettingsBody({onArea})`: reads the service; owns every write the blocks
-  and the panels stacked on it ask for. Order: delivery, ways you deliver, pickup.
-- `delivery_settings/delivery_settings.dart` — `DeliverySettingsBlock`: delivers (three-state `SettingsSelect` + `showSelectMenu`)
-  with "Select delivery area" beside it (`onArea`), fixed/flexible areas (`meeting`, two-state), the delivery note;
-  `DeliveryPickupBlock`: pickup (three-state). Rows: `delivery_flag_field.dart` — `DeliveryFlagField`,
-  `delivery_meeting_field.dart` — `DeliveryMeetingField`, `delivery_area_button.dart` — `DeliveryAreaButton`.
-- `delivery_settings/delivery_options.dart` — `DeliveryOptionsBlock`: the options, adding in the block title, the "turned off"
-  notice. `limit = 20`. `delivery_option_field.dart` — `DeliveryOptionField`: one option, its mode/reach line and its figures
-  as `SettingsTag`s (off a local reach, the branch it leaves from).
-- `delivery_settings/delivery_gate.dart` — `DeliveryGate({off, child})`: fades what only holds while delivering (options,
-  fixed/flexible) when `delivers == false`; still editable.
-- `delivery_option/_delivery_option.dart` — `showDeliveryOptionForm(context, catalog:, currency:, option?)`,
-  `DeliveryOptionFormModal`: mode → carrier → reach → figures. Carrier pickers are one per mode (their lists
-  differ); radius/zones only for a local reach, the branch it leaves from only off one (with several branches, `BranchService`). Checks what the backend refuses. **Returns the create/update body.**
+- `delivery_method/_delivery_method.dart` — `showDeliveryMethod(context, onArea:)` ("Draw on the map" closes it, then
+  `onArea`), `DeliveryMethodModal({onArea, source?})`: side panel, **owns its `BusinessDeliveryService`**; two pages in one
+  panel (`PageSwitcher`): `DeliveryMethodHome`, then a card's or a method's `DeliveryOptionForm` with `DeliveryGeneralBlock`
+  under it. Saves the option, then `meeting`/notes if changed; a new one turns `delivers` on when it was `false`; back to
+  the list once the option is written.
+- `delivery_method/method_home.dart` — `DeliveryMethodHome`: "How do you deliver?" as one `DeliveryMethodCard` per mode
+  (not at `limit = 20`), the "turned off" notice with "Turn on", the company's methods (`DeliveryOptionField`, faded by
+  `DeliveryGate` when off; edit/remove), pickup (`DeliveryFlagField`, three-state).
+- `delivery_method/method_card.dart` — `DeliveryMethodCard`: one kind of service, its sentence and the catalog's brands
+  of that kind; `deliveryMethodName`, `deliveryMethodNote`.
+- `delivery_method/method_general.dart` — `DeliveryGeneralDraft` (meeting + note, its controller in no form),
+  `DeliveryGeneralBlock`: "For all your deliveries": for a local reach the areas (open the map) and fixed/flexible
+  (`delivery_meeting_field.dart` — `DeliveryMeetingField`, two tiles), the delivery note.
+- `delivery_method/delivery_option_field.dart` — `DeliveryOptionField`: one option, its mode/reach line and its figures
+  as `SettingsTag`s (off a local reach, the branch it leaves from). `delivery_flag_field.dart` — `DeliveryFlagField`
+  (three-state `SettingsSelect` + `showSelectMenu`). `delivery_gate.dart` — `DeliveryGate({off, child})`: fades what only
+  holds while delivering when `delivers == false`; still editable.
+- `delivery_option/_delivery_option.dart` — `DeliveryOptionForm({catalog, currency, onSubmit, option?, mode?, extra?,
+  saving})`: mode (only without `mode`) → carrier → reach → figures, then `extra(reach)`. Carrier pickers are one per mode (their lists
+  differ); radius/zones only for a local reach, the branch it leaves from only off one (with several branches, `BranchService`). Checks what the backend refuses. **Hands the create/update body to `onSubmit`; writes nothing.**
 - `delivery_option/zone_rows.dart` — `ZoneDraft`, `ZoneRows`: a row per zone (area + its own price). Their
   controllers belong to **no** form: rows come and go, and a registered one would stay and be validated.
-- `edit_delivery_notes/_edit_delivery_notes.dart` — `showDeliveryNotes(context, notes:)`,
-  `EditDeliveryNotesModal`: one field. **Returns the text** (empty erases).
 - `shipment/_shipment.dart` — `showShipment(context, service:, id:)`, `ShipmentModal`: one shipment of the board, following
   the desk's `ShipmentsService` row (gone = left the board); moves and the form only with `shipments.dispatch`.
 - `shipment/shipment_moves.dart` — `ShipmentMoves`: a button per state of the catalog's `next` (assigned only with a carrier).

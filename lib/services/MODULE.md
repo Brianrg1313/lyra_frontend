@@ -155,7 +155,7 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `business_delivery_request.dart` — `DeliveryFlag`, `deliveryFlagRequest`, `deliveryMeetingRequest`, `deliveryNotesRequest`,
   create/update/remove option bodies (`BRANCH` only off a local reach, on edit only when changed, `""` = whichever serves), `readDeliveryAmount` (refuses `1,500`, like the backend).
 - `business_delivery_service.dart` — `BusinessDeliveryService` (+ status): the answer, its options and the
-  carrier catalog (`/delivery/providers/`, read by the form only). Provided by the delivery settings panel (`modals/deliveries/delivery_settings/`).
+  carrier catalog (`/delivery/providers/`, read by the form only). Provided by the delivery methods panel (`modals/deliveries/delivery_method/`).
 - `delivery_area_model.dart` — `DeliveryAreasModel` (`scope`, both maps in `areas`; `of(branch)`: one map, null = shared;
   `inForce(branches)`: the backend's `DeliveryAreas.inForce`; `holding(point)`: active, cheapest first), `DeliveryArea` (`branch`,
   `radius` | `polygon`, fee, minimum, active), `DeliveryScope {global, branch}`, `deliveringBranch` (the backend's
