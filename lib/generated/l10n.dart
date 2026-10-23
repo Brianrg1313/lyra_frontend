@@ -22924,6 +22924,166 @@ class S {
     );
   }
 
+  /// `What they ride`
+  String get business_delivery_vehicle {
+    return Intl.message(
+      'What they ride',
+      name: 'business_delivery_vehicle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Motorcycle`
+  String get business_delivery_vehicle_motorcycle {
+    return Intl.message(
+      'Motorcycle',
+      name: 'business_delivery_vehicle_motorcycle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Car`
+  String get business_delivery_vehicle_car {
+    return Intl.message(
+      'Car',
+      name: 'business_delivery_vehicle_car',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bicycle`
+  String get business_delivery_vehicle_bicycle {
+    return Intl.message(
+      'Bicycle',
+      name: 'business_delivery_vehicle_bicycle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Van or truck`
+  String get business_delivery_vehicle_van {
+    return Intl.message(
+      'Van or truck',
+      name: 'business_delivery_vehicle_van',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price per day`
+  String get business_delivery_rates {
+    return Intl.message(
+      'Price per day',
+      name: 'business_delivery_rates',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With {branch}'s opening hours. Each day is free or has its price; your assistant quotes the day the customer orders.`
+  String business_delivery_rates_note(Object branch) {
+    return Intl.message(
+      'With $branch\'s opening hours. Each day is free or has its price; your assistant quotes the day the customer orders.',
+      name: 'business_delivery_rates_note',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `Each day is free or has its price; your assistant quotes the day the customer orders.`
+  String get business_delivery_rates_note_plain {
+    return Intl.message(
+      'Each day is free or has its price; your assistant quotes the day the customer orders.',
+      name: 'business_delivery_rates_note_plain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Free`
+  String get business_delivery_rate_free {
+    return Intl.message(
+      'Free',
+      name: 'business_delivery_rate_free',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With price`
+  String get business_delivery_rate_paid {
+    return Intl.message(
+      'With price',
+      name: 'business_delivery_rate_paid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Same as that day`
+  String get business_delivery_rate_same {
+    return Intl.message(
+      'Same as that day',
+      name: 'business_delivery_rate_same',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Closed`
+  String get business_delivery_rate_closed {
+    return Intl.message(
+      'Closed',
+      name: 'business_delivery_rate_closed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holidays`
+  String get business_delivery_rate_holidays {
+    return Intl.message(
+      'Holidays',
+      name: 'business_delivery_rate_holidays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your country's national holidays`
+  String get business_delivery_rate_holidays_note {
+    return Intl.message(
+      'Your country\'s national holidays',
+      name: 'business_delivery_rate_holidays_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In {currency}`
+  String business_delivery_rate_hint(Object currency) {
+    return Intl.message(
+      'In $currency',
+      name: 'business_delivery_rate_hint',
+      desc: '',
+      args: [currency],
+    );
+  }
+
+  /// `Write the price for {day}, or make it free.`
+  String business_delivery_rate_missing(Object day) {
+    return Intl.message(
+      'Write the price for $day, or make it free.',
+      name: 'business_delivery_rate_missing',
+      desc: '',
+      args: [day],
+    );
+  }
+
   /// `From`
   String get business_delivery_eta_min {
     return Intl.message(

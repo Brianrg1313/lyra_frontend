@@ -13,6 +13,7 @@ import 'package:app/services/assistant/assistant_app_tools.dart';
 import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
+import 'package:app/services/business/business_service.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/business_location_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
@@ -444,7 +445,8 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
                 shipments: _board,
                 onShipment: _openShipment,
                 litShipment: _litShipment,
-                flow: _flow
+                flow: _flow,
+                company: context.read<BusinessService>().activeId == null ? "" : context.read<BusinessService>().active.name
               ))
             ),
             Positioned(

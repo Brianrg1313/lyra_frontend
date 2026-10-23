@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/appointments/opening_hours_service.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
@@ -11,6 +12,11 @@ import 'package:app/services/files/file_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
+import 'package:app/screens/modals/shared/opening_hours/week_editor.dart';
+
+import './state/rates_draft.dart';
+import './widgets/rates_field.dart';
+import './widgets/vehicle_picker.dart';
 
 /// One way the company delivers: who carries the order, what it costs and how
 /// long it takes.
@@ -28,6 +34,13 @@ import 'package:core/form.dart';
 /// the drawn areas (the backend answers a radius before giving up on a point
 /// outside them).
 ///
+/// **The company's own delivery is priced per day.** It is named after the
+/// branch it is added from, or the company ([ownName]); it says what its
+/// couriers ride, and each weekday and national holidays are free or have
+/// their price beside the hours of the branch picked ([hoursOf]) — one price
+/// for every day does not hold "free on weekdays, 5 on weekends". Its single
+/// fee is then not asked and is sent empty: the rates say every day's.
+///
 /// It checks here what the backend would refuse, in the same terms (amounts
 /// with at most two decimals and no thousands separator, a time up to thirty
 /// days), so a mistake is said beside the field and not as an error code
@@ -44,7 +57,10 @@ class DeliveryOptionForm extends StatefulWidget {
     required this.onSubmit,
     this.option,
     this.mode,
-    this.saving = false
+    this.saving = false,
+    this.ownName,
+    this.hoursOf,
+    this.branchName
   });
 
   /// What the form picks from. `null` when the catalog could not be read: the
@@ -67,6 +83,15 @@ class DeliveryOptionForm extends StatefulWidget {
 
   /// A write is under way: the save button spins and does not answer.
   final bool saving;
+
+  /// The name a new own delivery opens with: the branch it is added from,
+  /// else the company.
+  final String? ownName;
+
+  /// The branch whose hours stand beside an own delivery's prices, named
+  /// [branchName]; `null` shows the days alone.
+  final String? hoursOf;
+  final String? branchName;
 
   @override
   State<DeliveryOptionForm> createState() => _DeliveryOptionFormState();
@@ -132,7 +157,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     key: "LABEL",
     form: _form,
     max: 64,
-    initial: _option?.label,
+    initial: _option?.label ?? (widget.mode == DeliveryMode.own ? widget.ownName : null),
     customErrors: {
       InputError.long: S.of(context).form_long_ma(
         S.of(context).business_delivery_label
@@ -190,9 +215,22 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     }
   );
 
+  /// What the company's couriers ride (own only).
+  late DeliveryVehicle? _vehicle = _option?.vehicle;
+
+  /// Each day's price (own only).
+  late final RatesDraft _rates = RatesDraft.of(_option);
+
+  /// The week shown beside the prices.
+  late final OpeningHoursService? _hours = widget.hoursOf == null
+    ? null
+    : OpeningHoursService(branch: widget.hoursOf!);
+
   @override
   void initState() {
     super.initState();
+
+    _hours?.load();
 
     final option = _option;
 
@@ -220,6 +258,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
       controller.dispose();
     }
 
+    _rates.dispose();
+    _hours?.dispose();
     _saving.dispose();
     _form.dispose();
     super.dispose();
@@ -268,7 +308,18 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           controller: _label,
           leftIcon: Icon(CI.bookmark, color: scheme.icon)
         ),
-        Input(
+        if (mode == DeliveryMode.own) ...[
+          DeliveryVehiclePicker(
+            selected: _vehicle,
+            onChanged: (vehicle) => setState(() => _vehicle = vehicle)
+          ),
+          DeliveryRatesField(
+            draft: _rates,
+            currency: currency.symbol,
+            hours: _hours,
+            branch: widget.branchName
+          )
+        ] else Input(
           title: _optional(context, S.of(context).business_delivery_fee),
           placeholder: S.of(context).business_delivery_fee_hint(currency.symbol),
           controller: _fee,
@@ -428,7 +479,9 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
       return;
     }
 
-    final fee = readDeliveryAmount(_fee.value);
+    final own = mode == DeliveryMode.own;
+    // Own: the rates say every day's price, so no single fee goes with them.
+    final fee = own ? (valid: true, value: null) : readDeliveryAmount(_fee.value);
     final freeFrom = readDeliveryAmount(_freeFrom.value);
 
     if (!fee.valid ||
@@ -436,6 +489,19 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
         (fee.value ?? 0) > _maxAmount ||
         (freeFrom.value ?? 0) > _maxAmount) {
       _fail(S.of(context).business_delivery_amount_invalid);
+      return;
+    }
+
+    final rates = own ? _rates.read(max: _maxAmount) : null;
+
+    if (rates != null && rates.missing != null) {
+      final missing = rates.missing!;
+
+      _fail(rates.invalid
+        ? S.of(context).business_delivery_amount_invalid
+        : S.of(context).business_delivery_rate_missing(missing == 7
+            ? S.of(context).business_delivery_rate_holidays
+            : WeekEditor.dayName(context, missing)));
       return;
     }
 
@@ -464,7 +530,9 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           freeFrom: freeFrom.value,
           etaMin: etaMin,
           etaMax: etaMax,
-          notes: _notes.value
+          notes: _notes.value,
+          vehicle: own ? _vehicle : null,
+          rates: rates?.rates
         )
       : createDeliveryOptionRequest(
           mode: mode,
@@ -475,7 +543,9 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           freeFrom: freeFrom.value,
           etaMin: etaMin,
           etaMax: etaMax,
-          notes: _notes.value
+          notes: _notes.value,
+          vehicle: own ? _vehicle : null,
+          rates: rates?.rates
         ));
   }
 

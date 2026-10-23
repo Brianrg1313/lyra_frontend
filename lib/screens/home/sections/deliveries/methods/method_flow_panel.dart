@@ -37,11 +37,20 @@ class MethodFlowPanel extends StatefulWidget {
     super.key,
     required this.flow,
     required this.areas,
-    required this.onDone
+    required this.onDone,
+    this.ownName,
+    this.hoursOf,
+    this.branchName
   });
 
   final MethodFlow flow;
   final Widget Function(BuildContext context) areas;
+
+  /// See `DeliveryOptionForm`: the name a new own delivery opens with, and
+  /// the branch whose hours stand beside its prices.
+  final String? ownName;
+  final String? hoursOf;
+  final String? branchName;
 
   /// The flow ended on its last step.
   final void Function() onDone;
@@ -129,6 +138,9 @@ class _MethodFlowPanelState extends State<MethodFlowPanel> {
               option: editing,
               mode: editing == null ? mode : null,
               saving: _saving,
+              ownName: widget.ownName,
+              hoursOf: widget.hoursOf,
+              branchName: widget.branchName,
               onSubmit: (request) => _save(service, delivery, request)
             ),
             MethodStep.areas => Column(

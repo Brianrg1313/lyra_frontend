@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
@@ -118,6 +118,67 @@ enum DeliveryMode {
   };
 }
 
+/// What the company's own couriers ride (an own option only): what tells a
+/// customer whether a fridge fits. [van] is any van or truck.
+enum DeliveryVehicle {
+  motorcycle,
+  car,
+  bicycle,
+  van;
+
+  static DeliveryVehicle? from(dynamic code) {
+    final text = code?.toString().trim().toLowerCase();
+
+    return values.where((vehicle) => vehicle.name == text).firstOrNull;
+  }
+
+  /// Code that travels to the backend.
+  String get value => name;
+
+  // The icon font has no vehicles.
+  IconData get icon => switch (this) {
+    motorcycle => Icons.two_wheeler_rounded,
+    car => Icons.directions_car_rounded,
+    bicycle => Icons.pedal_bike_rounded,
+    van => Icons.local_shipping_rounded
+  };
+
+  String label(BuildContext context) => switch (this) {
+    motorcycle => S.of(context).business_delivery_vehicle_motorcycle,
+    car => S.of(context).business_delivery_vehicle_car,
+    bicycle => S.of(context).business_delivery_vehicle_bicycle,
+    van => S.of(context).business_delivery_vehicle_van
+  };
+}
+
+/// What the company's own delivery costs on each day, when it is not one
+/// price every day: free from Monday to Friday and 5 on weekends.
+///
+/// The backend quotes the day the customer asks, in the company's zone, and a
+/// national holiday of its country costs [holiday] over its weekday's.
+class DeliveryRates {
+  const DeliveryRates({required this.days, this.holiday});
+
+  /// Seven prices by weekday, 0 Sunday to 6 Saturday (the weekdays of the
+  /// opening hours). `0` is free; `null` is the option's `fee`.
+  final List<double?> days;
+
+  /// `null` is the weekday's price.
+  final double? holiday;
+
+  static DeliveryRates? from(dynamic raw) {
+    if (raw is! Map || raw["days"] is! List || (raw["days"] as List).length != 7) return null;
+
+    return DeliveryRates(
+      days: [for (final day in raw["days"] as List) _number(day)],
+      holiday: _number(raw["holiday"])
+    );
+  }
+
+  /// The body's `RATES`.
+  Map<String, dynamic> get request => {"DAYS": days, "HOLIDAY": holiday};
+}
+
 /// How far an option reaches. It is what answers "do you ship to another
 /// country?" once the customer's country is known.
 enum DeliveryCoverage {
@@ -187,7 +248,9 @@ class DeliveryOption {
     this.etaMax,
     this.notes = "",
     this.branch,
-    this.position = 100
+    this.position = 100,
+    this.vehicle,
+    this.rates
   });
 
   /// Public uuid: what an edit and a removal name it by.
@@ -240,6 +303,12 @@ class DeliveryOption {
 
   final int position;
 
+  /// What its couriers ride; own options only, `null` when it did not say.
+  final DeliveryVehicle? vehicle;
+
+  /// Its price per day; own options only, `null` is [fee] every day.
+  final DeliveryRates? rates;
+
   /// The carrier's brand: its catalog name, or its code when the catalog no
   /// longer knows it. Empty when the option names none.
   String get carrier => providerName.isNotEmpty ? providerName : provider;
@@ -278,7 +347,9 @@ class DeliveryOption {
       etaMax: _number(row["eta_max"])?.round(),
       notes: _text(row["notes"]),
       branch: _text(row["branch"]).isEmpty ? null : _text(row["branch"]),
-      position: _number(row["position"])?.round() ?? 100
+      position: _number(row["position"])?.round() ?? 100,
+      vehicle: DeliveryVehicle.from(row["vehicle"]),
+      rates: DeliveryRates.from(row["rates"])
     );
   }
 }

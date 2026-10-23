@@ -69,7 +69,8 @@ class DeliveriesPanel extends StatelessWidget {
     required this.branchPicker,
     this.query = "",
     this.shipments = true,
-    this.litShipment
+    this.litShipment,
+    this.company = ""
   });
 
   final AreaEditor editor;
@@ -101,6 +102,9 @@ class DeliveriesPanel extends StatelessWidget {
   /// The shipment picked on the map.
   final String? litShipment;
 
+  /// The company's name: a new own delivery's with "All branches" picked.
+  final String company;
+
   /// Adding or editing a delivery method, when under way.
   final MethodFlow flow;
 
@@ -126,9 +130,18 @@ class DeliveriesPanel extends StatelessWidget {
     if (editor.isOpen) return _areas(context);
 
     if (flow.isOpen) {
+      final branches = context.watch<BusinessBranchesService>().branches;
+      final picked = branches.where((entry) => entry.id == branch).firstOrNull;
+      // The hours beside an own delivery's prices: the branch picked's, else
+      // the main one's — a method is the company's, any week is an example.
+      final shown = picked ?? branches.where((entry) => entry.main).firstOrNull ?? branches.firstOrNull;
+
       return MethodFlowPanel(
         flow: flow,
         areas: _areas,
+        ownName: picked?.name ?? (company.isEmpty ? null : company),
+        hoursOf: shown?.id,
+        branchName: shown?.name,
         onDone: () {
           flow.close();
           onView(DeliveriesView.areas);

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:core/button.dart';
 import 'package:core/core.dart';
+import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
@@ -16,6 +17,7 @@ import 'package:app/screens/home/sections/business/settings/profile_action.dart'
 import 'package:app/screens/home/sections/deliveries/methods/method_flow_panel.dart';
 import 'package:app/screens/home/sections/deliveries/methods/method_list.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
+import 'package:app/screens/home/sections/deliveries/methods/state/rates_draft.dart';
 
 /// The delivery methods in the desk's panel: the Methods view (what the
 /// company has, pickup) and the steps a new method takes there — who carries
@@ -62,7 +64,7 @@ class _Source implements DeliverySource {
 
 /// The panel's two states as the desk swaps them: the Methods view, or the
 /// flow once started. [done] counts the flows ended on their last step.
-Future<MethodFlow> _pump(WidgetTester tester, _Source source, {List<int>? done}) async {
+Future<MethodFlow> _pump(WidgetTester tester, _Source source, {List<int>? done, String? ownName}) async {
   final service = BusinessDeliveryService(source: source);
   final flow = MethodFlow();
 
@@ -89,6 +91,7 @@ Future<MethodFlow> _pump(WidgetTester tester, _Source source, {List<int>? done})
               ? MethodFlowPanel(
                   flow: flow,
                   areas: (context) => const Center(child: TextSmall("the areas list")),
+                  ownName: ownName,
                   onDone: () {
                     done?.add(1);
                     flow.close();
@@ -234,6 +237,116 @@ void main() {
     expect(source.created, isEmpty);
     // Back on the list, not on to the areas.
     expect(find.text("Where do you deliver?"), findsNothing);
+  });
+
+  /// Opens the own delivery's form of a new method.
+  Future<_Source> own(WidgetTester tester, {String? ownName}) async {
+    final source = _Source(const BusinessDeliveryModel(delivers: true, currency: "USD"));
+    final flow = await _pump(tester, source, ownName: ownName);
+
+    flow.start();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("Your own deliveries"));
+    await tester.pumpAndSettle();
+
+    return source;
+  }
+
+  /// Turns the [index]th row of the prices (Monday first, holidays last) to a
+  /// price, and types [amount] in it.
+  Future<void> price(WidgetTester tester, int index, String amount) async {
+    final paid = find.text("With price").at(index);
+
+    await tester.ensureVisible(paid);
+    await tester.tap(paid);
+    await tester.pumpAndSettle();
+
+    final fields = find.byWidgetPredicate((widget) => widget is Input && widget.placeholder.startsWith("In "));
+    await tester.enterText(find.descendant(of: fields.last, matching: find.byType(EditableText)), amount);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets("own delivery: named after where it is added, what it rides, and a price per day", (tester) async {
+    await own(tester, ownName: "Sede Centro");
+
+    expect(tester.takeException(), isNull);
+    expect(find.text("Sede Centro"), findsOneWidget);
+    expect(find.text("Motorcycle"), findsOneWidget);
+    expect(find.text("Van or truck"), findsOneWidget);
+    expect(find.text("Price per day"), findsOneWidget);
+    expect(find.text("Monday"), findsOneWidget);
+    expect(find.text("Sunday"), findsOneWidget);
+    expect(find.text("Holidays"), findsOneWidget);
+    // Seven days free and holidays as their weekday, until said otherwise.
+    expect(find.text("Free"), findsNWidgets(8));
+    expect(find.text("Same as that day"), findsOneWidget);
+    // One price for every day is the rates' to say.
+    expect(find.text("Price · optional"), findsNothing);
+  });
+
+  testWidgets("free on weekdays, 5 on weekends and holidays travels as the rates", (tester) async {
+    final source = await own(tester);
+
+    await tester.tap(find.text("Motorcycle"));
+    await tester.pumpAndSettle();
+    await price(tester, 5, "5");
+    await price(tester, 6, "5");
+    await price(tester, 7, "5,5");
+    await tester.ensureVisible(find.text("Save"));
+    await tester.tap(find.text("Save"));
+    await tester.pumpAndSettle();
+
+    expect(source.created, hasLength(1));
+    expect(source.created.single["VEHICLE"], "motorcycle");
+    // Sunday first, as the backend counts them.
+    expect(source.created.single["RATES"], {"DAYS": [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0], "HOLIDAY": 5.5});
+    expect(source.created.single.containsKey("FEE"), isFalse);
+  });
+
+  testWidgets("a day with a price and none written is not saved", (tester) async {
+    final source = await own(tester);
+
+    await price(tester, 0, "");
+    await tester.ensureVisible(find.text("Save"));
+    await tester.tap(find.text("Save"));
+    await tester.pumpAndSettle();
+
+    expect(source.created, isEmpty);
+  });
+
+  test("an own delivery from before the rates opens with its one price every day", () {
+    final draft = RatesDraft.of(const DeliveryOption(id: "a1", mode: DeliveryMode.own, fee: 3));
+    addTearDown(draft.dispose);
+
+    expect(draft.days.every((day) => day.charge == RateCharge.paid && day.price.value == "3"), isTrue);
+    expect(draft.holiday.charge, RateCharge.same);
+    expect(draft.read().rates?.request, {"DAYS": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0], "HOLIDAY": null});
+
+    // A price emptied is a price forgotten, not a free day: Monday is named.
+    draft.days[1].price.textController.text = "";
+    expect(draft.read(), (rates: null, missing: 1, invalid: false));
+    draft.days[1].price.textController.text = "1.500";
+    expect(draft.read().invalid, isTrue);
+  });
+
+  test("the rates and the vehicle are read as the backend answers them", () {
+    final option = DeliveryOption.from({
+      "id": "a1",
+      "mode": "own",
+      "vehicle": "van",
+      "rates": {"days": [5, 0, 0, 0, 0, 0, "5.50"], "holiday": null}
+    })!;
+
+    expect(option.vehicle, DeliveryVehicle.van);
+    expect(option.rates?.days, [5, 0, 0, 0, 0, 0, 5.5]);
+    expect(option.rates?.holiday, isNull);
+    // An app or a carrier keeps neither.
+    expect(createDeliveryOptionRequest(
+      mode: DeliveryMode.platform,
+      label: "App",
+      vehicle: DeliveryVehicle.car,
+      rates: option.rates
+    ).keys, isNot(contains("RATES")));
   });
 
   test("the meeting point travels as a two-state flag", () {
