@@ -37,7 +37,8 @@ enum DeliveriesView { shipments, areas }
 
 /// The panel over the desk's map.
 ///
-/// While looking: a search over the view on screen, the branch the desk is
+/// While looking: the title and what the desk is for, a search over the view
+/// on screen, the branch the desk is
 /// filtered by ("All branches" or one), the switch between the two views, and
 /// the view. The deliveries (`ShipmentList`) are the daily work, open first;
 /// the areas show where it delivers (shared or per branch), "Add area", the
@@ -147,6 +148,15 @@ class DeliveriesPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        TextLarge(S.of(context).deliveries, ellipsis: true),
+        SizedBox(height: AppSize.gap * 0.5),
+        TextSmall(
+          S.of(context).deliveries_subtitle,
+          lines: 2,
+          ellipsis: true,
+          color: ThemeColor.of(context).text.secondary
+        ),
+        SizedBox(height: AppSize.spaceS),
         SearchInput(
           controller: search,
           placeholder: view == DeliveriesView.shipments

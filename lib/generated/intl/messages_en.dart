@@ -2910,6 +2910,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries_shipments_not_yours": MessageLookupByLibrary.simpleMessage(
       "You don\'t work in this branch, so its deliveries aren\'t shown here.",
     ),
+    "deliveries_subtitle": MessageLookupByLibrary.simpleMessage(
+      "The orders on their way to your customers, and where they are.",
+    ),
     "deliveries_view_areas": MessageLookupByLibrary.simpleMessage("Areas"),
     "deliveries_view_shipments": MessageLookupByLibrary.simpleMessage(
       "Deliveries",

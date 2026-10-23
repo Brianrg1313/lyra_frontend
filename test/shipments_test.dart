@@ -283,14 +283,14 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets("draws each shipment and counts what is going", (tester) async {
+    testWidgets("draws each shipment", (tester) async {
       final service = ShipmentsService()..seed([Shipment.read(_row("1"))!, Shipment.read(_row("2", sale: "open"))!]);
 
       await pump(tester, service);
 
       expect(find.text("A-000121"), findsOneWidget);
       expect(find.text("A-000122"), findsOneWidget);
-      expect(find.text(S.current.shipments_going_count(2)), findsOneWidget);
+      expect(find.text(S.current.shipments_going_count(2)), findsNothing);
       expect(find.textContaining(S.current.shipments_collect), findsOneWidget);
       service.dispose();
     });

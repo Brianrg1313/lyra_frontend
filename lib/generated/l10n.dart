@@ -18709,6 +18709,16 @@ class S {
     );
   }
 
+  /// `The orders on their way to your customers, and where they are.`
+  String get deliveries_subtitle {
+    return Intl.message(
+      'The orders on their way to your customers, and where they are.',
+      name: 'deliveries_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Branch`
   String get deliveries_branch {
     return Intl.message(

@@ -1928,6 +1928,7 @@
   "deliveries_area_outside": "Outside your areas",
   "deliveries_view_shipments": "Deliveries",
   "deliveries_view_areas": "Areas",
+  "deliveries_subtitle": "The orders on their way to your customers, and where they are.",
   "deliveries_branch": "Branch",
   "deliveries_branch_all": "All branches",
   "deliveries_search_shipments": "Search by customer, ticket or address",

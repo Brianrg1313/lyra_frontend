@@ -9,17 +9,13 @@ import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 
 // WIDGETS
-import 'package:app/screens/modals/deliveries/shipping_settings/_shipping_settings.dart';
-
-import '../widgets/panel_halves.dart';
 import './shipment_format.dart';
 import './shipment_tile.dart';
 
-/// **The branch's deliveries**, in the desk's panel: what is still going or
-/// what was delivered, the ones the panel's search matches, each one a tile
-/// that opens its panel. The branch's schedule (its franjas, week and closed
-/// days) opens from beside the switch; the branch is named by the panel's
-/// branch field.
+/// **The branch's deliveries**, in the desk's panel: the ones still going
+/// (scheduled, pending, on their way; the service's view, never switched
+/// here), the ones the panel's search matches, each one a tile that opens its
+/// panel. The branch is named by the panel's branch field.
 ///
 /// A shipment opens on its own when a customer's payment for a delivery is
 /// approved: there is nothing to create here, so an empty board says where
@@ -37,38 +33,7 @@ class ShipmentList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
-    final scheme = ThemeColor.of(context);
-    final service = context.watch<ShipmentsService>();
-
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Row(children: [
-        Expanded(child: PanelHalves<ShipmentsView>(
-          values: ShipmentsView.values,
-          selected: service.view,
-          label: (view) => switch (view) {
-            ShipmentsView.going => service.view == view && service.status == ShipmentsStatus.ready
-              ? s.shipments_going_count(service.shipments.length)
-              : s.shipments_going,
-            ShipmentsView.delivered => s.shipments_delivered
-          },
-          onChanged: service.show
-        )),
-        SizedBox(width: AppSize.gap),
-        FeedbackButton(
-          action: () => showShippingSettings(context, service: service),
-          height: AppSize.action,
-          padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS),
-          radius: AppSize.corner,
-          color: scheme.surfaceOver,
-          feedbackColor: scheme.line,
-          message: s.shipping_settings_title,
-          child: Icon(CI.calendar, size: AppSize.text, color: scheme.icon)
-        )
-      ]),
-      SizedBox(height: AppSize.spaceS),
-      Expanded(child: _body(context, service))
-    ]);
+    return _body(context, context.watch<ShipmentsService>());
   }
 
   Widget _body(BuildContext context, ShipmentsService service) {
