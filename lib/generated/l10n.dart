@@ -22894,6 +22894,16 @@ class S {
     );
   }
 
+  /// `Order total below which you don't deliver`
+  String get business_delivery_minimum_hint {
+    return Intl.message(
+      'Order total below which you don\'t deliver',
+      name: 'business_delivery_minimum_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Write amounts with digits and up to two decimals, without thousands separators.`
   String get business_delivery_amount_invalid {
     return Intl.message(

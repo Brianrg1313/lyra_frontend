@@ -1640,6 +1640,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_delivery_meeting_note": MessageLookupByLibrary.simpleMessage(
       "What your assistant does when a customer is outside every area you drew.",
     ),
+    "business_delivery_minimum_hint": MessageLookupByLibrary.simpleMessage(
+      "Order total below which you don\'t deliver",
+    ),
     "business_delivery_mode": MessageLookupByLibrary.simpleMessage(
       "Who carries it",
     ),

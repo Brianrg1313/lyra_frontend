@@ -109,6 +109,13 @@ class DeliveryOptionField extends StatelessWidget {
         ),
         color: scheme.snackBar.success
       ),
+      if (option.minimum != null) SettingsTag(
+        icon: CI.cart_shopping,
+        label: S.of(context).deliveries_area_minimum_tag(
+          deliveryAmount(option.minimum!, currency)
+        ),
+        color: neutral
+      ),
       if (eta.isNotEmpty) SettingsTag(
         icon: CI.calendar,
         label: eta,

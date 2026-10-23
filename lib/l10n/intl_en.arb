@@ -2354,6 +2354,7 @@
   "business_delivery_fee_hint": "In {currency}. Empty if it varies, 0 if it's free",
   "business_delivery_free_from_title": "Free from",
   "business_delivery_free_from_hint": "Order total from which it's free",
+  "business_delivery_minimum_hint": "Order total below which you don't deliver",
   "business_delivery_amount_invalid": "Write amounts with digits and up to two decimals, without thousands separators.",
   "business_delivery_eta": "Time until it arrives",
   "business_delivery_eta_note": "From when the customer orders until it's at their door, preparation included. It's what your assistant tells them.",

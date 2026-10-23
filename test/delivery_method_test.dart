@@ -325,6 +325,31 @@ void main() {
     expect(source.created.single.containsKey("FEE"), isFalse);
   });
 
+  testWidgets("an own delivery takes a minimum order, and the card says it", (tester) async {
+    final source = await own(tester);
+
+    final field = find.byWidgetPredicate((widget) => widget is Input && widget.placeholder == "Order total below which you don't deliver");
+    await tester.ensureVisible(field);
+    await tester.enterText(find.descendant(of: field, matching: find.byType(EditableText)), "20");
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text("Save"));
+    await tester.tap(find.text("Save"));
+    await tester.pumpAndSettle();
+
+    expect(source.created.single["MINIMUM"], 20.0);
+  });
+
+  testWidgets("a method with a minimum order shows it", (tester) async {
+    await _pump(tester, _Source(const BusinessDeliveryModel(
+      delivers: true,
+      currency: "USD",
+      options: [DeliveryOption(id: "a2", mode: DeliveryMode.own, fee: 2, minimum: 15)]
+    )));
+
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining("Min. order"), findsOneWidget);
+  });
+
   testWidgets("a run with a price and none written is not saved", (tester) async {
     final source = await own(tester);
 

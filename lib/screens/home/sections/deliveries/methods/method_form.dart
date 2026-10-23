@@ -203,6 +203,14 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     initial: _plain(_option?.freeFrom)
   );
 
+  late final _minimum = InputController(
+    key: "MINIMUM",
+    form: _form,
+    pattern: "[0-9.,]",
+    max: 16,
+    initial: _plain(_option?.minimum)
+  );
+
   late final _etaMin = InputController(
     key: "ETA_MIN",
     form: _form,
@@ -377,6 +385,12 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           placeholder: S.of(context).business_delivery_free_from_hint,
           controller: _freeFrom,
           leftIcon: Icon(CI.gift, color: scheme.icon)
+        ),
+        if (mode == DeliveryMode.own) Input(
+          title: _optional(context, S.of(context).deliveries_area_minimum),
+          placeholder: S.of(context).business_delivery_minimum_hint,
+          controller: _minimum,
+          leftIcon: Icon(CI.cart_shopping, color: scheme.icon)
         ),
         if (mode == DeliveryMode.own) const _Arrival() else ...[
         InputRow(
@@ -554,11 +568,15 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     // Own: the rates say every day's price, so no single fee goes with them.
     final fee = own ? (valid: true, value: null) : readDeliveryAmount(_fee.value);
     final freeFrom = readDeliveryAmount(_freeFrom.value);
+    // Own only: an app or a carrier takes the orders it takes.
+    final minimum = own ? readDeliveryAmount(_minimum.value) : (valid: true, value: null);
 
     if (!fee.valid ||
         !freeFrom.valid ||
+        !minimum.valid ||
         (fee.value ?? 0) > _maxAmount ||
-        (freeFrom.value ?? 0) > _maxAmount) {
+        (freeFrom.value ?? 0) > _maxAmount ||
+        (minimum.value ?? 0) > _maxAmount) {
       _fail(S.of(context).business_delivery_amount_invalid);
       return;
     }
@@ -616,7 +634,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           notes: _notes.value,
           vehicle: own ? _vehicle : null,
           rates: rates?.rates,
-          reach: own ? reach : null
+          reach: own ? reach : null,
+          minimum: minimum.value
         )
       : createDeliveryOptionRequest(
           mode: mode,
@@ -630,7 +649,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           notes: _notes.value,
           vehicle: own ? _vehicle : null,
           rates: rates?.rates,
-          reach: own ? reach : null
+          reach: own ? reach : null,
+          minimum: minimum.value
         ));
   }
 

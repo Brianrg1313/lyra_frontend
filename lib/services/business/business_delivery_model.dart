@@ -334,7 +334,8 @@ class DeliveryOption {
     this.position = 100,
     this.vehicle,
     this.rates,
-    this.reach
+    this.reach,
+    this.minimum
   });
 
   /// Public uuid: what an edit and a removal name it by.
@@ -397,6 +398,10 @@ class DeliveryOption {
   /// the drawn areas say.
   final DeliveryReach? reach;
 
+  /// Order total below which it is not delivered; own options only, `null`
+  /// is none. A drawn area's own minimum outranks it where it has one.
+  final double? minimum;
+
   /// The carrier's brand: its catalog name, or its code when the catalog no
   /// longer knows it. Empty when the option names none.
   String get carrier => providerName.isNotEmpty ? providerName : provider;
@@ -438,7 +443,8 @@ class DeliveryOption {
       position: _number(row["position"])?.round() ?? 100,
       vehicle: DeliveryVehicle.from(row["vehicle"]),
       rates: DeliveryRates.from(row["rates"]),
-      reach: DeliveryReach.from(row["reach"])
+      reach: DeliveryReach.from(row["reach"]),
+      minimum: _number(row["minimum"])
     );
   }
 }
