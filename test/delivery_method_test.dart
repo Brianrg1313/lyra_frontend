@@ -375,6 +375,46 @@ void main() {
     expect(find.text("Measure it on the map first, or pick another way."), findsWidgets);
   });
 
+  testWidgets("a way left and picked again keeps its figure's field alive", (tester) async {
+    final editor = AreaEditor(map: MapController());
+    addTearDown(editor.dispose);
+
+    await own(tester, editor: editor);
+
+    for (final way in ["Travel time", "Road distance", "Around", "Travel time", "Around"]) {
+      await tester.ensureVisible(find.text(way));
+      await tester.tap(find.text(way));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+
+    await tester.ensureVisible(find.text("5 km"));
+    await tester.tap(find.text("5 km"));
+    await tester.pumpAndSettle();
+
+    expect(editor.radius, 5.0);
+  });
+
+  testWidgets("a price hidden by Free can be asked for again", (tester) async {
+    final source = await own(tester);
+
+    await price(tester, 0, "4");
+
+    final free = find.text("Free").at(0);
+    await tester.ensureVisible(free);
+    await tester.tap(free);
+    await tester.pumpAndSettle();
+    await price(tester, 0, "4");
+
+    expect(tester.takeException(), isNull);
+
+    await tester.ensureVisible(find.text("Save"));
+    await tester.tap(find.text("Save"));
+    await tester.pumpAndSettle();
+
+    expect(source.created.single["RATES"], {"DAYS": [0.0, 4.0, 4.0, 4.0, 4.0, 4.0, 0.0], "HOLIDAY": null});
+  });
+
   test("an own delivery from before the rates opens with its one price every day", () {
     final draft = RatesDraft.of(const DeliveryOption(id: "a1", mode: DeliveryMode.own, fee: 3));
     addTearDown(draft.dispose);

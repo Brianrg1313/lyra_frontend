@@ -73,9 +73,15 @@ class _DeliveryReachFieldState extends State<DeliveryReachField> {
 
   DeliveryTravelMode get _mode => widget.vehicle?.travel ?? DeliveryTravelMode.motorcycle;
 
-  /// Out of any form: they are the map's figures, read as they are typed.
+  /// The map's figures, read as they are typed and never validated as a
+  /// form. They still need one of their own: a controller with none is
+  /// disposed by its `Input` on unmount, and each figure's field comes and
+  /// goes with the way picked.
+  final _figures = FormController();
+
   late final _radius = InputController(
     key: "REACH_RADIUS",
+    form: _figures,
     pattern: "[0-9.,]",
     max: 6,
     initial: deliveryNumber(_editor.radius)
@@ -83,6 +89,7 @@ class _DeliveryReachFieldState extends State<DeliveryReachField> {
 
   late final _minutes = InputController(
     key: "REACH_MINUTES",
+    form: _figures,
     type: InputType.numeric,
     max: 3,
     initial: "${_editor.minutes}"
@@ -90,6 +97,7 @@ class _DeliveryReachFieldState extends State<DeliveryReachField> {
 
   late final _km = InputController(
     key: "REACH_KM",
+    form: _figures,
     pattern: "[0-9.,]",
     max: 5,
     initial: deliveryNumber(_editor.km)
@@ -124,9 +132,11 @@ class _DeliveryReachFieldState extends State<DeliveryReachField> {
   @override
   void dispose() {
     _radius.textController.removeListener(_onRadius);
+    // A form only holds the fields it has seen built.
     _radius.dispose();
     _minutes.dispose();
     _km.dispose();
+    _figures.dispose();
     _measuring.dispose();
     super.dispose();
   }

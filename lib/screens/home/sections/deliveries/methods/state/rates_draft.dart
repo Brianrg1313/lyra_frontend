@@ -11,12 +11,15 @@ enum RateCharge { free, paid, same }
 
 /// One price as the form holds it.
 ///
-/// Its price field is in no `FormController`: a field hidden by "Free" would
-/// otherwise still be validated with what it was left holding.
+/// Its price field is in no form the method validates: a field hidden by
+/// "Free" would otherwise still be validated with what it was left holding.
+/// It has one of its own all the same, as a controller with none is disposed
+/// by its `Input` when "Free" hides it, and "Price" brings that field back.
 class RateDraft {
   RateDraft(this.charge, {String? price})
     : price = InputController(
         key: "RATE",
+        form: FormController(),
         pattern: "[0-9.,]",
         max: 16,
         initial: price
@@ -139,6 +142,7 @@ class RatesDraft {
   void dispose() {
     for (final draft in [for (final group in _groups) group.draft, holiday, ..._retired]) {
       draft.price.dispose();
+      draft.price.form.dispose();
     }
   }
 

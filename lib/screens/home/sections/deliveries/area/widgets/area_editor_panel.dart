@@ -90,9 +90,14 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
     initial: _plain(_area?.minimum)
   );
 
-  /// Out of [_form]: it is the map's figure, read as it is typed.
+  /// Out of [_form]: the map's figures, read as they are typed. Kept in a
+  /// form of their own, as a controller with none is disposed by its `Input`
+  /// on unmount, and each field comes and goes with the method picked.
+  final _figures = FormController();
+
   late final _radius = InputController(
     key: "RADIUS",
+    form: _figures,
     pattern: "[0-9.,]",
     max: 6,
     initial: deliveryNumber(_editor.radius)
@@ -100,6 +105,7 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
 
   late final _minutes = InputController(
     key: "MINUTES",
+    form: _figures,
     type: InputType.numeric,
     max: 3,
     initial: "${_editor.minutes}"
@@ -107,6 +113,7 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
 
   late final _mode = InputController.select(
     key: "MODE",
+    form: _figures,
     initial: _editor.mode.value
   );
 
@@ -125,9 +132,11 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
   @override
   void dispose() {
     _radius.textController.removeListener(_onRadius);
+    // A form only holds the fields it has seen built.
     _radius.dispose();
     _minutes.dispose();
     _mode.dispose();
+    _figures.dispose();
     _computing.dispose();
     _saving.dispose();
     _form.dispose();
