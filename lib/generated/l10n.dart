@@ -18499,16 +18499,6 @@ class S {
     );
   }
 
-  /// `Delivery methods`
-  String get deliveries_method_title {
-    return Intl.message(
-      'Delivery methods',
-      name: 'deliveries_method_title',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `How your orders reach your customers. Add every method you use: your assistant offers them when a customer asks.`
   String get deliveries_method_subtitle {
     return Intl.message(
@@ -18579,10 +18569,10 @@ class S {
     );
   }
 
-  /// `A shipping company sends it across the country or abroad`
+  /// `A parcel company collects the order and takes it to your customer's door`
   String get deliveries_method_courier_note {
     return Intl.message(
-      'A shipping company sends it across the country or abroad',
+      'A parcel company collects the order and takes it to your customer\'s door',
       name: 'deliveries_method_courier_note',
       desc: '',
       args: [],
@@ -18619,10 +18609,10 @@ class S {
     );
   }
 
-  /// `Pick one above to start delivering.`
+  /// `Add one with “New delivery method”, above.`
   String get deliveries_method_yours_empty_note {
     return Intl.message(
-      'Pick one above to start delivering.',
+      'Add one with “New delivery method”, above.',
       name: 'deliveries_method_yours_empty_note',
       desc: '',
       args: [],
@@ -18649,71 +18639,21 @@ class S {
     );
   }
 
-  /// `Back to delivery methods`
+  /// `Back`
   String get deliveries_method_back {
     return Intl.message(
-      'Back to delivery methods',
+      'Back',
       name: 'deliveries_method_back',
       desc: '',
       args: [],
     );
   }
 
-  /// `Who carries it, how far it goes, what it costs and how long it takes.`
+  /// `Who carries it, what it costs and how long it takes.`
   String get deliveries_method_edit_note {
     return Intl.message(
-      'Who carries it, how far it goes, what it costs and how long it takes.',
+      'Who carries it, what it costs and how long it takes.',
       name: 'deliveries_method_edit_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `For all your deliveries`
-  String get deliveries_method_general {
-    return Intl.message(
-      'For all your deliveries',
-      name: 'deliveries_method_general',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `These hold for every delivery method, not only this one.`
-  String get deliveries_method_general_note {
-    return Intl.message(
-      'These hold for every delivery method, not only this one.',
-      name: 'deliveries_method_general_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Where you deliver`
-  String get deliveries_method_area {
-    return Intl.message(
-      'Where you deliver',
-      name: 'deliveries_method_area',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Your delivery areas are drawn on the map.`
-  String get deliveries_method_area_note {
-    return Intl.message(
-      'Your delivery areas are drawn on the map.',
-      name: 'deliveries_method_area_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Draw on the map`
-  String get deliveries_method_area_open {
-    return Intl.message(
-      'Draw on the map',
-      name: 'deliveries_method_area_open',
       desc: '',
       args: [],
     );
@@ -18724,6 +18664,56 @@ class S {
     return Intl.message(
       'Delivery method saved',
       name: 'deliveries_method_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{step} of {count}`
+  String deliveries_method_step(Object step, Object count) {
+    return Intl.message(
+      '$step of $count',
+      name: 'deliveries_method_step',
+      desc: '',
+      args: [step, count],
+    );
+  }
+
+  /// `Where do you deliver?`
+  String get deliveries_method_where {
+    return Intl.message(
+      'Where do you deliver?',
+      name: 'deliveries_method_where',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draw on the map the areas your orders reach. Every delivery method delivers inside them.`
+  String get deliveries_method_where_note {
+    return Intl.message(
+      'Draw on the map the areas your orders reach. Every delivery method delivers inside them.',
+      name: 'deliveries_method_where_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Done`
+  String get deliveries_method_done {
+    return Intl.message(
+      'Done',
+      name: 'deliveries_method_done',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Outside your areas`
+  String get deliveries_area_outside {
+    return Intl.message(
+      'Outside your areas',
+      name: 'deliveries_area_outside',
       desc: '',
       args: [],
     );
@@ -18744,6 +18734,16 @@ class S {
     return Intl.message(
       'Areas',
       name: 'deliveries_view_areas',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Methods`
+  String get deliveries_view_methods {
+    return Intl.message(
+      'Methods',
+      name: 'deliveries_view_methods',
       desc: '',
       args: [],
     );
@@ -22854,36 +22854,6 @@ class S {
     );
   }
 
-  /// `Leaves from`
-  String get business_delivery_branch {
-    return Intl.message(
-      'Leaves from',
-      name: 'business_delivery_branch',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The branch that serves the order`
-  String get business_delivery_branch_any {
-    return Intl.message(
-      'The branch that serves the order',
-      name: 'business_delivery_branch_any',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Whichever branch has the order ready`
-  String get business_delivery_branch_any_note {
-    return Intl.message(
-      'Whichever branch has the order ready',
-      name: 'business_delivery_branch_any_note',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `From {branch}`
   String business_delivery_branch_from(Object branch) {
     return Intl.message(
@@ -22891,36 +22861,6 @@ class S {
       name: 'business_delivery_branch_from',
       desc: '',
       args: [branch],
-    );
-  }
-
-  /// `How far it reaches`
-  String get business_delivery_coverage {
-    return Intl.message(
-      'How far it reaches',
-      name: 'business_delivery_coverage',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Pick how far it reaches`
-  String get business_delivery_coverage_placeholder {
-    return Intl.message(
-      'Pick how far it reaches',
-      name: 'business_delivery_coverage_placeholder',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `{coverage}, unless you pick another`
-  String business_delivery_coverage_default(Object coverage) {
-    return Intl.message(
-      '$coverage, unless you pick another',
-      name: 'business_delivery_coverage_default',
-      desc: '',
-      args: [coverage],
     );
   }
 
@@ -22949,76 +22889,6 @@ class S {
     return Intl.message(
       'The radius goes in kilometres, above 0 and up to 1000.',
       name: 'business_delivery_radius_invalid',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Zones`
-  String get business_delivery_zones {
-    return Intl.message(
-      'Zones',
-      name: 'business_delivery_zones',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The areas it reaches, as your customers call them. A zone can have a price of its own.`
-  String get business_delivery_zones_note {
-    return Intl.message(
-      'The areas it reaches, as your customers call them. A zone can have a price of its own.',
-      name: 'business_delivery_zones_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Zone`
-  String get business_delivery_zone_name {
-    return Intl.message(
-      'Zone',
-      name: 'business_delivery_zone_name',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Own price`
-  String get business_delivery_zone_fee {
-    return Intl.message(
-      'Own price',
-      name: 'business_delivery_zone_fee',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add zone`
-  String get business_delivery_zone_add {
-    return Intl.message(
-      'Add zone',
-      name: 'business_delivery_zone_add',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Remove zone`
-  String get business_delivery_zone_remove {
-    return Intl.message(
-      'Remove zone',
-      name: 'business_delivery_zone_remove',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Every zone needs a name of up to 80 characters, and its own price has to be an amount.`
-  String get business_delivery_zone_invalid {
-    return Intl.message(
-      'Every zone needs a name of up to 80 characters, and its own price has to be an amount.',
-      name: 'business_delivery_zone_invalid',
       desc: '',
       args: [],
     );
@@ -23074,11 +22944,21 @@ class S {
     );
   }
 
-  /// `Delivery time`
+  /// `Time until it arrives`
   String get business_delivery_eta {
     return Intl.message(
-      'Delivery time',
+      'Time until it arrives',
       name: 'business_delivery_eta',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From when the customer orders until it's at their door, preparation included. It's what your assistant tells them.`
+  String get business_delivery_eta_note {
+    return Intl.message(
+      'From when the customer orders until it\'s at their door, preparation included. It\'s what your assistant tells them.',
+      name: 'business_delivery_eta_note',
       desc: '',
       args: [],
     );

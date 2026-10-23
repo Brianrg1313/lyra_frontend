@@ -11,6 +11,8 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
+import 'package:app/services/business/business_delivery_model.dart';
+import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_areas_service.dart';
 import 'package:app/services/business/sources/business_source.dart';
@@ -18,9 +20,11 @@ import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/deliveries_panel.dart';
+import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
 
 /// Where the company delivers, edited in the desk's panel: one shared map or
-/// one per branch, switched there; the open map's areas under "Add area".
+/// one per branch, switched there; the open map's areas under "Add area",
+/// and what happens outside them.
 void main() {
   setUpAll(() {
     ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
@@ -39,6 +43,10 @@ void main() {
 
     final areas = DeliveryAreasService(source: deliveries);
     final branches = BusinessBranchesService(source: _Business());
+    final delivery = BusinessDeliveryService(source: deliveries);
+    final flow = MethodFlow();
+
+    addTearDown(flow.dispose);
 
     await tester.pumpWidget(MaterialApp(
       localizationsDelegates: const [
@@ -52,6 +60,7 @@ void main() {
         providers: [
           ChangeNotifierProvider<DeliveryAreasService>.value(value: areas),
           ChangeNotifierProvider<BusinessBranchesService>.value(value: branches),
+          ChangeNotifierProvider<BusinessDeliveryService>.value(value: delivery),
           ChangeNotifierProvider<BranchesFocus>(create: (_) => BranchesFocus())
         ],
         child: ListenableBuilder(listenable: Listenable.merge([areas, editor]), builder: (context, _) {
@@ -69,6 +78,7 @@ void main() {
             view: DeliveriesView.areas,
             onView: (_) {},
             onShipment: (_) {},
+            flow: flow,
             shipments: false
           ));
         })
@@ -77,10 +87,23 @@ void main() {
 
     await areas.load();
     await branches.load();
+    await delivery.load();
     await tester.pumpAndSettle();
 
     return (deliveries, added, editor);
   }
+
+  testWidgets("under the areas, what happens outside them, saved on tap", (tester) async {
+    final (deliveries, _, _) = await pump(tester, "global");
+
+    expect(find.text("Outside your areas"), findsOneWidget);
+
+    await tester.ensureVisible(find.text("Flexible"));
+    await tester.tap(find.text("Flexible"));
+    await tester.pumpAndSettle();
+
+    expect(deliveries.writes, [{"MEETING_POINT": true}]);
+  });
 
   testWidgets("shared: the map every branch serves, no branch to pick", (tester) async {
     await pump(tester, "global");
@@ -171,9 +194,12 @@ class _Deliveries implements DeliverySource {
   });
 
   @override
+  Future<BusinessDeliveryModel> delivery() async => const BusinessDeliveryModel(currency: "USD");
+
+  @override
   Future<void> editDelivery(Map<String, dynamic> request) async {
     writes.add(request);
-    scope = request["DELIVERY_SCOPE"] as String;
+    scope = request["DELIVERY_SCOPE"] as String? ?? scope;
   }
 
   @override

@@ -12,8 +12,8 @@ import 'package:app/services/business/business_delivery_model.dart';
 /// Two answers and not three, unlike `DeliveryFlagField`: it is a promise to
 /// the customer, so until the company turns it on it is off (see
 /// [BusinessDeliveryModel.meeting]). Both drawn at once, each with its
-/// sentence, so the one picked is picked knowingly. Saved with the method,
-/// not on tap.
+/// sentence, so the one picked is picked knowingly. Saved on tap, under the
+/// areas it bends.
 class DeliveryMeetingField extends StatelessWidget {
   const DeliveryMeetingField({super.key, required this.value, required this.onChanged});
 

@@ -23,6 +23,7 @@ class AreaList extends StatelessWidget {
     required this.areas,
     required this.currency,
     required this.probe,
+    this.footer,
     required this.onFocus,
     required this.onEdit,
     required this.onToggle,
@@ -41,6 +42,9 @@ class AreaList extends StatelessWidget {
 
   /// What the tapped point gets, or `null` when none was tapped.
   final Widget? probe;
+
+  /// Under the areas: what happens outside them.
+  final Widget? footer;
 
   /// Moves the map to an area.
   final void Function(DeliveryArea area) onFocus;
@@ -93,7 +97,11 @@ class AreaList extends StatelessWidget {
               onEdit: () => onEdit(areas[i]),
               onToggle: () => onToggle(areas[i]),
               onRemove: () => onRemove(areas[i])
-            )
+            ),
+        if (footer != null) ...[
+          SizedBox(height: AppSize.spaceS),
+          footer!
+        ]
       ]
     );
   }

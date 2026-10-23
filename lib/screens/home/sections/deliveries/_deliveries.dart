@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:app/services/assistant/assistant_app_tools.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
+import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/business_location_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_areas_service.dart';
@@ -30,6 +31,7 @@ import 'package:app/screens/modals/deliveries/shipment/_shipment.dart';
 import './deliveries_header.dart';
 import './deliveries_map.dart';
 import './deliveries_panel.dart';
+import './methods/state/method_flow.dart';
 import './shipments/shipment_markers.dart';
 import './widgets/map_panel.dart';
 
@@ -65,6 +67,8 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   final BusinessBranchesService _branches = BusinessBranchesService();
   final DeliveryAreasService _areas = DeliveryAreasService();
   final ShipmentsService _shipments = ShipmentsService();
+  final BusinessDeliveryService _delivery = BusinessDeliveryService();
+  final MethodFlow _flow = MethodFlow();
   final BranchesFocus _focus = BranchesFocus();
   final MapController _map = MapController();
   late final AreaEditor _editor = AreaEditor(map: _map);
@@ -113,9 +117,12 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
       _branches.load();
       _areas.load();
       if (_board) _shipments.load();
+      // The catalog right after: the method cards name its carriers.
+      _delivery.load().then((_) => mounted ? _delivery.loadCatalog() : null);
     });
 
     _editor.addListener(_glance);
+    _flow.addListener(_glance);
     _areas.addListener(_glance);
     _branches.addListener(_glance);
     _moves = _map.mapEventStream.listen((_) => _glance());
@@ -131,6 +138,8 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     _branches.dispose();
     _areas.dispose();
     _shipments.dispose();
+    _delivery.dispose();
+    _flow.dispose();
     _focus.dispose();
     _map.dispose();
 
@@ -158,6 +167,12 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
       _map.move(point, perBranch ? _map.camera.zoom : DeliveriesMap.businessZoom);
     }
   }
+
+  /// Whether a tap on the map is the areas': while they are listed (their view,
+  /// or the last step of a new method) or one is shaped.
+  bool get _tappable => _editor.isOpen || (_flow.isOpen
+    ? _flow.step == MethodStep.areas
+    : _view == DeliveriesView.areas);
 
   /// Shows [view]; the areas drop the probe a shipment view has no use for.
   void _show(DeliveriesView view) {
@@ -188,6 +203,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
 
       AssistantAppTools.instance.glance("deliveries", {
         "view": _view.name,
+        "adding_method": ?_flow.step?.name,
         "center": point(camera.center),
         "zoom": double.parse(camera.zoom.toStringAsFixed(1)),
         "tapped": ?(probe == null ? null : point(probe)),
@@ -288,12 +304,13 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
       ChangeNotifierProvider<BusinessBranchesService>.value(value: _branches),
       ChangeNotifierProvider<DeliveryAreasService>.value(value: _areas),
       ChangeNotifierProvider<ShipmentsService>.value(value: _shipments),
+      ChangeNotifierProvider<BusinessDeliveryService>.value(value: _delivery),
       ChangeNotifierProvider<BranchesFocus>.value(value: _focus)
     ],
     child: Surface(
       padding: EdgeInsets.zero,
       child: ListenableBuilder(
-        listenable: Listenable.merge([_areas, _branches, _editor]),
+        listenable: Listenable.merge([_areas, _branches, _editor, _flow]),
         builder: (context, _) => LayoutBuilder(builder: (context, constraints) => Stack(
           children: [
             Positioned.fill(child: DeliveriesMap(
@@ -303,11 +320,11 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
               layers: [
                 ..._layers(context),
                 BranchMarkers(onSelect: (branch) => _open(branch.id)),
-                if (_view == DeliveriesView.shipments && !_editor.isOpen)
+                if (_view == DeliveriesView.shipments && !_editor.isOpen && !_flow.isOpen)
                   ShipmentMarkers(onOpen: _openShipment, lit: _litShipment)
               ],
               overlays: areaOverlays(context, _editor),
-              onTap: _view == DeliveriesView.areas || _editor.isOpen ? _editor.tap : null
+              onTap: _tappable ? _editor.tap : null
             )),
             Positioned(
               top: AppSize.spaceS,
@@ -324,7 +341,8 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
                 onView: _show,
                 shipments: _board,
                 onShipment: _openShipment,
-                litShipment: _litShipment
+                litShipment: _litShipment,
+                flow: _flow
               ))
             ),
             Positioned(

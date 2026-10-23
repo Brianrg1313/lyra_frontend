@@ -67,92 +67,92 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m20(branch) => "From ${branch}";
 
-  static String m21(coverage) => "${coverage}, unless you pick another";
-
-  static String m22(count) =>
+  static String m21(count) =>
       "${Intl.plural(count, one: '1 day', other: '${count} days')}";
 
-  static String m23(time) => "From ${time}";
+  static String m22(time) => "From ${time}";
 
-  static String m24(count) => "${count} h";
+  static String m23(count) => "${count} h";
 
-  static String m25(count) => "${count} min";
+  static String m24(count) => "${count} min";
 
-  static String m26(from, to) => "${from}–${to} days";
+  static String m25(from, to) => "${from}–${to} days";
 
-  static String m27(from, to) => "${from}–${to} h";
+  static String m26(from, to) => "${from}–${to} h";
 
-  static String m28(from, to) => "${from}–${to} min";
+  static String m27(from, to) => "${from}–${to} min";
 
-  static String m29(time) => "Up to ${time}";
+  static String m28(time) => "Up to ${time}";
 
-  static String m30(currency) =>
+  static String m29(currency) =>
       "In ${currency}. Empty if it varies, 0 if it\'s free";
 
-  static String m31(amount) => "Free from ${amount}";
+  static String m30(amount) => "Free from ${amount}";
 
-  static String m32(km) => "Within ${km} km";
+  static String m31(km) => "Within ${km} km";
 
-  static String m33(name) =>
+  static String m32(name) =>
       "${name} stops being offered to your customers. Removing the last one doesn\'t change whether your business says it delivers.";
 
-  static String m34(count) => "+${count} more";
+  static String m33(count) => "+${count} more";
 
-  static String m35(email) =>
+  static String m34(email) =>
       "${email} stops being one of the addresses this business can be written to. If it\'s the primary one, the oldest of the rest takes its place.";
 
-  static String m36(field) => "Add ${field}";
+  static String m35(field) => "Add ${field}";
 
-  static String m37(field) => "Edit ${field}";
+  static String m36(field) => "Edit ${field}";
 
-  static String m38(name) =>
+  static String m37(name) =>
       "Disconnecting ${name} deletes the tokens stored for it. The account can be connected again, but you\'ll have to set it up from scratch.";
 
-  static String m39(step, count) => "Step ${step} of ${count}";
+  static String m38(step, count) => "Step ${step} of ${count}";
 
-  static String m40(count) =>
+  static String m39(count) =>
       "${Intl.plural(count, zero: 'No bots', one: '1 bot', other: '${count} bots')}";
 
-  static String m41(provider) =>
+  static String m40(provider) =>
       "What ${provider} needs to connect. You can save the account without them and paste them later";
 
-  static String m42(count) =>
+  static String m41(count) =>
       "${Intl.plural(count, one: 'The bot answering through it is deleted too — pause the account instead to keep it.', other: 'The ${count} bots answering through it are deleted too — pause the account instead to keep them.')}";
 
-  static String m43(name) =>
+  static String m42(name) =>
       "Disconnecting ${name} deletes the credentials stored for it. The account can be connected again, but you\'ll have to set it up from scratch.";
 
-  static String m44(total) => "of ${total} people";
+  static String m43(total) => "of ${total} people";
 
-  static String m45(days) => "Renews in ${days} days";
+  static String m44(days) => "Renews in ${days} days";
 
-  static String m46(count) => "${count} left";
+  static String m45(count) => "${count} left";
 
-  static String m47(used, total) => "${used} of ${total}";
+  static String m46(used, total) => "${used} of ${total}";
 
-  static String m48(number) => "Area ${number}";
+  static String m47(number) => "Area ${number}";
 
-  static String m49(currency) =>
+  static String m48(currency) =>
       "In ${currency}. Empty to use the delivery option\'s, 0 if it\'s free";
 
-  static String m50(km) => "${km} km";
+  static String m49(km) => "${km} km";
 
-  static String m51(count) => "You can have up to ${count} areas.";
+  static String m50(count) => "You can have up to ${count} areas.";
 
-  static String m52(amount) => "Min. order ${amount}";
+  static String m51(amount) => "Min. order ${amount}";
 
-  static String m53(count) =>
+  static String m52(count) =>
       "${Intl.plural(count, one: '1 point', other: '${count} points')} · 3 at least";
 
-  static String m54(branch) => "Leaves from ${branch}";
+  static String m53(branch) => "Leaves from ${branch}";
 
-  static String m55(name) =>
+  static String m54(name) =>
       "${name} stops being part of where you deliver. To stop delivering there for a while, pause it instead.";
 
-  static String m56(km) => "${km} km²";
+  static String m55(km) => "${km} km²";
 
-  static String m57(count) =>
+  static String m56(count) =>
       "You have ${count} delivery methods, the most a business can have. Remove one to add another.";
+
+  static String m57(step, count) => "${step} of ${count}";
 
   static String m58(count) =>
       "${Intl.plural(count, zero: 'No areas', one: '1 area', other: '${count} areas')}";
@@ -1532,15 +1532,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_delivery_amount_invalid": MessageLookupByLibrary.simpleMessage(
       "Write amounts with digits and up to two decimals, without thousands separators.",
     ),
-    "business_delivery_branch": MessageLookupByLibrary.simpleMessage(
-      "Leaves from",
-    ),
-    "business_delivery_branch_any": MessageLookupByLibrary.simpleMessage(
-      "The branch that serves the order",
-    ),
-    "business_delivery_branch_any_note": MessageLookupByLibrary.simpleMessage(
-      "Whichever branch has the order ready",
-    ),
     "business_delivery_branch_from": m20,
     "business_delivery_carrier_required": MessageLookupByLibrary.simpleMessage(
       "Pick the company that carries it, or write its name.",
@@ -1548,10 +1539,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_delivery_choose": MessageLookupByLibrary.simpleMessage(
       "Change the answer",
     ),
-    "business_delivery_coverage": MessageLookupByLibrary.simpleMessage(
-      "How far it reaches",
-    ),
-    "business_delivery_coverage_default": m21,
     "business_delivery_coverage_international":
         MessageLookupByLibrary.simpleMessage("International"),
     "business_delivery_coverage_international_note":
@@ -1568,8 +1555,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "business_delivery_coverage_national_note":
         MessageLookupByLibrary.simpleMessage("Anywhere in the country"),
-    "business_delivery_coverage_placeholder":
-        MessageLookupByLibrary.simpleMessage("Pick how far it reaches"),
     "business_delivery_error_subtitle": MessageLookupByLibrary.simpleMessage(
       "Something went wrong. Please try again.",
     ),
@@ -1577,29 +1562,32 @@ class MessageLookup extends MessageLookupByLibrary {
       "Couldn\'t load delivery",
     ),
     "business_delivery_eta": MessageLookupByLibrary.simpleMessage(
-      "Delivery time",
+      "Time until it arrives",
     ),
-    "business_delivery_eta_days": m22,
-    "business_delivery_eta_from": m23,
-    "business_delivery_eta_hours": m24,
+    "business_delivery_eta_days": m21,
+    "business_delivery_eta_from": m22,
+    "business_delivery_eta_hours": m23,
     "business_delivery_eta_invalid": MessageLookupByLibrary.simpleMessage(
       "The delivery time goes from 1 minute to 30 days, and the first figure can\'t be larger than the second.",
     ),
     "business_delivery_eta_max": MessageLookupByLibrary.simpleMessage("To"),
     "business_delivery_eta_min": MessageLookupByLibrary.simpleMessage("From"),
-    "business_delivery_eta_minutes": m25,
-    "business_delivery_eta_range_days": m26,
-    "business_delivery_eta_range_hours": m27,
-    "business_delivery_eta_range_minutes": m28,
+    "business_delivery_eta_minutes": m24,
+    "business_delivery_eta_note": MessageLookupByLibrary.simpleMessage(
+      "From when the customer orders until it\'s at their door, preparation included. It\'s what your assistant tells them.",
+    ),
+    "business_delivery_eta_range_days": m25,
+    "business_delivery_eta_range_hours": m26,
+    "business_delivery_eta_range_minutes": m27,
     "business_delivery_eta_unit": MessageLookupByLibrary.simpleMessage("Unit"),
-    "business_delivery_eta_up_to": m29,
+    "business_delivery_eta_up_to": m28,
     "business_delivery_fee": MessageLookupByLibrary.simpleMessage("Price"),
     "business_delivery_fee_free": MessageLookupByLibrary.simpleMessage("Free"),
-    "business_delivery_fee_hint": m30,
+    "business_delivery_fee_hint": m29,
     "business_delivery_fee_varies": MessageLookupByLibrary.simpleMessage(
       "Price varies",
     ),
-    "business_delivery_free_from": m31,
+    "business_delivery_free_from": m30,
     "business_delivery_free_from_hint": MessageLookupByLibrary.simpleMessage(
       "Order total from which it\'s free",
     ),
@@ -1704,7 +1692,7 @@ class MessageLookup extends MessageLookupByLibrary {
         ),
     "business_delivery_provider_placeholder":
         MessageLookupByLibrary.simpleMessage("Pick the app or the carrier"),
-    "business_delivery_radius": m32,
+    "business_delivery_radius": m31,
     "business_delivery_radius_hint": MessageLookupByLibrary.simpleMessage("5"),
     "business_delivery_radius_invalid": MessageLookupByLibrary.simpleMessage(
       "The radius goes in kilometres, above 0 and up to 1000.",
@@ -1713,7 +1701,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Radius in km",
     ),
     "business_delivery_remove": MessageLookupByLibrary.simpleMessage("Remove"),
-    "business_delivery_remove_message": m33,
+    "business_delivery_remove_message": m32,
     "business_delivery_remove_title": MessageLookupByLibrary.simpleMessage(
       "Remove this way to deliver?",
     ),
@@ -1734,24 +1722,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Listing a way to deliver already counts as yes",
     ),
     "business_delivery_yes": MessageLookupByLibrary.simpleMessage("Yes"),
-    "business_delivery_zone_add": MessageLookupByLibrary.simpleMessage(
-      "Add zone",
-    ),
-    "business_delivery_zone_fee": MessageLookupByLibrary.simpleMessage(
-      "Own price",
-    ),
-    "business_delivery_zone_invalid": MessageLookupByLibrary.simpleMessage(
-      "Every zone needs a name of up to 80 characters, and its own price has to be an amount.",
-    ),
-    "business_delivery_zone_name": MessageLookupByLibrary.simpleMessage("Zone"),
-    "business_delivery_zone_remove": MessageLookupByLibrary.simpleMessage(
-      "Remove zone",
-    ),
-    "business_delivery_zones": MessageLookupByLibrary.simpleMessage("Zones"),
-    "business_delivery_zones_more": m34,
-    "business_delivery_zones_note": MessageLookupByLibrary.simpleMessage(
-      "The areas it reaches, as your customers call them. A zone can have a price of its own.",
-    ),
+    "business_delivery_zones_more": m33,
     "business_email_add": MessageLookupByLibrary.simpleMessage("Add address"),
     "business_email_address": MessageLookupByLibrary.simpleMessage(
       "Email address",
@@ -1759,7 +1730,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_email_address_hint": MessageLookupByLibrary.simpleMessage(
       "name@business.com",
     ),
-    "business_email_delete_message": m35,
+    "business_email_delete_message": m34,
     "business_email_delete_title": MessageLookupByLibrary.simpleMessage(
       "Delete this address?",
     ),
@@ -1937,7 +1908,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_profile_activity_note": MessageLookupByLibrary.simpleMessage(
       "What this business sells or does. It\'s what places it in searches and reports.",
     ),
-    "business_profile_add": m36,
+    "business_profile_add": m35,
     "business_profile_caption": MessageLookupByLibrary.simpleMessage("Tagline"),
     "business_profile_caption_note": MessageLookupByLibrary.simpleMessage(
       "One line about what this business does. It reads under its name, so it\'s what someone who doesn\'t know it yet reads first.",
@@ -1945,7 +1916,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_profile_created": MessageLookupByLibrary.simpleMessage(
       "Registered on",
     ),
-    "business_profile_edit": m37,
+    "business_profile_edit": m36,
     "business_profile_empty": MessageLookupByLibrary.simpleMessage("Not set"),
     "business_profile_error_subtitle": MessageLookupByLibrary.simpleMessage(
       "Something went wrong. Please try again.",
@@ -2214,7 +2185,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "channel_delete_explanation": MessageLookupByLibrary.simpleMessage(
       "Disconnecting deletes the credentials stored for this channel and takes it off the list. The account can be connected again, but you\'ll have to set it up from scratch.",
     ),
-    "channel_delete_message": m38,
+    "channel_delete_message": m37,
     "channel_delete_title": MessageLookupByLibrary.simpleMessage(
       "Disconnect this channel?",
     ),
@@ -2374,7 +2345,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Needs setup",
     ),
     "channel_state_ready": MessageLookupByLibrary.simpleMessage("Connected"),
-    "channel_step_label": m39,
+    "channel_step_label": m38,
     "channel_step_network_subtitle": MessageLookupByLibrary.simpleMessage(
       "Pick the app. Lyra will answer the messages that arrive there.",
     ),
@@ -2469,19 +2440,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionError": MessageLookupByLibrary.simpleMessage(
       "Sorry, there was a connection error, please try again later",
     ),
-    "connection_bot_count": m40,
+    "connection_bot_count": m39,
     "connection_catalog_error": MessageLookupByLibrary.simpleMessage(
       "We couldn\'t load the available services",
     ),
     "connection_created": MessageLookupByLibrary.simpleMessage(
       "Account connected",
     ),
-    "connection_credentials_subtitle": m41,
+    "connection_credentials_subtitle": m40,
     "connection_credentials_title": MessageLookupByLibrary.simpleMessage(
       "Credentials",
     ),
-    "connection_delete_bots": m42,
-    "connection_delete_message": m43,
+    "connection_delete_bots": m41,
+    "connection_delete_message": m42,
     "connection_delete_title": MessageLookupByLibrary.simpleMessage(
       "Disconnect this account?",
     ),
@@ -2620,7 +2591,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboard_online_employees": MessageLookupByLibrary.simpleMessage(
       "Online now",
     ),
-    "dashboard_online_of": m44,
+    "dashboard_online_of": m43,
     "dashboard_open_sales": MessageLookupByLibrary.simpleMessage(
       "Sales in process",
     ),
@@ -2648,7 +2619,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboard_sample_product_3": MessageLookupByLibrary.simpleMessage(
       "Cleaning supplies",
     ),
-    "dashboard_subscription_renews": m45,
+    "dashboard_subscription_renews": m44,
     "dashboard_subscription_title": MessageLookupByLibrary.simpleMessage(
       "Subscription",
     ),
@@ -2658,14 +2629,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboard_summary_title": MessageLookupByLibrary.simpleMessage(
       "At a glance",
     ),
-    "dashboard_units_left": m46,
+    "dashboard_units_left": m45,
     "dashboard_usage_ai": MessageLookupByLibrary.simpleMessage(
       "Assistant credits",
     ),
     "dashboard_usage_conversations": MessageLookupByLibrary.simpleMessage(
       "WhatsApp conversations",
     ),
-    "dashboard_usage_of": m47,
+    "dashboard_usage_of": m46,
     "dashboard_usage_storage": MessageLookupByLibrary.simpleMessage("Storage"),
     "dashboard_view_all": MessageLookupByLibrary.simpleMessage("View all"),
     "dashboard_vs_last_week": MessageLookupByLibrary.simpleMessage(
@@ -2682,7 +2653,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries": MessageLookupByLibrary.simpleMessage("Deliveries"),
     "deliveries_area_add": MessageLookupByLibrary.simpleMessage("Add area"),
     "deliveries_area_clear": MessageLookupByLibrary.simpleMessage("Clear"),
-    "deliveries_area_default_name": m48,
+    "deliveries_area_default_name": m47,
     "deliveries_area_draw_note": MessageLookupByLibrary.simpleMessage(
       "Tap the map to add points. Drag a point to move it, tap the ring in the middle of a side to add one there, or tap a point and remove it.",
     ),
@@ -2708,15 +2679,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries_area_fee": MessageLookupByLibrary.simpleMessage(
       "Delivery price here",
     ),
-    "deliveries_area_fee_hint": m49,
+    "deliveries_area_fee_hint": m48,
     "deliveries_area_fee_option": MessageLookupByLibrary.simpleMessage(
       "Price of the delivery option",
     ),
     "deliveries_area_focus": MessageLookupByLibrary.simpleMessage(
       "Show on the map",
     ),
-    "deliveries_area_km": m50,
-    "deliveries_area_limit": m51,
+    "deliveries_area_km": m49,
+    "deliveries_area_limit": m50,
     "deliveries_area_map": MessageLookupByLibrary.simpleMessage("Areas of"),
     "deliveries_area_map_shared": MessageLookupByLibrary.simpleMessage(
       "Every branch",
@@ -2745,7 +2716,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries_area_minimum_hint": MessageLookupByLibrary.simpleMessage(
       "Order total below which you don\'t deliver here",
     ),
-    "deliveries_area_minimum_tag": m52,
+    "deliveries_area_minimum_tag": m51,
     "deliveries_area_mode_bicycle": MessageLookupByLibrary.simpleMessage(
       "Bicycle",
     ),
@@ -2766,13 +2737,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries_area_not_ready": MessageLookupByLibrary.simpleMessage(
       "Wait for your areas to load before adding one.",
     ),
+    "deliveries_area_outside": MessageLookupByLibrary.simpleMessage(
+      "Outside your areas",
+    ),
     "deliveries_area_pause": MessageLookupByLibrary.simpleMessage("Pause area"),
     "deliveries_area_paused": MessageLookupByLibrary.simpleMessage("Paused"),
-    "deliveries_area_points": m53,
+    "deliveries_area_points": m52,
     "deliveries_area_probe_clear": MessageLookupByLibrary.simpleMessage(
       "Clear the point",
     ),
-    "deliveries_area_probe_from": m54,
+    "deliveries_area_probe_from": m53,
     "deliveries_area_probe_hint": MessageLookupByLibrary.simpleMessage(
       "Tap the map to check whether a point is inside your areas.",
     ),
@@ -2792,7 +2766,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Tap the map or drag the center to move it, and type the kilometres or pick them.",
     ),
     "deliveries_area_remove": MessageLookupByLibrary.simpleMessage("Remove"),
-    "deliveries_area_remove_message": m55,
+    "deliveries_area_remove_message": m54,
     "deliveries_area_remove_point": MessageLookupByLibrary.simpleMessage(
       "Remove point",
     ),
@@ -2805,7 +2779,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries_area_shape_missing": MessageLookupByLibrary.simpleMessage(
       "Put at least 3 points on the map.",
     ),
-    "deliveries_area_size": m56,
+    "deliveries_area_size": m55,
     "deliveries_area_travel": MessageLookupByLibrary.simpleMessage(
       "Travel time",
     ),
@@ -2846,37 +2820,21 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "deliveries_map_zoom_in": MessageLookupByLibrary.simpleMessage("Zoom in"),
     "deliveries_map_zoom_out": MessageLookupByLibrary.simpleMessage("Zoom out"),
-    "deliveries_method_area": MessageLookupByLibrary.simpleMessage(
-      "Where you deliver",
-    ),
-    "deliveries_method_area_note": MessageLookupByLibrary.simpleMessage(
-      "Your delivery areas are drawn on the map.",
-    ),
-    "deliveries_method_area_open": MessageLookupByLibrary.simpleMessage(
-      "Draw on the map",
-    ),
-    "deliveries_method_back": MessageLookupByLibrary.simpleMessage(
-      "Back to delivery methods",
-    ),
+    "deliveries_method_back": MessageLookupByLibrary.simpleMessage("Back"),
     "deliveries_method_courier": MessageLookupByLibrary.simpleMessage(
       "Parcel services",
     ),
     "deliveries_method_courier_note": MessageLookupByLibrary.simpleMessage(
-      "A shipping company sends it across the country or abroad",
+      "A parcel company collects the order and takes it to your customer\'s door",
     ),
+    "deliveries_method_done": MessageLookupByLibrary.simpleMessage("Done"),
     "deliveries_method_edit_note": MessageLookupByLibrary.simpleMessage(
-      "Who carries it, how far it goes, what it costs and how long it takes.",
-    ),
-    "deliveries_method_general": MessageLookupByLibrary.simpleMessage(
-      "For all your deliveries",
-    ),
-    "deliveries_method_general_note": MessageLookupByLibrary.simpleMessage(
-      "These hold for every delivery method, not only this one.",
+      "Who carries it, what it costs and how long it takes.",
     ),
     "deliveries_method_how": MessageLookupByLibrary.simpleMessage(
       "How do you deliver?",
     ),
-    "deliveries_method_limit": m57,
+    "deliveries_method_limit": m56,
     "deliveries_method_new": MessageLookupByLibrary.simpleMessage(
       "New delivery method",
     ),
@@ -2896,14 +2854,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries_method_saved": MessageLookupByLibrary.simpleMessage(
       "Delivery method saved",
     ),
+    "deliveries_method_step": m57,
     "deliveries_method_subtitle": MessageLookupByLibrary.simpleMessage(
       "How your orders reach your customers. Add every method you use: your assistant offers them when a customer asks.",
     ),
-    "deliveries_method_title": MessageLookupByLibrary.simpleMessage(
-      "Delivery methods",
-    ),
     "deliveries_method_turn_on": MessageLookupByLibrary.simpleMessage(
       "Turn on",
+    ),
+    "deliveries_method_where": MessageLookupByLibrary.simpleMessage(
+      "Where do you deliver?",
+    ),
+    "deliveries_method_where_note": MessageLookupByLibrary.simpleMessage(
+      "Draw on the map the areas your orders reach. Every delivery method delivers inside them.",
     ),
     "deliveries_method_yours": MessageLookupByLibrary.simpleMessage(
       "Your delivery methods",
@@ -2912,7 +2874,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "No delivery methods yet",
     ),
     "deliveries_method_yours_empty_note": MessageLookupByLibrary.simpleMessage(
-      "Pick one above to start delivering.",
+      "Add one with “New delivery method”, above.",
     ),
     "deliveries_refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "deliveries_scope_branch": MessageLookupByLibrary.simpleMessage(
@@ -2936,6 +2898,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "The orders on their way to your customers, and where they are.",
     ),
     "deliveries_view_areas": MessageLookupByLibrary.simpleMessage("Areas"),
+    "deliveries_view_methods": MessageLookupByLibrary.simpleMessage("Methods"),
     "deliveries_view_shipments": MessageLookupByLibrary.simpleMessage(
       "Deliveries",
     ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
-import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
@@ -13,10 +12,8 @@ import 'package:app/services/files/file_model.dart';
 import 'package:core/button.dart';
 import 'package:core/form.dart';
 
-import 'zone_rows.dart';
-
-/// One way the company delivers: who carries the order, how far it reaches,
-/// what it costs and how long it takes.
+/// One way the company delivers: who carries the order, what it costs and how
+/// long it takes.
 ///
 /// **Who carries it is a closed answer and the carrier is the catalog's.** The
 /// mode is picked first —own riders, a delivery app, a parcel carrier— and it
@@ -24,19 +21,21 @@ import 'zone_rows.dart';
 /// country. One the catalog lacks is "another one", named by hand; the backend
 /// refuses an app or a carrier nobody named.
 ///
-/// **Where it reaches decides what else is asked.** A local option narrows
-/// itself with a radius and with zones —in the company's own words, each with
-/// a price of its own if it differs—; a national or international one keeps
-/// neither, and the form stops asking for them.
+/// **Where it reaches is not asked: every method is local.** A business
+/// delivers inside the areas it draws on the desk's map, whoever carries the
+/// order, so the form saves `COVERAGE` local and no radius or zones — on an edit
+/// it erases the ones an older option kept, which would otherwise reach past
+/// the drawn areas (the backend answers a radius before giving up on a point
+/// outside them).
 ///
 /// It checks here what the backend would refuse, in the same terms (amounts
-/// with at most two decimals and no thousands separator, kilometres up to a
-/// thousand, a time up to thirty days), so a mistake is said beside the field
-/// and not as an error code after the panel closed.
+/// with at most two decimals and no thousands separator, a time up to thirty
+/// days), so a mistake is said beside the field and not as an error code
+/// after the panel moved on.
 ///
 /// It **hands the request body to [onSubmit] and writes nothing**: the
-/// delivery method panel it is a step of owns the service and the writes
-/// that go with it (see `DeliveryMethodModal`).
+/// method flow it is a step of owns the writes that go with it (see
+/// `MethodFlowPanel`).
 class DeliveryOptionForm extends StatefulWidget {
   const DeliveryOptionForm({
     super.key,
@@ -45,13 +44,11 @@ class DeliveryOptionForm extends StatefulWidget {
     required this.onSubmit,
     this.option,
     this.mode,
-    this.extra,
     this.saving = false
   });
 
   /// What the form picks from. `null` when the catalog could not be read: the
-  /// modes and reaches are then every one this app knows, and a carrier is
-  /// named by hand.
+  /// modes are then every one this app knows, and a carrier is named by hand.
   final DeliveryCatalog? catalog;
 
   /// The company's currency, which every amount is in.
@@ -68,10 +65,6 @@ class DeliveryOptionForm extends StatefulWidget {
   /// [option], `updateDeliveryOptionRequest` with one.
   final void Function(Map<String, dynamic> request) onSubmit;
 
-  /// Drawn after the option's own fields and before saving, given the reach
-  /// picked so far: what holds for every delivery, which the panel saves.
-  final Widget Function(BuildContext context, DeliveryCoverage? reach)? extra;
-
   /// A write is under way: the save button spins and does not answer.
   final bool saving;
 
@@ -82,8 +75,8 @@ class DeliveryOptionForm extends StatefulWidget {
 class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
   /// The fields that are always drawn.
   ///
-  /// What depends on an earlier answer —the carrier, the radius, the zones— is
-  /// held apart ([_providers], [_radius], [_zones]): a controller registers in
+  /// What depends on an earlier answer —the carrier— is held apart
+  /// ([_providers]): a controller registers in
   /// its form when its input mounts and never leaves it, so a field that was
   /// drawn and then hidden would still be validated with what it was left
   /// holding.
@@ -94,9 +87,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
 
   /// The backend's ceilings (`model:/business/delivery.js`).
   static const double _maxAmount = 9999999999.99;
-  static const double _maxRadius = 1000;
   static const int _maxEta = 43200;
-  static const int _maxZoneName = 80;
 
   DeliveryCatalog get _catalog => widget.catalog ?? const DeliveryCatalog();
   DeliveryOption? get _option => widget.option;
@@ -105,12 +96,6 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
   /// The picked mode: it decides which carriers are offered and whether one
   /// has to be named.
   late DeliveryMode? _mode = _option?.mode ?? widget.mode;
-
-  /// The picked reach, or `null` on a creation that did not pick one — which
-  /// is the mode's own ([DeliveryMode.reach]), as the backend defaults it.
-  late DeliveryCoverage? _coverage = _option?.coverage;
-
-  DeliveryCoverage? get _reach => _coverage ?? _mode?.reach;
 
   /// One carrier picker per mode, created the first time the mode is picked.
   ///
@@ -123,18 +108,6 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
   /// apart from the controller because a pick changes what the name field
   /// asks for.
   final Map<DeliveryMode, String> _picked = {};
-
-  late final List<ZoneDraft> _zones = [
-    for (final zone in _option?.zones ?? const <DeliveryZone>[])
-      ZoneDraft(initialName: zone.name, initialFee: _plain(zone.fee))
-  ];
-
-  late final _radius = InputController(
-    key: "RADIUS",
-    initial: _plain(_option?.radius),
-    pattern: "[0-9.,]",
-    max: 10
-  );
 
   /// The unit the time opens in: the largest one both figures are whole
   /// numbers of, so `1440–4320` opens as `1–3` days.
@@ -166,24 +139,6 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
       )
     }
   );
-
-  late final _coverageInput = InputController.select(
-    key: "COVERAGE",
-    form: _form,
-    initial: _option?.coverage.value
-  );
-
-  /// Where a national or international option leaves from; empty is whichever branch serves
-  /// the order. Not in [_form]: it is drawn only off a local reach.
-  late final _branch = InputController.select(
-    key: "BRANCH",
-    initial: _option?.branch ?? _anyBranch
-  );
-
-  static const String _anyBranch = "";
-
-  /// Asked only with branches to tell apart, or when the option already names one.
-  bool get _asksBranch => BranchService().choosable || _option?.branch != null;
 
   late final _fee = InputController(
     key: "FEE",
@@ -265,12 +220,6 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
       controller.dispose();
     }
 
-    for (final zone in _zones) {
-      zone.dispose();
-    }
-
-    _radius.dispose();
-    _branch.dispose();
     _saving.dispose();
     _form.dispose();
     super.dispose();
@@ -319,46 +268,6 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           controller: _label,
           leftIcon: Icon(CI.bookmark, color: scheme.icon)
         ),
-        SelectInput(
-          title: S.of(context).business_delivery_coverage,
-          // What a creation that picks nothing gets is written where the
-          // answer goes, so leaving it empty is a choice and not a gap.
-          placeholder: mode == null
-            ? S.of(context).business_delivery_coverage_placeholder
-            : S.of(context).business_delivery_coverage_default(
-                mode.reach.label(context)
-              ),
-          controller: _coverageInput,
-          options: [
-            for (final entry in _coverages) SelectOption(
-              value: entry.value,
-              placeholder: entry.label(context),
-              subtitle: entry.description(context)
-            )
-          ],
-          emptyText: S.of(context).business_delivery_select_empty,
-          searchable: false,
-          leftIcon: Icon(CI.globe_shopping, color: scheme.icon),
-          onSelected: (option) => setState(
-            () => _coverage = DeliveryCoverage.from(option.value)
-          )
-        ),
-        if (_reach != null && _reach != DeliveryCoverage.local && _asksBranch)
-          _branchInput(context),
-        if (_reach == DeliveryCoverage.local) ...[
-          Input(
-            title: _optional(context, S.of(context).business_delivery_radius_title),
-            placeholder: S.of(context).business_delivery_radius_hint,
-            controller: _radius,
-            leftIcon: Icon(CI.globe_shopping, color: scheme.icon)
-          ),
-          ZoneRows(
-            title: _optional(context, S.of(context).business_delivery_zones),
-            zones: _zones,
-            onAdd: _addZone,
-            onRemove: _removeZone
-          )
-        ],
         Input(
           title: _optional(context, S.of(context).business_delivery_fee),
           placeholder: S.of(context).business_delivery_fee_hint(currency.symbol),
@@ -400,6 +309,16 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
             )
           ]
         ),
+        // Said under the figures because "delivery time" alone was read both
+        // ways: until the courier leaves, or until the customer has it.
+        Padding(
+          padding: EdgeInsets.only(bottom: AppSize.spaceXS),
+          child: TextSmall(
+            S.of(context).business_delivery_eta_note,
+            lines: 3,
+            color: scheme.text.secondary
+          )
+        ),
         Input(
           title: _optional(context, S.of(context).business_delivery_option_notes),
           placeholder: S.of(context).business_delivery_option_notes_hint,
@@ -407,45 +326,10 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           leftIcon: Icon(CI.edit, color: scheme.icon),
           onSubmit: _submit
         ),
-        ?widget.extra?.call(context, _reach),
         SizedBox(height: AppSize.spaceM),
         Button(title: S.of(context).save, action: _submit, loading: _saving)
       ]
     );
-  }
-
-  /// The branch that hands this option's orders to the courier.
-  Widget _branchInput(BuildContext context) {
-    final branches = BranchService();
-    final stored = _option?.branch;
-
-    return SelectInput(
-      title: _optional(context, S.of(context).business_delivery_branch),
-      placeholder: S.of(context).business_delivery_branch_any,
-      controller: _branch,
-      searchable: false,
-      emptyText: S.of(context).business_delivery_select_empty,
-      leftIcon: Icon(CI.store, color: ThemeColor.of(context).icon),
-      options: [
-        SelectOption(
-          value: _anyBranch,
-          placeholder: S.of(context).business_delivery_branch_any,
-          subtitle: S.of(context).business_delivery_branch_any_note
-        ),
-        for (final branch in branches.branches)
-          SelectOption(value: branch.id, placeholder: branch.name),
-        if (stored != null && branches.byId(stored) == null)
-          SelectOption(value: stored, placeholder: S.of(context).finance_method_branch_other)
-      ]
-    );
-  }
-
-  /// The branch picked, null for whichever serves the order. Only off a local reach.
-  String? _pickedBranch(bool local) {
-    if (local || !_asksBranch) return _option?.branch;
-
-    final value = _branch.value.trim();
-    return value.isEmpty ? null : value;
   }
 
   /// The carrier picker of [mode]: the catalog's carriers of that kind, the
@@ -507,12 +391,6 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     if (_option != null && !_catalog.modes.contains(_option!.mode)) _option!.mode
   ];
 
-  List<DeliveryCoverage> get _coverages => [
-    ..._catalog.coverages,
-    if (_option != null && !_catalog.coverages.contains(_option!.coverage))
-      _option!.coverage
-  ];
-
   /// Whether the name is what says who carries it: an app or a carrier the
   /// catalog does not list —or with no catalog to pick from— is named by hand.
   bool get _nameRequired {
@@ -533,17 +411,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     setState(() => _mode = mode);
   }
 
-  void _addZone() => setState(() => _zones.add(ZoneDraft()));
-
-  /// A zone's inputs are still mounted while this runs, so its controllers
-  /// are let go of after the frame that removes them.
-  void _removeZone(ZoneDraft zone) {
-    setState(() => _zones.remove(zone));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => zone.dispose());
-  }
-
-  /// Reads the form and closes with the body.
+  /// Reads the form and hands over the body.
   void _submit() {
     if (widget.saving || !_form.validate()) return;
 
@@ -558,43 +426,6 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     if (mode.namesCarrier && provider.isEmpty && label.isEmpty) {
       _fail(S.of(context).business_delivery_carrier_required);
       return;
-    }
-
-    final coverage = DeliveryCoverage.from(_coverageInput.value);
-    final local = (coverage ?? mode.reach) == DeliveryCoverage.local;
-
-    double? radius;
-    final zones = <DeliveryZone>[];
-
-    if (local) {
-      final read = readDeliveryAmount(_radius.value);
-      final value = read.value;
-
-      if (!read.valid || (value != null && (value < 0.01 || value > _maxRadius))) {
-        _fail(S.of(context).business_delivery_radius_invalid);
-        return;
-      }
-
-      radius = value;
-
-      for (final draft in _zones) {
-        final name = draft.name.value.replaceAll(RegExp(r"\s+"), " ").trim();
-        final fee = readDeliveryAmount(draft.fee.value);
-
-        // A row left blank is not a zone: it is the one somebody added and
-        // did not use.
-        if (name.isEmpty && draft.fee.value.trim().isEmpty) continue;
-
-        if (name.isEmpty ||
-            name.length > _maxZoneName ||
-            !fee.valid ||
-            (fee.value ?? 0) > _maxAmount) {
-          _fail(S.of(context).business_delivery_zone_invalid);
-          return;
-        }
-
-        zones.add(DeliveryZone(name: name, fee: fee.value));
-      }
     }
 
     final fee = readDeliveryAmount(_fee.value);
@@ -628,29 +459,23 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           mode: mode,
           provider: provider,
           label: label,
-          coverage: coverage,
-          radius: radius,
-          zones: zones,
+          coverage: DeliveryCoverage.local,
           fee: fee.value,
           freeFrom: freeFrom.value,
           etaMin: etaMin,
           etaMax: etaMax,
-          notes: _notes.value,
-          branch: _pickedBranch(local)
+          notes: _notes.value
         )
       : createDeliveryOptionRequest(
           mode: mode,
           provider: provider,
           label: label,
-          coverage: coverage,
-          radius: radius,
-          zones: zones,
+          coverage: DeliveryCoverage.local,
           fee: fee.value,
           freeFrom: freeFrom.value,
           etaMin: etaMin,
           etaMax: etaMax,
-          notes: _notes.value,
-          branch: _pickedBranch(local)
+          notes: _notes.value
         ));
   }
 

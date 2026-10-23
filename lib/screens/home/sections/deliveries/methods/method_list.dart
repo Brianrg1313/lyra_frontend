@@ -1,92 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// PACKAGES
+import 'package:provider/provider.dart';
+
 // SERVICES
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
+import 'package:app/services/business/business_delivery_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/business/settings/profile_block.dart';
 import 'package:app/screens/home/sections/business/settings/profile_field.dart';
 
-import './delivery_flag_field.dart';
-import './delivery_gate.dart';
-import './delivery_option_field.dart';
-import './method_card.dart';
+import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
+import './widgets/delivery_flag_field.dart';
+import './widgets/delivery_gate.dart';
+import './widgets/delivery_notes_field.dart';
+import './widgets/delivery_option_field.dart';
 
-/// The panel's first page: the one question —how do you deliver?— as three
-/// cards, and under them what the company already has: its methods, each
-/// editable, and whether a customer can collect instead.
+/// The desk's Methods view: the company's delivery methods (edit, remove),
+/// whether a customer can collect instead, and the note that holds for every
+/// delivery. A new method is added from the panel's title ("New delivery
+/// method"), never from here: one way in.
 ///
 /// Whether the company delivers is not asked: adding a method says yes (see
-/// `DeliveryMethodModal`). Only a company that said no is told so here, with
-/// the way to turn it back on, because its methods are then not offered.
-class DeliveryMethodHome extends StatelessWidget {
-  const DeliveryMethodHome({
-    super.key,
-    required this.delivery,
-    required this.catalog,
-    required this.onPick,
-    required this.onEdit,
-    required this.onRemove,
-    required this.onFlag
-  });
+/// `MethodFlowPanel`). Only a company that said no is told so here, with the
+/// way to turn it back on, because its methods are then not offered.
+class MethodList extends StatelessWidget {
+  const MethodList({super.key, required this.onEdit});
 
-  final BusinessDeliveryModel delivery;
-
-  /// The carriers of the company's country, for the cards' examples. `null`
-  /// while it is read, or when it could not be.
-  final DeliveryCatalog? catalog;
-
-  final void Function(DeliveryMode mode) onPick;
+  /// Opens a method's form in the panel.
   final void Function(DeliveryOption option) onEdit;
-  final void Function(DeliveryOption option) onRemove;
-
-  /// Saves one flag; `null` is "not set".
-  final Future<void> Function(DeliveryFlag flag, bool? value) onFlag;
 
   /// Most options a company may keep (the backend's `Delivery.#max`). At the
-  /// limit the cards are not offered: the backend would refuse another.
+  /// limit no new one is offered: the backend would refuse it.
   static const int limit = 20;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
+    final service = context.watch<BusinessDeliveryService>();
+    final delivery = service.delivery;
+
+    if (delivery == null) {
+      return service.status == BusinessDeliveryStatus.error
+        ? SectionMessage(
+            icon: CI.info,
+            title: S.of(context).business_delivery_error_title,
+            subtitle: S.of(context).business_delivery_error_subtitle,
+            action: service.retry,
+            actionLabel: S.of(context).business_list_retry
+          )
+        : const Center(child: Loading());
+    }
+
     final options = delivery.options;
     final off = delivery.delivers == false;
 
+    Future<void> flag(DeliveryFlag flag, bool? value) => service.setFlag(context, flag, value);
+
     return ScrollableWidget(
+      showBar: false,
       padding: EdgeInsets.only(bottom: AppSize.padding),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextSmall(
-          S.of(context).deliveries_method_subtitle,
-          lines: 3,
-          color: scheme.text.secondary
-        ),
-        SizedBox(height: AppSize.spaceM),
-        TextMedium(S.of(context).deliveries_method_how, bold: true),
-        SizedBox(height: AppSize.spaceS),
-        if (options.length < limit)
-          for (final mode in catalog?.modes ?? DeliveryMode.values) Padding(
-            padding: EdgeInsets.only(bottom: AppSize.gap),
-            child: DeliveryMethodCard(
-              mode: mode,
-              examples: [for (final provider in catalog?.of(mode) ?? const []) provider.name],
-              onPick: () => onPick(mode)
-            )
-          )
-        else
-          TextSmall(
-            S.of(context).deliveries_method_limit(limit),
-            lines: 2,
-            color: scheme.text.secondary
-          ),
         if (off) ...[
-          SizedBox(height: AppSize.spaceS),
-          _Off(onTurnOn: () => onFlag(DeliveryFlag.delivers, true))
+          _Off(onTurnOn: () => flag(DeliveryFlag.delivers, true)),
+          SizedBox(height: AppSize.spaceS)
         ],
-        SizedBox(height: AppSize.padding),
         ProfileBlock(
           title: S.of(context).deliveries_method_yours,
           fields: [
@@ -104,7 +86,7 @@ class DeliveryMethodHome extends StatelessWidget {
                   option: option,
                   currency: delivery.currency,
                   onEdit: () => onEdit(option),
-                  onRemove: () => onRemove(option)
+                  onRemove: () => _remove(context, service, option)
                 )
               )
           ]
@@ -121,12 +103,37 @@ class DeliveryMethodHome extends StatelessWidget {
               icon: CI.store,
               label: S.of(context).business_delivery_pickup,
               description: S.of(context).business_delivery_pickup_note,
-              onChanged: onFlag
+              onChanged: flag
             )
           ]
+        ),
+        SizedBox(height: AppSize.padding),
+        DeliveryNotesField(
+          // A fresh field when the saved note changes under it (another
+          // device, a retry), instead of a draft that silently disagrees.
+          key: ValueKey(delivery.notes),
+          notes: delivery.notes,
+          onSave: (notes) => service.setNotes(context, notes)
         )
       ]
     );
+  }
+
+  /// Removes a method, after asking. What it warns about is what happens:
+  /// customers stop being offered it, and whether the company delivers does
+  /// not change.
+  Future<void> _remove(BuildContext context, BusinessDeliveryService service, DeliveryOption option) async {
+    final confirmed = await showAlertModal(
+      context: context,
+      title: S.of(context).business_delivery_remove_title,
+      message: S.of(context).business_delivery_remove_message(deliveryOptionName(context, option)),
+      confirmText: S.of(context).business_delivery_remove,
+      cancelText: S.of(context).cancel
+    );
+
+    if (!confirmed || !context.mounted) return;
+
+    await service.removeOption(context, option.id);
   }
 }
 
