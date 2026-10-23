@@ -5,7 +5,6 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
-import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 
@@ -13,36 +12,47 @@ import 'package:app/services/shipments/shipments_service.dart';
 import 'package:app/screens/modals/deliveries/shipping_settings/_shipping_settings.dart';
 
 import '../widgets/panel_halves.dart';
+import './shipment_format.dart';
 import './shipment_tile.dart';
 
 /// **The branch's deliveries**, in the desk's panel: what is still going or
-/// what was delivered, each one a tile that opens its panel. The branch's
-/// schedule (its franjas, week and closed days) opens from beside the switch.
+/// what was delivered, the ones the panel's search matches, each one a tile
+/// that opens its panel. The branch's schedule (its franjas, week and closed
+/// days) opens from beside the switch; the branch is named by the panel's
+/// branch field.
 ///
 /// A shipment opens on its own when a customer's payment for a delivery is
 /// approved: there is nothing to create here, so an empty board says where
 /// they come from.
 class ShipmentList extends StatelessWidget {
-  const ShipmentList({super.key, required this.onOpen, this.lit});
+  const ShipmentList({super.key, required this.onOpen, this.lit, this.query = ""});
 
   final void Function(Shipment shipment) onOpen;
 
   /// The shipment picked on the map.
   final String? lit;
 
+  /// The panel's search, trimmed and lower case (see [shipmentMatches]).
+  final String query;
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
     final service = context.watch<ShipmentsService>();
-    final branch = BranchService().active?.name ?? "";
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(children: [
-        Expanded(child: TextMedium(
-          branch.isEmpty ? s.shipments_title : s.shipments_title_branch(branch),
-          bold: true,
-          ellipsis: true
+        Expanded(child: PanelHalves<ShipmentsView>(
+          values: ShipmentsView.values,
+          selected: service.view,
+          label: (view) => switch (view) {
+            ShipmentsView.going => service.view == view && service.status == ShipmentsStatus.ready
+              ? s.shipments_going_count(service.shipments.length)
+              : s.shipments_going,
+            ShipmentsView.delivered => s.shipments_delivered
+          },
+          onChanged: service.show
         )),
         SizedBox(width: AppSize.gap),
         FeedbackButton(
@@ -53,25 +63,9 @@ class ShipmentList extends StatelessWidget {
           color: scheme.surfaceOver,
           feedbackColor: scheme.line,
           message: s.shipping_settings_title,
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(CI.calendar, size: AppSize.text, color: scheme.icon),
-            SizedBox(width: AppSize.gap),
-            TextSmall(s.shipments_schedule, bold: true)
-          ])
+          child: Icon(CI.calendar, size: AppSize.text, color: scheme.icon)
         )
       ]),
-      SizedBox(height: AppSize.gap),
-      PanelHalves<ShipmentsView>(
-        values: ShipmentsView.values,
-        selected: service.view,
-        label: (view) => switch (view) {
-          ShipmentsView.going => service.view == view && service.status == ShipmentsStatus.ready
-            ? s.shipments_going_count(service.shipments.length)
-            : s.shipments_going,
-          ShipmentsView.delivered => s.shipments_delivered
-        },
-        onChanged: service.show
-      ),
       SizedBox(height: AppSize.spaceS),
       Expanded(child: _body(context, service))
     ]);
@@ -105,11 +99,28 @@ class ShipmentList extends StatelessWidget {
       ShipmentsStatus.empty => service.view == ShipmentsView.going
         ? note(s.shipments_empty, s.shipments_empty_subtitle)
         : note(s.shipments_delivered_empty, s.shipments_delivered_empty_subtitle),
-      ShipmentsStatus.ready => ListView.builder(
+      ShipmentsStatus.ready => _list(context, service),
+      _ => const Center(child: Loading())
+    };
+  }
+
+  Widget _list(BuildContext context, ShipmentsService service) {
+    final found = query.isEmpty
+      ? service.shipments
+      : [for (final shipment in service.shipments) if (shipmentMatches(context, shipment, query)) shipment];
+
+    if (found.isEmpty) {
+      return Align(
+        alignment: Alignment.topLeft,
+        child: TextSmall(S.of(context).deliveries_search_empty, lines: 2, color: ThemeColor.of(context).text.secondary)
+      );
+    }
+
+    return ListView.builder(
         padding: EdgeInsets.zero,
-        itemCount: service.shipments.length,
+        itemCount: found.length,
         itemBuilder: (context, index) {
-          final shipment = service.shipments[index];
+          final shipment = found[index];
 
           return ShipmentTile(
             key: ValueKey(shipment.id),
@@ -119,8 +130,6 @@ class ShipmentList extends StatelessWidget {
             onTap: () => onOpen(shipment)
           );
         }
-      ),
-      _ => const Center(child: Loading())
-    };
+      );
   }
 }

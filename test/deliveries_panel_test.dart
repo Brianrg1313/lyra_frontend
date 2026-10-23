@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
+import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
@@ -23,14 +24,20 @@ import 'package:app/screens/home/sections/deliveries/deliveries_panel.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
 
 /// Where the company delivers, edited in the desk's panel: one shared map or
-/// one per branch, switched there; the open map's areas under "Add area",
-/// and what happens outside them.
+/// one per branch, switched there; the areas of the branch picked (every
+/// branch's for "All branches") under "Add area", what the search matches, and
+/// what happens outside them.
 void main() {
   setUpAll(() {
     ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
   });
 
-  Future<(_Deliveries, List<AreaMethod>, AreaEditor)> pump(WidgetTester tester, String scope) async {
+  Future<(_Deliveries, List<AreaMethod>, AreaEditor)> pump(
+    WidgetTester tester,
+    String scope, {
+    String? branch,
+    String query = ""
+  }) async {
     final deliveries = _Deliveries(scope);
     final added = <AreaMethod>[];
     final map = MapController();
@@ -46,7 +53,12 @@ void main() {
     final delivery = BusinessDeliveryService(source: deliveries);
     final flow = MethodFlow();
 
+    final filters = FormController();
+    final search = InputController.search(form: filters);
+    final branchPicker = InputController.select(form: filters, key: "BRANCH", initial: branch ?? DeliveriesPanel.allBranches);
+
     addTearDown(flow.dispose);
+    addTearDown(filters.dispose);
 
     await tester.pumpWidget(MaterialApp(
       localizationsDelegates: const [
@@ -66,14 +78,14 @@ void main() {
         child: ListenableBuilder(listenable: Listenable.merge([areas, editor]), builder: (context, _) {
           AppSize.instance(context);
 
-          // The desk works out the open map: per branch, the first one.
-          final owner = areas.areas?.scope == DeliveryScope.branch ? "b-centro" : null;
-
           return Scaffold(body: DeliveriesPanel(
             editor: editor,
-            owner: owner,
+            branch: branch,
             origin: () => const LatLng(10.5, -66.9),
-            onOwner: (_) {},
+            onBranch: (_) {},
+            search: search,
+            branchPicker: branchPicker,
+            query: query,
             onAdd: added.add,
             view: DeliveriesView.areas,
             onView: (_) {},
@@ -111,17 +123,40 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text("Todas"), findsOneWidget);
     expect(find.text("Centro 1"), findsNothing);
-    expect(find.text("Areas of"), findsNothing);
+    expect(find.text("Search areas"), findsOneWidget);
   });
 
-  testWidgets("per branch: the open branch's areas only, with its count", (tester) async {
-    await pump(tester, "branch");
+  testWidgets("per branch: the branch picked's areas only", (tester) async {
+    await pump(tester, "branch", branch: "b-centro");
 
     expect(tester.takeException(), isNull);
-    expect(find.text("Centro"), findsOneWidget);
-    expect(find.text("2 areas"), findsOneWidget);
+    expect(find.text("Centro 1"), findsOneWidget);
+    expect(find.text("Centro 2"), findsOneWidget);
+    expect(find.text("Todas"), findsNothing);
+    expect(find.text("Add area"), findsOneWidget);
+  });
+
+  testWidgets("per branch, all branches: every branch's areas, and no map to add one to", (tester) async {
+    await pump(tester, "branch");
+
     expect(find.text("Centro 1"), findsOneWidget);
     expect(find.text("Todas"), findsNothing);
+    expect(find.text("Add area"), findsNothing);
+    expect(find.text("Pick a branch above to add an area to its map."), findsOneWidget);
+  });
+
+  testWidgets("the search keeps the areas whose name holds it", (tester) async {
+    await pump(tester, "branch", branch: "b-centro", query: "2");
+
+    expect(find.text("Centro 1"), findsNothing);
+    expect(find.text("Centro 2"), findsOneWidget);
+  });
+
+  testWidgets("a search that leaves nothing says so, not that there are no areas", (tester) async {
+    await pump(tester, "global", query: "zzz");
+
+    expect(find.text("Nothing matches your search."), findsOneWidget);
+    expect(find.text("No areas yet"), findsNothing);
   });
 
   testWidgets("the switch writes the other scope and the panel follows it", (tester) async {

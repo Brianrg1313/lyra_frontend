@@ -6,8 +6,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/business/branch_service.dart';
+import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
-import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_area_request.dart';
@@ -15,68 +16,69 @@ import 'package:app/services/business/delivery_areas_service.dart';
 import 'package:app/services/shipments/shipment_model.dart';
 
 // WIDGETS
+import 'package:core/form.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/add_area_button.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_editor_panel.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_layers.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_list.dart';
-import 'package:app/screens/home/sections/deliveries/area/widgets/area_map_picker.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_probe.dart';
 
 import './methods/method_flow_panel.dart';
-import './methods/method_list.dart';
 import './methods/state/method_flow.dart';
 import './methods/widgets/delivery_meeting_field.dart';
 import './shipments/shipment_list.dart';
 import './widgets/panel_halves.dart';
+import './widgets/scope_switch.dart';
 
-/// What the panel shows: the branch's deliveries, where the company delivers,
-/// or how (its delivery methods).
-enum DeliveriesView { shipments, areas, methods }
+/// What the panel shows: the branch's deliveries, or where the company
+/// delivers.
+enum DeliveriesView { shipments, areas }
 
 /// The panel over the desk's map.
 ///
-/// While looking: the section's title with "New delivery method" beside it,
-/// then one of the views. The branch's deliveries (`ShipmentList`), the daily
-/// work, open first; the areas show where it delivers (shared or per branch,
-/// and per branch whose map is open), "Add area", the open map's areas and
-/// what happens outside them (fixed or flexible). A tap on the map says which
-/// areas in force reach that point and which branch the order would leave
-/// from. The methods (`MethodList`) are the company's ways of delivering,
-/// pickup and its delivery note.
+/// While looking: a search over the view on screen, the branch the desk is
+/// filtered by ("All branches" or one), the switch between the two views, and
+/// the view. The deliveries (`ShipmentList`) are the daily work, open first;
+/// the areas show where it delivers (shared or per branch), "Add area", the
+/// areas of the branch picked and what happens outside them (fixed or
+/// flexible). A tap on the map says which areas in force reach that point and
+/// which branch the order would leave from.
 ///
-/// "New delivery method" turns the whole panel into its steps
-/// (`MethodFlowPanel`): who carries it, its price and time, and where it
-/// delivers — the areas list again, with the map beside it.
+/// The board reads the branch worked in only (`branch_id`): "All branches", or
+/// a branch the person does not work in, says so instead of a list.
 ///
-/// While an area is shaped, everything under the title gives way to its tools,
-/// name and figures: the map is where the shape is made. A flow under way
-/// comes back after it.
+/// "New delivery method" (the desk's header) turns the whole panel into its
+/// steps (`MethodFlowPanel`); while an area is shaped, the panel gives way to
+/// its tools, name and figures. A flow under way comes back after it.
 class DeliveriesPanel extends StatelessWidget {
   const DeliveriesPanel({
     super.key,
     required this.editor,
-    required this.owner,
+    required this.branch,
     required this.origin,
-    required this.onOwner,
+    required this.onBranch,
     required this.onAdd,
     required this.view,
     required this.onView,
     required this.onShipment,
     required this.flow,
+    required this.search,
+    required this.branchPicker,
+    this.query = "",
     this.shipments = true,
     this.litShipment
   });
 
   final AreaEditor editor;
 
-  /// The open map: a branch's id, or `null` for the shared one.
-  final String? owner;
+  /// The branch picked, or `null` for all of them.
+  final String? branch;
 
   /// Where an area opened with no center of its own starts.
   final LatLng Function() origin;
 
-  final void Function(String branch) onOwner;
+  final void Function(String? branch) onBranch;
 
   /// Starts an area made by the method picked.
   final void Function(AreaMethod method) onAdd;
@@ -97,62 +99,33 @@ class DeliveriesPanel extends StatelessWidget {
   /// Adding or editing a delivery method, when under way.
   final MethodFlow flow;
 
+  /// The search field and the branch field: the desk's, so what was typed or
+  /// picked outlives the flow and the editor that hide them.
+  final InputController search;
+  final InputController branchPicker;
+
+  /// What the search holds, trimmed and lower case.
+  final String query;
+
+  /// [branchPicker]'s value for "All branches".
+  static const String allBranches = "all";
+
+  /// The open map: `null` for the shared one, and for "All branches" per
+  /// branch (no single map is open then).
+  static String? ownerOf(DeliveryAreasModel areas, String? branch) =>
+    areas.scope == DeliveryScope.branch ? branch : null;
+
+  /// The areas listed and drawn: per branch with none picked, every branch's
+  /// in force; else the open map's.
+  static List<DeliveryArea> shown(DeliveryAreasModel areas, String? branch, List<BusinessBranchModel> branches) =>
+    areas.scope == DeliveryScope.branch && branch == null
+      ? areas.inForce([for (final branch in branches) branch.id])
+      : areas.of(ownerOf(areas, branch));
+
   @override
   Widget build(BuildContext context) {
-    final scheme = ThemeColor.of(context);
     // The flow and the editor bring their own heading: the views' controls
     // would only be ways out of them.
-    final busy = editor.isOpen || flow.isOpen;
-    final views = [
-      if (shipments) DeliveriesView.shipments,
-      DeliveriesView.areas,
-      DeliveriesView.methods
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(children: [
-          Expanded(child: TextLarge(S.of(context).deliveries, ellipsis: true)),
-          if (!busy) ...[
-            SizedBox(width: AppSize.gap),
-            _newMethod(context)
-          ]
-        ]),
-        if (!busy) ...[
-          SizedBox(height: AppSize.gap * 0.5),
-          TextSmall(
-            S.of(context).deliveries_subtitle,
-            lines: 2,
-            ellipsis: true,
-            color: scheme.text.secondary
-          )
-        ],
-        SizedBox(height: AppSize.spaceS),
-        if (!busy) ...[
-          PanelHalves<DeliveriesView>(
-            values: views,
-            selected: view,
-            label: (view) => switch (view) {
-              DeliveriesView.shipments => S.of(context).deliveries_view_shipments,
-              DeliveriesView.areas => S.of(context).deliveries_view_areas,
-              DeliveriesView.methods => S.of(context).deliveries_view_methods
-            },
-            icon: (view) => switch (view) {
-              DeliveriesView.shipments => CI.delivery,
-              DeliveriesView.areas => CI.globe_shopping,
-              DeliveriesView.methods => CI.store
-            },
-            onChanged: onView
-          ),
-          SizedBox(height: AppSize.spaceS)
-        ],
-        Expanded(child: _body(context))
-      ]
-    );
-  }
-
-  Widget _body(BuildContext context) {
     if (editor.isOpen) return _areas(context);
 
     if (flow.isOpen) {
@@ -161,55 +134,96 @@ class DeliveriesPanel extends StatelessWidget {
         areas: _areas,
         onDone: () {
           flow.close();
-          onView(DeliveriesView.methods);
+          onView(DeliveriesView.areas);
         }
       );
     }
 
-    return switch (view) {
-      DeliveriesView.shipments when shipments => ShipmentList(onOpen: onShipment, lit: litShipment),
-      DeliveriesView.methods => MethodList(onEdit: (option) => _edit(context, option)),
-      _ => _areas(context)
-    };
-  }
+    final views = [
+      if (shipments) DeliveriesView.shipments,
+      DeliveriesView.areas
+    ];
 
-  /// "New delivery method": the panel turns into its steps, unless the
-  /// company already has as many as it may.
-  Widget _newMethod(BuildContext context) {
-    final scheme = ThemeColor.of(context);
-
-    return FeedbackButton(
-      action: () {
-        final count = context.read<BusinessDeliveryService>().delivery?.options.length ?? 0;
-
-        if (count >= MethodList.limit) {
-          FloatFlag.of(context).alert(message: S.of(context).deliveries_method_limit(MethodList.limit));
-          return;
-        }
-
-        flow.start();
-      },
-      height: AppSize.action,
-      padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS),
-      radius: AppSize.corner,
-      color: scheme.surfaceOver,
-      feedbackColor: scheme.line,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(CI.plus, size: AppSize.text, color: scheme.icon),
-          SizedBox(width: AppSize.gap),
-          TextSmall(S.of(context).deliveries_method_new, bold: true)
-        ]
-      )
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SearchInput(
+          controller: search,
+          placeholder: view == DeliveriesView.shipments
+            ? S.of(context).deliveries_search_shipments
+            : S.of(context).deliveries_search_areas,
+          // Filtered as it is typed (the desk listens to the field): there is
+          // nothing to ask the backend.
+          onSearch: (_) {}
+        ),
+        SizedBox(height: AppSize.gap),
+        _branchField(context),
+        SizedBox(height: AppSize.spaceS),
+        if (views.length > 1) ...[
+          PanelHalves<DeliveriesView>(
+            values: views,
+            selected: view,
+            label: (view) => switch (view) {
+              DeliveriesView.shipments => S.of(context).deliveries_view_shipments,
+              DeliveriesView.areas => S.of(context).deliveries_view_areas
+            },
+            icon: (view) => switch (view) {
+              DeliveriesView.shipments => CI.delivery,
+              DeliveriesView.areas => CI.globe_shopping
+            },
+            onChanged: onView
+          ),
+          SizedBox(height: AppSize.spaceS)
+        ],
+        Expanded(child: view == DeliveriesView.shipments && shipments
+          ? _shipments(context)
+          : _areas(context))
+      ]
     );
   }
 
-  /// Opens a method's form in the panel once the catalog is read (see
-  /// `MethodFlowPanel._pick`).
-  Future<void> _edit(BuildContext context, DeliveryOption option) async {
-    await context.read<BusinessDeliveryService>().loadCatalog();
-    flow.edit(option);
+  /// "All branches" and each branch; in the areas view each says how many
+  /// areas its map has.
+  Widget _branchField(BuildContext context) {
+    final areas = context.watch<DeliveryAreasService>().areas;
+    final branches = context.watch<BusinessBranchesService>().branches;
+    final perBranch = view == DeliveriesView.areas && areas?.scope == DeliveryScope.branch;
+
+    return SelectInput(
+      controller: branchPicker,
+      placeholder: S.of(context).deliveries_branch,
+      leftIcon: const Icon(CI.store),
+      searchable: false,
+      emptyText: S.of(context).deliveries_scope_branches_empty,
+      options: [
+        SelectOption(value: allBranches, placeholder: S.of(context).deliveries_branch_all),
+        for (final branch in branches) SelectOption(
+          value: branch.id,
+          placeholder: branch.name,
+          subtitle: perBranch ? S.of(context).deliveries_scope_branch_count(areas!.of(branch.id).length) : null
+        )
+      ],
+      onSelected: (option) => onBranch(option.value == allBranches ? null : option.value)
+    );
+  }
+
+  /// The board, when it is the branch picked's: it reads the branch worked in
+  /// and no other.
+  Widget _shipments(BuildContext context) {
+    final working = BranchService().activeId;
+
+    if (branch == null || (working != null && branch != working)) {
+      return Align(
+        alignment: Alignment.topLeft,
+        child: TextSmall(
+          branch == null ? S.of(context).deliveries_shipments_all : S.of(context).deliveries_shipments_not_yours,
+          lines: 4,
+          color: ThemeColor.of(context).text.secondary
+        )
+      );
+    }
+
+    return ShipmentList(onOpen: onShipment, lit: litShipment, query: query);
   }
 
   /// What the assistant does when a customer is outside every area: it bends
@@ -261,14 +275,15 @@ class DeliveriesPanel extends StatelessWidget {
     if (areas == null || waiting) return const Center(child: Loading());
 
     final branches = branchService.branches;
-    final mine = areas.of(owner);
+    final owner = ownerOf(areas, branch);
+    final listed = shown(areas, branch, branches);
 
     if (editor.isOpen) {
       return AreaEditorPanel(
         key: ValueKey(editor.session),
         editor: editor,
         currency: areas.currency,
-        count: mine.length,
+        count: listed.length,
         branch: owner
       );
     }
@@ -276,10 +291,18 @@ class DeliveriesPanel extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final inForce = areas.inForce([for (final branch in branches) branch.id]);
     final point = editor.probe;
+    // Per branch with none picked there is no one map a new area would go into.
+    final addable = areas.scope == DeliveryScope.global || owner != null;
 
-    Color colorOf(DeliveryArea area) => area.branch == owner
-      ? areaColor(context, mine.indexOf(area), active: area.active)
+    Color colorOf(DeliveryArea area) => listed.contains(area)
+      ? areaColor(context, listed.indexOf(area), active: area.active)
       : scheme.text.secondary;
+
+    // The colours stay the map's: an area keeps its index while others are
+    // filtered out of the list.
+    final found = query.isEmpty
+      ? listed
+      : [for (final area in listed) if (area.name.toLowerCase().contains(query)) area];
 
     return AreaList(
       header: Column(
@@ -288,17 +311,18 @@ class DeliveriesPanel extends StatelessWidget {
         children: [
           TextMedium(S.of(context).deliveries_scope_title, bold: true, ellipsis: true),
           SizedBox(height: AppSize.gap),
-          AreaMapPicker(
-            areas: areas,
-            branches: branches,
-            owner: owner,
-            onScope: service.isWriting ? null : (scope) => service.setScope(context, scope),
-            onOwner: onOwner
+          DeliveryScopeSwitch(
+            scope: areas.scope,
+            onChanged: service.isWriting ? null : (scope) => service.setScope(context, scope)
           )
         ]
       ),
-      add: AddAreaButton(onPick: onAdd),
-      areas: mine,
+      add: addable
+        ? AddAreaButton(onPick: onAdd)
+        : TextSmall(S.of(context).deliveries_area_pick_branch, lines: 2, color: scheme.text.secondary),
+      areas: found,
+      colorOf: colorOf,
+      empty: listed.isNotEmpty ? S.of(context).deliveries_search_empty : null,
       currency: areas.currency,
       probe: point == null ? null : AreaProbe(
         holding: DeliveryAreasModel(areas: inForce).holding(point),
@@ -307,7 +331,7 @@ class DeliveriesPanel extends StatelessWidget {
         from: deliveringBranch(point, scope: areas.scope, inForce: inForce, branches: branches)?.name,
         onClear: editor.clearProbe
       ),
-      footer: mine.isEmpty ? null : _outside(context),
+      footer: listed.isEmpty ? null : _outside(context),
       onFocus: (area) => editor.fit(area.bounds),
       onEdit: (area) => editor.edit(area, origin()),
       onToggle: (area) => service.update(context, deliveryAreaActiveRequest(area, !area.active)),

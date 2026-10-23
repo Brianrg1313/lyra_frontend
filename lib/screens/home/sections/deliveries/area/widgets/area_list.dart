@@ -7,20 +7,20 @@ import 'package:app/services/business/delivery_area_model.dart';
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
 
-import './area_layers.dart';
 import './area_tile.dart';
 
-/// The desk's panel while looking: which map is open and how the areas are
-/// shared ([header]), what the point tapped on the map gets ([probe], or the
-/// hint to tap one), the way to add one ([add]) right above them, and every
-/// area of the open map, each with its colour on the map, its size and its
-/// figures.
+/// The desk's panel while looking: how the areas are shared ([header]), what
+/// the point tapped on the map gets ([probe], or the hint to tap one), the way
+/// to add one ([add]) right above them, and every area listed, each with its
+/// colour on the map, its size and its figures.
 class AreaList extends StatelessWidget {
   const AreaList({
     super.key,
     required this.header,
     this.add,
     required this.areas,
+    required this.colorOf,
+    this.empty,
     required this.currency,
     required this.probe,
     this.footer,
@@ -35,8 +35,15 @@ class AreaList extends StatelessWidget {
   /// Starts a new area ("Add area"), above the areas it adds to.
   final Widget? add;
 
-  /// The open map's areas, in order.
+  /// The areas listed, in order.
   final List<DeliveryArea> areas;
+
+  /// An area's colour on the map, which a filtered list must not shift.
+  final Color Function(DeliveryArea area) colorOf;
+
+  /// Said instead of the empty state when [areas] is empty only because a
+  /// search left nothing.
+  final String? empty;
 
   final String currency;
 
@@ -78,7 +85,12 @@ class AreaList extends StatelessWidget {
           add!,
           SizedBox(height: AppSize.spaceS)
         ],
-        if (areas.isEmpty)
+        if (areas.isEmpty && empty != null)
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSize.spaceS),
+            child: TextSmall(empty!, lines: 2, color: scheme.text.secondary)
+          )
+        else if (areas.isEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: AppSize.spaceL),
             child: SectionMessage(
@@ -91,7 +103,7 @@ class AreaList extends StatelessWidget {
           for (var i = 0; i < areas.length; i++)
             AreaTile(
               area: areas[i],
-              color: areaColor(context, i, active: areas[i].active),
+              color: colorOf(areas[i]),
               currency: currency,
               onFocus: () => onFocus(areas[i]),
               onEdit: () => onEdit(areas[i]),

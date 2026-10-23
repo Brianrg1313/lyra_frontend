@@ -75,3 +75,18 @@ String shipmentDestinationLabel(BuildContext context, ShipmentDestination destin
     ? S.of(context).shipments_destination_pin
     : S.of(context).shipments_destination_none;
 }
+
+/// Whether [query] (trimmed, lower case) is in what a person would search a
+/// shipment by: its number or ticket, the customer and their contact, who
+/// receives it, where it goes and who carries it.
+bool shipmentMatches(BuildContext context, Shipment shipment, String query) => [
+  shipment.number,
+  shipment.ticket,
+  shipment.customer,
+  shipment.contact,
+  shipment.receiver,
+  shipment.destination.address,
+  shipment.destination.place,
+  shipment.destination.area,
+  shipmentCarrierLabel(context, shipment.carrier)
+].any((field) => field.toLowerCase().contains(query));

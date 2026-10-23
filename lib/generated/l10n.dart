@@ -18276,16 +18276,6 @@ class S {
     return Intl.message('Deliveries', name: 'deliveries', desc: '', args: []);
   }
 
-  /// `The orders on their way to your customers, and where they are.`
-  String get deliveries_subtitle {
-    return Intl.message(
-      'The orders on their way to your customers, and where they are.',
-      name: 'deliveries_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Where you deliver`
   String get deliveries_scope_title {
     return Intl.message(
@@ -18354,26 +18344,6 @@ class S {
     return Intl.message(
       'Add your branches in the business page to draw their areas.',
       name: 'deliveries_scope_branches_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Areas of`
-  String get deliveries_area_map {
-    return Intl.message(
-      'Areas of',
-      name: 'deliveries_area_map',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Every branch`
-  String get deliveries_area_map_shared {
-    return Intl.message(
-      'Every branch',
-      name: 'deliveries_area_map_shared',
       desc: '',
       args: [],
     );
@@ -18739,41 +18709,81 @@ class S {
     );
   }
 
-  /// `Methods`
-  String get deliveries_view_methods {
+  /// `Branch`
+  String get deliveries_branch {
     return Intl.message(
-      'Methods',
-      name: 'deliveries_view_methods',
+      'Branch',
+      name: 'deliveries_branch',
       desc: '',
       args: [],
     );
   }
 
-  /// `Deliveries`
-  String get shipments_title {
+  /// `All branches`
+  String get deliveries_branch_all {
     return Intl.message(
-      'Deliveries',
-      name: 'shipments_title',
+      'All branches',
+      name: 'deliveries_branch_all',
       desc: '',
       args: [],
     );
   }
 
-  /// `Deliveries · {branch}`
-  String shipments_title_branch(Object branch) {
+  /// `Search by customer, ticket or address`
+  String get deliveries_search_shipments {
     return Intl.message(
-      'Deliveries · $branch',
-      name: 'shipments_title_branch',
+      'Search by customer, ticket or address',
+      name: 'deliveries_search_shipments',
       desc: '',
-      args: [branch],
+      args: [],
     );
   }
 
-  /// `Schedule`
-  String get shipments_schedule {
+  /// `Search areas`
+  String get deliveries_search_areas {
     return Intl.message(
-      'Schedule',
-      name: 'shipments_schedule',
+      'Search areas',
+      name: 'deliveries_search_areas',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nothing matches your search.`
+  String get deliveries_search_empty {
+    return Intl.message(
+      'Nothing matches your search.',
+      name: 'deliveries_search_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deliveries are shown one branch at a time: pick a branch above to see its own.`
+  String get deliveries_shipments_all {
+    return Intl.message(
+      'Deliveries are shown one branch at a time: pick a branch above to see its own.',
+      name: 'deliveries_shipments_all',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You don't work in this branch, so its deliveries aren't shown here.`
+  String get deliveries_shipments_not_yours {
+    return Intl.message(
+      'You don\'t work in this branch, so its deliveries aren\'t shown here.',
+      name: 'deliveries_shipments_not_yours',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a branch above to add an area to its map.`
+  String get deliveries_area_pick_branch {
+    return Intl.message(
+      'Pick a branch above to add an area to its map.',
+      name: 'deliveries_area_pick_branch',
       desc: '',
       args: [],
     );

@@ -330,6 +330,7 @@ void main() {
         return Scaffold(body: AreaList(
           header: const SizedBox.shrink(),
           areas: areas.areas,
+          colorOf: (_) => const Color(0xFF000000),
           currency: areas.currency,
           probe: probe == null ? null : AreaProbe(
             holding: areas.holding(probe),

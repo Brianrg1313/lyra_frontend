@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/assistant/assistant_app_tools.dart';
+import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
 import 'package:app/services/business/business_delivery_service.dart';
@@ -22,6 +23,7 @@ import 'package:app/services/shipments/shipments_service.dart';
 import 'package:app/toolkit/deployment.dart';
 
 // WIDGETS
+import 'package:core/form.dart';
 import 'package:app/screens/home/sections/business/branches/branch_markers.dart';
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
@@ -31,6 +33,7 @@ import 'package:app/screens/modals/deliveries/shipment/_shipment.dart';
 import './deliveries_header.dart';
 import './deliveries_map.dart';
 import './deliveries_panel.dart';
+import './methods/method_list.dart';
 import './methods/state/method_flow.dart';
 import './shipments/shipment_markers.dart';
 import './widgets/map_panel.dart';
@@ -40,11 +43,11 @@ import './widgets/map_panel.dart';
 /// The map is the sheet, edge to edge, like the business's branches tab: the
 /// panel floats over its left side and the actions over its top right corner.
 /// Where the company delivers is drawn and edited here, on the one map: the
-/// panel lists the open map's areas (the shared one, or per branch the one
-/// picked) and "Add area" turns the map into where a new one is shaped. Per
-/// branch, the other branches' areas in force are drawn grey under the open
-/// map's, and a pin opens its branch's map; with one shared map a pin only
-/// moves the map.
+/// panel lists the areas of the branch picked in it (the shared ones, or per
+/// branch that branch's map; every branch's with "All branches") and "Add
+/// area" turns the map into where a new one is shaped. Per branch, the other
+/// branches' areas in force are drawn grey under the open map's, and a pin
+/// picks its branch; with one shared map a pin only moves the map.
 ///
 /// The branch's deliveries open first: the panel lists them and the map pins
 /// where each goes (cloud only, [ShipmentsService]); a tile or a pin opens the
@@ -73,8 +76,22 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   final MapController _map = MapController();
   late final AreaEditor _editor = AreaEditor(map: _map);
 
-  /// The branch whose map was asked for; [_owner] says which one is open.
-  String? _picked;
+  /// The branch the panel is filtered by, `null` for all of them: the branch
+  /// worked in on opening, since its deliveries are the ones the board reads.
+  late String? _branch = _board ? BranchService().activeId : null;
+
+  /// The panel's search and branch fields, kept here so a flow or an area
+  /// being shaped, which hide them, leave them as they were.
+  final FormController _filters = FormController();
+  late final InputController _search = InputController.search(form: _filters);
+  late final InputController _branchPicker = InputController.select(
+    form: _filters,
+    key: "BRANCH",
+    initial: _branch ?? DeliveriesPanel.allBranches
+  );
+
+  /// What the search holds, as the panel matches it.
+  String _query = "";
 
   /// The board exists only in the cloud (see [DeliveriesPanel.shipments]).
   final bool _board = Deployment.mode == DeploymentMode.cloud;
@@ -90,18 +107,15 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   Timer? _glancing;
   StreamSubscription<MapEvent>? _moves;
 
-  /// The open map: `null` for the shared one; per branch, the one picked, or
-  /// the first (the main one) when none was or it is gone.
+  /// The branch picked, while the company still has it.
+  String? get _picked => _branches.branches.any((branch) => branch.id == _branch) ? _branch : null;
+
+  /// The open map: `null` for the shared one, and per branch for "All
+  /// branches" (no single map is open).
   String? get _owner {
-    if (_areas.areas?.scope != DeliveryScope.branch) return null;
+    final areas = _areas.areas;
 
-    final branches = _branches.branches;
-
-    for (final branch in branches) {
-      if (branch.id == _picked) return branch.id;
-    }
-
-    return branches.firstOrNull?.id;
+    return areas == null ? null : DeliveriesPanel.ownerOf(areas, _picked);
   }
 
   @override
@@ -126,6 +140,13 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     _areas.addListener(_glance);
     _branches.addListener(_glance);
     _moves = _map.mapEventStream.listen((_) => _glance());
+    _search.textController.addListener(_typed);
+  }
+
+  void _typed() {
+    final query = _search.text.trim().toLowerCase();
+
+    if (query != _query) setState(() => _query = query);
   }
 
   @override
@@ -140,32 +161,89 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     _shipments.dispose();
     _delivery.dispose();
     _flow.dispose();
+    _filters.dispose();
     _focus.dispose();
     _map.dispose();
 
     super.dispose();
   }
 
-  /// A pin tapped, or a branch picked in the panel: per branch, its map opens
-  /// (unless an area is being shaped on the one open); shared, the map only
-  /// goes to it.
-  void _open(String branch) {
-    if (_editor.isOpen) return;
-
-    final perBranch = _areas.areas?.scope == DeliveryScope.branch;
-
-    if (perBranch) {
-      setState(() => _picked = branch);
-      _editor.clearProbe();
+  /// A branch picked in the panel (`null`: all of them), or a pin tapped in
+  /// the areas view. Not while an area is shaped: it belongs to the map open.
+  ///
+  /// The board reads the branch worked in and no other, so picking another
+  /// one on it works in that one (`BranchService.select`), which remounts the
+  /// desk on it; a branch the person may not work in stays picked, and the
+  /// panel says why there is no list.
+  void _pick(String? branch) {
+    if (_editor.isOpen) {
+      _showPicked();
+      return;
     }
+
+    setState(() => _branch = branch);
+    _showPicked();
+    _editor.clearProbe();
+
+    if (branch == null) return;
+
+    if (_view == DeliveriesView.shipments) _work(branch);
 
     _focus.select(branch);
 
     final point = _point(branch);
 
     if (point != null && _tiles.status == MapTilesStatus.ready) {
+      final perBranch = _areas.areas?.scope == DeliveryScope.branch;
+
       _map.move(point, perBranch ? _map.camera.zoom : DeliveriesMap.businessZoom);
     }
+  }
+
+  /// A pin tapped: on the board it only moves the map (a tap is no reason to
+  /// change the branch worked in); on the areas it picks its branch.
+  void _open(String branch) {
+    if (_view == DeliveriesView.areas || _editor.isOpen) {
+      _pick(branch);
+      return;
+    }
+
+    final point = _point(branch);
+
+    _focus.select(branch);
+    if (point != null && _tiles.status == MapTilesStatus.ready) _map.move(point, _map.camera.zoom);
+  }
+
+  /// Works in [branch] when the board is not its (see [_pick]).
+  void _work(String branch) {
+    final working = BranchService();
+
+    if (_board && branch != working.activeId && working.byId(branch) != null) working.select(branch);
+  }
+
+  /// Writes [_branch] into the panel's field.
+  void _showPicked() {
+    final value = _branch ?? DeliveriesPanel.allBranches;
+
+    if (_branchPicker.selectedValue == value) return;
+
+    _branchPicker.selectedValue = value;
+    _branchPicker.textController.text = value == DeliveriesPanel.allBranches
+      ? S.of(context).deliveries_branch_all
+      : _branches.branches.where((branch) => branch.id == value).firstOrNull?.name ?? "";
+  }
+
+  /// "New delivery method": the panel turns into its steps, unless the
+  /// company already has as many as it may.
+  void _newMethod() {
+    final count = _delivery.delivery?.options.length ?? 0;
+
+    if (count >= MethodList.limit) {
+      FloatFlag.of(context).alert(message: S.of(context).deliveries_method_limit(MethodList.limit));
+      return;
+    }
+
+    _flow.start();
   }
 
   /// Whether a tap on the map is the areas': while they are listed (their view,
@@ -174,13 +252,19 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     ? _flow.step == MethodStep.areas
     : _view == DeliveriesView.areas);
 
-  /// Shows [view]; the areas drop the probe a shipment view has no use for.
+  /// Shows [view]; the areas drop the probe a shipment view has no use for,
+  /// and the search, which matched the other view's rows, is emptied. The
+  /// board on a branch other than the one worked in works in it (see [_pick]).
   void _show(DeliveriesView view) {
     if (view == _view) return;
 
     _editor.clearProbe();
+    _search.textController.clear();
     setState(() => _view = view);
     _glance();
+
+    final branch = _branch;
+    if (view == DeliveriesView.shipments && branch != null) _work(branch);
   }
 
   void _glance() {
@@ -333,10 +417,13 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
               width: MapPanel.width(context, constraints.maxWidth),
               child: MapPanel(child: DeliveriesPanel(
                 editor: _editor,
-                owner: _owner,
+                branch: _picked,
                 origin: _origin,
-                onOwner: _open,
+                onBranch: _pick,
                 onAdd: _start,
+                search: _search,
+                branchPicker: _branchPicker,
+                query: _query,
                 view: _view,
                 onView: _show,
                 shipments: _board,
@@ -348,7 +435,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
             Positioned(
               top: AppSize.spaceS,
               right: AppSize.spaceS,
-              child: const DeliveriesHeader()
+              child: DeliveriesHeader(onNewMethod: _flow.isOpen || _editor.isOpen ? null : _newMethod)
             )
           ]
         ))
@@ -356,21 +443,21 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     )
   );
 
-  /// The open map's areas in their colours (and the one being shaped), the
+  /// The panel's areas in their colours (and the one being shaped), the
   /// other branches' in force grey under them.
   List<Widget> _layers(BuildContext context) {
     final areas = _areas.areas;
 
     if (areas == null) return areaLayers(context, const [], _editor);
 
-    final owner = _owner;
+    final shown = DeliveriesPanel.shown(areas, _picked, _branches.branches);
     final inForce = areas.inForce([for (final branch in _branches.branches) branch.id]);
 
     return areaLayers(
       context,
-      areas.of(owner),
+      shown,
       _editor,
-      others: [for (final area in inForce) if (area.branch != owner) area]
+      others: [for (final area in inForce) if (!shown.contains(area)) area]
     );
   }
 }
