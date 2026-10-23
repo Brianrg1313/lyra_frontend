@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/business/branch_service.dart';
-import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
@@ -29,7 +28,6 @@ import './methods/state/method_flow.dart';
 import './methods/widgets/delivery_meeting_field.dart';
 import './shipments/shipment_list.dart';
 import './widgets/panel_halves.dart';
-import './widgets/scope_switch.dart';
 
 /// What the panel shows: the branch's deliveries, or where the company
 /// delivers.
@@ -41,15 +39,17 @@ enum DeliveriesView { shipments, areas }
 /// on screen, the branch the desk is
 /// filtered by ("All branches" or one), the switch between the two views, and
 /// the view. The deliveries (`ShipmentList`) are the daily work, open first;
-/// the areas show where it delivers (shared or per branch), "Add area", the
-/// areas of the branch picked and what happens outside them (fixed or
-/// flexible). A tap on the map says which areas in force reach that point and
-/// which branch the order would leave from.
+/// the areas show "New delivery method", the map of the branch picked and what
+/// happens outside them (fixed or flexible). A tap on the map says which areas
+/// in force reach that point and which branch the order would leave from.
+///
+/// On the areas the branch field is the scope too: "All branches" is the
+/// shared map, a branch its own map (the desk writes the scope it means).
 ///
 /// The board reads the branch worked in only (`branch_id`): "All branches", or
 /// a branch the person does not work in, says so instead of a list.
 ///
-/// "New delivery method" (the desk's header) turns the whole panel into its
+/// "New delivery method" (over the areas) turns the whole panel into its
 /// steps (`MethodFlowPanel`); while an area is shaped, the panel gives way to
 /// its tools, name and figures. A flow under way comes back after it.
 class DeliveriesPanel extends StatelessWidget {
@@ -60,6 +60,7 @@ class DeliveriesPanel extends StatelessWidget {
     required this.origin,
     required this.onBranch,
     required this.onAdd,
+    required this.onNewMethod,
     required this.view,
     required this.onView,
     required this.onShipment,
@@ -83,6 +84,9 @@ class DeliveriesPanel extends StatelessWidget {
 
   /// Starts an area made by the method picked.
   final void Function(AreaMethod method) onAdd;
+
+  /// Starts a new delivery method, unless the company is at the limit.
+  final void Function() onNewMethod;
 
   final DeliveriesView view;
   final void Function(DeliveriesView view) onView;
@@ -111,17 +115,9 @@ class DeliveriesPanel extends StatelessWidget {
   /// [branchPicker]'s value for "All branches".
   static const String allBranches = "all";
 
-  /// The open map: `null` for the shared one, and for "All branches" per
-  /// branch (no single map is open then).
-  static String? ownerOf(DeliveryAreasModel areas, String? branch) =>
-    areas.scope == DeliveryScope.branch ? branch : null;
-
-  /// The areas listed and drawn: per branch with none picked, every branch's
-  /// in force; else the open map's.
-  static List<DeliveryArea> shown(DeliveryAreasModel areas, String? branch, List<BusinessBranchModel> branches) =>
-    areas.scope == DeliveryScope.branch && branch == null
-      ? areas.inForce([for (final branch in branches) branch.id])
-      : areas.of(ownerOf(areas, branch));
+  /// The scope the branch field means on the areas: "All branches" shares
+  /// one map, a branch has its own.
+  static DeliveryScope scopeOf(String? branch) => branch == null ? DeliveryScope.global : DeliveryScope.branch;
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +193,7 @@ class DeliveriesPanel extends StatelessWidget {
   Widget _branchField(BuildContext context) {
     final areas = context.watch<DeliveryAreasService>().areas;
     final branches = context.watch<BusinessBranchesService>().branches;
-    final perBranch = view == DeliveriesView.areas && areas?.scope == DeliveryScope.branch;
+    final counted = view == DeliveriesView.areas && areas != null;
 
     return SelectInput(
       controller: branchPicker,
@@ -210,7 +206,7 @@ class DeliveriesPanel extends StatelessWidget {
         for (final branch in branches) SelectOption(
           value: branch.id,
           placeholder: branch.name,
-          subtitle: perBranch ? S.of(context).deliveries_scope_branch_count(areas!.of(branch.id).length) : null
+          subtitle: counted ? S.of(context).deliveries_scope_branch_count(areas.of(branch.id).length) : null
         )
       ],
       onSelected: (option) => onBranch(option.value == allBranches ? null : option.value)
@@ -270,8 +266,8 @@ class DeliveriesPanel extends StatelessWidget {
     final branchService = context.watch<BusinessBranchesService>();
     final areas = service.areas;
 
-    // Per branch, the maps are the branches': nothing to open before they are read.
-    final waiting = areas?.scope == DeliveryScope.branch &&
+    // A branch's map is only known once the branches are read.
+    final waiting = branch != null &&
       branchService.status != BusinessBranchesStatus.ready &&
       branchService.status != BusinessBranchesStatus.error;
 
@@ -285,8 +281,7 @@ class DeliveriesPanel extends StatelessWidget {
     if (areas == null || waiting) return const Center(child: Loading());
 
     final branches = branchService.branches;
-    final owner = ownerOf(areas, branch);
-    final listed = shown(areas, branch, branches);
+    final listed = areas.of(branch);
 
     if (editor.isOpen) {
       return AreaEditorPanel(
@@ -294,15 +289,13 @@ class DeliveriesPanel extends StatelessWidget {
         editor: editor,
         currency: areas.currency,
         count: listed.length,
-        branch: owner
+        branch: branch
       );
     }
 
     final scheme = ThemeColor.of(context);
     final inForce = areas.inForce([for (final branch in branches) branch.id]);
     final point = editor.probe;
-    // Per branch with none picked there is no one map a new area would go into.
-    final addable = areas.scope == DeliveryScope.global || owner != null;
 
     Color colorOf(DeliveryArea area) => listed.contains(area)
       ? areaColor(context, listed.indexOf(area), active: area.active)
@@ -315,21 +308,9 @@ class DeliveriesPanel extends StatelessWidget {
       : [for (final area in listed) if (area.name.toLowerCase().contains(query)) area];
 
     return AreaList(
-      header: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextMedium(S.of(context).deliveries_scope_title, bold: true, ellipsis: true),
-          SizedBox(height: AppSize.gap),
-          DeliveryScopeSwitch(
-            scope: areas.scope,
-            onChanged: service.isWriting ? null : (scope) => service.setScope(context, scope)
-          )
-        ]
-      ),
-      add: addable
-        ? AddAreaButton(onPick: onAdd)
-        : TextSmall(S.of(context).deliveries_area_pick_branch, lines: 2, color: scheme.text.secondary),
+      // In a method's last step its areas are added here; looking, the
+      // method comes first.
+      add: flow.isOpen ? AddAreaButton(onPick: onAdd) : AddAreaButton.method(onMethod: onNewMethod),
       areas: found,
       colorOf: colorOf,
       empty: listed.isNotEmpty ? S.of(context).deliveries_search_empty : null,

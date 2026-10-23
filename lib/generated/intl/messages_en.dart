@@ -2736,9 +2736,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "deliveries_area_pause": MessageLookupByLibrary.simpleMessage("Pause area"),
     "deliveries_area_paused": MessageLookupByLibrary.simpleMessage("Paused"),
-    "deliveries_area_pick_branch": MessageLookupByLibrary.simpleMessage(
-      "Pick a branch above to add an area to its map.",
-    ),
     "deliveries_area_points": m52,
     "deliveries_area_probe_clear": MessageLookupByLibrary.simpleMessage(
       "Clear the point",
@@ -2878,22 +2875,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Add one with “New delivery method”, above.",
     ),
     "deliveries_refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
-    "deliveries_scope_branch": MessageLookupByLibrary.simpleMessage(
-      "Per branch",
-    ),
     "deliveries_scope_branch_count": m58,
-    "deliveries_scope_branch_note": MessageLookupByLibrary.simpleMessage(
-      "Each branch covers its own areas, and an order leaves from the branch whose area holds the customer.",
-    ),
     "deliveries_scope_branches_empty": MessageLookupByLibrary.simpleMessage(
       "Add your branches in the business page to draw their areas.",
-    ),
-    "deliveries_scope_global": MessageLookupByLibrary.simpleMessage("Shared"),
-    "deliveries_scope_global_note": MessageLookupByLibrary.simpleMessage(
-      "Every branch covers the same areas, and an order leaves from the closest branch.",
-    ),
-    "deliveries_scope_title": MessageLookupByLibrary.simpleMessage(
-      "Where you deliver",
     ),
     "deliveries_search_areas": MessageLookupByLibrary.simpleMessage(
       "Search areas",

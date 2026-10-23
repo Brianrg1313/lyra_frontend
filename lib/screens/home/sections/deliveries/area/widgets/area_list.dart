@@ -9,14 +9,12 @@ import 'package:app/screens/home/sections/_section/section_message.dart';
 
 import './area_tile.dart';
 
-/// The desk's panel while looking: how the areas are shared ([header]), what
-/// the point tapped on the map gets ([probe], or the hint to tap one), the way
-/// to add one ([add]) right above them, and every area listed, each with its
-/// colour on the map, its size and its figures.
+/// The desk's panel while looking: the panel's action ([add]) first, what the
+/// point tapped on the map gets ([probe], or the hint to tap one), and every
+/// area listed, each with its colour on the map, its size and its figures.
 class AreaList extends StatelessWidget {
   const AreaList({
     super.key,
-    required this.header,
     this.add,
     required this.areas,
     required this.colorOf,
@@ -30,9 +28,8 @@ class AreaList extends StatelessWidget {
     required this.onRemove
   });
 
-  final Widget header;
-
-  /// Starts a new area ("Add area"), above the areas it adds to.
+  /// The panel's action, first: "New delivery method" while looking, "Add
+  /// area" in a method's last step.
   final Widget? add;
 
   /// The areas listed, in order.
@@ -71,8 +68,10 @@ class AreaList extends StatelessWidget {
       showBar: false,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        header,
-        SizedBox(height: AppSize.spaceS),
+        if (add != null) ...[
+          add!,
+          SizedBox(height: AppSize.spaceS)
+        ],
         probe ?? Padding(
           padding: EdgeInsets.only(bottom: AppSize.spaceS),
           child: TextSmall(
@@ -81,10 +80,6 @@ class AreaList extends StatelessWidget {
             color: scheme.text.secondary
           )
         ),
-        if (add != null) ...[
-          add!,
-          SizedBox(height: AppSize.spaceS)
-        ],
         if (areas.isEmpty && empty != null)
           Padding(
             padding: EdgeInsets.symmetric(vertical: AppSize.spaceS),

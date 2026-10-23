@@ -5,15 +5,24 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
-/// "Add area", in the desk's panel right above the areas. It unfolds the three ways an area is
+/// "Add area", first in the desk's panel over the areas. It unfolds the three ways an area is
 /// made, each with what it is for, since the right one depends on how the
 /// company thinks of where it delivers: "5 km around us", "this part of the
 /// city", "as far as a rider gets in 20 minutes".
+///
+/// While the panel only looks at the areas, the same place reads "New delivery
+/// method" ([AddAreaButton.method]): a method's last step is where its areas
+/// are added.
 class AddAreaButton extends StatelessWidget {
-  const AddAreaButton({super.key, required this.onPick});
+  const AddAreaButton({super.key, required void Function(AreaMethod method) this.onPick}) : onMethod = null;
+
+  const AddAreaButton.method({super.key, required void Function() this.onMethod}) : onPick = null;
 
   /// Starts an area made by the method picked.
-  final void Function(AreaMethod method) onPick;
+  final void Function(AreaMethod method)? onPick;
+
+  /// Starts a new delivery method.
+  final void Function()? onMethod;
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +34,17 @@ class AddAreaButton extends StatelessWidget {
       color: scheme.surfaceOver,
       feedbackColor: scheme.line,
       padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS),
-      action: () => _open(context),
+      action: onMethod ?? () => _open(context),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(CI.plus, size: AppSize.text, color: scheme.primary),
           SizedBox(width: AppSize.gap),
-          TextSmall(S.of(context).deliveries_area_add, bold: true, color: scheme.primary)
+          TextSmall(
+            onMethod == null ? S.of(context).deliveries_area_add : S.of(context).deliveries_method_new,
+            bold: true,
+            color: scheme.primary
+          )
         ]
       )
     );
@@ -67,7 +80,7 @@ class AddAreaButton extends StatelessWidget {
     if (picked == null) return;
 
     for (final method in AreaMethod.values) {
-      if (method.name == picked.value) return onPick(method);
+      if (method.name == picked.value) return onPick?.call(method);
     }
   }
 }

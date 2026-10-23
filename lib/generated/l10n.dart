@@ -18276,56 +18276,6 @@ class S {
     return Intl.message('Deliveries', name: 'deliveries', desc: '', args: []);
   }
 
-  /// `Where you deliver`
-  String get deliveries_scope_title {
-    return Intl.message(
-      'Where you deliver',
-      name: 'deliveries_scope_title',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Shared`
-  String get deliveries_scope_global {
-    return Intl.message(
-      'Shared',
-      name: 'deliveries_scope_global',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Per branch`
-  String get deliveries_scope_branch {
-    return Intl.message(
-      'Per branch',
-      name: 'deliveries_scope_branch',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Every branch covers the same areas, and an order leaves from the closest branch.`
-  String get deliveries_scope_global_note {
-    return Intl.message(
-      'Every branch covers the same areas, and an order leaves from the closest branch.',
-      name: 'deliveries_scope_global_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Each branch covers its own areas, and an order leaves from the branch whose area holds the customer.`
-  String get deliveries_scope_branch_note {
-    return Intl.message(
-      'Each branch covers its own areas, and an order leaves from the branch whose area holds the customer.',
-      name: 'deliveries_scope_branch_note',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `{count, plural, =0{No areas} =1{1 area} other{{count} areas}}`
   String deliveries_scope_branch_count(num count) {
     return Intl.plural(
@@ -18784,16 +18734,6 @@ class S {
     return Intl.message(
       'You don\'t work in this branch, so its deliveries aren\'t shown here.',
       name: 'deliveries_shipments_not_yours',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Pick a branch above to add an area to its map.`
-  String get deliveries_area_pick_branch {
-    return Intl.message(
-      'Pick a branch above to add an area to its map.',
-      name: 'deliveries_area_pick_branch',
       desc: '',
       args: [],
     );

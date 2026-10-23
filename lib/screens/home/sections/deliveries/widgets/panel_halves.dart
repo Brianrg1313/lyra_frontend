@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 /// One control split in equal parts, the one on filled: what the desk's panel
-/// shows (shipments or areas) and which shipments (going or delivered). The
-/// same look as `DeliveryScopeSwitch`, which says more under its halves.
+/// shows (shipments or areas).
 ///
 /// [onChanged] `null` shows it without letting it change.
 class PanelHalves<T> extends StatelessWidget {

@@ -43,11 +43,11 @@ import './widgets/map_panel.dart';
 /// The map is the sheet, edge to edge, like the business's branches tab: the
 /// panel floats over its left side and the actions over its top right corner.
 /// Where the company delivers is drawn and edited here, on the one map: the
-/// panel lists the areas of the branch picked in it (the shared ones, or per
-/// branch that branch's map; every branch's with "All branches") and "Add
-/// area" turns the map into where a new one is shaped. Per branch, the other
-/// branches' areas in force are drawn grey under the open map's, and a pin
-/// picks its branch; with one shared map a pin only moves the map.
+/// panel lists the map of the branch picked in it ("All branches" the shared
+/// one, a branch its own, and picking there puts that one in force) and "New
+/// delivery method" ends where a method's areas are shaped on the map. The
+/// other areas in force are drawn grey under the open map's, and on the areas
+/// a pin picks its branch.
 ///
 /// The branch's deliveries open first: the panel lists them and the map pins
 /// where each goes (cloud only, [ShipmentsService]); a tile or a pin opens the
@@ -120,13 +120,6 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   /// The branch picked, while the company still has it.
   String? get _picked => _branches.branches.any((branch) => branch.id == _branch) ? _branch : null;
 
-  /// The open map: `null` for the shared one, and per branch for "All
-  /// branches" (no single map is open).
-  String? get _owner {
-    final areas = _areas.areas;
-
-    return areas == null ? null : DeliveriesPanel.ownerOf(areas, _picked);
-  }
 
   @override
   void initState() {
@@ -195,6 +188,8 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     _showPicked();
     _editor.clearProbe();
 
+    if (_view == DeliveriesView.areas) _scopeTo(branch);
+
     if (branch == null) return;
 
     if (_view == DeliveriesView.shipments) _work(branch);
@@ -222,6 +217,16 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
 
     _focus.select(branch);
     if (point != null && _tiles.status == MapTilesStatus.ready) _map.move(point, _map.camera.zoom);
+  }
+
+  /// On the areas the branch field is the scope: the map picked is put in
+  /// force ("All branches" the shared one).
+  void _scopeTo(String? branch) {
+    final scope = DeliveriesPanel.scopeOf(branch);
+
+    if (_areas.areas == null || _areas.areas!.scope == scope || _areas.isWriting) return;
+
+    _areas.setScope(context, scope);
   }
 
   /// Works in [branch] when the board is not its (see [_pick]).
@@ -293,7 +298,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
         return; // Not drawn yet: nothing to tell
       }
 
-      final owner = _owner;
+      final owner = _picked;
       final editing = _editor.editing;
       final probe = _editor.probe;
       Map<String, double> point(LatLng at) => {"latitude": _round(at.latitude), "longitude": _round(at.longitude)};
@@ -338,16 +343,12 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   /// Starts a new area, unless the list is not there to add it to, or full.
   void _start(AreaMethod method) {
     final areas = _areas.areas;
-    final branches = _branches.status == BusinessBranchesStatus.ready;
-
-    if (_areas.status != DeliveryAreasStatus.ready ||
-        areas == null ||
-        (areas.scope == DeliveryScope.branch && (!branches || _owner == null))) {
+    if (_areas.status != DeliveryAreasStatus.ready || areas == null) {
       FloatFlag.of(context).alert(message: S.of(context).deliveries_area_not_ready);
       return;
     }
 
-    if (areas.of(_owner).length >= DeliveryAreasService.limit) {
+    if (areas.of(_picked).length >= DeliveryAreasService.limit) {
       FloatFlag.of(context).alert(
         message: S.of(context).deliveries_area_limit(DeliveryAreasService.limit)
       );
@@ -372,7 +373,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   /// the middle of the map on screen, else the middle of the map the server
   /// holds.
   LatLng _origin() {
-    final branch = _point(_owner);
+    final branch = _point(_picked);
 
     if (branch != null) return branch;
 
@@ -434,6 +435,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
                 origin: _origin,
                 onBranch: _pick,
                 onAdd: _start,
+                onNewMethod: _newMethod,
                 search: _search,
                 branchPicker: _branchPicker,
                 query: _query,
@@ -448,7 +450,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
             Positioned(
               top: AppSize.spaceS,
               right: AppSize.spaceS,
-              child: DeliveriesHeader(onNewMethod: _flow.isOpen || _editor.isOpen ? null : _newMethod)
+              child: const DeliveriesHeader()
             )
           ]
         ))
@@ -463,7 +465,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
 
     if (areas == null) return areaLayers(context, const [], _editor);
 
-    final shown = DeliveriesPanel.shown(areas, _picked, _branches.branches);
+    final shown = areas.of(_picked);
     final inForce = areas.inForce([for (final branch in _branches.branches) branch.id]);
 
     return areaLayers(

@@ -23,23 +23,23 @@ import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart
 import 'package:app/screens/home/sections/deliveries/deliveries_panel.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
 
-/// Where the company delivers, edited in the desk's panel: one shared map or
-/// one per branch, switched there; the areas of the branch picked (every
-/// branch's for "All branches") under "Add area", what the search matches, and
-/// what happens outside them.
+/// Where the company delivers, edited in the desk's panel: the branch field
+/// picks the map ("All branches" the shared one, a branch its own), under
+/// "New delivery method" its areas, what the search matches, and what happens
+/// outside them.
 void main() {
   setUpAll(() {
     ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
   });
 
-  Future<(_Deliveries, List<AreaMethod>, AreaEditor)> pump(
+  Future<(_Deliveries, List<String>, AreaEditor)> pump(
     WidgetTester tester,
     String scope, {
     String? branch,
     String query = ""
   }) async {
     final deliveries = _Deliveries(scope);
-    final added = <AreaMethod>[];
+    final added = <String>[];
     final map = MapController();
     final editor = AreaEditor(map: map);
 
@@ -86,7 +86,8 @@ void main() {
             search: search,
             branchPicker: branchPicker,
             query: query,
-            onAdd: added.add,
+            onAdd: (method) => added.add(method.name),
+            onNewMethod: () => added.add("method"),
             view: DeliveriesView.areas,
             onView: (_) {},
             onShipment: (_) {},
@@ -117,13 +118,14 @@ void main() {
     expect(deliveries.writes, [{"MEETING_POINT": true}]);
   });
 
-  testWidgets("shared: the map every branch serves, no branch to pick", (tester) async {
+  testWidgets("all branches: the shared map, with no scope switch over it", (tester) async {
     await pump(tester, "global");
 
     expect(tester.takeException(), isNull);
     expect(find.text("Todas"), findsOneWidget);
     expect(find.text("Centro 1"), findsNothing);
     expect(find.text("Search areas"), findsOneWidget);
+    expect(find.text("Per branch"), findsNothing);
   });
 
   testWidgets("per branch: the branch picked's areas only", (tester) async {
@@ -133,16 +135,15 @@ void main() {
     expect(find.text("Centro 1"), findsOneWidget);
     expect(find.text("Centro 2"), findsOneWidget);
     expect(find.text("Todas"), findsNothing);
-    expect(find.text("Add area"), findsOneWidget);
+    expect(find.text("New delivery method"), findsOneWidget);
   });
 
-  testWidgets("per branch, all branches: every branch's areas, and no map to add one to", (tester) async {
+  testWidgets("all branches is the shared map whatever the scope in force", (tester) async {
     await pump(tester, "branch");
 
-    expect(find.text("Centro 1"), findsOneWidget);
-    expect(find.text("Todas"), findsNothing);
-    expect(find.text("Add area"), findsNothing);
-    expect(find.text("Pick a branch above to add an area to its map."), findsOneWidget);
+    expect(find.text("Todas"), findsOneWidget);
+    expect(find.text("Centro 1"), findsNothing);
+    expect(find.text("New delivery method"), findsOneWidget);
   });
 
   testWidgets("the search keeps the areas whose name holds it", (tester) async {
@@ -159,30 +160,24 @@ void main() {
     expect(find.text("No areas yet"), findsNothing);
   });
 
-  testWidgets("the switch writes the other scope and the panel follows it", (tester) async {
-    final (deliveries, _, _) = await pump(tester, "global");
-
-    await tester.tap(find.text("Per branch"));
-    await tester.pumpAndSettle();
-
-    expect(deliveries.writes, [{"DELIVERY_SCOPE": "branch"}]);
-    expect(find.text("Centro 1"), findsOneWidget);
+  test("the branch field means the scope: all branches shared, a branch its own", () {
+    expect(DeliveriesPanel.scopeOf(null), DeliveryScope.global);
+    expect(DeliveriesPanel.scopeOf("b-centro"), DeliveryScope.branch);
   });
 
-  testWidgets("\"Add area\" sits above the areas and starts the method picked", (tester) async {
+  testWidgets("\"New delivery method\" comes first, above the hint and the areas, and starts a method", (tester) async {
     final (_, added, _) = await pump(tester, "global");
 
     expect(
-      tester.getTopLeft(find.text("Add area")).dy,
+      tester.getTopLeft(find.text("New delivery method")).dy,
       lessThan(tester.getTopLeft(find.text("Todas")).dy)
     );
+    expect(find.text("Add area"), findsNothing);
 
-    await tester.tap(find.text("Add area"));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text("Radius around your business"));
+    await tester.tap(find.text("New delivery method"));
     await tester.pumpAndSettle();
 
-    expect(added, [AreaMethod.radius]);
+    expect(added, ["method"]);
   });
 
   testWidgets("shaping: the panel reads the shape live, and Save stays in reach", (tester) async {
