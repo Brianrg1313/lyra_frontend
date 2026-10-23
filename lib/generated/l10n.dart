@@ -20152,6 +20152,16 @@ class S {
     );
   }
 
+  /// `Edit delivery method`
+  String get deliveries_reach_edit {
+    return Intl.message(
+      'Edit delivery method',
+      name: 'deliveries_reach_edit',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Edit area`
   String get deliveries_area_edit {
     return Intl.message(

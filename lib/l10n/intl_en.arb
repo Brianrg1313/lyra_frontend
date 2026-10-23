@@ -2075,6 +2075,7 @@
   "deliveries_area_empty_title": "No areas yet",
   "deliveries_area_empty_subtitle": "Add one with the button above: a radius around your business, a shape drawn on the map, or how far a courier gets in some minutes.",
   "deliveries_area_focus": "Show on the map",
+  "deliveries_reach_edit": "Edit delivery method",
   "deliveries_area_edit": "Edit area",
   "deliveries_area_pause": "Pause area",
   "deliveries_area_resume": "Resume area",

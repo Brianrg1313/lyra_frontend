@@ -138,6 +138,23 @@ void main() {
     expect(find.text("New delivery method"), findsOneWidget);
   });
 
+  testWidgets("a saved own delivery's reach is listed on its branch's map", (tester) async {
+    await pump(tester, "branch", branch: "b-centro");
+
+    expect(tester.takeException(), isNull);
+    expect(find.text("Riders Centro"), findsOneWidget);
+    expect(find.text("Travel time · 30 min"), findsOneWidget);
+    expect(find.text("Riders Norte"), findsNothing);
+  });
+
+  testWidgets("all branches lists every own delivery's reach", (tester) async {
+    await pump(tester, "global");
+
+    expect(find.text("Riders Centro"), findsOneWidget);
+    expect(find.text("Riders Norte"), findsOneWidget);
+    expect(find.text("Road distance · 15 km"), findsOneWidget);
+  });
+
   testWidgets("all branches is the shared map whatever the scope in force", (tester) async {
     await pump(tester, "branch");
 
@@ -224,7 +241,25 @@ class _Deliveries implements DeliverySource {
   });
 
   @override
-  Future<BusinessDeliveryModel> delivery() async => const BusinessDeliveryModel(currency: "USD");
+  Future<BusinessDeliveryModel> delivery() async => const BusinessDeliveryModel(currency: "USD", options: [
+    DeliveryOption(
+      id: "own-centro",
+      mode: DeliveryMode.own,
+      label: "Riders Centro",
+      vehicle: DeliveryVehicle.bicycle,
+      reach: DeliveryReach(kind: DeliveryReachKind.time, value: 30, branch: "b-centro", points: [
+        LatLng(10.5, -66.9), LatLng(10.52, -66.9), LatLng(10.52, -66.88)
+      ])
+    ),
+    DeliveryOption(
+      id: "own-norte",
+      mode: DeliveryMode.own,
+      label: "Riders Norte",
+      reach: DeliveryReach(kind: DeliveryReachKind.road, value: 15, branch: "b-norte", points: [
+        LatLng(10.6, -66.9), LatLng(10.62, -66.9), LatLng(10.62, -66.88)
+      ])
+    )
+  ]);
 
   @override
   Future<void> editDelivery(Map<String, dynamic> request) async {

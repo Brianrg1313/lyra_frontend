@@ -409,7 +409,7 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     child: Surface(
       padding: EdgeInsets.zero,
       child: ListenableBuilder(
-        listenable: Listenable.merge([_areas, _branches, _editor, _flow]),
+        listenable: Listenable.merge([_areas, _branches, _editor, _flow, _delivery]),
         builder: (context, _) => LayoutBuilder(builder: (context, constraints) => Stack(
           children: [
             Positioned.fill(child: DeliveriesMap(
@@ -465,16 +465,29 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   List<Widget> _layers(BuildContext context) {
     final areas = _areas.areas;
 
-    if (areas == null) return areaLayers(context, const [], _editor);
+    // The reach being shaped is the editor's draft; a saved one under it
+    // would show the old outline beside the new.
+    final outlines = _view == DeliveriesView.areas && !(_editor.isOpen && _editor.reach)
+      ? [
+          for (final option in DeliveriesPanel.reaches(_delivery.delivery, _picked))
+            reachOutline(option.reach!, _branches.branches)
+        ]
+      : const <List<LatLng>>[];
+    final reach = reachLayers(outlines, ThemeColor.of(context).accent);
+
+    if (areas == null) return [...reach, ...areaLayers(context, const [], _editor)];
 
     final shown = areas.of(_picked);
     final inForce = areas.inForce([for (final branch in _branches.branches) branch.id]);
 
-    return areaLayers(
-      context,
-      shown,
-      _editor,
-      others: [for (final area in inForce) if (!shown.contains(area)) area]
-    );
+    return [
+      ...reach,
+      ...areaLayers(
+        context,
+        shown,
+        _editor,
+        others: [for (final area in inForce) if (!shown.contains(area)) area]
+      )
+    ];
   }
 }

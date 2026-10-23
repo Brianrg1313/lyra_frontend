@@ -3004,6 +3004,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "deliveries_method_yours_empty_note": MessageLookupByLibrary.simpleMessage(
       "Add one with “New delivery method”, above.",
     ),
+    "deliveries_reach_edit": MessageLookupByLibrary.simpleMessage(
+      "Edit delivery method",
+    ),
     "deliveries_refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "deliveries_scope_branch_count": m67,
     "deliveries_scope_branches_empty": MessageLookupByLibrary.simpleMessage(

@@ -21,6 +21,7 @@ class AreaList extends StatelessWidget {
     this.empty,
     required this.currency,
     required this.probe,
+    this.reaches = const [],
     this.footer,
     required this.onFocus,
     required this.onEdit,
@@ -46,6 +47,10 @@ class AreaList extends StatelessWidget {
 
   /// What the tapped point gets, or `null` when none was tapped.
   final Widget? probe;
+
+  /// Before the areas: how far the own deliveries go (`ReachTile`s), which
+  /// decide those methods on their own.
+  final List<Widget> reaches;
 
   /// Under the areas: what happens outside them.
   final Widget? footer;
@@ -80,6 +85,7 @@ class AreaList extends StatelessWidget {
             color: scheme.text.secondary
           )
         ),
+        ...reaches,
         if (areas.isEmpty && empty != null)
           Padding(
             padding: EdgeInsets.symmetric(vertical: AppSize.spaceS),

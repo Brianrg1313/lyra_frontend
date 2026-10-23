@@ -6,6 +6,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 // SERVICES
+import 'package:app/services/business/business_branch_model.dart';
+import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 
 // WIDGETS
@@ -132,6 +134,41 @@ List<Widget> savedAreaLayers(
     if (polygons.isNotEmpty) PolygonLayer(polygons: polygons)
   ];
 }
+
+/// The outline an own delivery's [reach] covers on the map: its points, or
+/// for a radius a ring around the branch it was measured from (none when that
+/// branch has no point, or the reach names none).
+List<LatLng> reachOutline(DeliveryReach reach, List<BusinessBranchModel> branches) {
+  if (reach.kind != DeliveryReachKind.radius) return reach.points;
+
+  final branch = branches.where((branch) => branch.id == reach.branch).firstOrNull;
+  final km = reach.value;
+
+  if (branch?.latitude == null || branch?.longitude == null || km == null) return const [];
+
+  const distance = Distance();
+  final middle = LatLng(branch!.latitude!, branch.longitude!);
+
+  return [
+    for (var bearing = 0.0; bearing < 360; bearing += 10)
+      distance.offset(middle, km * 1000, bearing)
+  ];
+}
+
+/// Own deliveries' reaches as map layers, dotted in [color]: they are not
+/// areas (no fee, no pause), only how far the company's couriers go.
+List<Widget> reachLayers(List<List<LatLng>> outlines, Color color) => [
+  if (outlines.any((outline) => outline.length >= 3)) PolygonLayer(polygons: [
+    for (final outline in outlines)
+      if (outline.length >= 3) Polygon(
+        points: outline,
+        color: color.withValues(alpha: 0.08),
+        borderColor: color,
+        borderStrokeWidth: 2,
+        pattern: const StrokePattern.dotted()
+      )
+  ])
+];
 
 /// What goes over the company's mark: the handles of the shape being made,
 /// and the probed point while looking.

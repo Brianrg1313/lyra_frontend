@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
+import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_area_request.dart';
@@ -23,10 +24,12 @@ import 'package:app/screens/home/sections/deliveries/area/widgets/area_editor_pa
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_layers.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_list.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_probe.dart';
+import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
 
 import './methods/method_flow_panel.dart';
 import './methods/state/method_flow.dart';
 import './methods/widgets/delivery_meeting_field.dart';
+import './methods/widgets/reach_tile.dart';
 import './shipments/shipment_list.dart';
 import './widgets/panel_halves.dart';
 
@@ -123,6 +126,16 @@ class DeliveriesPanel extends StatelessWidget {
   /// The scope the branch field means on the areas: "All branches" shares
   /// one map, a branch has its own.
   static DeliveryScope scopeOf(String? branch) => branch == null ? DeliveryScope.global : DeliveryScope.branch;
+
+  /// The own deliveries with a reach shown on the map of [branch]: every one
+  /// on "All branches", else those measured from it or from none.
+  static List<DeliveryOption> reaches(BusinessDeliveryModel? delivery, String? branch) => [
+    for (final option in delivery?.options ?? const <DeliveryOption>[])
+      if (option.mode == DeliveryMode.own &&
+          option.reach != null &&
+          (branch == null || option.reach!.branch == null || option.reach!.branch == branch))
+        option
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -318,6 +331,10 @@ class DeliveriesPanel extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final inForce = areas.inForce([for (final branch in branches) branch.id]);
     final point = editor.probe;
+    final reaching = [
+      for (final option in DeliveriesPanel.reaches(context.watch<BusinessDeliveryService>().delivery, branch))
+        if (query.isEmpty || deliveryOptionName(context, option).toLowerCase().contains(query)) option
+    ];
 
     Color colorOf(DeliveryArea area) => listed.contains(area)
       ? areaColor(context, listed.indexOf(area), active: area.active)
@@ -344,6 +361,15 @@ class DeliveriesPanel extends StatelessWidget {
         from: deliveringBranch(point, scope: areas.scope, inForce: inForce, branches: branches)?.name,
         onClear: editor.clearProbe
       ),
+      reaches: [
+        for (final option in reaching) ReachTile(
+          option: option,
+          color: scheme.accent,
+          currency: areas.currency,
+          onFocus: () => editor.fit(reachOutline(option.reach!, branches)),
+          onEdit: () => flow.edit(option)
+        )
+      ],
       footer: listed.isEmpty ? null : _outside(context),
       onFocus: (area) => editor.fit(area.bounds),
       onEdit: (area) => editor.edit(area, origin()),
