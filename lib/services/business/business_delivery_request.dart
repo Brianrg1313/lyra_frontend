@@ -49,8 +49,8 @@ Map<String, dynamic> deliveryNotesRequest(String notes) =>
 /// [branch] is where a national or international option leaves from; it only travels off a
 /// local reach (the map decides a local one), and left out it is whichever branch serves.
 ///
-/// [vehicle] and [rates] are the company's own delivery's; the backend drops
-/// them for an app or a carrier, so they do not travel for one.
+/// [vehicle], [rates] and [reach] are the company's own delivery's; the
+/// backend drops them for an app or a carrier, so they do not travel for one.
 Map<String, dynamic> createDeliveryOptionRequest({
   required DeliveryMode mode,
   String provider = "",
@@ -65,7 +65,8 @@ Map<String, dynamic> createDeliveryOptionRequest({
   String notes = "",
   String? branch,
   DeliveryVehicle? vehicle,
-  DeliveryRates? rates
+  DeliveryRates? rates,
+  DeliveryReach? reach
 }) {
   final local = (coverage ?? mode.reach) == DeliveryCoverage.local;
   final carrier = mode.namesCarrier ? provider.trim() : "";
@@ -85,7 +86,8 @@ Map<String, dynamic> createDeliveryOptionRequest({
     "ETA_MAX": ?etaMax,
     if (notes.trim().isNotEmpty) "NOTES": notes.trim(),
     if (own) "VEHICLE": ?vehicle?.value,
-    if (own) "RATES": ?rates?.request
+    if (own) "RATES": ?rates?.request,
+    if (own) "REACH": ?reach?.request
   };
 }
 
@@ -114,7 +116,8 @@ Map<String, dynamic> updateDeliveryOptionRequest({
   String notes = "",
   String? branch,
   DeliveryVehicle? vehicle,
-  DeliveryRates? rates
+  DeliveryRates? rates,
+  DeliveryReach? reach
 }) {
   final carrier = mode.namesCarrier ? provider.trim() : "";
   final moved = mode != from.mode || carrier != from.provider;
@@ -139,7 +142,8 @@ Map<String, dynamic> updateDeliveryOptionRequest({
     "NOTES": _orNull(notes),
     // `null` erases them; off own the backend drops them on its own.
     if (mode == DeliveryMode.own) "VEHICLE": vehicle?.value,
-    if (mode == DeliveryMode.own) "RATES": rates?.request
+    if (mode == DeliveryMode.own) "RATES": rates?.request,
+    if (mode == DeliveryMode.own) "REACH": reach?.request
   };
 }
 

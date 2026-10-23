@@ -5,18 +5,40 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 // SERVICES
+import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 
-/// The three ways an area is started, the ones the delivery apps offer
-/// (Uber Eats, Shopify, Square): a radius around the store, a shape drawn by
-/// hand, and how far a courier gets in some minutes. The last one ends as a
-/// drawn shape (see [DeliveryAreaKind]).
+/// The ways an area is started, the ones the delivery apps offer (Uber Eats,
+/// Shopify, Square): a radius around the store, a shape drawn by hand, how far
+/// a courier gets in some minutes and, for an own delivery's reach, how far
+/// some kilometres of road take them ([road]). The last two end as a drawn
+/// shape (see [DeliveryAreaKind]).
 enum AreaMethod {
   radius,
   draw,
-  travel;
+  travel,
+  road;
 
   DeliveryAreaKind get kind => this == radius ? DeliveryAreaKind.radius : DeliveryAreaKind.polygon;
+
+  /// Whether its outline comes from the routing engine, and is then edited
+  /// like a drawing.
+  bool get routed => this == travel || this == road;
+
+  /// The reach of an own delivery said this way.
+  DeliveryReachKind get reach => switch (this) {
+    radius => DeliveryReachKind.radius,
+    travel => DeliveryReachKind.time,
+    road => DeliveryReachKind.road,
+    draw => DeliveryReachKind.drawn
+  };
+
+  static AreaMethod of(DeliveryReachKind kind) => switch (kind) {
+    DeliveryReachKind.radius => radius,
+    DeliveryReachKind.time => travel,
+    DeliveryReachKind.road => road,
+    DeliveryReachKind.drawn => draw
+  };
 }
 
 /// What the deliveries desk is doing with its areas: looking at them (and
@@ -26,6 +48,11 @@ enum AreaMethod {
 /// and names and prices it, the map shapes it— so it lives in the desk and not
 /// in either of them. It holds **only the shape**:
 /// the name and the figures are the panel's inputs, read when it saves.
+///
+/// **A reach session ([reach]) shapes an own delivery's reach instead of an
+/// area**: the method form drives it and the panel stays on the form. Its
+/// middle is the branch it is measured from and does not move — the backend
+/// measures a radius from the branch that delivers.
 class AreaEditor extends ChangeNotifier {
   AreaEditor({required this.map});
 
@@ -44,6 +71,8 @@ class AreaEditor extends ChangeNotifier {
 
   DeliveryTravelMode _mode = DeliveryTravelMode.motorcycle;
   int _minutes = defaultMinutes;
+  double _km = defaultKm;
+  bool _reach = false;
 
   LatLng? _probe;
 
@@ -55,6 +84,7 @@ class AreaEditor extends ChangeNotifier {
 
   static const double defaultRadius = 3;
   static const int defaultMinutes = 15;
+  static const double defaultKm = 10;
 
   /// The backend's limits, to the figure (`DeliveryAreas` in lyra): a shape
   /// this refused would be a shape the company cannot draw and the server
@@ -90,6 +120,12 @@ class AreaEditor extends ChangeNotifier {
   DeliveryTravelMode get mode => _mode;
   int get minutes => _minutes;
 
+  /// Kilometres of road of a [AreaMethod.road] outline.
+  double get km => _km;
+
+  /// Whether the shape is an own delivery's reach and not an area of the map.
+  bool get reach => _reach;
+
   /// Where the map was touched while looking, to say which areas reach it.
   LatLng? get probe => _probe;
 
@@ -106,6 +142,7 @@ class AreaEditor extends ChangeNotifier {
   /// the middle of the map without one). A radius and a travel time start
   /// from it; a drawing starts empty.
   void start(AreaMethod method, LatLng origin) {
+    _reach = false;
     _open = true;
     _session++;
     _method = method;
@@ -122,8 +159,47 @@ class AreaEditor extends ChangeNotifier {
     if (method == AreaMethod.radius) fitShape();
   }
 
+  /// Starts shaping an own delivery's reach from [origin], the branch it is
+  /// measured from: as [from] says, else a [defaultRadius] circle. [mode] is
+  /// what its couriers ride.
+  void startReach(LatLng origin, {DeliveryReach? from, DeliveryTravelMode? mode}) {
+    _reach = true;
+    _open = true;
+    _session++;
+    _method = from == null ? AreaMethod.radius : AreaMethod.of(from.kind);
+    _editing = null;
+    _center = origin;
+    _radius = from?.kind == DeliveryReachKind.radius ? from?.value ?? defaultRadius : defaultRadius;
+    _minutes = from?.kind == DeliveryReachKind.time ? from?.value?.round() ?? defaultMinutes : defaultMinutes;
+    _km = from?.kind == DeliveryReachKind.road ? from?.value ?? defaultKm : defaultKm;
+    _mode = mode ?? _mode;
+    _points = List.of(from?.points ?? const <LatLng>[]);
+    _selected = null;
+    _probe = null;
+    _history.clear();
+
+    notifyListeners();
+    fitShape();
+  }
+
+  /// Another way of saying the shape, from the same middle: an outline
+  /// answers one way only, so it starts again.
+  void setMethod(AreaMethod method) {
+    if (method == _method) return;
+
+    _method = method;
+    _points = const [];
+    _selected = null;
+    _history.clear();
+
+    notifyListeners();
+
+    if (method == AreaMethod.radius) fitShape();
+  }
+
   /// Opens [area] to change it, with its shape as it is saved.
   void edit(DeliveryArea area, LatLng origin) {
+    _reach = false;
     _open = true;
     _session++;
     _method = area.kind == DeliveryAreaKind.radius ? AreaMethod.radius : AreaMethod.draw;
@@ -141,6 +217,7 @@ class AreaEditor extends ChangeNotifier {
 
   /// Back to looking, dropping the shape.
   void close() {
+    _reach = false;
     _open = false;
     _editing = null;
     _points = const [];
@@ -159,14 +236,16 @@ class AreaEditor extends ChangeNotifier {
       return;
     }
 
-    if (_method == AreaMethod.draw || (_method == AreaMethod.travel && _points.isNotEmpty)) {
+    if (_method == AreaMethod.draw || (_method.routed && _points.isNotEmpty)) {
       if (_points.length >= maxPoints) return;
 
       _remember();
       _points = [..._points, point];
       _selected = _points.length - 1;
-    } else {
+    } else if (!_reach) {
       _center = point;
+    } else {
+      return;
     }
 
     notifyListeners();
@@ -177,8 +256,10 @@ class AreaEditor extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Moves the middle, dragged by its handle.
+  /// Moves the middle, dragged by its handle; a reach's is its branch.
   void moveCenter(LatLng point) {
+    if (_reach) return;
+
     _center = point;
     notifyListeners();
   }
@@ -199,6 +280,11 @@ class AreaEditor extends ChangeNotifier {
 
   void setMinutes(int minutes) {
     _minutes = minutes;
+    notifyListeners();
+  }
+
+  void setKm(double km) {
+    _km = km;
     notifyListeners();
   }
 

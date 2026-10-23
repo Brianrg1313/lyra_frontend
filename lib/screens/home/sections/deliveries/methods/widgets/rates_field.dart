@@ -11,14 +11,16 @@ import 'package:app/screens/modals/shared/opening_hours/week_editor.dart';
 import 'package:app/screens/home/sections/deliveries/widgets/panel_halves.dart';
 
 import '../state/rates_draft.dart';
+import './form_section.dart';
 
-/// The own delivery's price per day, beside the hours of the branch it is
-/// seen from: each weekday free or with its price, and national holidays as
-/// their weekday, free or with their own.
+/// The own delivery's prices as one ledger: **runs of days, not seven rows**
+/// (see [RatesDraft]) — Monday to Friday and the weekend, split again where
+/// the hours of the branch it is seen from change — and national holidays,
+/// each free or with its price.
 ///
-/// The hours are only read, so the price of a day is set knowing whether the
-/// branch opens then. A method is the company's and not one branch's, so a
-/// day closed here still takes a price — another branch may open.
+/// The hours are only read, so a price is set knowing whether the branch
+/// opens then. A method is the company's and not one branch's, so a run
+/// closed here still takes a price — another branch may open.
 class DeliveryRatesField extends StatefulWidget {
   const DeliveryRatesField({
     super.key,
@@ -33,63 +35,110 @@ class DeliveryRatesField extends StatefulWidget {
   /// The company's currency symbol, in each price's placeholder.
   final String currency;
 
-  /// The week shown beside the prices; `null` shows the days alone.
+  /// The week the runs follow and show; `null` keeps weekdays and weekend.
   final OpeningHoursService? hours;
 
   /// The name of [hours]' branch.
   final String? branch;
 
-  /// The weekdays in the order a week is read: Monday first.
-  static const List<int> week = [1, 2, 3, 4, 5, 6, 0];
+  /// What a run of days is called: `Monday`, `Saturday and Sunday`, `Monday
+  /// to Friday`; holidays for none.
+  static String name(BuildContext context, List<int> weekdays) => switch (weekdays.length) {
+    0 => S.of(context).business_delivery_rate_holidays,
+    1 => WeekEditor.dayName(context, weekdays.first),
+    2 => S.of(context).business_delivery_rate_pair(
+      WeekEditor.dayName(context, weekdays.first),
+      WeekEditor.dayName(context, weekdays.last)
+    ),
+    _ => S.of(context).business_delivery_rate_span(
+      WeekEditor.dayName(context, weekdays.first),
+      WeekEditor.dayName(context, weekdays.last)
+    )
+  };
 
   @override
   State<DeliveryRatesField> createState() => _DeliveryRatesFieldState();
 }
 
 class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
+  /// The week was read and the runs follow it: once, so a price typed is not
+  /// regrouped under the person typing it.
+  bool _grouped = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.hours?.addListener(_regroup);
+    _regroup();
+  }
+
+  @override
+  void dispose() {
+    widget.hours?.removeListener(_regroup);
+    super.dispose();
+  }
+
+  void _regroup() {
+    final hours = widget.hours;
+
+    if (_grouped || hours == null || hours.status != OpeningHoursStatus.ready) return;
+
+    _grouped = true;
+
+    final week = [for (var weekday = 0; weekday < 7; weekday++) _stretches(hours, weekday) ?? ""];
+
+    // A branch with no week at all keeps weekdays and weekend.
+    if (week.every((day) => day.isEmpty)) return;
+
+    if (mounted) setState(() => widget.draft.regroup(RatesDraft.spans(week)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
-    final hours = widget.hours;
     final branch = widget.branch;
+    final named = widget.hours != null && branch != null && branch.isNotEmpty;
+    final groups = widget.draft.groups;
 
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextSmall(S.of(context).business_delivery_rates, bold: true),
-        SizedBox(height: AppSize.gap * 0.5),
-        TextSmall(
-          hours != null && branch != null && branch.isNotEmpty
-            ? S.of(context).business_delivery_rates_note(branch)
-            : S.of(context).business_delivery_rates_note_plain,
-          lines: 3,
-          color: scheme.text.secondary
+    return FormSection(
+      title: S.of(context).business_delivery_rates,
+      note: named
+        ? S.of(context).business_delivery_rates_note(branch)
+        : S.of(context).business_delivery_rates_note_plain,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: scheme.line),
+          borderRadius: BorderRadius.circular(AppSize.corner)
         ),
-        SizedBox(height: AppSize.spaceXS),
-        for (final weekday in DeliveryRatesField.week) _row(
-          context,
-          title: WeekEditor.dayName(context, weekday),
-          subtitle: _hours(context, weekday),
-          draft: widget.draft.days[weekday],
-          charges: const [RateCharge.free, RateCharge.paid]
-        ),
-        _row(
-          context,
-          title: S.of(context).business_delivery_rate_holidays,
-          subtitle: S.of(context).business_delivery_rate_holidays_note,
-          draft: widget.draft.holiday,
-          charges: const [RateCharge.same, RateCharge.free, RateCharge.paid]
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final group in groups) ...[
+              _row(
+                context,
+                title: DeliveryRatesField.name(context, group.weekdays),
+                subtitle: _hours(context, group.weekdays.first),
+                draft: group.draft,
+                charges: const [RateCharge.free, RateCharge.paid]
+              ),
+              Separator.horizontal()
+            ],
+            _row(
+              context,
+              title: S.of(context).business_delivery_rate_holidays,
+              subtitle: S.of(context).business_delivery_rate_holidays_note,
+              draft: widget.draft.holiday,
+              charges: const [RateCharge.same, RateCharge.free, RateCharge.paid]
+            )
+          ]
         )
-      ]
-    );
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSize.spaceXS),
-      child: hours == null ? content : ListenableBuilder(listenable: hours, builder: (context, _) => content)
+      )
     );
   }
 
-  /// One day: its name and hours, how it is charged and, with a price, the price.
+  /// One run: its days and hours over how it is charged and, with a price,
+  /// the price beside it.
   Widget _row(
     BuildContext context, {
     required String title,
@@ -100,7 +149,7 @@ class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
     final scheme = ThemeColor.of(context);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: AppSize.spaceXS),
+      padding: EdgeInsets.all(AppSize.spaceXS),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -111,7 +160,7 @@ class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
               Flexible(child: TextSmall(subtitle, ellipsis: true, color: scheme.text.secondary))
             ]
           ]),
-          SizedBox(height: AppSize.gap * 0.5),
+          SizedBox(height: AppSize.gap),
           Row(children: [
             Expanded(flex: 3, child: PanelHalves<RateCharge>(
               values: charges,
@@ -144,9 +193,18 @@ class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
 
     if (hours == null || hours.status != OpeningHoursStatus.ready) return null;
 
+    final week = [for (var day = 0; day < 7; day++) _stretches(hours, day)];
+
+    if (week.every((day) => day == null)) return null;
+
+    return week[weekday] ?? S.of(context).business_delivery_rate_closed;
+  }
+
+  /// [weekday]'s stretches as `9:00–18:00 · 19:00–22:00`; `null` closed.
+  static String? _stretches(OpeningHoursService hours, int weekday) {
     final stretches = hours.of(weekday);
 
-    if (stretches.isEmpty) return S.of(context).business_delivery_rate_closed;
+    if (stretches.isEmpty) return null;
 
     return stretches
       .map((stretch) => "${OpeningStretch.clock(stretch.opens)}–${OpeningStretch.clock(stretch.closes)}")

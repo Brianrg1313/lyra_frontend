@@ -84,6 +84,13 @@ class DeliveryLanSource implements DeliverySource {
     return const DeliveryCloudSource().travelShape(from, minutes, mode);
   }
 
+  @override
+  Future<List<LatLng>?> roadShape(LatLng from, double km, DeliveryTravelMode mode) {
+    if (!CapabilityService().cloudServices) throw UnsupportedError("Road distances need the internet");
+
+    return const DeliveryCloudSource().roadShape(from, km, mode);
+  }
+
   /// The settings' body keys, as the master names them.
   static const settingKeys = {
     "DELIVERS": "delivers", "PICKUP": "pickup", "MEETING_POINT": "meeting", "NOTES": "notes",

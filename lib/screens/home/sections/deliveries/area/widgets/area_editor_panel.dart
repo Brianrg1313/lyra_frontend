@@ -181,7 +181,9 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
                   SizedBox(height: AppSize.spaceS),
                   ..._drawTools(context)
                 ]
-              ]
+              ],
+              // Only a reach is shaped by road distance, on the method form.
+              AreaMethod.road => _drawTools(context)
             },
             Separator.horizontal(margin: EdgeInsets.symmetric(vertical: AppSize.spaceM)),
             Input(
@@ -454,7 +456,8 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
     AreaMethod.draw => S.of(context).deliveries_area_draw_note,
     AreaMethod.travel => _editor.points.isEmpty
       ? S.of(context).deliveries_area_travel_note
-      : S.of(context).deliveries_area_draw_note
+      : S.of(context).deliveries_area_draw_note,
+    AreaMethod.road => S.of(context).deliveries_area_draw_note
   };
 
   void _fail(String message) => FloatFlag.of(context).error(message: message);
@@ -466,13 +469,15 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
 IconData _methodIcon(AreaMethod method) => switch (method) {
   AreaMethod.radius => CI.circle,
   AreaMethod.draw => CI.pen,
-  AreaMethod.travel => CI.delivery
+  AreaMethod.travel => CI.delivery,
+  AreaMethod.road => CI.globe_shopping
 };
 
 String _methodName(BuildContext context, AreaMethod method) => switch (method) {
   AreaMethod.radius => S.of(context).deliveries_area_method_radius,
   AreaMethod.draw => S.of(context).deliveries_area_method_draw,
-  AreaMethod.travel => S.of(context).deliveries_area_method_travel
+  AreaMethod.travel => S.of(context).deliveries_area_method_travel,
+  AreaMethod.road => S.of(context).business_delivery_reach_road
 };
 
 /// The shape as it stands, in the colour the map draws it: how big it is,

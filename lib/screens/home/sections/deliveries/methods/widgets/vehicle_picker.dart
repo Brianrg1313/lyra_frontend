@@ -4,6 +4,9 @@ import 'package:app/toolkit/toolkit.dart';
 // SERVICES
 import 'package:app/services/business/business_delivery_model.dart';
 
+// WIDGETS
+import './form_section.dart';
+
 /// What the company's own couriers ride, one tile per vehicle with its icon.
 /// Tapping the one picked again leaves it unsaid.
 class DeliveryVehiclePicker extends StatelessWidget {
@@ -16,26 +19,19 @@ class DeliveryVehiclePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = ThemeColor.of(context);
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSize.spaceXS),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextSmall(S.of(context).business_delivery_vehicle, bold: true),
-          SizedBox(height: AppSize.gap),
-          Row(children: [
-            for (final (index, vehicle) in DeliveryVehicle.values.indexed) ...[
-              if (index > 0) SizedBox(width: AppSize.gap),
-              Expanded(child: _Tile(
-                vehicle: vehicle,
-                on: vehicle == selected,
-                onTap: () => onChanged(vehicle == selected ? null : vehicle),
-                scheme: scheme
-              ))
-            ]
-          ])
+    return FormSection(
+      title: S.of(context).business_delivery_vehicle,
+      child: Row(children: [
+        for (final (index, vehicle) in DeliveryVehicle.values.indexed) ...[
+          if (index > 0) SizedBox(width: AppSize.gap),
+          Expanded(child: _Tile(
+            vehicle: vehicle,
+            on: vehicle == selected,
+            onTap: () => onChanged(vehicle == selected ? null : vehicle),
+            scheme: scheme
+          ))
         ]
-      )
+      ])
     );
   }
 }

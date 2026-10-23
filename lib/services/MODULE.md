@@ -105,7 +105,7 @@ Reached through `LanService.server` (the `lan/` services own it).
   cloud's keys as they are.
 - `employee_activation_model.dart` — `EmployeeActivation` (a master's code and when it expires),
   `EmployeeInvitationSent` (what inviting answers).
-- `sources/delivery_source.dart` — `DeliverySource`: settings, carriers, options, areas, isochrone (cloud only). Used by
+- `sources/delivery_source.dart` — `DeliverySource`: settings, carriers, options, areas, isochrone by minutes (`travelShape`) or km of road (`roadShape`) (cloud only). Used by
   `BusinessDeliveryService`, `DeliveryAreasService`. `delivery_cloud_source.dart` — REST, and the isochrone's largest ring.
   `delivery_lan_source.dart` — `DeliveryLanSource` (`hybrid` only): `delivery.*` laid out as the cloud's rows
   (`settingsJson`, `areasJson`: amounts, kilometres), cloud bodies → the master's keys and units (`args`: minor units,
@@ -150,10 +150,10 @@ Reached through `LanService.server` (the `lan/` services own it).
   `/business/location/place/`. **Owned by the panel that searches**, not provided: it holds one editing session
   (the Places token). `unavailable` is a server with no key, not a failure — the form's fields are the answer
   on their own. `restrictTo` searches another country than the company's (`COUNTRY`).
-- `business_delivery_model.dart` — `BusinessDeliveryModel`, `DeliveryOption`, `DeliveryZone`, `DeliveryMode`, `DeliveryVehicle`, `DeliveryRates` (own only: seven prices Sunday first + holidays, null = `fee`),
+- `business_delivery_model.dart` — `BusinessDeliveryModel`, `DeliveryOption`, `DeliveryZone`, `DeliveryMode`, `DeliveryVehicle`, `DeliveryRates` (own only: seven prices Sunday first + holidays, null = `fee`), `DeliveryReachKind`, `DeliveryReach` (own only: how far its couriers go, a radius or the outline confirmed on the map; `DeliveryVehicle.travel` its routing mode),
   `DeliveryCoverage`, `DeliveryProvider`, `DeliveryCatalog`, `DeliveryEtaUnit`. `delivers`/`pickup` three-state, `meeting` two-state; an option's `branch` (where a national/international one leaves from; null = whichever serves).
 - `business_delivery_request.dart` — `DeliveryFlag`, `deliveryFlagRequest`, `deliveryMeetingRequest`, `deliveryNotesRequest`,
-  create/update/remove option bodies (`BRANCH` only off a local reach, on edit only when changed, `""` = whichever serves; `VEHICLE`/`RATES` only for own), `readDeliveryAmount` (refuses `1,500`, like the backend).
+  create/update/remove option bodies (`BRANCH` only off a local reach, on edit only when changed, `""` = whichever serves; `VEHICLE`/`RATES`/`REACH` only for own), `readDeliveryAmount` (refuses `1,500`, like the backend).
 - `business_delivery_service.dart` — `BusinessDeliveryService` (+ status): the answer, its options and the
   carrier catalog (`/delivery/providers/`, read by the form only). Provided by the deliveries desk (`screens/home/sections/deliveries/_deliveries.dart`).
 - `delivery_area_model.dart` — `DeliveryAreasModel` (`scope`, both maps in `areas`; `of(branch)`: one map, null = shared;

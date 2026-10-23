@@ -37,10 +37,15 @@ class MethodFlow extends ChangeNotifier {
   void edit(DeliveryOption option) => _go(MethodStep.form, mode: null, editing: option);
 
   /// After the method was written: a new one goes on to where it delivers, an
-  /// edit is done.
-  void saved() => _editing == null
+  /// edit is done. The company's own delivery said how far it goes in its
+  /// form, so it is done too.
+  void saved() => _editing == null && _mode != DeliveryMode.own
     ? _go(MethodStep.areas, mode: _mode, editing: null)
     : close();
+
+  /// How many steps adding this method takes: two for the company's own
+  /// delivery, which has no areas step.
+  int get steps => mode == DeliveryMode.own ? 2 : MethodStep.values.length;
 
   /// One step back; from the first, or from an edit, out of the flow. The
   /// areas step has nothing behind it: the method is already saved.

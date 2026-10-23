@@ -3,17 +3,20 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // PACKAGES
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-import 'package:core/button.dart';
 import 'package:core/core.dart';
 import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/business/business_delivery_service.dart';
+import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/screens/home/sections/business/settings/profile_action.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/methods/method_flow_panel.dart';
 import 'package:app/screens/home/sections/deliveries/methods/method_list.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
@@ -64,7 +67,7 @@ class _Source implements DeliverySource {
 
 /// The panel's two states as the desk swaps them: the Methods view, or the
 /// flow once started. [done] counts the flows ended on their last step.
-Future<MethodFlow> _pump(WidgetTester tester, _Source source, {List<int>? done, String? ownName}) async {
+Future<MethodFlow> _pump(WidgetTester tester, _Source source, {List<int>? done, String? ownName, AreaEditor? editor}) async {
   final service = BusinessDeliveryService(source: source);
   final flow = MethodFlow();
 
@@ -92,6 +95,9 @@ Future<MethodFlow> _pump(WidgetTester tester, _Source source, {List<int>? done, 
                   flow: flow,
                   areas: (context) => const Center(child: TextSmall("the areas list")),
                   ownName: ownName,
+                  editor: editor,
+                  reachFrom: editor == null ? null : _branchPoint,
+                  reachBranch: editor == null ? null : "b1",
                   onDone: () {
                     done?.add(1);
                     flow.close();
@@ -110,6 +116,9 @@ Future<MethodFlow> _pump(WidgetTester tester, _Source source, {List<int>? done, 
 
   return flow;
 }
+
+/// Where the reach of an own delivery is measured from in these tests.
+const LatLng _branchPoint = LatLng(10.5, -66.9);
 
 /// One way of delivering, with every figure the row can draw.
 const DeliveryOption _riders = DeliveryOption(
@@ -168,7 +177,7 @@ void main() {
     expect(find.text("Pickup at the business"), findsNothing);
   });
 
-  testWidgets("a card opens its form: no reach to pick, and the time says what it counts", (tester) async {
+  testWidgets("a card opens its form: no fixed time for the company's own riders, it is measured", (tester) async {
     final flow = await _pump(tester, _Source(const BusinessDeliveryModel(currency: "USD")));
 
     flow.start();
@@ -177,17 +186,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text("2 of 3"), findsOneWidget);
+    // Kind and form: how far they go is in the form, so there is no areas step.
+    expect(find.text("2 of 2"), findsOneWidget);
     // The kind was picked on the card: the form does not ask it again.
     expect(find.text("Who carries it"), findsNothing);
-    // Every method is local: where it reaches is the areas on the map.
-    expect(find.textContaining("How far it reaches"), findsNothing);
-    expect(find.textContaining("Radius"), findsNothing);
-    expect(find.textContaining("Time until it arrives"), findsOneWidget);
-    expect(find.textContaining("From when the customer orders"), findsOneWidget);
+    expect(find.textContaining("Time until it arrives"), findsNothing);
+    expect(find.text("Arrival time"), findsOneWidget);
+    expect(find.textContaining("Calculated for each order"), findsOneWidget);
   });
 
-  testWidgets("a new method is local, turns delivery back on, and goes on to the areas", (tester) async {
+  testWidgets("a new own delivery is local, turns delivery back on, and is done: no areas step", (tester) async {
     final source = _Source(const BusinessDeliveryModel(delivers: false, currency: "USD"));
     final done = <int>[];
     final flow = await _pump(tester, source, done: done);
@@ -205,17 +213,29 @@ void main() {
     // Said, not left to the mode's default (a courier's would be national).
     expect(source.created.single["COVERAGE"], "local");
     expect(source.created.single.containsKey("RADIUS"), isFalse);
+    // Measured per order: no time is kept.
+    expect(source.created.single.containsKey("ETA_MIN"), isFalse);
     expect(source.edits, [deliveryFlagRequest(DeliveryFlag.delivers, true)]);
 
-    expect(find.text("Where do you deliver?"), findsOneWidget);
-    expect(find.text("3 of 3"), findsOneWidget);
-    expect(find.text("the areas list"), findsOneWidget);
+    expect(flow.isOpen, isFalse);
+    expect(find.text("the areas list"), findsNothing);
+  });
 
-    // Pressed through the button: the "saved" flag floats over the panel's foot.
-    tester.widget<Button>(find.widgetWithText(Button, "Done")).action();
-    await tester.pumpAndSettle();
+  test("an app or a carrier still goes on to the areas once saved", () {
+    final flow = MethodFlow();
+    addTearDown(flow.dispose);
 
-    expect(done, [1]);
+    flow.start();
+    flow.pick(DeliveryMode.platform);
+    expect(flow.steps, 3);
+    flow.saved();
+    expect(flow.step, MethodStep.areas);
+
+    flow.start();
+    flow.pick(DeliveryMode.own);
+    expect(flow.steps, 2);
+    flow.saved();
+    expect(flow.isOpen, isFalse);
   });
 
   testWidgets("an edit is one step, and erases the radius and zones the areas replace", (tester) async {
@@ -239,10 +259,11 @@ void main() {
     expect(find.text("Where do you deliver?"), findsNothing);
   });
 
-  /// Opens the own delivery's form of a new method.
-  Future<_Source> own(WidgetTester tester, {String? ownName}) async {
+  /// Opens the own delivery's form of a new method; with [editor], its reach
+  /// is shaped on that map from [_branchPoint].
+  Future<_Source> own(WidgetTester tester, {String? ownName, AreaEditor? editor}) async {
     final source = _Source(const BusinessDeliveryModel(delivers: true, currency: "USD"));
-    final flow = await _pump(tester, source, ownName: ownName);
+    final flow = await _pump(tester, source, ownName: ownName, editor: editor);
 
     flow.start();
     await tester.pumpAndSettle();
@@ -252,10 +273,10 @@ void main() {
     return source;
   }
 
-  /// Turns the [index]th row of the prices (Monday first, holidays last) to a
-  /// price, and types [amount] in it.
+  /// Turns the [index]th row of the prices (Monday to Friday, the weekend,
+  /// holidays) to a price, and types [amount] in it.
   Future<void> price(WidgetTester tester, int index, String amount) async {
-    final paid = find.text("With price").at(index);
+    final paid = find.text("Price").at(index);
 
     await tester.ensureVisible(paid);
     await tester.tap(paid);
@@ -266,7 +287,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets("own delivery: named after where it is added, what it rides, and a price per day", (tester) async {
+  testWidgets("own delivery: named after where it is added, what it rides, and a price per run of days", (tester) async {
     await own(tester, ownName: "Sede Centro");
 
     expect(tester.takeException(), isNull);
@@ -274,12 +295,14 @@ void main() {
     expect(find.text("Motorcycle"), findsOneWidget);
     expect(find.text("Van or truck"), findsOneWidget);
     expect(find.text("Price per day"), findsOneWidget);
-    expect(find.text("Monday"), findsOneWidget);
-    expect(find.text("Sunday"), findsOneWidget);
+    // Weekdays and the weekend, not seven rows.
+    expect(find.text("Monday to Friday"), findsOneWidget);
+    expect(find.text("Saturday and Sunday"), findsOneWidget);
+    expect(find.text("Monday"), findsNothing);
     expect(find.text("Holidays"), findsOneWidget);
-    // Seven days free and holidays as their weekday, until said otherwise.
-    expect(find.text("Free"), findsNWidgets(8));
-    expect(find.text("Same as that day"), findsOneWidget);
+    // Free until said otherwise, and holidays as usual.
+    expect(find.text("Free"), findsNWidgets(3));
+    expect(find.text("As usual"), findsOneWidget);
     // One price for every day is the rates' to say.
     expect(find.text("Price · optional"), findsNothing);
   });
@@ -289,9 +312,8 @@ void main() {
 
     await tester.tap(find.text("Motorcycle"));
     await tester.pumpAndSettle();
-    await price(tester, 5, "5");
-    await price(tester, 6, "5");
-    await price(tester, 7, "5,5");
+    await price(tester, 1, "5");
+    await price(tester, 2, "5,5");
     await tester.ensureVisible(find.text("Save"));
     await tester.tap(find.text("Save"));
     await tester.pumpAndSettle();
@@ -303,7 +325,7 @@ void main() {
     expect(source.created.single.containsKey("FEE"), isFalse);
   });
 
-  testWidgets("a day with a price and none written is not saved", (tester) async {
+  testWidgets("a run with a price and none written is not saved", (tester) async {
     final source = await own(tester);
 
     await price(tester, 0, "");
@@ -314,39 +336,114 @@ void main() {
     expect(source.created, isEmpty);
   });
 
+  testWidgets("how far they go is shaped on the map and saved with the method", (tester) async {
+    final editor = AreaEditor(map: MapController());
+    addTearDown(editor.dispose);
+
+    final source = await own(tester, editor: editor);
+
+    expect(tester.takeException(), isNull);
+    expect(editor.reach, isTrue);
+    expect(find.text("How far they go"), findsOneWidget);
+    expect(find.text("Road distance"), findsOneWidget);
+
+    // A circle around the branch opens it; 5 km picked.
+    await tester.ensureVisible(find.text("5 km"));
+    await tester.tap(find.text("5 km"));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text("Save"));
+    await tester.tap(find.text("Save"));
+    await tester.pumpAndSettle();
+
+    expect(source.created.single["REACH"], {"KIND": "radius", "VALUE": 5.0, "BRANCH": "b1"});
+  });
+
+  testWidgets("a travel time not measured yet is not saved", (tester) async {
+    final editor = AreaEditor(map: MapController());
+    addTearDown(editor.dispose);
+
+    final source = await own(tester, editor: editor);
+
+    await tester.ensureVisible(find.text("Travel time"));
+    await tester.tap(find.text("Travel time"));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text("Save"));
+    await tester.tap(find.text("Save"));
+    await tester.pumpAndSettle();
+
+    expect(source.created, isEmpty);
+    expect(find.text("Measure it on the map first, or pick another way."), findsWidgets);
+  });
+
   test("an own delivery from before the rates opens with its one price every day", () {
     final draft = RatesDraft.of(const DeliveryOption(id: "a1", mode: DeliveryMode.own, fee: 3));
     addTearDown(draft.dispose);
 
-    expect(draft.days.every((day) => day.charge == RateCharge.paid && day.price.value == "3"), isTrue);
+    expect([for (final group in draft.groups) group.weekdays], RatesDraft.standard);
+    expect(draft.groups.every((group) => group.draft.charge == RateCharge.paid && group.draft.price.value == "3"), isTrue);
     expect(draft.holiday.charge, RateCharge.same);
     expect(draft.read().rates?.request, {"DAYS": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0], "HOLIDAY": null});
 
-    // A price emptied is a price forgotten, not a free day: Monday is named.
-    draft.days[1].price.textController.text = "";
-    expect(draft.read(), (rates: null, missing: 1, invalid: false));
-    draft.days[1].price.textController.text = "1.500";
+    // A price emptied is a price forgotten, not a free day: its days are named.
+    draft.groups.first.draft.price.textController.text = "";
+    expect(draft.read().rates, isNull);
+    expect(draft.read().missing, [1, 2, 3, 4, 5]);
+    expect(draft.read().invalid, isFalse);
+    draft.groups.first.draft.price.textController.text = "1.500";
     expect(draft.read().invalid, isTrue);
   });
 
-  test("the rates and the vehicle are read as the backend answers them", () {
+  test("the runs split where the hours change, and where a saved price already differs", () {
+    // Sunday closed, Saturday short: three runs and not the weekend whole.
+    const week = ["", "9:00–18:00", "9:00–18:00", "9:00–18:00", "9:00–18:00", "9:00–18:00", "9:00–13:00"];
+    expect(RatesDraft.spans(week), [[1, 2, 3, 4, 5], [6], [0]]);
+    // The same hours every day are still weekdays and weekend.
+    expect(RatesDraft.spans(List.filled(7, "9:00–18:00")), RatesDraft.standard);
+
+    final draft = RatesDraft.of(const DeliveryOption(
+      id: "a1",
+      mode: DeliveryMode.own,
+      rates: DeliveryRates(days: [5, 0, 0, 0, 0, 2, 5])
+    ));
+    addTearDown(draft.dispose);
+
+    expect([for (final group in draft.groups) group.weekdays], [[1, 2, 3, 4], [5], [6, 0]]);
+
+    draft.regroup(RatesDraft.spans(week));
+    expect([for (final group in draft.groups) group.weekdays], [[1, 2, 3, 4], [5], [6], [0]]);
+    expect(draft.read().rates?.days, [5.0, 0.0, 0.0, 0.0, 0.0, 2.0, 5.0]);
+  });
+
+  test("the rates, the vehicle and the reach are read as the backend answers them", () {
     final option = DeliveryOption.from({
       "id": "a1",
       "mode": "own",
       "vehicle": "van",
-      "rates": {"days": [5, 0, 0, 0, 0, 0, "5.50"], "holiday": null}
+      "rates": {"days": [5, 0, 0, 0, 0, 0, "5.50"], "holiday": null},
+      "reach": {"kind": "road", "value": "15.0", "branch": "b1", "polygon": [[10.5, -66.9], [10.6, -66.9], [10.6, -66.8]]}
     })!;
 
     expect(option.vehicle, DeliveryVehicle.van);
+    expect(option.vehicle?.travel, DeliveryTravelMode.car);
     expect(option.rates?.days, [5, 0, 0, 0, 0, 0, 5.5]);
     expect(option.rates?.holiday, isNull);
-    // An app or a carrier keeps neither.
+    expect(option.reach?.kind, DeliveryReachKind.road);
+    expect(option.reach?.value, 15);
+    expect(option.reach?.points, hasLength(3));
+    expect(option.reach?.request, {
+      "KIND": "road",
+      "VALUE": 15.0,
+      "BRANCH": "b1",
+      "POLYGON": [[10.5, -66.9], [10.6, -66.9], [10.6, -66.8]]
+    });
+    // An app or a carrier keeps none of them.
     expect(createDeliveryOptionRequest(
       mode: DeliveryMode.platform,
       label: "App",
       vehicle: DeliveryVehicle.car,
-      rates: option.rates
-    ).keys, isNot(contains("RATES")));
+      rates: option.rates,
+      reach: option.reach
+    ).keys, isNot(anyOf(contains("RATES"), contains("REACH"))));
   });
 
   test("the meeting point travels as a two-state flag", () {

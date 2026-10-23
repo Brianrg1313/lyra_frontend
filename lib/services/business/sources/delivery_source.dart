@@ -37,4 +37,8 @@ abstract interface class DeliverySource {
   /// [minutes] by [mode]: the largest outline, simplified for editing, or null
   /// when there is no road out of the point.
   Future<List<LatLng>?> travelShape(LatLng from, int minutes, DeliveryTravelMode mode);
+
+  /// Cloud only. How far [km] kilometres of road take one from [from] by
+  /// [mode] — not [km] around: the outline as [travelShape] gives it.
+  Future<List<LatLng>?> roadShape(LatLng from, double km, DeliveryTravelMode mode);
 }

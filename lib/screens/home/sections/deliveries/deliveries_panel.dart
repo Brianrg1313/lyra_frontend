@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/business/branch_service.dart';
+import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
@@ -127,7 +128,8 @@ class DeliveriesPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     // The flow and the editor bring their own heading: the views' controls
     // would only be ways out of them.
-    if (editor.isOpen) return _areas(context);
+    // A reach session is the method form's own: the form stays on.
+    if (editor.isOpen && !editor.reach) return _areas(context);
 
     if (flow.isOpen) {
       final branches = context.watch<BusinessBranchesService>().branches;
@@ -142,6 +144,13 @@ class DeliveriesPanel extends StatelessWidget {
         ownName: picked?.name ?? (company.isEmpty ? null : company),
         hoursOf: shown?.id,
         branchName: shown?.name,
+        editor: editor,
+        // An own delivery's reach is measured from that branch's point.
+        reachFrom: switch (shown) {
+          BusinessBranchModel(:final double latitude, :final double longitude) => LatLng(latitude, longitude),
+          _ => origin()
+        },
+        reachBranch: shown?.id,
         onDone: () {
           flow.close();
           onView(DeliveriesView.areas);

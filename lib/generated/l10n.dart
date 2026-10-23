@@ -22984,20 +22984,20 @@ class S {
     );
   }
 
-  /// `With {branch}'s opening hours. Each day is free or has its price; your assistant quotes the day the customer orders.`
+  /// `Weekdays and weekends apart, and apart again where {branch}'s hours change. Your assistant quotes the day the customer orders.`
   String business_delivery_rates_note(Object branch) {
     return Intl.message(
-      'With $branch\'s opening hours. Each day is free or has its price; your assistant quotes the day the customer orders.',
+      'Weekdays and weekends apart, and apart again where $branch\'s hours change. Your assistant quotes the day the customer orders.',
       name: 'business_delivery_rates_note',
       desc: '',
       args: [branch],
     );
   }
 
-  /// `Each day is free or has its price; your assistant quotes the day the customer orders.`
+  /// `Weekdays and weekends apart. Your assistant quotes the day the customer orders.`
   String get business_delivery_rates_note_plain {
     return Intl.message(
-      'Each day is free or has its price; your assistant quotes the day the customer orders.',
+      'Weekdays and weekends apart. Your assistant quotes the day the customer orders.',
       name: 'business_delivery_rates_note_plain',
       desc: '',
       args: [],
@@ -23014,23 +23014,43 @@ class S {
     );
   }
 
-  /// `With price`
+  /// `Price`
   String get business_delivery_rate_paid {
     return Intl.message(
-      'With price',
+      'Price',
       name: 'business_delivery_rate_paid',
       desc: '',
       args: [],
     );
   }
 
-  /// `Same as that day`
+  /// `As usual`
   String get business_delivery_rate_same {
     return Intl.message(
-      'Same as that day',
+      'As usual',
       name: 'business_delivery_rate_same',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `{from} to {to}`
+  String business_delivery_rate_span(Object from, Object to) {
+    return Intl.message(
+      '$from to $to',
+      name: 'business_delivery_rate_span',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `{first} and {second}`
+  String business_delivery_rate_pair(Object first, Object second) {
+    return Intl.message(
+      '$first and $second',
+      name: 'business_delivery_rate_pair',
+      desc: '',
+      args: [first, second],
     );
   }
 
@@ -23054,10 +23074,10 @@ class S {
     );
   }
 
-  /// `Your country's national holidays`
+  /// `National ones, of your country`
   String get business_delivery_rate_holidays_note {
     return Intl.message(
-      'Your country\'s national holidays',
+      'National ones, of your country',
       name: 'business_delivery_rate_holidays_note',
       desc: '',
       args: [],
@@ -23081,6 +23101,256 @@ class S {
       name: 'business_delivery_rate_missing',
       desc: '',
       args: [day],
+    );
+  }
+
+  /// `How far they go`
+  String get business_delivery_reach {
+    return Intl.message(
+      'How far they go',
+      name: 'business_delivery_reach',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Measured from {branch}. Your assistant only offers this delivery inside it.`
+  String business_delivery_reach_note(Object branch) {
+    return Intl.message(
+      'Measured from $branch. Your assistant only offers this delivery inside it.',
+      name: 'business_delivery_reach_note',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `Your assistant only offers this delivery inside it.`
+  String get business_delivery_reach_note_plain {
+    return Intl.message(
+      'Your assistant only offers this delivery inside it.',
+      name: 'business_delivery_reach_note_plain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Around`
+  String get business_delivery_reach_radius {
+    return Intl.message(
+      'Around',
+      name: 'business_delivery_reach_radius',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A circle of kilometres`
+  String get business_delivery_reach_radius_note {
+    return Intl.message(
+      'A circle of kilometres',
+      name: 'business_delivery_reach_radius_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Travel time`
+  String get business_delivery_reach_time {
+    return Intl.message(
+      'Travel time',
+      name: 'business_delivery_reach_time',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `As far as they get in minutes`
+  String get business_delivery_reach_time_note {
+    return Intl.message(
+      'As far as they get in minutes',
+      name: 'business_delivery_reach_time_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Road distance`
+  String get business_delivery_reach_road {
+    return Intl.message(
+      'Road distance',
+      name: 'business_delivery_reach_road',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kilometres they actually ride`
+  String get business_delivery_reach_road_note {
+    return Intl.message(
+      'Kilometres they actually ride',
+      name: 'business_delivery_reach_road_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draw it`
+  String get business_delivery_reach_drawn {
+    return Intl.message(
+      'Draw it',
+      name: 'business_delivery_reach_drawn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark the area on the map`
+  String get business_delivery_reach_drawn_note {
+    return Intl.message(
+      'Mark the area on the map',
+      name: 'business_delivery_reach_drawn_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How far a {vehicle} gets on the roads. Pick the minutes to see it on the map.`
+  String business_delivery_reach_time_hint(Object vehicle) {
+    return Intl.message(
+      'How far a $vehicle gets on the roads. Pick the minutes to see it on the map.',
+      name: 'business_delivery_reach_time_hint',
+      desc: '',
+      args: [vehicle],
+    );
+  }
+
+  /// `15 km of road isn't 15 km around: rivers, hills and one-way streets count. Pick the kilometres to see it on the map.`
+  String get business_delivery_reach_road_hint {
+    return Intl.message(
+      '15 km of road isn\'t 15 km around: rivers, hills and one-way streets count. Pick the kilometres to see it on the map.',
+      name: 'business_delivery_reach_road_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tap the map to add the corners of the area; drag a point to move it.`
+  String get business_delivery_reach_drawn_hint {
+    return Intl.message(
+      'Tap the map to add the corners of the area; drag a point to move it.',
+      name: 'business_delivery_reach_drawn_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Drag a point on the map to adjust the outline.`
+  String get business_delivery_reach_edit_hint {
+    return Intl.message(
+      'Drag a point on the map to adjust the outline.',
+      name: 'business_delivery_reach_edit_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By {vehicle} from {branch}`
+  String business_delivery_reach_by(Object vehicle, Object branch) {
+    return Intl.message(
+      'By $vehicle from $branch',
+      name: 'business_delivery_reach_by',
+      desc: '',
+      args: [vehicle, branch],
+    );
+  }
+
+  /// `By {vehicle}`
+  String business_delivery_reach_by_plain(Object vehicle) {
+    return Intl.message(
+      'By $vehicle',
+      name: 'business_delivery_reach_by_plain',
+      desc: '',
+      args: [vehicle],
+    );
+  }
+
+  /// `Minutes`
+  String get business_delivery_reach_minutes_hint {
+    return Intl.message(
+      'Minutes',
+      name: 'business_delivery_reach_minutes_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Km`
+  String get business_delivery_reach_km_hint {
+    return Intl.message(
+      'Km',
+      name: 'business_delivery_reach_km_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `See it on the map`
+  String get business_delivery_reach_show {
+    return Intl.message(
+      'See it on the map',
+      name: 'business_delivery_reach_show',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The kilometres of road go from 0.1 to 200.`
+  String get business_delivery_reach_km_invalid {
+    return Intl.message(
+      'The kilometres of road go from 0.1 to 200.',
+      name: 'business_delivery_reach_km_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mark how far they go on the map before saving.`
+  String get business_delivery_reach_missing {
+    return Intl.message(
+      'Mark how far they go on the map before saving.',
+      name: 'business_delivery_reach_missing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Measure it on the map first, or pick another way.`
+  String get business_delivery_reach_unmeasured {
+    return Intl.message(
+      'Measure it on the map first, or pick another way.',
+      name: 'business_delivery_reach_unmeasured',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Arrival time`
+  String get business_delivery_arrival {
+    return Intl.message(
+      'Arrival time',
+      name: 'business_delivery_arrival',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculated for each order: the preparation, the trip on the roads from the branch, and the deliveries already on their way. There is nothing to promise here.`
+  String get business_delivery_arrival_note {
+    return Intl.message(
+      'Calculated for each order: the preparation, the trip on the roads from the branch, and the deliveries already on their way. There is nothing to promise here.',
+      name: 'business_delivery_arrival_note',
+      desc: '',
+      args: [],
     );
   }
 

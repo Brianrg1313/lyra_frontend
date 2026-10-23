@@ -79,7 +79,7 @@ class AddAreaButton extends StatelessWidget {
 
     if (picked == null) return;
 
-    for (final method in AreaMethod.values) {
+    for (final method in const [AreaMethod.radius, AreaMethod.draw, AreaMethod.travel]) {
       if (method.name == picked.value) return onPick?.call(method);
     }
   }

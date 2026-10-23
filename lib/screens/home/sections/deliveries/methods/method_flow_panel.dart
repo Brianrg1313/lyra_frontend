@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // PACKAGES
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
@@ -13,6 +14,7 @@ import 'package:app/services/business/business_delivery_service.dart';
 import 'package:core/button.dart';
 import 'package:app/screens/home/sections/_section/page_switcher.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
 import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
 import './method_form.dart';
@@ -31,7 +33,8 @@ import './widgets/method_card.dart';
 ///
 /// [areas] is the desk's areas list, the same one its Areas view shows: an
 /// area added here is shaped by the panel's area editor and comes back to
-/// this step (see [MethodFlow]).
+/// this step (see [MethodFlow]). The company's own delivery has no such step:
+/// how far it goes is shaped in its form, on the same map ([editor]).
 class MethodFlowPanel extends StatefulWidget {
   const MethodFlowPanel({
     super.key,
@@ -40,7 +43,10 @@ class MethodFlowPanel extends StatefulWidget {
     required this.onDone,
     this.ownName,
     this.hoursOf,
-    this.branchName
+    this.branchName,
+    this.editor,
+    this.reachFrom,
+    this.reachBranch
   });
 
   final MethodFlow flow;
@@ -51,6 +57,12 @@ class MethodFlowPanel extends StatefulWidget {
   final String? ownName;
   final String? hoursOf;
   final String? branchName;
+
+  /// See `DeliveryOptionForm`: the map an own delivery's reach is shaped on,
+  /// the point it is measured from and that point's branch.
+  final AreaEditor? editor;
+  final LatLng? reachFrom;
+  final String? reachBranch;
 
   /// The flow ended on its last step.
   final void Function() onDone;
@@ -120,7 +132,7 @@ class _MethodFlowPanelState extends State<MethodFlowPanel> {
           if (editing == null) ...[
             SizedBox(width: AppSize.gap),
             TextSmall(
-              S.of(context).deliveries_method_step(step.index + 1, MethodStep.values.length),
+              S.of(context).deliveries_method_step(step.index + 1, _flow.steps),
               color: scheme.text.secondary
             )
           ]
@@ -141,6 +153,9 @@ class _MethodFlowPanelState extends State<MethodFlowPanel> {
               ownName: widget.ownName,
               hoursOf: widget.hoursOf,
               branchName: widget.branchName,
+              editor: widget.editor,
+              reachFrom: widget.reachFrom,
+              reachBranch: widget.reachBranch,
               onSubmit: (request) => _save(service, delivery, request)
             ),
             MethodStep.areas => Column(

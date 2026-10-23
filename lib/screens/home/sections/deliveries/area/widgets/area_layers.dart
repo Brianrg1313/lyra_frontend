@@ -158,7 +158,7 @@ List<Widget> areaOverlays(BuildContext context, AreaEditor editor) {
   final points = editor.points;
   final center = editor.center;
   final shaping = editor.method == AreaMethod.draw ||
-    (editor.method == AreaMethod.travel && points.isNotEmpty);
+    (editor.method.routed && points.isNotEmpty);
 
   if (shaping) {
     // The middle of each side, to bend it from there. The closing side only

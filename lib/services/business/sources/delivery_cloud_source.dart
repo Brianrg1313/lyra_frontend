@@ -88,6 +88,21 @@ class DeliveryCloudSource implements DeliverySource {
     return _largestRing(data);
   }
 
+  @override
+  Future<List<LatLng>?> roadShape(LatLng from, double km, DeliveryTravelMode mode) async {
+    final data = await scorpius.post(
+      path: "/isochrone",
+      version: "v1",
+      data: {
+        "POINT": {"LATITUDE": from.latitude, "LONGITUDE": from.longitude},
+        "KM": [km],
+        "MODE": mode.value
+      }
+    );
+
+    return _largestRing(data);
+  }
+
   /// The outer ring of the largest polygon of the first area answered
   /// (`[{minutes, polygons: [[ring, ...holes], ...]}]`). An island a route
   /// reaches across a bridge is left out: an area is one outline.

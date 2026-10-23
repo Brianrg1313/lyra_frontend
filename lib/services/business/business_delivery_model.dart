@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// PACKAGES
+import 'package:latlong2/latlong.dart';
+
 // SERVICES
+import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/catalog/catalog_table.dart';
 
 /// Whether, how and where the active company delivers, exactly as
@@ -143,6 +147,14 @@ enum DeliveryVehicle {
     van => Icons.local_shipping_rounded
   };
 
+  /// How its trips are measured on the roads: a van or a truck goes where a
+  /// car goes (the backend's `Delivery.travel`).
+  DeliveryTravelMode get travel => switch (this) {
+    motorcycle => DeliveryTravelMode.motorcycle,
+    bicycle => DeliveryTravelMode.bicycle,
+    car || van => DeliveryTravelMode.car
+  };
+
   String label(BuildContext context) => switch (this) {
     motorcycle => S.of(context).business_delivery_vehicle_motorcycle,
     car => S.of(context).business_delivery_vehicle_car,
@@ -177,6 +189,77 @@ class DeliveryRates {
 
   /// The body's `RATES`.
   Map<String, dynamic> get request => {"DAYS": days, "HOLIDAY": holiday};
+}
+
+/// The four ways the company says how far its own couriers go.
+enum DeliveryReachKind {
+  /// A circle of kilometres around the branch.
+  radius,
+
+  /// As far as they get in some minutes.
+  time,
+
+  /// As far as some kilometres of road take them: 15 km of roads is not 15 km
+  /// around, a river the roads go round is inside the circle.
+  road,
+
+  /// A shape drawn by hand.
+  drawn;
+
+  static DeliveryReachKind? from(dynamic code) {
+    final text = code?.toString().trim().toLowerCase();
+
+    return values.where((kind) => kind.name == text).firstOrNull;
+  }
+}
+
+/// **How far the company's own couriers go** (an own option only), kept as
+/// what can be measured: a circle ([value] km), or the [points] of the
+/// outline the company confirmed on the map — never the request behind it,
+/// since a route changes with the engine and a shape does not. The backend
+/// decides that option with this alone (`basis: "outline"`).
+class DeliveryReach {
+  const DeliveryReach({required this.kind, this.value, this.branch, this.points = const []});
+
+  final DeliveryReachKind kind;
+
+  /// Kilometres ([DeliveryReachKind.radius], [DeliveryReachKind.road]) or
+  /// minutes ([DeliveryReachKind.time]); `null` for a drawing.
+  final double? value;
+
+  /// The branch it was measured from, which the order leaves from when the
+  /// outline holds the customer; `null` for whichever serves it.
+  final String? branch;
+
+  /// The outline; empty for a radius.
+  final List<LatLng> points;
+
+  static DeliveryReach? from(dynamic raw) {
+    if (raw is! Map) return null;
+
+    final kind = DeliveryReachKind.from(raw["kind"]);
+
+    if (kind == null) return null;
+
+    final branch = raw["branch"]?.toString() ?? "";
+
+    return DeliveryReach(
+      kind: kind,
+      value: _number(raw["value"]),
+      branch: branch.isEmpty ? null : branch,
+      points: readRing(raw["polygon"])
+    );
+  }
+
+  /// The body's `REACH`.
+  Map<String, dynamic> get request => {
+    "KIND": kind.name,
+    "VALUE": value,
+    "BRANCH": branch ?? "",
+    if (kind != DeliveryReachKind.radius) "POLYGON": [
+      for (final point in points) [point.latitude, point.longitude]
+    ]
+  };
 }
 
 /// How far an option reaches. It is what answers "do you ship to another
@@ -250,7 +333,8 @@ class DeliveryOption {
     this.branch,
     this.position = 100,
     this.vehicle,
-    this.rates
+    this.rates,
+    this.reach
   });
 
   /// Public uuid: what an edit and a removal name it by.
@@ -309,6 +393,10 @@ class DeliveryOption {
   /// Its price per day; own options only, `null` is [fee] every day.
   final DeliveryRates? rates;
 
+  /// How far its couriers go; own options only, `null` is what [radius] and
+  /// the drawn areas say.
+  final DeliveryReach? reach;
+
   /// The carrier's brand: its catalog name, or its code when the catalog no
   /// longer knows it. Empty when the option names none.
   String get carrier => providerName.isNotEmpty ? providerName : provider;
@@ -349,7 +437,8 @@ class DeliveryOption {
       branch: _text(row["branch"]).isEmpty ? null : _text(row["branch"]),
       position: _number(row["position"])?.round() ?? 100,
       vehicle: DeliveryVehicle.from(row["vehicle"]),
-      rates: DeliveryRates.from(row["rates"])
+      rates: DeliveryRates.from(row["rates"]),
+      reach: DeliveryReach.from(row["reach"])
     );
   }
 }

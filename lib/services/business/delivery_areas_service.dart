@@ -105,6 +105,22 @@ class DeliveryAreasService extends ChangeNotifier {
     }
   }
 
+  /// How far [km] kilometres of road take a courier from [from], as
+  /// [travelShape]: `null` when there is no road or the engine failed.
+  Future<List<LatLng>?> roadShape(
+    LatLng from,
+    double km,
+    DeliveryTravelMode mode
+  ) async {
+    try {
+      return await _source.roadShape(from, km, mode);
+    } catch (error) {
+      if (kDebugMode) print("deliveryRoadShape failed: $error");
+
+      return null;
+    }
+  }
+
   /// The common body of every write: hold the lock, send it, report a
   /// failure in the floating flag, and reread without going through
   /// `loading` (the map stays on screen).

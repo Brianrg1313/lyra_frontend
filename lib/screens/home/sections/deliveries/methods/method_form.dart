@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
+// PACKAGES
+import 'package:latlong2/latlong.dart';
+
 // SERVICES
 import 'package:app/services/appointments/opening_hours_service.dart';
 import 'package:app/services/business/business_delivery_model.dart';
@@ -12,10 +15,11 @@ import 'package:app/services/files/file_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/modals/shared/opening_hours/week_editor.dart';
+import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
 import './state/rates_draft.dart';
 import './widgets/rates_field.dart';
+import './widgets/reach_field.dart';
 import './widgets/vehicle_picker.dart';
 
 /// One way the company delivers: who carries the order, what it costs and how
@@ -34,12 +38,18 @@ import './widgets/vehicle_picker.dart';
 /// the drawn areas (the backend answers a radius before giving up on a point
 /// outside them).
 ///
-/// **The company's own delivery is priced per day.** It is named after the
-/// branch it is added from, or the company ([ownName]); it says what its
-/// couriers ride, and each weekday and national holidays are free or have
-/// their price beside the hours of the branch picked ([hoursOf]) — one price
-/// for every day does not hold "free on weekdays, 5 on weekends". Its single
-/// fee is then not asked and is sent empty: the rates say every day's.
+/// **The company's own delivery says what its couriers ride, how far they go
+/// and what each run of days costs.** It is named after the branch it is
+/// added from, or the company ([ownName]). How far they go is shaped on the
+/// desk's map ([editor], a reach session around [reachFrom]: a circle, a
+/// travel time, a road distance or a drawing) and saved with the method, so
+/// it has no areas step. Its prices are runs of days beside the hours of the
+/// branch picked ([hoursOf]) — one price for every day does not hold "free on
+/// weekdays, 5 on weekends" — so its single fee is not asked and is sent
+/// empty. **Its time is not asked either**: the backend measures it per order
+/// (preparation, the road trip in what they ride, the deliveries already
+/// going), since a time promised here held on a quiet day and not on a busy
+/// one; an older one is erased.
 ///
 /// It checks here what the backend would refuse, in the same terms (amounts
 /// with at most two decimals and no thousands separator, a time up to thirty
@@ -60,7 +70,10 @@ class DeliveryOptionForm extends StatefulWidget {
     this.saving = false,
     this.ownName,
     this.hoursOf,
-    this.branchName
+    this.branchName,
+    this.editor,
+    this.reachFrom,
+    this.reachBranch
   });
 
   /// What the form picks from. `null` when the catalog could not be read: the
@@ -92,6 +105,15 @@ class DeliveryOptionForm extends StatefulWidget {
   /// [branchName]; `null` shows the days alone.
   final String? hoursOf;
   final String? branchName;
+
+  /// The desk's map, where an own delivery's reach is shaped; `null` asks
+  /// none (the reach is then left as it was).
+  final AreaEditor? editor;
+
+  /// Where the reach is measured from — the branch [reachBranch], whose
+  /// point it is — and the branch saved with it.
+  final LatLng? reachFrom;
+  final String? reachBranch;
 
   @override
   State<DeliveryOptionForm> createState() => _DeliveryOptionFormState();
@@ -226,11 +248,21 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     ? null
     : OpeningHoursService(branch: widget.hoursOf!);
 
+  /// The reach session this form started on the map, to end it and no other.
+  int? _reachSession;
+
+  /// Whether the reach is shaped here: an own delivery with a map to shape it on.
+  bool get _shapesReach => _mode == DeliveryMode.own && widget.editor != null && widget.reachFrom != null;
+
   @override
   void initState() {
     super.initState();
 
     _hours?.load();
+    // The map's listeners rebuild the desk: not in the middle of this build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _reach();
+    });
 
     final option = _option;
 
@@ -256,6 +288,15 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
   void dispose() {
     for (final controller in _providers.values) {
       controller.dispose();
+    }
+
+    final editor = widget.editor;
+    final session = _reachSession;
+
+    if (editor != null && session != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (editor.reach && editor.session == session) editor.close();
+      });
     }
 
     _rates.dispose();
@@ -309,9 +350,15 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           leftIcon: Icon(CI.bookmark, color: scheme.icon)
         ),
         if (mode == DeliveryMode.own) ...[
+          SizedBox(height: AppSize.spaceXS),
           DeliveryVehiclePicker(
             selected: _vehicle,
             onChanged: (vehicle) => setState(() => _vehicle = vehicle)
+          ),
+          if (_shapesReach && widget.editor!.reach) DeliveryReachField(
+            editor: widget.editor!,
+            vehicle: _vehicle,
+            branch: widget.branchName
           ),
           DeliveryRatesField(
             draft: _rates,
@@ -331,6 +378,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           controller: _freeFrom,
           leftIcon: Icon(CI.gift, color: scheme.icon)
         ),
+        if (mode == DeliveryMode.own) const _Arrival() else ...[
         InputRow(
           title: _optional(context, S.of(context).business_delivery_eta),
           spacing: AppSize.gap,
@@ -369,7 +417,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
             lines: 3,
             color: scheme.text.secondary
           )
-        ),
+        )
+        ],
         Input(
           title: _optional(context, S.of(context).business_delivery_option_notes),
           placeholder: S.of(context).business_delivery_option_notes_hint,
@@ -460,6 +509,28 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     if (mode == null || mode == _mode) return;
 
     setState(() => _mode = mode);
+    _reach();
+  }
+
+  /// Starts shaping the reach on the map for an own delivery, or ends the one
+  /// this form started for another kind.
+  void _reach() {
+    final editor = widget.editor;
+    final from = widget.reachFrom;
+
+    if (editor == null) return;
+
+    if (_shapesReach && from != null) {
+      if (editor.reach && editor.session == _reachSession) return;
+
+      editor.startReach(from, from: _option?.reach, mode: _vehicle?.travel);
+      _reachSession = editor.session;
+    } else if (editor.reach && editor.session == _reachSession) {
+      editor.close();
+      _reachSession = null;
+    }
+
+    if (mounted) setState(() {});
   }
 
   /// Reads the form and hands over the body.
@@ -499,9 +570,20 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
 
       _fail(rates.invalid
         ? S.of(context).business_delivery_amount_invalid
-        : S.of(context).business_delivery_rate_missing(missing == 7
-            ? S.of(context).business_delivery_rate_holidays
-            : WeekEditor.dayName(context, missing)));
+        : S.of(context).business_delivery_rate_missing(DeliveryRatesField.name(context, missing)));
+      return;
+    }
+
+    final reach = _shapesReach
+      ? DeliveryReachField.read(widget.editor!, branch: widget.reachBranch)
+      : _option?.reach;
+
+    if (_shapesReach && reach == null) {
+      final editor = widget.editor!;
+
+      _fail(editor.method.routed && editor.points.isEmpty
+        ? S.of(context).business_delivery_reach_unmeasured
+        : S.of(context).business_delivery_reach_missing);
       return;
     }
 
@@ -509,8 +591,9 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
       (entry) => entry.name == _etaUnit.value,
       orElse: () => DeliveryEtaUnit.minutes
     );
-    final etaMin = _minutes(_etaMin.value, unit);
-    final etaMax = _minutes(_etaMax.value, unit);
+    // Own: measured per order, so none is kept (an older one is erased).
+    final etaMin = own ? null : _minutes(_etaMin.value, unit);
+    final etaMax = own ? null : _minutes(_etaMax.value, unit);
 
     if (!_inRange(etaMin) ||
         !_inRange(etaMax) ||
@@ -532,7 +615,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           etaMax: etaMax,
           notes: _notes.value,
           vehicle: own ? _vehicle : null,
-          rates: rates?.rates
+          rates: rates?.rates,
+          reach: own ? reach : null
         )
       : createDeliveryOptionRequest(
           mode: mode,
@@ -545,7 +629,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           etaMax: etaMax,
           notes: _notes.value,
           vehicle: own ? _vehicle : null,
-          rates: rates?.rates
+          rates: rates?.rates,
+          reach: own ? reach : null
         ));
   }
 
@@ -601,6 +686,39 @@ class _ProviderMark extends StatelessWidget {
           fit: BoxFit.contain,
           errorBuilder: (context, error, stack) => const SizedBox.shrink()
         )
+      )
+    );
+  }
+}
+
+/// Where an own delivery's time would be asked: that it is calculated per
+/// order, and from what.
+class _Arrival extends StatelessWidget {
+  const _Arrival();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppSize.spaceM),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: AppSize.gap * 0.25),
+            child: Icon(Icons.schedule_rounded, size: AppSize.text * 1.1, color: scheme.icon)
+          ),
+          SizedBox(width: AppSize.spaceXS),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextSmall(S.of(context).business_delivery_arrival, bold: true),
+              SizedBox(height: AppSize.gap * 0.5),
+              TextSmall(S.of(context).business_delivery_arrival_note, lines: 4, color: scheme.text.secondary)
+            ]
+          ))
+        ]
       )
     );
   }
