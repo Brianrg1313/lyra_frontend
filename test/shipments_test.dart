@@ -290,7 +290,6 @@ void main() {
 
       expect(find.text("A-000121"), findsOneWidget);
       expect(find.text("A-000122"), findsOneWidget);
-      expect(find.text(S.current.shipments_going_count(2)), findsNothing);
       expect(find.textContaining(S.current.shipments_collect), findsOneWidget);
       service.dispose();
     });

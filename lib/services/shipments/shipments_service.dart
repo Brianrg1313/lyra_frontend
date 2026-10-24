@@ -14,22 +14,9 @@ import 'package:app/toolkit/deployment.dart';
 
 enum ShipmentsStatus { idle, loading, ready, empty, error }
 
-/// Which part of the board is on screen: what is still going, or what was
-/// delivered.
-enum ShipmentsView {
-  going,
-  delivered;
-
-  /// `STATE` of the read: empty is the backend's default (every state but
-  /// delivered).
-  String get states => this == going ? "" : ShipmentState.delivered.code;
-
-  bool holds(ShipmentState state) =>
-    this == going ? state != ShipmentState.delivered : state == ShipmentState.delivered;
-}
-
 /// **The deliveries of the branch worked in** (`envios-frontend.md`), owned by
-/// the deliveries desk.
+/// the deliveries desk: the ones still going (the read's default `STATE`, every
+/// state but delivered), so a delivered one leaves the board.
 ///
 /// Every route answers for the `branch_id` header's branch, so a branch switch
 /// remounts the desk (the home keys its content by the branch) and drops what
@@ -55,9 +42,6 @@ class ShipmentsService extends ChangeNotifier {
 
   ShipmentsStatus _status = ShipmentsStatus.idle;
   ShipmentsStatus get status => _status;
-
-  ShipmentsView _view = ShipmentsView.going;
-  ShipmentsView get view => _view;
 
   List<Shipment> _shipments = const [];
   List<Shipment> get shipments => _shipments;
@@ -92,7 +76,7 @@ class ShipmentsService extends ChangeNotifier {
   /// Shipments waiting on somebody of the company, among the ones on screen.
   int get attention => _shipments.where((row) => row.attention).length;
 
-  /// A read is answered for the view it was asked with; one asked later wins.
+  /// A read is answered only while it is the last one asked.
   int _reads = 0;
 
   void Function()? _off;
@@ -112,14 +96,6 @@ class ShipmentsService extends ChangeNotifier {
 
     unawaited(_readGrant());
     unawaited(_readStates());
-    await _read();
-  }
-
-  /// Shows [view].
-  Future<void> show(ShipmentsView view) async {
-    if (view == _view && _status != ShipmentsStatus.error) return;
-
-    _view = view;
     await _read();
   }
 
@@ -169,12 +145,7 @@ class ShipmentsService extends ChangeNotifier {
     _notify();
 
     try {
-      final states = _view.states;
-      final data = await api.get(
-        path: "/shipments/",
-        version: "v1",
-        query: states.isEmpty ? null : {"STATE": states}
-      );
+      final data = await api.get(path: "/shipments/", version: "v1");
 
       if (read != _reads) return;
 
@@ -211,9 +182,9 @@ class ShipmentsService extends ChangeNotifier {
   }
 
   /// A row from a write or an event: replaced in place, added when it is new
-  /// to the view on screen, dropped when it no longer belongs to it.
+  /// to the board, dropped once delivered.
   void _place(Shipment shipment) {
-    final belongs = _view.holds(shipment.state);
+    final belongs = shipment.state != ShipmentState.delivered;
     final index = _shipments.indexWhere((row) => row.id == shipment.id);
 
     if (index == -1) {
@@ -275,11 +246,9 @@ class ShipmentsService extends ChangeNotifier {
   @visibleForTesting
   void seed(
     List<Shipment> shipments, {
-    ShipmentsView view = ShipmentsView.going,
     Map<ShipmentState, ShipmentStateInfo>? states,
     Grant? grant
   }) {
-    _view = view;
     _shipments = shipments;
     _status = shipments.isEmpty ? ShipmentsStatus.empty : ShipmentsStatus.ready;
     if (states != null) _states = states;

@@ -18739,36 +18739,6 @@ class S {
     );
   }
 
-  /// `On their way`
-  String get shipments_going {
-    return Intl.message(
-      'On their way',
-      name: 'shipments_going',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `On their way ({count})`
-  String shipments_going_count(Object count) {
-    return Intl.message(
-      'On their way ($count)',
-      name: 'shipments_going_count',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `Delivered`
-  String get shipments_delivered {
-    return Intl.message(
-      'Delivered',
-      name: 'shipments_delivered',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `The deliveries could not be read`
   String get shipments_error {
     return Intl.message(
@@ -18804,26 +18774,6 @@ class S {
     return Intl.message(
       'A delivery shows up here by itself when a customer who chose home delivery has their payment approved.',
       name: 'shipments_empty_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Nothing delivered yet`
-  String get shipments_delivered_empty {
-    return Intl.message(
-      'Nothing delivered yet',
-      name: 'shipments_delivered_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Deliveries marked as delivered stay here.`
-  String get shipments_delivered_empty_subtitle {
-    return Intl.message(
-      'Deliveries marked as delivered stay here.',
-      name: 'shipments_delivered_empty_subtitle',
       desc: '',
       args: [],
     );

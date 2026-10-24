@@ -178,10 +178,10 @@ Reached through `LanService.server` (the `lan/` services own it).
 - `shipment_request.dart` — `CarrierChoice` (rider / provider + reference / none), `shipmentStateRequest`,
   `editShipmentRequest` (**only what changed**; empty = `""` takes it off; an address travels with the point it keeps),
   `shippingSettingsRequest` (only what changed; no limit = `""`).
-- `shipments_service.dart` — `ShipmentsService` (+ status, `ShipmentsView {going, delivered}`): the board of the
-  `branch_id` header's branch, the states' catalog, the person's grant (`canDispatch`, `canConfigure`, `canSchedule` =
+- `shipments_service.dart` — `ShipmentsService` (+ status): the board of the
+  `branch_id` header's branch (still going; a delivered one leaves it), the states' catalog, the person's grant (`canDispatch`, `canConfigure`, `canSchedule` =
   `appointments.configure`), `loadCarriers` (once), `windows`, `move` (answers the row, placed); `shipment/changed`
-  replaces, drops (`state: null`, another view) or places in window order; `onRestored` rereads. Seams `seed`, `receiveEvent`.
+  replaces, drops (`state: null`, delivered) or places in window order; `onRestored` rereads. Seams `seed`, `receiveEvent`.
 - `shipping_settings_service.dart` — `ShippingSettingsService` (+ status): `/shipments/settings/`, `measure` (every franja
   with `ALL`, and `/offer/`; a refusal kept in `slotsError`), `save` (only what changed, then measures). Owned by its panel.
 

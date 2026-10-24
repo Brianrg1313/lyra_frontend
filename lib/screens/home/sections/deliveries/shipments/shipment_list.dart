@@ -63,9 +63,7 @@ class ShipmentList extends StatelessWidget {
 
     return switch (service.status) {
       ShipmentsStatus.error => note(s.shipments_error, s.shipments_error_subtitle, retry: service.retry),
-      ShipmentsStatus.empty => service.view == ShipmentsView.going
-        ? note(s.shipments_empty, s.shipments_empty_subtitle)
-        : note(s.shipments_delivered_empty, s.shipments_delivered_empty_subtitle),
+      ShipmentsStatus.empty => note(s.shipments_empty, s.shipments_empty_subtitle),
       ShipmentsStatus.ready => _list(context, service),
       _ => const Center(child: Loading())
     };
