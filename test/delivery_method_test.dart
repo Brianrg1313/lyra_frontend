@@ -15,9 +15,12 @@ import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
+import 'package:app/services/money/money_method_model.dart';
+import 'package:app/services/money/money_methods_service.dart';
 import 'package:app/screens/home/sections/business/settings/profile_action.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/methods/method_flow_panel.dart';
+import 'package:app/screens/home/sections/deliveries/methods/method_form.dart';
 import 'package:app/screens/home/sections/deliveries/methods/method_list.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/rates_draft.dart';
@@ -236,6 +239,45 @@ void main() {
     expect(flow.steps, 2);
     flow.saved();
     expect(flow.isOpen, isFalse);
+  });
+
+  // Each delivery takes its own accounts at the door; one retired since is not sent back,
+  // since the backend refuses an account it no longer has.
+  testWidgets("a delivery's accounts taken on arrival are checked one by one", (tester) async {
+    final accounts = MoneyMethodsService()..seed([
+      MoneyMethod.fromJson({"id": "m1", "code": "pago_movil", "label": "Pago Movil"}),
+      MoneyMethod.fromJson({"id": "m2", "code": "cash", "method": "cash", "label": "Cash"})
+    ]);
+    addTearDown(accounts.dispose);
+    Map<String, dynamic>? body;
+
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: const [S.delegate, GlobalWidgetsLocalizations.delegate, GlobalMaterialLocalizations.delegate],
+      supportedLocales: S.delegate.supportedLocales,
+      home: Builder(builder: (context) {
+        AppSize.instance(context);
+
+        return Scaffold(body: SizedBox(width: 420, child: DeliveryOptionForm(
+          catalog: const DeliveryCatalog(country: "VE"),
+          currency: "USD",
+          option: const DeliveryOption(id: "a1", mode: DeliveryMode.platform, label: "App", onDeliveryMethods: ["m1", "gone"]),
+          accounts: accounts,
+          onSubmit: (request) => body = request
+        )));
+      })
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text(S.current.business_delivery_on_delivery), findsOneWidget);
+
+    await tester.ensureVisible(find.text("Cash"));
+    await tester.tap(find.text("Cash"));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text("Save"));
+    await tester.tap(find.text("Save"));
+    await tester.pumpAndSettle();
+
+    expect(body?["ON_DELIVERY_METHODS"], ["m1", "m2"]);
   });
 
   testWidgets("an edit is one step, and erases the radius and zones the areas replace", (tester) async {

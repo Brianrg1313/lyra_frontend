@@ -336,7 +336,7 @@ class DeliveryOption {
     this.rates,
     this.reach,
     this.minimum,
-    this.onDelivery = true
+    this.onDeliveryMethods = const []
   });
 
   /// Public uuid: what an edit and a removal name it by.
@@ -403,10 +403,11 @@ class DeliveryOption {
   /// is none. A drawn area's own minimum outranks it where it has one.
   final double? minimum;
 
-  /// Whether whoever carries it takes the payment when the order arrives (`on_delivery`):
-  /// own riders and a platform's, on unless said; never a parcel courier, paid before it
-  /// ships. An account is offered at the door only when it is marked too.
-  final bool onDelivery;
+  /// The company's payment accounts (`MoneyMethod.id`) whoever carries it takes when the
+  /// order arrives (`on_delivery_methods`): own riders and a platform's; none on a parcel
+  /// courier, paid before it ships. Empty is paid before it goes out. May name an account
+  /// retired since, which simply matches nothing.
+  final List<String> onDeliveryMethods;
 
   /// The carrier's brand: its catalog name, or its code when the catalog no
   /// longer knows it. Empty when the option names none.
@@ -451,8 +452,9 @@ class DeliveryOption {
       rates: DeliveryRates.from(row["rates"]),
       reach: DeliveryReach.from(row["reach"]),
       minimum: _number(row["minimum"]),
-      onDelivery: mode != DeliveryMode.courier &&
-        row["on_delivery"] != false && row["on_delivery"] != 0
+      onDeliveryMethods: mode != DeliveryMode.courier && row["on_delivery_methods"] is List
+        ? [for (final id in row["on_delivery_methods"] as List) if (id is String && id.isNotEmpty) id]
+        : const []
     );
   }
 }

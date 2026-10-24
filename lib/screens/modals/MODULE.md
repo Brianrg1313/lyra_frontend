@@ -220,8 +220,8 @@ through `Navigator.pop(context, value)`.
   accounts:, currency:, ticket?, amount?)`, `RecordPaymentModal`. **Returns
   `recordPaymentRequest`**. No direction (concept decides), no date (backend stamps it).
 - `payment_method_form/_payment_method_form.dart` — `showPaymentMethodForm(context, rails:,
-  sheets:, options:, doorDelivery, method?)`, `PaymentMethodFormModal`: add/edit an account. Rail read-only on
-  edit. "Paid on delivery" (`SettingsToggle`) only with `doorDelivery` or an account already marked. Fields drawn from the rail's sheet (`MoneyMethodField`): `select` searchable by code or
+  sheets:, options:, method?)`, `PaymentMethodFormModal`: add/edit an account. Rail read-only on
+  edit. Fields drawn from the rail's sheet (`MoneyMethodField`): `select` searchable by code or
   name, `document` stores the code (`SelectOption.chosen`), `format` → `AccountMask`. New rail =
   new `FormController` (`obligatory` is fixed at creation). Currency picked from `currencies:` (fixed when the
   rail has one; warns if it has no rate; not asked without a setup). Commission: none / percent (< 100) / fixed

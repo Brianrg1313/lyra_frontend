@@ -12,14 +12,15 @@ import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/catalog/currency_catalog_service.dart';
 import 'package:app/services/files/cdn_service.dart';
 import 'package:app/services/files/file_model.dart';
+import 'package:app/services/money/money_methods_service.dart';
 
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/modals/shared/settings/settings_block.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
 import './state/rates_draft.dart';
+import './widgets/door_methods_field.dart';
 import './widgets/hours_field.dart';
 import './widgets/rates_field.dart';
 import './widgets/reach_field.dart';
@@ -54,9 +55,9 @@ import './widgets/vehicle_picker.dart';
 /// going), since a time promised here held on a quiet day and not on a busy
 /// one; an older one is erased.
 ///
-/// **Whether its rider takes the payment on arrival** is asked of own riders and an
-/// app's (cloud only, where the assistant sells): a parcel carrier is always paid
-/// before it ships, so it is not asked of one.
+/// **Which payment accounts its rider takes on arrival** is asked of own riders and an
+/// app's (cloud only, where the assistant sells), one check per account: a parcel
+/// carrier is always paid before it ships, so it is not asked of one.
 ///
 /// It checks here what the backend would refuse, in the same terms (amounts
 /// with at most two decimals and no thousands separator, a time up to thirty
@@ -80,7 +81,8 @@ class DeliveryOptionForm extends StatefulWidget {
     this.branchName,
     this.editor,
     this.reachFrom,
-    this.reachBranch
+    this.reachBranch,
+    this.accounts
   });
 
   /// What the form picks from. `null` when the catalog could not be read: the
@@ -122,6 +124,10 @@ class DeliveryOptionForm extends StatefulWidget {
   final LatLng? reachFrom;
   final String? reachBranch;
 
+  /// The company's payment accounts the door's are checked from; `null` reads
+  /// them here (a test hands its own).
+  final MoneyMethodsService? accounts;
+
   @override
   State<DeliveryOptionForm> createState() => _DeliveryOptionFormState();
 }
@@ -151,8 +157,12 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
   /// has to be named.
   late DeliveryMode? _mode = _option?.mode ?? widget.mode;
 
-  /// Whether its rider takes the payment when the order arrives.
-  late bool _onDelivery = _option?.onDelivery ?? true;
+  /// The accounts its rider takes when the order arrives.
+  late final Set<String> _door = {...?_option?.onDeliveryMethods};
+
+  /// Owned by the form and not app-wide: they are the active company's, and a
+  /// cache that outlived a company switch would offer another one's accounts.
+  late final MoneyMethodsService _accounts = widget.accounts ?? MoneyMethodsService();
 
   bool get _asksOnDelivery =>
     _mode != null && _mode != DeliveryMode.courier && Deployment.mode == DeploymentMode.cloud;
@@ -282,7 +292,9 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     _hours?.load();
     // The map's listeners rebuild the desk: not in the middle of this build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _reach();
+      if (!mounted) return;
+      _reach();
+      if (Deployment.mode == DeploymentMode.cloud) _accounts.load();
     });
 
     final option = _option;
@@ -322,6 +334,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
 
     _rates.dispose();
     _hours?.dispose();
+    if (widget.accounts == null) _accounts.dispose();
     _saving.dispose();
     _form.dispose();
     super.dispose();
@@ -450,14 +463,10 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           )
         )
         ],
-        if (_asksOnDelivery) Padding(
-          padding: EdgeInsets.only(bottom: AppSize.spaceXS),
-          child: SettingsToggle(
-            value: _onDelivery,
-            label: S.of(context).business_delivery_on_delivery,
-            message: S.of(context).business_delivery_on_delivery_note,
-            toggle: () => setState(() => _onDelivery = !_onDelivery)
-          )
+        if (_asksOnDelivery) DeliveryDoorMethodsField(
+          accounts: _accounts,
+          selected: _door,
+          onToggle: (id) => setState(() => _door.contains(id) ? _door.remove(id) : _door.add(id))
         ),
         Input(
           title: _optional(context, S.of(context).business_delivery_option_notes),
@@ -662,7 +671,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           rates: rates?.rates,
           reach: own ? reach : null,
           minimum: minimum.value,
-          onDelivery: _asksOnDelivery ? _onDelivery : null
+          onDeliveryMethods: _doorMethods
         )
       : createDeliveryOptionRequest(
           mode: mode,
@@ -678,8 +687,23 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           rates: rates?.rates,
           reach: own ? reach : null,
           minimum: minimum.value,
-          onDelivery: _asksOnDelivery ? _onDelivery : null
+          onDeliveryMethods: _doorMethods
         ));
+  }
+
+  /// The accounts checked, as they travel: only what the accounts' read can
+  /// back — one retired since would be refused — and nothing when it could not
+  /// be read, which leaves the saved list as it was.
+  List<String>? get _doorMethods {
+    if (!_asksOnDelivery) return null;
+
+    return switch (_accounts.status) {
+      MoneyMethodsStatus.ready => [
+        for (final method in _accounts.methods) if (_door.contains(method.id)) method.id
+      ],
+      MoneyMethodsStatus.empty => const [],
+      _ => null
+    };
   }
 
   void _fail(String message) => FloatFlag.of(context).error(message: message);

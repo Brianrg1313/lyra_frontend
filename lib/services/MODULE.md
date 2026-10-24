@@ -150,10 +150,10 @@ Reached through `LanService.server` (the `lan/` services own it).
   `/business/location/place/`. **Owned by the panel that searches**, not provided: it holds one editing session
   (the Places token). `unavailable` is a server with no key, not a failure — the form's fields are the answer
   on their own. `restrictTo` searches another country than the company's (`COUNTRY`).
-- `business_delivery_model.dart` — `BusinessDeliveryModel`, `DeliveryOption`, `DeliveryZone`, `DeliveryMode`, `DeliveryVehicle`, `DeliveryRates` (own only: seven prices Sunday first + holidays, null = `fee`), `DeliveryReachKind`, `DeliveryReach` (own only: how far its couriers go, a radius or the outline confirmed on the map; `DeliveryVehicle.travel` its routing mode), `DeliveryOption.minimum` (own only: the minimum order), `DeliveryOption.onDelivery` (its rider takes the payment on arrival; on unless said, never a courier),
+- `business_delivery_model.dart` — `BusinessDeliveryModel`, `DeliveryOption`, `DeliveryZone`, `DeliveryMode`, `DeliveryVehicle`, `DeliveryRates` (own only: seven prices Sunday first + holidays, null = `fee`), `DeliveryReachKind`, `DeliveryReach` (own only: how far its couriers go, a radius or the outline confirmed on the map; `DeliveryVehicle.travel` its routing mode), `DeliveryOption.minimum` (own only: the minimum order), `DeliveryOption.onDeliveryMethods` (the payment accounts its rider takes on arrival; none on a courier),
   `DeliveryCoverage`, `DeliveryProvider`, `DeliveryCatalog`, `DeliveryEtaUnit`. `delivers`/`pickup` three-state, `meeting` two-state; an option's `branch` (where a national/international one leaves from; null = whichever serves).
 - `business_delivery_request.dart` — `DeliveryFlag`, `deliveryFlagRequest`, `deliveryMeetingRequest`, `deliveryNotesRequest`,
-  create/update/remove option bodies (`BRANCH` only off a local reach, on edit only when changed, `""` = whichever serves; `VEHICLE`/`RATES`/`REACH`/`MINIMUM` only for own, `ON_DELIVERY` only when said and never for a courier), `readDeliveryAmount` (refuses `1,500`, like the backend).
+  create/update/remove option bodies (`BRANCH` only off a local reach, on edit only when changed, `""` = whichever serves; `VEHICLE`/`RATES`/`REACH`/`MINIMUM` only for own, `ON_DELIVERY_METHODS` only when said and never for a courier), `readDeliveryAmount` (refuses `1,500`, like the backend).
 - `business_delivery_service.dart` — `BusinessDeliveryService` (+ status): the answer, its options and the
   carrier catalog (`/delivery/providers/`, read by the form only). Provided by the deliveries desk (`screens/home/sections/deliveries/_deliveries.dart`).
 - `delivery_area_model.dart` — `DeliveryAreasModel` (`scope`, both maps in `areas`; `of(branch)`: one map, null = shared;
@@ -504,13 +504,13 @@ Nothing here adds figures up: every total is the backend's answer.
 - `money_methods_service.dart` — `MoneyMethodsService`: accounts (`GET/POST/PUT/DELETE /money/methods`,
   delete is soft; every branch's) and rails (`GET /business/payments`); `usable`: the active branch's and the company's (what a payment may land in). `fields(code)` = a rail's requirement sheet;
   `options` = `banks`, `documents`, `networks`. `locked` status = a master's `sealed_locked` (M-45).
-- `money_method_model.dart` — `MoneyMethod` (account; `currency`, `fee`, `onDelivery`, `branch` null = the company's, `servesBranch`), `MoneyRail` (available rail; `currency`
+- `money_method_model.dart` — `MoneyMethod` (account; `currency`, `fee`, `branch` null = the company's, `servesBranch`), `MoneyRail` (available rail; `currency`
   it is fixed to, if any), `MoneyMethodField` (one requirement), `MoneyPaymentOption`, `MoneyFee` + `MoneyFeeType`
   (`none`/`fixed`/`percent`). Rail ≠ account ≠ settlement kind.
 - `account_mask.dart` — `AccountMask`, `AccountMaskFormatter`: spaces a number as typed; never
   touches what it cannot describe (email, alias, `+…`), never drops a digit. Backend re-applies it.
 - `money_method_request.dart` — create/update/remove. Account travels as `fields:` keyed by column;
-  blanks stripped on create, sent as `null` on update (= clear). `BRANCH` on create only with one, on update only when moved (`(id: null)` = the company). `CURRENCY`, `FEE_TYPE`, `FEE` (edit: `none` + `null` = remove). `ON_DELIVERY` on create only when on, on update only when changed.
+  blanks stripped on create, sent as `null` on update (= clear). `BRANCH` on create only with one, on update only when moved (`(id: null)` = the company). `CURRENCY`, `FEE_TYPE`, `FEE` (edit: `none` + `null` = remove).
 - `money_catalog_service.dart` — `MoneyCatalogService`: `GET /money/catalog`; settlement kinds read as `PosPaymentMethod`.
 - `money_currencies_service.dart` — `MoneyCurrenciesService` (+ status): `GET/PUT/DELETE /money/currencies` — main currency + exchange currencies. Every write rereads.
 - `money_currency_model.dart` — `MoneyCurrencies` (`main`, `exchanges`, `codes`), `MoneyExchange`, `MoneyRateMode` (`official`/`custom`). Non-positive rate = `null`.

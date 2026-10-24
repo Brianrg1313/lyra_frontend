@@ -56,12 +56,12 @@ all seven created and provided by `_finance.dart`, none app-wide.
 
 ### methods/
 - `_methods.dart` — `FinanceMethodsTab`: `BadgeNotes(financeMethods)` on top, then two halves in one scroll — currencies, then accounts (`/money/methods`
-  CRUD). Each half loads/fails on its own; on a master the accounts may be `locked` (sealed details: "Type password" → `showUnseal`, then read again). Reads rails + currencies before opening the account form (edit too), and in the cloud the delivery options (`doorDelivery`: delivering on, an own or platform option).
+  CRUD). Each half loads/fails on its own; on a master the accounts may be `locked` (sealed details: "Type password" → `showUnseal`, then read again). Reads rails + currencies before opening the account form (edit too).
 - `currencies_block.dart` — `MoneyCurrenciesBlock`: main currency (read-only; falls back to `BusinessService.currencyCode` while the setup has not answered) + exchange cards. **The only place the app shows the company's currencies** (removed from the business profile).
 - `widgets/money_main_currency_card.dart` — `MoneyMainCurrencyCard`; `widgets/money_exchange_card.dart` — `MoneyExchangeCard`
   (mode tag, effective rate, official beside a custom one); `widgets/money_no_exchanges.dart` — `MoneyNoExchanges`.
 - `methods_heading.dart` — `MethodsHeading` (title, subtitle, add button) and `kMoneyCardWidth`, shared by both halves.
-- `method_card.dart` — `MoneyMethodCard`: one account, lines labelled by its rail's sheet (`fields:`), generic fallback; the branch it is of ("Only X"), then currency and commission, "Paid on delivery" when marked. Payments and receivables offer `MoneyMethodsService.usable` to record into.
+- `method_card.dart` — `MoneyMethodCard`: one account, lines labelled by its rail's sheet (`fields:`), generic fallback; the branch it is of ("Only X"), then currency and commission. Payments and receivables offer `MoneyMethodsService.usable` to record into.
 
 ## Conventions
 

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/toolkit/deployment.dart';
 
 // PACKAGES
 import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/badges/badge_place.dart';
-import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/money/money_currencies_service.dart';
 import 'package:app/services/money/money_currency_model.dart';
@@ -200,7 +198,7 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
     final service = context.read<MoneyMethodsService>();
     final currencies = context.read<MoneyCurrenciesService>();
 
-    final (_, _, doorDelivery) = await (service.loadRails(), currencies.load(), _doorDelivery()).wait;
+    await Future.wait([service.loadRails(), currencies.load()]);
     if (!mounted) return;
 
     final request = await showPaymentMethodForm(
@@ -212,7 +210,6 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
       },
       options: service.options,
       currencies: currencies.currencies,
-      doorDelivery: doorDelivery,
       method: method
     );
 
@@ -221,22 +218,6 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
     await (method == null
       ? service.create(context, request: request)
       : service.update(context, request: request));
-  }
-
-  /// Whether the company delivers through its own riders or a platform's and one of them
-  /// takes the payment on arrival (`DeliveryOption.onDelivery`): a parcel courier is paid
-  /// before it ships. Cloud only, where the assistant takes orders; a read that fails reads no.
-  Future<bool> _doorDelivery() async {
-    if (Deployment.mode != DeploymentMode.cloud) return false;
-
-    final delivery = BusinessDeliveryService();
-    await delivery.load();
-    final answer = delivery.delivery;
-    delivery.dispose();
-
-    if (answer == null || answer.delivers == false) return false;
-
-    return answer.options.any((option) => option.onDelivery);
   }
 
   /// Turns an account off, after asking.

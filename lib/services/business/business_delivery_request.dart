@@ -52,8 +52,8 @@ Map<String, dynamic> deliveryNotesRequest(String notes) =>
 /// [vehicle], [rates], [reach] and [minimum] are the company's own delivery's; the
 /// backend drops them for an app or a carrier, so they do not travel for one.
 ///
-/// [onDelivery] (`ON_DELIVERY`, cloud only) is whether its rider takes the payment on
-/// arrival; it does not travel for a parcel courier, which never does.
+/// [onDeliveryMethods] (`ON_DELIVERY_METHODS`, cloud only) are the payment accounts its rider
+/// takes on arrival; they do not travel for a parcel courier, which never takes any.
 Map<String, dynamic> createDeliveryOptionRequest({
   required DeliveryMode mode,
   String provider = "",
@@ -71,7 +71,7 @@ Map<String, dynamic> createDeliveryOptionRequest({
   DeliveryRates? rates,
   DeliveryReach? reach,
   double? minimum,
-  bool? onDelivery
+  List<String>? onDeliveryMethods
 }) {
   final local = (coverage ?? mode.reach) == DeliveryCoverage.local;
   final carrier = mode.namesCarrier ? provider.trim() : "";
@@ -94,7 +94,7 @@ Map<String, dynamic> createDeliveryOptionRequest({
     if (own) "RATES": ?rates?.request,
     if (own) "REACH": ?reach?.request,
     if (own) "MINIMUM": ?minimum,
-    if (mode != DeliveryMode.courier) "ON_DELIVERY": ?onDelivery
+    if (mode != DeliveryMode.courier) "ON_DELIVERY_METHODS": ?onDeliveryMethods
   };
 }
 
@@ -126,7 +126,7 @@ Map<String, dynamic> updateDeliveryOptionRequest({
   DeliveryRates? rates,
   DeliveryReach? reach,
   double? minimum,
-  bool? onDelivery
+  List<String>? onDeliveryMethods
 }) {
   final carrier = mode.namesCarrier ? provider.trim() : "";
   final moved = mode != from.mode || carrier != from.provider;
@@ -154,7 +154,7 @@ Map<String, dynamic> updateDeliveryOptionRequest({
     if (mode == DeliveryMode.own) "RATES": rates?.request,
     if (mode == DeliveryMode.own) "REACH": reach?.request,
     if (mode == DeliveryMode.own) "MINIMUM": minimum,
-    if (mode != DeliveryMode.courier) "ON_DELIVERY": ?onDelivery
+    if (mode != DeliveryMode.courier) "ON_DELIVERY_METHODS": ?onDeliveryMethods
   };
 }
 

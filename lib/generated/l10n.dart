@@ -17731,51 +17731,41 @@ class S {
     );
   }
 
-  /// `Can be paid on delivery`
+  /// `Paid on delivery with`
   String get business_delivery_on_delivery {
     return Intl.message(
-      'Can be paid on delivery',
+      'Paid on delivery with',
       name: 'business_delivery_on_delivery',
       desc: '',
       args: [],
     );
   }
 
-  /// `Whether whoever delivers it takes the payment when the order arrives. Only the payment methods marked for it are offered then.`
+  /// `The payment methods whoever delivers it takes when the order arrives. With none checked, it is paid before it goes out.`
   String get business_delivery_on_delivery_note {
     return Intl.message(
-      'Whether whoever delivers it takes the payment when the order arrives. Only the payment methods marked for it are offered then.',
+      'The payment methods whoever delivers it takes when the order arrives. With none checked, it is paid before it goes out.',
       name: 'business_delivery_on_delivery_note',
       desc: '',
       args: [],
     );
   }
 
-  /// `Can be paid on delivery`
-  String get finance_method_on_delivery {
+  /// `The business has no payment methods yet. Add them in Finance, under Payment methods.`
+  String get business_delivery_on_delivery_empty {
     return Intl.message(
-      'Can be paid on delivery',
-      name: 'finance_method_on_delivery',
+      'The business has no payment methods yet. Add them in Finance, under Payment methods.',
+      name: 'business_delivery_on_delivery_empty',
       desc: '',
       args: [],
     );
   }
 
-  /// `Orders your riders or a delivery app bring can be paid through it when they arrive. Parcel shipments are always paid before they leave.`
-  String get finance_method_on_delivery_note {
+  /// `The payment methods could not be read.`
+  String get business_delivery_on_delivery_error {
     return Intl.message(
-      'Orders your riders or a delivery app bring can be paid through it when they arrive. Parcel shipments are always paid before they leave.',
-      name: 'finance_method_on_delivery_note',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Paid on delivery`
-  String get finance_method_on_delivery_card {
-    return Intl.message(
-      'Paid on delivery',
-      name: 'finance_method_on_delivery_card',
+      'The payment methods could not be read.',
+      name: 'business_delivery_on_delivery_error',
       desc: '',
       args: [],
     );

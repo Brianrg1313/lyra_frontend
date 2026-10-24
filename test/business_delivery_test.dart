@@ -304,22 +304,22 @@ void main() {
     });
   });
 
-  // A parcel is paid before it ships; own riders and an app's take it on arrival unless the
-  // company said they do not, which was the rule before the switch existed.
+  // A parcel is paid before it ships; own riders and an app's take the accounts the company
+  // checked for them, and none is paid before it goes out.
   group("paid on delivery", () {
-    test("is read on unless said, and never on a courier", () {
-      expect(DeliveryOption.from({"id": "a1", "mode": "own"})!.onDelivery, isTrue);
-      expect(DeliveryOption.from({"id": "a1", "mode": "platform", "on_delivery": false})!.onDelivery, isFalse);
-      expect(DeliveryOption.from({"id": "a1", "mode": "courier", "on_delivery": true})!.onDelivery, isFalse);
+    test("is read as the accounts listed, and never on a courier", () {
+      expect(DeliveryOption.from({"id": "a1", "mode": "own"})!.onDeliveryMethods, isEmpty);
+      expect(DeliveryOption.from({"id": "a1", "mode": "platform", "on_delivery_methods": ["m1", "m2"]})!.onDeliveryMethods, ["m1", "m2"]);
+      expect(DeliveryOption.from({"id": "a1", "mode": "courier", "on_delivery_methods": ["m1"]})!.onDeliveryMethods, isEmpty);
     });
 
     test("travels when said, and never for a courier", () {
-      expect(createDeliveryOptionRequest(mode: DeliveryMode.own, onDelivery: false)["ON_DELIVERY"], isFalse);
-      expect(createDeliveryOptionRequest(mode: DeliveryMode.own).containsKey("ON_DELIVERY"), isFalse);
-      expect(createDeliveryOptionRequest(mode: DeliveryMode.courier, onDelivery: true).containsKey("ON_DELIVERY"), isFalse);
+      expect(createDeliveryOptionRequest(mode: DeliveryMode.own, onDeliveryMethods: ["m1"])["ON_DELIVERY_METHODS"], ["m1"]);
+      expect(createDeliveryOptionRequest(mode: DeliveryMode.own).containsKey("ON_DELIVERY_METHODS"), isFalse);
+      expect(createDeliveryOptionRequest(mode: DeliveryMode.courier, onDeliveryMethods: ["m1"]).containsKey("ON_DELIVERY_METHODS"), isFalse);
 
       const stored = DeliveryOption(id: "a1", mode: DeliveryMode.platform);
-      expect(updateDeliveryOptionRequest(from: stored, mode: DeliveryMode.platform, onDelivery: true)["ON_DELIVERY"], isTrue);
+      expect(updateDeliveryOptionRequest(from: stored, mode: DeliveryMode.platform, onDeliveryMethods: const [])["ON_DELIVERY_METHODS"], isEmpty);
     });
   });
 
