@@ -46,6 +46,9 @@ final List<(String, String? Function(String? business))> _routes = [
   ("sidebar.chats", (_) => HomeSection.messages.path),
   ("sidebar.sales", (_) => HomeSection.sales.path),
   ("sidebar.knowledge", (_) => HomeSection.knowledge.path),
+  ("sidebar.deliveries", (_) => HomeSection.deliveries.path),
+  // How the company delivers is set on the deliveries desk here, not in the business section.
+  ("business.delivery", (_) => HomeSection.deliveries.path),
   ("inventory.transfers", (_) => StockTransfersSection.path),
   ("sidebar.inventory", (_) => HomeSection.inventory.path),
   ("sidebar.channels", (_) => HomeSection.channels.path),

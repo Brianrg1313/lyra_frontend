@@ -15417,6 +15417,16 @@ class S {
     );
   }
 
+  /// `Deliveries waiting for someone: to confirm, assign or retry`
+  String get badge_shipments_pending {
+    return Intl.message(
+      'Deliveries waiting for someone: to confirm, assign or retry',
+      name: 'badge_shipments_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Performance`
   String get stock_summary_performance {
     return Intl.message(
@@ -28968,6 +28978,16 @@ class S {
     return Intl.message(
       'Create your product catalog',
       name: 'badge_setup_catalog',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Say whether the company delivers`
+  String get badge_setup_delivery {
+    return Intl.message(
+      'Say whether the company delivers',
+      name: 'badge_setup_delivery',
       desc: '',
       args: [],
     );

@@ -263,6 +263,35 @@ void main() {
       reason: "a customer writing into the open chat while it was being sent is read too");
   });
 
+  test("deliveries waiting on somebody light the deliveries entry and its board, and open the desk", () {
+    final state = BadgeState.fromJson({
+      "badges": {
+        "keys": ["key", "kind", "count", "level", "scope", "anchors", "dismissible", "title"],
+        "values": [
+          ["shipments.pending", "count", 5, "warning", "business", ["sidebar.deliveries", "deliveries.board"], false, "badge_shipments_pending"]
+        ]
+      }
+    });
+
+    expect(state.union(BadgePlace.section("deliveries")!.anchors).count, 5);
+    expect(state.union(BadgePlace.deliveriesBoard.anchors).count, 5);
+    expect(badgeRoute(state.byKey("shipments.pending")!), HomeSection.deliveries.path);
+  });
+
+  test("an order paid at the door rings the bell for whoever can open the deliveries", () {
+    final order = NotificationModel.fromJson({
+      "id": "n-4",
+      "type": "shipment.new",
+      "title": "Nuevo delivery por confirmar",
+      "body": "Ana · XX48-R4KV",
+      "link": "/deliveries",
+      "data": {"sale": "s-1", "ticket": "XX48-R4KV"}
+    })!;
+
+    expect(order.area, "deliveries");
+    expect(notificationRoute(order), HomeSection.deliveries.path);
+  });
+
   test("a notification reads as the backend sends it and opens the section it is about", () {
     final ticket = NotificationModel.fromJson({
       "id": "n-1",

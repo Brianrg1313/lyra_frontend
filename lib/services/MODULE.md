@@ -358,7 +358,8 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
 - `badge_place.dart` — `BadgePlace`: **every place in the app that draws a badge → the anchors (or badge keys) it reads** (side bar
   entries via `section(key)`, tabs, header, the two channel-form fields, the profile's country and logo by key). Move a dot here.
   `sidebar.business` and `topbar.account` are not read. `messages` reads `sidebar.chats` (`chats.attention` + `chats.unread`),
-  `sales`/`knowledge` their side bar anchors, `salesProcess` the sales board's `process` tab (`sales.new`), `inventoryTransfers` the transfers button and page (`inventory.incoming`).
+  `sales`/`knowledge` their side bar anchors, `salesProcess` the sales board's `process` tab (`sales.new`), `inventoryTransfers` the transfers button and page (`inventory.incoming`),
+  `deliveries`/`deliveriesBoard` the side bar entry and the board (`shipments.pending`, the branch's deliveries waiting on somebody).
 - `badges_service.dart` — `BadgesService` singleton (`.value` provider): `seed(data, business:)` (`/init`'s, kept only
   when measured for the active company, else read), `refresh` (`GET /badges/`), `seen(keys)` (dismissible only,
   optimistic, `POST /badges/seen/`), `discover(place)` (its `news` seen), `at(place)`, `clear`. Rereads on
@@ -371,7 +372,7 @@ Contract: `E:/andromeda/backend/projects/lyra/lib/models/badges/MODULE.md`. Clou
   row's `unseen`) and `badges/changed`. `chats.unread` / `sales.new` count exactly the rows marked `unseen`.
 - `notification_model.dart` — `NotificationModel` (one row of `GET /notifications/` or one `notification/new`: id, type, title, body
   shown as received, level, link, data, seen, date); `area` = the `HomeSection.key` a type is about (`chat.new` → messages,
-  `sale.ticket` → sales, `knowledge.pending` → knowledge): the gate and where tapping goes. A new gated type gets its line there.
+  `sale.ticket` → sales, `knowledge.pending` → knowledge, `shipment.new` → deliveries): the gate and where tapping goes. A new gated type gets its line there.
 - `notifications_service.dart` — `NotificationsService` singleton (`.value` provider): `notification/new` → kept on top of
   `recent` (deduped by id, 30 kept) and shown as a `FloatFlag` — **only if the person can open its `area`** (the event goes to
   the whole company room); `load` (`GET /notifications/`, when the bell opens), `markSeen`, `clear` (sign out, company switch).

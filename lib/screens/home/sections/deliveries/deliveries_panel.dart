@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 // SERVICES
+import 'package:app/services/badges/badge_place.dart';
 import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_branches_service.dart';
@@ -18,6 +19,7 @@ import 'package:app/services/shipments/shipment_model.dart';
 
 // WIDGETS
 import 'package:core/form.dart';
+import 'package:app/screens/home/badges/badge_notes.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/add_area_button.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_editor_panel.dart';
@@ -264,7 +266,13 @@ class DeliveriesPanel extends StatelessWidget {
       );
     }
 
-    return ShipmentList(onOpen: onShipment, lit: litShipment, query: query);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        BadgeNotes(place: BadgePlace.deliveriesBoard, padding: EdgeInsets.only(bottom: AppSize.spaceS)),
+        Expanded(child: ShipmentList(onOpen: onShipment, lit: litShipment, query: query))
+      ]
+    );
   }
 
   /// What the assistant does when a customer is outside every area: it bends

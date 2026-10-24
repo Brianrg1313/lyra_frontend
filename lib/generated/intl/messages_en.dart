@@ -1248,11 +1248,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "badge_setup_country": MessageLookupByLibrary.simpleMessage(
       "Set the company\'s country",
     ),
+    "badge_setup_delivery": MessageLookupByLibrary.simpleMessage(
+      "Say whether the company delivers",
+    ),
     "badge_setup_logo": MessageLookupByLibrary.simpleMessage(
       "Add your company\'s logo",
     ),
     "badge_setup_payments": MessageLookupByLibrary.simpleMessage(
       "Add a way to get paid",
+    ),
+    "badge_shipments_pending": MessageLookupByLibrary.simpleMessage(
+      "Deliveries waiting for someone: to confirm, assign or retry",
     ),
     "badge_unknown": MessageLookupByLibrary.simpleMessage(
       "Something needs your attention",

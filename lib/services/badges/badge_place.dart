@@ -26,12 +26,16 @@ enum BadgePlace {
   inventory(["sidebar.inventory"]),
   channels(["sidebar.channels"]),
   finance(["sidebar.money", "business.payments"]),
+  deliveries(["sidebar.deliveries"]),
 
   // Tabs.
   businessSettings(["business.profile"]),
   financeReceivables(["money.receivables"]),
   financeMethods(["business.payments"]),
   salesProcess(["sales.process"]),
+
+  // The deliveries board: the branch's shipments waiting on somebody (`shipments.pending`).
+  deliveriesBoard(["deliveries.board"]),
 
   // Inventory: the shipments other branches sent here (`inventory.incoming`).
   inventoryTransfers(["inventory.transfers"]),
@@ -64,6 +68,7 @@ enum BadgePlace {
     "inventory" => inventory,
     "channels" => channels,
     "finance" => finance,
+    "deliveries" => deliveries,
     _ => null
   };
 }

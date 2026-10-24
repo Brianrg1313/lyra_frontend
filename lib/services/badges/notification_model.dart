@@ -49,6 +49,7 @@ class NotificationModel {
     "chat.new" => "messages",
     "sale.ticket" => "sales",
     "knowledge.pending" => "knowledge",
+    "shipment.new" => "deliveries",
     _ => null
   };
 
