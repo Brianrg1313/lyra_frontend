@@ -331,10 +331,18 @@ class DeliveriesPanel extends StatelessWidget {
     final scheme = ThemeColor.of(context);
     final inForce = areas.inForce([for (final branch in branches) branch.id]);
     final point = editor.probe;
+    final reaches = DeliveriesPanel.reaches(context.watch<BusinessDeliveryService>().delivery, branch);
     final reaching = [
-      for (final option in DeliveriesPanel.reaches(context.watch<BusinessDeliveryService>().delivery, branch))
+      for (final option in reaches)
         if (query.isEmpty || deliveryOptionName(context, option).toLowerCase().contains(query)) option
     ];
+    // The own deliveries the tapped point is inside of: an area is not the
+    // only way a point is delivered to.
+    final reachedBy = point == null ? const <DeliveryOption>[] : [
+      for (final option in reaches)
+        if (ringContains(reachOutline(option.reach!, branches), point)) option
+    ];
+    final holding = point == null ? const <DeliveryArea>[] : DeliveryAreasModel(areas: inForce).holding(point);
 
     Color colorOf(DeliveryArea area) => listed.contains(area)
       ? areaColor(context, listed.indexOf(area), active: area.active)
@@ -352,13 +360,18 @@ class DeliveriesPanel extends StatelessWidget {
       add: flow.isOpen ? AddAreaButton(onPick: onAdd) : AddAreaButton.method(onMethod: onNewMethod),
       areas: found,
       colorOf: colorOf,
-      empty: listed.isNotEmpty ? S.of(context).deliveries_search_empty : null,
+      empty: listed.isNotEmpty || reaches.isNotEmpty ? S.of(context).deliveries_search_empty : null,
       currency: areas.currency,
       probe: point == null ? null : AreaProbe(
-        holding: DeliveryAreasModel(areas: inForce).holding(point),
+        holding: holding,
+        reaching: [for (final option in reachedBy) deliveryOptionName(context, option)],
         currency: areas.currency,
         colorOf: colorOf,
-        from: deliveringBranch(point, scope: areas.scope, inForce: inForce, branches: branches)?.name,
+        // Held by no area, an own delivery's branch is the one it leaves from.
+        from: holding.isEmpty && reachedBy.isNotEmpty
+          ? _branchName(branches, reachedBy.first.reach!.branch) ??
+            deliveringBranch(point, scope: areas.scope, inForce: inForce, branches: branches)?.name
+          : deliveringBranch(point, scope: areas.scope, inForce: inForce, branches: branches)?.name,
         onClear: editor.clearProbe
       ),
       reaches: [
@@ -371,13 +384,16 @@ class DeliveriesPanel extends StatelessWidget {
           onRemove: () => _removeMethod(context, option)
         )
       ],
-      footer: listed.isEmpty ? null : _outside(context),
+      footer: listed.isEmpty && reaches.isEmpty ? null : _outside(context),
       onFocus: (area) => editor.fit(area.bounds),
       onEdit: (area) => editor.edit(area, origin()),
       onToggle: (area) => service.update(context, deliveryAreaActiveRequest(area, !area.active)),
       onRemove: (area) => _remove(context, service, area)
     );
   }
+
+  static String? _branchName(List<BusinessBranchModel> branches, String? id) =>
+    branches.where((branch) => branch.id == id).firstOrNull?.name;
 
   /// Removes an own delivery from its reach's tile, after asking: the reach
   /// has no life of its own, so what goes is the method (`MethodList` asks

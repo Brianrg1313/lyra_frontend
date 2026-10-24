@@ -20,6 +20,7 @@ import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
+import 'package:app/screens/home/sections/deliveries/area/widgets/area_probe.dart';
 import 'package:app/screens/home/sections/deliveries/deliveries_panel.dart';
 import 'package:app/screens/home/sections/deliveries/methods/widgets/reach_tile.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
@@ -178,6 +179,23 @@ void main() {
 
     expect(find.text("Centro 1"), findsNothing);
     expect(find.text("Centro 2"), findsOneWidget);
+  });
+
+  testWidgets("a map with only an own delivery's reach does not say it has no areas", (tester) async {
+    await pump(tester, "branch", branch: "b-norte");
+
+    expect(find.text("Riders Norte"), findsOneWidget);
+    expect(find.text("No areas yet"), findsNothing);
+  });
+
+  testWidgets("a point inside an own delivery's reach is inside, by that delivery", (tester) async {
+    final (_, _, editor) = await pump(tester, "branch", branch: "b-norte");
+
+    editor.tap(const LatLng(10.615, -66.895));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Inside your areas"), findsOneWidget);
+    expect(find.descendant(of: find.byType(AreaProbe), matching: find.text("Riders Norte")), findsOneWidget);
   });
 
   testWidgets("a search that leaves nothing says so, not that there are no areas", (tester) async {

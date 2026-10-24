@@ -88,7 +88,11 @@ class AreaList extends StatelessWidget {
           )
         ),
         ...reaches,
-        if (areas.isEmpty && empty != null)
+        // A company whose only reach is an own delivery's has somewhere it
+        // delivers: "No areas yet" would say otherwise.
+        if (areas.isEmpty && reaches.isNotEmpty)
+          const SizedBox.shrink()
+        else if (areas.isEmpty && empty != null)
           Padding(
             padding: EdgeInsets.symmetric(vertical: AppSize.spaceS),
             child: TextSmall(empty!, lines: 2, color: scheme.text.secondary)
