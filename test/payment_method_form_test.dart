@@ -445,7 +445,7 @@ void main() {
         (_) {}
       ));
 
-      expect(find.text(S.current.finance_method_on_delivery_off), findsNothing);
+      expect(find.text(S.current.finance_method_on_delivery), findsNothing);
     });
 
     testWidgets('turned on travels on the edit, untouched it does not', (tester) async {
@@ -468,9 +468,8 @@ void main() {
 
       await tester.tap(find.text("open"));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(S.current.finance_method_on_delivery_off));
+      await tester.tap(find.text(S.current.finance_method_on_delivery));
       await tester.pump();
-      expect(find.text(S.current.finance_method_on_delivery_on), findsOneWidget);
 
       await tester.tap(find.text(S.current.save));
       await tester.pumpAndSettle();
@@ -485,7 +484,7 @@ void main() {
         (value) => body = value
       ));
 
-      await tester.tap(find.text(S.current.finance_method_on_delivery_on));
+      await tester.tap(find.text(S.current.finance_method_on_delivery));
       await tester.pump();
       await tester.tap(find.text(S.current.save));
       await tester.pumpAndSettle();

@@ -454,9 +454,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           padding: EdgeInsets.only(bottom: AppSize.spaceXS),
           child: SettingsToggle(
             value: _onDelivery,
-            label: _onDelivery
-              ? S.of(context).business_delivery_on_delivery_on
-              : S.of(context).business_delivery_on_delivery_off,
+            label: S.of(context).business_delivery_on_delivery,
             message: S.of(context).business_delivery_on_delivery_note,
             toggle: () => setState(() => _onDelivery = !_onDelivery)
           )

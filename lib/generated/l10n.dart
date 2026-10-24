@@ -17731,21 +17731,11 @@ class S {
     );
   }
 
-  /// `Paid on delivery accepted`
-  String get business_delivery_on_delivery_on {
+  /// `Can be paid on delivery`
+  String get business_delivery_on_delivery {
     return Intl.message(
-      'Paid on delivery accepted',
-      name: 'business_delivery_on_delivery_on',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Paid before it goes out`
-  String get business_delivery_on_delivery_off {
-    return Intl.message(
-      'Paid before it goes out',
-      name: 'business_delivery_on_delivery_off',
+      'Can be paid on delivery',
+      name: 'business_delivery_on_delivery',
       desc: '',
       args: [],
     );
@@ -17762,20 +17752,10 @@ class S {
   }
 
   /// `Can be paid on delivery`
-  String get finance_method_on_delivery_on {
+  String get finance_method_on_delivery {
     return Intl.message(
       'Can be paid on delivery',
-      name: 'finance_method_on_delivery_on',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Not paid on delivery`
-  String get finance_method_on_delivery_off {
-    return Intl.message(
-      'Not paid on delivery',
-      name: 'finance_method_on_delivery_off',
+      name: 'finance_method_on_delivery',
       desc: '',
       args: [],
     );

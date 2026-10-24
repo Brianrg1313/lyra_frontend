@@ -1696,14 +1696,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_delivery_off_note": MessageLookupByLibrary.simpleMessage(
       "Delivery is turned off, so none of these is offered. They stay saved for when you turn it back on.",
     ),
+    "business_delivery_on_delivery": MessageLookupByLibrary.simpleMessage(
+      "Can be paid on delivery",
+    ),
     "business_delivery_on_delivery_note": MessageLookupByLibrary.simpleMessage(
       "Whether whoever delivers it takes the payment when the order arrives. Only the payment methods marked for it are offered then.",
-    ),
-    "business_delivery_on_delivery_off": MessageLookupByLibrary.simpleMessage(
-      "Paid before it goes out",
-    ),
-    "business_delivery_on_delivery_on": MessageLookupByLibrary.simpleMessage(
-      "Paid on delivery accepted",
     ),
     "business_delivery_option_notes": MessageLookupByLibrary.simpleMessage(
       "Notes",
@@ -3827,17 +3824,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "This method needs no account details: name it if you want and save it.",
     ),
     "finance_method_of_branch": m98,
+    "finance_method_on_delivery": MessageLookupByLibrary.simpleMessage(
+      "Can be paid on delivery",
+    ),
     "finance_method_on_delivery_card": MessageLookupByLibrary.simpleMessage(
       "Paid on delivery",
     ),
     "finance_method_on_delivery_note": MessageLookupByLibrary.simpleMessage(
       "Orders your riders or a delivery app bring can be paid through it when they arrive. Parcel shipments are always paid before they leave.",
-    ),
-    "finance_method_on_delivery_off": MessageLookupByLibrary.simpleMessage(
-      "Not paid on delivery",
-    ),
-    "finance_method_on_delivery_on": MessageLookupByLibrary.simpleMessage(
-      "Can be paid on delivery",
     ),
     "finance_method_optional": MessageLookupByLibrary.simpleMessage("optional"),
     "finance_method_rail": MessageLookupByLibrary.simpleMessage("Method"),
