@@ -22944,6 +22944,36 @@ class S {
     );
   }
 
+  /// `{branch}'s hours`
+  String business_delivery_hours(Object branch) {
+    return Intl.message(
+      '$branch\'s hours',
+      name: 'business_delivery_hours',
+      desc: '',
+      args: [branch],
+    );
+  }
+
+  /// `The prices below follow them: the days with the same hours share a price.`
+  String get business_delivery_hours_note {
+    return Intl.message(
+      'The prices below follow them: the days with the same hours share a price.',
+      name: 'business_delivery_hours_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No hours set yet. Set them and the prices below follow the days you work.`
+  String get business_delivery_hours_empty {
+    return Intl.message(
+      'No hours set yet. Set them and the prices below follow the days you work.',
+      name: 'business_delivery_hours_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Price per day`
   String get business_delivery_rates {
     return Intl.message(
@@ -22954,21 +22984,61 @@ class S {
     );
   }
 
-  /// `Weekdays and weekends apart, and apart again where {branch}'s hours change. Your assistant quotes the day the customer orders.`
+  /// `The days {branch} keeps the same hours share a row. Split a row to price its days apart. Your assistant quotes the day the customer orders.`
   String business_delivery_rates_note(Object branch) {
     return Intl.message(
-      'Weekdays and weekends apart, and apart again where $branch\'s hours change. Your assistant quotes the day the customer orders.',
+      'The days $branch keeps the same hours share a row. Split a row to price its days apart. Your assistant quotes the day the customer orders.',
       name: 'business_delivery_rates_note',
       desc: '',
       args: [branch],
     );
   }
 
-  /// `Weekdays and weekends apart. Your assistant quotes the day the customer orders.`
+  /// `Weekdays and weekends apart. Split a row to price its days apart. Your assistant quotes the day the customer orders.`
   String get business_delivery_rates_note_plain {
     return Intl.message(
-      'Weekdays and weekends apart. Your assistant quotes the day the customer orders.',
+      'Weekdays and weekends apart. Split a row to price its days apart. Your assistant quotes the day the customer orders.',
       name: 'business_delivery_rates_note_plain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Every day`
+  String get business_delivery_rate_every {
+    return Intl.message(
+      'Every day',
+      name: 'business_delivery_rate_every',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{first}, {next}`
+  String business_delivery_rate_list(Object first, Object next) {
+    return Intl.message(
+      '$first, $next',
+      name: 'business_delivery_rate_list',
+      desc: '',
+      args: [first, next],
+    );
+  }
+
+  /// `Price each day apart`
+  String get business_delivery_rate_separate {
+    return Intl.message(
+      'Price each day apart',
+      name: 'business_delivery_rate_separate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Join the days charged alike`
+  String get business_delivery_rate_join {
+    return Intl.message(
+      'Join the days charged alike',
+      name: 'business_delivery_rate_join',
       desc: '',
       args: [],
     );

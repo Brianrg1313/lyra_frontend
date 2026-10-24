@@ -84,8 +84,9 @@ through `Navigator.pop(context, value)`.
   `BusinessLocationService` + `MapTilesService` + one `BusinessPlacesService` per search (map box, address field); **writes** through the branches service
   passed by constructor (edit sends only what changed). Cloud only: an "Opening hours" row opens `showBranchHours` on a saved branch (a new one is born with the main
   branch's week). Returns `true` if something was written.
-- `branch_hours/_branch_hours.dart` — `showBranchHours(context, branch:)`, `BranchHoursModal`: side panel with that
-  branch's `WeekEditor` + `ClosedDays`; **owns** an `OpeningHoursService` for it (writes name `BRANCH`, any branch, not
+- `branch_hours/_branch_hours.dart` — `showBranchHours(context, branch:, hours?)`, `BranchHoursModal`: side panel with that
+  branch's `WeekEditor` + `ClosedDays`; **owns** an `OpeningHoursService` for it unless one is passed (an own delivery's
+  form passes its own, so its prices follow a save) (writes name `BRANCH`, any branch, not
   only the one worked in); editable with `appointments.configure` from `Sources.permissions.mine()`.
 - `branch_form/phone_field.dart` — `BranchPhoneField`: one box, the company's flag + dial fixed in front of
   the typed number; without a country (or a saved phone with another code) the whole phone, flag of the typed code.

@@ -18,6 +18,7 @@ import 'package:core/form.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
 import './state/rates_draft.dart';
+import './widgets/hours_field.dart';
 import './widgets/rates_field.dart';
 import './widgets/reach_field.dart';
 import './widgets/vehicle_picker.dart';
@@ -371,6 +372,7 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
             vehicle: _vehicle,
             branch: widget.branchName
           ),
+          if (_hours != null) DeliveryHoursField(hours: _hours, branch: widget.branchName),
           DeliveryRatesField(
             draft: _rates,
             currency: currency.symbol,

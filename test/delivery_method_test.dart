@@ -458,12 +458,12 @@ void main() {
     expect(draft.read().invalid, isTrue);
   });
 
-  test("the runs split where the hours change, and where a saved price already differs", () {
-    // Sunday closed, Saturday short: three runs and not the weekend whole.
+  test("the rows are the days that share the hours, and split where a saved price already differs", () {
+    // Sunday closed, Saturday short: three rows and not the weekend whole.
     const week = ["", "9:00–18:00", "9:00–18:00", "9:00–18:00", "9:00–18:00", "9:00–18:00", "9:00–13:00"];
     expect(RatesDraft.spans(week), [[1, 2, 3, 4, 5], [6], [0]]);
-    // The same hours every day are still weekdays and weekend.
-    expect(RatesDraft.spans(List.filled(7, "9:00–18:00")), RatesDraft.standard);
+    // No hours to read: weekdays and weekend.
+    expect(RatesDraft.spans(List.filled(7, "")), RatesDraft.standard);
 
     final draft = RatesDraft.of(const DeliveryOption(
       id: "a1",
@@ -474,9 +474,56 @@ void main() {
 
     expect([for (final group in draft.groups) group.weekdays], [[1, 2, 3, 4], [5], [6, 0]]);
 
-    draft.regroup(RatesDraft.spans(week));
+    draft.regroup(week);
     expect([for (final group in draft.groups) group.weekdays], [[1, 2, 3, 4], [5], [6], [0]]);
     expect(draft.read().rates?.days, [5.0, 0.0, 0.0, 0.0, 0.0, 2.0, 5.0]);
+  });
+
+  test("a restaurant open Tuesday to Saturday that only delivers on Sunday and Monday has those two rows", () {
+    const week = ["12:00–16:00", "12:00–16:00", "9:00–23:00", "9:00–23:00", "9:00–23:00", "9:00–23:00", "9:00–23:00"];
+    // Sunday and Monday make one row around the week's end.
+    expect(RatesDraft.spans(week), [[2, 3, 4, 5, 6], [0, 1]]);
+
+    final draft = RatesDraft.of(const DeliveryOption(id: "a1", mode: DeliveryMode.own));
+    addTearDown(draft.dispose);
+
+    draft.regroup(week);
+    expect([for (final group in draft.groups) group.weekdays], [[2, 3, 4, 5, 6], [0, 1]]);
+
+    draft.groups.last.draft.charge = RateCharge.paid;
+    draft.groups.last.draft.price.textController.text = "3";
+    expect(draft.read().rates?.days, [3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
+  });
+
+  test("a row splits into its days and they join back into the ones charged alike", () {
+    final draft = RatesDraft.of(const DeliveryOption(id: "a1", mode: DeliveryMode.own));
+    addTearDown(draft.dispose);
+
+    // The same hours every day: one row.
+    draft.regroup(List.filled(7, "9:00–18:00"));
+    expect([for (final group in draft.groups) group.weekdays], [[1, 2, 3, 4, 5, 6, 0]]);
+
+    draft.separate(draft.groups.single);
+    expect(draft.separated, isTrue);
+    expect(draft.groups, hasLength(7));
+
+    // Saturday and Sunday at 5: the weekdays and the weekend once joined.
+    for (final group in draft.groups.where((group) => group.weekdays.first == 6 || group.weekdays.first == 0)) {
+      group.draft.charge = RateCharge.paid;
+      group.draft.price.textController.text = "5";
+    }
+    draft.join();
+    expect(draft.separated, isFalse);
+    expect([for (final group in draft.groups) group.weekdays], [[1, 2, 3, 4, 5], [6, 0]]);
+    expect(draft.read().rates?.days, [5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0]);
+  });
+
+  test("days are named in the order they follow around the week", () {
+    expect(RatesDraft.ordered([0, 1]), [0, 1]);
+    expect(RatesDraft.ordered([6, 0, 1]), [6, 0, 1]);
+    expect(RatesDraft.ordered([5, 3, 1]), [1, 3, 5]);
+    expect(RatesDraft.consecutive([6, 0, 1]), isTrue);
+    expect(RatesDraft.consecutive([1, 3, 5]), isFalse);
   });
 
   test("the rates, the vehicle and the reach are read as the backend answers them", () {

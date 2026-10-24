@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
@@ -6,21 +7,24 @@ import 'package:app/services/appointments/opening_hours_model.dart';
 import 'package:app/services/appointments/opening_hours_service.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/modals/shared/opening_hours/week_editor.dart';
+import 'package:app/screens/modals/shared/settings/settings_block.dart';
 import 'package:app/screens/home/sections/deliveries/widgets/panel_halves.dart';
 
 import '../state/rates_draft.dart';
 import './form_section.dart';
 
-/// The own delivery's prices as one ledger: **runs of days, not seven rows**
-/// (see [RatesDraft]) — Monday to Friday and the weekend, split again where
-/// the hours of the branch it is seen from change — and national holidays,
-/// each free or with its price.
+/// The own delivery's prices as one ledger: **the days that share the hours
+/// of the branch it is seen from, not seven rows** (see [RatesDraft]), each
+/// row splittable into its days and joined back, and national holidays, each
+/// free or with its price.
 ///
-/// The hours are only read, so a price is set knowing whether the branch
-/// opens then. A method is the company's and not one branch's, so a run
-/// closed here still takes a price — another branch may open.
+/// The hours are edited above it (`DeliveryHoursField`) and followed here as
+/// they change, so a price is set knowing how the branch works then. A method
+/// is the company's and not one branch's, so a day closed here still takes a
+/// price — another branch may open.
 class DeliveryRatesField extends StatefulWidget {
   const DeliveryRatesField({
     super.key,
@@ -41,29 +45,35 @@ class DeliveryRatesField extends StatefulWidget {
   /// The name of [hours]' branch.
   final String? branch;
 
-  /// What a run of days is called: `Monday`, `Saturday and Sunday`, `Monday
-  /// to Friday`; holidays for none.
-  static String name(BuildContext context, List<int> weekdays) => switch (weekdays.length) {
-    0 => S.of(context).business_delivery_rate_holidays,
-    1 => WeekEditor.dayName(context, weekdays.first),
-    2 => S.of(context).business_delivery_rate_pair(
-      WeekEditor.dayName(context, weekdays.first),
-      WeekEditor.dayName(context, weekdays.last)
-    ),
-    _ => S.of(context).business_delivery_rate_span(
-      WeekEditor.dayName(context, weekdays.first),
-      WeekEditor.dayName(context, weekdays.last)
-    )
-  };
+  /// What a row's days are called: `Monday`, `Sunday and Monday`, `Tuesday
+  /// to Saturday`, `Monday, Wednesday and Friday`, `Every day`; holidays for
+  /// none. [weekdays] as [RatesDraft.ordered] gives them.
+  static String name(BuildContext context, List<int> weekdays) {
+    final s = S.of(context);
+    String day(int weekday) => WeekEditor.dayName(context, weekday);
+
+    if (weekdays.isEmpty) return s.business_delivery_rate_holidays;
+    if (weekdays.length == 7) return s.business_delivery_rate_every;
+    if (weekdays.length == 1) return day(weekdays.first);
+    if (weekdays.length > 2 && RatesDraft.consecutive(weekdays)) {
+      return s.business_delivery_rate_span(day(weekdays.first), day(weekdays.last));
+    }
+
+    final first = weekdays
+      .sublist(1, weekdays.length - 1)
+      .fold(day(weekdays.first), (list, weekday) => s.business_delivery_rate_list(list, day(weekday)));
+
+    return s.business_delivery_rate_pair(first, day(weekdays.last));
+  }
 
   @override
   State<DeliveryRatesField> createState() => _DeliveryRatesFieldState();
 }
 
 class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
-  /// The week was read and the runs follow it: once, so a price typed is not
-  /// regrouped under the person typing it.
-  bool _grouped = false;
+  /// The week the rows follow now: they are regrouped only when it changes
+  /// (the hours edited above), never under the person typing a price.
+  List<String>? _week;
 
   @override
   void initState() {
@@ -82,16 +92,15 @@ class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
   void _regroup() {
     final hours = widget.hours;
 
-    if (_grouped || hours == null || hours.status != OpeningHoursStatus.ready) return;
-
-    _grouped = true;
+    if (hours == null || hours.status != OpeningHoursStatus.ready) return;
 
     final week = [for (var weekday = 0; weekday < 7; weekday++) _stretches(hours, weekday) ?? ""];
 
-    // A branch with no week at all keeps weekdays and weekend.
-    if (week.every((day) => day.isEmpty)) return;
+    if (listEquals(week, _week)) return;
 
-    if (mounted) setState(() => widget.draft.regroup(RatesDraft.spans(week)));
+    _week = week;
+
+    if (mounted) setState(() => widget.draft.regroup(week));
   }
 
   @override
@@ -120,7 +129,21 @@ class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
                 title: DeliveryRatesField.name(context, group.weekdays),
                 subtitle: _hours(context, group.weekdays.first),
                 draft: group.draft,
-                charges: const [RateCharge.free, RateCharge.paid]
+                charges: const [RateCharge.free, RateCharge.paid],
+                separate: group.weekdays.length > 1
+                  ? () => setState(() => widget.draft.separate(group))
+                  : null
+              ),
+              Separator.horizontal()
+            ],
+            if (widget.draft.separated) ...[
+              Padding(
+                padding: EdgeInsets.all(AppSize.spaceXS),
+                child: Button(
+                  title: S.of(context).business_delivery_rate_join,
+                  leftIcon: Icon(CI.link, color: scheme.icon),
+                  action: () => setState(widget.draft.join)
+                )
               ),
               Separator.horizontal()
             ],
@@ -144,7 +167,8 @@ class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
     required String title,
     required String? subtitle,
     required RateDraft draft,
-    required List<RateCharge> charges
+    required List<RateCharge> charges,
+    void Function()? separate
   }) {
     final scheme = ThemeColor.of(context);
 
@@ -158,6 +182,14 @@ class _DeliveryRatesFieldState extends State<DeliveryRatesField> {
             if (subtitle != null) ...[
               SizedBox(width: AppSize.gap),
               Flexible(child: TextSmall(subtitle, ellipsis: true, color: scheme.text.secondary))
+            ],
+            if (separate != null) ...[
+              SizedBox(width: AppSize.gap),
+              SettingsAction(
+                icon: CI.list,
+                message: S.of(context).business_delivery_rate_separate,
+                action: separate
+              )
             ]
           ]),
           SizedBox(height: AppSize.gap),

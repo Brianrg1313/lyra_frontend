@@ -17,8 +17,9 @@ import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/modals/shared/opening_hours/closed_days.dart';
 import 'package:app/screens/modals/shared/opening_hours/week_editor.dart';
 
-/// Opens [branch]'s opening hours and closed days, from its form.
-Future<void> showBranchHours(BuildContext context, {required BusinessBranchModel branch}) async {
+/// Opens [branch]'s opening hours and closed days, from its form or from an
+/// own delivery's prices, which pass the [hours] they follow.
+Future<void> showBranchHours(BuildContext context, {required BusinessBranchModel branch, OpeningHoursService? hours}) async {
   final width = math.min(_width, MediaQuery.of(context).size.width * .5);
 
   await showSideModal(
@@ -26,7 +27,7 @@ Future<void> showBranchHours(BuildContext context, {required BusinessBranchModel
     title: S.of(context).branch_hours_title,
     minWidth: width,
     maxWidth: width,
-    builder: (context) => BranchHoursModal(branch: branch)
+    builder: (context) => BranchHoursModal(branch: branch, hours: hours)
   );
 }
 
@@ -48,7 +49,8 @@ class BranchHoursModal extends StatefulWidget {
   /// The person's grant, for tests; read on open otherwise.
   final Grant? grant;
 
-  /// An already loaded week, for tests; owned and read on open otherwise.
+  /// A week its caller owns and reads (tests, an own delivery's prices that
+  /// follow a save at once); owned and read on open otherwise.
   final OpeningHoursService? hours;
 
   @override
