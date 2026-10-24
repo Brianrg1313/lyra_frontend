@@ -13,6 +13,7 @@ class BusinessBranchModel {
     required this.name,
     this.main = false,
     this.storefront = true,
+    this.pickup,
     this.online = true,
     this.legalName = "",
     this.taxId = "",
@@ -40,6 +41,13 @@ class BusinessBranchModel {
 
   /// Customers may come to it.
   final bool storefront;
+
+  /// Whether an order arranged over the channels is collected here. Three
+  /// states: `null` is "has not said" (what a new branch has), which is not
+  /// "no": an order with nothing arranged still closes as collected here, but
+  /// the assistant never offers it. A branch that is not a [storefront] never
+  /// hands an order over, whatever this says (the backend's `Branches.collects`).
+  final bool? pickup;
 
   /// Orders from the company's channels may be fulfilled from it.
   final bool online;
@@ -94,6 +102,7 @@ class BusinessBranchModel {
       name: _text(row["name"]),
       main: _flag(row["main"]) ?? false,
       storefront: _flag(row["storefront"]) ?? true,
+      pickup: _flag(row["pickup"]),
       online: _flag(row["online"]) ?? true,
       legalName: _text(row["legal_name"]),
       taxId: _text(row["tax_id"]),

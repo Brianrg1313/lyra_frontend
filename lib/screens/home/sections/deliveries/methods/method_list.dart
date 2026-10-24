@@ -15,7 +15,6 @@ import 'package:app/screens/home/sections/business/settings/profile_block.dart';
 import 'package:app/screens/home/sections/business/settings/profile_field.dart';
 
 import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
-import './widgets/delivery_flag_field.dart';
 import './widgets/delivery_gate.dart';
 import './widgets/delivery_notes_field.dart';
 import './widgets/delivery_option_field.dart';
@@ -93,17 +92,21 @@ class MethodList extends StatelessWidget {
         ),
         SizedBox(height: AppSize.padding),
         // Not a way of delivering, so neither faded nor asked as one: a
-        // customer who can collect is answered whatever the methods say.
+        // customer who can collect is answered whatever the methods say. Read
+        // only: each branch says it in its form, and the backend measures the
+        // company's answer from theirs (`PICKUP` here is `pickup_is_per_branch`).
         ProfileBlock(
           title: S.of(context).deliveries_method_pickup,
           fields: [
-            DeliveryFlagField(
-              flag: DeliveryFlag.pickup,
-              value: delivery.pickup,
+            ProfileField(
               icon: CI.store,
               label: S.of(context).business_delivery_pickup,
               description: S.of(context).business_delivery_pickup_note,
-              onChanged: flag
+              value: switch (delivery.pickup) {
+                true => S.of(context).business_delivery_yes,
+                false => S.of(context).business_delivery_no,
+                null => S.of(context).business_delivery_unset
+              }
             )
           ]
         ),

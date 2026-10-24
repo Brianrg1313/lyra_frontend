@@ -8910,6 +8910,56 @@ class S {
     );
   }
 
+  /// `Orders can be picked up here`
+  String get business_branch_pickup_on {
+    return Intl.message(
+      'Orders can be picked up here',
+      name: 'business_branch_pickup_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Orders are only sent from here`
+  String get business_branch_pickup_off {
+    return Intl.message(
+      'Orders are only sent from here',
+      name: 'business_branch_pickup_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pickup not set`
+  String get business_branch_pickup_unset {
+    return Intl.message(
+      'Pickup not set',
+      name: 'business_branch_pickup_unset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lyra won't offer pickup here, but an order with no delivery arranged is still handed over here`
+  String get business_branch_pickup_unset_note {
+    return Intl.message(
+      'Lyra won\'t offer pickup here, but an order with no delivery arranged is still handed over here',
+      name: 'business_branch_pickup_unset_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whether customers can collect here the orders they place over your channels`
+  String get business_branch_pickup_note {
+    return Intl.message(
+      'Whether customers can collect here the orders they place over your channels',
+      name: 'business_branch_pickup_note',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Takes orders from the bot`
   String get business_branch_online_on {
     return Intl.message(
@@ -22197,10 +22247,10 @@ class S {
     );
   }
 
-  /// `Whether a customer can collect the order at your location.`
+  /// `Whether a customer can collect the order at one of your branches. Each branch sets it in its own form.`
   String get business_delivery_pickup_note {
     return Intl.message(
-      'Whether a customer can collect the order at your location.',
+      'Whether a customer can collect the order at one of your branches. Each branch sets it in its own form.',
       name: 'business_delivery_pickup_note',
       desc: '',
       args: [],

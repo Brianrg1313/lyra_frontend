@@ -18,6 +18,7 @@ class BranchDraft {
     required this.name,
     this.main = false,
     this.storefront = true,
+    this.pickup,
     this.online = true,
     this.legalName = "",
     this.taxId = "",
@@ -34,6 +35,9 @@ class BranchDraft {
   final String name;
   final bool main;
   final bool storefront;
+
+  /// Three-state, as [BusinessBranchModel.pickup].
+  final bool? pickup;
   final bool online;
   final String legalName;
   final String taxId;
@@ -53,11 +57,13 @@ class BranchDraft {
 ///
 /// What was left empty is not sent, so the backend keeps its defaults
 /// (`LEGAL_NAME`/`TAX_ID` the company's). The flags always travel: the form
-/// shows them set, and what is shown is what is stored.
+/// shows them set, and what is shown is what is stored. `PICKUP` only when it
+/// was answered: a new branch "has not said" by default.
 Map<String, dynamic> createBranchRequest(BranchDraft draft) => {
   "NAME": _clean(draft.name),
   "STOREFRONT": draft.storefront,
   "ONLINE": draft.online,
+  if (draft.pickup != null) "PICKUP": draft.pickup,
   if (draft.main) "MAIN": true,
   ..._filled("LEGAL_NAME", draft.legalName),
   ..._filled("TAX_ID", draft.taxId),
@@ -81,7 +87,8 @@ Map<String, dynamic> createBranchRequest(BranchDraft draft) => {
 ///
 /// A text emptied travels as `""`, which the backend reads as "erase it" and
 /// then the company's own value applies again. `MAIN` only ever travels as
-/// `true`: the flag is moved to a branch, never taken off one.
+/// `true`: the flag is moved to a branch, never taken off one. `PICKUP` put
+/// back to "has not said" travels as `null`.
 Map<String, dynamic> editBranchRequest({
   required BusinessBranchModel from,
   required BranchDraft draft
@@ -108,6 +115,7 @@ Map<String, dynamic> editBranchRequest({
 
   if (draft.storefront != from.storefront) body["STOREFRONT"] = draft.storefront;
   if (draft.online != from.online) body["ONLINE"] = draft.online;
+  if (draft.pickup != from.pickup) body["PICKUP"] = draft.pickup;
   if (draft.main && !from.main) body["MAIN"] = true;
 
   final point = draft.point;

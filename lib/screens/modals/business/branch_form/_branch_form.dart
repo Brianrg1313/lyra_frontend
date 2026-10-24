@@ -132,6 +132,7 @@ class _BranchFormModalState extends State<BranchFormModal> {
   late final LatLng? _opening = _point;
 
   late bool _storefront = _from?.storefront ?? true;
+  late bool? _pickup = _from?.pickup;
   late bool _online = _from?.online ?? true;
   late bool _main = _from?.main ?? false;
 
@@ -448,6 +449,15 @@ class _BranchFormModalState extends State<BranchFormModal> {
           storefront: _storefront,
           onChanged: (value) => setState(() => _storefront = value)
         ),
+        // A warehouse never hands an order over, whatever it says: the answer
+        // is kept, only not asked.
+        if (_storefront) ...[
+          _PickupField(
+            value: _pickup,
+            onChanged: (value) => setState(() => _pickup = value)
+          ),
+          SizedBox(height: AppSize.gap)
+        ],
         SettingsToggle(
           value: _online,
           label: _online
@@ -652,6 +662,7 @@ class _BranchFormModalState extends State<BranchFormModal> {
       name: _name.value,
       main: _main,
       storefront: _storefront,
+      pickup: _pickup,
       online: _online,
       legalName: _legalName.value,
       taxId: _taxId.value,
@@ -823,6 +834,61 @@ class _KindPicker extends StatelessWidget {
       SizedBox(height: AppSize.spaceS)
     ]
   );
+}
+
+/// Whether orders arranged over the chat are collected at the branch, as the
+/// three answers the backend keeps: a shop customers walk into may still only
+/// send them. Unset is not "no", so it is offered as its own answer.
+class _PickupField extends StatelessWidget {
+  const _PickupField({required this.value, required this.onChanged});
+
+  final bool? value;
+  final void Function(bool? value) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+
+    return SettingsSelect(
+      label: _answer(context, value),
+      icon: CI.store,
+      // Grey while unset, as the delivery answers are.
+      color: switch (value) {
+        true => scheme.chart.good,
+        false => scheme.chart.critical,
+        null => scheme.text.secondary
+      },
+      message: S.of(context).business_branch_pickup_note,
+      open: _open
+    );
+  }
+
+  Future<void> _open(BuildContext anchor) async {
+    final picked = await showSelectMenu(
+      context: anchor,
+      options: [
+        SelectOption(value: "yes", placeholder: _answer(anchor, true)),
+        SelectOption(value: "no", placeholder: _answer(anchor, false)),
+        SelectOption(
+          value: "unset",
+          placeholder: _answer(anchor, null),
+          subtitle: S.of(anchor).business_branch_pickup_unset_note
+        )
+      ],
+      selected: switch (value) { true => "yes", false => "no", null => "unset" },
+      emptyText: S.of(anchor).business_delivery_select_empty
+    );
+
+    if (picked == null) return;
+
+    onChanged(switch (picked.value) { "yes" => true, "no" => false, _ => null });
+  }
+
+  String _answer(BuildContext context, bool? value) => switch (value) {
+    true => S.of(context).business_branch_pickup_on,
+    false => S.of(context).business_branch_pickup_off,
+    null => S.of(context).business_branch_pickup_unset
+  };
 }
 
 class _KindCard extends StatelessWidget {

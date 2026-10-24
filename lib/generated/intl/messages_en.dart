@@ -1474,6 +1474,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_branch_phone_hint": MessageLookupByLibrary.simpleMessage(
       "4121234567",
     ),
+    "business_branch_pickup_note": MessageLookupByLibrary.simpleMessage(
+      "Whether customers can collect here the orders they place over your channels",
+    ),
+    "business_branch_pickup_off": MessageLookupByLibrary.simpleMessage(
+      "Orders are only sent from here",
+    ),
+    "business_branch_pickup_on": MessageLookupByLibrary.simpleMessage(
+      "Orders can be picked up here",
+    ),
+    "business_branch_pickup_unset": MessageLookupByLibrary.simpleMessage(
+      "Pickup not set",
+    ),
+    "business_branch_pickup_unset_note": MessageLookupByLibrary.simpleMessage(
+      "Lyra won\'t offer pickup here, but an order with no delivery arranged is still handed over here",
+    ),
     "business_branch_point": MessageLookupByLibrary.simpleMessage(
       "Point on the map",
     ),
@@ -1724,7 +1739,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Pickup at the business",
     ),
     "business_delivery_pickup_note": MessageLookupByLibrary.simpleMessage(
-      "Whether a customer can collect the order at your location.",
+      "Whether a customer can collect the order at one of your branches. Each branch sets it in its own form.",
     ),
     "business_delivery_provider": MessageLookupByLibrary.simpleMessage(
       "Company",

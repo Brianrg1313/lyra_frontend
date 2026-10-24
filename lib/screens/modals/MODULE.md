@@ -76,7 +76,7 @@ through `Navigator.pop(context, value)`.
   (the backend files the job with the invitation) + an optional permissions template (`inviteTemplates`; none offered = no field); **writes** through the `BusinessEmployeesService` passed in. Returns `true` if sent.
   On a master the form gives way to the activation code (`_ActivationCode`: the code, its expiry, copy, done), shown once.
 - `branch_form/_branch_form.dart` — `showBranchForm(context, branches:, country:, branch?)`, `BranchFormModal`:
-  create (no `branch`) or edit one branch whole — name, store/warehouse (`STOREFRONT`, two cards), bot orders (`ONLINE`),
+  create (no `branch`) or edit one branch whole — name, store/warehouse (`STOREFRONT`, two cards), pickup (`PICKUP`, yes/no/not set; only on a store), bot orders (`ONLINE`),
   main (not drawn on the main branch), phone, legal name + tax id (empty = the company's), address, landmark, city,
   region, postal code and the point on `DeliveriesMap` (beside the form; in one column, before the address; opens on the
   branch's point). `country` (the company's) fixes the phone code; only the main branch's form asks for it, and saving

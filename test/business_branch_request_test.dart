@@ -42,6 +42,11 @@ void main() {
       expect(body, {"NAME": "Warehouse East", "STOREFRONT": true, "ONLINE": true});
     });
 
+    test("pickup travels only once answered", () {
+      expect(createBranchRequest(const BranchDraft(name: "Downtown", pickup: false))["PICKUP"], false);
+      expect(createBranchRequest(const BranchDraft(name: "Downtown")).containsKey("PICKUP"), isFalse);
+    });
+
     test("the point travels as a pair with six decimals", () {
       final body = createBranchRequest(_draft());
 
@@ -69,6 +74,20 @@ void main() {
 
       expect(body["LATITUDE"], "");
       expect(body["LONGITUDE"], "");
+    });
+
+    test("pickup travels when changed, back to not said as null", () {
+      const collects = BusinessBranchModel(id: "b1", name: "Downtown", pickup: true);
+
+      expect(editBranchRequest(from: collects, draft: const BranchDraft(name: "Downtown", pickup: false))["PICKUP"], false);
+      expect(editBranchRequest(from: collects, draft: const BranchDraft(name: "Downtown")), {"ID": "b1", "PICKUP": null});
+      expect(editBranchRequest(from: collects, draft: const BranchDraft(name: "Downtown", pickup: true)), {"ID": "b1"});
+    });
+
+    test("pickup reads three states", () {
+      expect(BusinessBranchModel.from({"id": "b1", "pickup": 0})!.pickup, isFalse);
+      expect(BusinessBranchModel.from({"id": "b1", "pickup": "1"})!.pickup, isTrue);
+      expect(BusinessBranchModel.from({"id": "b1", "pickup": null})!.pickup, isNull);
     });
 
     test("main only travels as true", () {
