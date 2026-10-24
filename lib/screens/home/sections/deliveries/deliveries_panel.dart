@@ -367,7 +367,8 @@ class DeliveriesPanel extends StatelessWidget {
           color: scheme.accent,
           currency: areas.currency,
           onFocus: () => editor.fit(reachOutline(option.reach!, branches)),
-          onEdit: () => flow.edit(option)
+          onEdit: () => flow.edit(option),
+          onRemove: () => _removeMethod(context, option)
         )
       ],
       footer: listed.isEmpty ? null : _outside(context),
@@ -376,6 +377,24 @@ class DeliveriesPanel extends StatelessWidget {
       onToggle: (area) => service.update(context, deliveryAreaActiveRequest(area, !area.active)),
       onRemove: (area) => _remove(context, service, area)
     );
+  }
+
+  /// Removes an own delivery from its reach's tile, after asking: the reach
+  /// has no life of its own, so what goes is the method (`MethodList` asks
+  /// the same).
+  Future<void> _removeMethod(BuildContext context, DeliveryOption option) async {
+    final service = context.read<BusinessDeliveryService>();
+    final confirmed = await showAlertModal(
+      context: context,
+      title: S.of(context).business_delivery_remove_title,
+      message: S.of(context).business_delivery_remove_message(deliveryOptionName(context, option)),
+      confirmText: S.of(context).business_delivery_remove,
+      cancelText: S.of(context).cancel
+    );
+
+    if (!confirmed || !context.mounted) return;
+
+    await service.removeOption(context, option.id);
   }
 
   Future<void> _remove(BuildContext context, DeliveryAreasService service, DeliveryArea area) async {

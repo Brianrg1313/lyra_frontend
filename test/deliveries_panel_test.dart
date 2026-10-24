@@ -21,6 +21,7 @@ import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/deliveries_panel.dart';
+import 'package:app/screens/home/sections/deliveries/methods/widgets/reach_tile.dart';
 import 'package:app/screens/home/sections/deliveries/methods/state/method_flow.dart';
 
 /// Where the company delivers, edited in the desk's panel: the branch field
@@ -145,6 +146,15 @@ void main() {
     expect(find.text("Riders Centro"), findsOneWidget);
     expect(find.text("Travel time · 30 min"), findsOneWidget);
     expect(find.text("Riders Norte"), findsNothing);
+  });
+
+  testWidgets("a reach's remove asks before dropping its method", (tester) async {
+    await pump(tester, "branch", branch: "b-centro");
+
+    await tester.tap(find.descendant(of: find.byType(ReachTile), matching: find.byIcon(CI.trash)));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Remove this way to deliver?"), findsOneWidget);
   });
 
   testWidgets("all branches lists every own delivery's reach", (tester) async {

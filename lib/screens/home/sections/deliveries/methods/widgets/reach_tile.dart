@@ -9,8 +9,8 @@ import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
 /// An own delivery's reach in the areas list: whose it is, how it was
-/// measured, what they ride. It is not a `delivery_areas` row, so it has no
-/// pause or remove here: it is changed (or dropped) in its method's form.
+/// measured, what they ride. It is not a `delivery_areas` row: it has no
+/// pause, and removing it removes the whole method it belongs to.
 class ReachTile extends StatelessWidget {
   const ReachTile({
     super.key,
@@ -18,7 +18,8 @@ class ReachTile extends StatelessWidget {
     required this.color,
     required this.currency,
     required this.onFocus,
-    required this.onEdit
+    required this.onEdit,
+    required this.onRemove
   });
 
   /// An own option with a reach.
@@ -27,6 +28,9 @@ class ReachTile extends StatelessWidget {
   final String currency;
   final void Function() onFocus;
   final void Function() onEdit;
+
+  /// Removes the method (the caller asks first).
+  final void Function() onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +61,12 @@ class ReachTile extends StatelessWidget {
                 icon: CI.edit,
                 message: S.of(context).deliveries_reach_edit,
                 action: onEdit
+              ),
+              SizedBox(width: AppSize.gap / 2),
+              SettingsAction(
+                icon: CI.trash,
+                message: S.of(context).business_delivery_remove,
+                action: onRemove
               )
             ]),
             SizedBox(height: AppSize.gap),
