@@ -36,6 +36,9 @@
 /// **Branch** (`BRANCH`): the branch the account is of; left out (or null) it is the whole
 /// company's. A branch of another company is `404 branch_not_found`.
 ///
+/// **Paid on delivery** (`ON_DELIVERY`): whether an order a rider carries may be paid
+/// through it when it arrives. Missing on a creation is no; on an edit, leave it.
+///
 /// **Currency and commission** (`CURRENCY`, `FEE_TYPE`, `FEE`) are the
 /// company's and not the rail's, with one exception: a rail that moves a single
 /// currency (`MoneyRail.currency`) is saved in it whatever is sent. Contract:
@@ -59,6 +62,7 @@ Map<String, dynamic> createMoneyMethodRequest({
   String currency = "",
   MoneyFee fee = const MoneyFee(),
   String? branch,
+  bool onDelivery = false,
   int? position
 }) => {
   "CODE": code,
@@ -71,6 +75,7 @@ Map<String, dynamic> createMoneyMethodRequest({
   // Only a commission that exists: a new account with none is the default on
   // the other side, and sending `none` would be one more key to agree on.
   if (!fee.isNone) ..._fee(fee),
+  if (onDelivery) "ON_DELIVERY": true,
   "POSITION": ?position
 };
 
@@ -101,6 +106,7 @@ Map<String, dynamic> updateMoneyMethodRequest({
   String? currency,
   MoneyFee? fee,
   ({String? id})? branch,
+  bool? onDelivery,
   int? position
 }) => {
   "ID": id,
@@ -110,6 +116,7 @@ Map<String, dynamic> updateMoneyMethodRequest({
   if (instructions != null) "INSTRUCTIONS": _orNull(instructions),
   if (currency != null) "CURRENCY": _orNull(currency.toUpperCase()),
   if (fee != null) ..._fee(fee),
+  "ON_DELIVERY": ?onDelivery,
   "POSITION": ?position
 };
 

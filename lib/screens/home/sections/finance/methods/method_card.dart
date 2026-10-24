@@ -111,6 +111,18 @@ class MoneyMethodCard extends StatelessWidget {
             ],
             ..._lines(context),
             ..._charge(context),
+            if (method.onDelivery) ...[
+              SizedBox(height: AppSize.gap * 0.5),
+              Row(children: [
+                Icon(CI.check, size: AppSize.text * 0.9, color: scheme.chart.good),
+                SizedBox(width: AppSize.gap * 0.5),
+                Expanded(child: TextSmall(
+                  S.of(context).finance_method_on_delivery_card,
+                  color: scheme.text.secondary,
+                  ellipsis: true
+                ))
+              ])
+            ],
             if (method.instructions.isNotEmpty) ...[
               SizedBox(height: AppSize.gap),
               TextSmall(

@@ -430,4 +430,67 @@ void main() {
       expect(body["FEE_TYPE"], "none");
     });
   });
+
+  group('paid on delivery', () {
+    MoneyMethod cash({bool onDelivery = false}) => MoneyMethod.fromJson({
+      "id": "m2",
+      "code": "cash",
+      "name": "Efectivo",
+      "onDelivery": onDelivery
+    });
+
+    testWidgets('is not asked without a rider delivering', (tester) async {
+      await _open(tester, _host(
+        PaymentMethodFormModal(rails: _rails, sheets: const {"cash": []}, options: _options, method: cash()),
+        (_) {}
+      ));
+
+      expect(find.text(S.current.finance_method_on_delivery_off), findsNothing);
+    });
+
+    testWidgets('turned on travels on the edit, untouched it does not', (tester) async {
+      dynamic body;
+
+      await _open(tester, _host(
+        PaymentMethodFormModal(
+          rails: _rails,
+          sheets: const {"cash": []},
+          options: _options,
+          doorDelivery: true,
+          method: cash()
+        ),
+        (value) => body = value
+      ));
+
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+      expect(body.containsKey("ON_DELIVERY"), isFalse);
+
+      await tester.tap(find.text("open"));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.finance_method_on_delivery_off));
+      await tester.pump();
+      expect(find.text(S.current.finance_method_on_delivery_on), findsOneWidget);
+
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+      expect(body["ON_DELIVERY"], isTrue);
+    });
+
+    testWidgets('an account already marked keeps the box to take it off', (tester) async {
+      dynamic body;
+
+      await _open(tester, _host(
+        PaymentMethodFormModal(rails: _rails, sheets: const {"cash": []}, options: _options, method: cash(onDelivery: true)),
+        (value) => body = value
+      ));
+
+      await tester.tap(find.text(S.current.finance_method_on_delivery_on));
+      await tester.pump();
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+
+      expect(body["ON_DELIVERY"], isFalse);
+    });
+  });
 }

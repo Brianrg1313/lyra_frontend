@@ -273,6 +273,7 @@ class MoneyMethod {
     this.fee = const MoneyFee(),
     this.reference = false,
     this.change = false,
+    this.onDelivery = false,
     this.branch,
     this.position = 0
   });
@@ -339,6 +340,12 @@ class MoneyMethod {
   /// Whether it is cash.
   final bool change;
 
+  /// Whether an order a rider carries (the company's own or a platform's, never a
+  /// parcel courier) may be paid through it when it arrives (`on_delivery`). Off
+  /// until the company turns it on: the assistant only offers paying at the door
+  /// through an account the company agreed to collect there.
+  final bool onDelivery;
+
   /// Where it sits in the picker. The company's own order.
   /// The branch the account belongs to, or null when every branch charges into it. A till
   /// offers only its branch's and the company's (`servesBranch`): a payment into another
@@ -365,6 +372,7 @@ class MoneyMethod {
     fee: MoneyFee.fromJson(data["fee"]),
     reference: data["reference"] == true || data["reference"] == 1,
     change: data["change"] == true || data["change"] == 1,
+    onDelivery: data["onDelivery"] == true || data["onDelivery"] == 1,
     branch: switch ((data["branch"] ?? "").toString().trim()) {
       "" => null,
       final id => id

@@ -14,6 +14,7 @@ import 'package:app/services/money/money_method_model.dart';
 import 'package:app/services/money/money_method_request.dart';
 
 // WIDGETS
+import 'package:app/screens/modals/shared/settings/settings_block.dart';
 import 'package:core/button.dart';
 import 'package:core/form.dart';
 
@@ -51,6 +52,11 @@ import 'package:core/form.dart';
 /// commission is a fixed amount in that currency or a percentage, and the
 /// backend adds it to the charge.
 ///
+/// **Paid on delivery** is asked only when the company has a way of delivering
+/// that a rider carries ([doorDelivery]): a parcel courier is always paid before
+/// it ships, so with only those the question has no order to apply to. An
+/// account already marked keeps the box, so it can be taken off.
+///
 /// It **returns the request body and writes nothing**, like every modal here:
 /// `MoneyMethodsService` is provided by the finance section, which lives under
 /// the navigator this panel is opened on. The caller knows whether it handed in
@@ -63,6 +69,7 @@ Future<Map<String, dynamic>?> showPaymentMethodForm(
   required Map<String, List<MoneyMethodField>> sheets,
   required Map<String, List<MoneyPaymentOption>> options,
   MoneyCurrencies currencies = const MoneyCurrencies(main: ""),
+  bool doorDelivery = false,
   MoneyMethod? method
 }) => showSideModal(
   context: context,
@@ -74,6 +81,7 @@ Future<Map<String, dynamic>?> showPaymentMethodForm(
     sheets: sheets,
     options: options,
     currencies: currencies,
+    doorDelivery: doorDelivery,
     method: method
   )
 ).then((value) => value is Map<String, dynamic> ? value : null);
@@ -86,6 +94,7 @@ class PaymentMethodFormModal extends StatefulWidget {
     required this.sheets,
     required this.options,
     this.currencies = const MoneyCurrencies(main: ""),
+    this.doorDelivery = false,
     this.method
   });
 
@@ -105,6 +114,10 @@ class PaymentMethodFormModal extends StatefulWidget {
   /// money nothing converts. Empty when the setup did not arrive, and then the
   /// currency is not asked (the backend reads a missing one as the main).
   final MoneyCurrencies currencies;
+
+  /// Whether the company delivers through its own riders or a platform's, the
+  /// orders that can be paid when they arrive.
+  final bool doorDelivery;
 
   /// The account being edited, or null when one is being added.
   final MoneyMethod? method;
@@ -162,6 +175,11 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
   static const int _maxInstructions = 255;
 
   bool get _isEdit => widget.method != null;
+
+  /// Whether an order a rider carries may be paid through it when it arrives.
+  late bool _onDelivery = widget.method?.onDelivery ?? false;
+
+  bool get _asksOnDelivery => widget.doorDelivery || (widget.method?.onDelivery ?? false);
 
   /// Whether the sheet's controllers were built. See [didChangeDependencies].
   bool _built = false;
@@ -325,6 +343,17 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
           if (_asksBranch) _branchInput(context),
           ..._currencyInputs(context),
           _feeInputs(context),
+          if (_asksOnDelivery) Padding(
+            padding: EdgeInsets.only(bottom: AppSize.spaceXS),
+            child: SettingsToggle(
+              value: _onDelivery,
+              label: _onDelivery
+                ? S.of(context).finance_method_on_delivery_on
+                : S.of(context).finance_method_on_delivery_off,
+              message: S.of(context).finance_method_on_delivery_note,
+              toggle: () => setState(() => _onDelivery = !_onDelivery)
+            )
+          ),
           Input(
             title: _title(
               context,
@@ -780,7 +809,8 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
           fields: fields,
           currency: currency,
           fee: fee,
-          branch: _asksBranch && _pickedBranch != widget.method!.branch ? (id: _pickedBranch) : null
+          branch: _asksBranch && _pickedBranch != widget.method!.branch ? (id: _pickedBranch) : null,
+          onDelivery: _onDelivery != widget.method!.onDelivery ? _onDelivery : null
         )
       : createMoneyMethodRequest(
           code: _rail.value,
@@ -789,7 +819,8 @@ class _PaymentMethodFormModalState extends State<PaymentMethodFormModal> {
           fields: fields,
           currency: currency ?? "",
           fee: fee,
-          branch: _asksBranch ? _pickedBranch : null
+          branch: _asksBranch ? _pickedBranch : null,
+          onDelivery: _asksOnDelivery && _onDelivery
         ));
   }
 

@@ -17731,6 +17731,46 @@ class S {
     );
   }
 
+  /// `Can be paid on delivery`
+  String get finance_method_on_delivery_on {
+    return Intl.message(
+      'Can be paid on delivery',
+      name: 'finance_method_on_delivery_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not paid on delivery`
+  String get finance_method_on_delivery_off {
+    return Intl.message(
+      'Not paid on delivery',
+      name: 'finance_method_on_delivery_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Orders your riders or a delivery app bring can be paid through it when they arrive. Parcel shipments are always paid before they leave.`
+  String get finance_method_on_delivery_note {
+    return Intl.message(
+      'Orders your riders or a delivery app bring can be paid through it when they arrive. Parcel shipments are always paid before they leave.',
+      name: 'finance_method_on_delivery_note',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid on delivery`
+  String get finance_method_on_delivery_card {
+    return Intl.message(
+      'Paid on delivery',
+      name: 'finance_method_on_delivery_card',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Instructions`
   String get finance_method_instructions {
     return Intl.message(

@@ -504,13 +504,13 @@ Nothing here adds figures up: every total is the backend's answer.
 - `money_methods_service.dart` — `MoneyMethodsService`: accounts (`GET/POST/PUT/DELETE /money/methods`,
   delete is soft; every branch's) and rails (`GET /business/payments`); `usable`: the active branch's and the company's (what a payment may land in). `fields(code)` = a rail's requirement sheet;
   `options` = `banks`, `documents`, `networks`. `locked` status = a master's `sealed_locked` (M-45).
-- `money_method_model.dart` — `MoneyMethod` (account; `currency`, `fee`, `branch` null = the company's, `servesBranch`), `MoneyRail` (available rail; `currency`
+- `money_method_model.dart` — `MoneyMethod` (account; `currency`, `fee`, `onDelivery`, `branch` null = the company's, `servesBranch`), `MoneyRail` (available rail; `currency`
   it is fixed to, if any), `MoneyMethodField` (one requirement), `MoneyPaymentOption`, `MoneyFee` + `MoneyFeeType`
   (`none`/`fixed`/`percent`). Rail ≠ account ≠ settlement kind.
 - `account_mask.dart` — `AccountMask`, `AccountMaskFormatter`: spaces a number as typed; never
   touches what it cannot describe (email, alias, `+…`), never drops a digit. Backend re-applies it.
 - `money_method_request.dart` — create/update/remove. Account travels as `fields:` keyed by column;
-  blanks stripped on create, sent as `null` on update (= clear). `BRANCH` on create only with one, on update only when moved (`(id: null)` = the company). `CURRENCY`, `FEE_TYPE`, `FEE` (edit: `none` + `null` = remove).
+  blanks stripped on create, sent as `null` on update (= clear). `BRANCH` on create only with one, on update only when moved (`(id: null)` = the company). `CURRENCY`, `FEE_TYPE`, `FEE` (edit: `none` + `null` = remove). `ON_DELIVERY` on create only when on, on update only when changed.
 - `money_catalog_service.dart` — `MoneyCatalogService`: `GET /money/catalog`; settlement kinds read as `PosPaymentMethod`.
 - `money_currencies_service.dart` — `MoneyCurrenciesService` (+ status): `GET/PUT/DELETE /money/currencies` — main currency + exchange currencies. Every write rereads.
 - `money_currency_model.dart` — `MoneyCurrencies` (`main`, `exchanges`, `codes`), `MoneyExchange`, `MoneyRateMode` (`official`/`custom`). Non-positive rate = `null`.
