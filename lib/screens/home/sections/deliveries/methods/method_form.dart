@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
+import 'package:app/toolkit/deployment.dart';
 
 // PACKAGES
 import 'package:latlong2/latlong.dart';
@@ -15,6 +16,7 @@ import 'package:app/services/files/file_model.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
+import 'package:app/screens/modals/shared/settings/settings_block.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 
 import './state/rates_draft.dart';
@@ -51,6 +53,10 @@ import './widgets/vehicle_picker.dart';
 /// (preparation, the road trip in what they ride, the deliveries already
 /// going), since a time promised here held on a quiet day and not on a busy
 /// one; an older one is erased.
+///
+/// **Whether its rider takes the payment on arrival** is asked of own riders and an
+/// app's (cloud only, where the assistant sells): a parcel carrier is always paid
+/// before it ships, so it is not asked of one.
 ///
 /// It checks here what the backend would refuse, in the same terms (amounts
 /// with at most two decimals and no thousands separator, a time up to thirty
@@ -144,6 +150,12 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
   /// The picked mode: it decides which carriers are offered and whether one
   /// has to be named.
   late DeliveryMode? _mode = _option?.mode ?? widget.mode;
+
+  /// Whether its rider takes the payment when the order arrives.
+  late bool _onDelivery = _option?.onDelivery ?? true;
+
+  bool get _asksOnDelivery =>
+    _mode != null && _mode != DeliveryMode.courier && Deployment.mode == DeploymentMode.cloud;
 
   /// One carrier picker per mode, created the first time the mode is picked.
   ///
@@ -438,6 +450,17 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           )
         )
         ],
+        if (_asksOnDelivery) Padding(
+          padding: EdgeInsets.only(bottom: AppSize.spaceXS),
+          child: SettingsToggle(
+            value: _onDelivery,
+            label: _onDelivery
+              ? S.of(context).business_delivery_on_delivery_on
+              : S.of(context).business_delivery_on_delivery_off,
+            message: S.of(context).business_delivery_on_delivery_note,
+            toggle: () => setState(() => _onDelivery = !_onDelivery)
+          )
+        ),
         Input(
           title: _optional(context, S.of(context).business_delivery_option_notes),
           placeholder: S.of(context).business_delivery_option_notes_hint,
@@ -640,7 +663,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           vehicle: own ? _vehicle : null,
           rates: rates?.rates,
           reach: own ? reach : null,
-          minimum: minimum.value
+          minimum: minimum.value,
+          onDelivery: _asksOnDelivery ? _onDelivery : null
         )
       : createDeliveryOptionRequest(
           mode: mode,
@@ -655,7 +679,8 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
           vehicle: own ? _vehicle : null,
           rates: rates?.rates,
           reach: own ? reach : null,
-          minimum: minimum.value
+          minimum: minimum.value,
+          onDelivery: _asksOnDelivery ? _onDelivery : null
         ));
   }
 

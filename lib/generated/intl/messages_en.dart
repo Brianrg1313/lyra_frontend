@@ -1696,6 +1696,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "business_delivery_off_note": MessageLookupByLibrary.simpleMessage(
       "Delivery is turned off, so none of these is offered. They stay saved for when you turn it back on.",
     ),
+    "business_delivery_on_delivery_note": MessageLookupByLibrary.simpleMessage(
+      "Whether whoever delivers it takes the payment when the order arrives. Only the payment methods marked for it are offered then.",
+    ),
+    "business_delivery_on_delivery_off": MessageLookupByLibrary.simpleMessage(
+      "Paid before it goes out",
+    ),
+    "business_delivery_on_delivery_on": MessageLookupByLibrary.simpleMessage(
+      "Paid on delivery accepted",
+    ),
     "business_delivery_option_notes": MessageLookupByLibrary.simpleMessage(
       "Notes",
     ),

@@ -51,6 +51,9 @@ Map<String, dynamic> deliveryNotesRequest(String notes) =>
 ///
 /// [vehicle], [rates], [reach] and [minimum] are the company's own delivery's; the
 /// backend drops them for an app or a carrier, so they do not travel for one.
+///
+/// [onDelivery] (`ON_DELIVERY`, cloud only) is whether its rider takes the payment on
+/// arrival; it does not travel for a parcel courier, which never does.
 Map<String, dynamic> createDeliveryOptionRequest({
   required DeliveryMode mode,
   String provider = "",
@@ -67,7 +70,8 @@ Map<String, dynamic> createDeliveryOptionRequest({
   DeliveryVehicle? vehicle,
   DeliveryRates? rates,
   DeliveryReach? reach,
-  double? minimum
+  double? minimum,
+  bool? onDelivery
 }) {
   final local = (coverage ?? mode.reach) == DeliveryCoverage.local;
   final carrier = mode.namesCarrier ? provider.trim() : "";
@@ -89,7 +93,8 @@ Map<String, dynamic> createDeliveryOptionRequest({
     if (own) "VEHICLE": ?vehicle?.value,
     if (own) "RATES": ?rates?.request,
     if (own) "REACH": ?reach?.request,
-    if (own) "MINIMUM": ?minimum
+    if (own) "MINIMUM": ?minimum,
+    if (mode != DeliveryMode.courier) "ON_DELIVERY": ?onDelivery
   };
 }
 
@@ -120,7 +125,8 @@ Map<String, dynamic> updateDeliveryOptionRequest({
   DeliveryVehicle? vehicle,
   DeliveryRates? rates,
   DeliveryReach? reach,
-  double? minimum
+  double? minimum,
+  bool? onDelivery
 }) {
   final carrier = mode.namesCarrier ? provider.trim() : "";
   final moved = mode != from.mode || carrier != from.provider;
@@ -147,7 +153,8 @@ Map<String, dynamic> updateDeliveryOptionRequest({
     if (mode == DeliveryMode.own) "VEHICLE": vehicle?.value,
     if (mode == DeliveryMode.own) "RATES": rates?.request,
     if (mode == DeliveryMode.own) "REACH": reach?.request,
-    if (mode == DeliveryMode.own) "MINIMUM": minimum
+    if (mode == DeliveryMode.own) "MINIMUM": minimum,
+    if (mode != DeliveryMode.courier) "ON_DELIVERY": ?onDelivery
   };
 }
 

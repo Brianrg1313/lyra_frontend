@@ -17731,6 +17731,36 @@ class S {
     );
   }
 
+  /// `Paid on delivery accepted`
+  String get business_delivery_on_delivery_on {
+    return Intl.message(
+      'Paid on delivery accepted',
+      name: 'business_delivery_on_delivery_on',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid before it goes out`
+  String get business_delivery_on_delivery_off {
+    return Intl.message(
+      'Paid before it goes out',
+      name: 'business_delivery_on_delivery_off',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Whether whoever delivers it takes the payment when the order arrives. Only the payment methods marked for it are offered then.`
+  String get business_delivery_on_delivery_note {
+    return Intl.message(
+      'Whether whoever delivers it takes the payment when the order arrives. Only the payment methods marked for it are offered then.',
+      name: 'business_delivery_on_delivery_note',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Can be paid on delivery`
   String get finance_method_on_delivery_on {
     return Intl.message(

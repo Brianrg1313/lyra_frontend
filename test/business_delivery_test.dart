@@ -304,6 +304,25 @@ void main() {
     });
   });
 
+  // A parcel is paid before it ships; own riders and an app's take it on arrival unless the
+  // company said they do not, which was the rule before the switch existed.
+  group("paid on delivery", () {
+    test("is read on unless said, and never on a courier", () {
+      expect(DeliveryOption.from({"id": "a1", "mode": "own"})!.onDelivery, isTrue);
+      expect(DeliveryOption.from({"id": "a1", "mode": "platform", "on_delivery": false})!.onDelivery, isFalse);
+      expect(DeliveryOption.from({"id": "a1", "mode": "courier", "on_delivery": true})!.onDelivery, isFalse);
+    });
+
+    test("travels when said, and never for a courier", () {
+      expect(createDeliveryOptionRequest(mode: DeliveryMode.own, onDelivery: false)["ON_DELIVERY"], isFalse);
+      expect(createDeliveryOptionRequest(mode: DeliveryMode.own).containsKey("ON_DELIVERY"), isFalse);
+      expect(createDeliveryOptionRequest(mode: DeliveryMode.courier, onDelivery: true).containsKey("ON_DELIVERY"), isFalse);
+
+      const stored = DeliveryOption(id: "a1", mode: DeliveryMode.platform);
+      expect(updateDeliveryOptionRequest(from: stored, mode: DeliveryMode.platform, onDelivery: true)["ON_DELIVERY"], isTrue);
+    });
+  });
+
   group("the delivery time", () {
     test("a span is read in the largest whole unit", () {
       expect(DeliveryEtaUnit.fit([1440, 4320]), DeliveryEtaUnit.days);

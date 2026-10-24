@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/badges/badge_place.dart';
-import 'package:app/services/business/business_delivery_model.dart';
 import 'package:app/services/business/business_delivery_service.dart';
 import 'package:app/services/business/business_service.dart';
 import 'package:app/services/money/money_currencies_service.dart';
@@ -224,9 +223,9 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
       : service.update(context, request: request));
   }
 
-  /// Whether the company delivers through its own riders or a platform's: only those
-  /// orders can be paid when they arrive, a parcel courier is paid before it ships.
-  /// Cloud only, where the assistant takes orders; a read that fails reads no.
+  /// Whether the company delivers through its own riders or a platform's and one of them
+  /// takes the payment on arrival (`DeliveryOption.onDelivery`): a parcel courier is paid
+  /// before it ships. Cloud only, where the assistant takes orders; a read that fails reads no.
   Future<bool> _doorDelivery() async {
     if (Deployment.mode != DeploymentMode.cloud) return false;
 
@@ -237,7 +236,7 @@ class _FinanceMethodsTabState extends State<FinanceMethodsTab> {
 
     if (answer == null || answer.delivers == false) return false;
 
-    return answer.options.any((option) => option.mode != DeliveryMode.courier);
+    return answer.options.any((option) => option.onDelivery);
   }
 
   /// Turns an account off, after asking.

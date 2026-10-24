@@ -335,7 +335,8 @@ class DeliveryOption {
     this.vehicle,
     this.rates,
     this.reach,
-    this.minimum
+    this.minimum,
+    this.onDelivery = true
   });
 
   /// Public uuid: what an edit and a removal name it by.
@@ -402,6 +403,11 @@ class DeliveryOption {
   /// is none. A drawn area's own minimum outranks it where it has one.
   final double? minimum;
 
+  /// Whether whoever carries it takes the payment when the order arrives (`on_delivery`):
+  /// own riders and a platform's, on unless said; never a parcel courier, paid before it
+  /// ships. An account is offered at the door only when it is marked too.
+  final bool onDelivery;
+
   /// The carrier's brand: its catalog name, or its code when the catalog no
   /// longer knows it. Empty when the option names none.
   String get carrier => providerName.isNotEmpty ? providerName : provider;
@@ -444,7 +450,9 @@ class DeliveryOption {
       vehicle: DeliveryVehicle.from(row["vehicle"]),
       rates: DeliveryRates.from(row["rates"]),
       reach: DeliveryReach.from(row["reach"]),
-      minimum: _number(row["minimum"])
+      minimum: _number(row["minimum"]),
+      onDelivery: mode != DeliveryMode.courier &&
+        row["on_delivery"] != false && row["on_delivery"] != 0
     );
   }
 }
