@@ -18919,6 +18919,46 @@ class S {
     );
   }
 
+  /// `Collect {amount}`
+  String shipments_collect_amount(Object amount) {
+    return Intl.message(
+      'Collect $amount',
+      name: 'shipments_collect_amount',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Pays with {amount}`
+  String shipments_tender(Object amount) {
+    return Intl.message(
+      'Pays with $amount',
+      name: 'shipments_tender',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `change {amount}`
+  String shipments_tender_change(Object amount) {
+    return Intl.message(
+      'change $amount',
+      name: 'shipments_tender_change',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `no change`
+  String get shipments_tender_exact {
+    return Intl.message(
+      'no change',
+      name: 'shipments_tender_exact',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Location shared on the map`
   String get shipments_destination_pin {
     return Intl.message(
@@ -19372,6 +19412,241 @@ class S {
     return Intl.message(
       'No steps recorded yet.',
       name: 'shipment_history_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Collect on delivery`
+  String get shipment_collect {
+    return Intl.message(
+      'Collect on delivery',
+      name: 'shipment_collect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid in cash with`
+  String get shipment_tender {
+    return Intl.message(
+      'Paid in cash with',
+      name: 'shipment_tender',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting to be confirmed`
+  String get shipment_confirming {
+    return Intl.message(
+      'Waiting to be confirmed',
+      name: 'shipment_confirming',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The customer pays on arrival and nobody has confirmed the order yet. Its time window is held, but nobody can be assigned until it is confirmed.`
+  String get shipment_confirming_subtitle {
+    return Intl.message(
+      'The customer pays on arrival and nobody has confirmed the order yet. Its time window is held, but nobody can be assigned until it is confirmed.',
+      name: 'shipment_confirming_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm order`
+  String get shipment_confirm {
+    return Intl.message(
+      'Confirm order',
+      name: 'shipment_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Order confirmed: it can be assigned now`
+  String get shipment_confirmed {
+    return Intl.message(
+      'Order confirmed: it can be assigned now',
+      name: 'shipment_confirmed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New delivery`
+  String get new_shipment_title {
+    return Intl.message(
+      'New delivery',
+      name: 'new_shipment_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send a sale in process as a delivery. Then choose who carries it, when, and where it goes.`
+  String get new_shipment_subtitle {
+    return Intl.message(
+      'Send a sale in process as a delivery. Then choose who carries it, when, and where it goes.',
+      name: 'new_shipment_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sale`
+  String get new_shipment_sale {
+    return Intl.message('Sale', name: 'new_shipment_sale', desc: '', args: []);
+  }
+
+  /// `Search by code, number or customer`
+  String get new_shipment_sale_placeholder {
+    return Intl.message(
+      'Search by code, number or customer',
+      name: 'new_shipment_sale_placeholder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No sale matches`
+  String get new_shipment_sale_none {
+    return Intl.message(
+      'No sale matches',
+      name: 'new_shipment_sale_none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose the sale to deliver`
+  String get new_shipment_sale_error {
+    return Intl.message(
+      'Choose the sale to deliver',
+      name: 'new_shipment_sale_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It starts as`
+  String get new_shipment_start {
+    return Intl.message(
+      'It starts as',
+      name: 'new_shipment_start',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It waits on the board for someone to carry it.`
+  String get new_shipment_start_pending {
+    return Intl.message(
+      'It waits on the board for someone to carry it.',
+      name: 'new_shipment_start_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `It already left with whoever carries it.`
+  String get new_shipment_start_dispatched {
+    return Intl.message(
+      'It already left with whoever carries it.',
+      name: 'new_shipment_start_dispatched',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To assign`
+  String get new_shipment_pending {
+    return Intl.message(
+      'To assign',
+      name: 'new_shipment_pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On its way`
+  String get new_shipment_dispatched {
+    return Intl.message(
+      'On its way',
+      name: 'new_shipment_dispatched',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add delivery`
+  String get new_shipment_save {
+    return Intl.message(
+      'Add delivery',
+      name: 'new_shipment_save',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery added`
+  String get new_shipment_added {
+    return Intl.message(
+      'Delivery added',
+      name: 'new_shipment_added',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No sales to deliver`
+  String get new_shipment_empty {
+    return Intl.message(
+      'No sales to deliver',
+      name: 'new_shipment_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales of this branch in process that are not deliveries yet show up here.`
+  String get new_shipment_empty_subtitle {
+    return Intl.message(
+      'Sales of this branch in process that are not deliveries yet show up here.',
+      name: 'new_shipment_empty_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The sales could not be read`
+  String get new_shipment_error {
+    return Intl.message(
+      'The sales could not be read',
+      name: 'new_shipment_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check your connection and try again.`
+  String get new_shipment_error_subtitle {
+    return Intl.message(
+      'Check your connection and try again.',
+      name: 'new_shipment_error_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Try again`
+  String get new_shipment_retry {
+    return Intl.message(
+      'Try again',
+      name: 'new_shipment_retry',
       desc: '',
       args: [],
     );

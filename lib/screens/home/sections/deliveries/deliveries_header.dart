@@ -5,11 +5,13 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:core/button.dart';
 
 /// The section's action, floating over the map's top right corner: "New
-/// delivery" ("New delivery method" lives in the panel, over the areas).
-///
-/// "New delivery" has no endpoint behind it yet, so it answers coming soon.
+/// delivery", a sale of the branch sent as a delivery ("New delivery method"
+/// lives in the panel, over the areas). The desk mounts it only with the board
+/// and the permission to send sales.
 class DeliveriesHeader extends StatelessWidget {
-  const DeliveriesHeader({super.key});
+  const DeliveriesHeader({super.key, required this.onAdd});
+
+  final void Function() onAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class DeliveriesHeader extends StatelessWidget {
       width: null,
       title: S.of(context).deliveries_create,
       leftIcon: Icon(CI.plus, color: scheme.button.text),
-      action: () => FloatFlag.of(context).message(S.of(context).coming_soon)
+      action: onAdd
     );
   }
 }

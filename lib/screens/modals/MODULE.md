@@ -197,13 +197,14 @@ through `Navigator.pop(context, value)`.
 ### `deliveries/` (from the deliveries desk)
 - `shipment/_shipment.dart` — `showShipment(context, service:, id:)`, `ShipmentModal`: one shipment of the board, following
   the desk's `ShipmentsService` row (gone = left the board); moves and the form only with `shipments.dispatch`.
-- `shipment/shipment_moves.dart` — `ShipmentMoves`: a button per state of the catalog's `next` (assigned only with a carrier).
+- `shipment/shipment_moves.dart` — `ShipmentMoves`: a button per state of the catalog's `next` (assigned only with a carrier); `ShipmentConfirm`: an order paid at the door waiting to be confirmed, "Confirm order" with `shipments.dispatch` and a chat.
+- `new_shipment/_new_shipment.dart` — `showNewShipment(context, service:)` → `Future<Shipment?>`, `NewShipmentModal`: a sale of the branch in process (`ShipmentsService.candidates`) sent as a delivery, to assign or on its way, with a note; writes through the desk's service.
 - `shipment/shipment_form.dart` — `ShipmentForm`: carrier (`showSelectMenu`: none, the branch's riders, the country's
-  carriers + reference), window (the branch's franjas with room), cost, note, receiver; address + point only for a sale
+  carriers + reference), window (the branch's franjas with room), cost, note, receiver (a confirming one: window, note and address only); address + point only for a sale
   without a point of its own. Drafts follow the row until edited; one save, `editShipmentRequest`.
 - `shipment/shipment_facts.dart` — `ShipmentHeading` (number, state, untouched note, customer, opens the chat on the
   messages desk), `ShipmentCarrying` (read only), `ShipmentDestinationBlock` (address, area, point, opens `maps`),
-  `ShipmentMoney` (total, collect on delivery, fee, cost), `ShipmentHistory`.
+  `ShipmentMoney` (total, what the rider collects, the cash and its change, fee, cost), `ShipmentHistory`.
 - `shipping_settings/_shipping_settings.dart` — `showShippingSettings(context, service:)`, `ShippingSettingsModal`: the
   branch worked in's schedule; **owns** `ShippingSettingsService` and `OpeningHoursService`; a week or closure change
   re-measures the franjas.

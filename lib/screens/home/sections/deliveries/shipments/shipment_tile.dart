@@ -78,11 +78,15 @@ class ShipmentTile extends StatelessWidget {
             [
               window == null ? s.shipments_window_none : shipmentWindowLabel(context, window),
               shipmentCarrierLabel(context, shipment.carrier),
-              if (!shipment.charged) s.shipments_collect
+              if (!shipment.charged) shipmentCollectLabel(context, shipment.collect, shipment.currency)
             ].join(" · "),
             ellipsis: true,
             color: window == null ? scheme.text.secondary : scheme.text.primary
-          )
+          ),
+          if (shipment.tender case final ShipmentTender tender) ...[
+            SizedBox(height: AppSize.gap * 0.5),
+            TextSmall(shipmentTenderLabel(context, tender), ellipsis: true, color: scheme.text.secondary)
+          ]
         ])
       )
     );

@@ -6,6 +6,11 @@ import 'package:app/services/catalog/catalog_table.dart';
 /// only knows the codes, so a row in a state this app has never seen is dropped
 /// rather than drawn as a guess.
 enum ShipmentState {
+  /// An order the customer pays at the door that nobody of the company has
+  /// confirmed yet: on the board with its window held, but it takes no carrier
+  /// and no move (`409 shipment_unconfirmed`) until it is confirmed from its
+  /// conversation, which makes it [unassigned].
+  confirming("confirming"),
   unassigned("unassigned"),
   assigned("assigned"),
   picked("picked"),
@@ -181,6 +186,65 @@ class ShipmentWindow {
   int get hashCode => Object.hash(from, to);
 }
 
+/// What the rider takes at the door of an order paid when it arrives: the
+/// payment account the customer chose, its kind (`cash`, `mobile`…; null
+/// while the order waits to be confirmed) and the amount, in the sale's
+/// currency.
+class ShipmentCollect {
+  const ShipmentCollect({this.method = "", this.kind, this.amount, this.currency = ""});
+
+  final String method;
+  final String? kind;
+  final double? amount;
+  final String currency;
+
+  static ShipmentCollect? read(dynamic data) {
+    if (data is! Map) return null;
+
+    final kind = _text(data["kind"]);
+
+    return ShipmentCollect(
+      method: _text(data["method"]),
+      kind: kind.isEmpty ? null : kind,
+      amount: _double(data["amount"]),
+      currency: _text(data["currency"]).toUpperCase()
+    );
+  }
+}
+
+/// The bills a cash order is paid with: [amount] in that account's
+/// [currency], what was owed then, and the [change] the rider takes along.
+class ShipmentTender {
+  const ShipmentTender({
+    this.method = "",
+    required this.amount,
+    this.currency = "",
+    this.owed = 0,
+    this.change = 0
+  });
+
+  final String method;
+  final double amount;
+  final String currency;
+  final double owed;
+  final double change;
+
+  static ShipmentTender? read(dynamic data) {
+    if (data is! Map) return null;
+
+    final amount = _double(data["amount"]);
+    if (amount == null) return null;
+
+    return ShipmentTender(
+      method: _text(data["method"]),
+      amount: amount,
+      currency: _text(data["currency"]).toUpperCase(),
+      owed: _double(data["owed"]) ?? 0,
+      change: _double(data["change"]) ?? 0
+    );
+  }
+}
+
 /// One step of a shipment's history.
 class ShipmentStep {
   const ShipmentStep({required this.state, required this.label, this.at});
@@ -206,6 +270,8 @@ class Shipment {
     this.label = "",
     this.attention = false,
     this.charged = true,
+    this.collect,
+    this.tender,
     this.customer = "",
     this.contact = "",
     this.chat,
@@ -242,6 +308,12 @@ class Shipment {
   /// Whether the sale is paid (`charged`), or is charged on delivery (`open`).
   final bool charged;
 
+  /// What the rider collects on an order paid when it arrives, else null.
+  final ShipmentCollect? collect;
+
+  /// The bills a cash order is paid with and its change, else null.
+  final ShipmentTender? tender;
+
   final String customer;
   final String contact;
 
@@ -270,6 +342,9 @@ class Shipment {
   /// What it is called on screen: the internal number, else the ticket's code.
   String get name => number.isNotEmpty ? number : ticket;
 
+  /// Waiting for somebody to confirm an order paid at the door.
+  bool get confirming => state == ShipmentState.confirming;
+
   /// The row in an answer or an event, or null when it can't be one (no id, a
   /// state this app doesn't know). `state: null` in an event is a shipment that
   /// left the board, read by [leftBoard].
@@ -289,6 +364,8 @@ class Shipment {
       label: _text(data["label"]),
       attention: data["attention"] == true,
       charged: _text(data["sale"]) != "open",
+      collect: ShipmentCollect.read(data["collect"]),
+      tender: ShipmentTender.read(data["tender"]),
       customer: _text(data["customer"]),
       contact: _text(data["contact"]),
       chat: _text(data["chat"]).isEmpty ? null : _text(data["chat"]),

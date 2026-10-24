@@ -8,6 +8,9 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 
+// WIDGETS
+import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
+
 /// How a shipment is written on the desk and in its panel. The names of the
 /// states are the backend's (its catalog, else the row's own label): a state
 /// added there shows up here without a new version of the app.
@@ -22,7 +25,7 @@ Color shipmentStateColor(BuildContext context, ShipmentState state) {
   final scheme = ThemeColor.of(context);
 
   return switch (state) {
-    ShipmentState.unassigned => scheme.chart.warning,
+    ShipmentState.confirming || ShipmentState.unassigned => scheme.chart.warning,
     ShipmentState.assigned => scheme.text.primary,
     ShipmentState.picked || ShipmentState.enRoute => scheme.primary,
     ShipmentState.delivered => scheme.chart.good,
@@ -74,6 +77,33 @@ String shipmentDestinationLabel(BuildContext context, ShipmentDestination destin
   return destination.hasPoint
     ? S.of(context).shipments_destination_pin
     : S.of(context).shipments_destination_none;
+}
+
+/// What the rider takes at the door: `Collect 55.00 USD · Cash (USD)`, the
+/// amount or the account alone when only one is known, else "Collect on
+/// delivery".
+String shipmentCollectLabel(BuildContext context, ShipmentCollect? collect, String currency) {
+  final s = S.of(context);
+  final amount = collect?.amount;
+
+  if (collect == null || (amount == null && collect.method.isEmpty)) return s.shipments_collect;
+
+  final what = amount == null
+    ? s.shipments_collect
+    : s.shipments_collect_amount(deliveryAmount(amount, collect.currency.isNotEmpty ? collect.currency : currency));
+
+  return collect.method.isEmpty ? what : "$what · ${collect.method}";
+}
+
+/// The bills of a cash order and the change to take: `Pays with 100.00 USD ·
+/// change 10.00 USD`.
+String shipmentTenderLabel(BuildContext context, ShipmentTender tender) {
+  final s = S.of(context);
+  final paid = s.shipments_tender(deliveryAmount(tender.amount, tender.currency));
+
+  return tender.change > 0
+    ? "$paid · ${s.shipments_tender_change(deliveryAmount(tender.change, tender.currency))}"
+    : "$paid · ${s.shipments_tender_exact}";
 }
 
 /// Whether [query] (trimmed, lower case) is in what a person would search a

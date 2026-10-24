@@ -8,7 +8,9 @@ import 'package:lyra_protocol/lyra_protocol.dart' show Grant;
 // SERVICES
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
+import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/shipments/shipment_model.dart';
+import 'package:app/services/shipments/shipment_request.dart';
 import 'package:app/toolkit/api.dart';
 import 'package:app/toolkit/deployment.dart';
 
@@ -61,6 +63,10 @@ class ShipmentsService extends ChangeNotifier {
   Grant _grant = Grant.none();
   bool get canDispatch => _grant.can("shipments.dispatch");
   bool get canConfigure => _grant.can("shipments.configure");
+
+  /// Whether the person may send a sale as a delivery (`PUT /sales/fulfillment`
+  /// asks `sales.fulfill`, the register's permission, not the board's).
+  bool get canAdd => _grant.can("sales.fulfill");
 
   /// Whether the person may change the branch's week and closed days
   /// (`appointments.configure`), which is where the franjas come from.
@@ -138,11 +144,69 @@ class ShipmentsService extends ChangeNotifier {
     }
   }
 
-  Future<void> _read() async {
+  /// The branch's sales in process that can still be sent as a delivery
+  /// (`SaleModel.canShip`): one page of the ventas board's largest, as the
+  /// work list it is (newest movement first).
+  Future<List<SaleModel>> candidates() async {
+    final page = SalesPage.fromResponse(await api.get(
+      path: "/sales/",
+      version: "v1",
+      query: {"SECTION": SaleSection.process.value, "PAGE": 1, "SIZE": candidatesSize}
+    ));
+
+    return [for (final sale in page.sales) if (sale.canShip && byId(sale.id) == null) sale];
+  }
+
+  /// The backend's ceiling of a ventas page.
+  static const int candidatesSize = 100;
+
+  /// Sends [sale] as a delivery (`newShipmentRequest`) and rereads the board,
+  /// since the write answers the sale and not its shipment; the shipment is
+  /// named by the sale's id. Throws the backend's refusal.
+  Future<Shipment?> add(String sale, {bool dispatched = false, String note = ""}) async {
+    if (_busy != null) return null;
+
+    _busy = sale;
+    _notify();
+
+    try {
+      await api.put(path: "/sales/fulfillment/", version: "v1", data: newShipmentRequest(sale, dispatched: dispatched, note: note));
+      await _read(quiet: true);
+
+      return byId(sale);
+    } finally {
+      _busy = null;
+      _notify();
+    }
+  }
+
+  /// Confirms [shipment], an order paid at the door, through its conversation
+  /// (`confirmShipmentRequest`), then rereads it: confirmed, it is unassigned
+  /// and takes a carrier. Throws the backend's refusal.
+  Future<void> confirm(Shipment shipment) async {
+    final chat = shipment.chat;
+    if (_busy != null || chat == null) return;
+
+    _busy = shipment.id;
+    _notify();
+
+    try {
+      await api.put(path: "/chats/stage/", version: "v1", data: confirmShipmentRequest(chat));
+      await _read(quiet: true);
+    } finally {
+      _busy = null;
+      _notify();
+    }
+  }
+
+  /// [quiet]: the rows on screen stay while it reads (a reread after a write).
+  Future<void> _read({bool quiet = false}) async {
     final read = ++_reads;
 
-    _status = ShipmentsStatus.loading;
-    _notify();
+    if (!quiet) {
+      _status = ShipmentsStatus.loading;
+      _notify();
+    }
 
     try {
       final data = await api.get(path: "/shipments/", version: "v1");
@@ -155,7 +219,8 @@ class ShipmentsService extends ChangeNotifier {
       if (read != _reads) return;
       if (kDebugMode) print("loadShipments failed: $error");
 
-      _status = ShipmentsStatus.error;
+      // A quiet reread that failed keeps the rows it had; the event still places the new one.
+      if (!quiet) _status = ShipmentsStatus.error;
     }
 
     _notify();

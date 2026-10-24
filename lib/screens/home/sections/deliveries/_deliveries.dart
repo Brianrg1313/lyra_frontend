@@ -29,6 +29,7 @@ import 'package:app/screens/home/sections/business/branches/branch_markers.dart'
 import 'package:app/screens/home/sections/business/branches/branches_focus.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/area/widgets/area_layers.dart';
+import 'package:app/screens/modals/deliveries/new_shipment/_new_shipment.dart';
 import 'package:app/screens/modals/deliveries/shipment/_shipment.dart';
 
 import './deliveries_header.dart';
@@ -341,6 +342,20 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     await showShipment(context, service: _shipments, id: shipment.id);
   }
 
+  /// "New delivery": a sale sent as a delivery lands on the board, which comes
+  /// to the front, and its panel opens for who carries it and when — unless
+  /// showing the board moves the desk to another branch (it remounts).
+  Future<void> _addShipment() async {
+    final shipment = await showNewShipment(context, service: _shipments);
+    if (shipment == null || !mounted) return;
+
+    final branch = _branch;
+    final stays = branch == null || branch == BranchService().activeId;
+
+    _show(DeliveriesView.shipments);
+    if (stays && mounted) await _openShipment(shipment);
+  }
+
   /// Starts a new area, unless the list is not there to add it to, or full.
   void _start(AreaMethod method) {
     final areas = _areas.areas;
@@ -449,10 +464,15 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
                 company: context.read<BusinessService>().activeId == null ? "" : context.read<BusinessService>().active.name
               ))
             ),
-            Positioned(
+            if (_board) Positioned(
               top: AppSize.spaceS,
               right: AppSize.spaceS,
-              child: const DeliveriesHeader()
+              child: ListenableBuilder(
+                listenable: _shipments,
+                builder: (context, _) => _shipments.canAdd
+                  ? DeliveriesHeader(onAdd: _addShipment)
+                  : const SizedBox.shrink()
+              )
             )
           ]
         ))

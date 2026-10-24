@@ -181,6 +181,18 @@ class ShipmentMoney extends StatelessWidget {
             color: shipment.charged ? null : scheme.chart.warning
           )
         ),
+        if (!shipment.charged && shipment.collect != null) SettingsValue(
+          icon: CI.wallet,
+          label: s.shipment_collect,
+          value: shipmentCollectLabel(context, shipment.collect, shipment.currency),
+          empty: s.shipment_none
+        ),
+        if (shipment.tender case final ShipmentTender tender) SettingsValue(
+          icon: CI.wallet,
+          label: s.shipment_tender,
+          value: shipmentTenderLabel(context, tender),
+          empty: s.shipment_none
+        ),
         SettingsValue(icon: CI.delivery_square, label: s.shipment_fee, value: amount(shipment.fee), empty: s.shipment_none),
         SettingsValue(icon: CI.receipt, label: s.shipment_cost, value: amount(shipment.cost), empty: s.shipment_none)
       ])

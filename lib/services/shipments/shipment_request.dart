@@ -35,6 +35,22 @@ class CarrierChoice {
   int get hashCode => Object.hash(employment, provider, reference);
 }
 
+/// `PUT /sales/fulfillment` sending sale [sale] as a delivery: still to
+/// assign (`pending`, assigned once somebody carries it) or already on its
+/// way ([dispatched]). The board's own write starts from a shipment, so a sale
+/// becomes one through the handover; a blank [note] does not travel.
+Map<String, dynamic> newShipmentRequest(String sale, {bool dispatched = false, String note = ""}) => {
+  "ID": sale,
+  "MODE": "delivery",
+  "STATE": dispatched ? "dispatched" : "pending",
+  if (note.trim().isNotEmpty) "NOTE": note.trim()
+};
+
+/// `PUT /chats/stage` confirming the order of conversation [chat] that the
+/// customer pays at the door (`collecting`): its shipment goes from
+/// confirming to unassigned. Nothing is charged until it is delivered.
+Map<String, dynamic> confirmShipmentRequest(String chat) => {"ID": chat, "STAGE": "collecting"};
+
 /// `PUT /shipments` moving [shipment] to [state] (one of its `next`).
 Map<String, dynamic> shipmentStateRequest(Shipment shipment, ShipmentState state, {String? receiver}) => {
   "ID": shipment.id,

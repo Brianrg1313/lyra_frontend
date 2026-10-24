@@ -256,6 +256,17 @@ class SaleModel {
   bool get canFulfil =>
     source == SaleSource.ticket && state.isNotEmpty && state != delivered;
 
+  /// Whether it can be sent as a delivery (`MODE: delivery`) from the
+  /// deliveries desk: a charged sale the customer does not have yet, or the
+  /// open ticket of a channel sale (paid when it arrives) — the backend sends
+  /// no other open one, a till's cart being at the counter. One already
+  /// delivered by courier is on the board.
+  bool get canShip => mode != "delivery" && switch (source) {
+    SaleSource.ticket => state != delivered,
+    SaleSource.invoice => chat.isNotEmpty,
+    SaleSource.chat => false
+  };
+
   /// **Whether somebody can approve this sale from here.**
   ///
   /// Only a sale standing at [verifying]: the customer says the money is sent

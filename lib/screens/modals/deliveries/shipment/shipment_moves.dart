@@ -7,6 +7,7 @@ import 'package:app/services/shipments/shipment_request.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 
 // WIDGETS
+import 'package:core/button.dart';
 import 'package:app/screens/home/sections/deliveries/shipments/shipment_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
@@ -69,6 +70,49 @@ class ShipmentMoves extends StatelessWidget {
   Future<void> _move(BuildContext context, ShipmentState state) async {
     try {
       await service.move(shipmentStateRequest(shipment, state));
+    } catch (error) {
+      FloatFlag.showFromError(error);
+    }
+  }
+}
+
+/// **An order paid at the door that nobody confirmed yet**: it is on the board
+/// for whoever prepares it, but no carrier takes it and it does not move until
+/// a person confirms it through its conversation (`collecting`), which makes it
+/// unassigned. Without `shipments.dispatch`, or with no conversation to confirm
+/// it in, it only says so.
+class ShipmentConfirm extends StatelessWidget {
+  const ShipmentConfirm({super.key, required this.shipment, required this.service});
+
+  final Shipment shipment;
+  final ShipmentsService service;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final busy = service.busy != null;
+
+    return SettingsBlock(
+      title: s.shipment_confirming,
+      subtitle: s.shipment_confirming_subtitle,
+      child: service.canDispatch && shipment.chat != null
+        ? Button(
+            title: s.shipment_confirm,
+            action: () {
+              if (!busy) _confirm(context);
+            }
+          )
+        : const SizedBox.shrink()
+    );
+  }
+
+  Future<void> _confirm(BuildContext context) async {
+    final s = S.of(context);
+    final flag = FloatFlag.of(context);
+
+    try {
+      await service.confirm(shipment);
+      flag.message(s.shipment_confirmed);
     } catch (error) {
       FloatFlag.showFromError(error);
     }

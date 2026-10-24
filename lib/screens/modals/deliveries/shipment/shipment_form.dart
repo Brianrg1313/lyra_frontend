@@ -27,6 +27,10 @@ import 'package:app/screens/modals/shared/settings/settings_block.dart';
 ///
 /// The drafts follow the row while nothing is edited, so a window the
 /// customer chose through the bot shows up in an open form.
+///
+/// An order waiting to be confirmed takes only its window, note and address
+/// (the backend refuses the rest, `shipment_unconfirmed`): no carrier, cost or
+/// receiver is offered until it is confirmed.
 class ShipmentForm extends StatefulWidget {
   const ShipmentForm({super.key, required this.shipment, required this.service});
 
@@ -297,22 +301,25 @@ class _ShipmentFormState extends State<ShipmentForm> {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
     final busy = widget.service.busy != null;
+    final confirming = _shipment.confirming;
 
     return SettingsBlock(
       title: s.shipment_carrying,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        TextSmall(s.shipment_carrier, color: scheme.text.secondary),
-        SizedBox(height: AppSize.gap * 0.5),
-        SettingsSelect(label: _carrierLabel(), icon: CI.delivery, open: _pickCarrier),
-        if (_carrier.provider != null) ...[
-          SizedBox(height: AppSize.gap),
-          Input(
-            title: s.shipment_reference,
-            placeholder: s.shipment_reference_hint,
-            controller: _reference
-          )
+        if (!confirming) ...[
+          TextSmall(s.shipment_carrier, color: scheme.text.secondary),
+          SizedBox(height: AppSize.gap * 0.5),
+          SettingsSelect(label: _carrierLabel(), icon: CI.delivery, open: _pickCarrier),
+          if (_carrier.provider != null) ...[
+            SizedBox(height: AppSize.gap),
+            Input(
+              title: s.shipment_reference,
+              placeholder: s.shipment_reference_hint,
+              controller: _reference
+            )
+          ],
+          SizedBox(height: AppSize.spaceS)
         ],
-        SizedBox(height: AppSize.spaceS),
         TextSmall(s.shipment_window, color: scheme.text.secondary),
         SizedBox(height: AppSize.gap * 0.5),
         SettingsSelect(
@@ -321,14 +328,14 @@ class _ShipmentFormState extends State<ShipmentForm> {
           open: _pickWindow
         ),
         SizedBox(height: AppSize.spaceS),
-        Input(
+        if (!confirming) Input(
           title: s.shipment_cost,
           placeholder: s.shipment_cost_hint,
           controller: _cost,
           leftIcon: Icon(CI.receipt, color: scheme.icon)
         ),
         Input(title: s.shipment_note, placeholder: s.shipment_note_hint, controller: _note, lines: 3),
-        Input(
+        if (!confirming) Input(
           title: s.shipment_receiver,
           placeholder: s.shipment_receiver_hint,
           controller: _receiver,

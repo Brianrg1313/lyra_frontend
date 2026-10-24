@@ -61,6 +61,7 @@ class ShipmentModal extends StatelessWidget {
         children: [
           ShipmentHeading(shipment: shipment, service: service),
           SizedBox(height: AppSize.spaceS),
+          if (shipment.confirming) ShipmentConfirm(shipment: shipment, service: service),
           if (service.canDispatch && service.nextOf(shipment).isNotEmpty)
             ShipmentMoves(shipment: shipment, service: service),
           if (service.canDispatch)

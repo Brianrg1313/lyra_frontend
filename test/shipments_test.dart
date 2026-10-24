@@ -8,6 +8,7 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/appointments/opening_hours_model.dart';
 import 'package:app/services/appointments/opening_hours_request.dart';
+import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipment_request.dart';
 import 'package:app/services/shipments/shipments_service.dart';
@@ -93,6 +94,23 @@ void main() {
       expect(Shipment.leftBoard(_row("9")), isNull);
     });
 
+    test("an order paid at the door reads as confirming, with what the rider collects and the change", () {
+      final row = Shipment.read({
+        ..._row("4", state: "confirming", sale: "open"),
+        "collect": {"method": "Efectivo (USD)", "kind": null, "amount": 55, "currency": "usd"},
+        "tender": {"method": "Efectivo (USD)", "amount": 100, "currency": "USD", "owed": 90, "change": 10}
+      })!;
+
+      expect(row.state, ShipmentState.confirming);
+      expect(row.confirming, isTrue);
+      expect(row.collect!.amount, 55);
+      expect(row.collect!.kind, isNull);
+      expect(row.collect!.currency, "USD");
+      expect(row.tender!.change, 10);
+      expect(Shipment.read(_row("5"))!.collect, isNull);
+      expect(Shipment.read({..._row("6"), "tender": {"amount": null}})!.tender, isNull);
+    });
+
     test("the states' catalog says where each may go", () {
       final catalog = ShipmentStateInfo.catalog({"states": {
         "keys": ["state", "name", "attention", "next"],
@@ -163,6 +181,27 @@ void main() {
       });
     });
 
+    test("a sale becomes a delivery to assign or on its way; a blank note does not travel", () {
+      expect(newShipmentRequest("s1", note: " "), {"ID": "s1", "MODE": "delivery", "STATE": "pending"});
+      expect(
+        newShipmentRequest("s1", dispatched: true, note: "Gate 2"),
+        {"ID": "s1", "MODE": "delivery", "STATE": "dispatched", "NOTE": "Gate 2"}
+      );
+    });
+
+    test("confirming an order paid at the door is its conversation's collecting", () {
+      expect(confirmShipmentRequest("chat-4"), {"ID": "chat-4", "STAGE": "collecting"});
+    });
+
+    test("a charged sale not handed over, or a channel order still open, can be sent; nothing else", () {
+      expect(const SaleModel(id: "1", source: SaleSource.ticket, mode: "pickup", state: "pending").canShip, isTrue);
+      expect(const SaleModel(id: "2", source: SaleSource.ticket, mode: "delivery", state: "pending").canShip, isFalse);
+      expect(const SaleModel(id: "3", source: SaleSource.ticket, mode: "immediate", state: "done").canShip, isFalse);
+      expect(const SaleModel(id: "4", source: SaleSource.invoice, chat: "chat-4").canShip, isTrue);
+      expect(const SaleModel(id: "5", source: SaleSource.invoice).canShip, isFalse);
+      expect(const SaleModel(id: "6", source: SaleSource.chat, chat: "chat-6").canShip, isFalse);
+    });
+
     test("a move names the state's code", () {
       expect(shipmentStateRequest(shipment, ShipmentState.enRoute), {"ID": "1", "STATE": "en_route"});
     });
@@ -219,6 +258,7 @@ void main() {
       expect(service.canDispatch, isTrue);
       expect(service.canConfigure, isFalse);
       expect(service.canSchedule, isTrue);
+      expect(service.canAdd, isFalse);
       service.dispose();
     });
   });

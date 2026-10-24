@@ -170,17 +170,17 @@ Reached through `LanService.server` (the `lan/` services own it).
 
 ## shipments/ — a branch's deliveries board (`envios-frontend.md`; cloud only, `api` direct; owned by the deliveries desk)
 
-- `shipment_model.dart` — `ShipmentState` (codes, `en_route` = `enRoute`; `going`), `ShipmentStateInfo` (`catalog`: name,
+- `shipment_model.dart` — `ShipmentState` (codes, `en_route` = `enRoute`, `confirming`: paid at the door, unconfirmed — no carrier, no move; `going`), `ShipmentStateInfo` (`catalog`: name,
   attention, `next`), `Shipment` (`read`, `list` of the compressed board, `leftBoard`: an event with `state: null`; id = the
-  sale's, `name` = number else ticket, `charged`, `stored`), `ShipmentCarrier`, `ShipmentDestination`, `ShipmentWindow`,
+  sale's, `name` = number else ticket, `charged`, `collect`, `tender`, `stored`), `ShipmentCollect` (what the rider takes at the door), `ShipmentTender` (a cash order's bills and change), `ShipmentCarrier`, `ShipmentDestination`, `ShipmentWindow`,
   `ShipmentStep`, `ShippingSettings` (+ the backend's ranges), `DeliverySlot` (a franja: moments, day and hours as said,
   taken, load, seats), `DeliveryOffer` (what the bot offers: `said` hours), `ShipmentCarriers` (riders by job, providers).
-- `shipment_request.dart` — `CarrierChoice` (rider / provider + reference / none), `shipmentStateRequest`,
+- `shipment_request.dart` — `CarrierChoice` (rider / provider + reference / none), `newShipmentRequest` (`PUT /sales/fulfillment`, `MODE: delivery`, pending / dispatched), `confirmShipmentRequest` (`PUT /chats/stage`, `collecting`), `shipmentStateRequest`,
   `editShipmentRequest` (**only what changed**; empty = `""` takes it off; an address travels with the point it keeps),
   `shippingSettingsRequest` (only what changed; no limit = `""`).
 - `shipments_service.dart` — `ShipmentsService` (+ status): the board of the
   `branch_id` header's branch (still going; a delivered one leaves it), the states' catalog, the person's grant (`canDispatch`, `canConfigure`, `canSchedule` =
-  `appointments.configure`), `loadCarriers` (once), `windows`, `move` (answers the row, placed); `shipment/changed`
+  `appointments.configure`, `canAdd` = `sales.fulfill`), `loadCarriers` (once), `windows`, `move` (answers the row, placed), `candidates` (one ventas page of `process`, `SaleModel.canShip`), `add` (a sale sent as a delivery, then a quiet reread), `confirm` (an order paid at the door, through its chat, then a quiet reread); `shipment/changed`
   replaces, drops (`state: null`, delivered) or places in window order; `onRestored` rereads. Seams `seed`, `receiveEvent`.
 - `shipping_settings_service.dart` — `ShippingSettingsService` (+ status): `/shipments/settings/`, `measure` (every franja
   with `ALL`, and `/offer/`; a refusal kept in `slotsError`), `save` (only what changed, then measures). Owned by its panel.
@@ -561,7 +561,7 @@ Rows are measured on read from their owning collection (invoice, conversation, t
   `of(section)`, `stageName`/`channelName` fall back to the code.
 - `sale_model.dart` — `SaleModel` (`number`: the branch's internal `A-000123` of a completed sale, empty before; also on `SaleDetailModel` and `PosInvoice`), `SalesPage`, `SaleSource`, `SaleSection`, `SaleLevel`,
   `saleAmount`/`saleCount`/`saleDate`. **`saleAmount` returns `null`, not `0`.** Action rules:
-  `canFulfil`, `canApprove` (at `verifying` **and** has a `conversation`). `unseen`: a channel sale this person
+  `canFulfil`, `canApprove` (at `verifying` **and** has a `conversation`), `canShip` (sendable as a delivery: a charged sale not handed over, or a channel order's open ticket; not already one). `unseen`: a channel sale this person
   has not opened (kept by `moved`, cleared by `opened`).
 - `sale_detail_service.dart` — `SaleDetailService`: `GET /sales/detail/$reference` (ticket code,
   row id or chat all resolve). **Created per opened panel**, never cached. `missing` =
