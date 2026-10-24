@@ -15,6 +15,7 @@ import 'package:core/button.dart';
 import 'package:app/screens/home/sections/_section/page_switcher.dart';
 import 'package:app/screens/home/sections/_section/section_message.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
+import 'package:app/screens/home/sections/deliveries/widgets/map_panel.dart';
 
 import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
 import './method_form.dart';
@@ -113,15 +114,16 @@ class _MethodFlowPanelState extends State<MethodFlowPanel> {
       children: [
         Row(children: [
           if (step != MethodStep.areas) ...[
-            FocusableWidget(
+            // The app's back arrow (an employee's page, a channel's form):
+            // same box, same icon size.
+            FeedbackButton(
               action: _flow.back,
+              width: AppSize.action,
+              height: AppSize.action,
               message: S.of(context).deliveries_method_back,
-              child: Padding(
-                padding: EdgeInsets.all(AppSize.gap),
-                child: Icon(CI.arrow_left, size: AppSize.text, color: scheme.icon)
-              )
+              child: Center(child: Icon(CI.arrow_left, color: scheme.text.primary))
             ),
-            SizedBox(width: AppSize.gap * 0.5)
+            SizedBox(width: AppSize.gap)
           ],
           if (step == MethodStep.form && mode != null) ...[
             Icon(mode.icon, size: AppSize.text, color: scheme.primary),
@@ -162,8 +164,10 @@ class _MethodFlowPanelState extends State<MethodFlowPanel> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(child: widget.areas(context)),
-                SizedBox(height: AppSize.spaceS),
-                Button(title: S.of(context).deliveries_method_done, action: widget.onDone)
+                Padding(
+                  padding: EdgeInsets.only(bottom: MapPanel.inset),
+                  child: Button(title: S.of(context).deliveries_method_done, action: widget.onDone)
+                )
               ]
             )
           }
@@ -189,6 +193,7 @@ class _MethodFlowPanelState extends State<MethodFlowPanel> {
 
     return ScrollableWidget(
       showBar: false,
+      padding: EdgeInsets.only(bottom: MapPanel.inset),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final mode in catalog?.modes ?? DeliveryMode.values) Padding(

@@ -18,6 +18,7 @@ import 'package:core/button.dart';
 import 'package:core/form.dart';
 import 'package:app/screens/home/sections/deliveries/area/state/area_editor.dart';
 import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
+import 'package:app/screens/home/sections/deliveries/widgets/map_panel.dart';
 
 import './area_tool_chip.dart';
 
@@ -220,7 +221,7 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
         SizedBox(height: AppSize.spaceS),
         // Two halves of one height; only Save wears the button's fill, so the
         // way out never reads as a second way to save.
-        Row(children: [
+        Padding(padding: EdgeInsets.only(bottom: MapPanel.inset), child: Row(children: [
           Expanded(child: FeedbackButton(
             action: _editor.close,
             height: AppSize.action,
@@ -239,7 +240,7 @@ class _AreaEditorPanelState extends State<AreaEditorPanel> {
             loading: _saving,
             action: _save
           ))
-        ])
+        ]))
       ]
     );
   }

@@ -6,6 +6,7 @@ import 'package:app/services/business/delivery_area_model.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
+import 'package:app/screens/home/sections/deliveries/widgets/map_panel.dart';
 
 import './area_tile.dart';
 
@@ -71,6 +72,7 @@ class AreaList extends StatelessWidget {
 
     return ScrollableWidget(
       showBar: false,
+      padding: EdgeInsets.only(bottom: MapPanel.inset),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (add != null) ...[

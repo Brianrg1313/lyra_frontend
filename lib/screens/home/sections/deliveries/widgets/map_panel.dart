@@ -4,10 +4,17 @@ import 'package:app/toolkit/toolkit.dart';
 /// A panel floating over the left side of a map that fills its sheet: the
 /// side bar's fill, edge and rounding inside a translucent rim, so the map
 /// still reads around it. The branches tab draws the same frame.
+///
+/// No inset at the bottom: a body's scroll runs to the panel's edge instead
+/// of stopping short of it, and ends with [inset] of room of its own (what is
+/// pinned under a scroll stands [inset] off the edge the same way).
 class MapPanel extends StatelessWidget {
   const MapPanel({super.key, required this.child});
 
   final Widget child;
+
+  /// The room a body leaves under its last row.
+  static double get inset => AppSize.padding;
 
   /// Share of the sheet's width the panel takes: more on smaller screens,
   /// where a quarter would not fit a row's text.
@@ -43,14 +50,20 @@ class MapPanel extends StatelessWidget {
         color: scheme.surface.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(AppSize.spaceS)
       ),
-      child: Container(
-        padding: EdgeInsets.all(AppSize.padding),
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: scheme.navBar,
           border: Border.all(color: scheme.line),
           borderRadius: BorderRadius.circular(AppSize.spaceS)
         ),
-        child: child
+        // Inside the border, so what scrolls under the edge never draws over it.
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppSize.spaceS - 1),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(inset, inset, inset, 0),
+            child: child
+          )
+        )
       )
     );
   }

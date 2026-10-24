@@ -320,7 +320,10 @@ class _DeliveryOptionFormState extends State<DeliveryOptionForm> {
     final mode = _mode;
     final currency = CurrencyCatalogService().resolve(widget.currency);
 
+    // No bar: it would stand the panel's inset off the edge, and no other
+    // list in the panel draws one.
     return ScrollableWidget(
+      showBar: false,
       padding: EdgeInsets.only(bottom: AppSize.padding),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

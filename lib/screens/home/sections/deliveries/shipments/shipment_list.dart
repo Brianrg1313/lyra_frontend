@@ -9,6 +9,8 @@ import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 
 // WIDGETS
+import 'package:app/screens/home/sections/deliveries/widgets/map_panel.dart';
+
 import './shipment_format.dart';
 import './shipment_tile.dart';
 
@@ -82,7 +84,7 @@ class ShipmentList extends StatelessWidget {
     }
 
     return ListView.builder(
-        padding: EdgeInsets.zero,
+        padding: EdgeInsets.only(bottom: MapPanel.inset),
         itemCount: found.length,
         itemBuilder: (context, index) {
           final shipment = found[index];
