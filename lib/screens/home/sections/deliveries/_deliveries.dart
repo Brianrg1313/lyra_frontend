@@ -78,10 +78,11 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
   final MapController _map = MapController();
   late final AreaEditor _editor = AreaEditor(map: _map);
 
-  /// The branch the panel is filtered by, `null` for all of them (how it
-  /// opens), or the one picked on the board before working in it remounted
-  /// the desk ([_carried]).
-  late String? _branch = _takeCarried();
+  /// The branch the panel is filtered by, `null` for all of them: the one
+  /// picked on the board before working in it remounted the desk
+  /// ([_carried]), else the one worked in, since the board opens first and
+  /// "All branches" lists no shipment (the areas' "all" is a pick away).
+  late String? _branch = _takeCarried() ?? (_board ? BranchService().activeId : null);
 
   /// The branch [_work] switched to, read once by the desk it remounts.
   static String? _carried;
@@ -283,8 +284,18 @@ class _DeliveriesSectionState extends State<DeliveriesSection> {
     setState(() => _view = view);
     _glance();
 
+    if (view != DeliveriesView.shipments) return;
+
+    // Back on the board from "All branches": the branch worked in, whose list it is.
+    final working = BranchService().activeId;
+    if (_branch == null && working != null) {
+      setState(() => _branch = working);
+      _showPicked();
+      return;
+    }
+
     final branch = _branch;
-    if (view == DeliveriesView.shipments && branch != null) _work(branch);
+    if (branch != null) _work(branch);
   }
 
   void _glance() {
