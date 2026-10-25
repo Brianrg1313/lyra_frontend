@@ -1,45 +1,106 @@
-# Miscellaneous
-*.class
+# ─── Secrets and credentials ──────────────────────────────────────────────
+# Never commit these. Templates (*.example) are the only exception.
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+key.properties
+**/android/key.properties
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+*.secret
+secrets/
+credentials/
+
+# ─── Local data, logs and runtime state ───────────────────────────────────
 *.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+*.pid
+*.hive
+*.lock.hive
+*.db
+*.sqlite
+*.sqlite3
+baileys_server/data/
+baileys_server/auth_info*/
+baileys_server/sessions/
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
+# ─── Node (baileys_server) ────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# ─── Flutter / Dart / Pub ─────────────────────────────────────────────────
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
 /build/
 /coverage/
+**/flutter/ephemeral/
 
-# Symbolication related
+# Symbolication / obfuscation
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
+*.symbols
 
-# Android Studio will place build artifacts here
+# ─── Android ──────────────────────────────────────────────────────────────
 /android/app/debug
 /android/app/profile
 /android/app/release
+**/android/local.properties
+**/android/.gradle/
+**/android/.kotlin/
+**/android/captures/
+**/android/**/GeneratedPluginRegistrant.java
+
+# ─── iOS / macOS ──────────────────────────────────────────────────────────
+**/Pods/
+**/xcuserdata/
+**/DerivedData/
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_export_environment.sh
+*.mobileprovision
+*.cer
+
+# ─── IDEs and editors ─────────────────────────────────────────────────────
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+.history
+*.swp
+*~
+
+# ─── Tooling / AI assistants (local only) ─────────────────────────────────
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ─── OS ───────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Misc ─────────────────────────────────────────────────────────────────
+*.class
+*.pyc
+.atom/
+.build/
+.buildlog/
+.svn/
+.swiftpm/
+migrate_working_dir/
+_patch.py
