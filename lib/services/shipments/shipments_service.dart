@@ -312,12 +312,14 @@ class ShipmentsService extends ChangeNotifier {
   void seed(
     List<Shipment> shipments, {
     Map<ShipmentState, ShipmentStateInfo>? states,
-    Grant? grant
+    Grant? grant,
+    ShipmentCarriers? carriers
   }) {
     _shipments = shipments;
     _status = shipments.isEmpty ? ShipmentsStatus.empty : ShipmentsStatus.ready;
     if (states != null) _states = states;
     if (grant != null) _grant = grant;
+    if (carriers != null) _carriers = carriers;
     _notify();
   }
 

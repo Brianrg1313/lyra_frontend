@@ -19487,6 +19487,153 @@ class S {
     );
   }
 
+  /// `View ticket`
+  String get shipment_ticket_open {
+    return Intl.message(
+      'View ticket',
+      name: 'shipment_ticket_open',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, =1{1 more product} other{{count} more products}}`
+  String shipment_ticket_more(num count) {
+    return Intl.plural(
+      count,
+      one: '1 more product',
+      other: '$count more products',
+      name: 'shipment_ticket_more',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Paid`
+  String get shipment_ticket_paid {
+    return Intl.message(
+      'Paid',
+      name: 'shipment_ticket_paid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To collect at the door`
+  String get shipment_ticket_collect {
+    return Intl.message(
+      'To collect at the door',
+      name: 'shipment_ticket_collect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The ticket has no products.`
+  String get shipment_ticket_empty {
+    return Intl.message(
+      'The ticket has no products.',
+      name: 'shipment_ticket_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This sale has no ticket to show any more.`
+  String get shipment_ticket_missing {
+    return Intl.message(
+      'This sale has no ticket to show any more.',
+      name: 'shipment_ticket_missing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The ticket could not be read.`
+  String get shipment_ticket_error {
+    return Intl.message(
+      'The ticket could not be read.',
+      name: 'shipment_ticket_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retry`
+  String get shipment_ticket_retry {
+    return Intl.message(
+      'Retry',
+      name: 'shipment_ticket_retry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rider`
+  String get shipment_rider {
+    return Intl.message('Rider', name: 'shipment_rider', desc: '', args: []);
+  }
+
+  /// `Choosing someone assigns the delivery right away.`
+  String get shipment_rider_subtitle {
+    return Intl.message(
+      'Choosing someone assigns the delivery right away.',
+      name: 'shipment_rider_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This branch has no riders yet; its team shows up here. A platform or courier can take it meanwhile.`
+  String get shipment_rider_nobody {
+    return Intl.message(
+      'This branch has no riders yet; its team shows up here. A platform or courier can take it meanwhile.',
+      name: 'shipment_rider_nobody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm the order first, then choose who takes it.`
+  String get shipment_rider_confirm_first {
+    return Intl.message(
+      'Confirm the order first, then choose who takes it.',
+      name: 'shipment_rider_confirm_first',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rider assigned`
+  String get shipment_rider_assigned {
+    return Intl.message(
+      'Rider assigned',
+      name: 'shipment_rider_assigned',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rider removed`
+  String get shipment_rider_removed {
+    return Intl.message(
+      'Rider removed',
+      name: 'shipment_rider_removed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When and cost`
+  String get shipment_when {
+    return Intl.message(
+      'When and cost',
+      name: 'shipment_when',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `New delivery`
   String get new_shipment_title {
     return Intl.message(

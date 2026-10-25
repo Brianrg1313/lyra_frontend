@@ -8,11 +8,15 @@ import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
 import 'package:app/services/appointments/opening_hours_model.dart';
 import 'package:app/services/appointments/opening_hours_request.dart';
+import 'package:app/services/sales/sale_detail_model.dart';
 import 'package:app/services/sales/sale_model.dart';
+import 'package:app/services/sales/sources/sales_source.dart';
 import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipment_request.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 import 'package:app/screens/home/sections/deliveries/shipments/shipment_list.dart';
+import 'package:app/screens/modals/deliveries/shipment/shipment_rider.dart';
+import 'package:app/screens/modals/deliveries/shipment/shipment_ticket.dart';
 
 /// The deliveries board of a branch (`envios-frontend.md`): rows read from the compressed list
 /// with their nested carrier, window and destination; a state this app doesn't know is no row;
@@ -55,6 +59,11 @@ Map<String, dynamic> _compressed(List<Map<String, dynamic>> rows) {
 }
 
 void main() {
+  setUpAll(() {
+    ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFFFFFFF));
+    ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
+  });
+
   group("Shipment", () {
     test("reads the compressed board with its nested parts, and drops an unknown state", () {
       final rows = Shipment.list(_compressed([
@@ -294,11 +303,6 @@ void main() {
   });
 
   group("the list", () {
-    setUpAll(() {
-      ThemeColor.dark = SchemeColor.dark(primary: const Color(0xFFFFFFFF));
-      ThemeColor.light = SchemeColor.light(primary: const Color(0xFF000000));
-    });
-
     Future<void> pump(WidgetTester tester, ShipmentsService service) async {
       await tester.binding.setSurfaceSize(const Size(500, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -343,4 +347,103 @@ void main() {
       service.dispose();
     });
   });
+
+  group("the panel", () {
+    Future<void> pump(WidgetTester tester, Widget child) async {
+      await tester.binding.setSurfaceSize(const Size(500, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        home: Builder(builder: (context) {
+          AppSize.instance(context);
+
+          return Scaffold(body: SingleChildScrollView(child: child));
+        })
+      ));
+      await tester.pump();
+      await tester.pump();
+    }
+
+    testWidgets("the stub reads the sale by the shipment's id and shows what goes in the bag", (tester) async {
+      final sales = _Sales(SaleDetailModel(
+        id: "1",
+        currency: "USD",
+        total: 40,
+        items: [
+          for (var i = 1; i <= 6; i++) SaleItemModel(name: "Burger $i", qty: i, total: 5.0 * i)
+        ]
+      ));
+      final service = ShipmentsService()..seed([Shipment.read(_row("1"))!]);
+
+      await pump(tester, ShipmentTicket(shipment: service.shipments.first, service: service, sales: sales));
+
+      expect(sales.asked, ["1"]);
+      expect(find.text("Burger 1"), findsOneWidget);
+      expect(find.text("Burger 4"), findsOneWidget);
+      expect(find.text("Burger 5"), findsNothing);
+      expect(find.text(S.current.shipment_ticket_more(2)), findsOneWidget);
+      expect(find.text(S.current.shipment_ticket_open), findsOneWidget);
+      service.dispose();
+    });
+
+    testWidgets("a channel order whose sale does not answer by id is asked for by its chat", (tester) async {
+      final sales = _Sales(const SaleDetailModel(id: "1", items: [SaleItemModel(name: "Pizza", qty: 1)]), missing: {"1"});
+      final service = ShipmentsService()..seed([Shipment.read(_row("1"))!]);
+
+      await pump(tester, ShipmentTicket(shipment: service.shipments.first, service: service, sales: sales));
+
+      expect(sales.asked, ["1", "chat-1"]);
+      expect(find.text("Pizza"), findsOneWidget);
+      service.dispose();
+    });
+
+    testWidgets("an order waiting to be confirmed takes no rider yet", (tester) async {
+      final service = ShipmentsService()..seed(
+        [Shipment.read(_row("1", state: "confirming", sale: "open"))!],
+        carriers: const ShipmentCarriers()
+      );
+
+      await pump(tester, ShipmentRider(shipment: service.shipments.first, service: service));
+
+      expect(find.text(S.current.shipment_rider_confirm_first), findsOneWidget);
+      expect(find.text(S.current.shipments_carrier_none), findsOneWidget);
+      service.dispose();
+    });
+
+    testWidgets("a branch without riders says so", (tester) async {
+      final service = ShipmentsService()..seed([Shipment.read(_row("1"))!], carriers: const ShipmentCarriers());
+
+      await pump(tester, ShipmentRider(shipment: service.shipments.first, service: service));
+
+      expect(find.text(S.current.shipment_rider_nobody), findsOneWidget);
+      service.dispose();
+    });
+  });
+}
+
+/// A sales source answering one sale; a reference in [missing] is the backend's `sale_not_found`.
+class _Sales implements SalesSource {
+  _Sales(this.sale, {this.missing = const {}});
+
+  final SaleDetailModel sale;
+  final Set<String> missing;
+  final List<String> asked = [];
+
+  @override
+  Future<SaleDetailModel> detail(String reference) async {
+    asked.add(reference);
+    if (missing.contains(reference)) throw {"message": "sale_not_found"};
+
+    return sale;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

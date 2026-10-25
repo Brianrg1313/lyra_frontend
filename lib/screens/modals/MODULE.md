@@ -196,11 +196,12 @@ through `Navigator.pop(context, value)`.
 
 ### `deliveries/` (from the deliveries desk)
 - `shipment/_shipment.dart` — `showShipment(context, service:, id:)`, `ShipmentModal`: one shipment of the board, following
-  the desk's `ShipmentsService` row (gone = left the board); moves and the form only with `shipments.dispatch`.
+  the desk's `ShipmentsService` row (gone = left the board): the ticket stub, confirm, then rider, moves and the form only with `shipments.dispatch`.
+- `shipment/shipment_ticket.dart` — `ShipmentTicket({shipment, service, sales?})`: `ShipmentHeading` over a dashed tear, the sale's first lines (`GET /sales/detail/:ID` by the shipment's id, its chat when that answers `sale_not_found`; its own `SaleDetailService`), "+n more", paid / to collect total, "View ticket" → `showSaleItems` stacked.
+- `shipment/shipment_rider.dart` — `ShipmentRider`: who takes it (`showSelectMenu`: nobody, the branch's people, the country's carriers), written at once with the carrier alone; waits while confirming; says when the branch has no riders.
 - `shipment/shipment_moves.dart` — `ShipmentMoves`: a button per state of the catalog's `next` (assigned only with a carrier); `ShipmentConfirm`: an order paid at the door waiting to be confirmed, "Confirm order" with `shipments.dispatch` and a chat.
 - `new_shipment/_new_shipment.dart` — `showNewShipment(context, service:)` → `Future<Shipment?>`, `NewShipmentModal`: a sale of the branch in process (`ShipmentsService.candidates`) sent as a delivery, to assign or on its way, with a note; writes through the desk's service.
-- `shipment/shipment_form.dart` — `ShipmentForm`: carrier (`showSelectMenu`: none, the branch's riders, the country's
-  carriers + reference), window (the branch's franjas with room), cost, note, receiver (a confirming one: window, note and address only); address + point only for a sale
+- `shipment/shipment_form.dart` — `ShipmentForm`: a carrier's reference (when a platform or courier carries it), window (the branch's franjas with room), cost, note, receiver (a confirming one: window, note and address only); address + point only for a sale
   without a point of its own. Drafts follow the row until edited; one save, `editShipmentRequest`.
 - `shipment/shipment_facts.dart` — `ShipmentHeading` (number, state, untouched note, customer, opens the chat on the
   messages desk), `ShipmentCarrying` (read only), `ShipmentDestinationBlock` (address, area, point, opens `maps`),

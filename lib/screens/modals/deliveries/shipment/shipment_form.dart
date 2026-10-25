@@ -15,13 +15,12 @@ import 'package:core/form.dart';
 import 'package:app/screens/home/sections/deliveries/shipments/shipment_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
-/// **Who carries it, when, and what it cost**: the dispatcher's form. Picks
-/// are drafts until saved, and one save sends only what changed
-/// (`editShipmentRequest`).
+/// **When, and what it cost**: the dispatcher's form. Picks are drafts until
+/// saved, and one save sends only what changed (`editShipmentRequest`).
 ///
-/// The carrier is one of the branch's people or a platform or courier of the
-/// country (with its order or tracking number); the window is one of the
-/// branch's franjas with room left. A sale with no point of its own (a counter
+/// Who carries it is picked above and written at once (`ShipmentRider`); a
+/// platform or courier's order or tracking number is typed here. The window is
+/// one of the branch's franjas with room left. A sale with no point of its own (a counter
 /// sale) takes an address and a point here; one that came with the customer's
 /// pin keeps it, measured by the backend on every read.
 ///
@@ -29,8 +28,8 @@ import 'package:app/screens/modals/shared/settings/settings_block.dart';
 /// customer chose through the bot shows up in an open form.
 ///
 /// An order waiting to be confirmed takes only its window, note and address
-/// (the backend refuses the rest, `shipment_unconfirmed`): no carrier, cost or
-/// receiver is offered until it is confirmed.
+/// (the backend refuses the rest, `shipment_unconfirmed`): no reference, cost
+/// or receiver is offered until it is confirmed.
 class ShipmentForm extends StatefulWidget {
   const ShipmentForm({super.key, required this.shipment, required this.service});
 
@@ -50,7 +49,6 @@ class _ShipmentFormState extends State<ShipmentForm> {
   late final _address = InputController(key: "ADDRESS", form: _form, max: 255);
   late final _point = InputController(key: "POINT", form: _form, max: 300);
 
-  late CarrierChoice _carrier;
   ShipmentWindow? _window;
   bool _dirty = false;
 
@@ -90,7 +88,6 @@ class _ShipmentFormState extends State<ShipmentForm> {
     final shipment = _shipment;
     final destination = shipment.destination;
 
-    _carrier = CarrierChoice.of(shipment.carrier);
     _window = shipment.window;
     _set(_reference, shipment.carrier?.reference ?? "");
     _set(_cost, shipment.cost == null ? "" : _plain(shipment.cost!));
@@ -118,76 +115,6 @@ class _ShipmentFormState extends State<ShipmentForm> {
       _address.value != shipment.destination.address;
 
     if (changed) setState(() => _dirty = true);
-  }
-
-  Future<void> _pickCarrier(BuildContext anchor) async {
-    final s = S.of(context);
-    ShipmentCarriers carriers;
-
-    try {
-      carriers = await widget.service.loadCarriers();
-    } catch (error) {
-      FloatFlag.showFromError(error);
-      return;
-    }
-
-    if (!anchor.mounted || !mounted) return;
-
-    final picked = await showSelectMenu(
-      context: anchor,
-      selected: _carrierValue(_carrier),
-      searchPlaceholder: s.shipment_carrier_search,
-      emptyText: s.shipment_carrier_empty,
-      maxOptions: 8,
-      options: [
-        SelectOption(value: "", placeholder: s.shipments_carrier_none, icon: CI.remove_image),
-        for (final rider in carriers.riders) SelectOption(
-          value: "rider:${rider.id}",
-          placeholder: rider.name.isEmpty ? s.shipments_carrier_rider : rider.name,
-          subtitle: rider.title.isEmpty ? s.shipment_carrier_team : rider.title,
-          icon: CI.employee
-        ),
-        for (final provider in carriers.providers) SelectOption(
-          value: "provider:${provider.code}",
-          placeholder: provider.name.isEmpty ? provider.code : provider.name,
-          subtitle: provider.kind == "courier" ? s.shipment_carrier_courier : s.shipment_carrier_platform,
-          icon: provider.kind == "courier" ? CI.delivery_plane : CI.shop_mobile
-        )
-      ]
-    );
-
-    if (picked == null || !mounted) return;
-
-    final value = picked.value;
-
-    setState(() {
-      _carrier = value.startsWith("rider:")
-        ? CarrierChoice.rider(value.substring(6))
-        : value.startsWith("provider:")
-          ? CarrierChoice.provider(value.substring(9), reference: _reference.value)
-          : const CarrierChoice.none();
-      _dirty = true;
-      _names[value] = picked.placeholder;
-    });
-  }
-
-  /// Names of the carriers picked here, for the field before the row says them.
-  final Map<String, String> _names = {};
-
-  static String _carrierValue(CarrierChoice choice) => switch (choice) {
-    CarrierChoice(employment: final String id) => "rider:$id",
-    CarrierChoice(provider: final String code) => "provider:$code",
-    _ => ""
-  };
-
-  String _carrierLabel() {
-    if (_carrier == CarrierChoice.of(_shipment.carrier)) {
-      return shipmentCarrierLabel(context, _shipment.carrier);
-    }
-
-    if (_carrier.isNone) return S.of(context).shipments_carrier_none;
-
-    return _names[_carrierValue(_carrier)] ?? _carrierValue(_carrier);
   }
 
   Future<void> _pickWindow(BuildContext anchor) async {
@@ -261,9 +188,8 @@ class _ShipmentFormState extends State<ShipmentForm> {
       }
     }
 
-    final carrier = _carrier.provider == null
-      ? _carrier
-      : CarrierChoice.provider(_carrier.provider!, reference: _reference.value.trim());
+    final provider = _shipment.carrier?.provider;
+    final carrier = provider == null ? null : CarrierChoice.provider(provider, reference: _reference.value.trim());
 
     final body = editShipmentRequest(
       _shipment,
@@ -304,22 +230,13 @@ class _ShipmentFormState extends State<ShipmentForm> {
     final confirming = _shipment.confirming;
 
     return SettingsBlock(
-      title: s.shipment_carrying,
+      title: s.shipment_when,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        if (!confirming) ...[
-          TextSmall(s.shipment_carrier, color: scheme.text.secondary),
-          SizedBox(height: AppSize.gap * 0.5),
-          SettingsSelect(label: _carrierLabel(), icon: CI.delivery, open: _pickCarrier),
-          if (_carrier.provider != null) ...[
-            SizedBox(height: AppSize.gap),
-            Input(
-              title: s.shipment_reference,
-              placeholder: s.shipment_reference_hint,
-              controller: _reference
-            )
-          ],
-          SizedBox(height: AppSize.spaceS)
-        ],
+        if (!confirming && _shipment.carrier?.provider != null) Input(
+          title: s.shipment_reference,
+          placeholder: s.shipment_reference_hint,
+          controller: _reference
+        ),
         TextSmall(s.shipment_window, color: scheme.text.secondary),
         SizedBox(height: AppSize.gap * 0.5),
         SettingsSelect(

@@ -12,6 +12,8 @@ import 'package:app/screens/home/sections/_section/section_message.dart';
 import './shipment_facts.dart';
 import './shipment_form.dart';
 import './shipment_moves.dart';
+import './shipment_rider.dart';
+import './shipment_ticket.dart';
 
 /// Opens one shipment of the board over the deliveries desk.
 ///
@@ -31,10 +33,11 @@ Future<void> showShipment(BuildContext context, {required ShipmentsService servi
 
 const double _width = 460;
 
-/// **One delivery, and what the branch does with it**: where it stands and
-/// where it may go next, who carries it and in which window, what it cost,
-/// where it goes and what happened to it. Without `shipments.dispatch` it is
-/// read only.
+/// **One delivery, and what the branch does with it**, in the order a
+/// dispatcher asks: whose order it is and what goes in the bag (the ticket
+/// stub), whether it still needs confirming, who takes it, where it may go
+/// next, its window and cost, where it goes, the money and what happened to
+/// it. Without `shipments.dispatch` it is read only.
 class ShipmentModal extends StatelessWidget {
   const ShipmentModal({super.key, required this.service, required this.id});
 
@@ -59,14 +62,13 @@ class ShipmentModal extends StatelessWidget {
         padding: EdgeInsets.only(bottom: AppSize.padding),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ShipmentHeading(shipment: shipment, service: service),
-          SizedBox(height: AppSize.spaceS),
+          ShipmentTicket(key: ValueKey("ticket-${shipment.id}"), shipment: shipment, service: service),
           if (shipment.confirming) ShipmentConfirm(shipment: shipment, service: service),
-          if (service.canDispatch && service.nextOf(shipment).isNotEmpty)
-            ShipmentMoves(shipment: shipment, service: service),
-          if (service.canDispatch)
+          if (service.canDispatch) ...[
+            ShipmentRider(shipment: shipment, service: service),
+            if (service.nextOf(shipment).isNotEmpty) ShipmentMoves(shipment: shipment, service: service),
             ShipmentForm(key: ValueKey(shipment.id), shipment: shipment, service: service)
-          else
+          ] else
             ShipmentCarrying(shipment: shipment),
           ShipmentDestinationBlock(shipment: shipment),
           ShipmentMoney(shipment: shipment),
