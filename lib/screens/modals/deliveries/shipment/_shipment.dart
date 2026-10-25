@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
+import 'package:app/services/sales/sources/sales_source.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';
 
+import './shipment_dispatch.dart';
 import './shipment_facts.dart';
 import './shipment_form.dart';
 import './shipment_moves.dart';
-import './shipment_rider.dart';
 import './shipment_ticket.dart';
 
 /// Opens one shipment of the board over the deliveries desk.
@@ -34,15 +35,19 @@ Future<void> showShipment(BuildContext context, {required ShipmentsService servi
 const double _width = 460;
 
 /// **One delivery, and what the branch does with it**, in the order a
-/// dispatcher asks: whose order it is and what goes in the bag (the ticket
-/// stub), whether it still needs confirming, who takes it, where it may go
-/// next, its window and cost, where it goes, the money and what happened to
-/// it. Without `shipments.dispatch` it is read only.
+/// dispatcher asks: whose order it is, where it goes, what goes in the bag
+/// and what the door is owed (the ticket stub, the only place each of those is
+/// said), whether it still needs confirming, who takes it and when, where it
+/// may go next, its details and what happened to it. Without
+/// `shipments.dispatch` it is read only.
 class ShipmentModal extends StatelessWidget {
-  const ShipmentModal({super.key, required this.service, required this.id});
+  const ShipmentModal({super.key, required this.service, required this.id, this.sales});
 
   final ShipmentsService service;
   final String id;
+
+  /// Where the ticket is read; the deployment's when null (tests pass one).
+  final SalesSource? sales;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -62,16 +67,14 @@ class ShipmentModal extends StatelessWidget {
         padding: EdgeInsets.only(bottom: AppSize.padding),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ShipmentTicket(key: ValueKey("ticket-${shipment.id}"), shipment: shipment, service: service),
+          ShipmentTicket(key: ValueKey("ticket-${shipment.id}"), shipment: shipment, service: service, sales: sales),
           if (shipment.confirming) ShipmentConfirm(shipment: shipment, service: service),
           if (service.canDispatch) ...[
-            ShipmentRider(shipment: shipment, service: service),
+            ShipmentDispatch(shipment: shipment, service: service),
             if (service.nextOf(shipment).isNotEmpty) ShipmentMoves(shipment: shipment, service: service),
             ShipmentForm(key: ValueKey(shipment.id), shipment: shipment, service: service)
           ] else
             ShipmentCarrying(shipment: shipment),
-          ShipmentDestinationBlock(shipment: shipment),
-          ShipmentMoney(shipment: shipment),
           ShipmentHistory(shipment: shipment, service: service)
         ]
       );

@@ -15,7 +15,7 @@ import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipment_request.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 import 'package:app/screens/home/sections/deliveries/shipments/shipment_list.dart';
-import 'package:app/screens/modals/deliveries/shipment/shipment_rider.dart';
+import 'package:app/screens/modals/deliveries/shipment/shipment_dispatch.dart';
 import 'package:app/screens/modals/deliveries/shipment/shipment_ticket.dart';
 
 /// The deliveries board of a branch (`envios-frontend.md`): rows read from the compressed list
@@ -410,7 +410,7 @@ void main() {
         carriers: const ShipmentCarriers()
       );
 
-      await pump(tester, ShipmentRider(shipment: service.shipments.first, service: service));
+      await pump(tester, ShipmentDispatch(shipment: service.shipments.first, service: service));
 
       expect(find.text(S.current.shipment_rider_confirm_first), findsOneWidget);
       expect(find.text(S.current.shipments_carrier_none), findsOneWidget);
@@ -420,7 +420,7 @@ void main() {
     testWidgets("a branch without riders says so", (tester) async {
       final service = ShipmentsService()..seed([Shipment.read(_row("1"))!], carriers: const ShipmentCarriers());
 
-      await pump(tester, ShipmentRider(shipment: service.shipments.first, service: service));
+      await pump(tester, ShipmentDispatch(shipment: service.shipments.first, service: service));
 
       expect(find.text(S.current.shipment_rider_nobody), findsOneWidget);
       service.dispose();

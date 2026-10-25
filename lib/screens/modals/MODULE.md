@@ -196,16 +196,15 @@ through `Navigator.pop(context, value)`.
 
 ### `deliveries/` (from the deliveries desk)
 - `shipment/_shipment.dart` — `showShipment(context, service:, id:)`, `ShipmentModal`: one shipment of the board, following
-  the desk's `ShipmentsService` row (gone = left the board): the ticket stub, confirm, then rider, moves and the form only with `shipments.dispatch`.
-- `shipment/shipment_ticket.dart` — `ShipmentTicket({shipment, service, sales?})`: `ShipmentHeading` over a dashed tear, the sale's first lines (`GET /sales/detail/:ID` by the shipment's id, its chat when that answers `sale_not_found`; its own `SaleDetailService`), "+n more", paid / to collect total, "View ticket" → `showSaleItems` stacked.
-- `shipment/shipment_rider.dart` — `ShipmentRider`: who takes it (`showSelectMenu`: nobody, the branch's people, the country's carriers), written at once with the carrier alone; waits while confirming; says when the branch has no riders.
+  the desk's `ShipmentsService` row (gone = left the board): the ticket stub, confirm, then who and when, moves and the details only with `shipments.dispatch`, history.
+- `shipment/shipment_ticket.dart` — `ShipmentTicket({shipment, service, sales?})`: `ShipmentHeading` over a dashed tear, the sale's first lines (`GET /sales/detail/:ID` by the shipment's id, its chat when that answers `sale_not_found`; its own `SaleDetailService`), "+n more" beside the "View ticket" link → `showSaleItems` stacked, and the due band (paid / to collect, fee, cash and change, total in Bebas). The only place the total, fee and destination are drawn.
+- `shipment/shipment_dispatch.dart` — `ShipmentDispatch`: rider (`showSelectMenu`: nobody, the branch's people, the country's carriers) and window (the branch's franjas with room), each written at once alone; the rider waits while confirming; says when the branch has no riders.
 - `shipment/shipment_moves.dart` — `ShipmentMoves`: a button per state of the catalog's `next` (assigned only with a carrier); `ShipmentConfirm`: an order paid at the door waiting to be confirmed, "Confirm order" with `shipments.dispatch` and a chat.
 - `new_shipment/_new_shipment.dart` — `showNewShipment(context, service:)` → `Future<Shipment?>`, `NewShipmentModal`: a sale of the branch in process (`ShipmentsService.candidates`) sent as a delivery, to assign or on its way, with a note; writes through the desk's service.
-- `shipment/shipment_form.dart` — `ShipmentForm`: a carrier's reference (when a platform or courier carries it), window (the branch's franjas with room), cost, note, receiver (a confirming one: window, note and address only); address + point only for a sale
-  without a point of its own. Drafts follow the row until edited; one save, `editShipmentRequest`.
-- `shipment/shipment_facts.dart` — `ShipmentHeading` (number, state, untouched note, customer, opens the chat on the
-  messages desk), `ShipmentCarrying` (read only), `ShipmentDestinationBlock` (address, area, point, opens `maps`),
-  `ShipmentMoney` (total, what the rider collects, the cash and its change, fee, cost), `ShipmentHistory`.
+- `shipment/shipment_form.dart` — `ShipmentForm`: the details — a carrier's reference (when a platform or courier carries it), cost, receiver, note (a confirming one: note and address only); address + point only for a sale
+  without a point of its own. Drafts follow the row until edited; Discard / Save show only with a change; one save, `editShipmentRequest`.
+- `shipment/shipment_facts.dart` — `ShipmentHeading` (number in Bebas, state, untouched note, customer with the chat on the
+  messages desk, address and area with `maps`), `ShipmentCarrying` (read only: carrier, window, cost, note, receiver), `ShipmentHistory`.
 - `shipping_settings/_shipping_settings.dart` — `showShippingSettings(context, service:)`, `ShippingSettingsModal`: the
   branch worked in's schedule; **owns** `ShippingSettingsService` and `OpeningHoursService`; a week or closure change
   re-measures the franjas.

@@ -12,22 +12,23 @@ import 'package:app/services/shipments/shipments_service.dart';
 // WIDGETS
 import 'package:core/button.dart';
 import 'package:core/form.dart';
-import 'package:app/screens/home/sections/deliveries/shipments/shipment_format.dart';
 import 'package:app/screens/modals/shared/settings/settings_block.dart';
 
-/// **When, and what it cost**: the dispatcher's form. Picks are drafts until
-/// saved, and one save sends only what changed (`editShipmentRequest`).
+/// **The details of a delivery**: what is typed about it, as drafts until
+/// saved; one save sends only what changed (`editShipmentRequest`), and the
+/// button shows only once something did, so an untouched form is just its
+/// fields.
 ///
-/// Who carries it is picked above and written at once (`ShipmentRider`); a
-/// platform or courier's order or tracking number is typed here. The window is
-/// one of the branch's franjas with room left. A sale with no point of its own (a counter
-/// sale) takes an address and a point here; one that came with the customer's
-/// pin keeps it, measured by the backend on every read.
+/// Who carries it and when are picked above and written at once
+/// (`ShipmentDispatch`); a platform or courier's order or tracking number is
+/// typed here. A sale with no point of its own (a counter sale) takes an
+/// address and a point here; one that came with the customer's pin keeps it,
+/// measured by the backend on every read.
 ///
 /// The drafts follow the row while nothing is edited, so a window the
 /// customer chose through the bot shows up in an open form.
 ///
-/// An order waiting to be confirmed takes only its window, note and address
+/// An order waiting to be confirmed takes only its note and address
 /// (the backend refuses the rest, `shipment_unconfirmed`): no reference, cost
 /// or receiver is offered until it is confirmed.
 class ShipmentForm extends StatefulWidget {
@@ -49,11 +50,10 @@ class _ShipmentFormState extends State<ShipmentForm> {
   late final _address = InputController(key: "ADDRESS", form: _form, max: 255);
   late final _point = InputController(key: "POINT", form: _form, max: 300);
 
-  ShipmentWindow? _window;
   bool _dirty = false;
 
-  /// The franjas offered by the picker, read when it first opens.
-  List<DeliverySlot>? _slots;
+  /// Set while [_fill] writes the drafts, which is not an edit.
+  bool _filling = false;
 
   Shipment get _shipment => widget.shipment;
 
@@ -86,86 +86,45 @@ class _ShipmentFormState extends State<ShipmentForm> {
   /// The drafts as the row stands.
   void _fill() {
     final shipment = _shipment;
-    final destination = shipment.destination;
 
-    _window = shipment.window;
+    _filling = true;
     _set(_reference, shipment.carrier?.reference ?? "");
     _set(_cost, shipment.cost == null ? "" : _plain(shipment.cost!));
     _set(_note, shipment.note);
     _set(_receiver, shipment.receiver);
-    _set(_address, destination.address);
-    _set(_point, destination.hasPoint
-      ? "${destination.latitude!.toStringAsFixed(6)}, ${destination.longitude!.toStringAsFixed(6)}"
-      : "");
+    _set(_address, shipment.destination.address);
+    _set(_point, _pointOf(shipment));
+    _filling = false;
     _dirty = false;
+  }
+
+  static String _pointOf(Shipment shipment) {
+    final destination = shipment.destination;
+
+    return destination.hasPoint
+      ? "${destination.latitude!.toStringAsFixed(6)}, ${destination.longitude!.toStringAsFixed(6)}"
+      : "";
   }
 
   void _set(InputController input, String text) {
     if (input.textController.text != text) input.textController.text = text;
   }
 
+  /// Follows every keystroke both ways, so typing a field back to what it was
+  /// hides the buttons again.
   void _edited() {
-    if (_dirty) return;
+    if (_filling) return;
 
     final shipment = _shipment;
     final changed = _reference.value != (shipment.carrier?.reference ?? "") ||
       _cost.value != (shipment.cost == null ? "" : _plain(shipment.cost!)) ||
       _note.value != shipment.note ||
       _receiver.value != shipment.receiver ||
-      _address.value != shipment.destination.address;
+      _address.value != shipment.destination.address ||
+      _point.value != _pointOf(shipment);
 
-    if (changed) setState(() => _dirty = true);
+    if (changed != _dirty) setState(() => _dirty = changed);
   }
-
-  Future<void> _pickWindow(BuildContext anchor) async {
-    final s = S.of(context);
-
-    try {
-      _slots ??= await widget.service.windows();
-    } catch (error) {
-      FloatFlag.showFromError(error);
-      return;
-    }
-
-    if (!anchor.mounted || !mounted) return;
-
-    final slots = _slots!;
-
-    if (slots.isEmpty) {
-      FloatFlag.of(context).alert(message: s.shipment_window_no_slots);
-    }
-
-    final picked = await showSelectMenu(
-      context: anchor,
-      selected: _window == null ? "" : _windowValue(_window!),
-      searchPlaceholder: s.shipment_window_search,
-      emptyText: s.shipment_window_no_slots,
-      maxOptions: 8,
-      options: [
-        SelectOption(value: "", placeholder: s.shipments_window_none, icon: CI.remove_image),
-        for (final slot in slots) SelectOption(
-          value: _windowValue(slot.window),
-          placeholder: shipmentWindowLabel(context, slot.window),
-          subtitle: slot.seats == null
-            ? s.shipment_window_taken(slot.taken)
-            : s.shipment_window_seats(slot.seats!, slot.taken),
-          icon: CI.calendar
-        )
-      ]
-    );
-
-    if (picked == null || !mounted) return;
-
-    setState(() {
-      _window = picked.value.isEmpty
-        ? null
-        : slots.firstWhere((slot) => _windowValue(slot.window) == picked.value).window;
-      _dirty = true;
-    });
-  }
-
-  static String _windowValue(ShipmentWindow window) =>
-    "${window.from.millisecondsSinceEpoch}-${window.to.millisecondsSinceEpoch}";
 
   Future<void> _save() async {
     final s = S.of(context);
@@ -194,8 +153,6 @@ class _ShipmentFormState extends State<ShipmentForm> {
     final body = editShipmentRequest(
       _shipment,
       carrier: carrier,
-      window: _window,
-      clearWindow: _window == null,
       cost: cost.isEmpty ? null : double.parse(cost.replaceAll(",", ".")),
       clearCost: cost.isEmpty,
       note: _note.value,
@@ -230,28 +187,19 @@ class _ShipmentFormState extends State<ShipmentForm> {
     final confirming = _shipment.confirming;
 
     return SettingsBlock(
-      title: s.shipment_when,
+      title: s.shipment_details,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         if (!confirming && _shipment.carrier?.provider != null) Input(
           title: s.shipment_reference,
           placeholder: s.shipment_reference_hint,
           controller: _reference
         ),
-        TextSmall(s.shipment_window, color: scheme.text.secondary),
-        SizedBox(height: AppSize.gap * 0.5),
-        SettingsSelect(
-          label: _window == null ? s.shipments_window_none : shipmentWindowLabel(context, _window!),
-          icon: CI.calendar,
-          open: _pickWindow
-        ),
-        SizedBox(height: AppSize.spaceS),
         if (!confirming) Input(
           title: s.shipment_cost,
           placeholder: s.shipment_cost_hint,
           controller: _cost,
           leftIcon: Icon(CI.receipt, color: scheme.icon)
         ),
-        Input(title: s.shipment_note, placeholder: s.shipment_note_hint, controller: _note, lines: 3),
         if (!confirming) Input(
           title: s.shipment_receiver,
           placeholder: s.shipment_receiver_hint,
@@ -272,12 +220,24 @@ class _ShipmentFormState extends State<ShipmentForm> {
             leftIcon: Icon(CI.globe_shopping, color: scheme.icon)
           )
         ],
-        SizedBox(height: AppSize.spaceXS),
-        Button(
-          title: s.save,
-          action: () {
-            if (!busy) unawaited(_save());
-          }
+        Input(title: s.shipment_note, placeholder: s.shipment_note_hint, controller: _note, lines: 3),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          alignment: Alignment.topCenter,
+          child: !_dirty ? const SizedBox(width: double.infinity) : Padding(
+            padding: EdgeInsets.only(top: AppSize.gap),
+            child: Row(children: [
+              Expanded(child: Button(title: s.shipment_discard, action: () => setState(_fill))),
+              SizedBox(width: AppSize.gap),
+              Expanded(child: MainButton(
+                title: s.save,
+                action: () {
+                  if (!busy) unawaited(_save());
+                }
+              ))
+            ])
+          )
         )
       ])
     );

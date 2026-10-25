@@ -9,15 +9,18 @@ import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipments_service.dart';
 
 // WIDGETS
-import 'package:core/button.dart';
+import 'package:app/screens/home/sections/deliveries/delivery_format.dart';
+import 'package:app/screens/home/sections/deliveries/shipments/shipment_format.dart';
 import 'package:app/screens/home/sections/sales/sale_format.dart';
 import 'package:app/screens/modals/sales/sale_items/_sale_items.dart';
 
 import './shipment_facts.dart';
 
-/// **The delivery and the ticket it carries**, as one stub: whose order it is
-/// and where it stands above the tear, what goes in the bag below it, and
-/// "View ticket" opening every line (`showSaleItems`, stacked on the panel).
+/// **The delivery and the ticket it carries**, as one stub: whose order it is,
+/// where it goes and where it stands above the tear, what goes in the bag
+/// below it with "View ticket" opening every line (`showSaleItems`, stacked on
+/// the panel), and what the door is owed at its foot. Each fact is said here
+/// once, so the blocks below only hold what the dispatcher does.
 ///
 /// A shipment is named by its sale (`GET /sales/detail/:ID` takes the same
 /// id), so the stub reads the sale once when the panel opens; a channel order
@@ -39,7 +42,7 @@ class ShipmentTicket extends StatefulWidget {
 class _ShipmentTicketState extends State<ShipmentTicket> {
   late final _detail = SaleDetailService(source: widget.sales);
 
-  /// Lines drawn on the stub; the rest are counted and live behind the button.
+  /// Lines drawn on the stub; the rest are counted and live behind the link.
   static const int _preview = 4;
 
   bool _triedChat = false;
@@ -76,14 +79,22 @@ class _ShipmentTicketState extends State<ShipmentTicket> {
     padding: EdgeInsets.only(bottom: AppSize.spaceXS),
     child: Surface.over(
       padding: EdgeInsets.all(AppSize.spaceS),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        ShipmentHeading(shipment: widget.shipment, service: widget.service),
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: AppSize.spaceS),
-          child: const _Tear()
-        ),
-        ListenableBuilder(listenable: _detail, builder: (context, _) => _order(context))
-      ])
+      child: ListenableBuilder(
+        listenable: _detail,
+        builder: (context, _) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          ShipmentHeading(shipment: widget.shipment, service: widget.service),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSize.spaceS),
+            child: const _Tear()
+          ),
+          _order(context),
+          SizedBox(height: AppSize.spaceS),
+          _Due(
+            shipment: widget.shipment,
+            total: _detail.status == SaleDetailStatus.ready ? _detail.sale.total : null
+          )
+        ])
+      )
     )
   );
 
@@ -97,7 +108,7 @@ class _ShipmentTicketState extends State<ShipmentTicket> {
       SaleDetailStatus.error => Row(children: [
         Expanded(child: TextSmall(s.shipment_ticket_error, lines: 2, color: scheme.text.secondary)),
         SizedBox(width: AppSize.gap),
-        Button(width: null, title: s.shipment_ticket_retry, action: _detail.retry)
+        _Link(label: s.shipment_ticket_retry, action: _detail.retry)
       ]),
       _ => Padding(
         padding: EdgeInsets.symmetric(vertical: AppSize.spaceS),
@@ -109,55 +120,130 @@ class _ShipmentTicketState extends State<ShipmentTicket> {
   Widget _lines(BuildContext context, SaleDetailModel sale) {
     final s = S.of(context);
     final scheme = ThemeColor.of(context);
-    final shipment = widget.shipment;
     final shown = sale.items.take(_preview).toList();
     final rest = sale.items.length - shown.length;
-    final total = sale.total ?? shipment.total;
-    final currency = sale.currency.isNotEmpty ? sale.currency : shipment.currency;
+
+    if (shown.isEmpty) return TextSmall(s.shipment_ticket_empty, lines: 2, color: scheme.text.secondary);
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      if (shown.isEmpty)
-        TextSmall(s.shipment_ticket_empty, lines: 2, color: scheme.text.secondary)
-      else
-        for (final item in shown) _TicketLine(item: item, currency: currency),
-      if (rest > 0) Padding(
-        padding: EdgeInsets.only(left: AppSize.text * 2.25),
-        child: TextSmall(s.shipment_ticket_more(rest), color: scheme.text.secondary)
-      ),
-      if (total != null) ...[
-        SizedBox(height: AppSize.spaceS),
-        Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-          Expanded(child: TextSmall(
-            shipment.charged ? s.shipment_ticket_paid : s.shipment_ticket_collect,
-            color: shipment.charged ? scheme.text.secondary : scheme.chart.warning,
-            ellipsis: true
-          )),
-          SizedBox(width: AppSize.gap),
-          TextLarge(
-            saleAmountLabel(total, currency),
-            color: shipment.charged ? null : scheme.chart.warning
-          )
-        ])
-      ],
-      if (sale.items.isNotEmpty) ...[
-        SizedBox(height: AppSize.spaceS),
-        Button(
-          title: s.shipment_ticket_open,
-          leftIcon: Icon(CI.receipt, size: AppSize.text, color: scheme.button.text),
-          action: () => showSaleItems(context, sale: sale)
-        )
-      ]
+      for (final item in shown) _TicketLine(item: item),
+      // What is not drawn is counted where the lines end, and the whole ticket
+      // is a quiet link beside it: the stub is read, not operated.
+      Row(children: [
+        SizedBox(width: _TicketLine.qtyWidth),
+        Expanded(child: rest > 0
+          ? TextSmall(s.shipment_ticket_more(rest), color: scheme.text.secondary)
+          : const SizedBox.shrink()),
+        _Link(icon: CI.receipt, label: s.shipment_ticket_open, action: () => showSaleItems(context, sale: sale))
+      ])
     ]);
   }
 }
 
+/// **What the door is owed**: the stub's foot, a band tinted by whether money
+/// changes hands on arrival. It is said once for the whole panel (the state
+/// tag says where the order stands, this says what to collect), with the
+/// delivery fee and the cash to change under it, and the total set in the
+/// stub's printed face beside its label.
+class _Due extends StatelessWidget {
+  const _Due({required this.shipment, this.total});
+
+  final Shipment shipment;
+
+  /// The sale's own total once read; the row's until then.
+  final double? total;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final scheme = ThemeColor.of(context);
+    final collect = !shipment.charged;
+    final warning = scheme.chart.warning;
+    final amount = total ?? shipment.total;
+    final fee = shipment.fee;
+    final method = shipment.collect?.method ?? "";
+    final notes = [
+      if (fee != null && fee > 0) s.shipment_ticket_fee(deliveryAmount(fee, shipment.currency)),
+      if (collect && shipment.tender != null) shipmentTenderLabel(context, shipment.tender!)
+      else if (collect && method.isNotEmpty) method
+    ];
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: AppSize.spaceS, vertical: AppSize.spaceXS),
+      decoration: BoxDecoration(
+        color: collect ? warning.withValues(alpha: 0.1) : scheme.surface.withAlpha(150),
+        borderRadius: BorderRadius.circular(AppSize.cornerInset(AppSize.spaceS))
+      ),
+      child: Row(children: [
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Icon(collect ? CI.wallet : CI.check, size: AppSize.text, color: collect ? warning : scheme.text.secondary),
+            SizedBox(width: AppSize.gap),
+            Flexible(child: TextSmall(
+              collect ? s.shipment_ticket_collect : s.shipment_ticket_paid,
+              bold: true,
+              ellipsis: true,
+              color: collect ? warning : null
+            ))
+          ]),
+          for (final note in notes) Padding(
+            padding: EdgeInsets.only(top: AppSize.gap * 0.5, left: AppSize.text + AppSize.gap),
+            child: TextSmall(note, ellipsis: true, color: scheme.text.secondary)
+          )
+        ])),
+        SizedBox(width: AppSize.spaceS),
+        TextMedium(
+          amount == null ? s.shipment_none : saleAmountLabel(amount, shipment.currency),
+          font: TextFont.bebas,
+          multiplier: 2.1,
+          color: collect ? warning : null
+        )
+      ])
+    );
+  }
+}
+
+/// A text action that does not compete with the panel's buttons: icon and
+/// label in the brand colour, filled only while pointed at.
+class _Link extends StatelessWidget {
+  const _Link({required this.label, required this.action, this.icon});
+
+  final String label;
+  final void Function() action;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = ThemeColor.of(context);
+
+    return FeedbackButton(
+      action: action,
+      message: label,
+      height: AppSize.text * 2,
+      padding: EdgeInsets.symmetric(horizontal: AppSize.gap),
+      radius: AppSize.cornerInset(AppSize.gap),
+      color: scheme.surfaceOver,
+      feedbackColor: scheme.line,
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        if (icon != null) ...[
+          Icon(icon, size: AppSize.text, color: scheme.primary),
+          SizedBox(width: AppSize.gap * 0.5)
+        ],
+        TextSmall(label, bold: true, color: scheme.primary)
+      ])
+    );
+  }
+}
+
 /// One line as a kitchen ticket prints it: how many, what, and for how much,
-/// with what was added or left out underneath.
+/// with what was added or left out underneath. The currency is the total's:
+/// repeated on every line it is read before the figure.
 class _TicketLine extends StatelessWidget {
-  const _TicketLine({required this.item, required this.currency});
+  const _TicketLine({required this.item});
 
   final SaleItemModel item;
-  final String currency;
+
+  static double get qtyWidth => AppSize.text * 2.5;
 
   @override
   Widget build(BuildContext context) {
@@ -166,22 +252,22 @@ class _TicketLine extends StatelessWidget {
     final extras = [
       for (final pick in item.modifiers) pick.name,
       for (final name in item.omitted) s.sales_detail_item_without(name)
-    ].where((part) => part.trim().isNotEmpty).join(" · ");
+    ].where((part) => part.trim().isNotEmpty).join(", ");
 
     return Padding(
-      padding: EdgeInsets.only(bottom: AppSize.gap * 0.75),
+      padding: EdgeInsets.only(bottom: AppSize.gap),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SizedBox(
-          width: AppSize.text * 2.25,
+          width: qtyWidth,
           child: TextMedium("${saleCountLabel(context, item.qty)}×", bold: true, color: scheme.primary)
         ),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           TextMedium(item.name.isEmpty ? s.sales_detail_item_concept : item.name, lines: 2, ellipsis: true),
           if (extras.isNotEmpty) TextSmall(extras, lines: 2, ellipsis: true, color: scheme.text.secondary)
         ])),
-        if (item.total != null) ...[
+        if (item.total != null && item.total! > 0) ...[
           SizedBox(width: AppSize.gap),
-          TextSmall(saleAmountLabel(item.total, currency), color: scheme.text.secondary)
+          TextMedium(item.total!.toStringAsFixed(2), color: scheme.text.secondary)
         ]
       ])
     );

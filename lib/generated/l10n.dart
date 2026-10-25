@@ -19337,61 +19337,11 @@ class S {
     );
   }
 
-  /// `Destination`
-  String get shipment_destination {
-    return Intl.message(
-      'Destination',
-      name: 'shipment_destination',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Open in maps`
   String get shipment_open_map {
     return Intl.message(
       'Open in maps',
       name: 'shipment_open_map',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Area`
-  String get shipment_area {
-    return Intl.message('Area', name: 'shipment_area', desc: '', args: []);
-  }
-
-  /// `Money`
-  String get shipment_money {
-    return Intl.message('Money', name: 'shipment_money', desc: '', args: []);
-  }
-
-  /// `Sale total`
-  String get shipment_total {
-    return Intl.message(
-      'Sale total',
-      name: 'shipment_total',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Not paid yet: it is collected on delivery.`
-  String get shipment_collect_hint {
-    return Intl.message(
-      'Not paid yet: it is collected on delivery.',
-      name: 'shipment_collect_hint',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Paid by the customer for delivery`
-  String get shipment_fee {
-    return Intl.message(
-      'Paid by the customer for delivery',
-      name: 'shipment_fee',
       desc: '',
       args: [],
     );
@@ -19422,26 +19372,6 @@ class S {
     return Intl.message(
       'No steps recorded yet.',
       name: 'shipment_history_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Collect on delivery`
-  String get shipment_collect {
-    return Intl.message(
-      'Collect on delivery',
-      name: 'shipment_collect',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Paid in cash with`
-  String get shipment_tender {
-    return Intl.message(
-      'Paid in cash with',
-      name: 'shipment_tender',
       desc: '',
       args: [],
     );
@@ -19574,16 +19504,6 @@ class S {
     return Intl.message('Rider', name: 'shipment_rider', desc: '', args: []);
   }
 
-  /// `Choosing someone assigns the delivery right away.`
-  String get shipment_rider_subtitle {
-    return Intl.message(
-      'Choosing someone assigns the delivery right away.',
-      name: 'shipment_rider_subtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `This branch has no riders yet; its team shows up here. A platform or courier can take it meanwhile.`
   String get shipment_rider_nobody {
     return Intl.message(
@@ -19624,13 +19544,63 @@ class S {
     );
   }
 
-  /// `When and cost`
-  String get shipment_when {
+  /// `Details`
+  String get shipment_details {
     return Intl.message(
-      'When and cost',
-      name: 'shipment_when',
+      'Details',
+      name: 'shipment_details',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Discard`
+  String get shipment_discard {
+    return Intl.message(
+      'Discard',
+      name: 'shipment_discard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Who and when`
+  String get shipment_dispatch {
+    return Intl.message(
+      'Who and when',
+      name: 'shipment_dispatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Each choice is saved as soon as you make it.`
+  String get shipment_dispatch_subtitle {
+    return Intl.message(
+      'Each choice is saved as soon as you make it.',
+      name: 'shipment_dispatch_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time window saved`
+  String get shipment_window_saved {
+    return Intl.message(
+      'Time window saved',
+      name: 'shipment_window_saved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delivery {amount}`
+  String shipment_ticket_fee(String amount) {
+    return Intl.message(
+      'Delivery $amount',
+      name: 'shipment_ticket_fee',
+      desc: '',
+      args: [amount],
     );
   }
 
