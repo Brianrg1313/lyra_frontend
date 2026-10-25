@@ -52,6 +52,24 @@ function extractLocation(content) {
   };
 }
 
+/// The message this one answers, when the customer used WhatsApp's "reply"
+/// on it: the quoted message's id and its text. The id is what matters — it
+/// is the id the backend stored our own message under, so it can tell which
+/// of three photos "estos me gustan" points at. Without it the backend got
+/// the words alone and answered about all three (14/10/2026). The quote
+/// travels on whichever content type carries the reply, so every one is read.
+function extractQuoted(content) {
+  for (const value of Object.values(content ?? {})) {
+    const info = value?.contextInfo;
+
+    if (info?.stanzaId) {
+      return { id: info.stanzaId, text: extractText(info.quotedMessage) };
+    }
+  }
+
+  return null;
+}
+
 function detectType(content) {
   if (!content) return "unknown";
   const [key] = Object.keys(content);
@@ -103,7 +121,8 @@ async function mapMessage(sock, waMessage, logger) {
     type,
     text: extractText(content),
     media: null,
-    location: extractLocation(content)
+    location: extractLocation(content),
+    quoted: extractQuoted(content)
   };
 
   const mediaField = MEDIA_TYPES[Object.keys(content ?? {})[0]];

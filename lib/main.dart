@@ -12,8 +12,8 @@ import 'toolkit/settings/initial_builder.dart';
 import 'toolkit/settings/initial_validator.dart';
 
 void main() => starter(
-  devMode: true,
   title: "Lyra",
+  devMode: true,
   routes: routes,
   preCall: preCall,
   darkScheme: darkScheme,

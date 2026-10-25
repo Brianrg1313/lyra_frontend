@@ -41,7 +41,7 @@ WhatsApp <---> Baileys socket <---> this server ---> backend  (HTTP, outbound)
 - `src/store/registry.js` — persisted session ids (`data/registry.json`), reconnected on boot.
 - `src/whatsapp/device.js` — linked-device identity (`Browsers.windows("Lyra")`) + `ensurePairedAsCurrentDevice`.
 - `src/whatsapp/status.js` — `SessionState` enum and the status shape.
-- `src/whatsapp/message-mapper.js` — `WAMessage` → flat message; inlines media as base64 up to `MEDIA_INLINE_MAX_BYTES`; a pin (`locationMessage`/`liveLocationMessage`) as `location` numbers, forwarded as `LATITUDE`/`LONGITUDE`/`LABEL`/`ADDRESS` — without them the backend cannot measure it against the delivery areas.
+- `src/whatsapp/message-mapper.js` — `WAMessage` → flat message; inlines media as base64 up to `MEDIA_INLINE_MAX_BYTES`; a pin (`locationMessage`/`liveLocationMessage`) as `location` numbers, forwarded as `LATITUDE`/`LONGITUDE`/`LABEL`/`ADDRESS` — without them the backend cannot measure it against the delivery areas. A reply's `contextInfo` (any content type) as `quoted { id, text }`, forwarded as `QUOTED_ID`/`QUOTED_TEXT` — without it «estos me gustan» on one of three photos reached the backend as words about none of them (14/10/2026).
 - `src/whatsapp/session.js` — `WhatsappSession`: one socket + reconnect loop; `start stop logout sendMessage readMessages sendPresence subscribeToPresence _announceAvailable`; emits `status message receipts presence`.
 - `src/whatsapp/session-manager.js` — `SessionManager`: all sessions by id, re-emits events, registry.
 - `src/backend/credentials.js` — the borrowed app session (url, token, device, business, language) in `data/backend.json`.

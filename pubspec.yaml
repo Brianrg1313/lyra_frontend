@@ -1,7 +1,7 @@
 name: app
 description: "Lyra"
 publish_to: 'none'
-version: 0.0.8+1
+version: 0.0.9+1
 
 environment:
   sdk: ^3.9.2

@@ -34,6 +34,11 @@ const TICKET_MEMORY = 500;
 /// polling on top of a healthy socket would only fetch answers it already got.
 const OUTBOX_POLL_MS = 60000;
 
+/// How long downloading one product photo from the backend may take before
+/// the send fails (and is acked as failed). The answer's parts are sent in
+/// order, so a photo that hangs holds up everything after it.
+const DOWNLOAD_TIMEOUT_MS = 20000;
+
 /// Least time between two "the customer is typing" reports for the same chat.
 /// WhatsApp emits presence continuously while somebody types, and the backend
 /// only needs to know that it is happening — the endpoint stores nothing, so
@@ -551,7 +556,7 @@ class BackendLink {
     const ack = { TICKET: ticket, TO: to };
 
     try {
-      const messageId = await this._sessions.sendMessage(entry.sessionId, this._address(entry, to), this._content(payload, text));
+      const messageId = await this._sessions.sendMessage(entry.sessionId, this._address(entry, to), await this._content(payload, text));
 
       ack.MESSAGE_ID = messageId ?? undefined;
 
@@ -582,11 +587,16 @@ class BackendLink {
     }
   }
 
-  /// What Baileys is handed for one action. `kind` is "text" or "location"
-  /// (the company's pin, sent after an answer about where it is); a payload
-  /// with no `kind` predates the field and is text.
-  _content(payload, text) {
+  /// What Baileys is handed for one action. `kind` is "text", "location"
+  /// (the company's pin, sent after an answer about where it is) or "image" (a
+  /// product photo the customer asked to see); a payload with no `kind`
+  /// predates the field and is text.
+  async _content(payload, text) {
     const location = payload?.location;
+
+    if (payload?.kind === "image" && payload?.image?.path) {
+      return { image: await this._download(payload.image.path), mimetype: "image/jpeg", ...(payload.image.caption ? { caption: payload.image.caption } : {}) };
+    }
 
     if (payload?.kind === "location" && Number.isFinite(location?.latitude) && Number.isFinite(location?.longitude)) {
       return {
@@ -600,6 +610,23 @@ class BackendLink {
     }
 
     return { text };
+  }
+
+  /// The photo's bytes, from the backend this phone already talks to: the path
+  /// (`/rigel/media/<id>.jpg`) is relative on purpose, because this side knows
+  /// the backend's address and the backend may not know its own public one.
+  /// Public and unauthenticated, like every `/rigel` file. A failure throws,
+  /// which acks the ticket with the error like any other send that failed.
+  async _download(path) {
+    const base = credentials.value?.url;
+
+    if (!base) throw new Error("No backend URL to download the photo from");
+
+    const response = await fetch(`${base}${path}`, { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) });
+
+    if (!response.ok) throw new Error(`Photo download answered ${response.status}`);
+
+    return Buffer.from(await response.arrayBuffer());
   }
 
   /// Blue ticks, "escribiendo…", the account showing as online. Emitted and
@@ -862,7 +889,12 @@ class BackendLink {
       LATITUDE: message.location?.latitude ?? undefined,
       LONGITUDE: message.location?.longitude ?? undefined,
       LABEL: message.location?.name ?? undefined,
-      ADDRESS: message.location?.address ?? undefined
+      ADDRESS: message.location?.address ?? undefined,
+      // The message this one replies to (WhatsApp's "reply"): its id, which
+      // the backend resolves against what it stored, and its text as a
+      // fallback for a message it never stored.
+      QUOTED_ID: message.quoted?.id ?? undefined,
+      QUOTED_TEXT: message.quoted?.text ?? undefined
     };
   }
 
