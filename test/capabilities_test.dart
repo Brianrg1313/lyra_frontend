@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
 import 'package:app/services/business/sources/delivery_lan_source.dart';

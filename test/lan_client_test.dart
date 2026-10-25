@@ -6,8 +6,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 import 'package:app/services/lan/lan_device.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 

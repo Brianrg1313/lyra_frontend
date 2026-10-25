@@ -8,7 +8,7 @@ import 'package:app/services/stock/movements/stock_mover.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/tables/table_view_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// The sheet's stock cells move their product through the inventory: the − and + through the
 /// movement form, a typed figure as a correction ([correct]). The stock is the inventory

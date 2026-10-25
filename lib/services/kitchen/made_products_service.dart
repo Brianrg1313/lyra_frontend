@@ -19,8 +19,8 @@ import 'package:app/services/kitchen/modifier_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan_image.dart' show mediaBytes;
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/image.dart' show mediaBytes;
 
 enum MadeProductsStatus { loading, ready, empty, error }
 

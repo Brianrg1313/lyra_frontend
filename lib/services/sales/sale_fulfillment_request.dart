@@ -22,7 +22,7 @@
 ///
 /// The owning business does not go in the body: it travels in the
 /// `business_id` header of every request (see `useBusiness` in
-/// `toolkit/api.dart`).
+/// `toolkit/backend/api.dart`).
 library;
 
 /// Builds the body that records how a sale reaches its customer.

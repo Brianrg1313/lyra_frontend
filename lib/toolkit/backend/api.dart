@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:core/api.dart';
 
 // SERVICES
-import 'package:app/toolkit/sockets.dart';
+import 'package:app/toolkit/backend/sockets.dart';
 import 'package:app/services/database/database_service.dart';
 
 // WIDGETS

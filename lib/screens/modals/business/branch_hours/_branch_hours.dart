@@ -10,7 +10,7 @@ import 'package:lyra_protocol/lyra_protocol.dart' show Grant;
 // SERVICES
 import 'package:app/services/appointments/opening_hours_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/_section/section_message.dart';

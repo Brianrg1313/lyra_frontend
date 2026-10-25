@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/services/local_server/local_server_service.dart';
 import 'package:app/services/local_server/node_commands.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// The app's side of the engine (`docs/plan-offline-lan.md` §3): every step is a `lyra_node`
 /// command, secrets go on stdin, and the engine is started detached only when it isn't already

@@ -34,7 +34,7 @@ Banned (never introduce new usages):
 | `showMenu` `MenuAnchor` `ContextMenuController`, menus on `onSecondaryTap`/`onLongPress` | `ContextMenuRegion` (+ `ContextItem`/`ContextSeparator`/`ContextHeader`), `showContextMenu` |
 | `DataTable` `Table` | `DataTableView` + `TableColumn`/`TableController`/`TableStyle` |
 | `CircularProgressIndicator` | `Loading` (raw one only for pre-existing sized inline spinners) |
-| `Image.network(url)` | `Image(image: mediaImage(url))` (`toolkit/lan_image.dart`: a master's files come over its channel) |
+| `Image.network(url)` | `Image(image: mediaImage(url))` (`toolkit/lan/image.dart`: a master's files come over its channel) |
 | initials circles, `DecorationImage` avatars, `NetworkImage` | `ProfilePicture(kind: ProfileKind.user/employee/business/customer)` |
 | hardcoded colors | `ThemeColor.of(context).*` |
 | hardcoded paddings/sizes | `AppSize.*` |
@@ -138,7 +138,7 @@ provided by their screen. Load states: `enum XStatus { idle, loading, ready, emp
 
 **Backend access** — a service reads and writes through its domain's source
 (`lib/services/<domain>/sources/`: `XSource` returns models, `XCloudSource` holds the REST
-calls), resolved by `Sources` in `lib/toolkit/deployment.dart`. **Never `api.*` from a service.**
+calls), resolved by `Sources` in `lib/toolkit/backend/deployment.dart`. **Never `api.*` from a service.**
 Only cloud-only services (chats, channels, connections, maps, Baileys, places, money AI, sign up,
 badges, the person's own account, shipments, opening hours, kitchen) call `api` directly. Screens never know the deployment mode (`docs/plan-offline-lan.md`).
 

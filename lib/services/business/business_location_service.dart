@@ -4,8 +4,8 @@ import 'package:flutter/widgets.dart' show BuildContext;
 // SERVICES
 import 'package:app/services/business/business_location_model.dart';
 import 'package:app/services/business/sources/business_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum BusinessLocationStatus { idle, loading, ready, error }
 

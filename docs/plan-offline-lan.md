@@ -243,7 +243,7 @@ left out.
 | `lyra_protocol` (new repo, pure Dart) | `E:/andromeda/frontend/packages/lyra_protocol` | Op names, request/response and event DTOs, error codes, `protocolVersion`. Shared by the app and the engine. |
 | `lyra_node` (new repo, pure Dart, no Flutter) | `E:/andromeda/frontend/packages/lyra_node` | The engine: storage, crypto, domain, oplog, network, backup, sync. `bin/lyra_node.dart` = the background executable (§3). |
 | app: sources | `lib/services/<domain>/sources/` | `XSource` interface, `XCloudSource` (today's REST calls moved here), `XLanSource` (protocol client). |
-| app: mode and gateway | `lib/toolkit/deployment.dart`, `lib/toolkit/lan.dart` | `DeploymentMode {cloud, local, hybrid}`, `DeploymentRole {master, client}`, the LAN client (RPC plus events), capability table. |
+| app: mode and gateway | `lib/toolkit/backend/deployment.dart`, `lib/toolkit/lan/_lan.dart` | `DeploymentMode {cloud, local, hybrid}`, `DeploymentRole {master, client}`, the LAN client (RPC plus events), capability table. |
 | app: engine launcher | `lib/services/local_server/` | `LocalServerService`: start, attach, verify, stop, status of `lyra_node` (master only). |
 | app: setup screens | `lib/screens/pre_start/deployment/` | Choose mode, licence agreement, create master, pair client, unlock master, recovery key. |
 | app: admin screens | `lib/screens/home/sections/business/settings/local_server/` | Devices, backups, key rotation, sync status, conflicts, stop server. |
@@ -478,7 +478,7 @@ Per domain:
 2. Move the current calls into `XCloudSource` unchanged. **No behaviour change**, verified by
    the existing tests.
 3. Add `XLanSource` (protocol ops → models, via a `fromLocal` factory next to `fromJson`).
-4. The service receives its source from `Sources.of(mode)`, one resolver in `lib/toolkit/deployment.dart`.
+4. The service receives its source from `Sources.of(mode)`, one resolver in `lib/toolkit/backend/deployment.dart`.
 
 Order: `client` (`/init` → `session.bootstrap`), `permissions`, `business`, `catalog`, `stock`,
 `inventory`, `pos`, `sales`, `money`, `business_employees`, `branches` (single site),
@@ -724,7 +724,7 @@ apps. What the person sees, how they sign in and what the side bar holds don't c
   (`BusinessModel.cloudKey`); the local domains keep the master's.
 
 ### 9.7 The cloud's web finds its master (D19, planned 2026-10-03)
-A browser on the cloud's web build can't discover anything (no multicast: `lan_web.dart` `discover`
+A browser on the cloud's web build can't discover anything (no multicast: `toolkit/lan/web.dart` `discover`
 answers nothing), but it can try a name it already knows. So the cloud tells it the name, and the
 master proves who it is.
 - **The master reports its address.** Over the edge channel (signed, §9.2), once after enrolment and

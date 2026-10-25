@@ -12,7 +12,7 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/sync_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 // WIDGETS

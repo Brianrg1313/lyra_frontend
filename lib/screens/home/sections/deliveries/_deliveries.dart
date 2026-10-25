@@ -21,7 +21,7 @@ import 'package:app/services/business/delivery_areas_service.dart';
 import 'package:app/services/maps/map_tiles_service.dart';
 import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipments_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 // WIDGETS
 import 'package:core/form.dart';

@@ -4,10 +4,10 @@ import 'package:app/services/stock/movements/stock_ledger_model.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/prices/branch_price_model.dart';
 import 'package:app/services/stock/transfers/stock_transfer_model.dart';
-import 'package:app/toolkit/deployment.dart' show UnreadableAnswer;
+import 'package:app/toolkit/backend/deployment.dart' show UnreadableAnswer;
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// [StockSource] over the backend's REST api.
 class StockCloudSource implements StockSource {

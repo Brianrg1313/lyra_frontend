@@ -21,7 +21,7 @@ explicit `context.read` helpers). Screens read services through `provider`.
   `<x>_source.dart` (`abstract interface class XSource`, returns models, throws the normalised
   error or `UnreadableAnswer`) and `<x>_cloud_source.dart` (the REST calls, `const`, stateless).
   A service takes `{XSource? source}` for tests and otherwise reads `Sources.<x>`
-  (`lib/toolkit/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
+  (`lib/toolkit/backend/deployment.dart`). **A service never calls `api.*` itself**; cloud-only
   domains (chats, channels, connections, knowledge, maps, baileys, places, money AI, sign up, business
   e-mails, badges, account, shipments, opening hours, kitchen) are not split.
 

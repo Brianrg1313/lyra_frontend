@@ -13,8 +13,8 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_normalize_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// Name of the form field a file travels under (a spreadsheet to import, a
 /// product photo). The backend decides it: it's the one its multipart reads,

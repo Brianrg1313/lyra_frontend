@@ -12,7 +12,7 @@ import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/business_employees_service.dart';
 import 'package:app/services/client/client_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/screens/home/sections/employees/employee_detail/_employee_detail.dart';
 import 'package:app/screens/home/sections/employees/own_settings/own_history.dart';
 import 'package:app/screens/home/sections/employees/own_settings/own_security.dart';

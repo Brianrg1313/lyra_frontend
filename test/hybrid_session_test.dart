@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:core/core.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/connection/cloud_presence.dart';

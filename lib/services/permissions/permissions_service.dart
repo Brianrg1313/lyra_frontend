@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// What the person may open and do in each company, from `/init`'s `permissions`.

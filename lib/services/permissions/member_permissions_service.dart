@@ -7,7 +7,7 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum MemberPermissionsStatus { idle, loading, ready, error }
 

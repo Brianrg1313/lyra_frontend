@@ -7,7 +7,7 @@ import 'package:app/services/pos/pos_invoice_model.dart';
 import 'package:app/services/pos/pos_payment_method.dart';
 import 'package:app/services/pos/pos_product_model.dart';
 import 'package:app/services/pos/sources/pos_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// [PosSource] over the master (`docs/offline/specs/pos.md`).

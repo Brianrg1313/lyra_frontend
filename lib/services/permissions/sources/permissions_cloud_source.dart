@@ -5,8 +5,8 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/permission_member_request.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [PermissionsSource] over the backend's REST api (`/lyra/v1/permissions`).
 class PermissionsCloudSource implements PermissionsSource {

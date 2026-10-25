@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/money/money_receivable_model.dart';
 import 'package:app/services/money/sources/money_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum MoneyReceivablesStatus { idle, loading, ready, empty, error }
 

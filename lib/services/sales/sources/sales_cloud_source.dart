@@ -5,7 +5,7 @@ import 'package:app/services/sales/sale_detail_model.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sale_stage_model.dart';
 import 'package:app/services/sales/sources/sales_source.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// [SalesSource] over the backend's REST api.
 class SalesCloudSource implements SalesSource {

@@ -9,11 +9,11 @@ import 'package:web/web.dart' as web;
 
 // SERVICES
 import 'package:app/services/lan/lan_device.dart';
-import './lan_found.dart';
-import './lan_key.dart';
-import './lan_file.dart';
+import './found.dart';
+import './key.dart';
+import './file.dart';
 
-/// Browser transport of the LAN client (`lan.dart`, `protocol-v1.md` §3).
+/// Browser transport of the LAN client (`_lan.dart`, `protocol-v1.md` §3).
 ///
 /// The page is served by the master itself (plan §3), so the master is the page's own origin:
 /// `/rpc` and `/pair` always go there, whatever address was stored, because the master lets a

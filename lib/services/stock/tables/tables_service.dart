@@ -12,8 +12,8 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_normalizing_model.dart';
 import 'package:app/services/stock/tables/table_ready_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/toolkit.dart' show S;
 
 /// State of the table list load (`GET /inventory/products/builder/list/`).
@@ -264,7 +264,7 @@ class TablesService extends ChangeNotifier {
   ///
   /// The owning business doesn't travel in [data]: it goes in the
   /// `business_id` header the apis set on their own (see `useBusiness` in
-  /// `toolkit/api.dart`).
+  /// `toolkit/backend/api.dart`).
   ///
   /// Returns the created table's identifier. On error it shows the floating
   /// banner and rethrows, so the screen can turn off its loading state. On

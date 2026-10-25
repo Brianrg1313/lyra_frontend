@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:app/services/kitchen/kitchen_api.dart';
 import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/kitchen/modifier_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Status of the modifier groups' read.
 enum ModifiersStatus { idle, loading, ready, empty, error }

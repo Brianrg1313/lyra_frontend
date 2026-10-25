@@ -11,7 +11,7 @@ import 'package:app/services/business/sources/business_cloud_source.dart';
 import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/lan/lan_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [BusinessSource] over the master (`docs/offline/specs/business.md`): its one company and one
 /// site, and its logo.

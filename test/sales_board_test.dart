@@ -9,7 +9,7 @@ import 'package:app/services/sales/sale_progress_model.dart';
 import 'package:app/services/sales/sale_stage_model.dart';
 import 'package:app/services/sales/sales_service.dart';
 import 'package:app/services/connection/connection_service.dart' show SocketStatus;
-import 'package:app/toolkit/sockets.dart';
+import 'package:app/toolkit/backend/sockets.dart';
 import 'package:app/toolkit/settings/routes.dart';
 
 /// What the sales board runs on, pinned where it is invisible from the screen:

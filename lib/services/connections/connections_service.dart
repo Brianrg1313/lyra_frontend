@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:app/services/connections/connection_detail_model.dart';
 import 'package:app/services/connections/connection_lite_model.dart';
 import 'package:app/services/connections/connection_request.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Status of loading the connections listing (`GET /connections/`).
 enum ConnectionsStatus { idle, loading, ready, empty, error }

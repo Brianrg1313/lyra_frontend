@@ -16,8 +16,8 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/business/sources/business_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// Status of loading the active business's profile (`/business/profile/`).
 enum BusinessProfileStatus { idle, loading, ready, error }

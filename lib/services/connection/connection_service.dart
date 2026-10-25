@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:core/socket.dart' show SocketStatus, SocketHandler;
 
-import 'package:app/toolkit/sockets.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/sockets.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 
 // The status and the handler signature are part of this service's API:

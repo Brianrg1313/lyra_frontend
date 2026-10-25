@@ -13,7 +13,7 @@ import 'package:app/services/money/money_receivable_model.dart';
 import 'package:app/services/money/money_summary_model.dart';
 import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/services/pos/pos_payment_method.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// [MoneySource] over the backend's REST api.
 class MoneyCloudSource implements MoneySource {

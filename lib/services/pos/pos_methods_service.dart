@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/pos/pos_payment_method.dart';
 import 'package:app/services/pos/sources/pos_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum PosMethodsStatus { idle, loading, ready, error }
 

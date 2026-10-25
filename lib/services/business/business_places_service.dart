@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 // SERVICES
 import 'package:app/services/business/business_places_model.dart';
 import 'package:app/services/catalog/catalog_table.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Where the search box stands. [unavailable] is not a failure: it is what an
 /// installation with no Places key answers, and the form hides the box and

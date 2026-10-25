@@ -15,7 +15,7 @@ import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/tables/table_normalize_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [InventorySource] over the master (`docs/offline/specs/inventory.md`).
 ///

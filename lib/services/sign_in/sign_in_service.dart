@@ -1,5 +1,5 @@
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
 // SERVICES

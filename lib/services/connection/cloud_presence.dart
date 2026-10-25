@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:core/socket.dart' show SocketAPI, SocketStatus;
 
 // SERVICES
-import 'package:app/toolkit/sockets.dart' show presenceSocket;
+import 'package:app/toolkit/backend/sockets.dart' show presenceSocket;
 
 /// Whether the backend is there, said as it changes: a socket on its `/presence` namespace, open
 /// without a session (`model:/bridge/presence.js`). It is the only way the app knows: nothing

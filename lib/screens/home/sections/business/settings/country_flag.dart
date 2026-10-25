@@ -3,7 +3,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/catalog/country_model.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/lan/image.dart';
 
 /// A country's flag, the size of a row.
 ///

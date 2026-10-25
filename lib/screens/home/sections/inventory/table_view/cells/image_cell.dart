@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 // SERVICES
 import 'package:app/services/inventory/product_image.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/lan/image.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/inventory/table_view/sheet_style.dart';

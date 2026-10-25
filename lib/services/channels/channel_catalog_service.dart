@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:app/services/channels/channel_provider_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Status of the catalog read (`GET /channels/providers`).
 enum ChannelCatalogStatus { idle, loading, ready, error }

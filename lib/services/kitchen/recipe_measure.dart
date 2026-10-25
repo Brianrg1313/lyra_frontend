@@ -1,6 +1,6 @@
 // SERVICES
 import 'package:app/services/kitchen/recipe_availability_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Reads what the branch can make of the ids it is given (`POST /inventory/recipes/availability`):
 /// a product with a recipe answers, one without is not in the map. Cloud only.

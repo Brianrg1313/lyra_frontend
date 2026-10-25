@@ -3,7 +3,7 @@
 /// (`DELETE /v1/knowledge/`).
 ///
 /// The business does not go in the body: it travels in the `business_id`
-/// header of every request (see `useBusiness` in `toolkit/api.dart`).
+/// header of every request (see `useBusiness` in `toolkit/backend/api.dart`).
 ///
 /// Every scope key travels on both writes, emptied when there is none, and the
 /// backend reads an empty one as "clear it": `BRANCH_ID` `""` is the whole

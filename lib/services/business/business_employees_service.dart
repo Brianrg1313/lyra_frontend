@@ -15,8 +15,8 @@ import 'package:app/services/permissions/permission_member_model.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
 import 'package:app/services/business/sources/employees_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum BusinessEmployeesStatus { idle, loading, ready, error }
 

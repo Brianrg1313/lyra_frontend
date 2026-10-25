@@ -7,7 +7,7 @@
 ///
 /// The owning business does not go in the body: it travels in the
 /// `business_id` header of every request (see `useBusiness` in
-/// `toolkit/api.dart`).
+/// `toolkit/backend/api.dart`).
 ///
 /// A connection is **the account and nothing more**: which service it is for,
 /// what the business named it, and which credentials it logs in with. What the

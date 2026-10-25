@@ -9,7 +9,7 @@
 /// spreadsheet.
 ///
 /// The owning company does not go in the body: it travels in the `business_id` header of
-/// all requests (see `useBusiness` in `toolkit/api.dart`).
+/// all requests (see `useBusiness` in `toolkit/backend/api.dart`).
 ///
 /// `DATA` is indexed by FIELD_ID and **only carries what was touched**: the
 /// spreadsheet edits one cell at a time, so sending the whole row would rewrite

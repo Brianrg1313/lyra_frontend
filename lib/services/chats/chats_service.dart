@@ -10,7 +10,7 @@ import 'package:app/services/chats/chat_model.dart';
 import 'package:app/services/badges/badges_service.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 enum ChatsStatus { idle, loading, ready, empty, error }
 

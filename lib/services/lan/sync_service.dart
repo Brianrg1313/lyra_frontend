@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import './hybrid_service.dart';

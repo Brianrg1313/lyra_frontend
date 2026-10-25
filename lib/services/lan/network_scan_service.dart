@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 // SERVICES
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 import 'package:app/services/connection/cloud_presence.dart';
 import 'package:app/services/local_server/local_server_service.dart';
 

@@ -8,7 +8,7 @@ import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/business/sources/business_lan_source.dart';
 import 'package:app/services/business/sources/employees_source.dart';
 import 'package:app/services/lan/lan_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [EmployeesSource] over the master (`docs/offline/specs/employees.md`).
 ///

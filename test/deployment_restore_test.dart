@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/services/lan/lan_device.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 

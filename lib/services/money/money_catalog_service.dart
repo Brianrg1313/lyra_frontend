@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/money/money_concept_model.dart';
 import 'package:app/services/pos/pos_payment_method.dart';
 import 'package:app/services/money/sources/money_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum MoneyCatalogStatus { idle, loading, ready, error }
 

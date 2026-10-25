@@ -7,8 +7,8 @@ import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/sources/business_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum BusinessBranchesStatus { idle, loading, ready, error }
 

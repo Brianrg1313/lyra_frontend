@@ -29,8 +29,8 @@ import 'package:app/services/stock/sources/inventory_lan_source.dart';
 import 'package:app/services/stock/sources/stock_lan_source.dart';
 import 'package:app/services/stock/summary/stock_summary_model.dart';
 import 'package:app/services/stock/summary/stock_summary_service.dart';
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/image.dart';
 
 /// The inventory and stock release of plan phase 4 on the app's side: the services' cloud
 /// bodies reach the master in the spec's keys, and its answers (as `lyra_node` sends them,

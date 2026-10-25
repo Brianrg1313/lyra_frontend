@@ -10,8 +10,8 @@ import 'package:app/services/client/client_task.dart';
 import 'package:app/services/client/employment_invitation_model.dart';
 import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 // SERVICES
 import 'package:app/services/database/database_service.dart';

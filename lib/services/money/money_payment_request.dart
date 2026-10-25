@@ -7,7 +7,7 @@
 ///
 /// The owning business does not go in the body: it travels in the
 /// `business_id` header of every request (see `useBusiness` in
-/// `toolkit/api.dart`).
+/// `toolkit/backend/api.dart`).
 ///
 /// **There is no `DIRECTION`.** Which way the money went is decided by the
 /// concept —`supplier` is money out, `settlement` is money in— so a request

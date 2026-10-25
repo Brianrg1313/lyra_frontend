@@ -8,8 +8,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_area_request.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum DeliveryAreasStatus { idle, loading, ready, error }
 

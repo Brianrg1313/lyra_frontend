@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/lan/image.dart';
 
 // SERVICES
 import 'package:app/services/catalog/currency_model.dart';

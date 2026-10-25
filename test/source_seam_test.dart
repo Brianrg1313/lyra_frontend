@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app/services/pos/pos_service.dart';
 import 'package:app/services/pos/sources/pos_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// The data-source seam (`docs/plan-offline-lan.md` §7.1): a service reads models from its
 /// source and knows nothing of where they came from. It is what lets the LAN source replace

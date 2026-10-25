@@ -5,7 +5,7 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/pos/pos_product_model.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
 import 'package:app/services/pos/sources/pos_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// Status of the catalog read (`POST /pos/catalog/`).
 ///

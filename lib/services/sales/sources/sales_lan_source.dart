@@ -9,7 +9,7 @@ import 'package:app/services/sales/sale_detail_model.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sale_stage_model.dart';
 import 'package:app/services/sales/sources/sales_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [SalesSource] over the master (`docs/offline/specs/sales.md`).
 ///

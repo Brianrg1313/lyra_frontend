@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/kitchen/modifier_model.dart';
 import 'package:app/services/kitchen/recipe_availability_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// What the till asks the kitchen while ringing a dish up (`cocina-frontend.md` §5–6): which
 /// products offer modifiers, a product's groups with what is left of each option, and which of

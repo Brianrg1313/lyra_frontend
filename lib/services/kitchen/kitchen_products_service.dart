@@ -13,7 +13,7 @@ import 'package:app/services/stock/movements/stock_mover.dart';
 import 'package:app/services/stock/movements/stock_movement_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// Status of a supplies table's list.
 enum KitchenProductsStatus { idle, loading, ready, empty, error }

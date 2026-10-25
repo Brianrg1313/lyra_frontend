@@ -4,9 +4,9 @@ import 'package:app/services/business/branch_service.dart';
 import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
-import 'package:app/toolkit/sockets.dart';
+import 'package:app/toolkit/backend/sockets.dart';
 
 BusinessBranchModel _branch(String id, {bool main = false}) =>
   BusinessBranchModel.from({"id": id, "name": id, "main": main})!;

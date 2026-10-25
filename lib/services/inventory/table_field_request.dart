@@ -7,7 +7,7 @@
 /// mounting the modal.
 ///
 /// The owning company does not go in the body: it travels in the `business_id` header of
-/// all requests (see `useBusiness` in `toolkit/api.dart`). The [tableId]
+/// all requests (see `useBusiness` in `toolkit/backend/api.dart`). The [tableId]
 /// does travel in creation, because the field belongs to a concrete table; in
 /// editing the field id is enough, which already knows which table it belongs to.
 ///

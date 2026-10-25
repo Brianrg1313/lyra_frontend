@@ -5,8 +5,8 @@ import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/business_location_model.dart';
 import 'package:app/services/business/business_profile_model.dart';
 import 'package:app/services/business/sources/business_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// Name of the form field the logo travels under. The backend decides it:
 /// it's the one its multipart reads, and with any other name the request

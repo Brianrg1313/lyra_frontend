@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 
 // SERVICES
 import 'package:app/services/money/money_currency_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 import 'package:app/services/money/sources/money_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum MoneyCurrenciesStatus { idle, loading, ready, error }
 

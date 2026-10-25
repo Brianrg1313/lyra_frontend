@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/files/file_model.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan_image.dart' show LanFileImage;
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/image.dart' show LanFileImage;
 
 /// Where images are downloaded from.
 ///

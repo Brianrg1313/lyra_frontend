@@ -8,7 +8,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:lyra_protocol/lyra_protocol.dart' show Fingerprint;
 
 // SERVICES
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 
 // WIDGETS
 import 'package:core/button.dart';

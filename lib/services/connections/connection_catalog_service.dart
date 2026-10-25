@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:app/services/connections/connection_provider_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Status of reading the catalog (`GET /connections/providers`).
 enum ConnectionCatalogStatus { idle, loading, ready, error }

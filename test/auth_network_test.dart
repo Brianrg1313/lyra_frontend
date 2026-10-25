@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'package:core/core.dart';
 import 'package:app/generated/l10n.dart';
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_pairing_service.dart';
 import 'package:app/services/lan/lan_service.dart';

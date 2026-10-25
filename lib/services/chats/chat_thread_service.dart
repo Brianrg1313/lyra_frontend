@@ -13,7 +13,7 @@ import 'package:app/services/chats/chat_model.dart';
 import 'package:app/services/chats/chat_request.dart';
 import 'package:app/services/chats/chats_service.dart';
 import 'package:app/services/connection/connection_service.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 enum ChatThreadStatus { idle, loading, ready, error }
 

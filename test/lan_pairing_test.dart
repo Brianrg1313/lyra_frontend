@@ -5,8 +5,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
 import 'package:app/services/lan/lan_pairing_service.dart';
 
@@ -228,7 +228,7 @@ class _ScriptedMaster implements PairingChannel {
   }
 }
 
-/// A browser's device key, as `lan_web.dart` makes it: no PEM, kept on its own.
+/// A browser's device key, as `lan/web.dart` makes it: no PEM, kept on its own.
 class _BrowserKey implements LanDeviceKey {
   final _key = EcKeyPair.generate();
   bool kept = false;

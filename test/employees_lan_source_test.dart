@@ -6,7 +6,7 @@ import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/sources/employees_lan_source.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/lan/lan_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// The employees release of plan phase 4 on the app's side: what the master answers
 /// (`docs/offline/specs/employees.md`, as `lyra_node` sends it) reaches the models the cloud's

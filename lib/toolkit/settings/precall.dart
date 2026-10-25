@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:app/services/database/database_service.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/image.dart';
 import 'package:core/core.dart';
 
 import 'package:window_manager/window_manager.dart';

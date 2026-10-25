@@ -7,8 +7,8 @@ import 'package:app/services/business/business_branch_model.dart';
 import 'package:app/services/business/sources/business_source.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum BranchStatus { idle, loading, ready, error }
 

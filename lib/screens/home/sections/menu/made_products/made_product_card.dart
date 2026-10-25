@@ -9,7 +9,7 @@ import 'package:app/services/kitchen/made_product_model.dart';
 import 'package:app/services/kitchen/made_products_service.dart';
 import 'package:app/services/kitchen/recipe_availability_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/lan/image.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 // WIDGETS

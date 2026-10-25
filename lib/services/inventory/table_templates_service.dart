@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/inventory/table_template_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum TableTemplatesStatus { idle, loading, ready, empty, error }
 

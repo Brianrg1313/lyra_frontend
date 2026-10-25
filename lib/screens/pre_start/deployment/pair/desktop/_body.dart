@@ -6,7 +6,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:lyra_protocol/lyra_protocol.dart' show defaultPort, PairingOffer;
 
 // SERVICES
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 import 'package:app/services/lan/lan_pairing_service.dart';
 
 // WIDGETS

@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan.dart' show lanServingMaster;
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/_lan.dart' show lanServingMaster;
 import 'package:app/toolkit/settings/initial_builder.dart' show clientService, hybridService;
 import 'package:app/services/preferences/preferences_service.dart';
 import 'package:app/services/lan/lan_service.dart';

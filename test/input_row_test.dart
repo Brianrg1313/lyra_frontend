@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:core/core.dart';
 import 'package:core/form.dart';
 import 'package:app/generated/l10n.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/screens/modals/business/create_business/_create_business.dart';
 
 /// `InputRow` fills its width without a `LayoutBuilder`: `showImageModal` measures its content

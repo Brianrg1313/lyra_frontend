@@ -8,7 +8,7 @@ import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/catalog/catalog_table.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// **The feed behind the bell, and the moment something lands in it.**

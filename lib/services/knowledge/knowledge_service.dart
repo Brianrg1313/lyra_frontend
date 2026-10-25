@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart' show BuildContext;
 // SERVICES
 import 'package:app/services/knowledge/knowledge_entry_model.dart';
 import 'package:app/services/knowledge/knowledge_request.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Status of the read of the frequent questions (`GET /knowledge/`).
 enum KnowledgeStatus { idle, loading, ready, empty, error }

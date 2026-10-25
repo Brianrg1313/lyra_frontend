@@ -1,6 +1,6 @@
 // SERVICES
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart' show UnreadableAnswer;
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart' show UnreadableAnswer;
 
 /// The backend's side of enrolling a master (`docs/task-edge-sync-backend.md` §1) and of its grants (§9),
 /// with the person's session. Cloud only: a master has nothing to enrol with while offline.

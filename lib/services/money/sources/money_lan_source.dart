@@ -14,7 +14,7 @@ import 'package:app/services/money/money_summary_model.dart';
 import 'package:app/services/money/sources/money_source.dart';
 import 'package:app/services/pos/pos_payment_method.dart';
 import 'package:app/services/pos/sources/pos_lan_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// [MoneySource] over the master (`docs/offline/specs/money.md`).

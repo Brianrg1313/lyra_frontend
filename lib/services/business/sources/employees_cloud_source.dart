@@ -3,8 +3,8 @@ import 'package:app/services/business/business_employee_detail_model.dart';
 import 'package:app/services/business/business_employee_model.dart';
 import 'package:app/services/business/employee_activation_model.dart';
 import 'package:app/services/business/sources/employees_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [EmployeesSource] over the backend's REST api.
 class EmployeesCloudSource implements EmployeesSource {

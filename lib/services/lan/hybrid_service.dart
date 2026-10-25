@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 import 'package:app/services/business/business_model.dart';
 import 'package:app/services/business/business_profile_model.dart';

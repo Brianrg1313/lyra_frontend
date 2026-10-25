@@ -1,7 +1,7 @@
 import 'package:core/socket.dart';
 
 // SERVICES
-import 'package:app/toolkit/api.dart' show devHost, useCookieSession;
+import 'package:app/toolkit/backend/api.dart' show devHost, useCookieSession;
 import 'package:app/services/database/database_service.dart';
 
 /// The app's socket connection.

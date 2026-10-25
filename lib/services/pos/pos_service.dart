@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/pos/sources/pos_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum PosSummaryStatus { idle, loading, ready, error }
 

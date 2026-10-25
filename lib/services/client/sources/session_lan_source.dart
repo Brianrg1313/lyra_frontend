@@ -7,7 +7,7 @@ import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/permissions/permission_request_model.dart';
 import 'package:app/services/sign_in/login_method.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [SessionSource] over the master (`docs/offline/specs/session.md`).
 ///

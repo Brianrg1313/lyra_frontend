@@ -4,8 +4,8 @@ import 'package:app/services/database/database_service.dart';
 import 'package:app/services/permissions/permission_request.dart';
 import 'package:app/services/permissions/permission_request_model.dart';
 import 'package:app/services/sign_in/login_method.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [SessionSource] over the backend's REST api.
 class SessionCloudSource implements SessionSource {

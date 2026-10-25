@@ -7,7 +7,7 @@
 /// backend, just like those of the product tables.
 ///
 /// The owning company does not go in the body: it travels in the `business_id`
-/// header of every request (see `useBusiness` in `toolkit/api.dart`).
+/// header of every request (see `useBusiness` in `toolkit/backend/api.dart`).
 ///
 /// `NAME` and `DESCRIPTION` are not built here at all: the form no longer asks
 /// for either — a channel not yet named already shows something meaningful in

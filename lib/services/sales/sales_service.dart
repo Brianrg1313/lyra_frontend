@@ -9,8 +9,8 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/sales/sale_progress_model.dart';
 import 'package:app/services/sales/sources/sales_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum SalesStatus { idle, loading, ready, empty, error }
 

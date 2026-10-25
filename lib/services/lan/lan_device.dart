@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:lyra_protocol/lyra_protocol.dart';
 
 // SERVICES
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// What this install keeps to reach its master (`docs/offline/protocol-v1.md` §3): the
 /// installation CA it trusts, its own certificate and key, and where the master was last seen.

@@ -10,7 +10,7 @@ import 'package:app/services/business/sources/delivery_source.dart';
 import 'package:app/services/capabilities/capability_service.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/pos/sources/pos_lan_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show businessService;
 
 /// [DeliverySource] over the master (`docs/offline/specs/deliveries.md`): only on a device in

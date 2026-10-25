@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/permissions/permission_request_model.dart';
 import 'package:app/services/client/sources/session_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show clientService;
 
 enum PermissionRequestsStatus { idle, loading, ready, error }

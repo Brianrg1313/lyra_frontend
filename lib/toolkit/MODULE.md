@@ -7,7 +7,8 @@ backend, routes and theme. No UI.
 ## Files
 
 - `toolkit.dart` — app barrel: re-exports `package:core/core.dart` + `S`. **Screens import this.**
-- `api.dart` — REST clients and the business header:
+- `save_file.dart` — `saveFile` (bytes to a file the person keeps: a save dialog natively, a download in a browser).
+- `backend/api.dart` — REST clients and the business header:
   - `api` — main backend (`lyra`, port 80). `assets` — media backend (`cetus`, port 81, `ApiMode.assets`).
     `aries` — conversation desk (`aries`, port 80). `scorpius` — maps (`scorpius`, port 80; tile routes public).
     `edge` — a company's masters (`edge`, port 80): the enrolment with the owner's session.
@@ -22,30 +23,29 @@ backend, routes and theme. No UI.
   - `useBranch(String? id)` — the branch on every api and `sockets` (`branch_id`); called only by `BranchService`, then `ConnectionService().rebind()`.
   - `onBranchRefused` — hook fired by `_SessionApi` on any answer with `action: "select_branch"`; set by `BranchService`.
   - `onSessionRejected` — hook fired by `_SessionApi` on a `401` with `action: "login"`; set by `ClientService` (ends the session).
-- `deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`/`.paired` (the pairing's role, whichever session),
+- `backend/sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` and `branch_id` in headers **and**
+  `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
+  Also `presenceSocket`: the backend's `/presence` namespace, no token (`tokenName: "Presence"`), reconnects within 2 s; the only way the app knows the backend is there (`CloudPresence`).
+- `backend/deployment.dart` — `DeploymentMode` (`cloud`, `local`, `hybrid`), `DeploymentRole`, `Deployment.mode`/`.role`/`.paired` (the pairing's role, whichever session),
   `lanEnabled` (every native install, or the page a master serves; no build flag), `restore`
   (in `preCall`: a stored `LanDevice` is LAN mode with its role unless a cloud token is stored, anything else cloud; never chosen), `attach` (set up or
   paired), `detach` (left the LAN), `online`/`offline` (the sign in page's network: the cloud's sources, or the paired master's; `offline` is also "work offline"), `hybrid` (signed in online and to the master, `HybridService`), `use` (tests); `Sources` (one getter per domain: the cloud source, or in `local`/`hybrid` its LAN source over
   `lanService` — session, business, inventory and stock so far — and `UnsupportedError` for a domain whose release hasn't come), `UnreadableAnswer` (an answer its model can't read).
-- `lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in (or `activate`, or a cloud `grant`) + `session.bind`, `unseal`,
+- `lan/_lan.dart` — `LanClient` (one `/rpc` socket to the master: hello, a browser's `device.prove`, sign in (or `activate`, or a cloud `grant`) + `session.bind`, `unseal`,
   silent refresh, failures as `{message, action, code}` maps), `LanUnreachable`, `lanAppVersion` (= pubspec),
   `lanPlatform`, `lanDeviceName` (the default name a device pairs with), `lanSupported` (web: the `<meta name="lyra-master">` a master writes into its page), `lanServingMaster` (web: the page's origin, if a master's), `lanCanScan` (Android, iOS),
   `discoverMasters`, `openPairingSocket`, `newDeviceKey`, `signDeviceProof`, `forgetDeviceKey`, `canInstallBrowserCa`,
   `installBrowserCa`, `saveBrowserCa`, `lanFailure`; `download` / `upload` (`/f`, the session's token, refreshed once),
   `LanFiles` (the seam).
-- `lan_io.dart` — native transport: mutual TLS pinned to the CA (`403` → `device_revoked`, and `/f`), mDNS, PEM keys, the
+- `lan/io.dart` — native transport: mutual TLS pinned to the CA (`403` → `device_revoked`, and `/f`), mDNS, PEM keys, the
   browsers' root into the user trust store (Windows `certutil`, macOS `security`).
-- `lan_web.dart` — browser transport: WebSockets to the page's origin, a non-extractable WebCrypto key in IndexedDB,
+- `lan/web.dart` — browser transport: WebSockets to the page's origin, a non-extractable WebCrypto key in IndexedDB,
   `fetch` for `/f`.
-- `lan_file.dart` — `LanFileResponse`, `LanFileUnreachable` (both transports' `fileRequest`).
-- `lan_image.dart` — `mediaImage(url)` (what screens draw an image address with), `mediaBytes(url)` (the same image's bytes, to upload again), `LanFileImage` (a master's file over
+- `lan/file.dart` — `LanFileResponse`, `LanFileUnreachable` (both transports' `fileRequest`).
+- `lan/image.dart` — `mediaImage(url)` (what screens draw an image address with), `mediaBytes(url)` (the same image's bytes, to upload again), `LanFileImage` (a master's file over
   its channel, cached by id and size; `address`, `parse`).
-- `lan_key.dart` — `LanDeviceKey` (a pairing key: signs, PEM or none, `keep`), `PemDeviceKey`.
-- `lan_found.dart` — `LanFound` (a master mDNS found), `LanPairingSocket`.
-- `save_file.dart` — `saveFile` (bytes to a file the person keeps: a save dialog natively, a download in a browser).
-- `sockets.dart` — `sockets` (`SocketAPI`), same host/token as `api`; `business_id` and `branch_id` in headers **and**
-  `auth` (web cannot send custom headers; `auth` is re-read on reconnect). Lifecycle: `ConnectionService`.
-  Also `presenceSocket`: the backend's `/presence` namespace, no token (`tokenName: "Presence"`), reconnects within 2 s; the only way the app knows the backend is there (`CloudPresence`).
+- `lan/key.dart` — `LanDeviceKey` (a pairing key: signs, PEM or none, `keep`), `PemDeviceKey`.
+- `lan/found.dart` — `LanFound` (a master mDNS found), `LanPairingSocket`.
 - `settings/routes.dart` — the route table. Home sections, business/finance/sales tabs are generated
   from their enums; all `/home/...` share `shell: Home.shell`. Fixed segments
   (`/home/connections/new`) go **before** their `:id` sibling. `/pos` is standalone.

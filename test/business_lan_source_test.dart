@@ -24,7 +24,7 @@ import 'package:app/services/client/client_service.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
 import 'package:app/services/lan/lan_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/screens/home/sections/business/settings/profile_email_add.dart';
 
 /// The business release of plan phase 4 on the app's side: what the master answers

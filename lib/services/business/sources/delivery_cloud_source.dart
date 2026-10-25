@@ -7,8 +7,8 @@ import 'package:app/services/business/business_delivery_request.dart';
 import 'package:app/services/business/delivery_area_model.dart';
 import 'package:app/services/business/delivery_area_request.dart';
 import 'package:app/services/business/sources/delivery_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [DeliverySource] over the backend's REST api, and the isochrone over the
 /// map backend (`POST /scorpius/v1/isochrone`).

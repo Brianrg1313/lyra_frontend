@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:app/services/channels/channel_detail_model.dart';
 import 'package:app/services/channels/channel_lite_model.dart';
 import 'package:app/services/channels/channel_request.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Status of the channel list load (`GET /channels/`).
 enum ChannelsStatus { idle, loading, ready, empty, error }

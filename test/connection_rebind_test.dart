@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // SERVICES
 import 'package:app/services/connection/connection_service.dart';
-import 'package:app/toolkit/sockets.dart';
+import 'package:app/toolkit/backend/sockets.dart';
 
 /// `ConnectionService.rebind` is what `BusinessService` calls on every change
 /// of the active business: the server joins a socket to its business's rooms

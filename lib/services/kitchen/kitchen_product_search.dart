@@ -5,7 +5,7 @@ import 'package:app/services/kitchen/kitchen_product_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum KitchenProductSearchStatus { idle, loading, ready, error }
 

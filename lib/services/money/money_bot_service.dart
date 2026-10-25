@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/money/money_bot_model.dart';
 import 'package:app/services/money/money_service.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 enum MoneyBotStatus { idle, loading, ready, empty, error }
 

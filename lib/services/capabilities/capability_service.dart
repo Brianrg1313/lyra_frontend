@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 // SERVICES
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// What an area is in the running deployment.
 enum Capability {

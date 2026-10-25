@@ -29,7 +29,7 @@ import 'package:app/screens/home/sections/inventory/table_list/stock_summary/sum
 import 'package:app/screens/home/sections/inventory/table_list/inventory_bar.dart';
 import 'package:app/screens/home/sections/inventory/table_list/supplies/_supplies.dart';
 import 'package:app/screens/modals/inventory/create_table/_create_table.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 import 'package:app/toolkit/settings/routes.dart';
 
 /// Supplies and products are different tables in one section, and no table shows in two

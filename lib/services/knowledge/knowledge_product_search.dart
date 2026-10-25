@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 // SERVICES
 import 'package:app/services/knowledge/knowledge_entry_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// Status of the product search of the question form.
 enum KnowledgeProductSearchStatus { idle, loading, ready, error }

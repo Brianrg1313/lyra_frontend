@@ -9,8 +9,8 @@ import 'package:app/services/inventory/table_request.dart';
 import 'package:app/services/stock/tables/table_detail_model.dart';
 import 'package:app/services/stock/tables/table_lite_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// State of the read of a table's detail
 /// (`GET /inventory/products/builder/details/<table_id>`).

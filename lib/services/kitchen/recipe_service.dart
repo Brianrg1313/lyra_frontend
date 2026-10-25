@@ -10,8 +10,8 @@ import 'package:app/services/kitchen/recipe_availability_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
 import 'package:app/services/inventory/table_record_request.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// Status of one product's recipe: [none] is a product without one (`404 recipe_not_found`),
 /// news and not an error.

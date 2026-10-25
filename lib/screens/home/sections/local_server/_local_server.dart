@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 // SERVICES
 import 'package:app/services/lan/hybrid_service.dart';
 import 'package:app/services/lan/lan_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 // WIDGETS
 import 'package:app/screens/home/sections/local_server/widgets/server_away.dart';

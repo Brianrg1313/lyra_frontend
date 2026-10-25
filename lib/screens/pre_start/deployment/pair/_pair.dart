@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 import 'package:app/services/lan/lan_pairing_service.dart';
 
 // WIDGETS

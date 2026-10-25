@@ -11,7 +11,7 @@ import 'package:app/services/business/business_service.dart';
 import 'package:app/services/home/home_service.dart';
 import 'package:app/services/permissions/permissions_service.dart';
 import 'package:app/services/capabilities/capability_service.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 import 'package:app/screens/home/desktop/side_bar/option.dart';
 import 'package:app/screens/home/desktop/side_bar/options.dart';
 import 'package:app/screens/home/sections/_sections.dart';

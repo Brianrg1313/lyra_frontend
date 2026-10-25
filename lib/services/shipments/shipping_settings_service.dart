@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipment_request.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 enum ShippingSettingsStatus { idle, loading, ready, error }
 

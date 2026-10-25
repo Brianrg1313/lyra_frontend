@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:app/toolkit/toolkit.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/lan/image.dart';
 
 /// Shows [url] full screen, above everything, and goes back when it closes.
 ///

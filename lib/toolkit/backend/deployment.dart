@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 // SERVICES
 import 'package:app/services/lan/lan_device.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
-import 'package:app/toolkit/lan.dart' show lanSupported;
+import 'package:app/toolkit/lan/_lan.dart' show lanSupported;
 import 'package:app/services/client/sources/session_source.dart';
 import 'package:app/services/client/sources/session_cloud_source.dart';
 import 'package:app/services/client/sources/session_lan_source.dart';
@@ -35,7 +35,7 @@ import 'package:app/services/permissions/sources/permissions_source.dart';
 import 'package:app/services/permissions/sources/permissions_cloud_source.dart';
 import 'package:app/services/permissions/sources/permissions_lan_source.dart';
 import 'package:app/toolkit/settings/initial_builder.dart' show lanService;
-import 'package:app/toolkit/api.dart' show api;
+import 'package:app/toolkit/backend/api.dart' show api;
 import 'package:app/services/database/database_service.dart';
 
 /// Where the company's data lives (`docs/plan-offline-lan.md` §7, decision D9).

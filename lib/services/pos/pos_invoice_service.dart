@@ -10,7 +10,7 @@ import 'package:app/services/pos/pos_invoice_model.dart';
 import 'package:app/services/pos/pos_product_model.dart';
 import 'package:app/services/stock/movements/stock_changed_model.dart';
 import 'package:app/services/pos/sources/pos_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// What the ticket on screen is up to.
 ///

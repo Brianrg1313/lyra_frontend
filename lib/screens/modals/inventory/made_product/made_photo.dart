@@ -7,7 +7,7 @@ import 'package:app/toolkit/toolkit.dart';
 import 'package:app/services/files/image_file.dart';
 import 'package:app/services/inventory/product_image.dart';
 import 'package:app/services/kitchen/made_products_service.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/lan/image.dart';
 
 // WIDGETS
 import 'package:core/form.dart';

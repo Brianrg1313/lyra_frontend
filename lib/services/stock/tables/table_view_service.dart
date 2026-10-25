@@ -16,8 +16,8 @@ import 'package:app/services/stock/tables/table_ready_model.dart';
 import 'package:app/services/stock/tables/table_structure_model.dart';
 import 'package:app/services/stock/tables/table_view_model.dart';
 import 'package:app/services/stock/sources/inventory_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// Loading state of a table's structure
 /// (`GET /inventory/products/builder/structure/<table_id>`).

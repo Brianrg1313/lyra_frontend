@@ -8,9 +8,9 @@ import 'package:uuid/uuid.dart';
 
 // SERVICES
 import 'package:app/generated/l10n.dart';
-import 'package:app/toolkit/api.dart' show onSessionRejected;
-import 'package:app/toolkit/deployment.dart';
-import 'package:app/toolkit/lan.dart';
+import 'package:app/toolkit/backend/api.dart' show onSessionRejected;
+import 'package:app/toolkit/backend/deployment.dart';
+import 'package:app/toolkit/lan/_lan.dart';
 import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/local_server/local_server_service.dart';
 import 'package:app/services/preferences/preferences_service.dart';

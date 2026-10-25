@@ -4,7 +4,7 @@
 **Role** Conversation desk: the chats the assistant holds with customers (WhatsApp). Two panels,
 1/3 inbox + 2/3 open chat. Content of the `messages` home section.
 **Services** `ChatsService`, `ChatThreadService` (`lib/services/chats`) — created by this section, not app-wide.
-**Backend** `/aries/v1` through the `aries` client (`lib/toolkit/api.dart`). Contract:
+**Backend** `/aries/v1` through the `aries` client (`lib/toolkit/backend/api.dart`). Contract:
 `E:/andromeda/backend/projects/lyra/docs/guides/aries-chat-desk.md`.
 
 ## Invariants

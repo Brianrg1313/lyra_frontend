@@ -11,8 +11,8 @@ import 'package:app/services/permissions/sources/permissions_source.dart';
 import 'package:app/services/sales/sale_model.dart';
 import 'package:app/services/shipments/shipment_model.dart';
 import 'package:app/services/shipments/shipment_request.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum ShipmentsStatus { idle, loading, ready, empty, error }
 

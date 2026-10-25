@@ -22,7 +22,7 @@ import 'package:app/screens/home/sections/inventory/table_list/inventory_start.d
 import 'package:app/screens/home/sections/inventory/table_list/stock_summary/_stock_summary.dart';
 import 'package:app/screens/home/sections/inventory/table_list/view_toggle.dart';
 import 'package:app/screens/home/sections/inventory/table_view/_table_view.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 import 'package:app/toolkit/settings/routes.dart';
 
 /// The inventory section opens one table at a time, picked in its bar: the link's, else

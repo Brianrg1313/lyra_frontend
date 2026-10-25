@@ -11,7 +11,7 @@ import 'package:app/services/connection/connection_service.dart';
 import 'package:app/services/permissions/sources/permissions_source.dart';
 import 'package:app/services/stock/prices/branch_price_model.dart';
 import 'package:app/services/stock/sources/stock_source.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 enum BranchPricesStatus { idle, loading, ready, error }
 

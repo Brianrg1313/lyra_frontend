@@ -9,11 +9,11 @@ import 'package:multicast_dns/multicast_dns.dart';
 
 // SERVICES
 import 'package:app/services/lan/lan_device.dart';
-import './lan_found.dart';
-import './lan_key.dart';
-import './lan_file.dart';
+import './found.dart';
+import './key.dart';
+import './file.dart';
 
-/// Native transport of the LAN client (`lan.dart`): `dart:io` sockets, mutual TLS pinned to
+/// Native transport of the LAN client (`_lan.dart`): `dart:io` sockets, mutual TLS pinned to
 /// the installation CA, mDNS discovery.
 ///
 /// The master refuses a revoked device's upgrade with `403` (`protocol-v1.md` §3): that comes

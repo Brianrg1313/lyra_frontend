@@ -8,7 +8,7 @@ storage (`flutter_secure_storage` has no OS vault there), so any XSS on the page
 ## What the frontend already does (flag on)
 
 Enabled with `flutter build web --dart-define=LYRA_COOKIE_SESSION=true`
-(`useCookieSession` in `lib/toolkit/api.dart`). Desktop is never affected.
+(`useCookieSession` in `lib/toolkit/backend/api.dart`). Desktop is never affected.
 
 - Every REST request and the socket handshake go out **with credentials** (`fetch` with
   `credentials: "include"`, socket.io `withCredentials`), so the browser sends and stores cookies
@@ -53,4 +53,4 @@ Enabled with `flutter build web --dart-define=LYRA_COOKIE_SESSION=true`
 - `document.cookie` and browser storage hold no session token.
 - A request from a non-allow-listed origin gets no CORS credentials.
 - Desktop (no flag, `Authorization` header) works unchanged.
-- Then make the flag the default for web builds (or remove it) in `lib/toolkit/api.dart`.
+- Then make the flag the default for web builds (or remove it) in `lib/toolkit/backend/api.dart`.

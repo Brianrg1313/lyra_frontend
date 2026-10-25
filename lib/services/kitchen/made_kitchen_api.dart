@@ -3,7 +3,7 @@ import 'package:app/services/kitchen/kitchen_report_model.dart';
 import 'package:app/services/kitchen/kitchen_request.dart';
 import 'package:app/services/kitchen/modifier_model.dart';
 import 'package:app/services/kitchen/recipe_model.dart';
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 
 /// What a made product's form reads and writes besides its record (`cocina-frontend.md` §6, §9):
 /// the modifier groups it offers, and what making it costs as it is written. Cloud only, `api`

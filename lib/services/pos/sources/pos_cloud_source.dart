@@ -3,8 +3,8 @@ import 'package:app/services/pos/pos_invoice_model.dart';
 import 'package:app/services/pos/pos_payment_method.dart';
 import 'package:app/services/pos/pos_product_model.dart';
 import 'package:app/services/pos/sources/pos_source.dart';
-import 'package:app/toolkit/api.dart';
-import 'package:app/toolkit/deployment.dart';
+import 'package:app/toolkit/backend/api.dart';
+import 'package:app/toolkit/backend/deployment.dart';
 
 /// [PosSource] over the backend's REST api.
 class PosCloudSource implements PosSource {

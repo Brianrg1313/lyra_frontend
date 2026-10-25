@@ -8,7 +8,7 @@
 /// mounting the form.
 ///
 /// The owning company does not go in the body: it travels in the `business_id` header of
-/// all requests (see `useBusiness` in `toolkit/api.dart`).
+/// all requests (see `useBusiness` in `toolkit/backend/api.dart`).
 ///
 /// The table is created with its header (title, description and color) and, if a
 /// template category was chosen, with that category. The columns are never built by the

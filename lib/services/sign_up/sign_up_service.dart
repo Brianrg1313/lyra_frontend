@@ -1,4 +1,4 @@
-import 'package:app/toolkit/api.dart';
+import 'package:app/toolkit/backend/api.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
 /// Service for the sign-up flow, reached when `email/verify` answers

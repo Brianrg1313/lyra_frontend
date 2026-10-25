@@ -9,15 +9,15 @@ import 'package:lyra_protocol/lyra_protocol.dart';
 // SERVICES
 import 'package:app/services/lan/lan_device.dart';
 import 'package:app/services/lan/lan_identity_store.dart';
-import 'lan_web.dart' if (dart.library.io) 'lan_io.dart' as transport;
-import './lan_found.dart';
-import './lan_key.dart';
-import './lan_file.dart';
-import './save_file.dart';
+import './web.dart' if (dart.library.io) './io.dart' as transport;
+import './found.dart';
+import './key.dart';
+import './file.dart';
+import 'package:app/toolkit/save_file.dart';
 
-export './lan_found.dart';
-export './lan_key.dart';
-export './lan_file.dart';
+export './found.dart';
+export './key.dart';
+export './file.dart';
 
 /// This app's version as `hello` sends it (`protocol-v1.md` §4). `test/lan_client_test.dart`
 /// keeps it equal to `pubspec.yaml`.

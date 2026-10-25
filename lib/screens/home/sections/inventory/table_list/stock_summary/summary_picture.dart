@@ -3,7 +3,7 @@ import 'package:app/toolkit/toolkit.dart';
 
 // SERVICES
 import 'package:app/services/stock/summary/stock_summary_model.dart';
-import 'package:app/toolkit/lan_image.dart';
+import 'package:app/toolkit/lan/image.dart';
 
 /// The product's thumbnail, which is how a person recognizes it.
 ///
